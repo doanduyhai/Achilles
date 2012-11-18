@@ -1,145 +1,142 @@
 package fr.doan.achilles.parser;
 
+import static fr.doan.achilles.metadata.builder.ListPropertyMetaBuilder.listPropertyMetaBuilder;
+import static fr.doan.achilles.metadata.builder.MapPropertyMetaBuilder.mapPropertyMetaBuilder;
+import static fr.doan.achilles.metadata.builder.SetPropertyMetaBuilder.setPropertyMetaBuilder;
+import static fr.doan.achilles.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import fr.doan.achilles.metadata.ListPropertyMeta;
-import fr.doan.achilles.metadata.MapPropertyMeta;
+import fr.doan.achilles.bean.BeanPropertyHelper;
 import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.metadata.SetPropertyMeta;
-import fr.doan.achilles.metadata.SimplePropertyMeta;
+import fr.doan.achilles.validation.Validator;
 
-public class PropertyParser
-{
-	@SuppressWarnings("unchecked")
-	public static <V extends Serializable> PropertyMeta<V> parse(Field field, String propertyName)
-	{
-		Class<?> fieldType = field.getType();
+public class PropertyParser {
 
-		PropertyMeta<V> propertyMeta;
+    private final BeanPropertyHelper helper = new BeanPropertyHelper();
 
-		if (List.class.isAssignableFrom(fieldType))
-		{
-			propertyMeta = parseListProperty(field, propertyName, fieldType);
-		}
+    public <V extends Serializable> PropertyMeta<V> parse(Class<?> beanClass, Field field, String propertyName) {
+        Class<?> fieldType = field.getType();
 
-		else if (Set.class.isAssignableFrom(fieldType))
-		{
-			propertyMeta = parseSetProperty(field, propertyName, fieldType);
-		}
+        PropertyMeta<V> propertyMeta;
 
-		else if (Map.class.isAssignableFrom(fieldType))
-		{
-			propertyMeta = parseMapProperty(field, propertyName, fieldType);
-		}
-		else
-		{
-			propertyMeta = new SimplePropertyMeta<V>(propertyName, (Class<V>) fieldType);
-		}
+        if (List.class.isAssignableFrom(fieldType)) {
+            propertyMeta = parseListProperty(beanClass, field, propertyName, fieldType);
+        }
 
-		return propertyMeta;
-	}
+        else if (Set.class.isAssignableFrom(fieldType)) {
+            propertyMeta = parseSetProperty(beanClass, field, propertyName, fieldType);
+        }
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	private static <V extends Serializable> PropertyMeta<V> parseMapProperty(Field field, String propertyName, Class<?> fieldType)
-	{
-		PropertyMeta<V> propertyMeta;
-		Class<V> valueClass;
-		Class<? extends Serializable> keyClass;
-		Class<? extends Map> mapType = (Class<? extends Map>) fieldType;
-		Type genericType = field.getGenericType();
+        else if (Map.class.isAssignableFrom(fieldType)) {
+            propertyMeta = parseMapProperty(beanClass, field, propertyName, fieldType);
+        }
 
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 1)
-			{
-				keyClass = (Class<? extends Serializable>) actualTypeArguments[0];
-				valueClass = (Class<V>) actualTypeArguments[1];
-			}
-			else
-			{
-				keyClass = (Class<? extends Serializable>) Object.class;
-				valueClass = (Class<V>) Object.class;
-			}
-		}
-		else
-		{
-			keyClass = (Class<? extends Serializable>) Object.class;
-			valueClass = (Class<V>) Object.class;
-		}
+        else {
+            propertyMeta = parseSimpleProperty(beanClass, field, propertyName);
+        }
 
-		propertyMeta = new MapPropertyMeta<V>(propertyName, keyClass, valueClass, mapType);
-		return propertyMeta;
-	}
+        return propertyMeta;
+    }
 
-	@SuppressWarnings("unchecked")
-	private static <V extends Serializable> PropertyMeta<V> parseSetProperty(Field field, String propertyName, Class<?> fieldType)
-	{
-		PropertyMeta<V> propertyMeta;
-		Class<V> valueClass;
-		Class<? extends Set<V>> setType = (Class<? extends Set<V>>) fieldType;
-		Type genericType = field.getGenericType();
+    @SuppressWarnings("unchecked")
+    private <V extends Serializable> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field,
+            String propertyName) {
+        Validator.validateSerializable(field.getType(), field.getName());
+        Method[] accessors = helper.findAccessors(beanClass, field);
 
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 0)
-			{
-				valueClass = (Class<V>) actualTypeArguments[0];
-			}
-			else
-			{
-				valueClass = (Class<V>) Object.class;
-			}
-		}
-		else
-		{
-			valueClass = (Class<V>) Object.class;
-		}
+        return simplePropertyMetaBuilder((Class<V>) field.getType()).propertyName(propertyName).accessors(accessors)
+                .build();
+    }
 
-		propertyMeta = new SetPropertyMeta<V>(propertyName, valueClass, setType);
-		return propertyMeta;
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <V extends Serializable> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field,
+            String propertyName, Class<?> fieldType) {
 
-	@SuppressWarnings("unchecked")
-	private static <V extends Serializable> PropertyMeta<V> parseListProperty(Field field, String propertyName, Class<?> fieldType)
-	{
-		PropertyMeta<V> propertyMeta;
-		Class<V> valueClass;
-		Class<? extends List<V>> listType = (Class<? extends List<V>>) fieldType;
-		Type genericType = field.getGenericType();
+        Class valueClass;
+        Class<? extends List<V>> listType = (Class<? extends List<V>>) fieldType;
+        Type genericType = field.getGenericType();
 
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 0)
-			{
-				valueClass = (Class<V>) actualTypeArguments[0];
-			}
-			else
-			{
-				valueClass = (Class<V>) Object.class;
-			}
-		}
-		else
-		{
-			valueClass = (Class<V>) Object.class;
-		}
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) genericType;
+            Type[] actualTypeArguments = pt.getActualTypeArguments();
+            if (actualTypeArguments.length > 0) {
+                valueClass = (Class) actualTypeArguments[0];
+            } else {
+                valueClass = Object.class;
+            }
+        } else {
+            valueClass = Object.class;
+        }
 
-		propertyMeta = new ListPropertyMeta<V>(propertyName, valueClass, listType);
-		return propertyMeta;
-	}
+        Validator.validateSerializable(valueClass, "value type of " + field.getName());
+        Method[] accessors = helper.findAccessors(beanClass, field);
+
+        return listPropertyMetaBuilder((Class<V>) valueClass).listClass(listType).propertyName(propertyName)
+                .accessors(accessors).build();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <V extends Serializable> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field,
+            String propertyName, Class<?> fieldType) {
+
+        Class valueClass;
+        Class<? extends Set<V>> setType = (Class<? extends Set<V>>) fieldType;
+        Type genericType = field.getGenericType();
+
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) genericType;
+            Type[] actualTypeArguments = pt.getActualTypeArguments();
+            if (actualTypeArguments.length > 0) {
+                valueClass = (Class) actualTypeArguments[0];
+            } else {
+                valueClass = Object.class;
+            }
+        } else {
+            valueClass = Object.class;
+        }
+        Validator.validateSerializable(valueClass, "value type of " + field.getName());
+        Method[] accessors = helper.findAccessors(beanClass, field);
+
+        return setPropertyMetaBuilder((Class<V>) valueClass).setClass(setType).propertyName(propertyName)
+                .accessors(accessors).build();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <V extends Serializable> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field,
+            String propertyName, Class<?> fieldType) {
+
+        Class valueClass;
+        Class keyType;
+
+        Class<? extends Map> mapType = (Class<? extends Map>) fieldType;
+        Type genericType = field.getGenericType();
+
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) genericType;
+            Type[] actualTypeArguments = pt.getActualTypeArguments();
+            if (actualTypeArguments.length > 1) {
+                keyType = (Class) actualTypeArguments[0];
+                valueClass = (Class) actualTypeArguments[1];
+            } else {
+                keyType = Object.class;
+                valueClass = Object.class;
+            }
+        } else {
+            keyType = Object.class;
+            valueClass = Object.class;
+        }
+        Validator.validateSerializable(valueClass, "value type of " + field.getName());
+        Validator.validateSerializable(keyType, "key type of " + field.getName());
+        Method[] accessors = helper.findAccessors(beanClass, field);
+
+        return mapPropertyMetaBuilder(valueClass).keyClass(keyType).mapClass(mapType).propertyName(propertyName)
+                .accessors(accessors).build();
+
+    }
 }

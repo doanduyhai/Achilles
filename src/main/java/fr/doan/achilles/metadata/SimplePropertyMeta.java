@@ -1,66 +1,69 @@
 package fr.doan.achilles.metadata;
 
 import java.io.Serializable;
-
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
+import java.lang.reflect.Method;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.validation.Validator;
 
-public class SimplePropertyMeta<V extends Serializable> implements PropertyMeta<V>
-{
-	protected String name;
-	protected String valueCanonicalClassName;
-	protected Class<V> valueClass;
-	protected Serializer<?> valueSerializer;
+public class SimplePropertyMeta<V extends Serializable> implements PropertyMeta<V> {
+    private String propertyName;
+    private Class<V> valueClass;
+    private Serializer<?> valueSerializer;
+    private Method getter;
+    private Method setter;
 
-	public SimplePropertyMeta(String name, Class<V> valueClazz) {
-		super();
-		Validator.validateNotBlank(name, "name");
-		Validator.validateNotNull(valueClazz, "valueClazz");
-		this.name = name;
-		this.valueClass = valueClazz;
-		this.bootStrapProperties();
-	}
+    @Override
+    public PropertyType propertyType() {
+        return PropertyType.SIMPLE;
+    }
 
-	private void bootStrapProperties()
-	{
-		this.valueSerializer = SerializerTypeInferer.getSerializer(valueClass);
-		this.valueCanonicalClassName = this.valueClass.getCanonicalName();
-	}
+    @Override
+    public V get(Object object) {
+        return valueClass.cast(object);
+    }
 
-	@Override
-	public String getName()
-	{
-		return name;
-	}
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
 
-	@Override
-	public String getValueCanonicalClassName()
-	{
-		return valueCanonicalClassName;
-	}
+    public void setPropertyName(String name) {
+        this.propertyName = name;
+    }
 
-	@Override
-	public Class<V> getValueClass()
-	{
-		return valueClass;
-	}
+    @Override
+    public Class<V> getValueClass() {
+        return valueClass;
+    }
 
-	@Override
-	public Serializer<?> getValueSerializer()
-	{
-		return valueSerializer;
-	}
+    public void setValueClass(Class<V> valueClass) {
+        this.valueClass = valueClass;
+    }
 
-	@Override
-	public PropertyType propertyType()
-	{
-		return PropertyType.SIMPLE;
-	}
+    @Override
+    public Serializer<?> getValueSerializer() {
+        return valueSerializer;
+    }
 
-	@Override
-	public V get(Object object)
-	{
-		return valueClass.cast(object);
-	}
+    public void setValueSerializer(Serializer<?> valueSerializer) {
+        this.valueSerializer = valueSerializer;
+    }
+
+    @Override
+    public Method getGetter() {
+        return getter;
+    }
+
+    public void setGetter(Method getter) {
+        this.getter = getter;
+    }
+
+    @Override
+    public Method getSetter() {
+        return setter;
+    }
+
+    public void setSetter(Method setter) {
+        this.setter = setter;
+    }
+
 }

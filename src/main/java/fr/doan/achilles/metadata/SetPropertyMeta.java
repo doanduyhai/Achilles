@@ -4,37 +4,32 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import fr.doan.achilles.validation.Validator;
-
 @SuppressWarnings("rawtypes")
-public class SetPropertyMeta<V extends Serializable> extends SimplePropertyMeta<V>
-{
+public class SetPropertyMeta<V extends Serializable> extends SimplePropertyMeta<V> {
 
-	private Class<? extends Set> setClass;
+    private Class<? extends Set> setClass;
 
-	public SetPropertyMeta(String name, Class<V> valueClazz, Class<? extends Set> setClazz) {
-		super(name, valueClazz);
-		Validator.validateNotNull(setClazz, "setClazz");
-		Validator.validateNoargsConstructor(setClazz);
-		if (setClazz == Set.class)
-		{
-			this.setClass = HashSet.class;
-		}
-		else
-		{
-			this.setClass = setClazz;
-		}
-	}
+    @SuppressWarnings("unchecked")
+    public Set<V> newSetInstance() {
+        Set<V> set;
+        try {
+            set = this.setClass.newInstance();
+        } catch (InstantiationException e) {
+            set = new HashSet<V>();
+        } catch (IllegalAccessException e) {
+            set = new HashSet<V>();
+        }
 
-	@SuppressWarnings("unchecked")
-	public Set<V> newSetInstance() throws InstantiationException, IllegalAccessException
-	{
-		return this.setClass.newInstance();
-	}
+        return set;
+    }
 
-	@Override
-	public PropertyType propertyType()
-	{
-		return PropertyType.SET;
-	}
+    public void setSetClass(Class<? extends Set> setClass) {
+        this.setClass = setClass;
+    }
+
+    @Override
+    public PropertyType propertyType() {
+        return PropertyType.SET;
+    }
+
 }

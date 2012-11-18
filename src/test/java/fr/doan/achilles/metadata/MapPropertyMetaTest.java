@@ -1,40 +1,100 @@
 package fr.doan.achilles.metadata;
 
-import static fr.doan.achilles.metadata.PropertyType.MAP;
-import static org.fest.assertions.Assertions.assertThat;
-
+import static org.fest.assertions.api.Assertions.assertThat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Set;
 import org.junit.Test;
 
-import fr.doan.achilles.serializer.Utils;
+public class MapPropertyMetaTest {
 
-public class MapPropertyMetaTest
-{
-	@Test
-	public void should_create_new_HashMap_instance() throws Exception
-	{
-		MapPropertyMeta<String> mapPropertyMeta = new MapPropertyMeta<String>("name", Integer.class, String.class, HashMap.class);
+    @Test
+    public void should_exception_when_cannot_instanciate() throws Exception {
 
-		assertThat(mapPropertyMeta.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(mapPropertyMeta.getKeyClassSerializer()).isEqualTo(Utils.INT_SRZ);
-		assertThat(mapPropertyMeta.newMapInstance()).isNotNull();
-		assertThat(mapPropertyMeta.newMapInstance()).isEmpty();
-		assertThat(mapPropertyMeta.newMapInstance() instanceof HashMap).isTrue();
-		assertThat(mapPropertyMeta.propertyType()).isEqualTo(MAP);
-	}
+        MapPropertyMeta<String> mapMeta = new MapPropertyMeta<String>();
+        mapMeta.setMapClass(MyMap.class);
 
-	@Test
-	public void should_create_new_default_set_instance() throws Exception
-	{
-		MapPropertyMeta<String> mapPropertyMeta = new MapPropertyMeta<String>("name", Integer.class, String.class, Map.class);
+        Map<?, String> map = mapMeta.newMapInstance();
 
-		assertThat(mapPropertyMeta.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(mapPropertyMeta.getKeyClassSerializer()).isEqualTo(Utils.INT_SRZ);
-		assertThat(mapPropertyMeta.newMapInstance()).isNotNull();
-		assertThat(mapPropertyMeta.newMapInstance()).isEmpty();
-		assertThat(mapPropertyMeta.newMapInstance() instanceof HashMap).isTrue();
-		assertThat(mapPropertyMeta.propertyType()).isEqualTo(MAP);
-	}
+        assertThat(map).isInstanceOf(HashMap.class);
+
+    }
+
+    class MyMap<K, V> implements Map<K, V> {
+
+        private MyMap() {
+        }
+
+        @Override
+        public int size() {
+
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+
+            return false;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+
+            return false;
+        }
+
+        @Override
+        public V get(Object key) {
+
+            return null;
+        }
+
+        @Override
+        public V put(K key, V value) {
+
+            return null;
+        }
+
+        @Override
+        public V remove(Object key) {
+
+            return null;
+        }
+
+        @Override
+        public void putAll(Map<? extends K, ? extends V> m) {
+
+        }
+
+        @Override
+        public void clear() {
+
+        }
+
+        @Override
+        public Set<K> keySet() {
+
+            return null;
+        }
+
+        @Override
+        public Collection<V> values() {
+
+            return null;
+        }
+
+        @Override
+        public Set<java.util.Map.Entry<K, V>> entrySet() {
+
+            return null;
+        }
+
+    }
 }

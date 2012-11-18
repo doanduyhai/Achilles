@@ -1,19 +1,18 @@
 package fr.doan.achilles.columnFamily;
 
+import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import me.prettyprint.cassandra.model.BasicColumnFamilyDefinition;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,150 +20,166 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
 import fr.doan.achilles.metadata.SimplePropertyMeta;
+import fr.doan.achilles.metadata.builder.SimplePropertyMetaBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ColumnFamilyHelperTest
-{
+public class ColumnFamilyHelperTest {
 
-	// @InjectMocks
-	ColumnFamilyHelper helper;
+    ColumnFamilyHelper helper;
 
-	@Mock
-	Cluster cluster;
+    @Mock
+    Cluster cluster;
 
-	@Mock
-	Keyspace keyspace;
+    @Mock
+    Keyspace keyspace;
 
-	@Mock
-	KeyspaceDefinition keyspaceDefinition;
+    @Mock
+    KeyspaceDefinition keyspaceDefinition;
 
-	@Mock
-	private ColumnFamilyBuilder columnFamilyBuilder;
+    @Mock
+    private ColumnFamilyBuilder columnFamilyBuilder;
 
-	@Mock
-	private ColumnFamilyValidator columnFamilyValidator;
+    @Mock
+    private ColumnFamilyValidator columnFamilyValidator;
 
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+    private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	private EntityMeta<?> meta;
+    private EntityMeta<?> meta;
 
-	@Before
-	public void setUp()
-	{
-		MockitoAnnotations.initMocks(this);
-		helper = new ColumnFamilyHelper(cluster, keyspace);
-		ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
-		ReflectionTestUtils.setField(helper, "columnFamilyValidator", columnFamilyValidator);
-	}
+    private final Method[] accessors = new Method[2];
 
-	@Test
-	public void should_discover_column_family() throws Exception
-	{
-		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+    private PropertyMeta<Long> idMeta;
 
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-		cfDef.setKeyValidationClass("keyValidationClass");
-		cfDef.setComment("comment");
+    @Before
+    public void setUp() throws Exception {
+        accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
+        accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
+        idMeta = SimplePropertyMetaBuilder.simplePropertyMetaBuilder(Long.class).propertyName("id")
+                .accessors(accessors).build();
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+        MockitoAnnotations.initMocks(this);
+        helper = new ColumnFamilyHelper(cluster, keyspace);
+        ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
+        ReflectionTestUtils.setField(helper, "columnFamilyValidator", columnFamilyValidator);
+    }
 
-		ColumnFamilyDefinition discoveredCfDef = helper.discoverColumnFamily("testCF");
+    @Test
+    public void should_discover_column_family() throws Exception {
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 
-		assertThat(discoveredCfDef).isNotNull();
-		assertThat(discoveredCfDef.getName()).isEqualTo("testCF");
-		assertThat(discoveredCfDef.getKeyValidationClass()).isEqualTo("keyValidationClass");
-		assertThat(discoveredCfDef.getComment()).isEqualTo("comment");
-	}
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+        cfDef.setKeyValidationClass("keyValidationClass");
+        cfDef.setComment("comment");
 
-	@Test
-	public void should_add_column_family() throws Exception
-	{
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-		when(cluster.addColumnFamily(cfDef, true)).thenReturn("id");
+        ColumnFamilyDefinition discoveredCfDef = helper.discoverColumnFamily("testCF");
 
-		String id = this.helper.addColumnFamily(cfDef);
+        assertThat(discoveredCfDef).isNotNull();
+        assertThat(discoveredCfDef.getName()).isEqualTo("testCF");
+        assertThat(discoveredCfDef.getKeyValidationClass()).isEqualTo("keyValidationClass");
+        assertThat(discoveredCfDef.getComment()).isEqualTo("comment");
+    }
 
-		assertThat(id).isEqualTo("id");
-	}
+    @Test
+    public void should_add_column_family() throws Exception {
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 
-	@Test
-	public void should_create_entity_meta() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		when(columnFamilyBuilder.build(meta, "keyspace")).thenReturn(cfDef);
+        when(cluster.addColumnFamily(cfDef, true)).thenReturn("id");
 
-		helper.createColumnFamily(meta);
+        String id = this.helper.addColumnFamily(cfDef);
 
-		verify(columnFamilyBuilder).build(meta, "keyspace");
-		verify(cluster).addColumnFamily(cfDef, true);
+        assertThat(id).isEqualTo("id");
+    }
 
-	}
+    @Test
+    public void should_create_entity_meta() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        when(columnFamilyBuilder.build(meta, "keyspace")).thenReturn(cfDef);
 
-	@Test
-	public void should_validate_column_family() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
+        helper.createColumnFamily(meta);
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+        verify(columnFamilyBuilder).build(meta, "keyspace");
+        verify(cluster).addColumnFamily(cfDef, true);
 
-		helper.validateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyValidator).validate(cfDef, meta);
-	}
+    }
 
-	@Test
-	public void should_validate_then_create_column_family_when_not_matching() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF2");
+    @Test
+    public void should_validate_column_family() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+        when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-		helper.validateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyBuilder).build(meta, "keyspace");
-	}
+        helper.validateColumnFamilies(entityMetaMap, true);
+        verify(columnFamilyValidator).validate(cfDef, meta);
+    }
 
-	@Test
-	public void should_validate_then_create_column_family_when_null() throws Exception
-	{
-		prepareData();
-		when(keyspaceDefinition.getCfDefs()).thenReturn(null);
+    @Test
+    public void should_validate_then_create_column_family_when_not_matching() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF2");
 
-		helper.validateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyBuilder).build(meta, "keyspace");
-	}
+        when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-	@Test(expected = InvalidColumnFamilyException.class)
-	public void should_exception_because_column_family_not_found() throws Exception
-	{
-		prepareData();
-		when(keyspaceDefinition.getCfDefs()).thenReturn(null);
+        helper.validateColumnFamilies(entityMetaMap, true);
+        verify(columnFamilyBuilder).build(meta, "keyspace");
+    }
 
-		helper.validateColumnFamilies(entityMetaMap, false);
-	}
+    @Test
+    public void should_validate_then_create_column_family_when_null() throws Exception {
+        prepareData();
+        when(keyspaceDefinition.getCfDefs()).thenReturn(null);
 
-	private void prepareData()
-	{
-		Map<String, PropertyMeta<?>> map = new HashMap<String, PropertyMeta<?>>();
+        helper.validateColumnFamilies(entityMetaMap, true);
+        verify(columnFamilyBuilder).build(meta, "keyspace");
+    }
 
-		SimplePropertyMeta<String> simplePropertyMeta = new SimplePropertyMeta<String>("name", String.class);
-		map.put("name", simplePropertyMeta);
-		meta = new EntityMeta<Long>(Long.class, "testCF", 1L, map);
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		entityMetaMap.put(this.getClass(), meta);
+    @Test(expected = InvalidColumnFamilyException.class)
+    public void should_exception_because_column_family_not_found() throws Exception {
+        prepareData();
+        when(keyspaceDefinition.getCfDefs()).thenReturn(null);
 
-		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
-	}
+        helper.validateColumnFamilies(entityMetaMap, false);
+    }
+
+    private void prepareData() {
+        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+
+        SimplePropertyMeta<String> simplePropertyMeta = SimplePropertyMetaBuilder
+                .simplePropertyMetaBuilder(String.class).propertyName("name").accessors(accessors).build();
+
+        propertyMetas.put("name", simplePropertyMeta);
+
+        meta = entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName("fr.doan.TestBean")
+                .columnFamilyName("testCF").serialVersionUID(1L).propertyMetas(propertyMetas).build();
+        entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+        entityMetaMap.put(this.getClass(), meta);
+
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+    }
+
+    class TestBean {
+
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+    }
 }

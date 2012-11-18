@@ -1,78 +1,75 @@
 package fr.doan.achilles.metadata;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
-
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.validation.Validator;
+import fr.doan.achilles.dao.GenericDao;
 
-public class EntityMeta<ID extends Serializable>
-{
-	private String canonicalClassName;
-	private String columnFamilyName;
-	private Long serialVersionUID;
-	private Class<ID> idClass;
-	private Serializer<?> idSerializer;
-	private Map<String, PropertyMeta<?>> attributes;
+public class EntityMeta<ID extends Serializable> {
 
-	public EntityMeta(Class<ID> idClass, String canonicalClassName, Long serialVersionUID, Map<String, PropertyMeta<?>> propertieMetas) {
-		this(idClass, canonicalClassName, normalizeColumnFamilyName(canonicalClassName), serialVersionUID, propertieMetas);
-	}
+    public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";
+    private String canonicalClassName;
+    private String columnFamilyName;
+    private Long serialVersionUID;
+    private Serializer<?> idSerializer;
+    private Map<String, PropertyMeta<?>> propertyMetas;
+    private PropertyMeta<ID> idMeta;
+    private GenericDao<ID> dao;
 
-	public EntityMeta(Class<ID> idClass, String canonicalClassName, String columnFamilyName, Long serialVersionUID,
-			Map<String, PropertyMeta<?>> propertieMetas)
-	{
-		super();
+    public String getCanonicalClassName() {
+        return canonicalClassName;
+    }
 
-		Validator.validateNotNull(idClass, "idClass");
-		Validator.validateNotBlank(canonicalClassName, "canonicalClassName");
-		Validator.validateNotBlank(columnFamilyName, "columnFamilyName");
-		Validator.validateNotNull(serialVersionUID, "serialVersionUID");
-		Validator.validateNotEmpty(propertieMetas, "propertieMetas");
+    public void setCanonicalClassName(String canonicalClassName) {
+        this.canonicalClassName = canonicalClassName;
+    }
 
-		this.idClass = idClass;
-		this.idSerializer = SerializerTypeInferer.getSerializer(idClass);
-		this.canonicalClassName = canonicalClassName;
-		this.columnFamilyName = normalizeColumnFamilyName(columnFamilyName);
-		this.serialVersionUID = serialVersionUID;
-		this.attributes = Collections.unmodifiableMap(propertieMetas);
-	}
+    public String getColumnFamilyName() {
+        return columnFamilyName;
+    }
 
-	public static String normalizeColumnFamilyName(String columnFamilyName)
-	{
-		return columnFamilyName.replaceAll("\\.", "_").replaceAll("\\$", "_I_");
-	}
+    public void setColumnFamilyName(String columnFamilyName) {
+        this.columnFamilyName = columnFamilyName;
+    }
 
-	public String getCanonicalClassName()
-	{
-		return canonicalClassName;
-	}
+    public Long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
-	public String getColumnFamilyName()
-	{
-		return columnFamilyName;
-	}
+    public void setSerialVersionUID(Long serialVersionUID) {
+        this.serialVersionUID = serialVersionUID;
+    }
 
-	public Long getSerialVersionUID()
-	{
-		return serialVersionUID;
-	}
+    public Serializer<?> getIdSerializer() {
+        return idSerializer;
+    }
 
-	public Map<String, PropertyMeta<?>> getAttributes()
-	{
-		return attributes;
-	}
+    public void setIdSerializer(Serializer<?> idSerializer) {
+        this.idSerializer = idSerializer;
+    }
 
-	public Class<ID> getIdClass()
-	{
-		return idClass;
-	}
+    public Map<String, PropertyMeta<?>> getPropertyMetas() {
+        return propertyMetas;
+    }
 
-	public Serializer<?> getIdSerializer()
-	{
-		return idSerializer;
-	}
+    public void setPropertyMetas(Map<String, PropertyMeta<?>> propertyMetas) {
+        this.propertyMetas = propertyMetas;
+    }
+
+    public PropertyMeta<ID> getIdMeta() {
+        return idMeta;
+    }
+
+    public void setIdMeta(PropertyMeta<ID> idMeta) {
+        this.idMeta = idMeta;
+    }
+
+    public GenericDao<ID> getDao() {
+        return dao;
+    }
+
+    public void setDao(GenericDao<ID> dao) {
+        this.dao = dao;
+    }
 
 }

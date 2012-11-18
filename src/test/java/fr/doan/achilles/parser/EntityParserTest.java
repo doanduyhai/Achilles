@@ -4,7 +4,6 @@ import static fr.doan.achilles.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.Assertions.assertThat;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,15 +11,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+import me.prettyprint.hector.api.Keyspace;
 import org.junit.Test;
-
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import fr.doan.achilles.exception.IncorrectTypeException;
-import fr.doan.achilles.exception.NotSerializableException;
+import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.ListPropertyMeta;
 import fr.doan.achilles.metadata.MapPropertyMeta;
@@ -29,191 +29,256 @@ import fr.doan.achilles.metadata.PropertyType;
 import fr.doan.achilles.metadata.SetPropertyMeta;
 import fr.doan.achilles.serializer.Utils;
 
-public class EntityParserTest
-{
-	private EntityParser parser = new EntityParser();
+@RunWith(MockitoJUnitRunner.class)
+public class EntityParserTest {
+    private final EntityParser parser = new EntityParser();
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_entity() throws Exception
-	{
-		EntityMeta<Long> meta = parser.parseEntity(TestEntity.class);
+    @Mock
+    private Keyspace keyspace;
 
-		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.achilles.parser.EntityParserTest.TestEntity");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("fr_doan_achilles_parser_EntityParserTest_TestEntity");
-		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
-		assertThat(meta.getIdClass()).isEqualTo(Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(meta.getAttributes()).hasSize(5);
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_parse_entity() throws Exception {
+        EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, TestEntity.class);
 
-		PropertyMeta<?> name = meta.getAttributes().get("name");
-		PropertyMeta<?> age = meta.getAttributes().get("age_in_year");
-		ListPropertyMeta<String> friends = (ListPropertyMeta<String>) meta.getAttributes().get("friends");
-		SetPropertyMeta<String> followers = (SetPropertyMeta<String>) meta.getAttributes().get("followers");
-		MapPropertyMeta<String> preferences = (MapPropertyMeta<String>) meta.getAttributes().get("preferences");
+        assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.achilles.parser.EntityParserTest.TestEntity");
+        assertThat(meta.getColumnFamilyName()).isEqualTo("fr_doan_achilles_parser_EntityParserTest_TestEntity");
+        assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
+        assertThat(meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
+        assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
+        assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(LONG_SRZ.getComparatorType());
+        assertThat(meta.getIdSerializer()).isEqualTo(LONG_SRZ);
+        assertThat(meta.getPropertyMetas()).hasSize(5);
 
-		assertThat(name).isNotNull();
-		assertThat(age).isNotNull();
-		assertThat(friends).isNotNull();
-		assertThat(followers).isNotNull();
-		assertThat(preferences).isNotNull();
+        PropertyMeta<?> name = meta.getPropertyMetas().get("name");
+        PropertyMeta<?> age = meta.getPropertyMetas().get("age_in_year");
+        ListPropertyMeta<String> friends = (ListPropertyMeta<String>) meta.getPropertyMetas().get("friends");
+        SetPropertyMeta<String> followers = (SetPropertyMeta<String>) meta.getPropertyMetas().get("followers");
+        MapPropertyMeta<String> preferences = (MapPropertyMeta<String>) meta.getPropertyMetas().get("preferences");
 
-		assertThat(name.getName()).isEqualTo("name");
-		assertThat(name.getValueCanonicalClassName()).isEqualTo("java.lang.String");
-		assertThat(name.getValueClass()).isEqualTo(String.class);
-		assertThat(name.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(name.propertyType()).isEqualTo(SIMPLE);
+        assertThat(name).isNotNull();
+        assertThat(age).isNotNull();
+        assertThat(friends).isNotNull();
+        assertThat(followers).isNotNull();
+        assertThat(preferences).isNotNull();
 
-		assertThat(age.getName()).isEqualTo("age_in_year");
-		assertThat(age.getValueCanonicalClassName()).isEqualTo("java.lang.Long");
-		assertThat(age.getValueClass()).isEqualTo(Long.class);
-		assertThat(age.getValueSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(age.propertyType()).isEqualTo(SIMPLE);
+        assertThat(name.getPropertyName()).isEqualTo("name");
+        assertThat(name.getValueClass()).isEqualTo(String.class);
+        assertThat(name.getValueSerializer()).isEqualTo(STRING_SRZ);
+        assertThat(name.propertyType()).isEqualTo(SIMPLE);
 
-		assertThat(friends.getName()).isEqualTo("friends");
-		assertThat(friends.getValueCanonicalClassName()).isEqualTo("java.lang.String");
-		assertThat(friends.getValueClass()).isEqualTo(String.class);
-		assertThat(friends.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(friends.propertyType()).isEqualTo(PropertyType.LIST);
-		assertThat(friends.newListInstance()).isNotNull();
-		assertThat(friends.newListInstance()).isEmpty();
-		assertThat(friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
+        assertThat(age.getPropertyName()).isEqualTo("age_in_year");
+        assertThat(age.getValueClass()).isEqualTo(Long.class);
+        assertThat(age.getValueSerializer()).isEqualTo(LONG_SRZ);
+        assertThat(age.propertyType()).isEqualTo(SIMPLE);
 
-		assertThat(followers.getName()).isEqualTo("followers");
-		assertThat(followers.getValueCanonicalClassName()).isEqualTo("java.lang.String");
-		assertThat(followers.getValueClass()).isEqualTo(String.class);
-		assertThat(followers.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(followers.propertyType()).isEqualTo(PropertyType.SET);
-		assertThat(followers.newSetInstance()).isNotNull();
-		assertThat(followers.newSetInstance()).isEmpty();
-		assertThat(followers.newSetInstance().getClass()).isEqualTo(HashSet.class);
+        assertThat(friends.getPropertyName()).isEqualTo("friends");
+        assertThat(friends.getValueClass()).isEqualTo(String.class);
+        assertThat(friends.getValueSerializer()).isEqualTo(STRING_SRZ);
+        assertThat(friends.propertyType()).isEqualTo(PropertyType.LIST);
+        assertThat(friends.newListInstance()).isNotNull();
+        assertThat(friends.newListInstance()).isEmpty();
+        assertThat(friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
 
-		assertThat(preferences.getName()).isEqualTo("preferences");
-		assertThat(preferences.getValueCanonicalClassName()).isEqualTo("java.lang.String");
-		assertThat(preferences.getValueClass()).isEqualTo(String.class);
-		assertThat(preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(preferences.propertyType()).isEqualTo(PropertyType.MAP);
-		assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(preferences.getKeyClassSerializer()).isEqualTo(Utils.INT_SRZ);
-		assertThat(preferences.newMapInstance()).isNotNull();
-		assertThat(preferences.newMapInstance()).isEmpty();
-		assertThat(preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
-	}
+        assertThat(followers.getPropertyName()).isEqualTo("followers");
+        assertThat(followers.getValueClass()).isEqualTo(String.class);
+        assertThat(followers.getValueSerializer()).isEqualTo(STRING_SRZ);
+        assertThat(followers.propertyType()).isEqualTo(PropertyType.SET);
+        assertThat(followers.newSetInstance()).isNotNull();
+        assertThat(followers.newSetInstance()).isEmpty();
+        assertThat(followers.newSetInstance().getClass()).isEqualTo(HashSet.class);
 
-	@Test
-	public void should_parse_entity_with_table_name() throws Exception
-	{
-		@Table(name = "myOwnCF")
-		class TestEntityWithColumnFamilyName implements Serializable
-		{
-			private static final long serialVersionUID = 1L;
+        assertThat(preferences.getPropertyName()).isEqualTo("preferences");
+        assertThat(preferences.getValueClass()).isEqualTo(String.class);
+        assertThat(preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
+        assertThat(preferences.propertyType()).isEqualTo(PropertyType.MAP);
+        assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
+        assertThat(preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+        assertThat(preferences.newMapInstance()).isNotNull();
+        assertThat(preferences.newMapInstance()).isEmpty();
+        assertThat(preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
+    }
 
-			@Id
-			private Long id;
+    @SuppressWarnings({ "unused", "unchecked" })
+    @Test
+    public void should_parse_entity_with_table_name() throws Exception {
+        @Table(name = "myOwnCF")
+        class TestEntityWithColumnFamilyName implements Serializable {
+            public static final long serialVersionUID = 1234L;
 
-			@Column
-			private String name;
-		}
+            @Id
+            private Long id;
 
-		EntityMeta<Long> meta = parser.parseEntity(TestEntityWithColumnFamilyName.class);
+            @Column
+            private String name;
 
-		assertThat(meta).isNotNull();
-		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
-	}
+            public Long getId() {
+                return id;
+            }
 
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_table_annotation() throws Exception
-	{
-		@SuppressWarnings("serial")
-		class TestEntityNoTableAnnotation implements Serializable
-		{}
-		parser.parseEntity(TestEntityNoTableAnnotation.class);
-	}
+            public void setId(Long id) {
+                this.id = id;
+            }
 
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_serialVersionUID() throws Exception
-	{
-		@SuppressWarnings("serial")
-		class TestEntityNoSerialVersionUID implements Serializable
-		{}
-		parser.parseEntity(TestEntityNoSerialVersionUID.class);
-	}
+            public String getName() {
+                return name;
+            }
 
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_non_public_serialVersionUID() throws Exception
-	{
-		class TestEntityNonPublicSerialVersionUID implements Serializable
-		{
-			static final long serialVersionUID = 1L;
-		}
-		parser.parseEntity(TestEntityNonPublicSerialVersionUID.class);
-	}
+            public void setName(String name) {
+                this.name = name;
+            }
 
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_id() throws Exception
-	{
-		@Table
-		class TestEntityNoId implements Serializable
-		{
-			private static final long serialVersionUID = 1L;
-		}
-		parser.parseEntity(TestEntityNoId.class);
-	}
+        }
 
-	@Test(expected = NotSerializableException.class)
-	public void should_exception_when_id_type_not_serializable() throws Exception
-	{
-		class NotSerializableId
-		{}
-		@Table
-		class TestEntityNotSerializableId implements Serializable
-		{
-			private static final long serialVersionUID = 1L;
+        EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, TestEntityWithColumnFamilyName.class);
 
-			@Id
-			private NotSerializableId id;
-		}
+        assertThat(meta).isNotNull();
+        assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
+    }
 
-		parser.parseEntity(TestEntityNotSerializableId.class);
-	}
+    @Test(expected = IncorrectTypeException.class)
+    public void should_exception_when_entity_has_no_table_annotation() throws Exception {
+        @SuppressWarnings("serial")
+        @Table
+        class TestEntityNoTableAnnotation implements Serializable {
+        }
+        parser.parseEntity(keyspace, TestEntityNoTableAnnotation.class);
+    }
 
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_column() throws Exception
-	{
-		@Table
-		class TestEntityNoColumn implements Serializable
-		{
-			private static final long serialVersionUID = 1L;
+    @Test(expected = IncorrectTypeException.class)
+    public void should_exception_when_entity_has_no_serialVersionUID() throws Exception {
+        @SuppressWarnings("serial")
+        @Table
+        class TestEntityNoSerialVersionUID implements Serializable {
+        }
+        parser.parseEntity(keyspace, TestEntityNoSerialVersionUID.class);
+    }
 
-			@Id
-			private Long id;
-		}
-		parser.parseEntity(TestEntityNoColumn.class);
-	}
+    @Test(expected = IncorrectTypeException.class)
+    public void should_exception_when_entity_has_non_public_serialVersionUID() throws Exception {
+        @Table
+        class TestEntityNonPublicSerialVersionUID implements Serializable {
+            static final long serialVersionUID = 1L;
+        }
+        parser.parseEntity(keyspace, TestEntityNonPublicSerialVersionUID.class);
+    }
 
-	@Table
-	public class TestEntity implements Serializable
-	{
-		private static final long serialVersionUID = 1L;
+    @Test(expected = IncorrectTypeException.class)
+    public void should_exception_when_entity_has_no_id() throws Exception {
+        @Table
+        class TestEntityNoId implements Serializable {
+            public static final long serialVersionUID = 1L;
+        }
+        parser.parseEntity(keyspace, TestEntityNoId.class);
+    }
 
-		@Id
-		private Long id;
+    @Test(expected = ValidationException.class)
+    public void should_exception_when_id_type_not_serializable() throws Exception {
+        class NotSerializableId {
+        }
+        @Table
+        class TestEntityNotSerializableId implements Serializable {
+            public static final long serialVersionUID = 1L;
 
-		@Column
-		private String name;
+            @Id
+            private NotSerializableId id;
+        }
 
-		@Column(name = "age_in_year")
-		private Long age;
+        parser.parseEntity(keyspace, TestEntityNotSerializableId.class);
+    }
 
-		@Column
-		private List<String> friends;
+    @SuppressWarnings("unused")
+    @Test(expected = IncorrectTypeException.class)
+    public void should_exception_when_entity_has_no_column() throws Exception {
+        @Table
+        class TestEntityNoColumn implements Serializable {
+            public static final long serialVersionUID = 1L;
 
-		@Column
-		private Set<String> followers;
+            @Id
+            private Long id;
 
-		@Column
-		private Map<Integer, String> preferences;
+            public Long getId() {
+                return id;
+            }
 
-	}
+            public void setId(Long id) {
+                this.id = id;
+            }
+
+        }
+        parser.parseEntity(keyspace, TestEntityNoColumn.class);
+    }
+
+    @Table
+    public class TestEntity implements Serializable {
+        public static final long serialVersionUID = 1L;
+
+        @Id
+        private Long id;
+
+        @Column
+        private String name;
+
+        @Column(name = "age_in_year")
+        private Long age;
+
+        @Column
+        private List<String> friends;
+
+        @Column
+        private Set<String> followers;
+
+        @Column
+        private Map<Integer, String> preferences;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Long getAge() {
+            return age;
+        }
+
+        public void setAge(Long age) {
+            this.age = age;
+        }
+
+        public List<String> getFriends() {
+            return friends;
+        }
+
+        public void setFriends(List<String> friends) {
+            this.friends = friends;
+        }
+
+        public Set<String> getFollowers() {
+            return followers;
+        }
+
+        public void setFollowers(Set<String> followers) {
+            this.followers = followers;
+        }
+
+        public Map<Integer, String> getPreferences() {
+            return preferences;
+        }
+
+        public void setPreferences(Map<Integer, String> preferences) {
+            this.preferences = preferences;
+        }
+
+    }
 
 }

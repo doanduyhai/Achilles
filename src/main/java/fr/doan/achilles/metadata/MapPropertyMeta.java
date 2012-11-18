@@ -3,57 +3,50 @@ package fr.doan.achilles.metadata;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.validation.Validator;
 
 @SuppressWarnings("rawtypes")
-public class MapPropertyMeta<V extends Serializable> extends SimplePropertyMeta<V>
-{
+public class MapPropertyMeta<V extends Serializable> extends SimplePropertyMeta<V> {
 
-	private Class<? extends Map> mapClass;
-	private Class<? extends Serializable> keyClass;
-	private Serializer<?> keyClassSerializer;
+    private Class<? extends Map> mapClass;
+    private Class<? extends Serializable> keyClass;
+    private Serializer<?> keySerializer;
 
-	public MapPropertyMeta(String name, Class<? extends Serializable> keyClass, Class<V> valueClass, Class<? extends Map> mapClass) {
-		super(name, valueClass);
-		Validator.validateNotNull(keyClass, "keyClass");
-		Validator.validateNotNull(mapClass, "mapClass");
-		Validator.validateNoargsConstructor(mapClass);
+    public Class getKeyClass() {
+        return keyClass;
+    }
 
-		this.keyClass = keyClass;
-		this.keyClassSerializer = SerializerTypeInferer.getSerializer(keyClass);
-		if (mapClass == Map.class)
-		{
-			this.mapClass = HashMap.class;
-		}
-		else
-		{
-			this.mapClass = mapClass;
-		}
+    public Serializer<?> getKeySerializer() {
+        return keySerializer;
+    }
 
-	}
+    public void setKeyClass(Class<? extends Serializable> keyClass) {
+        this.keyClass = keyClass;
+    }
 
-	public Class<? extends Serializable> getKeyClass()
-	{
-		return this.keyClass;
-	}
+    public void setKeySerializer(Serializer<?> keyClassSerializer) {
+        this.keySerializer = keyClassSerializer;
+    }
 
-	public Serializer<?> getKeyClassSerializer()
-	{
-		return keyClassSerializer;
-	}
+    @SuppressWarnings("unchecked")
+    public <K extends Serializable> Map<K, V> newMapInstance() {
+        Map<K, V> map;
+        try {
+            map = this.mapClass.newInstance();
+        } catch (InstantiationException e) {
+            map = new HashMap<K, V>();
+        } catch (IllegalAccessException e) {
+            map = new HashMap<K, V>();
+        }
+        return map;
+    }
 
-	@SuppressWarnings("unchecked")
-	public Map<? extends Serializable, V> newMapInstance() throws InstantiationException, IllegalAccessException
-	{
-		return this.mapClass.newInstance();
-	}
+    public void setMapClass(Class<? extends Map> mapClass) {
+        this.mapClass = mapClass;
+    }
 
-	@Override
-	public PropertyType propertyType()
-	{
-		return PropertyType.MAP;
-	}
+    @Override
+    public PropertyType propertyType() {
+        return PropertyType.MAP;
+    }
 }
