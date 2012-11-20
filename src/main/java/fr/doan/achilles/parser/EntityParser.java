@@ -12,13 +12,14 @@ import org.apache.commons.lang.StringUtils;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
+import fr.doan.achilles.validation.Validator;
 
 public class EntityParser {
 
     private PropertyParser parser = new PropertyParser();
 
     public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass) {
-
+        Validator.validateInstantiable(entityClass);
         String canonicalName = findCanonicalName(entityClass);
         String columnFamily = inferColumnFamilyName(entityClass, canonicalName);
         Long serialVersionUID = findSerialVersionUID(entityClass);

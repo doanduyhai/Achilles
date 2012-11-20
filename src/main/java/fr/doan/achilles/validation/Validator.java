@@ -75,4 +75,22 @@ public class Validator {
             throw new ValidationException("The property '" + label + "' should match the pattern '" + regexp + "'");
         }
     }
+
+    public static void validateInstantiable(Class<?> arg) {
+        String canonicalName = arg.getCanonicalName();
+        validateNotNull(arg, canonicalName);
+        validateNoargsConstructor(arg);
+        try {
+            arg.newInstance();
+        } catch (InstantiationException e) {
+            throw new ValidationException(
+                    "Cannot instantiate the class '"
+                            + canonicalName
+                            + "'. Please ensure the class is not an abstract class, an interface, an array class, a primitive type, or void and have a nullary (default) constructor and is declared public");
+        } catch (IllegalAccessException e) {
+            throw new ValidationException("Cannot instantiate the class '" + canonicalName
+                    + "'. Please ensure the class has a public nullary (default) constructor");
+        } catch (SecurityException e) {
+        }
+    }
 }

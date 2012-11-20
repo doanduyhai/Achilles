@@ -1,7 +1,7 @@
 package fr.doan.achilles.metadata;
 
 public enum PropertyType {
-    META(0), SIMPLE(1), LIST(2), SET(3), MAP(4), ITERATOR(5);
+    META(0), START_EAGER(1), SIMPLE(2), LIST(3), SET(4), MAP(5), END_EAGER(6), ITERATOR(7);
 
     private int flag;
 

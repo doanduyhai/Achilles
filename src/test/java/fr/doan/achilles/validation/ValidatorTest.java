@@ -70,6 +70,37 @@ public class ValidatorTest {
         Validator.validateRegExp("1_a-bcd01_sdf", "[a-zA-Z0-9_]+", "arg");
     }
 
+    @Test
+    public void should_instanciate_a_bean() throws Exception {
+        Validator.validateInstantiable(NormalClass.class);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void should_exception_when_private_class() throws Exception {
+        Validator.validateInstantiable(PrivateEntity.class);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void should_exception_when_interface() throws Exception {
+        Validator.validateInstantiable(TestInterface.class);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void should_exception_when_abstract_class() throws Exception {
+        Validator.validateInstantiable(AbstractClass.class);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void should_exception_when_primitive() throws Exception {
+        Validator.validateInstantiable(Long.class);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void should_exception_array_type() throws Exception {
+        String[] array = new String[2];
+        Validator.validateInstantiable(array.getClass());
+    }
+
     class TestNoArgConstructor {
         private TestNoArgConstructor() {
         }
