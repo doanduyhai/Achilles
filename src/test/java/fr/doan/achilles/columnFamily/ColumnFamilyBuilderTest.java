@@ -1,97 +1,69 @@
 package fr.doan.achilles.columnFamily;
 
-import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static fr.doan.achilles.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
+import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.Assertions.assertThat;
-import java.io.Serializable;
-import java.lang.reflect.Method;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import me.prettyprint.hector.api.Keyspace;
+import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.ddl.ColumnDefinition;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
-import org.junit.Before;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.google.common.base.Charsets;
+
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ColumnFamilyBuilderTest {
-    private final ColumnFamilyBuilder builder = new ColumnFamilyBuilder();
+public class ColumnFamilyBuilderTest
+{
+	private final ColumnFamilyBuilder builder = new ColumnFamilyBuilder();
 
-    private final Method[] accessors = new Method[2];
+	@Mock
+	private EntityMeta<Long> entityMeta;
 
-    private PropertyMeta<Long> idMeta;
+	@Mock
+	private Keyspace keyspace;
 
-    @Mock
-    private Keyspace keyspace;
+	@Test
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public void should_build_column_family() throws Exception
+	{
+		PropertyMeta<Long> propertyMeta = mock(PropertyMeta.class);
+		when((Serializer) propertyMeta.getValueSerializer()).thenReturn(STRING_SRZ);
 
-    @Before
-    public void setUp() throws Exception {
-        accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
-        accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
+		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+		propertyMetas.put("age", propertyMeta);
 
-        idMeta = simplePropertyMetaBuilder(Long.class).propertyName("id").accessors(accessors).build();
-    }
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
+		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
+		when(entityMeta.getCanonicalClassName()).thenReturn("fr.doan.test.bean");
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_build_cf() throws Exception {
-        class TestClass implements Serializable {
-            private static final long serialVersionUID = 1L;
-        }
+		ColumnFamilyDefinition cfDef = builder.build(entityMeta, "keyspace");
 
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        propertyMetas.put("name", simplePropertyMetaBuilder(String.class).propertyName("name").accessors(accessors)
-                .build());
-        propertyMetas.put("age", simplePropertyMetaBuilder(Integer.class).propertyName("age").accessors(accessors)
-                .build());
-        propertyMetas.put("test", simplePropertyMetaBuilder(TestClass.class).propertyName("test")
-                .accessors(accessors).build());
+		assertThat(cfDef).isNotNull();
+		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
+		assertThat(cfDef.getName()).isEqualTo("myCF");
+		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
+		assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
 
-        EntityMeta<Long> entityMeta = entityMetaBuilder(idMeta).canonicalClassName("test.com.Entity")
-                .columnFamilyName("myEntity").serialVersionUID(1L).keyspace(keyspace).propertyMetas(propertyMetas)
-                .build();
-
-        ColumnFamilyDefinition built = builder.build(entityMeta, "keyspace");
-
-        assertThat(built).isNotNull();
-        assertThat(built.getKeyspaceName()).isEqualTo("keyspace");
-        assertThat(built.getKeyValidationClass()).isEqualTo("org.apache.cassandra.db.marshal.LongType");
-        assertThat(built.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
-
-        assertThat(built.getColumnMetadata()).hasSize(3);
-        assertThat(new String(built.getColumnMetadata().get(0).getName().array(), Charsets.UTF_8)).isEqualTo("test");
-        assertThat(built.getColumnMetadata().get(0).getValidationClass()).isEqualTo(
-                OBJECT_SRZ.getClass().getCanonicalName());
-
-        assertThat(new String(built.getColumnMetadata().get(1).getName().array(), Charsets.UTF_8)).isEqualTo("age");
-        assertThat(built.getColumnMetadata().get(1).getValidationClass()).isEqualTo(
-                INT_SRZ.getClass().getCanonicalName());
-
-        assertThat(new String(built.getColumnMetadata().get(2).getName().array(), Charsets.UTF_8)).isEqualTo("name");
-        assertThat(built.getColumnMetadata().get(2).getValidationClass()).isEqualTo(
-                STRING_SRZ.getClass().getCanonicalName());
-    }
-
-    class TestBean {
-
-        private Long id;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-    }
+		assertThat(cfDef.getColumnMetadata()).hasSize(1);
+		ColumnDefinition columnDef = cfDef.getColumnMetadata().get(0);
+		assertThat(columnDef.getName().array()).isEqualTo("age".getBytes());
+		assertThat(columnDef.getValidationClass()).isEqualTo(STRING_SRZ.getComparatorType().getTypeName());
+	}
 }
