@@ -1,11 +1,15 @@
 package fr.doan.achilles.factory;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.EntityManager;
 
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -84,4 +88,31 @@ public class AchillesEntityManagerFactoryImplTest
 		ReflectionTestUtils.invokeMethod(factory, "bootstrap", (Object[]) null);
 	}
 
+	@Test
+	public void should_create_entity_manager() throws Exception
+	{
+		EntityManager em = factory.createEntityManager();
+
+		assertThat(em).isNotNull();
+	}
+
+	@Test
+	public void should_create_entity_manager_with_parameters() throws Exception
+	{
+		EntityManager em = factory.createEntityManager(new HashMap());
+
+		assertThat(em).isNotNull();
+	}
+
+	@Test
+	public void should_return_true_when_open_called() throws Exception
+	{
+		assertThat(factory.isOpen()).isTrue();
+	}
+
+	@Test
+	public void should_do_nothing_when_close_called() throws Exception
+	{
+		factory.close();
+	}
 }

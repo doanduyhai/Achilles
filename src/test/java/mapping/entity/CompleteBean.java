@@ -4,68 +4,93 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table
-public class CompleteBean implements Serializable {
+public class CompleteBean implements Serializable
+{
 
-    public static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
-    @Id
-    private Long id;
+	@Id
+	private Long id;
 
-    @Column
-    private String name;
+	@Column
+	private String name;
 
-    @Column
-    private List<String> friends;
+	@Column(name = "age_in_years")
+	private Long age;
 
-    @Column
-    private Set<String> followers;
+	@Column
+	private List<String> friends;
 
-    @Column
-    private Map<Integer, String> preferences;
+	@Column
+	private Set<String> followers;
 
-    public Long getId() {
-        return id;
-    }
+	@Column
+	private Map<Integer, String> preferences;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Long getId()
+	{
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName()
+	{
+		return name;
+	}
 
-    public List<String> getFriends() {
-        return friends;
-    }
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 
-    public void setFriends(List<String> friends) {
-        this.friends = friends;
-    }
+	public List<String> getFriends()
+	{
+		return friends;
+	}
 
-    public Set<String> getFollowers() {
-        return followers;
-    }
+	public void setFriends(List<String> friends)
+	{
+		this.friends = friends;
+	}
 
-    public void setFollowers(Set<String> followers) {
-        this.followers = followers;
-    }
+	public Set<String> getFollowers()
+	{
+		return followers;
+	}
 
-    public Map<Integer, String> getPreferences() {
-        return preferences;
-    }
+	public void setFollowers(Set<String> followers)
+	{
+		this.followers = followers;
+	}
 
-    public void setPreferences(Map<Integer, String> preferences) {
-        this.preferences = preferences;
-    }
+	public Map<Integer, String> getPreferences()
+	{
+		return preferences;
+	}
+
+	public void setPreferences(Map<Integer, String> preferences)
+	{
+		this.preferences = preferences;
+	}
+
+	public Long getAge()
+	{
+		return age;
+	}
+
+	public void setAge(Long age)
+	{
+		this.age = age;
+	}
 
 }

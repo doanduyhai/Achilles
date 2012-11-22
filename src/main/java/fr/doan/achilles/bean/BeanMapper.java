@@ -33,8 +33,7 @@ import fr.doan.achilles.metadata.SetPropertyMeta;
 public class BeanMapper
 {
 
-	public <T extends Object, ID extends Serializable> void mapColumnsToBean(ID key, List<Pair<Composite, Object>> columns,
-			EntityMeta<ID> entityMeta, T entity)
+	public <T, ID extends Serializable> void mapColumnsToBean(ID key, List<Pair<Composite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();

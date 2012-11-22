@@ -10,7 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table
-public class CompleteBean implements Serializable
+public class Bean implements Serializable
 {
 	public static final long serialVersionUID = 1L;
 

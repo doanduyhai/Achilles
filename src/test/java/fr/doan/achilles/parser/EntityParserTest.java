@@ -3,19 +3,21 @@ package fr.doan.achilles.parser;
 import static fr.doan.achilles.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import me.prettyprint.hector.api.Keyspace;
+import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import parser.entity.Bean;
 import parser.entity.BeanWithColumnFamilyName;
 import parser.entity.BeanWithNoColumn;
 import parser.entity.BeanWithNoId;
@@ -23,7 +25,6 @@ import parser.entity.BeanWithNoSerialVersionUID;
 import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.BeanWithNonPublicSerialVersionUID;
 import parser.entity.BeanWithNotSerializableId;
-import parser.entity.CompleteBean;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.metadata.EntityMeta;
@@ -42,19 +43,23 @@ public class EntityParserTest
 	@Mock
 	private Keyspace keyspace;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_parse_entity() throws Exception
 	{
-		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class);
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, Bean.class);
 
-		assertThat(meta.getCanonicalClassName()).isEqualTo("parser.entity.CompleteBeanForParser");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("parser_entity_CompleteBeanForParser");
+		assertThat(meta.getCanonicalClassName()).isEqualTo("parser.entity.Bean");
+		assertThat(meta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
 		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(LONG_SRZ.getComparatorType());
-		assertThat(meta.getIdSerializer()).isEqualTo(LONG_SRZ);
+		assertThat((Serializer<Long>) meta.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(meta.getPropertyMetas()).hasSize(5);
 
 		PropertyMeta<?> name = meta.getPropertyMetas().get("name");
@@ -70,40 +75,40 @@ public class EntityParserTest
 		assertThat(preferences).isNotNull();
 
 		assertThat(name.getPropertyName()).isEqualTo("name");
-		assertThat(name.getValueClass()).isEqualTo(String.class);
-		assertThat(name.getValueSerializer()).isEqualTo(STRING_SRZ);
+		assertThat((Class<String>) name.getValueClass()).isEqualTo(String.class);
+		assertThat((Serializer<String>) name.getValueSerializer()).isEqualTo(STRING_SRZ);
 		assertThat(name.propertyType()).isEqualTo(SIMPLE);
 
 		assertThat(age.getPropertyName()).isEqualTo("age_in_year");
-		assertThat(age.getValueClass()).isEqualTo(Long.class);
-		assertThat(age.getValueSerializer()).isEqualTo(LONG_SRZ);
+		assertThat((Class<Long>) age.getValueClass()).isEqualTo(Long.class);
+		assertThat((Serializer<Long>) age.getValueSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(age.propertyType()).isEqualTo(SIMPLE);
 
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
-		assertThat(friends.getValueClass()).isEqualTo(String.class);
-		assertThat(friends.getValueSerializer()).isEqualTo(STRING_SRZ);
+		assertThat((Class<String>) friends.getValueClass()).isEqualTo(String.class);
+		assertThat((Serializer<String>) friends.getValueSerializer()).isEqualTo(STRING_SRZ);
 		assertThat(friends.propertyType()).isEqualTo(PropertyType.LIST);
 		assertThat(friends.newListInstance()).isNotNull();
 		assertThat(friends.newListInstance()).isEmpty();
-		assertThat(friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
+		assertThat((Class<ArrayList>) friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
 
 		assertThat(followers.getPropertyName()).isEqualTo("followers");
 		assertThat(followers.getValueClass()).isEqualTo(String.class);
-		assertThat(followers.getValueSerializer()).isEqualTo(STRING_SRZ);
+		assertThat((Serializer<String>) followers.getValueSerializer()).isEqualTo(STRING_SRZ);
 		assertThat(followers.propertyType()).isEqualTo(PropertyType.SET);
 		assertThat(followers.newSetInstance()).isNotNull();
 		assertThat(followers.newSetInstance()).isEmpty();
-		assertThat(followers.newSetInstance().getClass()).isEqualTo(HashSet.class);
+		assertThat((Class<HashSet>) followers.newSetInstance().getClass()).isEqualTo(HashSet.class);
 
 		assertThat(preferences.getPropertyName()).isEqualTo("preferences");
 		assertThat(preferences.getValueClass()).isEqualTo(String.class);
-		assertThat(preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
+		assertThat((Serializer<String>) preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
 		assertThat(preferences.propertyType()).isEqualTo(PropertyType.MAP);
 		assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+		assertThat((Serializer<Integer>) preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
 		assertThat(preferences.newMapInstance()).isNotNull();
 		assertThat(preferences.newMapInstance()).isEmpty();
-		assertThat(preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
+		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
 	}
 
 	@SuppressWarnings(

@@ -1,7 +1,7 @@
 package fr.doan.achilles.columnFamily;
 
 import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

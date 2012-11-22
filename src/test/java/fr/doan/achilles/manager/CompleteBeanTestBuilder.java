@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import parser.entity.CompleteBean;
+import mapping.entity.CompleteBean;
 
 public class CompleteBeanTestBuilder
 {

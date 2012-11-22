@@ -4,6 +4,7 @@ import static fr.doan.achilles.validation.Validator.validateNotEmpty;
 import static fr.doan.achilles.validation.Validator.validateNotNull;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import me.prettyprint.hector.api.Keyspace;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
+import fr.doan.achilles.manager.AchillesEntityManager;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.parser.EntityExplorer;
 import fr.doan.achilles.parser.EntityParser;
@@ -23,7 +25,7 @@ public class AchillesEntityManagerFactoryImpl implements AchillesEntityManagerFa
 {
 
 	private List<String> entityPackages;
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
 	private boolean forceColumnFamilyCreation = false;
@@ -88,21 +90,18 @@ public class AchillesEntityManagerFactoryImpl implements AchillesEntityManagerFa
 	@Override
 	public EntityManager createEntityManager()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new AchillesEntityManager(entityMetaMap);
 	}
 
 	@Override
-	public EntityManager createEntityManager(Map map)
+	public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new AchillesEntityManager(entityMetaMap);
 	}
 
 	@Override
 	public void close()
 	{
-		// TODO Auto-generated method stub
 
 	}
 
