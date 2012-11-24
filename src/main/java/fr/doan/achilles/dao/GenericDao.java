@@ -66,6 +66,58 @@ public class GenericDao<K> extends AbstractDao<K, Composite, Object>
 		return composite;
 	}
 
+	public Composite buildCompositeComparatorStart(String propertyName, PropertyType type)
+	{
+		Composite composite = new Composite();
+		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+
+		return composite;
+	}
+
+	public Composite buildCompositeComparatorEnd(String propertyName, PropertyType type)
+	{
+		Composite composite = new Composite();
+		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, propertyName, ComponentEquality.GREATER_THAN_EQUAL);
+
+		return composite;
+	}
+
+	public Composite buildCompositeComparatorStart(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
+	{
+		Composite composite = new Composite();
+		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+		if (exclusive)
+		{
+			composite.addComponent(2, hashOrPosition, ComponentEquality.GREATER_THAN_EQUAL);
+		}
+		else
+		{
+			composite.addComponent(2, hashOrPosition, ComponentEquality.EQUAL);
+		}
+
+		return composite;
+	}
+
+	public Composite buildCompositeComparatorEnd(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
+	{
+		Composite composite = new Composite();
+		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+		if (exclusive)
+		{
+			composite.addComponent(2, hashOrPosition, ComponentEquality.LESS_THAN_EQUAL);
+		}
+		else
+		{
+			composite.addComponent(2, hashOrPosition, ComponentEquality.EQUAL);
+		}
+
+		return composite;
+	}
+
 	public List<Pair<Composite, Object>> eagerFetchEntity(K key)
 	{
 

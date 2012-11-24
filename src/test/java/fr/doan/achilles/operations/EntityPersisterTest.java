@@ -1,277 +1,241 @@
 package fr.doan.achilles.operations;
 
-import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static fr.doan.achilles.metadata.builder.ListPropertyMetaBuilder.listPropertyMetaBuilder;
-import static fr.doan.achilles.metadata.builder.SetPropertyMetaBuilder.setPropertyMetaBuilder;
-import static fr.doan.achilles.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
-import static org.mockito.Matchers.any;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Id;
+
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.cassandra.model.MutatorImpl;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.mutation.Mutator;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import parser.entity.Bean;
+
+import com.google.common.collect.Sets;
+
 import fr.doan.achilles.bean.BeanPropertyHelper;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.holder.KeyValueHolder;
-import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
 import fr.doan.achilles.metadata.PropertyType;
-import fr.doan.achilles.metadata.builder.MapPropertyMetaBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityPersisterTest {
+public class EntityPersisterTest
+{
+
+	@InjectMocks
+	private EntityPersister persister = new EntityPersister();
+
+	@Mock
+	private BeanPropertyHelper helper;
+
+	@Mock
+	private GenericDao<Long> dao;
+
+	@Mock
+	private PropertyMeta<?> propertyMeta;
+	@Mock
+	private ExecutingKeyspace keyspace;
+
+	private MutatorImpl<Long> mutator = new MutatorImpl<Long>(keyspace);
+
+	private Method method;
+
+	private Bean entity = new Bean();
+
+	@Before
+	public void setUp() throws Exception
+	{
+		method = this.getClass().getDeclaredMethod("setUp", (Class<?>[]) null);
+	}
+
+	@Test
+	public void should_batch_simple_property() throws Exception
+	{
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
+
+		ReflectionTestUtils.invokeMethod(persister, "batchSimpleProperty", entity, 1L, dao, mutator, propertyMeta);
+
+		verify(dao).insertColumnBatch(1L, composite, "testValue", mutator);
+	}
+
+	@Test
+	public void should_persist_simple_property() throws Exception
+	{
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
+
+		ReflectionTestUtils.invokeMethod(persister, "persistSimpleProperty", entity, 1L, dao, propertyMeta);
+
+		verify(dao).insertColumn(1L, composite, "testValue");
+	}
+
+	@Test
+	public void should_batch_list_property() throws Exception
+	{
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
+		when(propertyMeta.getPropertyName()).thenReturn("friends");
+
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 0)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 1)).thenReturn(composite);
+
+		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao, mutator, propertyMeta);
+
+		verify(dao).insertColumnBatch(1L, composite, "foo", mutator);
+		verify(dao).insertColumnBatch(1L, composite, "bar", mutator);
+	}
+
+	@Test
+	public void should_persist_list_property() throws Exception
+	{
+		when(dao.buildMutator()).thenReturn(mutator);
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
+		when(propertyMeta.getPropertyName()).thenReturn("friends");
+
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 0)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 1)).thenReturn(composite);
+
+		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao, propertyMeta);
+
+		verify(dao).insertColumnBatch(1L, composite, "foo", mutator);
+		verify(dao).insertColumnBatch(1L, composite, "bar", mutator);
+	}
+
+	@Test
+	public void should_batch_set_property() throws Exception
+	{
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
+		when(propertyMeta.getPropertyName()).thenReturn("followers");
+
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "George".hashCode())).thenReturn(composite);
+		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "Paul".hashCode())).thenReturn(composite);
 
-    @InjectMocks
-    private EntityPersister persister = new EntityPersister();
+		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao, mutator, propertyMeta);
 
-    @Mock
-    private BeanPropertyHelper helper;
+		verify(dao).insertColumnBatch(1L, composite, "George", mutator);
+		verify(dao).insertColumnBatch(1L, composite, "Paul", mutator);
+	}
 
-    @Mock
-    private GenericDao<Long> dao;
+	@Test
+	public void should_persist_set_property() throws Exception
+	{
+		when(dao.buildMutator()).thenReturn(mutator);
+		when(propertyMeta.getGetter()).thenReturn(method);
+		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
+		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
-    @Mock
-    private ExecutingKeyspace keyspace;
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "George".hashCode())).thenReturn(composite);
+		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "Paul".hashCode())).thenReturn(composite);
 
-    private MutatorImpl<Long> mutator = new MutatorImpl<Long>(keyspace);
+		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao, propertyMeta);
 
-    @Before
-    public void setUp() throws Exception {
+		verify(dao).insertColumnBatch(1L, composite, "George", mutator);
+		verify(dao).insertColumnBatch(1L, composite, "Paul", mutator);
+	}
 
-    }
+	@Test
+	public void should_batch_map_property() throws Exception
+	{
+		when(propertyMeta.getGetter()).thenReturn(method);
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1, "FR");
+		map.put(2, "Paris");
+		map.put(3, "75014");
 
-    @Test
-    public void should_persist_simple_property() throws Exception {
+		when(helper.getValueFromField(entity, method)).thenReturn(map);
+		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
-        Bean entity = new Bean();
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 1)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 2)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 3)).thenReturn(composite);
 
-        PropertyMeta<Long> idMeta = buildIdMeta();
+		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao, mutator, propertyMeta);
 
-        Method[] nameAccessors = new Method[2];
-        nameAccessors[0] = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
-        nameAccessors[1] = Bean.class.getDeclaredMethod("setName", String.class);
+		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValueHolder.class);
 
-        PropertyMeta<String> nameMeta = simplePropertyMetaBuilder(String.class).propertyName("name")
-                .accessors(nameAccessors).build();
+		verify(dao, times(3)).insertColumnBatch(eq(1L), eq(composite), keyValueHolderCaptor.capture(), eq(mutator));
 
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        propertyMetas.put("name", nameMeta);
+		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
+		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValueHolder holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValueHolder holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
-        EntityMeta<Long> entityMeta = buildEntityMeta(idMeta, propertyMetas);
+		assertThat(holder1.getKey()).isEqualTo(1);
+		assertThat(holder1.getValue()).isEqualTo("FR");
 
-        when(helper.getKey(entity, idMeta)).thenReturn(2L);
-        when(dao.buildMutator()).thenReturn(mutator);
-        when(helper.getValueFromField(entity, nameAccessors[0])).thenReturn("foo");
+		assertThat(holder2.getKey()).isEqualTo(2);
+		assertThat(holder2.getValue()).isEqualTo("Paris");
 
-        Composite composite = new Composite();
-        when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		assertThat(holder3.getKey()).isEqualTo(3);
+		assertThat(holder3.getValue()).isEqualTo("75014");
+	}
 
-        persister.persist(entity, entityMeta);
+	@Test
+	public void should_persist_map_property() throws Exception
+	{
+		when(dao.buildMutator()).thenReturn(mutator);
+		when(propertyMeta.getGetter()).thenReturn(method);
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1, "FR");
+		map.put(2, "Paris");
+		map.put(3, "75014");
 
-        verify(dao).insertColumnBatch(2L, composite, "foo", mutator);
-    }
+		when(helper.getValueFromField(entity, method)).thenReturn(map);
+		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
-    @Test
-    public void should_persist_list_property() throws Exception {
-        Bean entity = new Bean();
+		Composite composite = new Composite();
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 1)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 2)).thenReturn(composite);
+		when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 3)).thenReturn(composite);
 
-        PropertyMeta<Long> idMeta = buildIdMeta();
+		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao, propertyMeta);
 
-        Method[] friendsAccessors = new Method[2];
-        friendsAccessors[0] = Bean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
-        friendsAccessors[1] = Bean.class.getDeclaredMethod("setFriends", List.class);
-        PropertyMeta<String> friendsMeta = listPropertyMetaBuilder(String.class).listClass(List.class)
-                .propertyName("friends").accessors(friendsAccessors).build();
+		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValueHolder.class);
 
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        propertyMetas.put("friends", friendsMeta);
+		verify(dao, times(3)).insertColumnBatch(eq(1L), eq(composite), keyValueHolderCaptor.capture(), eq(mutator));
 
-        EntityMeta<Long> entityMeta = buildEntityMeta(idMeta, propertyMetas);
+		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
+		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValueHolder holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValueHolder holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
-        when(helper.getKey(entity, idMeta)).thenReturn(2L);
-        when(dao.buildMutator()).thenReturn(mutator);
+		assertThat(holder1.getKey()).isEqualTo(1);
+		assertThat(holder1.getValue()).isEqualTo("FR");
 
-        ArrayList<String> friends = new ArrayList<String>();
-        friends.add("foo");
-        friends.add("bar");
-        when(helper.getValueFromField(entity, friendsAccessors[0])).thenReturn(friends);
+		assertThat(holder2.getKey()).isEqualTo(2);
+		assertThat(holder2.getValue()).isEqualTo("Paris");
 
-        Composite composite = new Composite();
-        when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 0)).thenReturn(composite);
-        when(dao.buildCompositeForProperty("friends", PropertyType.LIST, 1)).thenReturn(composite);
-
-        persister.persist(entity, entityMeta);
-
-        verify(dao).insertColumnBatch(2L, composite, "foo", mutator);
-        verify(dao).insertColumnBatch(2L, composite, "bar", mutator);
-    }
-
-    @Test
-    public void should_persist_set_property() throws Exception {
-        Bean entity = new Bean();
-
-        PropertyMeta<Long> idMeta = buildIdMeta();
-
-        Method[] followersAccessors = new Method[2];
-        followersAccessors[0] = Bean.class.getDeclaredMethod("getFollowers", (Class<?>[]) null);
-        followersAccessors[1] = Bean.class.getDeclaredMethod("setFollowers", Set.class);
-        PropertyMeta<String> followersMeta = setPropertyMetaBuilder(String.class).setClass(Set.class)
-                .propertyName("followers").accessors(followersAccessors).build();
-
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        propertyMetas.put("followers", followersMeta);
-
-        EntityMeta<Long> entityMeta = buildEntityMeta(idMeta, propertyMetas);
-
-        when(helper.getKey(entity, idMeta)).thenReturn(2L);
-        when(dao.buildMutator()).thenReturn(mutator);
-
-        Set<String> followers = new HashSet<String>();
-
-        followers.add("George");
-        followers.add("Paul");
-        when(helper.getValueFromField(entity, followersAccessors[0])).thenReturn(followers);
-
-        Composite composite = new Composite();
-        when(dao.buildCompositeForProperty("followers", PropertyType.SET, "George".hashCode())).thenReturn(composite);
-        when(dao.buildCompositeForProperty("followers", PropertyType.SET, "Paul".hashCode())).thenReturn(composite);
-
-        persister.persist(entity, entityMeta);
-
-        verify(dao).insertColumnBatch(2L, composite, "George", mutator);
-        verify(dao).insertColumnBatch(2L, composite, "Paul", mutator);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_persist_map_property() throws Exception {
-        Bean entity = new Bean();
-
-        PropertyMeta<Long> idMeta = buildIdMeta();
-
-        Method[] preferencesAccessors = new Method[2];
-        preferencesAccessors[0] = Bean.class.getDeclaredMethod("getPreferences", (Class<?>[]) null);
-        preferencesAccessors[1] = Bean.class.getDeclaredMethod("setPreferences", Map.class);
-        PropertyMeta<String> preferencesMeta = MapPropertyMetaBuilder.mapPropertyMetaBuilder(String.class)
-                .keyClass(Integer.class).mapClass(Map.class).propertyName("preferences")
-                .accessors(preferencesAccessors).build();
-
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        propertyMetas.put("preferences", preferencesMeta);
-
-        EntityMeta<Long> entityMeta = buildEntityMeta(idMeta, propertyMetas);
-
-        when(helper.getKey(entity, idMeta)).thenReturn(2L);
-        when(dao.buildMutator()).thenReturn(mutator);
-
-        Map<Integer, String> preferences = new HashMap<Integer, String>();
-        preferences.put(1, "FR");
-        preferences.put(2, "Paris");
-        preferences.put(3, "75014");
-        when(helper.getValueFromField(entity, preferencesAccessors[0])).thenReturn(preferences);
-
-        Composite composite = new Composite();
-        when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 1)).thenReturn(composite);
-        when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 2)).thenReturn(composite);
-        when(dao.buildCompositeForProperty("preferences", PropertyType.MAP, 3)).thenReturn(composite);
-
-        persister.persist(entity, entityMeta);
-
-        verify(dao, times(3)).insertColumnBatch(eq(2L), eq(composite), any(KeyValueHolder.class), any(Mutator.class));
-    }
-
-    ////////////////////////////////////////////////////////
-
-    private PropertyMeta<Long> buildIdMeta() throws NoSuchMethodException {
-        Method[] idAccessors = new Method[2];
-        idAccessors[0] = Bean.class.getDeclaredMethod("getId", (Class<?>[]) null);
-        idAccessors[1] = Bean.class.getDeclaredMethod("setId", Long.class);
-        PropertyMeta<Long> idMeta = simplePropertyMetaBuilder(Long.class).propertyName("id").accessors(idAccessors)
-                .build();
-        return idMeta;
-    }
-
-    @SuppressWarnings("unchecked")
-    private EntityMeta<Long> buildEntityMeta(PropertyMeta<Long> idMeta, Map<String, PropertyMeta<?>> propertyMetas) {
-        EntityMeta<Long> entityMeta = entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName("bean")
-                .serialVersionUID(1L).propertyMetas(propertyMetas).build();
-        ReflectionTestUtils.setField(entityMeta, "dao", this.dao);
-        return entityMeta;
-    }
-
-    class Bean {
-        @Id
-        private Long id;
-
-        @Column
-        private String name;
-
-        @Column
-        private List<String> friends;
-
-        @Column
-        private Set<String> followers;
-
-        @Column
-        private Map<Integer, String> preferences;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public List<String> getFriends() {
-            return friends;
-        }
-
-        public void setFriends(List<String> friends) {
-            this.friends = friends;
-        }
-
-        public Set<String> getFollowers() {
-            return followers;
-        }
-
-        public void setFollowers(Set<String> followers) {
-            this.followers = followers;
-        }
-
-        public Map<Integer, String> getPreferences() {
-            return preferences;
-        }
-
-        public void setPreferences(Map<Integer, String> preferences) {
-            this.preferences = preferences;
-        }
-    }
+		assertThat(holder3.getKey()).isEqualTo(3);
+		assertThat(holder3.getValue()).isEqualTo("75014");
+	}
 }

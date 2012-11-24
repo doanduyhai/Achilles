@@ -78,6 +78,13 @@ public class EntityPersister
 		dao.insertColumnBatch(key, name, value, mutator);
 	}
 
+	public <ID extends Serializable> void persistSimpleProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
+	{
+		Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SIMPLE, 0);
+		Object value = beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
+		dao.insertColumn(key, name, value);
+	}
+
 	private <ID extends Serializable> void batchListProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
 			PropertyMeta<?> propertyMeta)
 	{
@@ -92,16 +99,41 @@ public class EntityPersister
 		}
 	}
 
+	public <ID extends Serializable> void persistListProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
+	{
+		Mutator<ID> mutator = dao.buildMutator();
+		List<?> list = (List<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
+		int count = 0;
+		for (Object value : list)
+		{
+			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), LIST, count);
+			dao.insertColumnBatch(key, name, value, mutator);
+			count++;
+		}
+		mutator.execute();
+	}
+
 	private <ID extends Serializable> void batchSetProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
 			PropertyMeta<?> propertyMeta)
 	{
-
 		Set<?> set = (Set<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
 		for (Object value : set)
 		{
 			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SET, value.hashCode());
 			dao.insertColumnBatch(key, name, value, mutator);
 		}
+	}
+
+	public <ID extends Serializable> void persistSetProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
+	{
+		Mutator<ID> mutator = dao.buildMutator();
+		Set<?> set = (Set<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
+		for (Object value : set)
+		{
+			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SET, value.hashCode());
+			dao.insertColumnBatch(key, name, value, mutator);
+		}
+		mutator.execute();
 	}
 
 	private <ID extends Serializable> void batchMapProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
@@ -117,5 +149,20 @@ public class EntityPersister
 			KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
 			dao.insertColumnBatch(key, name, value, mutator);
 		}
+	}
+
+	public <ID extends Serializable> void persistMapProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
+	{
+		Mutator<ID> mutator = dao.buildMutator();
+		Map<?, ?> map = (Map<?, ?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
+		for (Entry<?, ?> entry : map.entrySet())
+		{
+
+			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), MAP, entry.getKey().hashCode());
+
+			KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
+			dao.insertColumnBatch(key, name, value, mutator);
+		}
+		mutator.execute();
 	}
 }

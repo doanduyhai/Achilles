@@ -3,14 +3,19 @@ package fr.doan.achilles.metadata.builder;
 import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import java.io.Serializable;
+
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import parser.entity.Bean;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
@@ -18,81 +23,77 @@ import fr.doan.achilles.metadata.SimplePropertyMeta;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMetaBuilderTest {
+public class EntityMetaBuilderTest
+{
 
-    @Mock
-    private ExecutingKeyspace keyspace;
+	@Mock
+	private ExecutingKeyspace keyspace;
 
-    @Mock
-    private GenericDao<?> dao;
+	@Mock
+	private GenericDao<?> dao;
 
-    @Mock
-    private PropertyMeta<Long> idMeta;
+	@Mock
+	private PropertyMeta<Long> idMeta;
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_build_meta() throws Exception {
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_build_meta() throws Exception
+	{
 
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
-        propertyMetas.put("name", simpleMeta);
+		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+		SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
+		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
+		simpleMeta.setGetter(getter);
 
-        when(idMeta.getValueClass()).thenReturn(Long.class);
+		Method setter = Bean.class.getDeclaredMethod("setName", String.class);
+		simpleMeta.setSetter(setter);
 
-        EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean").serialVersionUID(1L)
-                .propertyMetas(propertyMetas).keyspace(keyspace).build();
+		propertyMetas.put("name", simpleMeta);
 
-        assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
-        assertThat(meta.getColumnFamilyName()).isEqualTo("fr_doan_Bean");
-        assertThat(meta.getIdMeta()).isSameAs(idMeta);
-        assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(Utils.LONG_SRZ.getComparatorType());
-        assertThat(meta.getPropertyMetas()).containsKey("name");
-        assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
-        assertThat(meta.getDao()).isNotNull();
+		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-    }
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean").serialVersionUID(1L).propertyMetas(propertyMetas)
+				.keyspace(keyspace).build();
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_build_meta_with_column_family_name() throws Exception {
+		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
+		assertThat(meta.getColumnFamilyName()).isEqualTo("fr_doan_Bean");
+		assertThat(meta.getIdMeta()).isSameAs(idMeta);
+		assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(Utils.LONG_SRZ.getComparatorType());
+		assertThat(meta.getPropertyMetas()).containsKey("name");
+		assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
 
-        Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-        SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
-        propertyMetas.put("name", simpleMeta);
+		assertThat(meta.getGetterMetas()).hasSize(1);
+		assertThat(meta.getGetterMetas().containsKey(getter));
+		assertThat(meta.getGetterMetas().get(getter)).isSameAs((PropertyMeta) simpleMeta);
 
-        when(idMeta.getValueClass()).thenReturn(Long.class);
+		assertThat(meta.getSetterMetas()).hasSize(1);
+		assertThat(meta.getSetterMetas().containsKey(setter));
+		assertThat(meta.getSetterMetas().get(setter)).isSameAs((PropertyMeta) simpleMeta);
 
-        EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean").serialVersionUID(1L)
-                .propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace).build();
+		assertThat(meta.getDao()).isNotNull();
 
-        assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
-        assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
+	}
 
-    }
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_meta_with_column_family_name() throws Exception
+	{
 
-    class Bean implements Serializable {
+		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+		SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
+		propertyMetas.put("name", simpleMeta);
 
-        private static final long serialVersionUID = 1L;
+		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-        private Long id;
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean").serialVersionUID(1L).propertyMetas(propertyMetas)
+				.columnFamilyName("toto").keyspace(keyspace).build();
 
-        private String name;
+		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
+		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
 
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-    }
+	}
 }
