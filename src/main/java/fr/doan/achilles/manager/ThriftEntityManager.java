@@ -11,51 +11,59 @@ import javax.persistence.Query;
 
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.operations.EntityLoader;
+import fr.doan.achilles.operations.EntityMerger;
 import fr.doan.achilles.operations.EntityPersister;
+import fr.doan.achilles.proxy.EntityProxyUtil;
+import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
-public class AchillesEntityManager implements EntityManager
+@SuppressWarnings(
+{
+		"unchecked",
+		"rawtypes"
+})
+public class ThriftEntityManager implements EntityManager
 {
 
 	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
+	private EntityMerger merger = new EntityMerger();
+	private EntityProxyUtil util = new EntityProxyUtil();
 
-	public AchillesEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+
+	public ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
 		this.entityMetaMap = entityMetaMap;
 	}
 
 	@Override
 	public void persist(Object entity)
 	{
-		Validator.validateNotNull(entity, "entity");
+		this.validateEntity(entity);
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
+
 		this.persister.persist(entity, entityMeta);
 	}
 
 	@Override
 	public <T> T merge(T entity)
 	{
-		Validator.validateNotNull(entity, "entity");
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
-		this.persister.persist(entity, entityMeta);
-		return entity;
+		this.validateEntity(entity);
+		Class baseClass = util.deriveBaseClass(entity);
+		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+		return this.merger.mergeEntity(entity, entityMeta);
 	}
 
 	@Override
 	public void remove(Object entity)
 	{
-		Validator.validateNotNull(entity, "entity");
+		this.validateEntity(entity);
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
 		this.persister.remove(entity, entityMeta);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
@@ -66,27 +74,13 @@ public class AchillesEntityManager implements EntityManager
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entityClass);
 
 		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey, (EntityMeta) entityMeta);
-
-		return entity;
+		return (T) this.interceptorBuilder.build(entity, entityMeta);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Override
 	public <T> T getReference(Class<T> entityClass, Object primaryKey)
 	{
-		Validator.validateNotNull(entityClass, "entity class");
-		Validator.validateNotNull(primaryKey, "entity primaryKey");
-		Validator.validateSerializable(primaryKey.getClass(), "entity primaryKey");
-
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(entityClass);
-
-		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey, (EntityMeta) entityMeta);
-
-		return entity;
+		return this.find(entityClass, primaryKey);
 	}
 
 	@Override
@@ -182,8 +176,7 @@ public class AchillesEntityManager implements EntityManager
 	@Override
 	public Object getDelegate()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
@@ -207,4 +200,25 @@ public class AchillesEntityManager implements EntityManager
 		return null;
 	}
 
+	private void validateEntity(Object entity)
+	{
+		Validator.validateNotNull(entity, "entity");
+
+		Class baseClass = util.deriveBaseClass(entity);
+		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+
+		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName() + " is not managed");
+
+		Object key = null;
+		try
+		{
+			key = entityMeta.getIdMeta().getGetter().invoke(entity, (Object[]) null);
+		}
+		catch (Exception e)
+		{
+			throw new IllegalArgumentException("Cannot get identifier for entity " + entity.getClass().getCanonicalName());
+		}
+
+		Validator.validateNotNull(key, "Cannot get identifier for entity " + entity.getClass().getCanonicalName());
+	}
 }

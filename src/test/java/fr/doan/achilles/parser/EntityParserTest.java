@@ -87,9 +87,10 @@ public class EntityParserTest
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
 		assertThat((Class<String>) friends.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) friends.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(friends.propertyType()).isEqualTo(PropertyType.LIST);
+		assertThat(friends.propertyType()).isEqualTo(PropertyType.LAZY_LIST);
 		assertThat(friends.newListInstance()).isNotNull();
 		assertThat(friends.newListInstance()).isEmpty();
+		assertThat(friends.isLazy()).isTrue();
 		assertThat((Class<ArrayList>) friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
 
 		assertThat(followers.getPropertyName()).isEqualTo("followers");

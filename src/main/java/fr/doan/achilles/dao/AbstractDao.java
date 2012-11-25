@@ -57,28 +57,32 @@ public abstract class AbstractDao<K, N, V>
 		mutator.insert(key, columnFamily, HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
 	}
 
-	public void insertColumn(K key, N name, V value, int ttl)
+	public void insertColumn(K key, N name, V value, int ttl, Mutator<K> mutator)
 	{
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl));
-		mutator.execute();
+		Mutator<K> mut = mutator;
+		if (mutator == null)
+		{
+			mut = HFactory.createMutator(keyspace, keySerializer);
+		}
+		mut.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl));
+		if (mutator == null)
+		{
+			mut.execute();
+		}
 	}
 
-	public void insertColumnBatch(K key, N name, V value, int ttl, Mutator<K> mutator)
+	public void insertColumn(K key, N name, V value, Mutator<K> mutator)
 	{
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl));
-	}
-
-	public void insertColumn(K key, N name, V value)
-	{
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
-		mutator.execute();
-	}
-
-	public void insertColumnBatch(K key, N name, V value, Mutator<K> mutator)
-	{
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
+		Mutator<K> mut = mutator;
+		if (mutator == null)
+		{
+			mut = HFactory.createMutator(keyspace, keySerializer);
+		}
+		mut.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
+		if (mutator == null)
+		{
+			mut.execute();
+		}
 	}
 
 	public V getValue(K key, N name)
@@ -219,7 +223,7 @@ public abstract class AbstractDao<K, N, V>
 
 	}
 
-	void truncate()
+	public void truncate()
 	{
 		Iterator<K> iterator = new KeyIterator<K>(keyspace, columnFamily, keySerializer).iterator();
 		while (iterator.hasNext())

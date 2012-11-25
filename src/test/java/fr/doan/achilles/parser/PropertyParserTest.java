@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Basic;
+import javax.persistence.FetchType;
+
 import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Test;
@@ -85,6 +88,78 @@ public class PropertyParserTest
 		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("name"), "firstname");
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
+	}
+
+	@Test
+	public void should_parse_lazy() throws Exception
+	{
+		class Test
+		{
+			@Basic(fetch = FetchType.LAZY)
+			private List<String> friends;
+
+			public List<String> getFriends()
+			{
+				return friends;
+			}
+
+			public void setFriends(List<String> friends)
+			{
+				this.friends = friends;
+			}
+		}
+
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+
+		assertThat(meta.isLazy()).isTrue();
+	}
+
+	@Test
+	public void should_parse_eager() throws Exception
+	{
+		class Test
+		{
+			@Basic(fetch = FetchType.EAGER)
+			private List<String> friends;
+
+			public List<String> getFriends()
+			{
+				return friends;
+			}
+
+			public void setFriends(List<String> friends)
+			{
+				this.friends = friends;
+			}
+		}
+
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+
+		assertThat(meta.isLazy()).isFalse();
+	}
+
+	@Test
+	public void should_parse_eager_as_default() throws Exception
+	{
+		class Test
+		{
+			@Basic
+			private List<String> friends;
+
+			public List<String> getFriends()
+			{
+				return friends;
+			}
+
+			public void setFriends(List<String> friends)
+			{
+				this.friends = friends;
+			}
+		}
+
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+
+		assertThat(meta.isLazy()).isFalse();
 	}
 
 	@Test

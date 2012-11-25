@@ -16,7 +16,7 @@ import me.prettyprint.hector.api.Keyspace;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.manager.AchillesEntityManager;
+import fr.doan.achilles.manager.ThriftEntityManager;
 import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.parser.EntityExplorer;
 import fr.doan.achilles.parser.EntityParser;
@@ -90,13 +90,13 @@ public class AchillesEntityManagerFactoryImpl implements AchillesEntityManagerFa
 	@Override
 	public EntityManager createEntityManager()
 	{
-		return new AchillesEntityManager(entityMetaMap);
+		return new ThriftEntityManager(entityMetaMap);
 	}
 
 	@Override
 	public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map)
 	{
-		return new AchillesEntityManager(entityMetaMap);
+		return new ThriftEntityManager(entityMetaMap);
 	}
 
 	@Override

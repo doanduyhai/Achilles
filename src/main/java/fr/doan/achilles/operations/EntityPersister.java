@@ -1,10 +1,5 @@
 package fr.doan.achilles.operations;
 
-import static fr.doan.achilles.metadata.PropertyType.LIST;
-import static fr.doan.achilles.metadata.PropertyType.MAP;
-import static fr.doan.achilles.metadata.PropertyType.SET;
-import static fr.doan.achilles.metadata.PropertyType.SIMPLE;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +15,10 @@ import fr.doan.achilles.bean.BeanPropertyHelper;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.metadata.EntityMeta;
+import fr.doan.achilles.metadata.ListPropertyMeta;
+import fr.doan.achilles.metadata.MapPropertyMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
+import fr.doan.achilles.metadata.SetPropertyMeta;
 
 public class EntityPersister
 {
@@ -39,24 +37,29 @@ public class EntityPersister
 		for (Entry<String, PropertyMeta<?>> entry : entityMeta.getPropertyMetas().entrySet())
 		{
 			PropertyMeta<?> propertyMeta = entry.getValue();
-			if (propertyMeta.propertyType() == SIMPLE)
+			switch (propertyMeta.propertyType())
 			{
-				this.batchSimpleProperty(entity, key, dao, mutator, propertyMeta);
+				case SIMPLE:
+				case LAZY_SIMPLE:
+					this.batchSimpleProperty(entity, key, dao, propertyMeta, mutator);
+					break;
+				case LIST:
+				case LAZY_LIST:
+					this.batchListProperty(entity, key, dao, propertyMeta, mutator);
+					break;
+				case SET:
+				case LAZY_SET:
+					this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
+					break;
+				case MAP:
+				case LAZY_MAP:
+					this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
+					break;
+				default:
+					break;
 			}
-			else if (propertyMeta.propertyType() == LIST)
-			{
-				this.batchListProperty(entity, key, dao, mutator, propertyMeta);
-			}
-			else if (propertyMeta.propertyType() == SET)
-			{
-				this.batchSetProperty(entity, key, dao, mutator, propertyMeta);
-			}
-			else if (propertyMeta.propertyType() == MAP)
-			{
-				this.batchMapProperty(entity, key, dao, mutator, propertyMeta);
-			}
-			mutator.execute();
 		}
+		mutator.execute();
 
 	}
 
@@ -69,100 +72,113 @@ public class EntityPersister
 
 	}
 
-	private <ID extends Serializable> void batchSimpleProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
-			PropertyMeta<?> propertyMeta)
+	private <ID extends Serializable> void batchSimpleProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta,
+			Mutator<ID> mutator)
 	{
-
-		Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SIMPLE, 0);
+		Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
 		Object value = beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		dao.insertColumnBatch(key, name, value, mutator);
+		dao.insertColumn(key, name, value, mutator);
 	}
 
 	public <ID extends Serializable> void persistSimpleProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
 	{
-		Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SIMPLE, 0);
-		Object value = beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		dao.insertColumn(key, name, value);
+		this.batchSimpleProperty(entity, key, dao, propertyMeta, null);
 	}
 
-	private <ID extends Serializable> void batchListProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
-			PropertyMeta<?> propertyMeta)
+	private <ID extends Serializable> void batchListProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta,
+			Mutator<ID> mutator)
 	{
 
 		List<?> list = (List<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
 		int count = 0;
-		for (Object value : list)
+		if (list != null)
 		{
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), LIST, count);
-			dao.insertColumnBatch(key, name, value, mutator);
-			count++;
+			for (Object value : list)
+			{
+				Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), count);
+				dao.insertColumn(key, name, value, mutator);
+				count++;
+			}
 		}
 	}
 
 	public <ID extends Serializable> void persistListProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		List<?> list = (List<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		int count = 0;
-		for (Object value : list)
-		{
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), LIST, count);
-			dao.insertColumnBatch(key, name, value, mutator);
-			count++;
-		}
+		this.batchListProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
 	}
 
-	private <ID extends Serializable> void batchSetProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
-			PropertyMeta<?> propertyMeta)
+	private <ID extends Serializable> void batchSetProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta,
+			Mutator<ID> mutator)
 	{
 		Set<?> set = (Set<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		for (Object value : set)
+		if (set != null)
 		{
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SET, value.hashCode());
-			dao.insertColumnBatch(key, name, value, mutator);
+			for (Object value : set)
+			{
+				Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), value.hashCode());
+				dao.insertColumn(key, name, value, mutator);
+			}
 		}
 	}
 
 	public <ID extends Serializable> void persistSetProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		Set<?> set = (Set<?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		for (Object value : set)
-		{
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), SET, value.hashCode());
-			dao.insertColumnBatch(key, name, value, mutator);
-		}
+		this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
 	}
 
-	private <ID extends Serializable> void batchMapProperty(Object entity, ID key, GenericDao<ID> dao, Mutator<ID> mutator,
-			PropertyMeta<?> propertyMeta)
+	private <ID extends Serializable> void batchMapProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta,
+			Mutator<ID> mutator)
 	{
 
 		Map<?, ?> map = (Map<?, ?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		for (Entry<?, ?> entry : map.entrySet())
+		if (map != null)
 		{
+			for (Entry<?, ?> entry : map.entrySet())
+			{
+				Composite name = dao
+						.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), entry.getKey().hashCode());
 
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), MAP, entry.getKey().hashCode());
-
-			KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
-			dao.insertColumnBatch(key, name, value, mutator);
+				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
+				dao.insertColumn(key, name, value, mutator);
+			}
 		}
 	}
 
 	public <ID extends Serializable> void persistMapProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		Map<?, ?> map = (Map<?, ?>) beanPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		for (Entry<?, ?> entry : map.entrySet())
-		{
-
-			Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), MAP, entry.getKey().hashCode());
-
-			KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
-			dao.insertColumnBatch(key, name, value, mutator);
-		}
+		this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
+	}
+
+	public <ID extends Serializable, V extends Serializable> void persistProperty(Object entity, ID key, GenericDao<ID> dao,
+			PropertyMeta<V> propertyMeta)
+	{
+
+		switch (propertyMeta.propertyType())
+		{
+			case SIMPLE:
+			case LAZY_SIMPLE:
+				this.persistSimpleProperty(entity, key, dao, propertyMeta);
+				break;
+			case LIST:
+			case LAZY_LIST:
+				this.persistListProperty(entity, key, dao, (ListPropertyMeta<V>) propertyMeta);
+				break;
+			case SET:
+			case LAZY_SET:
+				this.persistSetProperty(entity, key, dao, (SetPropertyMeta<V>) propertyMeta);
+				break;
+			case MAP:
+			case LAZY_MAP:
+				this.persistMapProperty(entity, key, dao, (MapPropertyMeta<V>) propertyMeta);
+				break;
+			default:
+				break;
+		}
 	}
 }

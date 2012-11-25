@@ -16,7 +16,6 @@ import fr.doan.achilles.metadata.EntityMeta;
 import fr.doan.achilles.metadata.ListPropertyMeta;
 import fr.doan.achilles.metadata.MapPropertyMeta;
 import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.metadata.PropertyType;
 import fr.doan.achilles.metadata.SetPropertyMeta;
 import fr.doan.achilles.validation.Validator;
 
@@ -51,35 +50,32 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID extends Serializable, V extends Serializable> V loadSimpleProperty(ID key, String propertyName, GenericDao<ID> dao,
-			PropertyMeta<V> propertyMeta)
+	public <ID extends Serializable, V extends Serializable> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
 	{
-		Composite composite = dao.buildCompositeForProperty(propertyName, PropertyType.SIMPLE, 0);
+		Composite composite = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.get(value);
 	}
 
-	public <ID extends Serializable, V extends Serializable> List<V> loadListProperty(ID key, String propertyName, GenericDao<ID> dao,
-			ListPropertyMeta<V> listpropertyMeta)
+	public <ID extends Serializable, V extends Serializable> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListPropertyMeta<V> listPropertyMeta)
 	{
-		Composite start = dao.buildCompositeComparatorStart(propertyName, PropertyType.LIST);
-		Composite end = dao.buildCompositeComparatorEnd(propertyName, PropertyType.LIST);
+		Composite start = dao.buildCompositeComparatorStart(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType());
+		Composite end = dao.buildCompositeComparatorEnd(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType());
 		List<Pair<Composite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
-		List<V> list = listpropertyMeta.newListInstance();
+		List<V> list = listPropertyMeta.newListInstance();
 		for (Pair<Composite, Object> pair : columns)
 		{
-			list.add(listpropertyMeta.get(pair.right));
+			list.add(listPropertyMeta.get(pair.right));
 		}
 		return list;
 	}
 
-	public <ID extends Serializable, V extends Serializable> Set<V> loadSetProperty(ID key, String propertyName, GenericDao<ID> dao,
-			SetPropertyMeta<V> setPropertyMeta)
+	public <ID extends Serializable, V extends Serializable> Set<V> loadSetProperty(ID key, GenericDao<ID> dao, SetPropertyMeta<V> setPropertyMeta)
 	{
 
-		Composite start = dao.buildCompositeComparatorStart(propertyName, PropertyType.SET);
-		Composite end = dao.buildCompositeComparatorEnd(propertyName, PropertyType.SET);
+		Composite start = dao.buildCompositeComparatorStart(setPropertyMeta.getPropertyName(), setPropertyMeta.propertyType());
+		Composite end = dao.buildCompositeComparatorEnd(setPropertyMeta.getPropertyName(), setPropertyMeta.propertyType());
 		List<Pair<Composite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
 		Set<V> set = setPropertyMeta.newSetInstance();
 		for (Pair<Composite, Object> pair : columns)
@@ -90,12 +86,12 @@ public class EntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID extends Serializable, K extends Serializable, V extends Serializable> Map<K, V> loadMapProperty(ID key, String propertyName,
-			GenericDao<ID> dao, MapPropertyMeta<V> mapPropertyMeta)
+	public <ID extends Serializable, K extends Serializable, V extends Serializable> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao,
+			MapPropertyMeta<V> mapPropertyMeta)
 	{
 
-		Composite start = dao.buildCompositeComparatorStart(propertyName, PropertyType.MAP);
-		Composite end = dao.buildCompositeComparatorEnd(propertyName, PropertyType.MAP);
+		Composite start = dao.buildCompositeComparatorStart(mapPropertyMeta.getPropertyName(), mapPropertyMeta.propertyType());
+		Composite end = dao.buildCompositeComparatorEnd(mapPropertyMeta.getPropertyName(), mapPropertyMeta.propertyType());
 		List<Pair<Composite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
 		Map<K, V> map = mapPropertyMeta.newMapInstance();
 
@@ -107,5 +103,38 @@ public class EntityLoader
 			map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.get(holder.getValue()));
 		}
 		return map;
+	}
+
+	public <ID extends Serializable, V extends Serializable> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao,
+			PropertyMeta<V> propertyMeta)
+	{
+		Object value = null;
+		switch (propertyMeta.propertyType())
+		{
+			case SIMPLE:
+			case LAZY_SIMPLE:
+				value = this.loadSimpleProperty(key, dao, propertyMeta);
+				break;
+			case LIST:
+			case LAZY_LIST:
+				value = this.loadListProperty(key, dao, (ListPropertyMeta<?>) propertyMeta);
+				break;
+			case SET:
+			case LAZY_SET:
+				value = this.loadSetProperty(key, dao, (SetPropertyMeta<?>) propertyMeta);
+				break;
+			case MAP:
+			case LAZY_MAP:
+				value = this.loadMapProperty(key, dao, (MapPropertyMeta<?>) propertyMeta);
+				break;
+			default:
+				break;
+		}
+		try
+		{
+			propertyMeta.getSetter().invoke(realObject, value);
+		}
+		catch (Exception e)
+		{}
 	}
 }

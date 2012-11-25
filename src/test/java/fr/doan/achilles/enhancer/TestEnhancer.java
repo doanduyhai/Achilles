@@ -28,5 +28,7 @@ public class TestEnhancer
 		assertThat(proxy.getName()).isEqualTo("name");
 
 		assertThat(proxy).isInstanceOf(Factory.class);
+
+		assertThat(Factory.class.isAssignableFrom(proxy.getClass())).isTrue();
 	}
 }

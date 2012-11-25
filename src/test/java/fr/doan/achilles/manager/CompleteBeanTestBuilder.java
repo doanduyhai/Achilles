@@ -10,6 +10,8 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 
+import org.apache.commons.lang.math.RandomUtils;
+
 public class CompleteBeanTestBuilder
 {
 
@@ -46,6 +48,12 @@ public class CompleteBeanTestBuilder
 	public CompleteBeanTestBuilder id(Long id)
 	{
 		this.id = id;
+		return this;
+	}
+
+	public CompleteBeanTestBuilder randomId()
+	{
+		this.id = RandomUtils.nextLong();
 		return this;
 	}
 

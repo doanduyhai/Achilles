@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -23,6 +25,7 @@ public class Bean implements Serializable
 	@Column(name = "age_in_year")
 	private Long age;
 
+	@Basic(fetch = FetchType.LAZY)
 	@Column
 	private List<String> friends;
 
