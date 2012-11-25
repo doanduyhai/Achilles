@@ -1,6 +1,6 @@
 package fr.doan.achilles.columnFamily;
 
-import static fr.doan.achilles.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
+import fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.metadata.EntityMeta;
-import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.metadata.SimplePropertyMeta;
-import fr.doan.achilles.metadata.builder.SimplePropertyMetaBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyHelperTest

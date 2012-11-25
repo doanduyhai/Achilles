@@ -1,7 +1,7 @@
 package fr.doan.achilles.dao;
 
-import static fr.doan.achilles.metadata.PropertyType.END_EAGER;
-import static fr.doan.achilles.metadata.PropertyType.START_EAGER;
+import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
+import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
 import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
@@ -19,7 +19,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.cassandra.utils.Pair;
 
-import fr.doan.achilles.metadata.PropertyType;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.validation.Validator;
 
 public class GenericDao<K> extends AbstractDao<K, Composite, Object>

@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import fr.doan.achilles.metadata.EntityMeta;
-import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.operations.EntityLoader;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.validation.Validator;
 
 public class JpaInterceptorBuilder<ID extends Serializable>

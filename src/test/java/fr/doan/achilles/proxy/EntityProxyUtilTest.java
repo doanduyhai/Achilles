@@ -10,8 +10,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.manager.CompleteBeanTestBuilder;
-import fr.doan.achilles.metadata.EntityMeta;
+import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.proxy.EntityProxyUtil;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
 
 @RunWith(MockitoJUnitRunner.class)

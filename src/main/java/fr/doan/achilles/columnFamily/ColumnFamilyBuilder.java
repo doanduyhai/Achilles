@@ -12,8 +12,8 @@ import me.prettyprint.hector.api.ddl.ColumnDefinition;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 import me.prettyprint.hector.api.factory.HFactory;
-import fr.doan.achilles.metadata.EntityMeta;
-import fr.doan.achilles.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.serializer.Utils;
 
 public class ColumnFamilyBuilder

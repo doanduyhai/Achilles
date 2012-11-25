@@ -1,11 +1,11 @@
 package fr.doan.achilles.dao;
 
-import static fr.doan.achilles.metadata.PropertyType.END_EAGER;
-import static fr.doan.achilles.metadata.PropertyType.LIST;
-import static fr.doan.achilles.metadata.PropertyType.MAP;
-import static fr.doan.achilles.metadata.PropertyType.SET;
-import static fr.doan.achilles.metadata.PropertyType.SIMPLE;
-import static fr.doan.achilles.metadata.PropertyType.START_EAGER;
+import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
+import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static org.fest.assertions.api.Assertions.assertThat;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -20,7 +20,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.metadata.PropertyType;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)

@@ -22,10 +22,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.manager.CompleteBeanTestBuilder;
-import fr.doan.achilles.metadata.EntityMeta;
-import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.operations.EntityLoader;
+import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.operations.EntityLoader;
+import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaInterceptorBuilder;
 
 @SuppressWarnings(
 {

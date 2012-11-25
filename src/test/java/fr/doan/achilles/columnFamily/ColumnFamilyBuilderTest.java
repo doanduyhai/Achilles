@@ -19,8 +19,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.metadata.EntityMeta;
-import fr.doan.achilles.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyBuilderTest

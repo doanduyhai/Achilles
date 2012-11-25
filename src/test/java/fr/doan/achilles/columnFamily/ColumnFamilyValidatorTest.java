@@ -15,8 +15,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.metadata.EntityMeta;
 
 @SuppressWarnings("rawtypes")
 @RunWith(MockitoJUnitRunner.class)

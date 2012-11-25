@@ -8,8 +8,8 @@ import java.util.Set;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.metadata.PropertyMeta;
-import fr.doan.achilles.operations.EntityLoader;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.operations.EntityLoader;
 
 public class JpaInterceptor<ID extends Serializable> implements MethodInterceptor, AchillesInterceptor
 {

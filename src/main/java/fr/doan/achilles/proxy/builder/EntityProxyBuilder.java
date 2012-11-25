@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 import net.sf.cglib.proxy.Enhancer;
-import fr.doan.achilles.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptorBuilder;
 import fr.doan.achilles.validation.Validator;
 

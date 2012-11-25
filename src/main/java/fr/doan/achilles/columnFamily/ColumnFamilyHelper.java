@@ -7,8 +7,9 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import org.apache.commons.lang.StringUtils;
+
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.metadata.EntityMeta;
 
 public class ColumnFamilyHelper {
     private Cluster cluster;

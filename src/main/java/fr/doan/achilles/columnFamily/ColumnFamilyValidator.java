@@ -4,8 +4,8 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.metadata.EntityMeta;
 
 public class ColumnFamilyValidator
 {
