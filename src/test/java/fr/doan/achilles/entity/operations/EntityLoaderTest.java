@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +35,6 @@ import fr.doan.achilles.entity.metadata.MapPropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,7 +60,7 @@ public class EntityLoaderTest
 	private SetPropertyMeta<String> setPropertyMeta;
 
 	@Mock
-	private MapPropertyMeta<String> mapPropertyMeta;
+	private MapPropertyMeta<Integer, String> mapPropertyMeta;
 
 	@Mock
 	private EntityMapper mapper;
@@ -205,7 +203,7 @@ public class EntityLoaderTest
 		when((String) mapPropertyMeta.get("Paris")).thenReturn("Paris");
 		when((String) mapPropertyMeta.get("75014")).thenReturn("75014");
 
-		Map<Serializable, String> value = loader.loadMapProperty(1L, dao, mapPropertyMeta);
+		Map<Integer, String> value = loader.loadMapProperty(1L, dao, mapPropertyMeta);
 
 		assertThat(value).hasSize(3);
 		assertThat(value).containsKey(1);

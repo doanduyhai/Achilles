@@ -26,8 +26,8 @@ public class ListPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFriends", List.class);
 
-		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).listClass(ArrayList.class)
-				.propertyName("friends").accessors(accessors).lazy(false).build();
+		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).propertyName("friends").accessors(accessors)
+				.lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -45,8 +45,8 @@ public class ListPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFriends", List.class);
 
-		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).listClass(ArrayList.class)
-				.propertyName("friends").accessors(accessors).lazy(true).build();
+		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).propertyName("friends").accessors(accessors)
+				.lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_LIST);

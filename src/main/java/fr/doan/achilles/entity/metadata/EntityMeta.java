@@ -1,13 +1,12 @@
 package fr.doan.achilles.entity.metadata;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 
 import me.prettyprint.hector.api.Serializer;
 import fr.doan.achilles.dao.GenericDao;
 
-public class EntityMeta<ID extends Serializable>
+public class EntityMeta<ID>
 {
 
 	public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";

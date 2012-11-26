@@ -124,7 +124,6 @@ public class EntityParser
 		{
 			throw new IncorrectTypeException("The entity '" + entity.getCanonicalName() + "' should have javax.persistence.Table annotation");
 		}
-
 		return columnFamily;
 	}
 

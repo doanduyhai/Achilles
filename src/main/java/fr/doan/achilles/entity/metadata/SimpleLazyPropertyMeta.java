@@ -1,8 +1,7 @@
 package fr.doan.achilles.entity.metadata;
 
-import java.io.Serializable;
 
-public class SimpleLazyPropertyMeta<V extends Serializable> extends SimplePropertyMeta<V>
+public class SimpleLazyPropertyMeta<V> extends SimplePropertyMeta<V>
 {
 	@Override
 	public PropertyType propertyType()

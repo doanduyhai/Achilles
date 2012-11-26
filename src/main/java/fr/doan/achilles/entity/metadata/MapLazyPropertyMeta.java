@@ -1,8 +1,6 @@
 package fr.doan.achilles.entity.metadata;
 
-import java.io.Serializable;
-
-public class MapLazyPropertyMeta<V extends Serializable> extends MapPropertyMeta<V>
+public class MapLazyPropertyMeta<K, V> extends MapPropertyMeta<K, V>
 {
 	@Override
 	public PropertyType propertyType()

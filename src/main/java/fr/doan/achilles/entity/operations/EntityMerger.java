@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.operations;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 
@@ -26,7 +25,7 @@ public class EntityMerger
 	private EntityProxyUtil util = new EntityProxyUtil();
 
 	@SuppressWarnings("unchecked")
-	public <T, ID extends Serializable> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
+	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
 	{
 		Validator.validateNotNull(entity, "proxy object");
 		Validator.validateNotNull(entityMeta, "entityMeta");

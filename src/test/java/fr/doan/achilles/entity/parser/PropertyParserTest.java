@@ -20,7 +20,6 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetPropertyMeta;
 import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
-import fr.doan.achilles.entity.parser.PropertyParser;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
@@ -229,6 +228,7 @@ public class PropertyParserTest
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.SET);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_parse_map() throws Exception
 	{
@@ -255,7 +255,7 @@ public class PropertyParserTest
 		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.MAP);
 
-		MapPropertyMeta<String> mapMeta = (MapPropertyMeta<String>) meta;
+		MapPropertyMeta<Integer, String> mapMeta = (MapPropertyMeta<Integer, String>) meta;
 		assertThat(mapMeta.getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getPreferences");

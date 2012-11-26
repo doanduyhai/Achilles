@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -10,7 +9,7 @@ import fr.doan.achilles.entity.metadata.SimpleLazyPropertyMeta;
 import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
 import fr.doan.achilles.validation.Validator;
 
-public class SimplePropertyMetaBuilder<V extends Serializable>
+public class SimplePropertyMetaBuilder<V>
 {
 
 	private String propertyName;
@@ -18,7 +17,7 @@ public class SimplePropertyMetaBuilder<V extends Serializable>
 	private Method[] accessors;
 	protected boolean lazy;
 
-	public static <V extends Serializable> SimplePropertyMetaBuilder<V> simplePropertyMetaBuilder(Class<V> valueClass)
+	public static <V> SimplePropertyMetaBuilder<V> simplePropertyMetaBuilder(Class<V> valueClass)
 	{
 		return new SimplePropertyMetaBuilder<V>(valueClass);
 	}

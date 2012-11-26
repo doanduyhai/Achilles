@@ -1,11 +1,10 @@
 package fr.doan.achilles.entity.metadata;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import me.prettyprint.hector.api.Serializer;
 
-public class SimplePropertyMeta<V extends Serializable> implements PropertyMeta<V>
+public class SimplePropertyMeta<V> implements PropertyMeta<V>
 {
 	private String propertyName;
 	private Class<V> valueClass;

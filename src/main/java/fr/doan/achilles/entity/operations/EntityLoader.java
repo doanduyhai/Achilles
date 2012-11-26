@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.operations;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +23,7 @@ public class EntityLoader
 
 	private EntityMapper mapper = new EntityMapper();
 
-	public <T extends Object, ID extends Serializable> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
+	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{
 		Validator.validateNotNull(entityClass, "entity class");
 		Validator.validateNotNull(key, "entity key");
@@ -50,7 +49,7 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID extends Serializable, V extends Serializable> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
+	public <ID, V> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
 	{
 		Composite composite = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
@@ -58,7 +57,7 @@ public class EntityLoader
 		return propertyMeta.get(value);
 	}
 
-	public <ID extends Serializable, V extends Serializable> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListPropertyMeta<V> listPropertyMeta)
+	public <ID, V> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListPropertyMeta<V> listPropertyMeta)
 	{
 		Composite start = dao.buildCompositeComparatorStart(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType());
 		Composite end = dao.buildCompositeComparatorEnd(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType());
@@ -71,7 +70,7 @@ public class EntityLoader
 		return list;
 	}
 
-	public <ID extends Serializable, V extends Serializable> Set<V> loadSetProperty(ID key, GenericDao<ID> dao, SetPropertyMeta<V> setPropertyMeta)
+	public <ID, V> Set<V> loadSetProperty(ID key, GenericDao<ID> dao, SetPropertyMeta<V> setPropertyMeta)
 	{
 
 		Composite start = dao.buildCompositeComparatorStart(setPropertyMeta.getPropertyName(), setPropertyMeta.propertyType());
@@ -85,9 +84,7 @@ public class EntityLoader
 		return set;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID extends Serializable, K extends Serializable, V extends Serializable> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao,
-			MapPropertyMeta<V> mapPropertyMeta)
+	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao, MapPropertyMeta<K, V> mapPropertyMeta)
 	{
 
 		Composite start = dao.buildCompositeComparatorStart(mapPropertyMeta.getPropertyName(), mapPropertyMeta.propertyType());
@@ -105,8 +102,7 @@ public class EntityLoader
 		return map;
 	}
 
-	public <ID extends Serializable, V extends Serializable> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao,
-			PropertyMeta<V> propertyMeta)
+	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
 	{
 		Object value = null;
 		switch (propertyMeta.propertyType())
@@ -125,7 +121,7 @@ public class EntityLoader
 				break;
 			case MAP:
 			case LAZY_MAP:
-				value = this.loadMapProperty(key, dao, (MapPropertyMeta<?>) propertyMeta);
+				value = this.loadMapProperty(key, dao, (MapPropertyMeta<?, ?>) propertyMeta);
 				break;
 			default:
 				break;

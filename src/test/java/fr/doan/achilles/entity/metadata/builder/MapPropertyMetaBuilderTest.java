@@ -18,6 +18,7 @@ import fr.doan.achilles.serializer.Utils;
 public class MapPropertyMetaBuilderTest
 {
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_map_property_meta() throws Exception
 	{
@@ -26,7 +27,7 @@ public class MapPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getPreferences", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setPreferences", Map.class);
 
-		MapPropertyMeta<String> meta = (MapPropertyMeta<String>) mapPropertyMetaBuilder(String.class).mapClass(HashMap.class).keyClass(Integer.class)
+		MapPropertyMeta<Integer, String> meta = (MapPropertyMeta<Integer, String>) mapPropertyMetaBuilder(Integer.class, String.class)
 				.propertyName("preferences").accessors(accessors).lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
@@ -41,6 +42,7 @@ public class MapPropertyMetaBuilderTest
 		assertThat(meta.isLazy()).isEqualTo(false);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_lazy_map_property_meta() throws Exception
 	{
@@ -48,7 +50,7 @@ public class MapPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getPreferences", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setPreferences", Map.class);
 
-		MapPropertyMeta<String> meta = (MapPropertyMeta<String>) mapPropertyMetaBuilder(String.class).mapClass(HashMap.class).keyClass(Integer.class)
+		MapPropertyMeta<Integer, String> meta = (MapPropertyMeta<Integer, String>) mapPropertyMetaBuilder(Integer.class, String.class)
 				.propertyName("preferences").accessors(accessors).lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
@@ -61,7 +63,7 @@ public class MapPropertyMetaBuilderTest
 	public void should_exception_when_missing_data() throws Exception
 	{
 
-		mapPropertyMetaBuilder(String.class).propertyName("name").build();
+		mapPropertyMetaBuilder(Integer.class, String.class).propertyName("name").build();
 
 	}
 

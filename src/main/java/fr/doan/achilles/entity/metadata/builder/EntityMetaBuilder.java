@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +16,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.validation.Validator;
 
-public class EntityMetaBuilder<ID extends Serializable>
+public class EntityMetaBuilder<ID>
 {
 
 	private PropertyMeta<ID> idMeta;
@@ -28,7 +27,7 @@ public class EntityMetaBuilder<ID extends Serializable>
 	private Map<String, PropertyMeta<?>> propertyMetas;
 	private Keyspace keyspace;
 
-	public static <ID extends Serializable> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<ID> idMeta)
+	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<ID> idMeta)
 	{
 		return new EntityMetaBuilder<ID>(idMeta);
 	}

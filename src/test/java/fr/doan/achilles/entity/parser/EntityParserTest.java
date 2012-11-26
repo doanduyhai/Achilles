@@ -31,7 +31,6 @@ import fr.doan.achilles.entity.metadata.MapPropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
@@ -67,7 +66,7 @@ public class EntityParserTest
 		PropertyMeta<?> age = meta.getPropertyMetas().get("age_in_year");
 		ListPropertyMeta<String> friends = (ListPropertyMeta<String>) meta.getPropertyMetas().get("friends");
 		SetPropertyMeta<String> followers = (SetPropertyMeta<String>) meta.getPropertyMetas().get("followers");
-		MapPropertyMeta<String> preferences = (MapPropertyMeta<String>) meta.getPropertyMetas().get("preferences");
+		MapPropertyMeta<Integer, String> preferences = (MapPropertyMeta<Integer, String>) meta.getPropertyMetas().get("preferences");
 
 		assertThat(name).isNotNull();
 		assertThat(age).isNotNull();
@@ -113,10 +112,7 @@ public class EntityParserTest
 		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked"
-	})
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_parse_entity_with_table_name() throws Exception
 	{

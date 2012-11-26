@@ -5,7 +5,6 @@ import static fr.doan.achilles.entity.metadata.builder.MapPropertyMetaBuilder.ma
 import static fr.doan.achilles.entity.metadata.builder.SetPropertyMetaBuilder.setPropertyMetaBuilder;
 import static fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -26,7 +25,7 @@ public class PropertyParser
 
 	private final EntityPropertyHelper helper = new EntityPropertyHelper();
 
-	public <V extends Serializable> PropertyMeta<V> parse(Class<?> beanClass, Field field, String propertyName)
+	public <V> PropertyMeta<V> parse(Class<?> beanClass, Field field, String propertyName)
 	{
 		Class<?> fieldType = field.getType();
 
@@ -51,12 +50,11 @@ public class PropertyParser
 		{
 			propertyMeta = parseSimpleProperty(beanClass, field, propertyName);
 		}
-
 		return propertyMeta;
 	}
 
 	@SuppressWarnings("unchecked")
-	private <V extends Serializable> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field, String propertyName)
+	private <V> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field, String propertyName)
 	{
 		Validator.validateSerializable(field.getType(), field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
@@ -69,11 +67,10 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V extends Serializable> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
+	private <V> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
 	{
 
 		Class valueClass;
-		Class<? extends List<V>> listType = (Class<? extends List<V>>) fieldType;
 		Type genericType = field.getGenericType();
 
 		if (genericType instanceof ParameterizedType)
@@ -97,7 +94,7 @@ public class PropertyParser
 		Validator.validateSerializable(valueClass, "value type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return listPropertyMetaBuilder((Class<V>) valueClass).listClass(listType).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+		return listPropertyMetaBuilder((Class<V>) valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
 	}
 
 	@SuppressWarnings(
@@ -105,11 +102,10 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V extends Serializable> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
+	private <V> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
 	{
 
 		Class valueClass;
-		Class<? extends Set<V>> setType = (Class<? extends Set<V>>) fieldType;
 		Type genericType = field.getGenericType();
 
 		if (genericType instanceof ParameterizedType)
@@ -132,7 +128,7 @@ public class PropertyParser
 		Validator.validateSerializable(valueClass, "value type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return setPropertyMetaBuilder((Class<V>) valueClass).setClass(setType).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+		return setPropertyMetaBuilder((Class<V>) valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
 	}
 
 	@SuppressWarnings(
@@ -140,13 +136,12 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V extends Serializable> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
+	private <V> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
 	{
 
 		Class valueClass;
 		Class keyType;
 
-		Class<? extends Map> mapType = (Class<? extends Map>) fieldType;
 		Type genericType = field.getGenericType();
 
 		if (genericType instanceof ParameterizedType)
@@ -173,8 +168,7 @@ public class PropertyParser
 		Validator.validateSerializable(keyType, "key type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return mapPropertyMetaBuilder(valueClass).keyClass(keyType).mapClass(mapType).propertyName(propertyName).accessors(accessors).lazy(lazy)
-				.build();
+		return mapPropertyMetaBuilder(keyType, valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
 
 	}
 

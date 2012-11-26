@@ -36,7 +36,6 @@ import fr.doan.achilles.entity.metadata.MapPropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,7 +61,7 @@ public class EntityPersisterTest
 	private SetPropertyMeta<String> setPropertyMeta;
 
 	@Mock
-	private MapPropertyMeta<String> mapPropertyMeta;
+	private MapPropertyMeta<Integer, String> mapPropertyMeta;
 
 	@Mock
 	private ExecutingKeyspace keyspace;

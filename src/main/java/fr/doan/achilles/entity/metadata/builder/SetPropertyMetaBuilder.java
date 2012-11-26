@@ -1,20 +1,12 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-
 import fr.doan.achilles.entity.metadata.SetLazyPropertyMeta;
 import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.validation.Validator;
 
-@SuppressWarnings("rawtypes")
-public class SetPropertyMetaBuilder<V extends Serializable> extends SimplePropertyMetaBuilder<V>
+public class SetPropertyMetaBuilder<V> extends SimplePropertyMetaBuilder<V>
 {
 
-	private Class<? extends Set> setClass;
-
-	public static <V extends Serializable> SetPropertyMetaBuilder<V> setPropertyMetaBuilder(Class<V> valueClass)
+	public static <V> SetPropertyMetaBuilder<V> setPropertyMetaBuilder(Class<V> valueClass)
 	{
 		return new SetPropertyMetaBuilder<V>(valueClass);
 	}
@@ -26,8 +18,6 @@ public class SetPropertyMetaBuilder<V extends Serializable> extends SimpleProper
 	@Override
 	public SetPropertyMeta<V> build()
 	{
-
-		Validator.validateNotNull(setClass, "setClass");
 		SetPropertyMeta<V> meta;
 		if (this.lazy)
 		{
@@ -39,21 +29,6 @@ public class SetPropertyMetaBuilder<V extends Serializable> extends SimpleProper
 		}
 
 		super.build(meta);
-		if (setClass == Set.class)
-		{
-			meta.setSetClass(HashSet.class);
-		}
-		else
-		{
-			meta.setSetClass(setClass);
-		}
 		return meta;
 	}
-
-	public SetPropertyMetaBuilder<V> setClass(Class<? extends Set> setClass)
-	{
-		this.setClass = setClass;
-		return this;
-	}
-
 }

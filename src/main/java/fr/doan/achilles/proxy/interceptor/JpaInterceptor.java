@@ -1,6 +1,5 @@
 package fr.doan.achilles.proxy.interceptor;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +10,7 @@ import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 
-public class JpaInterceptor<ID extends Serializable> implements MethodInterceptor, AchillesInterceptor
+public class JpaInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
 	private Object target;

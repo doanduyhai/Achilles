@@ -26,8 +26,8 @@ public class SetPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFollowers", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFollowers", Set.class);
 
-		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).setClass(HashSet.class)
-				.propertyName("followers").accessors(accessors).lazy(false).build();
+		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).propertyName("followers").accessors(accessors)
+				.lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -45,8 +45,8 @@ public class SetPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFollowers", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFollowers", Set.class);
 
-		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).setClass(HashSet.class)
-				.propertyName("followers").accessors(accessors).lazy(true).build();
+		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).propertyName("followers").accessors(accessors)
+				.lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_SET);

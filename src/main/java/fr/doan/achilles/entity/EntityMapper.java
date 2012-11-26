@@ -4,7 +4,6 @@ import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import fr.doan.achilles.holder.KeyValueHolder;
 public class EntityMapper
 {
 
-	public <T, ID extends Serializable> void mapColumnsToBean(ID key, List<Pair<Composite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
+	public <T, ID> void mapColumnsToBean(ID key, List<Pair<Composite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();
@@ -68,7 +67,7 @@ public class EntityMapper
 
 			else if (Arrays.equals(type, PropertyType.MAP.flag()))
 			{
-				MapPropertyMeta<?> mapMeta = (MapPropertyMeta<?>) propertyMetas.get(propertyName);
+				MapPropertyMeta<?, ?> mapMeta = (MapPropertyMeta<?, ?>) propertyMetas.get(propertyName);
 				addToMap(mapProperties, mapMeta, (KeyValueHolder) pair.right);
 			}
 		}
@@ -123,7 +122,7 @@ public class EntityMapper
 		set.add(value);
 	}
 
-	protected void addToMap(Map<String, Map> mapProperties, MapPropertyMeta<?> mapMeta, KeyValueHolder keyValueHolder)
+	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapPropertyMeta<K, V> mapMeta, KeyValueHolder keyValueHolder)
 	{
 		String propertyName = mapMeta.getPropertyName();
 
@@ -140,7 +139,7 @@ public class EntityMapper
 		map.put(keyValueHolder.getKey(), mapMeta.get(keyValueHolder.getValue()));
 	}
 
-	public <T extends Object, ID extends Serializable> void mapIdToBean(ID key, PropertyMeta<?> keyMeta, T entity)
+	public <T, ID> void mapIdToBean(ID key, PropertyMeta<?> keyMeta, T entity)
 	{
 
 		try
@@ -153,7 +152,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T extends Object, ID extends Serializable> void mapSimplePropertyToBean(Object value, PropertyMeta<?> propertyMeta, T entity)
+	public <T, ID> void mapSimplePropertyToBean(Object value, PropertyMeta<?> propertyMeta, T entity)
 	{
 		try
 		{
@@ -165,7 +164,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T extends Object, ID extends Serializable> void mapListPropertyToBean(List<?> list, PropertyMeta<?> listMeta, T entity)
+	public <T, ID> void mapListPropertyToBean(List<?> list, PropertyMeta<?> listMeta, T entity)
 	{
 		try
 		{
@@ -177,7 +176,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T extends Object, ID extends Serializable> void mapSetPropertyToBean(Set<?> set, PropertyMeta<?> setMeta, T entity)
+	public <T, ID> void mapSetPropertyToBean(Set<?> set, PropertyMeta<?> setMeta, T entity)
 	{
 		try
 		{
@@ -189,7 +188,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T extends Object, ID extends Serializable> void mapMapPropertyToBean(Map<?, ?> map, PropertyMeta<?> mapMeta, T entity)
+	public <T, ID> void mapMapPropertyToBean(Map<?, ?> map, PropertyMeta<?> mapMeta, T entity)
 	{
 		try
 		{

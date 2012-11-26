@@ -2,7 +2,6 @@ package fr.doan.achilles.columnFamily;
 
 import static fr.doan.achilles.validation.Validator.validateNotBlank;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -19,7 +18,7 @@ import fr.doan.achilles.serializer.Utils;
 public class ColumnFamilyBuilder
 {
 
-	public <ID extends Serializable> ColumnFamilyDefinition build(EntityMeta<ID> entityMeta, String keyspaceName)
+	public <ID> ColumnFamilyDefinition build(EntityMeta<ID> entityMeta, String keyspaceName)
 	{
 		validateNotBlank(keyspaceName, "keyspaceName");
 		List<ColumnDefinition> columnMetadatas = new ArrayList<ColumnDefinition>();
