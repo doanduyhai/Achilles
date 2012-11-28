@@ -1,6 +1,5 @@
-package fr.doan.achilles.proxy.builder;
+package fr.doan.achilles.wrapper;
 
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
@@ -17,10 +16,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.collection.CollectionProxy;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CollectionProxyBuilderTest
+public class IteratorProxyTest
 {
 	@Mock
 	private Map<Method, PropertyMeta<?>> dirtyMap;
@@ -28,7 +26,7 @@ public class CollectionProxyBuilderTest
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -37,15 +35,20 @@ public class CollectionProxyBuilderTest
 	}
 
 	@Test
-	public void should_build() throws Exception
+	public void should_mark_dirty_on_element_remove() throws Exception
 	{
-		List<String> target = new ArrayList<String>();
-		CollectionProxy<String> collectionProxy = CollectionProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
 
-		assertThat(collectionProxy.getDirtyMap()).isSameAs(dirtyMap);
+		List<Integer> list = new ArrayList<Integer>();
+		list.add(1);
+		list.add(2);
 
-		collectionProxy.add("a");
+		IteratorProxy<Integer> proxy = new IteratorProxy<Integer>(list.iterator());
+		proxy.setDirtyMap(dirtyMap);
+		proxy.setSetter(setter);
+		proxy.setPropertyMeta(propertyMeta);
+
+		proxy.next();
+		proxy.remove();
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}

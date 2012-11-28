@@ -1,18 +1,13 @@
-package fr.doan.achilles.proxy.collection;
+package fr.doan.achilles.wrapper;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
-import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.wrapper.builder.IteratorProxyBuilder;
 
-public class CollectionProxy<E> implements Collection<E>
+public class CollectionProxy<E> extends AbstractProxy<E> implements Collection<E>
 {
 	protected Collection<E> target;
-	protected Map<Method, PropertyMeta<?>> dirtyMap;
-	protected Method setter;
-	protected PropertyMeta<E> propertyMeta;
 
 	public CollectionProxy(Collection<E> target) {
 		this.target = target;
@@ -69,7 +64,8 @@ public class CollectionProxy<E> implements Collection<E>
 	@Override
 	public Iterator<E> iterator()
 	{
-		return this.target.iterator();
+		return IteratorProxyBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.build();
 	}
 
 	@Override
@@ -123,31 +119,8 @@ public class CollectionProxy<E> implements Collection<E>
 		return this.target.toArray(arg0);
 	}
 
-	public Map<Method, PropertyMeta<?>> getDirtyMap()
+	public Collection<E> getTarget()
 	{
-		return dirtyMap;
-	}
-
-	public void setDirtyMap(Map<Method, PropertyMeta<?>> dirtyMap)
-	{
-		this.dirtyMap = dirtyMap;
-	}
-
-	public void setSetter(Method setter)
-	{
-		this.setter = setter;
-	}
-
-	public void setPropertyMeta(PropertyMeta<E> propertyMeta)
-	{
-		this.propertyMeta = propertyMeta;
-	}
-
-	protected void markDirty()
-	{
-		if (!dirtyMap.containsKey(this.setter))
-		{
-			dirtyMap.put(this.setter, this.propertyMeta);
-		}
+		return this.target;
 	}
 }

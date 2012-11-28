@@ -1,4 +1,4 @@
-package fr.doan.achilles.proxy.builder;
+package fr.doan.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -17,13 +17,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.collection.ListProxy;
-import fr.doan.achilles.proxy.builder.ListProxyBuilder;
+import fr.doan.achilles.wrapper.CollectionProxy;
+import fr.doan.achilles.wrapper.builder.CollectionProxyBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ListProxyBuilderTest
+public class CollectionProxyBuilderTest
 {
-
 	@Mock
 	private Map<Method, PropertyMeta<?>> dirtyMap;
 
@@ -42,12 +41,12 @@ public class ListProxyBuilderTest
 	public void should_build() throws Exception
 	{
 		List<String> target = new ArrayList<String>();
-		ListProxy<String> listProxy = ListProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		CollectionProxy<String> collectionProxy = CollectionProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.build();
 
-		assertThat(listProxy.getTarget()).isSameAs(target);
-		assertThat(listProxy.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(collectionProxy.getDirtyMap()).isSameAs(dirtyMap);
 
-		listProxy.add("a");
+		collectionProxy.add("a");
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}

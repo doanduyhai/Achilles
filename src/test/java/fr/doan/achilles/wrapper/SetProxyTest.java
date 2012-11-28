@@ -1,4 +1,4 @@
-package fr.doan.achilles.proxy.collection;
+package fr.doan.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
+
+import fr.doan.achilles.wrapper.SetProxy;
 
 public class SetProxyTest
 {
@@ -18,4 +20,5 @@ public class SetProxyTest
 		SetProxy<String> setProxy = new SetProxy<String>(target);
 		assertThat(setProxy.getTarget()).isSameAs(target);
 	}
+
 }

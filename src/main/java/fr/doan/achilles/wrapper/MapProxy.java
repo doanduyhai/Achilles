@@ -1,23 +1,19 @@
-package fr.doan.achilles.proxy.map;
+package fr.doan.achilles.wrapper;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.builder.CollectionProxyBuilder;
-import fr.doan.achilles.proxy.builder.SetProxyBuilder;
-import fr.doan.achilles.proxy.collection.CollectionProxy;
-import fr.doan.achilles.proxy.collection.SetProxy;
+import fr.doan.achilles.wrapper.builder.KeySetProxyBuilder;
+import fr.doan.achilles.wrapper.builder.MapEntryProxyBuilder;
+import fr.doan.achilles.wrapper.builder.SetProxyBuilder;
+import fr.doan.achilles.wrapper.builder.ValueCollectionProxyBuilder;
 
-public class MapProxy<K, V> implements Map<K, V>
+public class MapProxy<K, V> extends AbstractProxy<V> implements Map<K, V>
 {
 
 	private final Map<K, V> target;
-	private Map<Method, PropertyMeta<?>> dirtyMap;
-	private Method setter;
-	private PropertyMeta<V> propertyMeta;
 
 	public MapProxy(Map<K, V> target) {
 		this.target = target;
@@ -46,11 +42,28 @@ public class MapProxy<K, V> implements Map<K, V>
 		return this.target.containsValue(value);
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet()
 	{
-		// return this.target.entrySet();
-		return null;
+		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
+		if (targetEntrySet.size() > 0)
+		{
+			SetProxy<Entry<K, V>> wrapperSet = SetProxyBuilder.builder(targetEntrySet).dirtyMap(dirtyMap).setter(setter)
+					.propertyMeta((PropertyMeta) propertyMeta).build();
+			for (Entry<K, V> entry : targetEntrySet)
+			{
+				MapEntryProxy<K, V> entryProxy = MapEntryProxyBuilder.builder(entry).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+						.build();
+				wrapperSet.add(entryProxy);
+			}
+			targetEntrySet = wrapperSet;
+		}
+		return targetEntrySet;
 	}
 
 	@Override
@@ -74,11 +87,11 @@ public class MapProxy<K, V> implements Map<K, V>
 	public Set<K> keySet()
 	{
 		Set<K> keySet = this.target.keySet();
-		if (keySet != null && keySet.size() > 0)
+		if (keySet.size() > 0)
 		{
-			SetProxy<K> setProxy = SetProxyBuilder.builder(keySet).dirtyMap(dirtyMap).setter(setter).build();
-			setProxy.setPropertyMeta((PropertyMeta) propertyMeta);
-			keySet = setProxy;
+			KeySetProxy<K> keySetProxy = KeySetProxyBuilder.builder(keySet).dirtyMap(dirtyMap).setter(setter)
+					.propertyMeta((PropertyMeta) propertyMeta).build();
+			keySet = keySetProxy;
 		}
 		return keySet;
 	}
@@ -121,8 +134,8 @@ public class MapProxy<K, V> implements Map<K, V>
 
 		if (values != null && values.size() > 0)
 		{
-			CollectionProxy<V> collectionProxy = CollectionProxyBuilder.builder(values).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-					.build();
+			ValueCollectionProxy<V> collectionProxy = ValueCollectionProxyBuilder.builder(values).dirtyMap(dirtyMap).setter(setter)
+					.propertyMeta(propertyMeta).build();
 			values = collectionProxy;
 		}
 		return values;
@@ -131,33 +144,5 @@ public class MapProxy<K, V> implements Map<K, V>
 	public Map<K, V> getTarget()
 	{
 		return target;
-	}
-
-	public Map<Method, PropertyMeta<?>> getDirtyMap()
-	{
-		return dirtyMap;
-	}
-
-	public void setDirtyMap(Map<Method, PropertyMeta<?>> dirtyMap)
-	{
-		this.dirtyMap = dirtyMap;
-	}
-
-	public void setSetter(Method setter)
-	{
-		this.setter = setter;
-	}
-
-	public void setPropertyMeta(PropertyMeta<V> propertyMeta)
-	{
-		this.propertyMeta = propertyMeta;
-	}
-
-	protected void markDirty()
-	{
-		if (!dirtyMap.containsKey(this.setter))
-		{
-			dirtyMap.put(this.setter, this.propertyMeta);
-		}
 	}
 }

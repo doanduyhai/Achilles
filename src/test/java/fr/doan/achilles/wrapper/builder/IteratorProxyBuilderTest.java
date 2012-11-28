@@ -1,12 +1,12 @@
-package fr.doan.achilles.proxy.builder;
+package fr.doan.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import mapping.entity.CompleteBean;
 
@@ -17,13 +17,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.collection.SetProxy;
-import fr.doan.achilles.proxy.builder.SetProxyBuilder;
+import fr.doan.achilles.wrapper.IteratorProxy;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SetProxyBuilderTest
+public class IteratorProxyBuilderTest
 {
-
 	@Mock
 	private Map<Method, PropertyMeta<?>> dirtyMap;
 
@@ -35,19 +33,22 @@ public class SetProxyBuilderTest
 	@Before
 	public void setUp() throws Exception
 	{
-		setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
+		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 	}
 
 	@Test
 	public void should_build() throws Exception
 	{
-		Set<String> target = new HashSet<String>();
-		SetProxy<String> setProxy = SetProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		List<String> target = new ArrayList<String>();
+		target.add("a");
 
-		assertThat(setProxy.getTarget()).isSameAs(target);
-		assertThat(setProxy.getDirtyMap()).isSameAs(dirtyMap);
+		IteratorProxy<String> iteratorProxy = IteratorProxyBuilder.builder(target.iterator()).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 
-		setProxy.add("a");
+		assertThat(iteratorProxy.getDirtyMap()).isSameAs(dirtyMap);
+
+		iteratorProxy.next();
+		iteratorProxy.remove();
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}

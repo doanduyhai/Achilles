@@ -1,11 +1,13 @@
-package fr.doan.achilles.proxy.collection;
+package fr.doan.achilles.wrapper;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +42,12 @@ public class CollectionProxyTest
 	public void should_mark_dirty_on_element_add() throws Exception
 	{
 
-		ListProxy<String> listProxy = prepareListProxy(new ArrayList<String>());
+		ArrayList<String> target = new ArrayList<String>();
+		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.add("a");
+
+		assertThat(target).hasSize(1);
+		assertThat(target.get(0)).isEqualTo("a");
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
@@ -50,8 +56,13 @@ public class CollectionProxyTest
 	public void should_mark_dirty_on_add_all() throws Exception
 	{
 
-		ListProxy<String> listProxy = prepareListProxy(new ArrayList<String>());
+		ArrayList<String> target = new ArrayList<String>();
+		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.addAll(Arrays.asList("a", "b"));
+
+		assertThat(target).hasSize(2);
+		assertThat(target.get(0)).isEqualTo("a");
+		assertThat(target.get(1)).isEqualTo("b");
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
@@ -60,8 +71,11 @@ public class CollectionProxyTest
 	public void should_not_mark_dirty_on_empty_add_all() throws Exception
 	{
 
-		ListProxy<String> listProxy = prepareListProxy(new ArrayList<String>());
+		ArrayList<String> target = new ArrayList<String>();
+		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.addAll(new ArrayList<String>());
+
+		assertThat(target).hasSize(0);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}
@@ -75,6 +89,8 @@ public class CollectionProxyTest
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.clear();
 
+		assertThat(target).hasSize(0);
+
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
@@ -82,8 +98,11 @@ public class CollectionProxyTest
 	public void should_not_mark_dirty_on_clear_when_empty() throws Exception
 	{
 
-		ListProxy<String> listProxy = prepareListProxy(new ArrayList<String>());
+		ArrayList<String> target = new ArrayList<String>();
+		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.clear();
+
+		assertThat(target).hasSize(0);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}
@@ -98,6 +117,9 @@ public class CollectionProxyTest
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.remove("a");
 
+		assertThat(target).hasSize(1);
+		assertThat(target.get(0)).isEqualTo("b");
+
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
@@ -110,6 +132,10 @@ public class CollectionProxyTest
 		target.add("b");
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.remove("c");
+
+		assertThat(target).hasSize(2);
+		assertThat(target.get(0)).isEqualTo("a");
+		assertThat(target.get(1)).isEqualTo("b");
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}
@@ -125,6 +151,9 @@ public class CollectionProxyTest
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.removeAll(Arrays.asList("a", "c"));
 
+		assertThat(target).hasSize(1);
+		assertThat(target.get(0)).isEqualTo("b");
+
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
@@ -138,6 +167,11 @@ public class CollectionProxyTest
 		target.add("c");
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.removeAll(Arrays.asList("d", "e"));
+
+		assertThat(target).hasSize(3);
+		assertThat(target.get(0)).isEqualTo("a");
+		assertThat(target.get(1)).isEqualTo("b");
+		assertThat(target.get(2)).isEqualTo("c");
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}
@@ -153,6 +187,10 @@ public class CollectionProxyTest
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.retainAll(Arrays.asList("a", "c"));
 
+		assertThat(target).hasSize(2);
+		assertThat(target.get(0)).isEqualTo("a");
+		assertThat(target.get(1)).isEqualTo("c");
+
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
@@ -167,7 +205,31 @@ public class CollectionProxyTest
 		ListProxy<String> listProxy = prepareListProxy(target);
 		listProxy.retainAll(Arrays.asList("a", "b", "c"));
 
+		assertThat(target).hasSize(3);
+		assertThat(target.get(0)).isEqualTo("a");
+		assertThat(target.get(1)).isEqualTo("b");
+		assertThat(target.get(2)).isEqualTo("c");
+
 		verify(dirtyMap, never()).put(setter, propertyMeta);
+	}
+
+	@Test
+	public void should_mark_dirty_on_iterator_remove() throws Exception
+	{
+		ArrayList<String> target = new ArrayList<String>();
+		target.add("a");
+		target.add("b");
+		target.add("c");
+		ListProxy<String> listProxy = prepareListProxy(target);
+
+		Iterator<String> iteratorProxy = listProxy.iterator();
+
+		assertThat(iteratorProxy).isInstanceOf(IteratorProxy.class);
+
+		iteratorProxy.next();
+		iteratorProxy.remove();
+
+		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
 	private ListProxy<String> prepareListProxy(List<String> target)

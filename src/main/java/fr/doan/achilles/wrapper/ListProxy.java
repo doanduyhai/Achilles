@@ -1,9 +1,11 @@
-package fr.doan.achilles.proxy.collection;
+package fr.doan.achilles.wrapper;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import fr.doan.achilles.wrapper.builder.ListIteratorProxyBuilder;
+import fr.doan.achilles.wrapper.builder.ListProxyBuilder;
 
 public class ListProxy<E> extends CollectionProxy<E> implements List<E>
 {
@@ -31,18 +33,6 @@ public class ListProxy<E> extends CollectionProxy<E> implements List<E>
 	}
 
 	@Override
-	public boolean contains(Object arg0)
-	{
-		return this.target.contains(arg0);
-	}
-
-	@Override
-	public boolean containsAll(Collection<?> arg0)
-	{
-		return this.target.containsAll(arg0);
-	}
-
-	@Override
 	public E get(int arg0)
 	{
 		return ((List<E>) super.target).get(arg0);
@@ -55,12 +45,6 @@ public class ListProxy<E> extends CollectionProxy<E> implements List<E>
 	}
 
 	@Override
-	public Iterator<E> iterator()
-	{
-		return this.target.iterator();
-	}
-
-	@Override
 	public int lastIndexOf(Object arg0)
 	{
 		return ((List<E>) super.target).lastIndexOf(arg0);
@@ -69,13 +53,17 @@ public class ListProxy<E> extends CollectionProxy<E> implements List<E>
 	@Override
 	public ListIterator<E> listIterator()
 	{
-		return ((List<E>) super.target).listIterator();
+		ListIterator<E> target = ((List<E>) super.target).listIterator();
+
+		return ListIteratorProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override
 	public ListIterator<E> listIterator(int arg0)
 	{
-		return ((List<E>) super.target).listIterator(arg0);
+		ListIterator<E> target = ((List<E>) super.target).listIterator(arg0);
+
+		return ListIteratorProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override
@@ -97,9 +85,12 @@ public class ListProxy<E> extends CollectionProxy<E> implements List<E>
 	@Override
 	public List<E> subList(int arg0, int arg1)
 	{
-		return ((List<E>) super.target).subList(arg0, arg1);
+		List<E> target = ((List<E>) super.target).subList(arg0, arg1);
+
+		return ListProxyBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
+	@Override
 	public List<E> getTarget()
 	{
 		return ((List<E>) super.target);
