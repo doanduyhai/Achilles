@@ -5,9 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.wrapper.builder.EntrySetProxyBuilder;
 import fr.doan.achilles.wrapper.builder.KeySetProxyBuilder;
-import fr.doan.achilles.wrapper.builder.MapEntryProxyBuilder;
-import fr.doan.achilles.wrapper.builder.SetProxyBuilder;
 import fr.doan.achilles.wrapper.builder.ValueCollectionProxyBuilder;
 
 public class MapProxy<K, V> extends AbstractProxy<V> implements Map<K, V>
@@ -53,14 +52,8 @@ public class MapProxy<K, V> extends AbstractProxy<V> implements Map<K, V>
 		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0)
 		{
-			SetProxy<Entry<K, V>> wrapperSet = SetProxyBuilder.builder(targetEntrySet).dirtyMap(dirtyMap).setter(setter)
+			EntrySetProxy<K, V> wrapperSet = EntrySetProxyBuilder.builder(targetEntrySet).dirtyMap(dirtyMap).setter(setter)
 					.propertyMeta((PropertyMeta) propertyMeta).build();
-			for (Entry<K, V> entry : targetEntrySet)
-			{
-				MapEntryProxy<K, V> entryProxy = MapEntryProxyBuilder.builder(entry).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-						.build();
-				wrapperSet.add(entryProxy);
-			}
 			targetEntrySet = wrapperSet;
 		}
 		return targetEntrySet;
@@ -132,7 +125,7 @@ public class MapProxy<K, V> extends AbstractProxy<V> implements Map<K, V>
 	{
 		Collection<V> values = this.target.values();
 
-		if (values != null && values.size() > 0)
+		if (values.size() > 0)
 		{
 			ValueCollectionProxy<V> collectionProxy = ValueCollectionProxyBuilder.builder(values).dirtyMap(dirtyMap).setter(setter)
 					.propertyMeta(propertyMeta).build();
