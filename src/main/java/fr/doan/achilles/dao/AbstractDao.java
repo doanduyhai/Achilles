@@ -120,6 +120,19 @@ public abstract class AbstractDao<K, N, V>
 		mutator.execute();
 	}
 
+	public void removeColumnRange(K key, N start, N end)
+	{
+		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
+				.setKey(key).setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
+
+		for (HColumn<N, V> column : columns)
+		{
+			mutator.delete(key, columnFamily, column.getName(), columnNameSerializer);
+		}
+		mutator.execute();
+	}
+
 	public List<V> findValuesRange(K key, N startName, boolean reverse, int count)
 	{
 		List<V> values = new ArrayList<V>();
@@ -171,10 +184,15 @@ public abstract class AbstractDao<K, N, V>
 
 	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse, int length)
 	{
+		return getColumnsIterator(key, startName, null, reverse, length);
+	}
+
+	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName, boolean reverse, int length)
+	{
 		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
 				.setKey(key);
 
-		return new ColumnSliceIterator<K, N, V>(query, startName, (N) null, reverse, length);
+		return new ColumnSliceIterator<K, N, V>(query, startName, endName, reverse, length);
 	}
 
 	public CounterColumnSliceIterator<K, N> getCounterColumnsIterator(K key, N startName, boolean reverse, int length)

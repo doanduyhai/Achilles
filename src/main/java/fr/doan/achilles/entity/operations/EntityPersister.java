@@ -68,7 +68,14 @@ public class EntityPersister
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
 		GenericDao<ID> dao = entityMeta.getDao();
 		dao.removeRow(key);
+	}
 
+	public <ID, V> void removeProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
+	{
+		Validate.notNull(key, "key value");
+		Composite start = dao.buildCompositeComparatorStart(propertyMeta.getPropertyName(), propertyMeta.propertyType());
+		Composite end = dao.buildCompositeComparatorEnd(propertyMeta.getPropertyName(), propertyMeta.propertyType());
+		dao.removeColumnRange(key, start, end);
 	}
 
 	private <ID> void batchSimpleProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta, Mutator<ID> mutator)
