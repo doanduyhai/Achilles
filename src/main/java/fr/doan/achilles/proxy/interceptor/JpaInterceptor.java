@@ -1,6 +1,7 @@
 package fr.doan.achilles.proxy.interceptor;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +10,9 @@ import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
+import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
+import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
+import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 
 public class JpaInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
@@ -43,20 +47,67 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 			throw new IllegalAccessException("Cannot change id value for existing entity ");
 		}
 
+		Object result = null;
 		if (this.getterMetas.containsKey(method))
 		{
-			PropertyMeta<?> propertyMeta = this.getterMetas.get(method);
-			if (propertyMeta.isLazy() && !this.lazyLoaded.contains(method))
-			{
-				this.loader.loadPropertyIntoObject(target, key, dao, propertyMeta);
-				this.lazyLoaded.add(method);
-			}
+			result = interceptGetter(method, args, proxy);
 		}
 		else if (this.setterMetas.containsKey(method))
 		{
-			this.dirtyMap.put(method, this.setterMetas.get(method));
+			result = interceptSetter(method, args, proxy);
 		}
-		return proxy.invoke(target, args);
+		else
+		{
+			result = proxy.invoke(target, args);
+		}
+		return result;
+	}
+
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable
+	{
+		Object result;
+		PropertyMeta propertyMeta = this.getterMetas.get(method);
+		if (propertyMeta.isLazy() && !this.lazyLoaded.contains(method))
+		{
+			this.loader.loadPropertyIntoObject(target, key, dao, propertyMeta);
+			this.lazyLoaded.add(method);
+		}
+
+		switch (propertyMeta.propertyType())
+		{
+			case LIST:
+			case LAZY_LIST:
+				List<?> list = (List<?>) proxy.invoke(target, args);
+				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				break;
+			case SET:
+			case LAZY_SET:
+				Set<?> set = (Set<?>) proxy.invoke(target, args);
+				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				break;
+			case MAP:
+			case LAZY_MAP:
+				Map<?, ?> map = (Map<?, ?>) proxy.invoke(target, args);
+				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				break;
+			default:
+				result = proxy.invoke(target, args);
+				break;
+		}
+		return result;
+	}
+
+	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable
+	{
+		Object result;
+		this.dirtyMap.put(method, this.setterMetas.get(method));
+		result = proxy.invoke(target, args);
+		return result;
 	}
 
 	public Map<Method, PropertyMeta<?>> getDirtyMap()

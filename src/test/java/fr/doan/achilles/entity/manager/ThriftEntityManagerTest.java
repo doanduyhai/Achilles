@@ -21,12 +21,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.Bean;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
+import fr.doan.achilles.proxy.EntityProxyUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
 @SuppressWarnings(
@@ -57,6 +57,9 @@ public class ThriftEntityManagerTest
 	private EntityProxyBuilder interceptorBuilder;
 
 	@Mock
+	private EntityProxyUtil util;
+
+	@Mock
 	private EntityMeta entityMeta;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
@@ -70,6 +73,7 @@ public class ThriftEntityManagerTest
 		ReflectionTestUtils.setField(merger, "persister", persister);
 		ReflectionTestUtils.setField(em, "loader", loader);
 		ReflectionTestUtils.setField(em, "merger", merger);
+		ReflectionTestUtils.setField(em, "util", util);
 		ReflectionTestUtils.setField(em, "interceptorBuilder", interceptorBuilder);
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
@@ -84,11 +88,18 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_persist() throws Exception
 	{
-
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		em.persist(entity);
 
 		verify(persister).persist(entity, entityMeta);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_trying_to_persist_a_managed_entity() throws Exception
+	{
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
+		when(util.isProxy(entity)).thenReturn(true);
+		em.persist(entity);
 	}
 
 	@Test

@@ -22,8 +22,6 @@ import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptorBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JpaInterceptorBuilderTest
@@ -83,28 +81,4 @@ public class JpaInterceptorBuilderTest
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
 	}
 
-	@Test
-	public void should_build_with_lazy_loaded_set() throws Exception
-	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
-
-		Set<Method> lazyLoaded = new HashSet<Method>();
-
-		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
-		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getDao()).thenReturn(dao);
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
-
-		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
-		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
-
-		when(idMeta.getGetter()).thenReturn(idGetter);
-		when(idMeta.getSetter()).thenReturn(idSetter);
-
-		JpaInterceptor<Long> interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity).lazyLoaded(lazyLoaded).build();
-
-		assertThat(interceptor.getLazyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyLoaded()).isSameAs(lazyLoaded);
-
-	}
 }

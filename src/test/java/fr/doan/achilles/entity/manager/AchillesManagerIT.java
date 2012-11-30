@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
@@ -196,6 +195,45 @@ public class AchillesManagerIT
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
 		assertThat(age.right).isEqualTo(100L);
+
+		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
+
+		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
+
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+
+		assertThat(columns).hasSize(3);
+
+		Pair<Composite, Object> eve = columns.get(2);
+
+		assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
+		assertThat(eve.right).isEqualTo("eve");
+
+		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
+
+		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
+
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+
+		assertThat(columns).hasSize(2);
+
+		Pair<Composite, Object> FR = columns.get(0);
+
+		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
+		KeyValueHolder mapValue = (KeyValueHolder) FR.right;
+		assertThat(mapValue.getValue()).isEqualTo("FR");
 	}
 
 	@After

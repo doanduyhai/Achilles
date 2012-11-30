@@ -42,6 +42,11 @@ public class ThriftEntityManager implements EntityManager
 	public void persist(Object entity)
 	{
 		this.validateEntity(entity);
+		if (util.isProxy(entity))
+		{
+			throw new IllegalStateException("Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+		}
+
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
 
 		this.persister.persist(entity, entityMeta);
@@ -219,6 +224,6 @@ public class ThriftEntityManager implements EntityManager
 			throw new IllegalArgumentException("Cannot get identifier for entity " + entity.getClass().getCanonicalName());
 		}
 
-		Validator.validateNotNull(key, "Cannot get identifier for entity " + entity.getClass().getCanonicalName());
+		Validator.validateNotNull(key, "Primary key for entity shoud not be null");
 	}
 }

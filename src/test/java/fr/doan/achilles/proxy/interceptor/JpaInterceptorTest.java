@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,9 +28,11 @@ import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptorBuilder;
+import fr.doan.achilles.wrapper.ListWrapper;
+import fr.doan.achilles.wrapper.MapWrapper;
+import fr.doan.achilles.wrapper.SetWrapper;
 
 @SuppressWarnings(
 {
@@ -138,8 +143,8 @@ public class JpaInterceptorTest
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.isLazy()).thenReturn(true);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
 		when(lazyLoaded.contains(nameGetter)).thenReturn(false);
-
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
 		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
@@ -156,6 +161,8 @@ public class JpaInterceptorTest
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.isLazy()).thenReturn(true);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
+
 		when(lazyLoaded.contains(nameGetter)).thenReturn(true);
 
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
@@ -186,5 +193,50 @@ public class JpaInterceptorTest
 
 		verify(proxy).invoke(entity, args);
 		verify(dirtyMap).put(nameSetter, propertyMeta);
+	}
+
+	@Test
+	public void should_create_list_wrapper() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.isLazy()).thenReturn(false);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.LIST);
+
+		when(proxy.invoke(entity, null)).thenReturn(Arrays.asList("a"));
+
+		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(name).isInstanceOf(ListWrapper.class);
+	}
+
+	@Test
+	public void should_create_set_wrapper() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.isLazy()).thenReturn(false);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.SET);
+
+		when(proxy.invoke(entity, null)).thenReturn(new HashSet<String>());
+
+		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(name).isInstanceOf(SetWrapper.class);
+	}
+
+	@Test
+	public void should_create_map_wrapper() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.isLazy()).thenReturn(false);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+
+		when(proxy.invoke(entity, null)).thenReturn(new HashMap<Integer, String>());
+
+		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(name).isInstanceOf(MapWrapper.class);
 	}
 }

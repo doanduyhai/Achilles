@@ -356,4 +356,21 @@ public class EntityPersisterTest
 
 		verify(spy).persistMapProperty(entity, 1L, dao, mapPropertyMeta);
 	}
+
+	@Test
+	public void should_remove_property() throws Exception
+	{
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.MAP);
+
+		Composite start = new Composite();
+		Composite end = new Composite();
+
+		when(dao.buildCompositeComparatorStart("name", PropertyType.MAP)).thenReturn(start);
+		when(dao.buildCompositeComparatorEnd("name", PropertyType.MAP)).thenReturn(end);
+
+		persister.removeProperty(1L, dao, propertyMeta);
+
+		verify(dao).removeColumnRange(1L, start, end);
+	}
 }

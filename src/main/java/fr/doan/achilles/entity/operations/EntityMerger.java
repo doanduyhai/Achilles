@@ -1,6 +1,7 @@
 package fr.doan.achilles.entity.operations;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sf.cglib.proxy.Factory;
@@ -37,12 +38,21 @@ public class EntityMerger
 			JpaInterceptor<ID> interceptor = (JpaInterceptor<ID>) factory.getCallback(0);
 			GenericDao<ID> dao = entityMeta.getDao();
 
-			for (Entry<Method, PropertyMeta<?>> entry : interceptor.getDirtyMap().entrySet())
+			Map<Method, PropertyMeta<?>> dirtyMap = interceptor.getDirtyMap();
+
+			for (Entry<Method, PropertyMeta<?>> entry : dirtyMap.entrySet())
 			{
-				this.persister.persistProperty(entity, interceptor.getKey(), dao, entry.getValue());
+				PropertyMeta<?> propertyMeta = entry.getValue();
+				ID key = interceptor.getKey();
+				if (propertyMeta.propertyType().isMultiValue())
+				{
+					this.persister.removeProperty(key, dao, propertyMeta);
+				}
+				this.persister.persistProperty(entity, key, dao, propertyMeta);
 			}
 
-			proxy = (T) interceptorBuilder.build(interceptor.getTarget(), entityMeta, interceptor.getLazyLoaded());
+			dirtyMap.clear();
+			proxy = entity;
 		}
 		else
 		{
