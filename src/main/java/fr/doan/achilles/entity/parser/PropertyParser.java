@@ -13,9 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Basic;
-import javax.persistence.FetchType;
-
+import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.validation.Validator;
@@ -175,8 +173,7 @@ public class PropertyParser
 	private boolean isLazy(Field field)
 	{
 		boolean lazy = false;
-		Basic basic = field.getAnnotation(javax.persistence.Basic.class);
-		if (basic != null && basic.fetch() != null && basic.fetch() == FetchType.LAZY)
+		if (field.getAnnotation(Lazy.class) != null)
 		{
 			lazy = true;
 		}

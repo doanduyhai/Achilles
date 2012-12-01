@@ -14,6 +14,7 @@ import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Test;
 
+import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.metadata.ListPropertyMeta;
 import fr.doan.achilles.entity.metadata.MapPropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -95,7 +96,7 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			@Basic(fetch = FetchType.LAZY)
+			@Lazy
 			private List<String> friends;
 
 			public List<String> getFriends()
