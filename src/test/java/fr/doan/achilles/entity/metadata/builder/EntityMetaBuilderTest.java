@@ -19,7 +19,7 @@ import parser.entity.Bean;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,7 +45,7 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-		SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
+		SimpleMeta<String> simpleMeta = new SimpleMeta<String>();
 		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
 		simpleMeta.setGetter(getter);
 
@@ -84,7 +84,7 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-		SimplePropertyMeta<String> simpleMeta = new SimplePropertyMeta<String>();
+		SimpleMeta<String> simpleMeta = new SimpleMeta<String>();
 		propertyMetas.put("name", simpleMeta);
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);

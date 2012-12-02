@@ -1,5 +1,15 @@
 package fr.doan.achilles.entity.operations;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
@@ -15,7 +25,7 @@ import java.util.Map;
 import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.cassandra.model.MutatorImpl;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,12 +41,11 @@ import com.google.common.collect.Sets;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityPersisterTest
@@ -55,13 +64,13 @@ public class EntityPersisterTest
 	private PropertyMeta<String> propertyMeta;
 
 	@Mock
-	private ListPropertyMeta<String> listPropertyMeta;
+	private ListMeta<String> listMeta;
 
 	@Mock
-	private SetPropertyMeta<String> setPropertyMeta;
+	private SetMeta<String> setMeta;
 
 	@Mock
-	private MapPropertyMeta<Integer, String> mapPropertyMeta;
+	private MapMeta<Integer, String> mapMeta;
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -84,9 +93,9 @@ public class EntityPersisterTest
 	public void should_batch_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
@@ -99,9 +108,9 @@ public class EntityPersisterTest
 	public void should_persist_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
@@ -114,13 +123,13 @@ public class EntityPersisterTest
 	public void should_batch_list_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(method);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_LIST);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
 		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("friends", PropertyType.LAZY_LIST, 0)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("friends", PropertyType.LAZY_LIST, 1)).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(dao.buildComponentForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao, propertyMeta, mutator);
 
@@ -132,14 +141,14 @@ public class EntityPersisterTest
 	public void should_persist_list_property() throws Exception
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_LIST);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("friends", PropertyType.LAZY_LIST, 0)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("friends", PropertyType.LAZY_LIST, 1)).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(dao.buildComponentForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao, propertyMeta);
 
@@ -151,13 +160,13 @@ public class EntityPersisterTest
 	public void should_batch_set_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(method);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SET);
+		when(propertyMeta.propertyType()).thenReturn(SET);
 		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "George".hashCode())).thenReturn(composite);
-		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "Paul".hashCode())).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("followers", SET, "George".hashCode())).thenReturn(composite);
+		when(dao.buildComponentForProperty("followers", SET, "Paul".hashCode())).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao, propertyMeta, mutator);
 
@@ -170,13 +179,13 @@ public class EntityPersisterTest
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(propertyMeta.getGetter()).thenReturn(method);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SET);
+		when(propertyMeta.propertyType()).thenReturn(SET);
 		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "George".hashCode())).thenReturn(composite);
-		when(dao.buildCompositeForProperty("followers", PropertyType.SET, "Paul".hashCode())).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("followers", SET, "George".hashCode())).thenReturn(composite);
+		when(dao.buildComponentForProperty("followers", SET, "Paul".hashCode())).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao, propertyMeta);
 
@@ -188,7 +197,7 @@ public class EntityPersisterTest
 	public void should_batch_map_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(method);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
@@ -197,10 +206,10 @@ public class EntityPersisterTest
 		when(helper.getValueFromField(entity, method)).thenReturn(map);
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 1)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 2)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 3)).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao, propertyMeta, mutator);
 
@@ -227,7 +236,7 @@ public class EntityPersisterTest
 	public void should_persist_map_property() throws Exception
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
@@ -237,10 +246,10 @@ public class EntityPersisterTest
 		when(helper.getValueFromField(entity, method)).thenReturn(map);
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 1)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 2)).thenReturn(composite);
-		when(dao.buildCompositeForProperty("preferences", PropertyType.LAZY_MAP, 3)).thenReturn(composite);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao, propertyMeta);
 
@@ -266,7 +275,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_simple_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
+		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		EntityPersister spy = spy(persister);
 		spy.persistProperty(entity, 1L, dao, propertyMeta);
 		verify(spy).persistSimpleProperty(entity, 1L, dao, propertyMeta);
@@ -276,7 +285,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_simple_lazy_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_SIMPLE);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_SIMPLE);
 		EntityPersister spy = spy(persister);
 		spy.persistProperty(entity, 1L, dao, propertyMeta);
 
@@ -286,88 +295,88 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_list_property_into_object() throws Exception
 	{
-		when(listPropertyMeta.propertyType()).thenReturn(PropertyType.LIST);
+		when(listMeta.propertyType()).thenReturn(LIST);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, listPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, listMeta);
 
-		verify(spy).persistListProperty(entity, 1L, dao, listPropertyMeta);
+		verify(spy).persistListProperty(entity, 1L, dao, listMeta);
 
 	}
 
 	@Test
 	public void should_persist_list_lazy_property_into_object() throws Exception
 	{
-		when(listPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_LIST);
+		when(listMeta.propertyType()).thenReturn(LAZY_LIST);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, listPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, listMeta);
 
-		verify(spy).persistListProperty(entity, 1L, dao, listPropertyMeta);
+		verify(spy).persistListProperty(entity, 1L, dao, listMeta);
 	}
 
 	@Test
 	public void should_persist_set_property_into_object() throws Exception
 	{
-		when(setPropertyMeta.propertyType()).thenReturn(PropertyType.SET);
+		when(setMeta.propertyType()).thenReturn(SET);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, setPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, setMeta);
 
-		verify(spy).persistSetProperty(entity, 1L, dao, setPropertyMeta);
+		verify(spy).persistSetProperty(entity, 1L, dao, setMeta);
 	}
 
 	@Test
 	public void should_persist_set_lazy_property_into_object() throws Exception
 	{
-		when(setPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_SET);
+		when(setMeta.propertyType()).thenReturn(LAZY_SET);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, setPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, setMeta);
 
-		verify(spy).persistSetProperty(entity, 1L, dao, setPropertyMeta);
+		verify(spy).persistSetProperty(entity, 1L, dao, setMeta);
 	}
 
 	@Test
 	public void should_persist_map_property_into_object() throws Exception
 	{
-		when(mapPropertyMeta.propertyType()).thenReturn(PropertyType.MAP);
+		when(mapMeta.propertyType()).thenReturn(MAP);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, mapPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, mapMeta);
 
-		verify(spy).persistMapProperty(entity, 1L, dao, mapPropertyMeta);
+		verify(spy).persistMapProperty(entity, 1L, dao, mapMeta);
 
 	}
 
 	@Test
 	public void should_persist_map_lazy_property_into_object() throws Exception
 	{
-		when(mapPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(mapMeta.propertyType()).thenReturn(LAZY_MAP);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, mapPropertyMeta);
+		spy.persistProperty(entity, 1L, dao, mapMeta);
 
-		verify(spy).persistMapProperty(entity, 1L, dao, mapPropertyMeta);
+		verify(spy).persistMapProperty(entity, 1L, dao, mapMeta);
 	}
 
 	@Test
 	public void should_remove_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.MAP);
+		when(propertyMeta.propertyType()).thenReturn(MAP);
 
-		Composite start = new Composite();
-		Composite end = new Composite();
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
 
-		when(dao.buildCompositeComparatorStart("name", PropertyType.MAP)).thenReturn(start);
-		when(dao.buildCompositeComparatorEnd("name", PropertyType.MAP)).thenReturn(end);
+		when(dao.buildQueryComponentComparator("name", MAP, EQUAL)).thenReturn(start);
+		when(dao.buildQueryComponentComparator("name", MAP, GREATER_THAN_EQUAL)).thenReturn(end);
 
 		persister.removeProperty(1L, dao, propertyMeta);
 

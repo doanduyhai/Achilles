@@ -26,8 +26,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
-import fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -65,7 +65,7 @@ public class ColumnFamilyHelperTest
 	{
 		accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 		accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
-		idMeta = SimplePropertyMetaBuilder.simplePropertyMetaBuilder(Long.class).propertyName("id").accessors(accessors).build();
+		idMeta = SimpleMetaBuilder.simpleMetaBuilder(Long.class).propertyName("id").accessors(accessors).build();
 
 		ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
 		ReflectionTestUtils.setField(helper, "columnFamilyValidator", columnFamilyValidator);
@@ -167,7 +167,7 @@ public class ColumnFamilyHelperTest
 	{
 		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
 
-		SimplePropertyMeta<String> simplePropertyMeta = SimplePropertyMetaBuilder.simplePropertyMetaBuilder(String.class).propertyName("name")
+		SimpleMeta<String> simplePropertyMeta = SimpleMetaBuilder.simpleMetaBuilder(String.class).propertyName("name")
 				.accessors(accessors).build();
 
 		propertyMetas.put("name", simplePropertyMeta);

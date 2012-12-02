@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity.metadata;
 
-public class MapLazyPropertyMeta<K, V> extends MapPropertyMeta<K, V>
+public class MapLazyMeta<K, V> extends MapMeta<K, V>
 {
 	@Override
 	public PropertyType propertyType()

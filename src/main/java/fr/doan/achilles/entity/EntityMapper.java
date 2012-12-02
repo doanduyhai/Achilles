@@ -11,18 +11,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
+import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.holder.KeyValueHolder;
 
 @SuppressWarnings(
 {
@@ -32,7 +32,7 @@ import fr.doan.achilles.holder.KeyValueHolder;
 public class EntityMapper
 {
 
-	public <T, ID> void mapColumnsToBean(ID key, List<Pair<Composite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
+	public <T, ID> void mapColumnsToBean(ID key, List<Pair<DynamicComposite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();
@@ -43,7 +43,7 @@ public class EntityMapper
 
 		Map<String, PropertyMeta<?>> propertyMetas = entityMeta.getPropertyMetas();
 
-		for (Pair<Composite, Object> pair : columns)
+		for (Pair<DynamicComposite, Object> pair : columns)
 		{
 			byte[] type = pair.left.get(0, BYTE_SRZ);
 			String propertyName = pair.left.get(1, STRING_SRZ);
@@ -55,19 +55,19 @@ public class EntityMapper
 
 			else if (Arrays.equals(type, PropertyType.LIST.flag()))
 			{
-				ListPropertyMeta<?> listMeta = (ListPropertyMeta<?>) propertyMetas.get(propertyName);
+				ListMeta<?> listMeta = (ListMeta<?>) propertyMetas.get(propertyName);
 				addToList(listProperties, listMeta, listMeta.get(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.SET.flag()))
 			{
-				SetPropertyMeta<?> setMeta = (SetPropertyMeta<?>) propertyMetas.get(propertyName);
+				SetMeta<?> setMeta = (SetMeta<?>) propertyMetas.get(propertyName);
 				addToSet(setProperties, setMeta, setMeta.get(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.MAP.flag()))
 			{
-				MapPropertyMeta<?, ?> mapMeta = (MapPropertyMeta<?, ?>) propertyMetas.get(propertyName);
+				MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) propertyMetas.get(propertyName);
 				addToMap(mapProperties, mapMeta, (KeyValueHolder) pair.right);
 			}
 		}
@@ -89,7 +89,7 @@ public class EntityMapper
 
 	}
 
-	protected void addToList(Map<String, List> listProperties, ListPropertyMeta<?> listMeta, Object value)
+	protected void addToList(Map<String, List> listProperties, ListMeta<?> listMeta, Object value)
 	{
 		String propertyName = listMeta.getPropertyName();
 		List list = null;
@@ -105,7 +105,7 @@ public class EntityMapper
 		list.add(value);
 	}
 
-	protected void addToSet(Map<String, Set> setProperties, SetPropertyMeta<?> setMeta, Object value)
+	protected void addToSet(Map<String, Set> setProperties, SetMeta<?> setMeta, Object value)
 	{
 		String propertyName = setMeta.getPropertyName();
 
@@ -122,7 +122,7 @@ public class EntityMapper
 		set.add(value);
 	}
 
-	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapPropertyMeta<K, V> mapMeta, KeyValueHolder keyValueHolder)
+	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapMeta<K, V> mapMeta, KeyValueHolder keyValueHolder)
 	{
 		String propertyName = mapMeta.getPropertyName();
 

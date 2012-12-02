@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import static fr.doan.achilles.entity.metadata.builder.MapPropertyMetaBuilder.mapPropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.MapMetaBuilder.mapMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -9,13 +9,13 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import fr.doan.achilles.entity.metadata.MapLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.MapLazyMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
-public class MapPropertyMetaBuilderTest
+public class MapMetaBuilderTest
 {
 
 	@SuppressWarnings("unchecked")
@@ -27,7 +27,7 @@ public class MapPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getPreferences", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setPreferences", Map.class);
 
-		MapPropertyMeta<Integer, String> meta = (MapPropertyMeta<Integer, String>) mapPropertyMetaBuilder(Integer.class, String.class)
+		MapMeta<Integer, String> meta = (MapMeta<Integer, String>) mapMetaBuilder(Integer.class, String.class)
 				.propertyName("preferences").accessors(accessors).lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
@@ -50,12 +50,12 @@ public class MapPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getPreferences", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setPreferences", Map.class);
 
-		MapPropertyMeta<Integer, String> meta = (MapPropertyMeta<Integer, String>) mapPropertyMetaBuilder(Integer.class, String.class)
+		MapMeta<Integer, String> meta = (MapMeta<Integer, String>) mapMetaBuilder(Integer.class, String.class)
 				.propertyName("preferences").accessors(accessors).lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_MAP);
-		assertThat(meta).isInstanceOf(MapLazyPropertyMeta.class);
+		assertThat(meta).isInstanceOf(MapLazyMeta.class);
 
 	}
 
@@ -63,7 +63,7 @@ public class MapPropertyMetaBuilderTest
 	public void should_exception_when_missing_data() throws Exception
 	{
 
-		mapPropertyMetaBuilder(Integer.class, String.class).propertyName("name").build();
+		mapMetaBuilder(Integer.class, String.class).propertyName("name").build();
 
 	}
 

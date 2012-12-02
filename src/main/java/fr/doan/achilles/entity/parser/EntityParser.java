@@ -47,6 +47,7 @@ public class EntityParser
 				String propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
 				propertyMetas.put(propertyName, parser.parse(entityClass, field, propertyName));
 			}
+
 		}
 
 		if (idMeta == null)

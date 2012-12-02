@@ -1,11 +1,14 @@
 package fr.doan.achilles.entity.operations;
 
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.Validate;
@@ -13,11 +16,11 @@ import org.apache.commons.lang.Validate;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 
 public class EntityPersister
 {
@@ -73,14 +76,15 @@ public class EntityPersister
 	public <ID, V> void removeProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
 	{
 		Validate.notNull(key, "key value");
-		Composite start = dao.buildCompositeComparatorStart(propertyMeta.getPropertyName(), propertyMeta.propertyType());
-		Composite end = dao.buildCompositeComparatorEnd(propertyMeta.getPropertyName(), propertyMeta.propertyType());
+		DynamicComposite start = dao.buildQueryComponentComparator(propertyMeta.getPropertyName(), propertyMeta.propertyType(),
+				ComponentEquality.EQUAL);
+		DynamicComposite end = dao.buildQueryComponentComparator(propertyMeta.getPropertyName(), propertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		dao.removeColumnRange(key, start, end);
 	}
 
 	private <ID> void batchSimpleProperty(Object entity, ID key, GenericDao<ID> dao, PropertyMeta<?> propertyMeta, Mutator<ID> mutator)
 	{
-		Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
+		DynamicComposite name = dao.buildComponentForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
 		Object value = entityPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
 		dao.insertColumn(key, name, value, mutator);
 	}
@@ -99,7 +103,7 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), count);
+				DynamicComposite name = dao.buildComponentForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), count);
 				dao.insertColumn(key, name, value, mutator);
 				count++;
 			}
@@ -120,7 +124,7 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				Composite name = dao.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), value.hashCode());
+				DynamicComposite name = dao.buildComponentForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), value.hashCode());
 				dao.insertColumn(key, name, value, mutator);
 			}
 		}
@@ -141,8 +145,8 @@ public class EntityPersister
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				Composite name = dao
-						.buildCompositeForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), entry.getKey().hashCode());
+				DynamicComposite name = dao.buildComponentForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), entry.getKey()
+						.hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
 				dao.insertColumn(key, name, value, mutator);
@@ -169,15 +173,15 @@ public class EntityPersister
 				break;
 			case LIST:
 			case LAZY_LIST:
-				this.persistListProperty(entity, key, dao, (ListPropertyMeta<V>) propertyMeta);
+				this.persistListProperty(entity, key, dao, (ListMeta<V>) propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				this.persistSetProperty(entity, key, dao, (SetPropertyMeta<V>) propertyMeta);
+				this.persistSetProperty(entity, key, dao, (SetMeta<V>) propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				this.persistMapProperty(entity, key, dao, (MapPropertyMeta<?, V>) propertyMeta);
+				this.persistMapProperty(entity, key, dao, (MapMeta<?, V>) propertyMeta);
 				break;
 			default:
 				break;

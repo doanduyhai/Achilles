@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import static fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder.simpleMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -8,12 +8,12 @@ import java.lang.reflect.Method;
 import org.junit.Test;
 
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SimpleLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
+import fr.doan.achilles.entity.metadata.SimpleLazyMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
-public class SimplePropertyMetaBuilderTest
+public class SimpleMetaBuilderTest
 {
 
 	@Test
@@ -24,7 +24,7 @@ public class SimplePropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setName", String.class);
 
-		SimplePropertyMeta<String> meta = simplePropertyMetaBuilder(String.class).propertyName("name").accessors(accessors).lazy(false).build();
+		SimpleMeta<String> meta = simpleMetaBuilder(String.class).propertyName("name").accessors(accessors).lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -42,11 +42,11 @@ public class SimplePropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setName", String.class);
 
-		SimplePropertyMeta<String> meta = simplePropertyMetaBuilder(String.class).propertyName("name").accessors(accessors).lazy(true).build();
+		SimpleMeta<String> meta = simpleMetaBuilder(String.class).propertyName("name").accessors(accessors).lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_SIMPLE);
-		assertThat(meta).isInstanceOf(SimpleLazyPropertyMeta.class);
+		assertThat(meta).isInstanceOf(SimpleLazyMeta.class);
 
 	}
 
@@ -54,7 +54,7 @@ public class SimplePropertyMetaBuilderTest
 	public void should_exception_when_missing_data() throws Exception
 	{
 
-		simplePropertyMetaBuilder(String.class).propertyName("name").build();
+		simpleMetaBuilder(String.class).propertyName("name").build();
 
 	}
 

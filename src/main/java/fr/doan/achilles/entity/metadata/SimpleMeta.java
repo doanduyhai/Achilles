@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 import me.prettyprint.hector.api.Serializer;
 
-public class SimplePropertyMeta<V> implements PropertyMeta<V>
+public class SimpleMeta<V> implements PropertyMeta<V>
 {
 	private String propertyName;
 	private Class<V> valueClass;

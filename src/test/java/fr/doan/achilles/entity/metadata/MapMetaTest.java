@@ -7,13 +7,13 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class MapPropertyMetaTest
+public class MapMetaTest
 {
 	@Test
 	public void should_exception_when_cannot_instanciate() throws Exception
 	{
 
-		MapPropertyMeta<Integer, String> mapMeta = new MapPropertyMeta<Integer, String>();
+		MapMeta<Integer, String> mapMeta = new MapMeta<Integer, String>();
 		Map<?, String> map = mapMeta.newMapInstance();
 
 		assertThat(map).isInstanceOf(HashMap.class);

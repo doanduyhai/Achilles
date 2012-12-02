@@ -13,7 +13,7 @@ public enum PropertyType
 	LAZY_LIST(8, true),
 	LAZY_SET(9, true),
 	LAZY_MAP(10, true),
-	ITERATOR(11, true);
+	WIDE_MAP(11, true);
 
 	private int flag;
 	private boolean multiValue;

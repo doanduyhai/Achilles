@@ -9,10 +9,12 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
+import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
 
 public class JpaInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
@@ -36,7 +38,8 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 	}
 
 	@Override
-	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable
+	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
 	{
 		if (this.idGetter == method)
 		{
@@ -68,7 +71,8 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 			"rawtypes",
 			"unchecked"
 	})
-	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable
+	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
 	{
 		Object result;
 		PropertyMeta propertyMeta = this.getterMetas.get(method);
@@ -83,17 +87,23 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 			case LIST:
 			case LAZY_LIST:
 				List<?> list = (List<?>) proxy.invoke(target, args);
-				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap)
+						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case SET:
 			case LAZY_SET:
 				Set<?> set = (Set<?>) proxy.invoke(target, args);
-				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap)
+						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case MAP:
 			case LAZY_MAP:
 				Map<?, ?> map = (Map<?, ?>) proxy.invoke(target, args);
-				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap)
+						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				break;
+			case WIDE_MAP:
+				result = buildWideMapWrapper(propertyMeta);
 				break;
 			default:
 				result = proxy.invoke(target, args);
@@ -102,7 +112,29 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		return result;
 	}
 
-	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable
+	@SuppressWarnings("unchecked")
+	private <V> Object buildWideMapWrapper(PropertyMeta<V> propertyMeta)
+	{
+		Object result;
+
+		WideMapMeta<?, V> meta = (WideMapMeta<?, V>) propertyMeta;
+
+		if (meta.isSingleKey())
+		{
+
+			result = WideMapWrapperBuilder.builder(key, dao, meta).build();
+		}
+		else
+		{
+			WideMapMeta<?, V> multiKeyMeta = (WideMapMeta<?, V>) propertyMeta;
+		}
+
+		result = null;
+		return result;
+	}
+
+	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
 	{
 		Object result;
 		this.dirtyMap.put(method, this.setterMetas.get(method));

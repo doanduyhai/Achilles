@@ -10,7 +10,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class GenericDaoTest
 	public void should_build_composite_for_simple_property() throws Exception
 	{
 
-		Composite comp = dao.buildCompositeForProperty("name", SIMPLE, 0);
+		DynamicComposite comp = dao.buildComponentForProperty("name", SIMPLE, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("name");
@@ -59,7 +59,7 @@ public class GenericDaoTest
 	public void should_build_composite_for_list_property() throws Exception
 	{
 
-		Composite comp = dao.buildCompositeForProperty("friends", LIST, 0);
+		DynamicComposite comp = dao.buildComponentForProperty("friends", LIST, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(LIST.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
@@ -70,7 +70,7 @@ public class GenericDaoTest
 	public void should_build_composite_for_set_property() throws Exception
 	{
 
-		Composite comp = dao.buildCompositeForProperty("followers", SET, 12345);
+		DynamicComposite comp = dao.buildComponentForProperty("followers", SET, 12345);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SET.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("followers");
@@ -81,7 +81,7 @@ public class GenericDaoTest
 	public void should_build_composite_for_map_property() throws Exception
 	{
 
-		Composite comp = dao.buildCompositeForProperty("preferences", MAP, -123933);
+		DynamicComposite comp = dao.buildComponentForProperty("preferences", MAP, -123933);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(MAP.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("preferences");
@@ -92,7 +92,7 @@ public class GenericDaoTest
 	public void should_build_start_composite_for_eager_fetch() throws Exception
 	{
 
-		Composite comp = (Composite) ReflectionTestUtils.getField(dao, "startCompositeForEagerFetch");
+		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao, "startCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -102,7 +102,7 @@ public class GenericDaoTest
 	public void should_build_end_composite_for_eager_fetch() throws Exception
 	{
 
-		Composite comp = (Composite) ReflectionTestUtils.getField(dao, "endCompositeForEagerFetch");
+		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao, "endCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.GREATER_THAN_EQUAL);
@@ -111,7 +111,7 @@ public class GenericDaoTest
 	@Test
 	public void should_build_composite_comparator_start_inclusive() throws Exception
 	{
-		Composite comp = dao.buildCompositeComparatorStart("friends", PropertyType.LIST, 1, false);
+		DynamicComposite comp = dao.buildQueryComponentComparatorStart("friends", PropertyType.LIST, 1, false);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -126,7 +126,7 @@ public class GenericDaoTest
 	@Test
 	public void should_build_composite_comparator_start_exlusive() throws Exception
 	{
-		Composite comp = dao.buildCompositeComparatorStart("friends", PropertyType.LIST, 1, true);
+		DynamicComposite comp = dao.buildQueryComponentComparatorStart("friends", PropertyType.LIST, 1, true);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
@@ -141,7 +141,7 @@ public class GenericDaoTest
 	@Test
 	public void should_build_composite_comparator_end_inclusive() throws Exception
 	{
-		Composite comp = dao.buildCompositeComparatorEnd("friends", PropertyType.LIST, 4, false);
+		DynamicComposite comp = dao.buildQueryComponentComparatorEnd("friends", PropertyType.LIST, 4, false);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -156,7 +156,7 @@ public class GenericDaoTest
 	@Test
 	public void should_build_composite_comparator_end_exlusive() throws Exception
 	{
-		Composite comp = dao.buildCompositeComparatorEnd("friends", PropertyType.LIST, 4, true);
+		DynamicComposite comp = dao.buildQueryComponentComparatorEnd("friends", PropertyType.LIST, 4, true);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -169,9 +169,9 @@ public class GenericDaoTest
 	}
 
 	@Test
-	public void should_build_composite_comparator_start() throws Exception
+	public void should_build_composite_comparator() throws Exception
 	{
-		Composite comp = dao.buildCompositeComparatorStart("friends", PropertyType.LIST);
+		DynamicComposite comp = dao.buildQueryComponentComparator("friends", PropertyType.LIST, ComponentEquality.EQUAL);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -181,15 +181,4 @@ public class GenericDaoTest
 
 	}
 
-	@Test
-	public void should_build_composite_comparator_end() throws Exception
-	{
-		Composite comp = dao.buildCompositeComparatorEnd("friends", PropertyType.LIST);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.GREATER_THAN_EQUAL);
-	}
 }

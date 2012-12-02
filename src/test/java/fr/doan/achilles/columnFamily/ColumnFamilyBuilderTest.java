@@ -57,7 +57,7 @@ public class ColumnFamilyBuilderTest
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
 		assertThat(cfDef.getName()).isEqualTo("myCF");
-		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
+		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.DYNAMICCOMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
 
 		// assertThat(cfDef.getColumnMetadata()).hasSize(1);

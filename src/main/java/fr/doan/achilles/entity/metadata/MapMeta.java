@@ -5,7 +5,7 @@ import java.util.Map;
 
 import me.prettyprint.hector.api.Serializer;
 
-public class MapPropertyMeta<K, V> extends SimplePropertyMeta<V>
+public class MapMeta<K, V> extends SimpleMeta<V>
 {
 
 	private Class<K> keyClass;

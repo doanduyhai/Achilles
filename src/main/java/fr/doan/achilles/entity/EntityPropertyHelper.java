@@ -32,11 +32,8 @@ public class EntityPropertyHelper
 		return "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 	}
 
-	public Method[] findAccessors(Class<?> beanClass, Field field)
+	public Method findGetter(Class<?> beanClass, Field field)
 	{
-
-		Method[] accessors = new Method[2];
-
 		String fieldName = field.getName();
 
 		try
@@ -52,16 +49,19 @@ public class EntityPropertyHelper
 			{
 				throw new InvalidBeanException("The getter for field '" + fieldName + "' does not return correct type");
 			}
-			else
-			{
-				accessors[0] = getterMethod;
-			}
+
+			return getterMethod;
 
 		}
 		catch (NoSuchMethodException e)
 		{
 			throw new InvalidBeanException("The getter for field '" + fieldName + "' does not exist");
 		}
+	}
+
+	public Method findSetter(Class<?> beanClass, Field field)
+	{
+		String fieldName = field.getName();
 
 		try
 		{
@@ -76,16 +76,23 @@ public class EntityPropertyHelper
 			{
 				throw new InvalidBeanException("The setter for field '" + fieldName + "' does not exist");
 			}
-			else
-			{
-				accessors[1] = setterMethod;
-			}
+
+			return setterMethod;
 
 		}
 		catch (NoSuchMethodException e)
 		{
 			throw new InvalidBeanException("The setter for field '" + fieldName + "' does not exist or is incorrect");
 		}
+	}
+
+	public Method[] findAccessors(Class<?> beanClass, Field field)
+	{
+
+		Method[] accessors = new Method[2];
+
+		accessors[0] = findGetter(beanClass, field);
+		accessors[1] = findSetter(beanClass, field);
 
 		return accessors;
 	}

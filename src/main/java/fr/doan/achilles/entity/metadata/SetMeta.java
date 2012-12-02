@@ -3,7 +3,7 @@ package fr.doan.achilles.entity.metadata;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetPropertyMeta<V> extends SimplePropertyMeta<V>
+public class SetMeta<V> extends SimpleMeta<V>
 {
 	public Set<V> newSetInstance()
 	{

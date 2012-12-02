@@ -7,13 +7,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class ListPropertyMetaTest
+public class ListMetaTest
 {
 
 	@Test
 	public void should_exception_when_cannot_instanciate() throws Exception
 	{
-		ListPropertyMeta<String> listMeta = new ListPropertyMeta<String>();
+		ListMeta<String> listMeta = new ListMeta<String>();
 		List<String> list = listMeta.newListInstance();
 
 		assertThat(list).isInstanceOf(ArrayList.class);

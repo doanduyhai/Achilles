@@ -26,11 +26,11 @@ import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.BeanWithNonPublicSerialVersionUID;
 import parser.entity.BeanWithNotSerializableId;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
+import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
@@ -64,9 +64,9 @@ public class EntityParserTest
 
 		PropertyMeta<?> name = meta.getPropertyMetas().get("name");
 		PropertyMeta<?> age = meta.getPropertyMetas().get("age_in_year");
-		ListPropertyMeta<String> friends = (ListPropertyMeta<String>) meta.getPropertyMetas().get("friends");
-		SetPropertyMeta<String> followers = (SetPropertyMeta<String>) meta.getPropertyMetas().get("followers");
-		MapPropertyMeta<Integer, String> preferences = (MapPropertyMeta<Integer, String>) meta.getPropertyMetas().get("preferences");
+		ListMeta<String> friends = (ListMeta<String>) meta.getPropertyMetas().get("friends");
+		SetMeta<String> followers = (SetMeta<String>) meta.getPropertyMetas().get("followers");
+		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas().get("preferences");
 
 		assertThat(name).isNotNull();
 		assertThat(age).isNotNull();

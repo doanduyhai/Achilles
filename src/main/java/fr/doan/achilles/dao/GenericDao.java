@@ -3,7 +3,7 @@ package fr.doan.achilles.dao;
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
-import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
+import static fr.doan.achilles.serializer.Utils.DYNA_COMP_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
@@ -13,7 +13,7 @@ import java.util.List;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 
@@ -22,11 +22,11 @@ import org.apache.cassandra.utils.Pair;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.validation.Validator;
 
-public class GenericDao<K> extends AbstractDao<K, Composite, Object>
+public class GenericDao<K> extends AbstractDao<K, DynamicComposite, Object>
 {
 
-	private Composite startCompositeForEagerFetch;
-	private Composite endCompositeForEagerFetch;
+	private DynamicComposite startCompositeForEagerFetch;
+	private DynamicComposite endCompositeForEagerFetch;
 
 	protected GenericDao() {
 		initComposites();
@@ -39,16 +39,16 @@ public class GenericDao<K> extends AbstractDao<K, Composite, Object>
 		Validator.validateNotNull(keySrz, "keySerializer for columnFamily ='" + columnFamily + "'");
 		keySerializer = keySrz;
 		columnFamily = cf;
-		columnNameSerializer = COMPOSITE_SRZ;
+		columnNameSerializer = DYNA_COMP_SRZ;
 		valueSerializer = OBJECT_SRZ;
 	}
 
 	private void initComposites()
 	{
-		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(), ComponentEquality.GREATER_THAN_EQUAL);
 	}
 
@@ -57,36 +57,46 @@ public class GenericDao<K> extends AbstractDao<K, Composite, Object>
 		return HFactory.createMutator(this.keyspace, this.keySerializer);
 	}
 
-	public Composite buildCompositeForProperty(String propertyName, PropertyType type, int hashOrPosition)
+	public DynamicComposite buildComponentForProperty(String propertyName, PropertyType type, int hashOrPosition)
 	{
-		Composite composite = new Composite();
+		DynamicComposite composite = new DynamicComposite();
 		composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName());
 		composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
 		composite.setComponent(2, hashOrPosition, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
 		return composite;
 	}
 
-	public Composite buildCompositeComparatorStart(String propertyName, PropertyType type)
+	public <T> DynamicComposite buildComponentForProperty(String propertyName, PropertyType type, T value, Serializer<T> valueSerializer)
 	{
-		Composite composite = new Composite();
+		DynamicComposite composite = new DynamicComposite();
+		composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(2, value, valueSerializer, valueSerializer.getComparatorType().getTypeName());
+		return composite;
+	}
+
+	public DynamicComposite buildQueryComponentComparator(String propertyName, PropertyType type, Object value, ComponentEquality equality)
+	{
+		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+		composite.addComponent(2, value, equality);
 
 		return composite;
 	}
 
-	public Composite buildCompositeComparatorEnd(String propertyName, PropertyType type)
+	public DynamicComposite buildQueryComponentComparator(String propertyName, PropertyType type, ComponentEquality equality)
 	{
-		Composite composite = new Composite();
+		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.GREATER_THAN_EQUAL);
+		composite.addComponent(1, propertyName, equality);
 
 		return composite;
 	}
 
-	public Composite buildCompositeComparatorStart(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
+	public DynamicComposite buildQueryComponentComparatorStart(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
 	{
-		Composite composite = new Composite();
+		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
 		if (exclusive)
@@ -101,9 +111,9 @@ public class GenericDao<K> extends AbstractDao<K, Composite, Object>
 		return composite;
 	}
 
-	public Composite buildCompositeComparatorEnd(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
+	public DynamicComposite buildQueryComponentComparatorEnd(String propertyName, PropertyType type, int hashOrPosition, boolean exclusive)
 	{
-		Composite composite = new Composite();
+		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
 		if (exclusive)
@@ -118,7 +128,7 @@ public class GenericDao<K> extends AbstractDao<K, Composite, Object>
 		return composite;
 	}
 
-	public List<Pair<Composite, Object>> eagerFetchEntity(K key)
+	public List<Pair<DynamicComposite, Object>> eagerFetchEntity(K key)
 	{
 
 		return this.findColumnsRange(key, startCompositeForEagerFetch, endCompositeForEagerFetch, false, Integer.MAX_VALUE);

@@ -97,6 +97,18 @@ public abstract class AbstractDao<K, N, V>
 		return result;
 	}
 
+	public void setValue(K key, N name, V value)
+	{
+		HFactory.createMutator(keyspace, keySerializer)
+				.addInsertion(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer)).execute();
+	}
+
+	public void setValue(K key, N name, V value, int ttl)
+	{
+		HFactory.createMutator(keyspace, keySerializer)
+				.addInsertion(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl)).execute();
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<HColumn<N, V>> getColumns(K key, List<N> names)
 	{

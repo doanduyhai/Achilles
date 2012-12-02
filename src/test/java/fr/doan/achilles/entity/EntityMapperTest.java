@@ -16,7 +16,7 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
@@ -29,11 +29,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
+import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 
 @SuppressWarnings(
 {
@@ -120,7 +120,7 @@ public class EntityMapperTest
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();
-		ListPropertyMeta<?> listMeta = (ListPropertyMeta<?>) entityMeta.getPropertyMetas().get("friends");
+		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
 		mapper.addToList(listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(1);
@@ -134,7 +134,7 @@ public class EntityMapperTest
 
 		Map<String, List> listProperties = new HashMap<String, List>();
 		listProperties.put("test", Arrays.asList("test1", "test2"));
-		ListPropertyMeta<?> listMeta = (ListPropertyMeta<?>) entityMeta.getPropertyMetas().get("friends");
+		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
 		mapper.addToList(listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(2);
@@ -150,7 +150,7 @@ public class EntityMapperTest
 	{
 
 		Map<String, Set> setProperties = new HashMap<String, Set>();
-		SetPropertyMeta<?> setMeta = (SetPropertyMeta<?>) entityMeta.getPropertyMetas().get("followers");
+		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
 		mapper.addToSet(setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(1);
@@ -167,7 +167,7 @@ public class EntityMapperTest
 		set.addAll(Arrays.asList("test1", "test2"));
 		setProperties.put("test", set);
 
-		SetPropertyMeta<?> setMeta = (SetPropertyMeta<?>) entityMeta.getPropertyMetas().get("followers");
+		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
 		mapper.addToSet(setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(2);
@@ -183,7 +183,7 @@ public class EntityMapperTest
 	{
 
 		Map<String, Map> mapProperties = new HashMap<String, Map>();
-		MapPropertyMeta<?, ?> mapMeta = (MapPropertyMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
 		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(1);
@@ -202,7 +202,7 @@ public class EntityMapperTest
 		map.put(3, "75014");
 		mapProperties.put("test", map);
 
-		MapPropertyMeta<?, ?> mapMeta = (MapPropertyMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
 		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(2);
@@ -220,19 +220,19 @@ public class EntityMapperTest
 
 		CompleteBean entity = new CompleteBean();
 
-		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 
-		columns.add(new Pair<Composite, Object>(buildSimplePropertyComposite("name"), "name"));
+		columns.add(new Pair<DynamicComposite, Object>(buildSimplePropertyComposite("name"), "name"));
 
-		columns.add(new Pair<Composite, Object>(buildListPropertyComposite("friends"), "foo"));
-		columns.add(new Pair<Composite, Object>(buildListPropertyComposite("friends"), "bar"));
+		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "foo"));
+		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "bar"));
 
-		columns.add(new Pair<Composite, Object>(buildSetPropertyComposite("followers"), "George"));
-		columns.add(new Pair<Composite, Object>(buildSetPropertyComposite("followers"), "Paul"));
+		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"), "George"));
+		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"), "Paul"));
 
-		columns.add(new Pair<Composite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(1, "FR")));
-		columns.add(new Pair<Composite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(2, "Paris")));
-		columns.add(new Pair<Composite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(3, "75014")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(1, "FR")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(2, "Paris")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(3, "75014")));
 
 		mapper.mapColumnsToBean(2L, columns, entityMeta, entity);
 
@@ -251,33 +251,33 @@ public class EntityMapperTest
 		assertThat(entity.getPreferences().get(3)).isEqualTo("75014");
 	}
 
-	private Composite buildSimplePropertyComposite(String propertyName)
+	private DynamicComposite buildSimplePropertyComposite(String propertyName)
 	{
-		Composite comp = new Composite();
+		DynamicComposite comp = new DynamicComposite();
 		comp.add(0, SIMPLE.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private Composite buildListPropertyComposite(String propertyName)
+	private DynamicComposite buildListPropertyComposite(String propertyName)
 	{
-		Composite comp = new Composite();
+		DynamicComposite comp = new DynamicComposite();
 		comp.add(0, LIST.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private Composite buildSetPropertyComposite(String propertyName)
+	private DynamicComposite buildSetPropertyComposite(String propertyName)
 	{
-		Composite comp = new Composite();
+		DynamicComposite comp = new DynamicComposite();
 		comp.add(0, SET.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private Composite buildMapPropertyComposite(String propertyName)
+	private DynamicComposite buildMapPropertyComposite(String propertyName)
 	{
-		Composite comp = new Composite();
+		DynamicComposite comp = new DynamicComposite();
 		comp.add(0, MAP.flag());
 		comp.add(1, propertyName);
 		return comp;

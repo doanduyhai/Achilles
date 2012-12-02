@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import static fr.doan.achilles.entity.metadata.builder.SetPropertyMetaBuilder.setPropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.SetMetaBuilder.setMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -10,12 +10,12 @@ import java.util.Set;
 import org.junit.Test;
 
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
+import fr.doan.achilles.entity.metadata.SetLazyMeta;
+import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
-public class SetPropertyMetaBuilderTest
+public class SetMetaBuilderTest
 {
 
 	@Test
@@ -26,7 +26,7 @@ public class SetPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFollowers", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFollowers", Set.class);
 
-		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).propertyName("followers").accessors(accessors)
+		SetMeta<String> meta = (SetMeta<String>) setMetaBuilder(String.class).propertyName("followers").accessors(accessors)
 				.lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
@@ -45,12 +45,12 @@ public class SetPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFollowers", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFollowers", Set.class);
 
-		SetPropertyMeta<String> meta = (SetPropertyMeta<String>) setPropertyMetaBuilder(String.class).propertyName("followers").accessors(accessors)
+		SetMeta<String> meta = (SetMeta<String>) setMetaBuilder(String.class).propertyName("followers").accessors(accessors)
 				.lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_SET);
-		assertThat(meta).isInstanceOf(SetLazyPropertyMeta.class);
+		assertThat(meta).isInstanceOf(SetLazyMeta.class);
 
 	}
 
@@ -58,7 +58,7 @@ public class SetPropertyMetaBuilderTest
 	public void should_exception_when_missing_data() throws Exception
 	{
 
-		setPropertyMetaBuilder(String.class).propertyName("name").build();
+		setMetaBuilder(String.class).propertyName("name").build();
 
 	}
 

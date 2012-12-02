@@ -1,5 +1,15 @@
 package fr.doan.achilles.entity.operations;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -16,7 +26,7 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
@@ -30,12 +40,11 @@ import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityLoaderTest
@@ -54,13 +63,13 @@ public class EntityLoaderTest
 	private PropertyMeta<String> propertyMeta;
 
 	@Mock
-	private ListPropertyMeta<String> listPropertyMeta;
+	private ListMeta<String> listMeta;
 
 	@Mock
-	private SetPropertyMeta<String> setPropertyMeta;
+	private SetMeta<String> setMeta;
 
 	@Mock
-	private MapPropertyMeta<Integer, String> mapPropertyMeta;
+	private MapMeta<Integer, String> mapMeta;
 
 	@Mock
 	private EntityMapper mapper;
@@ -79,8 +88,8 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_entity() throws Exception
 	{
-		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
-		columns.add(new Pair<Composite, Object>(new Composite(), ""));
+		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+		columns.add(new Pair<DynamicComposite, Object>(new DynamicComposite(), ""));
 
 		when(entityMeta.getDao()).thenReturn(dao);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
@@ -92,7 +101,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_not_load_entity_because_not_found() throws Exception
 	{
-		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 
 		when(entityMeta.getDao()).thenReturn(dao);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
@@ -115,9 +124,9 @@ public class EntityLoaderTest
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.get("name")).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
-		Composite composite = new Composite();
-		when(dao.buildCompositeForProperty("name", PropertyType.SIMPLE, 0)).thenReturn(composite);
+		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		DynamicComposite composite = new DynamicComposite();
+		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(dao.getValue(1L, composite)).thenReturn("name");
 
 		String value = (String) loader.loadSimpleProperty(1L, dao, propertyMeta);
@@ -127,25 +136,25 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_list_property() throws Exception
 	{
-		when(listPropertyMeta.getPropertyName()).thenReturn("friends");
-		when(listPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_LIST);
+		when(listMeta.getPropertyName()).thenReturn("friends");
+		when(listMeta.propertyType()).thenReturn(LAZY_LIST);
 
-		Composite start = new Composite();
-		Composite end = new Composite();
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<Composite, Object>> friends = new ArrayList<Pair<Composite, Object>>();
-		friends.add(new Pair<Composite, Object>(start, "foo"));
-		friends.add(new Pair<Composite, Object>(end, "bar"));
+		List<Pair<DynamicComposite, Object>> friends = new ArrayList<Pair<DynamicComposite, Object>>();
+		friends.add(new Pair<DynamicComposite, Object>(start, "foo"));
+		friends.add(new Pair<DynamicComposite, Object>(end, "bar"));
 
-		when(dao.buildCompositeComparatorStart("friends", PropertyType.LAZY_LIST)).thenReturn(start);
-		when(dao.buildCompositeComparatorEnd("friends", PropertyType.LAZY_LIST)).thenReturn(end);
+		when(dao.buildQueryComponentComparator("friends", LAZY_LIST, EQUAL)).thenReturn(start);
+		when(dao.buildQueryComponentComparator("friends", LAZY_LIST, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(friends);
 
-		when(listPropertyMeta.newListInstance()).thenReturn(new ArrayList<String>());
-		when((String) listPropertyMeta.get("foo")).thenReturn("foo");
-		when((String) listPropertyMeta.get("bar")).thenReturn("bar");
+		when(listMeta.newListInstance()).thenReturn(new ArrayList<String>());
+		when((String) listMeta.get("foo")).thenReturn("foo");
+		when((String) listMeta.get("bar")).thenReturn("bar");
 
-		List<String> value = loader.loadListProperty(1L, dao, listPropertyMeta);
+		List<String> value = loader.loadListProperty(1L, dao, listMeta);
 
 		assertThat(value).hasSize(2);
 		assertThat(value).containsExactly("foo", "bar");
@@ -154,25 +163,25 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_set_property() throws Exception
 	{
-		when(setPropertyMeta.getPropertyName()).thenReturn("followers");
-		when(setPropertyMeta.propertyType()).thenReturn(PropertyType.SET);
+		when(setMeta.getPropertyName()).thenReturn("followers");
+		when(setMeta.propertyType()).thenReturn(SET);
 
-		Composite start = new Composite();
-		Composite end = new Composite();
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<Composite, Object>> followers = new ArrayList<Pair<Composite, Object>>();
-		followers.add(new Pair<Composite, Object>(start, "George"));
-		followers.add(new Pair<Composite, Object>(end, "Paul"));
+		List<Pair<DynamicComposite, Object>> followers = new ArrayList<Pair<DynamicComposite, Object>>();
+		followers.add(new Pair<DynamicComposite, Object>(start, "George"));
+		followers.add(new Pair<DynamicComposite, Object>(end, "Paul"));
 
-		when(dao.buildCompositeComparatorStart("followers", PropertyType.SET)).thenReturn(start);
-		when(dao.buildCompositeComparatorEnd("followers", PropertyType.SET)).thenReturn(end);
+		when(dao.buildQueryComponentComparator("followers", SET, EQUAL)).thenReturn(start);
+		when(dao.buildQueryComponentComparator("followers", SET, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(followers);
 
-		when(setPropertyMeta.newSetInstance()).thenReturn(new HashSet<String>());
-		when((String) setPropertyMeta.get("George")).thenReturn("George");
-		when((String) setPropertyMeta.get("Paul")).thenReturn("Paul");
+		when(setMeta.newSetInstance()).thenReturn(new HashSet<String>());
+		when((String) setMeta.get("George")).thenReturn("George");
+		when((String) setMeta.get("Paul")).thenReturn("Paul");
 
-		Set<String> value = loader.loadSetProperty(1L, dao, setPropertyMeta);
+		Set<String> value = loader.loadSetProperty(1L, dao, setMeta);
 
 		assertThat(value).hasSize(2);
 		assertThat(value).contains("George", "Paul");
@@ -181,29 +190,29 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_map_property() throws Exception
 	{
-		when(mapPropertyMeta.getPropertyName()).thenReturn("preferences");
-		when(mapPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(mapMeta.getPropertyName()).thenReturn("preferences");
+		when(mapMeta.propertyType()).thenReturn(LAZY_MAP);
 
-		Composite start = new Composite();
-		Composite middle = new Composite();
-		Composite end = new Composite();
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite middle = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<Composite, Object>> preferences = new ArrayList<Pair<Composite, Object>>();
-		preferences.add(new Pair<Composite, Object>(start, new KeyValueHolder(1, "FR")));
-		preferences.add(new Pair<Composite, Object>(middle, new KeyValueHolder(2, "Paris")));
-		preferences.add(new Pair<Composite, Object>(end, new KeyValueHolder(3, "75014")));
+		List<Pair<DynamicComposite, Object>> preferences = new ArrayList<Pair<DynamicComposite, Object>>();
+		preferences.add(new Pair<DynamicComposite, Object>(start, new KeyValueHolder(1, "FR")));
+		preferences.add(new Pair<DynamicComposite, Object>(middle, new KeyValueHolder(2, "Paris")));
+		preferences.add(new Pair<DynamicComposite, Object>(end, new KeyValueHolder(3, "75014")));
 
-		when(dao.buildCompositeComparatorStart("preferences", PropertyType.LAZY_MAP)).thenReturn(start);
-		when(dao.buildCompositeComparatorEnd("preferences", PropertyType.LAZY_MAP)).thenReturn(end);
+		when(dao.buildQueryComponentComparator("preferences", LAZY_MAP, EQUAL)).thenReturn(start);
+		when(dao.buildQueryComponentComparator("preferences", LAZY_MAP, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(preferences);
 
-		when(mapPropertyMeta.getKeyClass()).thenReturn(Integer.class);
+		when(mapMeta.getKeyClass()).thenReturn(Integer.class);
 
-		when((String) mapPropertyMeta.get("FR")).thenReturn("FR");
-		when((String) mapPropertyMeta.get("Paris")).thenReturn("Paris");
-		when((String) mapPropertyMeta.get("75014")).thenReturn("75014");
+		when((String) mapMeta.get("FR")).thenReturn("FR");
+		when((String) mapMeta.get("Paris")).thenReturn("Paris");
+		when((String) mapMeta.get("75014")).thenReturn("75014");
 
-		Map<Integer, String> value = loader.loadMapProperty(1L, dao, mapPropertyMeta);
+		Map<Integer, String> value = loader.loadMapProperty(1L, dao, mapMeta);
 
 		assertThat(value).hasSize(3);
 		assertThat(value).containsKey(1);
@@ -217,7 +226,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_simple_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
+		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		EntityLoader spy = spy(loader);
 		spy.loadPropertyIntoObject(bean, 1L, dao, propertyMeta);
 
@@ -228,7 +237,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_simple_lazy_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_SIMPLE);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_SIMPLE);
 		EntityLoader spy = spy(loader);
 		spy.loadPropertyIntoObject(bean, 1L, dao, propertyMeta);
 
@@ -239,66 +248,66 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_list_property_into_object() throws Exception
 	{
-		when(listPropertyMeta.propertyType()).thenReturn(PropertyType.LIST);
+		when(listMeta.propertyType()).thenReturn(LIST);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, listPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, listMeta);
 
-		verify(spy).loadListProperty(1L, dao, listPropertyMeta);
-		verify(listPropertyMeta).getSetter();
+		verify(spy).loadListProperty(1L, dao, listMeta);
+		verify(listMeta).getSetter();
 	}
 
 	@Test
 	public void should_load_list_lazy_property_into_object() throws Exception
 	{
-		when(listPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_LIST);
+		when(listMeta.propertyType()).thenReturn(LAZY_LIST);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, listPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, listMeta);
 
-		verify(spy).loadListProperty(1L, dao, listPropertyMeta);
-		verify(listPropertyMeta).getSetter();
+		verify(spy).loadListProperty(1L, dao, listMeta);
+		verify(listMeta).getSetter();
 	}
 
 	@Test
 	public void should_load_set_property_into_object() throws Exception
 	{
-		when(setPropertyMeta.propertyType()).thenReturn(PropertyType.SET);
+		when(setMeta.propertyType()).thenReturn(SET);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, setPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, setMeta);
 
-		verify(spy).loadSetProperty(1L, dao, setPropertyMeta);
-		verify(setPropertyMeta).getSetter();
+		verify(spy).loadSetProperty(1L, dao, setMeta);
+		verify(setMeta).getSetter();
 	}
 
 	@Test
 	public void should_load_set_lazy_property_into_object() throws Exception
 	{
-		when(setPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_SET);
+		when(setMeta.propertyType()).thenReturn(LAZY_SET);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, setPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, setMeta);
 
-		verify(spy).loadSetProperty(1L, dao, setPropertyMeta);
-		verify(setPropertyMeta).getSetter();
+		verify(spy).loadSetProperty(1L, dao, setMeta);
+		verify(setMeta).getSetter();
 	}
 
 	@Test
 	public void should_load_map_property_into_object() throws Exception
 	{
-		when(mapPropertyMeta.propertyType()).thenReturn(PropertyType.MAP);
+		when(mapMeta.propertyType()).thenReturn(MAP);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, mapPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, mapMeta);
 
-		verify(spy).loadMapProperty(1L, dao, mapPropertyMeta);
-		verify(mapPropertyMeta).getSetter();
+		verify(spy).loadMapProperty(1L, dao, mapMeta);
+		verify(mapMeta).getSetter();
 	}
 
 	@Test
 	public void should_load_map_lazy_property_into_object() throws Exception
 	{
-		when(mapPropertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(mapMeta.propertyType()).thenReturn(LAZY_MAP);
 		EntityLoader spy = spy(loader);
-		spy.loadPropertyIntoObject(bean, 1L, dao, mapPropertyMeta);
+		spy.loadPropertyIntoObject(bean, 1L, dao, mapMeta);
 
-		verify(spy).loadMapProperty(1L, dao, mapPropertyMeta);
-		verify(mapPropertyMeta).getSetter();
+		verify(spy).loadMapProperty(1L, dao, mapMeta);
+		verify(mapMeta).getSetter();
 	}
 }

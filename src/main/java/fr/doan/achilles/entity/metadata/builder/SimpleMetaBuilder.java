@@ -5,11 +5,11 @@ import java.util.Arrays;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.entity.metadata.SimpleLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
+import fr.doan.achilles.entity.metadata.SimpleLazyMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.validation.Validator;
 
-public class SimplePropertyMetaBuilder<V>
+public class SimpleMetaBuilder<V>
 {
 
 	private String propertyName;
@@ -17,31 +17,31 @@ public class SimplePropertyMetaBuilder<V>
 	private Method[] accessors;
 	protected boolean lazy;
 
-	public static <V> SimplePropertyMetaBuilder<V> simplePropertyMetaBuilder(Class<V> valueClass)
+	public static <V> SimpleMetaBuilder<V> simpleMetaBuilder(Class<V> valueClass)
 	{
-		return new SimplePropertyMetaBuilder<V>(valueClass);
+		return new SimpleMetaBuilder<V>(valueClass);
 	}
 
-	public SimplePropertyMetaBuilder(Class<V> valueClass) {
+	public SimpleMetaBuilder(Class<V> valueClass) {
 		this.valueClass = valueClass;
 	}
 
-	public SimplePropertyMeta<V> build()
+	public SimpleMeta<V> build()
 	{
-		SimplePropertyMeta<V> meta;
+		SimpleMeta<V> meta;
 		if (this.lazy)
 		{
-			meta = new SimpleLazyPropertyMeta<V>();
+			meta = new SimpleLazyMeta<V>();
 		}
 		else
 		{
-			meta = new SimplePropertyMeta<V>();
+			meta = new SimpleMeta<V>();
 		}
 		this.build(meta);
 		return meta;
 	}
 
-	protected void build(SimplePropertyMeta<V> meta)
+	protected void build(SimpleMeta<V> meta)
 	{
 		Validator.validateNotBlank(propertyName, "propertyName");
 		Validator.validateNotNull(valueClass, "valueClazz");
@@ -58,19 +58,19 @@ public class SimplePropertyMetaBuilder<V>
 		meta.setLazy(lazy);
 	}
 
-	public SimplePropertyMetaBuilder<V> propertyName(String propertyName)
+	public SimpleMetaBuilder<V> propertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
 		return this;
 	}
 
-	public SimplePropertyMetaBuilder<V> accessors(Method[] accessors)
+	public SimpleMetaBuilder<V> accessors(Method[] accessors)
 	{
 		this.accessors = accessors;
 		return this;
 	}
 
-	public SimplePropertyMetaBuilder<V> lazy(boolean lazy)
+	public SimpleMetaBuilder<V> lazy(boolean lazy)
 	{
 		this.lazy = lazy;
 		return this;

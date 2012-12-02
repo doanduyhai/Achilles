@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity.metadata.builder;
 
-import static fr.doan.achilles.entity.metadata.builder.ListPropertyMetaBuilder.listPropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.ListMetaBuilder.listMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -9,13 +9,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import fr.doan.achilles.entity.metadata.ListLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListLazyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
-public class ListPropertyMetaBuilderTest
+public class ListMetaBuilderTest
 {
 
 	@Test
@@ -26,7 +26,7 @@ public class ListPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFriends", List.class);
 
-		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).propertyName("friends").accessors(accessors)
+		ListMeta<String> meta = (ListMeta<String>) listMetaBuilder(String.class).propertyName("friends").accessors(accessors)
 				.lazy(false).build();
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
@@ -45,12 +45,12 @@ public class ListPropertyMetaBuilderTest
 		accessors[0] = Bean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		accessors[1] = Bean.class.getDeclaredMethod("setFriends", List.class);
 
-		ListPropertyMeta<String> meta = (ListPropertyMeta<String>) listPropertyMetaBuilder(String.class).propertyName("friends").accessors(accessors)
+		ListMeta<String> meta = (ListMeta<String>) listMetaBuilder(String.class).propertyName("friends").accessors(accessors)
 				.lazy(true).build();
 
 		assertThat(meta.isLazy()).isEqualTo(true);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.LAZY_LIST);
-		assertThat(meta).isInstanceOf(ListLazyPropertyMeta.class);
+		assertThat(meta).isInstanceOf(ListLazyMeta.class);
 
 	}
 
@@ -58,7 +58,7 @@ public class ListPropertyMetaBuilderTest
 	public void should_exception_when_missing_data() throws Exception
 	{
 
-		listPropertyMetaBuilder(String.class).propertyName("name").build();
+		listMetaBuilder(String.class).propertyName("name").build();
 
 	}
 

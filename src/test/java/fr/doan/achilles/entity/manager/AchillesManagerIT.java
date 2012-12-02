@@ -16,7 +16,7 @@ import java.util.List;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.cassandra.utils.Pair;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
 
 public class AchillesManagerIT
@@ -47,26 +47,27 @@ public class AchillesManagerIT
 
 		em.persist(bean);
 
-		Composite startCompositeForEagerFetch = new Composite();
+		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
 
-		Composite endCompositeForEagerFetch = new Composite();
+		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(), ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<Composite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch,
+				false, 20);
 
 		assertThat(columns).hasSize(7);
 
-		Pair<Composite, Object> age = columns.get(0);
+		Pair<DynamicComposite, Object> age = columns.get(0);
 
-		Pair<Composite, Object> name = columns.get(1);
+		Pair<DynamicComposite, Object> name = columns.get(1);
 
-		Pair<Composite, Object> George = columns.get(2);
-		Pair<Composite, Object> Paul = columns.get(3);
+		Pair<DynamicComposite, Object> George = columns.get(2);
+		Pair<DynamicComposite, Object> Paul = columns.get(3);
 
-		Pair<Composite, Object> FR = columns.get(4);
-		Pair<Composite, Object> Paris = columns.get(5);
-		Pair<Composite, Object> _75014 = columns.get(6);
+		Pair<DynamicComposite, Object> FR = columns.get(4);
+		Pair<DynamicComposite, Object> Paris = columns.get(5);
+		Pair<DynamicComposite, Object> _75014 = columns.get(6);
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
 		assertThat(age.right).isEqualTo(35L);
@@ -94,17 +95,17 @@ public class AchillesManagerIT
 		assertThat(zipCode.getKey()).isEqualTo(3);
 		assertThat(zipCode.getValue()).isEqualTo("75014");
 
-		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.GREATER_THAN_EQUAL);
 
 		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 		assertThat(columns).hasSize(2);
 
-		Pair<Composite, Object> foo = columns.get(0);
-		Pair<Composite, Object> bar = columns.get(1);
+		Pair<DynamicComposite, Object> foo = columns.get(0);
+		Pair<DynamicComposite, Object> bar = columns.get(1);
 
 		assertThat(foo.left.get(1, STRING_SRZ)).isEqualTo("friends");
 		assertThat(foo.right).isEqualTo("foo");
@@ -177,31 +178,32 @@ public class AchillesManagerIT
 		assertThat(merged.getPreferences()).hasSize(2);
 		assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
 
-		Composite startCompositeForEagerFetch = new Composite();
+		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		Composite endCompositeForEagerFetch = new Composite();
+		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<Composite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch,
+				false, 20);
 
 		assertThat(columns).hasSize(1);
 
-		Pair<Composite, Object> age = columns.get(0);
+		Pair<DynamicComposite, Object> age = columns.get(0);
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
 		assertThat(age.right).isEqualTo(100L);
 
-		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
@@ -210,17 +212,17 @@ public class AchillesManagerIT
 
 		assertThat(columns).hasSize(3);
 
-		Pair<Composite, Object> eve = columns.get(2);
+		Pair<DynamicComposite, Object> eve = columns.get(2);
 
 		assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
 		assertThat(eve.right).isEqualTo("eve");
 
-		startCompositeForEagerFetch = new Composite();
+		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new Composite();
+		endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
@@ -229,7 +231,7 @@ public class AchillesManagerIT
 
 		assertThat(columns).hasSize(2);
 
-		Pair<Composite, Object> FR = columns.get(0);
+		Pair<DynamicComposite, Object> FR = columns.get(0);
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
 		KeyValueHolder mapValue = (KeyValueHolder) FR.right;

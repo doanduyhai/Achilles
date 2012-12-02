@@ -1,6 +1,6 @@
 package fr.doan.achilles.entity;
 
-import static fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder.simpleMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -260,7 +260,7 @@ public class EntityPropertyHelperTest
 		bean.setComplicatedAttributeName("test");
 
 		Method[] accessors = helper.findAccessors(Bean.class, Bean.class.getDeclaredField("ComplicatedAttributeName"));
-		PropertyMeta<String> idMeta = simplePropertyMetaBuilder(String.class).propertyName("ComplicatedAttributeName").accessors(accessors).build();
+		PropertyMeta<String> idMeta = simpleMetaBuilder(String.class).propertyName("ComplicatedAttributeName").accessors(accessors).build();
 
 		String key = helper.getKey(bean, idMeta);
 		assertThat(key).isEqualTo("test");

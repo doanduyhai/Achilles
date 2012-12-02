@@ -1,25 +1,85 @@
 package fr.doan.achilles.entity.parser;
 
-import static fr.doan.achilles.entity.metadata.builder.ListPropertyMetaBuilder.listPropertyMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.MapPropertyMetaBuilder.mapPropertyMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.SetPropertyMetaBuilder.setPropertyMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.SimplePropertyMetaBuilder.simplePropertyMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.ListMetaBuilder.listMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.MapMetaBuilder.mapMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.MultiKeyWideMapMetaBuilder.multiKeyWideMapPropertyMetaBuiler;
+import static fr.doan.achilles.entity.metadata.builder.SetMetaBuilder.setMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder.simpleMetaBuilder;
+import static fr.doan.achilles.entity.metadata.builder.WideMapMetaBuilder.wideMapPropertyMetaBuiler;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.type.MultiKey;
+import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.validation.Validator;
 
 public class PropertyParser
 {
+
+	private Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
+
+	public PropertyParser() {
+		// Bytes
+		allowedTypes.add(byte[].class);
+		allowedTypes.add(ByteBuffer.class);
+
+		// Boolean
+		allowedTypes.add(Boolean.class);
+		allowedTypes.add(boolean.class);
+
+		// Date
+		allowedTypes.add(Date.class);
+
+		// Double
+		allowedTypes.add(Double.class);
+		allowedTypes.add(double.class);
+
+		// Char
+		allowedTypes.add(Character.class);
+
+		// Char
+		allowedTypes.add(Character.class);
+
+		// Float
+		allowedTypes.add(Float.class);
+		allowedTypes.add(float.class);
+
+		// Integer
+		allowedTypes.add(BigInteger.class);
+		allowedTypes.add(Integer.class);
+		allowedTypes.add(int.class);
+
+		// Long
+		allowedTypes.add(Long.class);
+		allowedTypes.add(long.class);
+
+		// Short
+		allowedTypes.add(Short.class);
+		allowedTypes.add(short.class);
+
+		// String
+		allowedTypes.add(String.class);
+
+		// UUID
+		allowedTypes.add(UUID.class);
+
+	}
 
 	private final EntityPropertyHelper helper = new EntityPropertyHelper();
 
@@ -44,6 +104,11 @@ public class PropertyParser
 			propertyMeta = parseMapProperty(beanClass, field, propertyName, fieldType);
 		}
 
+		else if (WideMap.class.isAssignableFrom(fieldType))
+		{
+			propertyMeta = parseWideMapProperty(beanClass, field, propertyName, fieldType);
+		}
+
 		else
 		{
 			propertyMeta = parseSimpleProperty(beanClass, field, propertyName);
@@ -52,12 +117,34 @@ public class PropertyParser
 	}
 
 	@SuppressWarnings("unchecked")
-	private <V> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field, String propertyName)
+	private <V> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field,
+			String propertyName)
 	{
 		Validator.validateSerializable(field.getType(), field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return simplePropertyMetaBuilder((Class<V>) field.getType()).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+		return simpleMetaBuilder((Class<V>) field.getType()).propertyName(propertyName)
+				.accessors(accessors).lazy(lazy).build();
+	}
+
+	@SuppressWarnings(
+	{
+		"unchecked",
+	})
+	private <V> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field,
+			String propertyName, Class<?> fieldType)
+	{
+
+		Class<?> valueClass;
+		Type genericType = field.getGenericType();
+
+		valueClass = inferValueClass(genericType);
+
+		Validator.validateSerializable(valueClass, "value type of " + field.getName());
+		Method[] accessors = helper.findAccessors(beanClass, field);
+		boolean lazy = this.isLazy(field);
+		return listMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
+				.accessors(accessors).lazy(lazy).build();
 	}
 
 	@SuppressWarnings(
@@ -65,34 +152,19 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
+	private <V> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field,
+			String propertyName, Class<?> fieldType)
 	{
 
 		Class valueClass;
 		Type genericType = field.getGenericType();
 
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 0)
-			{
-				valueClass = (Class) actualTypeArguments[0];
-			}
-			else
-			{
-				valueClass = Object.class;
-			}
-		}
-		else
-		{
-			valueClass = Object.class;
-		}
-
+		valueClass = inferValueClass(genericType);
 		Validator.validateSerializable(valueClass, "value type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return listPropertyMetaBuilder((Class<V>) valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+		return setMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
+				.accessors(accessors).lazy(lazy).build();
 	}
 
 	@SuppressWarnings(
@@ -100,41 +172,8 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
-	{
-
-		Class valueClass;
-		Type genericType = field.getGenericType();
-
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 0)
-			{
-				valueClass = (Class) actualTypeArguments[0];
-			}
-			else
-			{
-				valueClass = Object.class;
-			}
-		}
-		else
-		{
-			valueClass = Object.class;
-		}
-		Validator.validateSerializable(valueClass, "value type of " + field.getName());
-		Method[] accessors = helper.findAccessors(beanClass, field);
-		boolean lazy = this.isLazy(field);
-		return setPropertyMetaBuilder((Class<V>) valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	private <V> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field, String propertyName, Class<?> fieldType)
+	private <V> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field,
+			String propertyName, Class<?> fieldType)
 	{
 
 		Class valueClass;
@@ -166,8 +205,119 @@ public class PropertyParser
 		Validator.validateSerializable(keyType, "key type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return mapPropertyMetaBuilder(keyType, valueClass).propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+		return mapMetaBuilder(keyType, valueClass).propertyName(propertyName).accessors(accessors)
+				.lazy(lazy).build();
+	}
 
+	@SuppressWarnings("unchecked")
+	private <V> PropertyMeta<V> parseWideMapProperty(Class<?> beanClass, Field field,
+			String propertyName, Class<?> fieldType)
+	{
+		List<Class<?>> keyClasses = new ArrayList<Class<?>>();
+		List<Method> keyGetters = new ArrayList<Method>();
+
+		Class<?> keyClass;
+		Class<V> valueClass;
+
+		Type genericType = field.getGenericType();
+		if (genericType instanceof ParameterizedType)
+		{
+			ParameterizedType pt = (ParameterizedType) genericType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if (actualTypeArguments.length > 1)
+			{
+				keyClass = (Class<?>) actualTypeArguments[0];
+				valueClass = (Class<V>) actualTypeArguments[1];
+
+				if (MultiKey.class.isAssignableFrom(keyClass))
+				{
+					parseMultiKey(keyClasses, keyGetters, keyClass);
+				}
+				else
+				{
+					Validator.validateAllowedTypes(keyClass, allowedTypes,
+							"The class '" + keyClass.getCanonicalName()
+									+ "' is not allowed as WideMap key");
+				}
+			}
+			else
+			{
+				throw new IncorrectTypeException(
+						"The WideMap type should be parameterized with <K,V> for the entity "
+								+ beanClass.getCanonicalName());
+			}
+		}
+		else
+		{
+			throw new IncorrectTypeException(
+					"The WideMap type should be parameterized for the entity "
+							+ beanClass.getCanonicalName());
+		}
+
+		Validator.validateSerializable(valueClass, "value type of " + field.getName());
+
+		if (keyClasses.size() == 0)
+		{
+			return wideMapPropertyMetaBuiler(keyClass, valueClass).propertyName(propertyName)
+					.build();
+		}
+		else
+		{
+			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass)
+					.propertyName(propertyName).keyClasses(keyClasses).keyGetters(keyGetters)
+					.build();
+		}
+
+	}
+
+	private void parseMultiKey(List<Class<?>> keyClassses, List<Method> keyGetters,
+			Class<?> keyClass)
+	{
+		for (Field multiKeyField : keyClass.getDeclaredFields())
+		{
+			if (multiKeyField.getAnnotation(javax.persistence.Id.class) != null)
+			{
+				Class<?> keySubType = multiKeyField.getType();
+				Validator.validateAllowedTypes(
+						keySubType,
+						allowedTypes,
+						"The class '" + keySubType.getCanonicalName()
+								+ "' is not a valid key type for the MultiKey class '"
+								+ keyClass.getCanonicalName() + "'");
+
+				keyGetters.add(helper.findGetter(keyClass, multiKeyField));
+				keyClassses.add(keySubType);
+			}
+		}
+
+		Validator.validateNotEmpty(
+				keyClassses,
+				"No field with javax.persistence.Id annotation found in the class '"
+						+ keyClass.getCanonicalName() + "'");
+		Validator.validateInstantiable(keyClass);
+	}
+
+	private Class<?> inferValueClass(Type genericType)
+	{
+		Class<?> valueClass;
+		if (genericType instanceof ParameterizedType)
+		{
+			ParameterizedType pt = (ParameterizedType) genericType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if (actualTypeArguments.length > 0)
+			{
+				valueClass = (Class<?>) actualTypeArguments[0];
+			}
+			else
+			{
+				valueClass = Object.class;
+			}
+		}
+		else
+		{
+			valueClass = Object.class;
+		}
+		return valueClass;
 	}
 
 	private boolean isLazy(Field field)

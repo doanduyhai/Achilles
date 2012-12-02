@@ -2,40 +2,40 @@ package fr.doan.achilles.entity.metadata.builder;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.entity.metadata.MapLazyPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.MapLazyMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.validation.Validator;
 
-public class MapPropertyMetaBuilder<K, V> extends SimplePropertyMetaBuilder<V>
+public class MapMetaBuilder<K, V> extends SimpleMetaBuilder<V>
 {
 
 	private Class<K> keyClass;
 
-	public static <K, V> MapPropertyMetaBuilder<K, V> mapPropertyMetaBuilder(Class<K> keyClass, Class<V> valueClass)
+	public static <K, V> MapMetaBuilder<K, V> mapMetaBuilder(Class<K> keyClass, Class<V> valueClass)
 	{
-		return new MapPropertyMetaBuilder<K, V>(keyClass, valueClass);
+		return new MapMetaBuilder<K, V>(keyClass, valueClass);
 	}
 
-	public MapPropertyMetaBuilder(Class<K> keyClass, Class<V> valueClass) {
+	public MapMetaBuilder(Class<K> keyClass, Class<V> valueClass) {
 		super(valueClass);
 		this.keyClass = keyClass;
 	}
 
 	@Override
-	public MapPropertyMeta<K, V> build()
+	public MapMeta<K, V> build()
 	{
 
 		Validator.validateNotNull(keyClass, "keyClass");
 
-		MapPropertyMeta<K, V> meta;
+		MapMeta<K, V> meta;
 
 		if (this.lazy)
 		{
-			meta = new MapLazyPropertyMeta<K, V>();
+			meta = new MapLazyMeta<K, V>();
 		}
 		else
 		{
-			meta = new MapPropertyMeta<K, V>();
+			meta = new MapMeta<K, V>();
 		}
 
 		super.build(meta);

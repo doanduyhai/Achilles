@@ -6,21 +6,28 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
 
 import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Test;
 
+import parser.entity.CorrectMultiKey;
 import fr.doan.achilles.annotations.Lazy;
-import fr.doan.achilles.entity.metadata.ListPropertyMeta;
-import fr.doan.achilles.entity.metadata.MapPropertyMeta;
+import fr.doan.achilles.entity.metadata.ListMeta;
+import fr.doan.achilles.entity.metadata.MapMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetPropertyMeta;
-import fr.doan.achilles.entity.metadata.SimplePropertyMeta;
+import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.type.MultiKey;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
@@ -53,9 +60,10 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("name"), "name");
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("name"),
+				"name");
 
-		assertThat(meta).isInstanceOf(SimplePropertyMeta.class);
+		assertThat(meta).isInstanceOf(SimpleMeta.class);
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(STRING_SRZ);
@@ -86,7 +94,8 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("name"), "firstname");
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("name"),
+				"firstname");
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
 	}
@@ -110,7 +119,8 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+		PropertyMeta<String> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("friends"), "friends");
 
 		assertThat(meta.isLazy()).isTrue();
 	}
@@ -134,7 +144,8 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+		PropertyMeta<String> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("friends"), "friends");
 
 		assertThat(meta.isLazy()).isFalse();
 	}
@@ -158,7 +169,8 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+		PropertyMeta<String> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("friends"), "friends");
 
 		assertThat(meta.isLazy()).isFalse();
 	}
@@ -181,9 +193,10 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("friends"), "friends");
+		PropertyMeta<String> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("friends"), "friends");
 
-		assertThat(meta).isInstanceOf(ListPropertyMeta.class);
+		assertThat(meta).isInstanceOf(ListMeta.class);
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
@@ -214,9 +227,10 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<Long> meta = parser.parse(Test.class, Test.class.getDeclaredField("followers"), "followers");
+		PropertyMeta<Long> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("followers"), "followers");
 
-		assertThat(meta).isInstanceOf(SetPropertyMeta.class);
+		assertThat(meta).isInstanceOf(SetMeta.class);
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat(meta.getValueClass()).isEqualTo(Long.class);
 		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.LONG_SRZ);
@@ -248,15 +262,16 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("preferences"), "preferences");
+		PropertyMeta<String> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("preferences"), "preferences");
 
-		assertThat(meta).isInstanceOf(MapPropertyMeta.class);
+		assertThat(meta).isInstanceOf(MapMeta.class);
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
 		assertThat(meta.propertyType()).isEqualTo(PropertyType.MAP);
 
-		MapPropertyMeta<Integer, String> mapMeta = (MapPropertyMeta<Integer, String>) meta;
+		MapMeta<Integer, String> mapMeta = (MapMeta<Integer, String>) meta;
 		assertThat(mapMeta.getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getPreferences");
@@ -265,6 +280,256 @@ public class PropertyParserTest
 		assertThat((Class) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
 
 		assertThat((Serializer) mapMeta.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_wide_map() throws Exception
+	{
+		class Test
+		{
+			private WideMap<UUID, String> tweets;
+
+			public WideMap<UUID, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<UUID, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("tweets"),
+				"tweets");
+
+		assertThat(meta).isInstanceOf(WideMapMeta.class);
+		assertThat(meta.getPropertyName()).isEqualTo("tweets");
+		assertThat(meta.getValueClass()).isEqualTo(String.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat(meta.propertyType()).isEqualTo(PropertyType.WIDE_MAP);
+
+		WideMapMeta<UUID, String> wideMapMeta = (WideMapMeta<UUID, String>) meta;
+		assertThat(wideMapMeta.getKeyClass()).isEqualTo(UUID.class);
+
+		assertThat((Serializer) wideMapMeta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
+	}
+
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_invalid_wide_map_key() throws Exception
+	{
+		class Test
+		{
+			private WideMap<Void, String> tweets;
+
+			public WideMap<Void, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<Void, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_multi_key_wide_map() throws Exception
+	{
+
+		class Test
+		{
+			private WideMap<CorrectMultiKey, String> tweets;
+
+			public WideMap<CorrectMultiKey, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<CorrectMultiKey, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("tweets"),
+				"tweets");
+
+		assertThat(meta).isInstanceOf(MultiKeyWideMapMeta.class);
+		assertThat(meta.getPropertyName()).isEqualTo("tweets");
+		assertThat(meta.getValueClass()).isEqualTo(String.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat(meta.propertyType()).isEqualTo(PropertyType.WIDE_MAP);
+
+		MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta = (MultiKeyWideMapMeta<CorrectMultiKey, String>) meta;
+
+		assertThat(wideMapMeta.getKeyClass()).isEqualTo(CorrectMultiKey.class);
+
+		assertThat(wideMapMeta.getKeyGetters()).hasSize(2);
+		assertThat(wideMapMeta.getKeyGetters().get(0).getName()).isEqualTo("getName");
+		assertThat(wideMapMeta.getKeyGetters().get(1).getName()).isEqualTo("getRank");
+
+		assertThat(wideMapMeta.getKeySerializers()).hasSize(2);
+		assertThat((Serializer) wideMapMeta.getKeySerializers().get(0)).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) wideMapMeta.getKeySerializers().get(1)).isEqualTo(Utils.INT_SRZ);
+	}
+
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_invalid_multi_key() throws Exception
+	{
+		class TestMultiKey implements MultiKey
+		{
+			@Id
+			private Void name;
+
+			@Id
+			private int rank;
+
+			public Void getName()
+			{
+				return name;
+			}
+
+			public void setName(Void name)
+			{
+				this.name = name;
+			}
+
+			public int getRank()
+			{
+				return rank;
+			}
+
+			public void setRank(int rank)
+			{
+				this.rank = rank;
+			}
+
+		}
+
+		class Test
+		{
+			private WideMap<TestMultiKey, String> tweets;
+
+			public WideMap<TestMultiKey, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+	}
+
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_no_id_in_multi_key() throws Exception
+	{
+		class TestMultiKey implements MultiKey
+		{
+			private Void name;
+
+			private int rank;
+
+			public Void getName()
+			{
+				return name;
+			}
+
+			public void setName(Void name)
+			{
+				this.name = name;
+			}
+
+			public int getRank()
+			{
+				return rank;
+			}
+
+			public void setRank(int rank)
+			{
+				this.rank = rank;
+			}
+
+		}
+
+		class Test
+		{
+			private WideMap<TestMultiKey, String> tweets;
+
+			public WideMap<TestMultiKey, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+	}
+
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_multi_key_not_instantiable() throws Exception
+	{
+		class TestMultiKey implements MultiKey
+		{
+			@Id
+			private String name;
+
+			@Id
+			private int rank;
+
+			public TestMultiKey(String name, int rank) {
+				super();
+				this.name = name;
+				this.rank = rank;
+			}
+
+			public String getName()
+			{
+				return name;
+			}
+
+			public void setName(String name)
+			{
+				this.name = name;
+			}
+
+			public int getRank()
+			{
+				return rank;
+			}
+
+			public void setRank(int rank)
+			{
+				this.rank = rank;
+			}
+
+		}
+		class Test
+		{
+			private WideMap<TestMultiKey, String> tweets;
+
+			public WideMap<TestMultiKey, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
 	}
 
 	@Test(expected = ValidationException.class)

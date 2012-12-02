@@ -1,6 +1,7 @@
 package fr.doan.achilles.serializer;
 
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
+import me.prettyprint.cassandra.serializers.CharSerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.DateSerializer;
 import me.prettyprint.cassandra.serializers.DoubleSerializer;
@@ -25,4 +26,5 @@ public class Utils
 	public static final DoubleSerializer DOUBLE_SRZ = DoubleSerializer.get();
 	public static final ObjectSerializer OBJECT_SRZ = ObjectSerializer.get();
 	public static final BytesArraySerializer BYTE_SRZ = BytesArraySerializer.get();
+	public static final CharSerializer CHAR_SRZ = CharSerializer.get();
 }

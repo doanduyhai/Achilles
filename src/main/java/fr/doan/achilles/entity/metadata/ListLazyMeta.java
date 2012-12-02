@@ -1,7 +1,7 @@
 package fr.doan.achilles.entity.metadata;
 
 
-public class ListLazyPropertyMeta<V> extends ListPropertyMeta<V>
+public class ListLazyMeta<V> extends ListMeta<V>
 {
 	@Override
 	public PropertyType propertyType()
