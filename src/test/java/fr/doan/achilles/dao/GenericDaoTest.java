@@ -1,10 +1,6 @@
 package fr.doan.achilles.dao;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
-import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
-import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
-import static fr.doan.achilles.entity.metadata.PropertyType.SET;
-import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static org.fest.assertions.api.Assertions.assertThat;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
@@ -20,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,54 +40,11 @@ public class GenericDaoTest
 	}
 
 	@Test
-	public void should_build_composite_for_simple_property() throws Exception
-	{
-
-		DynamicComposite comp = dao.buildComponentForProperty("name", SIMPLE, 0);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(SIMPLE.flag());
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("name");
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(0);
-	}
-
-	@Test
-	public void should_build_composite_for_list_property() throws Exception
-	{
-
-		DynamicComposite comp = dao.buildComponentForProperty("friends", LIST, 0);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(LIST.flag());
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(0);
-	}
-
-	@Test
-	public void should_build_composite_for_set_property() throws Exception
-	{
-
-		DynamicComposite comp = dao.buildComponentForProperty("followers", SET, 12345);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(SET.flag());
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("followers");
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(12345);
-	}
-
-	@Test
-	public void should_build_composite_for_map_property() throws Exception
-	{
-
-		DynamicComposite comp = dao.buildComponentForProperty("preferences", MAP, -123933);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(MAP.flag());
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("preferences");
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(-123933);
-	}
-
-	@Test
 	public void should_build_start_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao, "startCompositeForEagerFetch");
+		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao,
+				"startCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -102,83 +54,11 @@ public class GenericDaoTest
 	public void should_build_end_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao, "endCompositeForEagerFetch");
+		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao,
+				"endCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.GREATER_THAN_EQUAL);
+		assertThat(comp.getComponent(0).getEquality()).isSameAs(
+				ComponentEquality.GREATER_THAN_EQUAL);
 	}
-
-	@Test
-	public void should_build_composite_comparator_start_inclusive() throws Exception
-	{
-		DynamicComposite comp = dao.buildQueryComponentComparatorStart("friends", PropertyType.LIST, 1, false);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(1);
-		assertThat(comp.getComponent(2).getEquality()).isSameAs(ComponentEquality.EQUAL);
-	}
-
-	@Test
-	public void should_build_composite_comparator_start_exlusive() throws Exception
-	{
-		DynamicComposite comp = dao.buildQueryComponentComparatorStart("friends", PropertyType.LIST, 1, true);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(1);
-		assertThat(comp.getComponent(2).getEquality()).isSameAs(ComponentEquality.GREATER_THAN_EQUAL);
-	}
-
-	@Test
-	public void should_build_composite_comparator_end_inclusive() throws Exception
-	{
-		DynamicComposite comp = dao.buildQueryComponentComparatorEnd("friends", PropertyType.LIST, 4, false);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(4);
-		assertThat(comp.getComponent(2).getEquality()).isSameAs(ComponentEquality.EQUAL);
-	}
-
-	@Test
-	public void should_build_composite_comparator_end_exlusive() throws Exception
-	{
-		DynamicComposite comp = dao.buildQueryComponentComparatorEnd("friends", PropertyType.LIST, 4, true);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(2).getValue()).isEqualTo(4);
-		assertThat(comp.getComponent(2).getEquality()).isSameAs(ComponentEquality.LESS_THAN_EQUAL);
-	}
-
-	@Test
-	public void should_build_composite_comparator() throws Exception
-	{
-		DynamicComposite comp = dao.buildQueryComponentComparator("friends", PropertyType.LIST, ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
-		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
-
-	}
-
 }

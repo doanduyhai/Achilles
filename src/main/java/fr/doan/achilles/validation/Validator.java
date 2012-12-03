@@ -138,4 +138,12 @@ public class Validator
 		catch (SecurityException e)
 		{}
 	}
+
+	public static void validateTrue(boolean condition, String message)
+	{
+		if (!condition)
+		{
+			throw new ValidationException(message);
+		}
+	}
 }

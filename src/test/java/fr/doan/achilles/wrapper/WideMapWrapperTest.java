@@ -18,6 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * InternalWideMapWrapperTest
@@ -38,6 +39,9 @@ public class WideMapWrapperTest
 	@Mock
 	private WideMapMeta<Integer, String> propertyMeta;
 
+	@Mock
+	private DynamicCompositeKeyFactory keyFactory;
+
 	@Before
 	public void setUp()
 	{
@@ -50,7 +54,7 @@ public class WideMapWrapperTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.getKeySerializer()).thenReturn(INT_SRZ);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
 
 		wrapper.getValue(1);
 
@@ -64,7 +68,7 @@ public class WideMapWrapperTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.getKeySerializer()).thenReturn(INT_SRZ);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
 		wrapper.insertValue(1, "test");
 
@@ -78,7 +82,7 @@ public class WideMapWrapperTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.getKeySerializer()).thenReturn(INT_SRZ);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
 		wrapper.insertValue(1, "test", 12);
 
@@ -93,10 +97,10 @@ public class WideMapWrapperTest
 		when(propertyMeta.getKeySerializer()).thenReturn(INT_SRZ);
 
 		DynamicComposite start = new DynamicComposite();
-		when(dao.buildQueryComponentComparator("name", WIDE_MAP, EQUAL)).thenReturn(start);
+		when(keyFactory.buildQueryComparator("name", WIDE_MAP, EQUAL)).thenReturn(start);
 
 		DynamicComposite end = new DynamicComposite();
-		when(dao.buildQueryComponentComparator("name", WIDE_MAP, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.buildQueryComparator("name", WIDE_MAP, GREATER_THAN_EQUAL)).thenReturn(end);
 
 	}
 }

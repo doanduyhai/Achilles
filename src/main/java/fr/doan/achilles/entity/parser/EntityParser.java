@@ -44,7 +44,8 @@ public class EntityParser
 			else if (field.getAnnotation(javax.persistence.Column.class) != null)
 			{
 				Column column = field.getAnnotation(javax.persistence.Column.class);
-				String propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
+				String propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field
+						.getName();
 				propertyMetas.put(propertyName, parser.parse(entityClass, field, propertyName));
 			}
 
@@ -62,8 +63,9 @@ public class EntityParser
 					+ "' should have at least one field with javax.persistence.Column annotation");
 		}
 
-		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName).columnFamilyName(columnFamily)
-				.serialVersionUID(serialVersionUID).propertyMetas(propertyMetas).build();
+		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName)
+				.columnFamilyName(columnFamily).serialVersionUID(serialVersionUID)
+				.propertyMetas(propertyMetas).build();
 	}
 
 	private String findCanonicalName(Class<?> entity)
@@ -89,18 +91,22 @@ public class EntityParser
 
 			if (!Modifier.isPublic(declaredSerialVersionUID.getModifiers()))
 			{
-				throw new IncorrectTypeException("The 'serialVersionUID' property should be publicly accessible for entity '"
-						+ entity.getCanonicalName() + "'");
+				throw new IncorrectTypeException(
+						"The 'serialVersionUID' property should be publicly accessible for entity '"
+								+ entity.getCanonicalName() + "'");
 			}
 		}
 		catch (NoSuchFieldException e)
 		{
-			throw new IncorrectTypeException("The 'serialVersionUID' property should be declared for entity '" + entity.getCanonicalName() + "'", e);
+			throw new IncorrectTypeException(
+					"The 'serialVersionUID' property should be declared for entity '"
+							+ entity.getCanonicalName() + "'", e);
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new IncorrectTypeException("The 'serialVersionUID' property should be publicly accessible for entity '" + entity.getCanonicalName()
-					+ "'", e);
+			throw new IncorrectTypeException(
+					"The 'serialVersionUID' property should be publicly accessible for entity '"
+							+ entity.getCanonicalName() + "'", e);
 		}
 		return serialVersionUID;
 	}
@@ -123,7 +129,8 @@ public class EntityParser
 		}
 		else
 		{
-			throw new IncorrectTypeException("The entity '" + entity.getCanonicalName() + "' should have javax.persistence.Table annotation");
+			throw new IncorrectTypeException("The entity '" + entity.getCanonicalName()
+					+ "' should have javax.persistence.Table annotation");
 		}
 		return columnFamily;
 	}

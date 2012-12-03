@@ -46,6 +46,7 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.type.KeyValueHolder;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityPersisterTest
@@ -75,6 +76,9 @@ public class EntityPersisterTest
 	@Mock
 	private ExecutingKeyspace keyspace;
 
+	@Mock
+	private DynamicCompositeKeyFactory keyFactory;
+
 	private MutatorImpl<Long> mutator = new MutatorImpl<Long>(keyspace);
 
 	private Method method;
@@ -85,8 +89,9 @@ public class EntityPersisterTest
 	public void setUp() throws Exception
 	{
 		method = this.getClass().getDeclaredMethod("setUp", (Class<?>[]) null);
-		entity = CompleteBeanTestBuilder.builder().id(1L).name("name").age(52L).addFriends("foo", "bar").addFollowers("George", "Paul")
-				.addPreference(1, "FR").buid();
+		entity = CompleteBeanTestBuilder.builder().id(1L).name("name").age(52L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.buid();
 	}
 
 	@Test
@@ -95,11 +100,12 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
-		ReflectionTestUtils.invokeMethod(persister, "batchSimpleProperty", entity, 1L, dao, propertyMeta, mutator);
+		ReflectionTestUtils.invokeMethod(persister, "batchSimpleProperty", entity, 1L, dao,
+				propertyMeta, mutator);
 
 		verify(dao).insertColumn(1L, composite, "testValue", mutator);
 	}
@@ -110,11 +116,12 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
-		ReflectionTestUtils.invokeMethod(persister, "persistSimpleProperty", entity, 1L, dao, propertyMeta);
+		ReflectionTestUtils.invokeMethod(persister, "persistSimpleProperty", entity, 1L, dao,
+				propertyMeta);
 
 		verify(dao).insertColumn(1L, composite, "testValue", null);
 	}
@@ -128,10 +135,11 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
-		when(dao.buildComponentForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
+		when(keyFactory.buildForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(keyFactory.buildForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao, propertyMeta, mutator);
+		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao,
+				propertyMeta, mutator);
 
 		verify(dao).insertColumn(1L, composite, "foo", mutator);
 		verify(dao).insertColumn(1L, composite, "bar", mutator);
@@ -147,10 +155,11 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
-		when(dao.buildComponentForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
+		when(keyFactory.buildForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(keyFactory.buildForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao, propertyMeta);
+		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao,
+				propertyMeta);
 
 		verify(dao).insertColumn(1L, composite, "foo", mutator);
 		verify(dao).insertColumn(1L, composite, "bar", mutator);
@@ -161,14 +170,18 @@ public class EntityPersisterTest
 	{
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(propertyMeta.propertyType()).thenReturn(SET);
-		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
+		when(helper.getValueFromField(entity, method))
+				.thenReturn(Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("followers", SET, "George".hashCode())).thenReturn(composite);
-		when(dao.buildComponentForProperty("followers", SET, "Paul".hashCode())).thenReturn(composite);
+		when(keyFactory.buildForProperty("followers", SET, "George".hashCode())).thenReturn(
+				composite);
+		when(keyFactory.buildForProperty("followers", SET, "Paul".hashCode()))
+				.thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao, propertyMeta, mutator);
+		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao,
+				propertyMeta, mutator);
 
 		verify(dao).insertColumn(1L, composite, "George", mutator);
 		verify(dao).insertColumn(1L, composite, "Paul", mutator);
@@ -180,14 +193,18 @@ public class EntityPersisterTest
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(propertyMeta.propertyType()).thenReturn(SET);
-		when(helper.getValueFromField(entity, method)).thenReturn(Sets.newHashSet("George", "Paul"));
+		when(helper.getValueFromField(entity, method))
+				.thenReturn(Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("followers", SET, "George".hashCode())).thenReturn(composite);
-		when(dao.buildComponentForProperty("followers", SET, "Paul".hashCode())).thenReturn(composite);
+		when(keyFactory.buildForProperty("followers", SET, "George".hashCode())).thenReturn(
+				composite);
+		when(keyFactory.buildForProperty("followers", SET, "Paul".hashCode()))
+				.thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao, propertyMeta);
+		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao,
+				propertyMeta);
 
 		verify(dao).insertColumn(1L, composite, "George", mutator);
 		verify(dao).insertColumn(1L, composite, "Paul", mutator);
@@ -207,15 +224,18 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao, propertyMeta, mutator);
+		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao,
+				propertyMeta, mutator);
 
-		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValueHolder.class);
+		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
+				.forClass(KeyValueHolder.class);
 
-		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(), eq(mutator));
+		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(),
+				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
 		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
@@ -247,15 +267,18 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
-		when(dao.buildComponentForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao, propertyMeta);
+		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao,
+				propertyMeta);
 
-		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValueHolder.class);
+		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
+				.forClass(KeyValueHolder.class);
 
-		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(), eq(mutator));
+		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(),
+				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
 		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
@@ -375,8 +398,8 @@ public class EntityPersisterTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(dao.buildQueryComponentComparator("name", MAP, EQUAL)).thenReturn(start);
-		when(dao.buildQueryComponentComparator("name", MAP, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.buildQueryComparator("name", MAP, EQUAL)).thenReturn(start);
+		when(keyFactory.buildQueryComparator("name", MAP, GREATER_THAN_EQUAL)).thenReturn(end);
 
 		persister.removeProperty(1L, dao, propertyMeta);
 

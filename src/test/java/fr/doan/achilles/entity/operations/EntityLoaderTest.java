@@ -45,6 +45,7 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.type.KeyValueHolder;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityLoaderTest
@@ -77,6 +78,9 @@ public class EntityLoaderTest
 	@Mock
 	private GenericDao<Long> dao;
 
+	@Mock
+	private DynamicCompositeKeyFactory keyFactory;
+
 	private CompleteBean bean;
 
 	@Before
@@ -95,7 +99,8 @@ public class EntityLoaderTest
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
 		loader.load(CompleteBean.class, 1L, entityMeta);
 
-		verify(mapper).mapColumnsToBean(eq(1L), eq(columns), eq(entityMeta), any(CompleteBean.class));
+		verify(mapper).mapColumnsToBean(eq(1L), eq(columns), eq(entityMeta),
+				any(CompleteBean.class));
 	}
 
 	@Test
@@ -126,7 +131,7 @@ public class EntityLoaderTest
 		when(propertyMeta.get("name")).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(dao.buildComponentForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
 		when(dao.getValue(1L, composite)).thenReturn("name");
 
 		String value = (String) loader.loadSimpleProperty(1L, dao, propertyMeta);
@@ -146,8 +151,9 @@ public class EntityLoaderTest
 		friends.add(new Pair<DynamicComposite, Object>(start, "foo"));
 		friends.add(new Pair<DynamicComposite, Object>(end, "bar"));
 
-		when(dao.buildQueryComponentComparator("friends", LAZY_LIST, EQUAL)).thenReturn(start);
-		when(dao.buildQueryComponentComparator("friends", LAZY_LIST, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.buildQueryComparator("friends", LAZY_LIST, EQUAL)).thenReturn(start);
+		when(keyFactory.buildQueryComparator("friends", LAZY_LIST, GREATER_THAN_EQUAL)).thenReturn(
+				end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(friends);
 
 		when(listMeta.newListInstance()).thenReturn(new ArrayList<String>());
@@ -173,8 +179,8 @@ public class EntityLoaderTest
 		followers.add(new Pair<DynamicComposite, Object>(start, "George"));
 		followers.add(new Pair<DynamicComposite, Object>(end, "Paul"));
 
-		when(dao.buildQueryComponentComparator("followers", SET, EQUAL)).thenReturn(start);
-		when(dao.buildQueryComponentComparator("followers", SET, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.buildQueryComparator("followers", SET, EQUAL)).thenReturn(start);
+		when(keyFactory.buildQueryComparator("followers", SET, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(followers);
 
 		when(setMeta.newSetInstance()).thenReturn(new HashSet<String>());
@@ -202,9 +208,11 @@ public class EntityLoaderTest
 		preferences.add(new Pair<DynamicComposite, Object>(middle, new KeyValueHolder(2, "Paris")));
 		preferences.add(new Pair<DynamicComposite, Object>(end, new KeyValueHolder(3, "75014")));
 
-		when(dao.buildQueryComponentComparator("preferences", LAZY_MAP, EQUAL)).thenReturn(start);
-		when(dao.buildQueryComponentComparator("preferences", LAZY_MAP, GREATER_THAN_EQUAL)).thenReturn(end);
-		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(preferences);
+		when(keyFactory.buildQueryComparator("preferences", LAZY_MAP, EQUAL)).thenReturn(start);
+		when(keyFactory.buildQueryComparator("preferences", LAZY_MAP, GREATER_THAN_EQUAL))
+				.thenReturn(end);
+		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE))
+				.thenReturn(preferences);
 
 		when(mapMeta.getKeyClass()).thenReturn(Integer.class);
 

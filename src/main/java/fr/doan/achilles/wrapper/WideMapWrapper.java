@@ -8,6 +8,7 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * WideMap
@@ -21,6 +22,8 @@ public class WideMapWrapper<ID, K, V>
 	private GenericDao<ID> dao;
 	private WideMapMeta<K, V> wideMapMeta;
 
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+
 	public V getValue(K key)
 	{
 		return null;
@@ -28,27 +31,27 @@ public class WideMapWrapper<ID, K, V>
 
 	public void insertValue(K key, V value, int ttl)
 	{
-		DynamicComposite composite = dao.buildComponentForProperty(wideMapMeta.getPropertyName(),
+		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
 				PropertyType.WIDE_MAP, key, wideMapMeta.getKeySerializer());
 		dao.setValue(id, composite, (Object) value, ttl);
 	}
 
 	public void insertValue(K key, V value)
 	{
-		DynamicComposite composite = dao.buildComponentForProperty(wideMapMeta.getPropertyName(),
+		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
 				PropertyType.WIDE_MAP, key, wideMapMeta.getKeySerializer());
 		dao.setValue(id, composite, (Object) value);
 	}
 
 	public List<KeyValue<K, V>> findValues(K start, K end, boolean reverse, int count)
 	{
-		return null;
+		return findValues(start, end, true, reverse, count);
 	}
 
 	public List<KeyValue<K, V>> findValues(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
-		return null;
+		return findValues(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,

@@ -20,11 +20,14 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.validation.Validator;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class EntityLoader
 {
 
 	private EntityMapper mapper = new EntityMapper();
+
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{
@@ -36,7 +39,8 @@ public class EntityLoader
 		try
 		{
 
-			List<Pair<DynamicComposite, Object>> columns = entityMeta.getDao().eagerFetchEntity(key);
+			List<Pair<DynamicComposite, Object>> columns = entityMeta.getDao()
+					.eagerFetchEntity(key);
 
 			if (columns.size() > 0)
 			{
@@ -47,14 +51,16 @@ public class EntityLoader
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Error when loading entity type '" + entityClass.getCanonicalName() + "' with key '" + key + "'", e);
+			throw new RuntimeException("Error when loading entity type '"
+					+ entityClass.getCanonicalName() + "' with key '" + key + "'", e);
 		}
 		return entity;
 	}
 
 	public <ID, V> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
 	{
-		DynamicComposite composite = dao.buildComponentForProperty(propertyMeta.getPropertyName(), propertyMeta.propertyType(), 0);
+		DynamicComposite composite = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+				propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.get(value);
@@ -62,10 +68,12 @@ public class EntityLoader
 
 	public <ID, V> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListMeta<V> listPropertyMeta)
 	{
-		DynamicComposite start = dao.buildQueryComponentComparator(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = dao.buildQueryComponentComparator(listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(),
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
+		DynamicComposite start = keyFactory.buildQueryComparator(
+				listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
+		DynamicComposite end = keyFactory.buildQueryComparator(listPropertyMeta.getPropertyName(),
+				listPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
 		List<V> list = listPropertyMeta.newListInstance();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
@@ -77,10 +85,12 @@ public class EntityLoader
 	public <ID, V> Set<V> loadSetProperty(ID key, GenericDao<ID> dao, SetMeta<V> setPropertyMeta)
 	{
 
-		DynamicComposite start = dao.buildQueryComponentComparator(setPropertyMeta.getPropertyName(), setPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = dao.buildQueryComponentComparator(setPropertyMeta.getPropertyName(), setPropertyMeta.propertyType(),
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
+		DynamicComposite start = keyFactory.buildQueryComparator(setPropertyMeta.getPropertyName(),
+				setPropertyMeta.propertyType(), EQUAL);
+		DynamicComposite end = keyFactory.buildQueryComparator(setPropertyMeta.getPropertyName(),
+				setPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
 		Set<V> set = setPropertyMeta.newSetInstance();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
@@ -89,13 +99,16 @@ public class EntityLoader
 		return set;
 	}
 
-	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao, MapMeta<K, V> mapPropertyMeta)
+	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao,
+			MapMeta<K, V> mapPropertyMeta)
 	{
 
-		DynamicComposite start = dao.buildQueryComponentComparator(mapPropertyMeta.getPropertyName(), mapPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = dao.buildQueryComponentComparator(mapPropertyMeta.getPropertyName(), mapPropertyMeta.propertyType(),
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
+		DynamicComposite start = keyFactory.buildQueryComparator(mapPropertyMeta.getPropertyName(),
+				mapPropertyMeta.propertyType(), EQUAL);
+		DynamicComposite end = keyFactory.buildQueryComparator(mapPropertyMeta.getPropertyName(),
+				mapPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
 		Map<K, V> map = mapPropertyMeta.newMapInstance();
 
 		Class<K> keyClass = mapPropertyMeta.getKeyClass();
@@ -108,7 +121,8 @@ public class EntityLoader
 		return map;
 	}
 
-	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
+	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao,
+			PropertyMeta<V> propertyMeta)
 	{
 		Object value = null;
 		switch (propertyMeta.propertyType())
