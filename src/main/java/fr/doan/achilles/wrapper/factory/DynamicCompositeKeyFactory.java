@@ -85,6 +85,20 @@ public class DynamicCompositeKeyFactory
 		return buildQueryComparator(propertyName, type, hashOrPosition, equality);
 	}
 
+	public DynamicComposite buildQueryComparatorStart(String propertyName, PropertyType type,
+			Object value, boolean inclusive)
+	{
+		ComponentEquality equality = inclusive ? EQUAL : GREATER_THAN_EQUAL;
+		return buildQueryComparator(propertyName, type, value, equality);
+	}
+
+	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
+			Object value, boolean inclusive)
+	{
+		ComponentEquality equality = inclusive ? EQUAL : LESS_THAN_EQUAL;
+		return buildQueryComparator(propertyName, type, value, equality);
+	}
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -173,7 +187,7 @@ public class DynamicCompositeKeyFactory
 	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
 			List<Object> keyValues, List<Serializer<?>> serializers, boolean inclusive)
 	{
-		ComponentEquality equality = inclusive ? EQUAL : LESS_THAN_EQUAL;
+		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
 		return buildQueryComparator(propertyName, type, keyValues, serializers, equality);
 
 	}

@@ -103,7 +103,8 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case WIDE_MAP:
-				result = buildWideMapWrapper(propertyMeta);
+				WideMapMeta wideMapMeta = (WideMapMeta) propertyMeta;
+				result = buildWideMapWrapper(wideMapMeta);
 				break;
 			default:
 				result = proxy.invoke(target, args);
@@ -112,24 +113,20 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <V> Object buildWideMapWrapper(PropertyMeta<V> propertyMeta)
+	private <K extends Comparable<K>, V> Object buildWideMapWrapper(WideMapMeta<K, V> propertyMeta)
 	{
 		Object result;
 
-		WideMapMeta<?, V> meta = (WideMapMeta<?, V>) propertyMeta;
-
-		if (meta.isSingleKey())
+		if (propertyMeta.isSingleKey())
 		{
 
-			result = WideMapWrapperBuilder.builder(key, dao, meta).build();
+			result = WideMapWrapperBuilder.builder(key, dao, propertyMeta).build();
 		}
 		else
 		{
-			WideMapMeta<?, V> multiKeyMeta = (WideMapMeta<?, V>) propertyMeta;
+			result = null;
 		}
 
-		result = null;
 		return result;
 	}
 

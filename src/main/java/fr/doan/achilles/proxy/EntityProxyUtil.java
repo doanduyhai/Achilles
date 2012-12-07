@@ -1,6 +1,7 @@
 package fr.doan.achilles.proxy;
 
 import net.sf.cglib.proxy.Factory;
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
 public class EntityProxyUtil
@@ -22,5 +23,19 @@ public class EntityProxyUtil
 		}
 
 		return baseClass;
+	}
+
+	public Object determinePrimaryKey(Object entity, EntityMeta<?> entityMeta)
+	{
+		Object key;
+		try
+		{
+			key = entityMeta.getIdMeta().getGetter().invoke(entity, (Object[]) null);
+		}
+		catch (Exception e)
+		{
+			key = null;
+		}
+		return key;
 	}
 }

@@ -13,6 +13,8 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
+import fr.doan.achilles.entity.operations.EntityRefresher;
+import fr.doan.achilles.entity.operations.EntityValidator;
 import fr.doan.achilles.proxy.EntityProxyUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
@@ -30,7 +32,9 @@ public class ThriftEntityManager implements EntityManager
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
 	private EntityMerger merger = new EntityMerger();
+	private EntityRefresher entityRefresher = new EntityRefresher();
 	private EntityProxyUtil util = new EntityProxyUtil();
+	private EntityValidator entityValidator = new EntityValidator();
 
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
@@ -41,10 +45,11 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void persist(Object entity)
 	{
-		this.validateEntity(entity);
+		entityValidator.validateEntity(entity, entityMetaMap);
 		if (util.isProxy(entity))
 		{
-			throw new IllegalStateException("Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+			throw new IllegalStateException(
+					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
@@ -55,7 +60,7 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public <T> T merge(T entity)
 	{
-		this.validateEntity(entity);
+		entityValidator.validateEntity(entity, entityMetaMap);
 		Class baseClass = util.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
 		return this.merger.mergeEntity(entity, entityMeta);
@@ -64,7 +69,8 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void remove(Object entity)
 	{
-		this.validateEntity(entity);
+		entityValidator.validateEntity(entity, entityMetaMap);
+
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
 		this.persister.remove(entity, entityMeta);
 	}
@@ -78,8 +84,15 @@ public class ThriftEntityManager implements EntityManager
 
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(entityClass);
 
-		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey, (EntityMeta) entityMeta);
-		return (T) this.interceptorBuilder.build(entity, entityMeta);
+		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey,
+				(EntityMeta) entityMeta);
+
+		if (entity != null)
+		{
+			entity = (T) this.interceptorBuilder.build(entity, entityMeta);
+		}
+
+		return entity;
 	}
 
 	@Override
@@ -91,14 +104,14 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void flush()
 	{
-		// TODO Auto-generated method stub
-
+		// Do nothing here
 	}
 
 	@Override
 	public void setFlushMode(FlushModeType flushMode)
 	{
-		throw new UnsupportedOperationException("This operation is not supported for this Entity Manager");
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 
 	}
 
@@ -111,70 +124,77 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void lock(Object entity, LockModeType lockMode)
 	{
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public void refresh(Object entity)
 	{
-		// TODO Auto-generated method stub
 
+		if (!util.isProxy(entity))
+		{
+			throw new IllegalStateException("The entity " + entity + " is not in 'managed' state");
+		}
+		else
+		{
+			entityRefresher.refresh(entity, entityMetaMap);
+		}
 	}
 
 	@Override
 	public void clear()
 	{
-		// TODO Auto-generated method stub
+		//
 
 	}
 
 	@Override
 	public boolean contains(Object entity)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public Query createQuery(String qlString)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public Query createNamedQuery(String name)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 
 	@Override
 	public void joinTransaction()
 	{
-		// TODO Auto-generated method stub
+		// Do nothing
 
 	}
 
@@ -187,43 +207,20 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void close()
 	{
-		// TODO Auto-generated method stub
+		// Do nothing
 
 	}
 
 	@Override
 	public boolean isOpen()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public EntityTransaction getTransaction()
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private void validateEntity(Object entity)
-	{
-		Validator.validateNotNull(entity, "entity");
-
-		Class baseClass = util.deriveBaseClass(entity);
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
-
-		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName() + " is not managed");
-
-		Object key = null;
-		try
-		{
-			key = entityMeta.getIdMeta().getGetter().invoke(entity, (Object[]) null);
-		}
-		catch (Exception e)
-		{
-			throw new IllegalArgumentException("Cannot get identifier for entity " + entity.getClass().getCanonicalName());
-		}
-
-		Validator.validateNotNull(key, "Primary key for entity shoud not be null");
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Entity Manager");
 	}
 }

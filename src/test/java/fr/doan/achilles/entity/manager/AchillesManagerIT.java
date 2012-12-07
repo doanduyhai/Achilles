@@ -14,6 +14,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
+import javax.persistence.LockModeType;
+
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -28,22 +31,28 @@ import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class AchillesManagerIT
 {
 
 	private final String ENTITY_PACKAGE = "mapping.entity";
-	private GenericDao<Long> dao = getDao(LONG_SRZ, normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
+	private GenericDao<Long> dao = getDao(LONG_SRZ,
+			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
+	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
+			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	@Test
 	public void should_persist() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		em.persist(bean);
 
@@ -51,10 +60,11 @@ public class AchillesManagerIT
 		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
 
 		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(), ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
+				ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch,
-				false, 20);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(7);
 
@@ -99,9 +109,11 @@ public class AchillesManagerIT
 		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(),
+				ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
+				endCompositeForEagerFetch, false, 20);
 		assertThat(columns).hasSize(2);
 
 		Pair<DynamicComposite, Object> foo = columns.get(0);
@@ -117,8 +129,9 @@ public class AchillesManagerIT
 	@Test
 	public void should_find() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L).addFriends("bob")
-				.addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
+				.addPreference(2, "New York").buid();
 
 		em.persist(bean);
 
@@ -136,8 +149,9 @@ public class AchillesManagerIT
 	@Test
 	public void should_find_lazy() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky")
+				.addPreference(1, "US").addPreference(2, "New York").buid();
 
 		em.persist(bean);
 
@@ -147,7 +161,8 @@ public class AchillesManagerIT
 		JpaInterceptor interceptor = (JpaInterceptor) factory.getCallback(0);
 
 		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
-		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget(), (Object[]) null);
+		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget(),
+				(Object[]) null);
 
 		assertThat(lazyFriends).isNull();
 
@@ -161,8 +176,9 @@ public class AchillesManagerIT
 	@Test
 	public void should_merge_modifications() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky")
+				.addPreference(1, "US").addPreference(2, "New York").buid();
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
@@ -179,17 +195,19 @@ public class AchillesManagerIT
 		assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
 
 		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
-		startCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
+				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
 		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
+				ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch,
-				false, 20);
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(1);
 
@@ -199,16 +217,19 @@ public class AchillesManagerIT
 		assertThat(age.right).isEqualTo(100L);
 
 		startCompositeForEagerFetch = new DynamicComposite();
-		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
+				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
+				ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
+				endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(3);
 
@@ -218,7 +239,8 @@ public class AchillesManagerIT
 		assertThat(eve.right).isEqualTo("eve");
 
 		startCompositeForEagerFetch = new DynamicComposite();
-		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
+				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
@@ -227,7 +249,8 @@ public class AchillesManagerIT
 		endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
+				endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(2);
 
@@ -236,6 +259,95 @@ public class AchillesManagerIT
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
 		KeyValueHolder mapValue = (KeyValueHolder) FR.right;
 		assertThat(mapValue.getValue()).isEqualTo("FR");
+	}
+
+	@Test
+	public void should_remove() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+		em.persist(bean);
+
+		em.remove(bean);
+
+		CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
+
+		assertThat(foundBean).isNull();
+
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), null,
+				null, false, 20);
+
+		assertThat(columns).hasSize(0);
+
+	}
+
+	@Test
+	public void should_get_reference() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+		em.persist(bean);
+
+		CompleteBean foundBean = em.getReference(CompleteBean.class, bean.getId());
+
+		assertThat(foundBean).isNotNull();
+		assertThat(foundBean.getId()).isEqualTo(bean.getId());
+
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_on_set_flush_mode() throws Exception
+	{
+		em.setFlushMode(FlushModeType.COMMIT);
+	}
+
+	@Test
+	public void should_get_flush_moe() throws Exception
+	{
+		FlushModeType type = em.getFlushMode();
+
+		assertThat(type).isEqualTo(FlushModeType.AUTO);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_on_lock() throws Exception
+	{
+		em.lock("sdf", LockModeType.READ);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_refreshing_non_managed_entity() throws Exception
+	{
+		em.refresh("test");
+	}
+
+	@Test
+	public void should_refresh() throws Exception
+	{
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+		bean = em.merge(bean);
+
+		DynamicComposite nameComposite = keyFactory
+				.buildForProperty("name", PropertyType.SIMPLE, 0);
+		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
+
+		DynamicComposite friend3Composite = keyFactory.buildForProperty("friends",
+				PropertyType.LAZY_LIST, 2);
+		dao.setValue(bean.getId(), friend3Composite, "qux");
+
+		em.refresh(bean);
+
+		assertThat(bean.getName()).isEqualTo("DuyHai_modified");
+		assertThat(bean.getFriends()).hasSize(3);
+		assertThat(bean.getFriends().get(2)).isEqualTo("qux");
 	}
 
 	@After

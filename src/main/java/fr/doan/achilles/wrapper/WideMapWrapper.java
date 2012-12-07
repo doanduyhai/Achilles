@@ -2,12 +2,15 @@ package fr.doan.achilles.wrapper;
 
 import java.util.List;
 
+import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
+import fr.doan.achilles.validation.Validator;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
@@ -16,7 +19,7 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K, V>
+public class WideMapWrapper<ID, K extends Comparable<K>, V>
 {
 	private ID id;
 	private GenericDao<ID> dao;
@@ -26,7 +29,11 @@ public class WideMapWrapper<ID, K, V>
 
 	public V getValue(K key)
 	{
-		return null;
+		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
+		Object value = dao.getValue(id, composite);
+
+		return wideMapMeta.get(value);
 	}
 
 	public void insertValue(K key, V value, int ttl)
@@ -57,34 +64,94 @@ public class WideMapWrapper<ID, K, V>
 	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		return null;
+		if (start != null && end != null)
+		{
+			if (reverse)
+			{
+				Validator.validateTrue(start.compareTo(end) > 0,
+						"For reverse range query, start value should be greater than end value");
+			}
+			else
+			{
+				Validator.validateTrue(start.compareTo(end) < 0,
+						"For range query, start value should be lesser than end value");
+			}
+		}
+
+		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
+		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id, startComp,
+				endComp, reverse, count);
+
+		return KeyValue.fromList(hColumns, wideMapMeta.getKeySerializer(), wideMapMeta);
 	}
 
 	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
 	{
-		return null;
+		return iterator(start, end, true, reverse, count);
 	}
 
 	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
-		return null;
+		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		return null;
+		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
+		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+
+		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
+				.getColumnsIterator(id, startComp, endComp, reverse, count);
+
+		return new KeyValueIterator(columnSliceIterator, wideMapMeta.getKeySerializer());
 	}
 
 	public void removeValue(K key)
 	{
+		DynamicComposite comp = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
 
+		dao.removeColumn(id, comp);
 	}
 
 	public void removeValues(K start, K end)
 	{
+		removeValues(start, end, true);
+	}
 
+	public void removeValues(K start, K end, boolean inclusiveBounds)
+	{
+		removeValues(start, inclusiveBounds, end, inclusiveBounds);
+	}
+
+	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	{
+
+		if (start != null && end != null)
+		{
+			Validator.validateTrue(start.compareTo(end) < 0,
+					"For range query, start value should be lesser than end value");
+		}
+
+		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
+		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+
+		dao.removeColumnRange(id, startComp, endComp);
 	}
 
 	public void setId(ID id)

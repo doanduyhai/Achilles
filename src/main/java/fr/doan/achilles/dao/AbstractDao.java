@@ -48,13 +48,15 @@ public abstract class AbstractDao<K, N, V>
 	public void insertName(K key, N name)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
+		mutator.insert(key, columnFamily,
+				HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
 		mutator.execute();
 	}
 
 	public void insertNameBatch(K key, N name, Mutator<K> mutator)
 	{
-		mutator.insert(key, columnFamily, HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
+		mutator.insert(key, columnFamily,
+				HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
 	}
 
 	public void insertColumn(K key, N name, V value, int ttl, Mutator<K> mutator)
@@ -64,7 +66,11 @@ public abstract class AbstractDao<K, N, V>
 		{
 			mut = HFactory.createMutator(keyspace, keySerializer);
 		}
-		mut.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl));
+		mut.insert(
+				key,
+				columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
+						ttl));
 		if (mutator == null)
 		{
 			mut.execute();
@@ -78,7 +84,8 @@ public abstract class AbstractDao<K, N, V>
 		{
 			mut = HFactory.createMutator(keyspace, keySerializer);
 		}
-		mut.insert(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
+		mut.insert(key, columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
 		if (mutator == null)
 		{
 			mut.execute();
@@ -88,7 +95,8 @@ public abstract class AbstractDao<K, N, V>
 	public V getValue(K key, N name)
 	{
 		V result = null;
-		HColumn<N, V> column = HFactory.createColumnQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
+		HColumn<N, V> column = HFactory
+				.createColumnQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
 				.setColumnFamily(columnFamily).setKey(key).setName(name).execute().get();
 		if (column != null)
 		{
@@ -100,13 +108,19 @@ public abstract class AbstractDao<K, N, V>
 	public void setValue(K key, N name, V value)
 	{
 		HFactory.createMutator(keyspace, keySerializer)
-				.addInsertion(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer)).execute();
+				.addInsertion(key, columnFamily,
+						HFactory.createColumn(name, value, columnNameSerializer, valueSerializer))
+				.execute();
 	}
 
 	public void setValue(K key, N name, V value, int ttl)
 	{
 		HFactory.createMutator(keyspace, keySerializer)
-				.addInsertion(key, columnFamily, HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(ttl)).execute();
+				.addInsertion(
+						key,
+						columnFamily,
+						HFactory.createColumn(name, value, columnNameSerializer, valueSerializer)
+								.setTtl(ttl)).execute();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -114,8 +128,10 @@ public abstract class AbstractDao<K, N, V>
 	{
 		N[] columnsName = (N[]) names.toArray();
 		List<HColumn<N, V>> columns = new ArrayList<HColumn<N, V>>();
-		ColumnSlice<N, V> slices = HFactory.createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
-				.setColumnFamily(columnFamily).setKey(key).setColumnNames(columnsName).execute().get();
+		ColumnSlice<N, V> slices = HFactory
+				.createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
+				.setColumnFamily(columnFamily).setKey(key).setColumnNames(columnsName).execute()
+				.get();
 
 		if (slices.getColumns() != null && slices.getColumns().size() > 0)
 		{
@@ -135,8 +151,9 @@ public abstract class AbstractDao<K, N, V>
 	public void removeColumnRange(K key, N start, N end)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
+				.setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
 
 		for (HColumn<N, V> column : columns)
 		{
@@ -149,8 +166,9 @@ public abstract class AbstractDao<K, N, V>
 	{
 		List<V> values = new ArrayList<V>();
 
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setRange(startName, null, reverse, count).execute().get().getColumns();
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
+				.setRange(startName, null, reverse, count).execute().get().getColumns();
 
 		for (HColumn<N, V> column : columns)
 		{
@@ -161,8 +179,9 @@ public abstract class AbstractDao<K, N, V>
 
 	public List<N> findNamesRange(K key, N startName, boolean reverse, int count)
 	{
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setRange(startName, null, reverse, count).execute().get().getColumns();
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
+				.setRange(startName, null, reverse, count).execute().get().getColumns();
 
 		List<N> names = new ArrayList<N>();
 		for (HColumn<N, V> column : columns)
@@ -180,10 +199,12 @@ public abstract class AbstractDao<K, N, V>
 		return this.findColumnsRange(key, startName, (N) null, reverse, count);
 	}
 
-	public List<Pair<N, V>> findColumnsRange(K key, N startName, N endName, boolean reverse, int count)
+	public List<Pair<N, V>> findColumnsRange(K key, N startName, N endName, boolean reverse,
+			int count)
 	{
-		List<HColumn<N, V>> results = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setRange(startName, endName, reverse, count).execute().get().getColumns();
+		List<HColumn<N, V>> results = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
+				.setRange(startName, endName, reverse, count).execute().get().getColumns();
 
 		List<Pair<N, V>> columns = new ArrayList<Pair<N, V>>();
 		for (HColumn<N, V> column : results)
@@ -194,41 +215,57 @@ public abstract class AbstractDao<K, N, V>
 		return columns;
 	}
 
-	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse, int length)
+	public List<HColumn<N, V>> findRawColumnsRange(K key, N startName, N endName, boolean reverse,
+			int count)
+	{
+		return createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
+				.setColumnFamily(columnFamily).setKey(key)
+				.setRange(startName, endName, reverse, count).execute().get().getColumns();
+	}
+
+	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse,
+			int length)
 	{
 		return getColumnsIterator(key, startName, null, reverse, length);
 	}
 
-	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName, boolean reverse, int length)
+	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
+			boolean reverse, int length)
 	{
-		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer).setColumnFamily(columnFamily)
-				.setKey(key);
+		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
+				valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
 		return new ColumnSliceIterator<K, N, V>(query, startName, endName, reverse, length);
 	}
 
-	public CounterColumnSliceIterator<K, N> getCounterColumnsIterator(K key, N startName, boolean reverse, int length)
+	public CounterColumnSliceIterator<K, N> getCounterColumnsIterator(K key, N startName,
+			boolean reverse, int length)
 	{
-		SliceCounterQuery<K, N> query = createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer).setColumnFamily(columnFamily).setKey(
-				key);
+		SliceCounterQuery<K, N> query = createCounterSliceQuery(keyspace, keySerializer,
+				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
 
 		return new CounterColumnSliceIterator<K, N>(query, startName, (N) null, reverse, length);
 	}
 
-	public <KEY, NAME, VALUE> ColumnSliceIterator<KEY, NAME, VALUE> getSpecificColumnsIterator(Serializer<KEY> keySz, Serializer<NAME> nameSz,
-			Serializer<VALUE> valueSz, String CF, KEY key, NAME startName, boolean reverse, int length)
+	public <KEY, NAME, VALUE> ColumnSliceIterator<KEY, NAME, VALUE> getSpecificColumnsIterator(
+			Serializer<KEY> keySz, Serializer<NAME> nameSz, Serializer<VALUE> valueSz, String CF,
+			KEY key, NAME startName, boolean reverse, int length)
 	{
-		SliceQuery<KEY, NAME, VALUE> query = createSliceQuery(keyspace, keySz, nameSz, valueSz).setColumnFamily(CF).setKey(key);
+		SliceQuery<KEY, NAME, VALUE> query = createSliceQuery(keyspace, keySz, nameSz, valueSz)
+				.setColumnFamily(CF).setKey(key);
 
-		return new ColumnSliceIterator<KEY, NAME, VALUE>(query, startName, (NAME) null, reverse, length);
+		return new ColumnSliceIterator<KEY, NAME, VALUE>(query, startName, (NAME) null, reverse,
+				length);
 	}
 
-	public List<HCounterColumn<N>> findCounterColumnsRange(K key, N startName, boolean reverse, int size)
+	public List<HCounterColumn<N>> findCounterColumnsRange(K key, N startName, boolean reverse,
+			int size)
 	{
-		SliceCounterQuery<K, N> counterQuery = createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer).setColumnFamily(columnFamily)
-				.setKey(key);
+		SliceCounterQuery<K, N> counterQuery = createCounterSliceQuery(keyspace, keySerializer,
+				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return counterQuery.setRange(startName, (N) null, reverse, size).execute().get().getColumns();
+		return counterQuery.setRange(startName, (N) null, reverse, size).execute().get()
+				.getColumns();
 	}
 
 	public void removeRow(K key)
@@ -264,7 +301,8 @@ public abstract class AbstractDao<K, N, V>
 
 	public long getCounterValue(K key, N name)
 	{
-		CounterQuery<K, N> counter = new ThriftCounterColumnQuery<K, N>(keyspace, keySerializer, columnNameSerializer);
+		CounterQuery<K, N> counter = new ThriftCounterColumnQuery<K, N>(keyspace, keySerializer,
+				columnNameSerializer);
 
 		counter.setColumnFamily(columnFamily).setKey(key).setName(name);
 
