@@ -9,6 +9,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
@@ -133,8 +134,16 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
+		PropertyMeta<?> propertyMeta = this.setterMetas.get(method);
+
+		if (propertyMeta.propertyType() == PropertyType.WIDE_MAP)
+		{
+			throw new UnsupportedOperationException(
+					"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
+		}
+
 		Object result;
-		this.dirtyMap.put(method, this.setterMetas.get(method));
+		this.dirtyMap.put(method, propertyMeta);
 		result = proxy.invoke(target, args);
 		return result;
 	}

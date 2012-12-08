@@ -9,6 +9,7 @@ import fr.doan.achilles.entity.metadata.SimpleLazyMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.validation.Validator;
 
+@SuppressWarnings("unchecked")
 public class SimpleMetaBuilder<V>
 {
 
@@ -58,21 +59,21 @@ public class SimpleMetaBuilder<V>
 		meta.setLazy(lazy);
 	}
 
-	public SimpleMetaBuilder<V> propertyName(String propertyName)
+	public <T extends SimpleMetaBuilder<V>> T propertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
-		return this;
+		return (T) this;
 	}
 
-	public SimpleMetaBuilder<V> accessors(Method[] accessors)
+	public <T extends SimpleMetaBuilder<V>> T accessors(Method[] accessors)
 	{
 		this.accessors = accessors;
-		return this;
+		return (T) this;
 	}
 
-	public SimpleMetaBuilder<V> lazy(boolean lazy)
+	public <T extends SimpleMetaBuilder<V>> T lazy(boolean lazy)
 	{
 		this.lazy = lazy;
-		return this;
+		return (T) this;
 	}
 }

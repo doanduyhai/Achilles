@@ -92,7 +92,10 @@ public class EntityPersister
 		DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = entityPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
-		dao.insertColumn(key, name, value, mutator);
+		if (value != null)
+		{
+			dao.insertColumn(key, name, value, mutator);
+		}
 	}
 
 	public <ID> void persistSimpleProperty(Object entity, ID key, GenericDao<ID> dao,
@@ -114,7 +117,10 @@ public class EntityPersister
 			{
 				DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), count);
-				dao.insertColumn(key, name, value, mutator);
+				if (value != null)
+				{
+					dao.insertColumn(key, name, value, mutator);
+				}
 				count++;
 			}
 		}
@@ -139,7 +145,10 @@ public class EntityPersister
 			{
 				DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), value.hashCode());
-				dao.insertColumn(key, name, value, mutator);
+				if (value != null)
+				{
+					dao.insertColumn(key, name, value, mutator);
+				}
 			}
 		}
 	}

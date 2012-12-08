@@ -65,8 +65,16 @@ public class DynamicCompositeKeyFactory
 	{
 		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
-		composite.addComponent(2, value, equality);
+
+		if (value != null)
+		{
+			composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+			composite.addComponent(2, value, equality);
+		}
+		else
+		{
+			composite.addComponent(1, propertyName, equality);
+		}
 
 		return composite;
 	}
@@ -81,7 +89,7 @@ public class DynamicCompositeKeyFactory
 	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
 			int hashOrPosition, boolean inclusive)
 	{
-		ComponentEquality equality = inclusive ? EQUAL : LESS_THAN_EQUAL;
+		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
 		return buildQueryComparator(propertyName, type, hashOrPosition, equality);
 	}
 
@@ -95,7 +103,7 @@ public class DynamicCompositeKeyFactory
 	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
 			Object value, boolean inclusive)
 	{
-		ComponentEquality equality = inclusive ? EQUAL : LESS_THAN_EQUAL;
+		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
 		return buildQueryComparator(propertyName, type, value, equality);
 	}
 

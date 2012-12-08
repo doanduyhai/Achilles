@@ -4,12 +4,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.type.WideMap;
 
 @Table
 public class CompleteBean implements Serializable
@@ -35,6 +37,9 @@ public class CompleteBean implements Serializable
 
 	@Column
 	private Map<Integer, String> preferences;
+
+	@Column
+	private WideMap<UUID, String> tweets;
 
 	public Long getId()
 	{
@@ -96,4 +101,13 @@ public class CompleteBean implements Serializable
 		this.age = age;
 	}
 
+	public WideMap<UUID, String> getTweets()
+	{
+		return tweets;
+	}
+
+	public void setTweets(WideMap<UUID, String> tweets)
+	{
+		this.tweets = tweets;
+	}
 }

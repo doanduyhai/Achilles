@@ -21,11 +21,20 @@ public class MapMetaBuilder<K, V> extends SimpleMetaBuilder<V>
 		this.keyClass = keyClass;
 	}
 
+	protected <T extends MapMeta<K, V>> T build(T meta)
+	{
+		Validator.validateNotNull(keyClass, "keyClass");
+		super.build(meta);
+		Serializer<K> keySerializer = SerializerTypeInferer.getSerializer(keyClass);
+		meta.setKeyClass(keyClass);
+		meta.setKeySerializer(keySerializer);
+
+		return null;
+	}
+
 	@Override
 	public MapMeta<K, V> build()
 	{
-
-		Validator.validateNotNull(keyClass, "keyClass");
 
 		MapMeta<K, V> meta;
 
@@ -38,12 +47,7 @@ public class MapMetaBuilder<K, V> extends SimpleMetaBuilder<V>
 			meta = new MapMeta<K, V>();
 		}
 
-		super.build(meta);
-
-		Serializer<?> keySerializer = SerializerTypeInferer.getSerializer(keyClass);
-		meta.setKeyClass(keyClass);
-		meta.setKeySerializer(keySerializer);
-
+		this.build(meta);
 		return meta;
 	}
 

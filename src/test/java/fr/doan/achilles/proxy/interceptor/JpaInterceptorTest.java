@@ -103,7 +103,8 @@ public class JpaInterceptorTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity).lazyLoaded(lazyLoaded).build();
+		interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity)
+				.lazyLoaded(lazyLoaded).build();
 
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
@@ -238,5 +239,16 @@ public class JpaInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(MapWrapper.class);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_call_setter_on_wide_map() throws Throwable
+	{
+		when(setterMetas.containsKey(nameSetter)).thenReturn(true);
+		when(setterMetas.get(nameSetter)).thenReturn(propertyMeta);
+		when(propertyMeta.isLazy()).thenReturn(true);
+		when(propertyMeta.propertyType()).thenReturn(PropertyType.WIDE_MAP);
+
+		this.interceptor.intercept(entity, nameSetter, (Object[]) null, proxy);
 	}
 }

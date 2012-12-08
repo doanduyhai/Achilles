@@ -9,14 +9,19 @@ public class MapMeta<K, V> extends SimpleMeta<V>
 {
 
 	private Class<K> keyClass;
-	private Serializer<?> keySerializer;
+	private Serializer<K> keySerializer;
 
 	public Class<K> getKeyClass()
 	{
 		return keyClass;
 	}
 
-	public Serializer<?> getKeySerializer()
+	public K getKey(Object object)
+	{
+		return keyClass.cast(object);
+	}
+
+	public Serializer<K> getKeySerializer()
 	{
 		return keySerializer;
 	}
@@ -26,9 +31,9 @@ public class MapMeta<K, V> extends SimpleMeta<V>
 		this.keyClass = keyClass;
 	}
 
-	public void setKeySerializer(Serializer<?> keyClassSerializer)
+	public void setKeySerializer(Serializer<K> K)
 	{
-		this.keySerializer = keyClassSerializer;
+		this.keySerializer = K;
 	}
 
 	public Map<K, V> newMapInstance()

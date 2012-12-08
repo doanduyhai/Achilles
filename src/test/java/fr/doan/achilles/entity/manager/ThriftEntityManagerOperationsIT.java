@@ -33,7 +33,7 @@ import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
-public class AchillesManagerIT
+public class ThriftEntityManagerOperationsIT
 {
 
 	private final String ENTITY_PACKAGE = "mapping.entity";
@@ -335,6 +335,8 @@ public class AchillesManagerIT
 
 		bean = em.merge(bean);
 
+		bean.getFriends();
+
 		DynamicComposite nameComposite = keyFactory
 				.buildForProperty("name", PropertyType.SIMPLE, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
@@ -348,6 +350,58 @@ public class AchillesManagerIT
 		assertThat(bean.getName()).isEqualTo("DuyHai_modified");
 		assertThat(bean.getFriends()).hasSize(3);
 		assertThat(bean.getFriends().get(2)).isEqualTo("qux");
+
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_contains() throws Exception
+	{
+		em.contains("sdf");
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_create_query() throws Exception
+	{
+		em.createQuery("query");
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_create_named_query() throws Exception
+	{
+		em.createNamedQuery("query");
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_create_native_query() throws Exception
+	{
+		em.createNativeQuery("query");
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_create_native_query_with_result_class() throws Exception
+	{
+		em.createNativeQuery("query", String.class);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_create_native_query_with_result_set_mapping()
+			throws Exception
+	{
+		em.createNativeQuery("query", "mapping");
+	}
+
+	@Test
+	public void should_get_delegate() throws Exception
+	{
+		Object delegate = em.getDelegate();
+
+		assertThat(delegate).isSameAs(em);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_get_transaction() throws Exception
+	{
+		em.getTransaction();
 	}
 
 	@After

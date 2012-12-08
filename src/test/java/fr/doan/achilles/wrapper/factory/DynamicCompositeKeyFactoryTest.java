@@ -85,6 +85,20 @@ public class DynamicCompositeKeyFactoryTest
 	}
 
 	@Test
+	public void should_build_query_comparator_with_null_value() throws Exception
+	{
+		DynamicComposite comp = keyFactory.buildQueryComparator("friends", PropertyType.LIST, null,
+				LESS_THAN_EQUAL);
+
+		assertThat(comp.getComponents()).hasSize(2);
+		assertThat(comp.getComponent(0).getValue()).isEqualTo(PropertyType.LIST.flag());
+		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
+
+		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
+		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.LESS_THAN_EQUAL);
+	}
+
+	@Test
 	public void should_build_query_comparator_start_inclusive() throws Exception
 	{
 		DynamicComposite comp = keyFactory.buildQueryComparatorStart("friends", PropertyType.LIST,
@@ -130,7 +144,8 @@ public class DynamicCompositeKeyFactoryTest
 		assertThat(comp.getComponent(1).getEquality()).isSameAs(ComponentEquality.EQUAL);
 
 		assertThat(comp.getComponent(2).getValue()).isEqualTo(4);
-		assertThat(comp.getComponent(2).getEquality()).isSameAs(ComponentEquality.EQUAL);
+		assertThat(comp.getComponent(2).getEquality()).isSameAs(
+				ComponentEquality.GREATER_THAN_EQUAL);
 	}
 
 	@Test

@@ -14,18 +14,6 @@ public class WideMapMetaTest
 {
 	private WideMapMeta<String, String> propertyMeta = new WideMapMeta<String, String>();
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_getter_asked() throws Exception
-	{
-		propertyMeta.getGetter();
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_setter_asked() throws Exception
-	{
-		propertyMeta.getSetter();
-	}
-
 	@Test
 	public void should_cast_key() throws Exception
 	{

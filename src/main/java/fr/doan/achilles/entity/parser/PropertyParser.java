@@ -255,17 +255,16 @@ public class PropertyParser
 		}
 
 		Validator.validateSerializable(valueClass, "value type of " + field.getName());
-
+		Method[] accessors = helper.findAccessors(beanClass, field);
 		if (keyClasses.size() == 0)
 		{
 			return wideMapPropertyMetaBuiler(keyClass, valueClass).propertyName(propertyName)
-					.build();
+					.accessors(accessors).build();
 		}
 		else
 		{
-			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass)
-					.propertyName(propertyName).keyClasses(keyClasses).keyGetters(keyGetters)
-					.build();
+			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass).keyClasses(keyClasses)
+					.keyGetters(keyGetters).propertyName(propertyName).accessors(accessors).build();
 		}
 
 	}

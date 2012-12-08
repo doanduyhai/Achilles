@@ -24,8 +24,8 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 		super(keyClass, valueClass);
 	}
 
-	public static <K, V> MultiKeyWideMapMetaBuilder<K, V> multiKeyWideMapPropertyMetaBuiler(Class<K> keyClass,
-			Class<V> valueClass)
+	public static <K, V> MultiKeyWideMapMetaBuilder<K, V> multiKeyWideMapPropertyMetaBuiler(
+			Class<K> keyClass, Class<V> valueClass)
 	{
 		return new MultiKeyWideMapMetaBuilder<K, V>(keyClass, valueClass);
 	}
@@ -58,12 +58,6 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 	public MultiKeyWideMapMetaBuilder<K, V> keyGetters(List<Method> keyGetters)
 	{
 		this.keyGetters = keyGetters;
-		return this;
-	}
-
-	public MultiKeyWideMapMetaBuilder<K, V> propertyName(String propertyName)
-	{
-		this.propertyName = propertyName;
 		return this;
 	}
 }

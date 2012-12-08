@@ -10,6 +10,7 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.validation.Validator;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -19,7 +20,7 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K extends Comparable<K>, V>
+public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K, V>
 {
 	private ID id;
 	private GenericDao<ID> dao;
@@ -27,6 +28,7 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
+	@Override
 	public V getValue(K key)
 	{
 		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
@@ -36,6 +38,7 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		return wideMapMeta.get(value);
 	}
 
+	@Override
 	public void insertValue(K key, V value, int ttl)
 	{
 		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
@@ -43,6 +46,7 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		dao.setValue(id, composite, (Object) value, ttl);
 	}
 
+	@Override
 	public void insertValue(K key, V value)
 	{
 		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
@@ -50,17 +54,20 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		dao.setValue(id, composite, (Object) value);
 	}
 
+	@Override
 	public List<KeyValue<K, V>> findValues(K start, K end, boolean reverse, int count)
 	{
 		return findValues(start, end, true, reverse, count);
 	}
 
+	@Override
 	public List<KeyValue<K, V>> findValues(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
 		return findValues(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
+	@Override
 	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
@@ -89,17 +96,20 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		return KeyValue.fromList(hColumns, wideMapMeta.getKeySerializer(), wideMapMeta);
 	}
 
+	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
 	{
 		return iterator(start, end, true, reverse, count);
 	}
 
+	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
 		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
+	@Override
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -119,6 +129,7 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		return new KeyValueIterator(columnSliceIterator, wideMapMeta.getKeySerializer());
 	}
 
+	@Override
 	public void removeValue(K key)
 	{
 		DynamicComposite comp = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
@@ -127,16 +138,19 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V>
 		dao.removeColumn(id, comp);
 	}
 
+	@Override
 	public void removeValues(K start, K end)
 	{
 		removeValues(start, end, true);
 	}
 
+	@Override
 	public void removeValues(K start, K end, boolean inclusiveBounds)
 	{
 		removeValues(start, inclusiveBounds, end, inclusiveBounds);
 	}
 
+	@Override
 	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
