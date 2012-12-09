@@ -4,18 +4,24 @@ import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * CorrectMultiKey
+ * MultiKeyNotInstantiable
  * 
  * @author DuyHai DOAN
  * 
  */
-public class CorrectMultiKey implements MultiKey
+public class MultiKeyNotInstantiable implements MultiKey
 {
 	@Key(order = 1)
 	private String name;
 
 	@Key(order = 2)
 	private int rank;
+
+	public MultiKeyNotInstantiable(String name, int rank) {
+		super();
+		this.name = name;
+		this.rank = rank;
+	}
 
 	public String getName()
 	{
@@ -36,4 +42,5 @@ public class CorrectMultiKey implements MultiKey
 	{
 		this.rank = rank;
 	}
+
 }

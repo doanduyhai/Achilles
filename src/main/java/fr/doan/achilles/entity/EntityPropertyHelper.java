@@ -15,7 +15,8 @@ public class EntityPropertyHelper
 
 	protected String deriveGetterName(Field field)
 	{
-		String camelCase = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+		String camelCase = field.getName().substring(0, 1).toUpperCase()
+				+ field.getName().substring(1);
 
 		if (StringUtils.equals(field.getType().toString(), "boolean"))
 		{
@@ -43,11 +44,13 @@ public class EntityPropertyHelper
 			Method getterMethod = beanClass.getDeclaredMethod(getter, (Class<?>[]) null);
 			if (!Modifier.isPublic(getterMethod.getModifiers()))
 			{
-				throw new InvalidBeanException("The getter for field '" + fieldName + "' should be public");
+				throw new InvalidBeanException("The getter for field '" + fieldName
+						+ "' should be public");
 			}
 			else if (getterMethod.getReturnType() != field.getType())
 			{
-				throw new InvalidBeanException("The getter for field '" + fieldName + "' does not return correct type");
+				throw new InvalidBeanException("The getter for field '" + fieldName
+						+ "' does not return correct type");
 			}
 
 			return getterMethod;
@@ -55,7 +58,8 @@ public class EntityPropertyHelper
 		}
 		catch (NoSuchMethodException e)
 		{
-			throw new InvalidBeanException("The getter for field '" + fieldName + "' does not exist");
+			throw new InvalidBeanException("The getter for field '" + fieldName
+					+ "' does not exist");
 		}
 	}
 
@@ -70,11 +74,13 @@ public class EntityPropertyHelper
 
 			if (!Modifier.isPublic(setterMethod.getModifiers()))
 			{
-				throw new InvalidBeanException("The setter for field '" + fieldName + "' should be public");
+				throw new InvalidBeanException("The setter for field '" + fieldName
+						+ "' should be public");
 			}
 			else if (!setterMethod.getReturnType().toString().equals("void"))
 			{
-				throw new InvalidBeanException("The setter for field '" + fieldName + "' does not exist");
+				throw new InvalidBeanException("The setter for field '" + fieldName
+						+ "' does not exist");
 			}
 
 			return setterMethod;
@@ -82,7 +88,8 @@ public class EntityPropertyHelper
 		}
 		catch (NoSuchMethodException e)
 		{
-			throw new InvalidBeanException("The setter for field '" + fieldName + "' does not exist or is incorrect");
+			throw new InvalidBeanException("The setter for field '" + fieldName
+					+ "' does not exist or is incorrect");
 		}
 	}
 
@@ -127,7 +134,8 @@ public class EntityPropertyHelper
 
 			try
 			{
-				Method getterMethod = target.getClass().getDeclaredMethod(getter, (Class<?>[]) null);
+				Method getterMethod = target.getClass()
+						.getDeclaredMethod(getter, (Class<?>[]) null);
 				value = getValueFromField(target, getterMethod);
 			}
 			catch (Exception e)
@@ -148,7 +156,7 @@ public class EntityPropertyHelper
 
 			try
 			{
-				value = getter.invoke(target, (Object[]) null);
+				value = getter.invoke(target);
 			}
 			catch (Exception e)
 			{
@@ -200,7 +208,7 @@ public class EntityPropertyHelper
 
 		try
 		{
-			return (ID) idMeta.getGetter().invoke(entity, (Object[]) null);
+			return (ID) idMeta.getGetter().invoke(entity);
 		}
 		catch (IllegalArgumentException e)
 		{

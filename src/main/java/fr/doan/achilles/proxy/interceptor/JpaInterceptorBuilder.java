@@ -18,7 +18,8 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 	private Set<Method> lazyLoaded = new HashSet<Method>();
 	private EntityMeta<ID> entityMeta;
 
-	public static <ID extends Serializable> JpaInterceptorBuilder<ID> builder(EntityMeta<ID> entityMeta)
+	public static <ID extends Serializable> JpaInterceptorBuilder<ID> builder(
+			EntityMeta<ID> entityMeta)
 	{
 		return new JpaInterceptorBuilder<ID>(entityMeta);
 	}
@@ -68,7 +69,7 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 
 		try
 		{
-			interceptor.setKey((ID) entityMeta.getIdMeta().getGetter().invoke(target, (Object[]) null));
+			interceptor.setKey((ID) entityMeta.getIdMeta().getGetter().invoke(target));
 		}
 		catch (Exception e)
 		{}

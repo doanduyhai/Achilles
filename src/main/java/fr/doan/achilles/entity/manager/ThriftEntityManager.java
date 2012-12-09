@@ -15,7 +15,7 @@ import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.entity.operations.EntityRefresher;
 import fr.doan.achilles.entity.operations.EntityValidator;
-import fr.doan.achilles.proxy.EntityProxyUtil;
+import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
@@ -33,7 +33,7 @@ public class ThriftEntityManager implements EntityManager
 	private EntityLoader loader = new EntityLoader();
 	private EntityMerger merger = new EntityMerger();
 	private EntityRefresher entityRefresher = new EntityRefresher();
-	private EntityProxyUtil util = new EntityProxyUtil();
+	private EntityWrapperUtil util = new EntityWrapperUtil();
 	private EntityValidator entityValidator = new EntityValidator();
 
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();

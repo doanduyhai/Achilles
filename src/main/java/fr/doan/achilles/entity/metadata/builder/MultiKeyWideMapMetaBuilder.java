@@ -35,7 +35,7 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 		MultiKeyWideMapMeta<K, V> propertyMeta = new MultiKeyWideMapMeta<K, V>();
 		super.build(propertyMeta);
 
-		propertyMeta.setKeyGetters(keyGetters);
+		propertyMeta.setComponentGetters(keyGetters);
 
 		List<Serializer<?>> keySerializers = new ArrayList<Serializer<?>>();
 		for (Class<?> keyClass : keyClasses)
@@ -43,7 +43,7 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 			keySerializers.add(SerializerTypeInferer.getSerializer(keyClass));
 		}
 
-		propertyMeta.setKeySerializers(keySerializers);
+		propertyMeta.setComponentSerializers(keySerializers);
 
 		return propertyMeta;
 

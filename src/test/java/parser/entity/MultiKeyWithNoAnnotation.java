@@ -1,28 +1,25 @@
 package parser.entity;
 
-import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * CorrectMultiKey
+ * MultiKeyWithNoAnnotation
  * 
  * @author DuyHai DOAN
  * 
  */
-public class CorrectMultiKey implements MultiKey
+public class MultiKeyWithNoAnnotation implements MultiKey
 {
-	@Key(order = 1)
-	private String name;
+	private Void name;
 
-	@Key(order = 2)
 	private int rank;
 
-	public String getName()
+	public Void getName()
 	{
 		return name;
 	}
 
-	public void setName(String name)
+	public void setName(Void name)
 	{
 		this.name = name;
 	}
@@ -36,4 +33,5 @@ public class CorrectMultiKey implements MultiKey
 	{
 		this.rank = rank;
 	}
+
 }

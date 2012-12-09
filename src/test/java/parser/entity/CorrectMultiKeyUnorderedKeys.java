@@ -9,13 +9,13 @@ import fr.doan.achilles.entity.type.MultiKey;
  * @author DuyHai DOAN
  * 
  */
-public class CorrectMultiKey implements MultiKey
+public class CorrectMultiKeyUnorderedKeys implements MultiKey
 {
-	@Key(order = 1)
-	private String name;
-
 	@Key(order = 2)
 	private int rank;
+
+	@Key(order = 1)
+	private String name;
 
 	public String getName()
 	{

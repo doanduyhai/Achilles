@@ -10,7 +10,9 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 
 @Table
@@ -40,6 +42,9 @@ public class CompleteBean implements Serializable
 
 	@Column
 	private WideMap<UUID, String> tweets;
+
+	@Column
+	private WideMap<UserTweetKey, String> userTweets;
 
 	public Long getId()
 	{
@@ -109,5 +114,53 @@ public class CompleteBean implements Serializable
 	public void setTweets(WideMap<UUID, String> tweets)
 	{
 		this.tweets = tweets;
+	}
+
+	public WideMap<UserTweetKey, String> getUserTweets()
+	{
+		return userTweets;
+	}
+
+	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
+	{
+		this.userTweets = userTweets;
+	}
+
+	public static class UserTweetKey implements MultiKey
+	{
+		@Key(order = 1)
+		private String user;
+
+		@Key(order = 2)
+		private UUID tweet;
+
+		public UserTweetKey() {}
+
+		public UserTweetKey(String user, UUID tweet) {
+			super();
+			this.user = user;
+			this.tweet = tweet;
+		}
+
+		public String getUser()
+		{
+			return user;
+		}
+
+		public void setUser(String user)
+		{
+			this.user = user;
+		}
+
+		public UUID getTweet()
+		{
+			return tweet;
+		}
+
+		public void setTweet(UUID tweet)
+		{
+			this.tweet = tweet;
+		}
+
 	}
 }

@@ -10,7 +10,7 @@ import fr.doan.achilles.wrapper.WideMapWrapper;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapperBuilder<ID, K extends Comparable<K>, V>
+public class WideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
 	private GenericDao<ID> dao;
@@ -22,18 +22,23 @@ public class WideMapWrapperBuilder<ID, K extends Comparable<K>, V>
 		this.wideMapMeta = wideMapMeta;
 	}
 
-	public static <ID, K extends Comparable<K>, V> WideMapWrapperBuilder<ID, K, V> builder(ID id,
-			GenericDao<ID> dao, WideMapMeta<K, V> wideMapMeta)
+	public static <ID, K, V> WideMapWrapperBuilder<ID, K, V> builder(ID id, GenericDao<ID> dao,
+			WideMapMeta<K, V> wideMapMeta)
 	{
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}
 
 	public WideMapWrapper<ID, K, V> build()
 	{
-		WideMapWrapper<ID, K, V> meta = new WideMapWrapper<ID, K, V>();
-		meta.setId(id);
-		meta.setDao(dao);
-		meta.setWideMapMeta(wideMapMeta);
-		return meta;
+		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
+		build(wrapper);
+		return wrapper;
+	}
+
+	protected <T extends WideMapWrapper<ID, K, V>> void build(T wrapper)
+	{
+		wrapper.setId(id);
+		wrapper.setDao(dao);
+		wrapper.setWideMapMeta(wideMapMeta);
 	}
 }

@@ -161,8 +161,7 @@ public class ThriftEntityManagerOperationsIT
 		JpaInterceptor interceptor = (JpaInterceptor) factory.getCallback(0);
 
 		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
-		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget(),
-				(Object[]) null);
+		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
 
 		assertThat(lazyFriends).isNull();
 

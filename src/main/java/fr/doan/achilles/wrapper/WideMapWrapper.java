@@ -6,7 +6,6 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
@@ -20,19 +19,18 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K, V>
+public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
-	private ID id;
-	private GenericDao<ID> dao;
-	private WideMapMeta<K, V> wideMapMeta;
+	protected ID id;
+	protected GenericDao<ID> dao;
+	protected WideMapMeta<K, V> wideMapMeta;
 
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	@Override
 	public V getValue(K key)
 	{
-		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
+		DynamicComposite composite = buildComposite(key);
 		Object value = dao.getValue(id, composite);
 
 		return wideMapMeta.get(value);
@@ -41,16 +39,14 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K
 	@Override
 	public void insertValue(K key, V value, int ttl)
 	{
-		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				PropertyType.WIDE_MAP, key, wideMapMeta.getKeySerializer());
+		DynamicComposite composite = buildComposite(key);
 		dao.setValue(id, composite, (Object) value, ttl);
 	}
 
 	@Override
 	public void insertValue(K key, V value)
 	{
-		DynamicComposite composite = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				PropertyType.WIDE_MAP, key, wideMapMeta.getKeySerializer());
+		DynamicComposite composite = buildComposite(key);
 		dao.setValue(id, composite, (Object) value);
 	}
 
@@ -71,24 +67,11 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K
 	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		if (start != null && end != null)
-		{
-			if (reverse)
-			{
-				Validator.validateTrue(start.compareTo(end) > 0,
-						"For reverse range query, start value should be greater than end value");
-			}
-			else
-			{
-				Validator.validateTrue(start.compareTo(end) < 0,
-						"For range query, start value should be lesser than end value");
-			}
-		}
 
-		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
-		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+		validateBounds(start, end, reverse);
+
+		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
+		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
 
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id, startComp,
 				endComp, reverse, count);
@@ -118,10 +101,8 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
-		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
+		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
 
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
 				.getColumnsIterator(id, startComp, endComp, reverse, count);
@@ -132,8 +113,7 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K
 	@Override
 	public void removeValue(K key)
 	{
-		DynamicComposite comp = keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
+		DynamicComposite comp = buildComposite(key);
 
 		dao.removeColumn(id, comp);
 	}
@@ -154,18 +134,52 @@ public class WideMapWrapper<ID, K extends Comparable<K>, V> implements WideMap<K
 	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
-		if (start != null && end != null)
-		{
-			Validator.validateTrue(start.compareTo(end) < 0,
-					"For range query, start value should be lesser than end value");
-		}
+		validateBounds(start, end, false);
 
-		DynamicComposite startComp = keyFactory.buildQueryComparatorStart(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), start, inclusiveStart);
-		DynamicComposite endComp = keyFactory.buildQueryComparatorEnd(
-				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), end, inclusiveEnd);
+		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
+		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
 
 		dao.removeColumnRange(id, startComp, endComp);
+	}
+
+	protected DynamicComposite buildComposite(K key)
+	{
+		return keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
+	}
+
+	protected DynamicComposite buildQueryCompositeStart(K start, boolean inclusiveStart)
+	{
+		return keyFactory.buildQueryComparatorStart(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), start, inclusiveStart);
+	}
+
+	protected DynamicComposite buildQueryCompositeEnd(K end, boolean inclusiveEnd)
+	{
+		return keyFactory.buildQueryComparatorEnd(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), end, inclusiveEnd);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void validateBounds(K start, K end, boolean reverse)
+	{
+
+		if (start != null && end != null)
+		{
+			Comparable<K> startComp = (Comparable<K>) start;
+
+			if (reverse)
+			{
+				Validator
+						.validateTrue(startComp.compareTo(end) >= 0,
+								"For reverse range query, start value should be greater or equal to end value");
+			}
+			else
+			{
+				Validator.validateTrue(startComp.compareTo(end) <= 0,
+						"For range query, start value should be lesser or equal to end value");
+			}
+		}
 	}
 
 	public void setId(ID id)

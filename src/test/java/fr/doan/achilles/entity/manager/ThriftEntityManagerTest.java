@@ -26,7 +26,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
-import fr.doan.achilles.proxy.EntityProxyUtil;
+import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
 @SuppressWarnings(
@@ -57,7 +57,7 @@ public class ThriftEntityManagerTest
 	private EntityProxyBuilder interceptorBuilder;
 
 	@Mock
-	private EntityProxyUtil util;
+	private EntityWrapperUtil util;
 
 	@Mock
 	private EntityMeta entityMeta;

@@ -14,13 +14,16 @@ import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -120,7 +123,7 @@ public class PropertyParser
 	private <V> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field,
 			String propertyName)
 	{
-		Validator.validateSerializable(field.getType(), field.getName());
+		Validator.validateSerializable(field.getType(), "property '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
 		return simpleMetaBuilder((Class<V>) field.getType()).propertyName(propertyName)
@@ -140,7 +143,7 @@ public class PropertyParser
 
 		valueClass = inferValueClass(genericType);
 
-		Validator.validateSerializable(valueClass, "value type of " + field.getName());
+		Validator.validateSerializable(valueClass, "list value type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
 		return listMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
@@ -160,7 +163,7 @@ public class PropertyParser
 		Type genericType = field.getGenericType();
 
 		valueClass = inferValueClass(genericType);
-		Validator.validateSerializable(valueClass, "value type of " + field.getName());
+		Validator.validateSerializable(valueClass, "set value type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
 		return setMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
@@ -201,8 +204,8 @@ public class PropertyParser
 			keyType = Object.class;
 			valueClass = Object.class;
 		}
-		Validator.validateSerializable(valueClass, "value type of " + field.getName());
-		Validator.validateSerializable(keyType, "key type of " + field.getName());
+		Validator.validateSerializable(valueClass, "map value type of '" + field.getName() + "'");
+		Validator.validateSerializable(keyType, "map key type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
 		return mapMetaBuilder(keyType, valueClass).propertyName(propertyName).accessors(accessors)
@@ -213,8 +216,8 @@ public class PropertyParser
 	private <V> PropertyMeta<V> parseWideMapProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{
-		List<Class<?>> keyClasses = new ArrayList<Class<?>>();
-		List<Method> keyGetters = new ArrayList<Method>();
+		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
+		List<Method> componentGetters = new ArrayList<Method>();
 
 		Class<?> keyClass;
 		Class<V> valueClass;
@@ -231,7 +234,7 @@ public class PropertyParser
 
 				if (MultiKey.class.isAssignableFrom(keyClass))
 				{
-					parseMultiKey(keyClasses, keyGetters, keyClass);
+					parseMultiKey(componentClasses, componentGetters, keyClass);
 				}
 				else
 				{
@@ -256,26 +259,35 @@ public class PropertyParser
 
 		Validator.validateSerializable(valueClass, "value type of " + field.getName());
 		Method[] accessors = helper.findAccessors(beanClass, field);
-		if (keyClasses.size() == 0)
+		if (componentClasses.size() == 0)
 		{
 			return wideMapPropertyMetaBuiler(keyClass, valueClass).propertyName(propertyName)
 					.accessors(accessors).build();
 		}
 		else
 		{
-			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass).keyClasses(keyClasses)
-					.keyGetters(keyGetters).propertyName(propertyName).accessors(accessors).build();
+			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass)
+					.keyClasses(componentClasses).keyGetters(componentGetters)
+					.propertyName(propertyName).accessors(accessors).build();
 		}
 
 	}
 
-	private void parseMultiKey(List<Class<?>> keyClassses, List<Method> keyGetters,
+	private void parseMultiKey(List<Class<?>> componentClasses, List<Method> componentGetters,
 			Class<?> keyClass)
 	{
+		int keySum = 0;
+		int keyCount = 0;
+		Map<Integer, Field> components = new HashMap<Integer, Field>();
+
 		for (Field multiKeyField : keyClass.getDeclaredFields())
 		{
-			if (multiKeyField.getAnnotation(javax.persistence.Id.class) != null)
+			Key keyAnnotation = multiKeyField.getAnnotation(Key.class);
+			if (keyAnnotation != null)
 			{
+				keyCount++;
+				keySum += keyAnnotation.order();
+
 				Class<?> keySubType = multiKeyField.getType();
 				Validator.validateAllowedTypes(
 						keySubType,
@@ -284,15 +296,28 @@ public class PropertyParser
 								+ "' is not a valid key type for the MultiKey class '"
 								+ keyClass.getCanonicalName() + "'");
 
-				keyGetters.add(helper.findGetter(keyClass, multiKeyField));
-				keyClassses.add(keySubType);
+				components.put(keyAnnotation.order(), multiKeyField);
+
 			}
 		}
 
-		Validator.validateNotEmpty(
-				keyClassses,
-				"No field with javax.persistence.Id annotation found in the class '"
-						+ keyClass.getCanonicalName() + "'");
+		int check = (keyCount * (keyCount + 1)) / 2;
+
+		Validator.validateTrue(keySum == check, "The key orders is wrong for MultiKey class '"
+				+ keyClass.getCanonicalName() + "'");
+
+		List<Integer> orderList = new ArrayList<Integer>(components.keySet());
+		Collections.sort(orderList);
+		for (Integer order : orderList)
+		{
+			Field multiKeyField = components.get(order);
+			componentGetters.add(helper.findGetter(keyClass, multiKeyField));
+			componentClasses.add(multiKeyField.getType());
+		}
+
+		Validator.validateNotEmpty(componentClasses,
+				"No field with @Key annotation found in the class '" + keyClass.getCanonicalName()
+						+ "'");
 		Validator.validateInstantiable(keyClass);
 	}
 

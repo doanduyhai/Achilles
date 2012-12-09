@@ -2,8 +2,7 @@ package parser.entity;
 
 import java.util.Date;
 
-import javax.persistence.Id;
-
+import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
@@ -15,13 +14,13 @@ import fr.doan.achilles.entity.type.MultiKey;
 public class MyMultiKey implements MultiKey
 {
 
-	@Id
+	@Key(order = 1)
 	String name;
 
-	@Id
+	@Key(order = 2)
 	Integer rank;
 
-	@Id
+	@Key(order = 3)
 	Date creationDate;
 
 	public String getName()

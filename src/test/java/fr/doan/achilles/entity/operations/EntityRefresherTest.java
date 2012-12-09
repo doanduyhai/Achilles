@@ -20,7 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.EntityProxyUtil;
+import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
 
 /**
@@ -42,7 +42,7 @@ public class EntityRefresherTest
 	private EntityRefresher entityRefresher;
 
 	@Mock
-	private EntityProxyUtil util;
+	private EntityWrapperUtil util;
 
 	@Mock
 	private EntityValidator entityValidator;

@@ -11,11 +11,16 @@ import me.prettyprint.hector.api.Serializer;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideMapMeta<K, V> extends
-		WideMapMeta<K, V>
+public class MultiKeyWideMapMeta<K, V> extends WideMapMeta<K, V>
 {
-	private List<Serializer<?>> keySerializers;
-	private List<Method> keyGetters;
+	private List<Serializer<?>> componentSerializers;
+	private List<Method> componentGetters;
+
+	@Override
+	public PropertyType propertyType()
+	{
+		return PropertyType.WIDE_MAP;
+	}
 
 	@Override
 	public boolean isSingleKey()
@@ -23,24 +28,34 @@ public class MultiKeyWideMapMeta<K, V> extends
 		return false;
 	}
 
-	public List<Serializer<?>> getKeySerializers()
+	@Override
+	public boolean isLazy()
 	{
-		return keySerializers;
+		return true;
 	}
 
-	public void setKeySerializers(List<Serializer<?>> keySerializers)
+	public boolean isInternal()
 	{
-		this.keySerializers = keySerializers;
+		return true;
 	}
 
-	public List<Method> getKeyGetters()
+	public List<Serializer<?>> getComponentSerializers()
 	{
-		return keyGetters;
+		return componentSerializers;
 	}
 
-	public void setKeyGetters(List<Method> keyGetters)
+	public void setComponentSerializers(List<Serializer<?>> componentSerializers)
 	{
-		this.keyGetters = keyGetters;
+		this.componentSerializers = componentSerializers;
 	}
 
+	public List<Method> getComponentGetters()
+	{
+		return componentGetters;
+	}
+
+	public void setComponentGetters(List<Method> componentGetters)
+	{
+		this.componentGetters = componentGetters;
+	}
 }

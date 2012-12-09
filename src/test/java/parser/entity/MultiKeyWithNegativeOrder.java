@@ -4,17 +4,17 @@ import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * CorrectMultiKey
+ * MultiKeyWithNegativeOrder
  * 
  * @author DuyHai DOAN
  * 
  */
-public class CorrectMultiKey implements MultiKey
+public class MultiKeyWithNegativeOrder implements MultiKey
 {
-	@Key(order = 1)
+	@Key(order = -1)
 	private String name;
 
-	@Key(order = 2)
+	@Key(order = 0)
 	private int rank;
 
 	public String getName()
@@ -36,4 +36,5 @@ public class CorrectMultiKey implements MultiKey
 	{
 		this.rank = rank;
 	}
+
 }

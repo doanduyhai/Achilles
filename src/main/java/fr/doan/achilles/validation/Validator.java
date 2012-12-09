@@ -31,12 +31,11 @@ public class Validator
 		}
 	}
 
-	public static void validateNotEmpty(Collection<?> arg, String label)
+	public static void validateNotEmpty(Collection<?> arg, String message)
 	{
 		if (arg == null || arg.isEmpty())
 		{
-			throw new ValidationException("The property '" + label
-					+ "' should not be null or empty");
+			throw new ValidationException(message);
 		}
 	}
 
@@ -73,7 +72,7 @@ public class Validator
 	{
 		if (!Serializable.class.isAssignableFrom(clazz))
 		{
-			throw new ValidationException("The property '" + label + "'should be Serializable");
+			throw new ValidationException("The " + label + " should be Serializable");
 		}
 	}
 

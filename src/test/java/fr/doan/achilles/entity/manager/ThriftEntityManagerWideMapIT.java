@@ -27,7 +27,6 @@ import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.WideMap;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class ThriftEntityManagerWideMapIT
 {
@@ -40,8 +39,6 @@ public class ThriftEntityManagerWideMapIT
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
-
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	private CompleteBean bean;
 
@@ -246,6 +243,63 @@ public class ThriftEntityManagerWideMapIT
 		assertThat(iter.next().getValue()).isEqualTo("tweet2");
 		assertThat(iter.next().getValue()).isEqualTo("tweet3");
 		assertThat(iter.hasNext()).isFalse();
+	}
+
+	@Test
+	public void should_remove_value() throws Exception
+	{
+		insert3Tweets();
+
+		tweets.removeValue(uuid1);
+
+		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+
+		assertThat(foundTweets).hasSize(2);
+		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet2");
+		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet3");
+	}
+
+	@Test
+	public void should_remove_values_range() throws Exception
+	{
+		insert5Tweets();
+
+		tweets.removeValues(uuid2, uuid4);
+
+		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+
+		assertThat(foundTweets).hasSize(2);
+		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
+		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet5");
+	}
+
+	@Test
+	public void should_remove_values_range_exclusive_bounds() throws Exception
+	{
+		insert5Tweets();
+
+		tweets.removeValues(uuid2, uuid5, false);
+
+		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+
+		assertThat(foundTweets).hasSize(3);
+		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
+		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet2");
+		assertThat(foundTweets.get(2).getValue()).isEqualTo("tweet5");
+	}
+
+	@Test
+	public void should_remove_values_range_inclusive_start_exclusive_end() throws Exception
+	{
+		insert5Tweets();
+
+		tweets.removeValues(uuid2, true, uuid5, false);
+
+		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+
+		assertThat(foundTweets).hasSize(2);
+		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
+		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet5");
 	}
 
 	private DynamicComposite buildComposite()

@@ -11,26 +11,15 @@ import java.lang.annotation.Target;
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(
-{
-		ElementType.FIELD,
-		ElementType.TYPE
-})
+@Target(ElementType.FIELD)
 @Documented
-public @interface WideMap
+public @interface Key
 {
 
 	/**
 	 * <p>
-	 * Indicates the column family to store this wide map
+	 * Indicates the key order. The order index start at 1
 	 * </p>
 	 */
-	String columnFamily() default "";
-
-	/**
-	 * <p>
-	 * Indicates the join key if the wide map is stored in a separated column family
-	 * </p>
-	 */
-	String[] key() default {};
+	int order();
 }

@@ -8,12 +8,14 @@ import java.util.Set;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
+import fr.doan.achilles.wrapper.builder.MultiKeyWideMapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
 
@@ -125,7 +127,11 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		}
 		else
 		{
-			result = null;
+			MultiKeyWideMapMeta<K, V> multiKeyMeta = (MultiKeyWideMapMeta<K, V>) propertyMeta;
+
+			result = MultiKeyWideMapWrapperBuilder.builder(key, dao, multiKeyMeta)
+					.componentGetters(multiKeyMeta.getComponentGetters())
+					.componentSerializers(multiKeyMeta.getComponentSerializers()).build();
 		}
 
 		return result;

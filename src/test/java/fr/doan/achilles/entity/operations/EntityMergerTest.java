@@ -24,7 +24,7 @@ import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.proxy.EntityProxyUtil;
+import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
 
@@ -57,7 +57,7 @@ public class EntityMergerTest
 	private GenericDao<Long> dao;
 
 	@Mock
-	private EntityProxyUtil util;
+	private EntityWrapperUtil util;
 
 	@Mock
 	private Bean entity;

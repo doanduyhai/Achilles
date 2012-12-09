@@ -52,9 +52,10 @@ public class MultiKeyWideMapMetaBuilderTest
 						(Class<?>) Date.class)) //
 				.keyGetters(keyGetters).propertyName("name").accessors(accessors).build();
 
-		assertThat(propertyMeta.getKeyGetters()).isSameAs(keyGetters);
+		assertThat(propertyMeta.getComponentGetters()).isSameAs(keyGetters);
 
-		assertThat(propertyMeta.getKeySerializers()).containsExactly(STRING_SRZ, INT_SRZ, DATE_SRZ);
+		assertThat(propertyMeta.getComponentSerializers()).containsExactly(STRING_SRZ, INT_SRZ,
+				DATE_SRZ);
 		assertThat(propertyMeta.isInternal()).isTrue();
 	}
 }

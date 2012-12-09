@@ -10,13 +10,18 @@ import java.util.UUID;
 
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 
 import me.prettyprint.hector.api.Serializer;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import parser.entity.CorrectMultiKey;
+import parser.entity.CorrectMultiKeyUnorderedKeys;
+import parser.entity.MultiKeyNotInstantiable;
+import parser.entity.MultiKeyWithNegativeOrder;
+import parser.entity.MultiKeyWithNoAnnotation;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -26,7 +31,6 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
-import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
@@ -38,6 +42,9 @@ import fr.doan.achilles.serializer.Utils;
 })
 public class PropertyParserTest
 {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	private final PropertyParser parser = new PropertyParser();
 
@@ -316,7 +323,7 @@ public class PropertyParserTest
 		assertThat((Serializer) wideMapMeta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_invalid_wide_map_key() throws Exception
 	{
 		class Test
@@ -333,6 +340,11 @@ public class PropertyParserTest
 				this.tweets = tweets;
 			}
 		}
+
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The class '" + Void.class.getCanonicalName()
+				+ "' is not allowed as WideMap key");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
 	}
 
@@ -369,170 +381,138 @@ public class PropertyParserTest
 
 		assertThat(wideMapMeta.getKeyClass()).isEqualTo(CorrectMultiKey.class);
 
-		assertThat(wideMapMeta.getKeyGetters()).hasSize(2);
-		assertThat(wideMapMeta.getKeyGetters().get(0).getName()).isEqualTo("getName");
-		assertThat(wideMapMeta.getKeyGetters().get(1).getName()).isEqualTo("getRank");
+		assertThat(wideMapMeta.getComponentGetters()).hasSize(2);
+		assertThat(wideMapMeta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+		assertThat(wideMapMeta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
-		assertThat(wideMapMeta.getKeySerializers()).hasSize(2);
-		assertThat((Serializer) wideMapMeta.getKeySerializers().get(0)).isEqualTo(Utils.STRING_SRZ);
-		assertThat((Serializer) wideMapMeta.getKeySerializers().get(1)).isEqualTo(Utils.INT_SRZ);
+		assertThat(wideMapMeta.getComponentSerializers()).hasSize(2);
+		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(0)).isEqualTo(
+				Utils.STRING_SRZ);
+		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(1)).isEqualTo(
+				Utils.INT_SRZ);
 	}
 
-	@Test(expected = ValidationException.class)
-	public void should_exception_when_invalid_multi_key() throws Exception
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_multi_key_wide_map_unordered_keys() throws Exception
 	{
-		class TestMultiKey implements MultiKey
-		{
-			@Id
-			private Void name;
-
-			@Id
-			private int rank;
-
-			public Void getName()
-			{
-				return name;
-			}
-
-			public void setName(Void name)
-			{
-				this.name = name;
-			}
-
-			public int getRank()
-			{
-				return rank;
-			}
-
-			public void setRank(int rank)
-			{
-				this.rank = rank;
-			}
-
-		}
 
 		class Test
 		{
-			private WideMap<TestMultiKey, String> tweets;
+			private WideMap<CorrectMultiKeyUnorderedKeys, String> tweets;
 
-			public WideMap<TestMultiKey, String> getTweets()
+			public WideMap<CorrectMultiKeyUnorderedKeys, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			public void setTweets(WideMap<CorrectMultiKeyUnorderedKeys, String> tweets)
 			{
 				this.tweets = tweets;
 			}
 		}
 
-		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+		PropertyMeta<String> meta = parser.parse(Test.class, Test.class.getDeclaredField("tweets"),
+				"tweets");
+
+		assertThat(meta).isInstanceOf(MultiKeyWideMapMeta.class);
+		assertThat(meta.getPropertyName()).isEqualTo("tweets");
+		assertThat(meta.getValueClass()).isEqualTo(String.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat(meta.propertyType()).isEqualTo(PropertyType.WIDE_MAP);
+
+		MultiKeyWideMapMeta<CorrectMultiKeyUnorderedKeys, String> wideMapMeta = (MultiKeyWideMapMeta<CorrectMultiKeyUnorderedKeys, String>) meta;
+
+		assertThat(wideMapMeta.getKeyClass()).isEqualTo(CorrectMultiKeyUnorderedKeys.class);
+
+		assertThat(wideMapMeta.getComponentGetters()).hasSize(2);
+		assertThat(wideMapMeta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+		assertThat(wideMapMeta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+
+		assertThat(wideMapMeta.getComponentSerializers()).hasSize(2);
+		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(0)).isEqualTo(
+				Utils.STRING_SRZ);
+		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(1)).isEqualTo(
+				Utils.INT_SRZ);
 	}
 
-	@Test(expected = ValidationException.class)
-	public void should_exception_when_no_id_in_multi_key() throws Exception
+	@Test
+	public void should_exception_when_invalid_multi_key_negative_order() throws Exception
 	{
-		class TestMultiKey implements MultiKey
-		{
-			private Void name;
-
-			private int rank;
-
-			public Void getName()
-			{
-				return name;
-			}
-
-			public void setName(Void name)
-			{
-				this.name = name;
-			}
-
-			public int getRank()
-			{
-				return rank;
-			}
-
-			public void setRank(int rank)
-			{
-				this.rank = rank;
-			}
-
-		}
-
 		class Test
 		{
-			private WideMap<TestMultiKey, String> tweets;
+			private WideMap<MultiKeyWithNegativeOrder, String> tweets;
 
-			public WideMap<TestMultiKey, String> getTweets()
+			public WideMap<MultiKeyWithNegativeOrder, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			public void setTweets(WideMap<MultiKeyWithNegativeOrder, String> tweets)
 			{
 				this.tweets = tweets;
 			}
 		}
+
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
+				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
+
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+
+	}
+
+	@Test
+	public void should_exception_when_no_annotation_in_multi_key() throws Exception
+	{
+		class Test
+		{
+			private WideMap<MultiKeyWithNoAnnotation, String> tweets;
+
+			public WideMap<MultiKeyWithNoAnnotation, String> getTweets()
+			{
+				return tweets;
+			}
+
+			public void setTweets(WideMap<MultiKeyWithNoAnnotation, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("No field with @Key annotation found in the class '"
+				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_multi_key_not_instantiable() throws Exception
 	{
-		class TestMultiKey implements MultiKey
-		{
-			@Id
-			private String name;
-
-			@Id
-			private int rank;
-
-			public TestMultiKey(String name, int rank) {
-				super();
-				this.name = name;
-				this.rank = rank;
-			}
-
-			public String getName()
-			{
-				return name;
-			}
-
-			public void setName(String name)
-			{
-				this.name = name;
-			}
-
-			public int getRank()
-			{
-				return rank;
-			}
-
-			public void setRank(int rank)
-			{
-				this.rank = rank;
-			}
-
-		}
 		class Test
 		{
-			private WideMap<TestMultiKey, String> tweets;
+			private WideMap<MultiKeyNotInstantiable, String> tweets;
 
-			public WideMap<TestMultiKey, String> getTweets()
+			public WideMap<MultiKeyNotInstantiable, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<TestMultiKey, String> tweets)
+			public void setTweets(WideMap<MultiKeyNotInstantiable, String> tweets)
 			{
 				this.tweets = tweets;
 			}
 		}
+
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
+				+ "' should have a public default constructor");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_field_not_serializable() throws Exception
 	{
 
@@ -551,10 +531,13 @@ public class PropertyParserTest
 			}
 		}
 
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The property 'parser' should be Serializable");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("parser"), "parser");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_value_of_list_not_serializable() throws Exception
 	{
 
@@ -573,10 +556,13 @@ public class PropertyParserTest
 			}
 		}
 
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The list value type of 'parsers' should be Serializable");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_value_of_set_not_serializable() throws Exception
 	{
 
@@ -595,10 +581,13 @@ public class PropertyParserTest
 			}
 		}
 
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The set value type of 'parsers' should be Serializable");
+
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_value_and_key_of_map_not_serializable() throws Exception
 	{
 
@@ -616,6 +605,9 @@ public class PropertyParserTest
 				this.parsers = parsers;
 			}
 		}
+
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The map value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
