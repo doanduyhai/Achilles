@@ -130,8 +130,10 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 			MultiKeyWideMapMeta<K, V> multiKeyMeta = (MultiKeyWideMapMeta<K, V>) propertyMeta;
 
 			result = MultiKeyWideMapWrapperBuilder.builder(key, dao, multiKeyMeta)
-					.componentGetters(multiKeyMeta.getComponentGetters())
-					.componentSerializers(multiKeyMeta.getComponentSerializers()).build();
+					.componentGetters(multiKeyMeta.getComponentGetters()) //
+					.componentSetters(multiKeyMeta.getComponentSetters()) //
+					.componentSerializers(multiKeyMeta.getComponentSerializers()) //
+					.build();
 		}
 
 		return result;

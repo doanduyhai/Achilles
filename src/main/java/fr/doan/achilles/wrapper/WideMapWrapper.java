@@ -1,8 +1,13 @@
 package fr.doan.achilles.wrapper;
 
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
+
 import java.util.List;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericDao;
@@ -70,11 +75,11 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 		validateBounds(start, end, reverse);
 
-		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
-		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
+		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
+				inclusiveEnd, reverse);
 
-		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id, startComp,
-				endComp, reverse, count);
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
 
 		return KeyValue.fromList(hColumns, wideMapMeta.getKeySerializer(), wideMapMeta);
 	}
@@ -101,11 +106,12 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
-		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
+
+		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
+				inclusiveEnd, reverse);
 
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
-				.getColumnsIterator(id, startComp, endComp, reverse, count);
+				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
 		return new KeyValueIterator(columnSliceIterator, wideMapMeta.getKeySerializer());
 	}
@@ -136,10 +142,10 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 		validateBounds(start, end, false);
 
-		DynamicComposite startComp = buildQueryCompositeStart(start, inclusiveStart);
-		DynamicComposite endComp = buildQueryCompositeEnd(end, inclusiveEnd);
+		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
+				inclusiveEnd, false);
 
-		dao.removeColumnRange(id, startComp, endComp);
+		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
 	}
 
 	protected DynamicComposite buildComposite(K key)
@@ -148,16 +154,10 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
 	}
 
-	protected DynamicComposite buildQueryCompositeStart(K start, boolean inclusiveStart)
+	protected DynamicComposite buildQueryComposite(K value, ComponentEquality equality)
 	{
-		return keyFactory.buildQueryComparatorStart(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), start, inclusiveStart);
-	}
-
-	protected DynamicComposite buildQueryCompositeEnd(K end, boolean inclusiveEnd)
-	{
-		return keyFactory.buildQueryComparatorEnd(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), end, inclusiveEnd);
+		return keyFactory.buildQueryComparator(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), value, equality);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -180,6 +180,43 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 						"For range query, start value should be lesser or equal to end value");
 			}
 		}
+	}
+
+	protected ComponentEquality[] determineEquality(boolean inclusiveStart, boolean inclusiveEnd,
+			boolean reverse)
+	{
+		ComponentEquality[] result = new ComponentEquality[2];
+		ComponentEquality start;
+		ComponentEquality end;
+		if (reverse)
+		{
+			start = inclusiveStart ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
+			end = inclusiveEnd ? EQUAL : GREATER_THAN_EQUAL;
+		}
+		else
+		{
+			start = inclusiveStart ? EQUAL : GREATER_THAN_EQUAL;
+			end = inclusiveEnd ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
+		}
+
+		result[0] = start;
+		result[1] = end;
+		return result;
+	}
+
+	protected DynamicComposite[] buildQueryComposites(K start, boolean inclusiveStart, K end,
+			boolean inclusiveEnd, boolean reverse)
+	{
+		DynamicComposite[] queryComp = new DynamicComposite[2];
+
+		ComponentEquality[] equalities = determineEquality(inclusiveStart, inclusiveEnd, reverse);
+		DynamicComposite startComp = buildQueryComposite(start, equalities[0]);
+		DynamicComposite endComp = buildQueryComposite(end, equalities[1]);
+
+		queryComp[0] = startComp;
+		queryComp[1] = endComp;
+
+		return queryComp;
 	}
 
 	public void setId(ID id)

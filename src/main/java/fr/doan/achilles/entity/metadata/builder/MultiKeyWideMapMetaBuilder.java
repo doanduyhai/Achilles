@@ -17,8 +17,9 @@ import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 {
 
-	private List<Class<?>> keyClasses;
-	private List<Method> keyGetters;
+	private List<Class<?>> componentClasses;
+	private List<Method> componentGetters;
+	private List<Method> componentSetters;
 
 	public MultiKeyWideMapMetaBuilder(Class<K> keyClass, Class<V> valueClass) {
 		super(keyClass, valueClass);
@@ -35,10 +36,11 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 		MultiKeyWideMapMeta<K, V> propertyMeta = new MultiKeyWideMapMeta<K, V>();
 		super.build(propertyMeta);
 
-		propertyMeta.setComponentGetters(keyGetters);
+		propertyMeta.setComponentGetters(componentGetters);
+		propertyMeta.setComponentSetters(componentSetters);
 
 		List<Serializer<?>> keySerializers = new ArrayList<Serializer<?>>();
-		for (Class<?> keyClass : keyClasses)
+		for (Class<?> keyClass : componentClasses)
 		{
 			keySerializers.add(SerializerTypeInferer.getSerializer(keyClass));
 		}
@@ -49,15 +51,21 @@ public class MultiKeyWideMapMetaBuilder<K, V> extends WideMapMetaBuilder<K, V>
 
 	}
 
-	public MultiKeyWideMapMetaBuilder<K, V> keyClasses(List<Class<?>> keyClasses)
+	public MultiKeyWideMapMetaBuilder<K, V> componentClasses(List<Class<?>> componentClasses)
 	{
-		this.keyClasses = keyClasses;
+		this.componentClasses = componentClasses;
 		return this;
 	}
 
-	public MultiKeyWideMapMetaBuilder<K, V> keyGetters(List<Method> keyGetters)
+	public MultiKeyWideMapMetaBuilder<K, V> componentGetters(List<Method> componentGetters)
 	{
-		this.keyGetters = keyGetters;
+		this.componentGetters = componentGetters;
+		return this;
+	}
+
+	public MultiKeyWideMapMetaBuilder<K, V> componentSetters(List<Method> componentSetters)
+	{
+		this.componentSetters = componentSetters;
 		return this;
 	}
 }

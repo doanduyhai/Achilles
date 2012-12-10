@@ -1,5 +1,6 @@
 package fr.doan.achilles.wrapper;
 
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -76,25 +77,11 @@ public class MultiKeyWideMapWrapperTest
 		List<Object> componentValues = Arrays.asList((Object) "name", 12);
 		when(util.determineMultiKey(multiKey, componentGetters)).thenReturn(componentValues);
 
-		wrapper.buildQueryCompositeStart(multiKey, true);
+		wrapper.buildQueryComposite(multiKey, GREATER_THAN_EQUAL);
 
-		verify(keyFactory).buildQueryComparatorStart(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers, true);
-	}
-
-	@Test
-	public void should_build_query_composite_end() throws Exception
-	{
-
-		CorrectMultiKey multiKey = new CorrectMultiKey();
-
-		List<Object> componentValues = Arrays.asList((Object) "name", 12);
-		when(util.determineMultiKey(multiKey, componentGetters)).thenReturn(componentValues);
-
-		wrapper.buildQueryCompositeEnd(multiKey, false);
-
-		verify(keyFactory).buildQueryComparatorEnd(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers, false);
+		verify(keyFactory).buildQueryComparator(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), componentValues, componentSerializers,
+				GREATER_THAN_EQUAL);
 	}
 
 	@Test
@@ -144,19 +131,24 @@ public class MultiKeyWideMapWrapperTest
 	}
 
 	@Test
-	public void should_exception_when_asc_start_null_and_end_not_null() throws Exception
+	public void should_exception_when_asc_hole_in_start() throws Exception
 	{
 		CorrectMultiKey start = new CorrectMultiKey();
 		CorrectMultiKey end = new CorrectMultiKey();
 
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", null);
+		List<Object> startComponentValues = Arrays.asList((Object) null, 10);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(wideMapMeta.getPropertyName()).thenReturn("name");
 
+		when(keyFactory.validateNoHole("name", startComponentValues))
+				.thenThrow(
+						new ValidationException(
+								"There should not be any null value between two non-null keys of WideMap 'name'"));
 		expectedEx.expect(ValidationException.class);
 		expectedEx
-				.expectMessage("For multiKey ascending range query, startKey cannot be null and endKey");
+				.expectMessage("There should not be any null value between two non-null keys of WideMap 'name'");
 
 		wrapper.validateBounds(start, end, false);
 	}
@@ -175,24 +167,6 @@ public class MultiKeyWideMapWrapperTest
 		expectedEx.expect(ValidationException.class);
 		expectedEx
 				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
-
-		wrapper.validateBounds(start, end, true);
-	}
-
-	@Test
-	public void should_exception_when_desc_end_null_and_start_not_null() throws Exception
-	{
-		CorrectMultiKey start = new CorrectMultiKey();
-		CorrectMultiKey end = new CorrectMultiKey();
-
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", 10);
-		List<Object> endComponentValues = Arrays.asList((Object) "abc", null);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-
-		expectedEx.expect(ValidationException.class);
-		expectedEx
-				.expectMessage("For multiKey descending range query, endKey cannot be null and startKey not null");
 
 		wrapper.validateBounds(start, end, true);
 	}

@@ -218,6 +218,7 @@ public class PropertyParser
 	{
 		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
 		List<Method> componentGetters = new ArrayList<Method>();
+		List<Method> componentSetters = new ArrayList<Method>();
 
 		Class<?> keyClass;
 		Class<V> valueClass;
@@ -234,7 +235,7 @@ public class PropertyParser
 
 				if (MultiKey.class.isAssignableFrom(keyClass))
 				{
-					parseMultiKey(componentClasses, componentGetters, keyClass);
+					parseMultiKey(componentClasses, componentGetters, componentSetters, keyClass);
 				}
 				else
 				{
@@ -267,14 +268,16 @@ public class PropertyParser
 		else
 		{
 			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass)
-					.keyClasses(componentClasses).keyGetters(componentGetters)
+					.componentClasses(componentClasses) //
+					.componentGetters(componentGetters) //
+					.componentSetters(componentSetters) //
 					.propertyName(propertyName).accessors(accessors).build();
 		}
 
 	}
 
 	private void parseMultiKey(List<Class<?>> componentClasses, List<Method> componentGetters,
-			Class<?> keyClass)
+			List<Method> componentSetters, Class<?> keyClass)
 	{
 		int keySum = 0;
 		int keyCount = 0;
@@ -312,6 +315,7 @@ public class PropertyParser
 		{
 			Field multiKeyField = components.get(order);
 			componentGetters.add(helper.findGetter(keyClass, multiKeyField));
+			componentSetters.add(helper.findSetter(keyClass, multiKeyField));
 			componentClasses.add(multiKeyField.getType());
 		}
 

@@ -167,16 +167,19 @@ public class ThriftEntityManagerWideMapIT
 	}
 
 	@Test
-	public void should_find_values_by_range_with_exclusive_start_inclusive_end() throws Exception
+	public void should_find_values_by_range_with_exclusive_start_inclusive_end_reverse()
+			throws Exception
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(uuid2, false, uuid4, true,
-				false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findValues( //
+				uuid4, false, //
+				uuid2, true, //
+				true, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet3");
-		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet4");
+		assertThat(foundTweets.get(1).getValue()).isEqualTo("tweet2");
 	}
 
 	@Test

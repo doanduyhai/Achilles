@@ -42,9 +42,13 @@ public class MultiKeyWideMapWrapperBuilderTest
 		Method nameGetter = CorrectMultiKey.class.getDeclaredMethod("getName");
 		Method rankGetter = CorrectMultiKey.class.getDeclaredMethod("getRank");
 
+		Method nameSetter = CorrectMultiKey.class.getDeclaredMethod("setName", String.class);
+		Method rankSetter = CorrectMultiKey.class.getDeclaredMethod("setRank", int.class);
+
 		MultiKeyWideMapWrapper<Long, CorrectMultiKey, String> wrapper = MultiKeyWideMapWrapperBuilder
-				.builder(12L, dao, wideMapMeta)
-				.componentGetters(Arrays.asList(nameGetter, rankGetter))
+				.builder(12L, dao, wideMapMeta) //
+				.componentGetters(Arrays.asList(nameGetter, rankGetter)) //
+				.componentSetters(Arrays.asList(nameSetter, rankSetter)) //
 				.componentSerializers(Arrays.asList((Serializer<?>) STRING_SRZ, INT_SRZ)).build();
 
 		assertThat(wrapper).isNotNull();

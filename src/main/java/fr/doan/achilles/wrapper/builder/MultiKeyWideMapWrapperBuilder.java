@@ -19,6 +19,7 @@ public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuild
 
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
+	private List<Method> componentSetters;
 
 	public MultiKeyWideMapWrapperBuilder(ID id, GenericDao<ID> dao, WideMapMeta<K, V> wideMapMeta) {
 		super(id, dao, wideMapMeta);
@@ -36,6 +37,7 @@ public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuild
 		super.build(wrapper);
 
 		wrapper.setComponentGetters(componentGetters);
+		wrapper.setComponentSetters(componentSetters);
 		wrapper.setComponentSerializers(componentSerializers);
 
 		return wrapper;
@@ -52,6 +54,12 @@ public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuild
 	public MultiKeyWideMapWrapperBuilder<ID, K, V> componentGetters(List<Method> componentGetters)
 	{
 		this.componentGetters = componentGetters;
+		return this;
+	}
+
+	public MultiKeyWideMapWrapperBuilder<ID, K, V> componentSetters(List<Method> componentSetters)
+	{
+		this.componentSetters = componentSetters;
 		return this;
 	}
 }

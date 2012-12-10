@@ -47,10 +47,10 @@ public class MultiKeyWideMapMetaBuilderTest
 
 		MultiKeyWideMapMeta<Integer, String> propertyMeta = (MultiKeyWideMapMeta<Integer, String>) MultiKeyWideMapMetaBuilder
 				.multiKeyWideMapPropertyMetaBuiler(Integer.class, String.class)
-				.keyClasses(Arrays.asList((Class<?>) String.class, //
+				.componentClasses(Arrays.asList((Class<?>) String.class, //
 						(Class<?>) Integer.class, //
 						(Class<?>) Date.class)) //
-				.keyGetters(keyGetters).propertyName("name").accessors(accessors).build();
+				.componentGetters(keyGetters).propertyName("name").accessors(accessors).build();
 
 		assertThat(propertyMeta.getComponentGetters()).isSameAs(keyGetters);
 

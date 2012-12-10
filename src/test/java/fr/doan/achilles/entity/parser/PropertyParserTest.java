@@ -385,6 +385,10 @@ public class PropertyParserTest
 		assertThat(wideMapMeta.getComponentGetters().get(0).getName()).isEqualTo("getName");
 		assertThat(wideMapMeta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
+		assertThat(wideMapMeta.getComponentSetters()).hasSize(2);
+		assertThat(wideMapMeta.getComponentSetters().get(0).getName()).isEqualTo("setName");
+		assertThat(wideMapMeta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
+
 		assertThat(wideMapMeta.getComponentSerializers()).hasSize(2);
 		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(0)).isEqualTo(
 				Utils.STRING_SRZ);

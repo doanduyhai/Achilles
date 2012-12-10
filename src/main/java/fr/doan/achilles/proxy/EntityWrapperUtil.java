@@ -4,8 +4,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite.Component;
+import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.HColumn;
 import net.sf.cglib.proxy.Factory;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
 public class EntityWrapperUtil
@@ -62,5 +68,39 @@ public class EntityWrapperUtil
 		}
 
 		return multiKeyValues;
+	}
+
+	public <K, V> List<KeyValue<K, V>> buildMultiKey(Class<K> multiKeyClass,
+			MultiKeyWideMapMeta<K, V> wideMapMeta,
+			List<HColumn<DynamicComposite, Object>> hColumns, List<Method> componentSetters)
+	{
+
+		List<KeyValue<K, V>> results = new ArrayList<KeyValue<K, V>>();
+		List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+		try
+		{
+
+			for (HColumn<DynamicComposite, Object> column : hColumns)
+			{
+				K multiKeyInstance = multiKeyClass.newInstance();
+				List<Component<?>> components = column.getName().getComponents();
+
+				for (int i = 2; i < components.size(); i++)
+				{
+					Component<?> comp = components.get(i);
+					Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
+					componentSetters.get(i - 2).invoke(multiKeyInstance, compValue);
+				}
+
+				V value = wideMapMeta.get(column.getValue());
+				results.add(new KeyValue<K, V>(multiKeyInstance, value));
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return results;
 	}
 }

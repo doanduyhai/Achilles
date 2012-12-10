@@ -79,34 +79,6 @@ public class DynamicCompositeKeyFactory
 		return composite;
 	}
 
-	public DynamicComposite buildQueryComparatorStart(String propertyName, PropertyType type,
-			int hashOrPosition, boolean inclusive)
-	{
-		ComponentEquality equality = inclusive ? EQUAL : GREATER_THAN_EQUAL;
-		return buildQueryComparator(propertyName, type, hashOrPosition, equality);
-	}
-
-	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
-			int hashOrPosition, boolean inclusive)
-	{
-		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
-		return buildQueryComparator(propertyName, type, hashOrPosition, equality);
-	}
-
-	public DynamicComposite buildQueryComparatorStart(String propertyName, PropertyType type,
-			Object value, boolean inclusive)
-	{
-		ComponentEquality equality = inclusive ? EQUAL : GREATER_THAN_EQUAL;
-		return buildQueryComparator(propertyName, type, value, equality);
-	}
-
-	public DynamicComposite buildQueryComparatorEnd(String propertyName, PropertyType type,
-			Object value, boolean inclusive)
-	{
-		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
-		return buildQueryComparator(propertyName, type, value, equality);
-	}
-
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -221,15 +193,7 @@ public class DynamicCompositeKeyFactory
 				nullFlag = true;
 			}
 		}
-
-		if (lastNotNullIndex > 0)
-		{
-			return --lastNotNullIndex;
-		}
-		else
-		{
-			throw new IllegalArgumentException("The keys of WideMap '" + propertyName
-					+ "' should not be all null");
-		}
+		lastNotNullIndex--;
+		return lastNotNullIndex;
 	}
 }

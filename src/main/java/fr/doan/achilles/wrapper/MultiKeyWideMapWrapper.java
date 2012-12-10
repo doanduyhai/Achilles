@@ -4,8 +4,11 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import fr.doan.achilles.exception.ValidationException;
+import me.prettyprint.hector.api.beans.HColumn;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
@@ -20,6 +23,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
+	private List<Method> componentSetters;
 
 	private EntityWrapperUtil util = new EntityWrapperUtil();
 
@@ -35,21 +39,29 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 	}
 
 	@Override
-	protected DynamicComposite buildQueryCompositeStart(K start, boolean inclusiveStart)
+	protected DynamicComposite buildQueryComposite(K start, ComponentEquality equality)
 	{
 		List<Object> componentValues = util.determineMultiKey(start, componentGetters);
 
-		return keyFactory.buildQueryComparatorStart(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers, inclusiveStart);
+		return keyFactory.buildQueryComparator(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), componentValues, componentSerializers, equality);
 	}
 
 	@Override
-	protected DynamicComposite buildQueryCompositeEnd(K end, boolean inclusiveEnd)
+	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
+			boolean inclusiveEnd, boolean reverse, int count)
 	{
-		List<Object> componentValues = util.determineMultiKey(end, componentGetters);
 
-		return keyFactory.buildQueryComparatorEnd(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers, inclusiveEnd);
+		validateBounds(start, end, reverse);
+
+		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
+				inclusiveEnd, reverse);
+
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
+
+		return util.buildMultiKey(wideMapMeta.getKeyClass(),
+				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -63,6 +75,9 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
 			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
 
+			keyFactory.validateNoHole(wideMapMeta.getPropertyName(), startComponentValues);
+			keyFactory.validateNoHole(wideMapMeta.getPropertyName(), endComponentValues);
+
 			for (int i = 0; i < startComponentValues.size(); i++)
 			{
 
@@ -71,12 +86,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 				if (reverse)
 				{
-					if (endValue == null && startValue != null)
-					{
-						throw new ValidationException(
-								"For multiKey descending range query, endKey cannot be null and startKey not null");
-					}
-					else if (startValue != null && endValue != null)
+					if (startValue != null && endValue != null)
 					{
 						Validator
 								.validateTrue(startValue.compareTo(endValue) >= 0,
@@ -86,12 +96,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 				}
 				else
 				{
-					if (startValue == null && endValue != null)
-					{
-						throw new ValidationException(
-								"For multiKey ascending range query, startKey cannot be null and endKey not null");
-					}
-					else if (startValue != null && endValue != null)
+					if (startValue != null && endValue != null)
 					{
 						Validator
 								.validateTrue(startValue.compareTo(endValue) <= 0,
@@ -111,4 +116,10 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 	{
 		this.componentGetters = componentGetters;
 	}
+
+	public void setComponentSetters(List<Method> componentSetters)
+	{
+		this.componentSetters = componentSetters;
+	}
+
 }

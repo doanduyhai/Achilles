@@ -15,6 +15,7 @@ public class MultiKeyWideMapMeta<K, V> extends WideMapMeta<K, V>
 {
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
+	private List<Method> componentSetters;
 
 	@Override
 	public PropertyType propertyType()
@@ -57,5 +58,15 @@ public class MultiKeyWideMapMeta<K, V> extends WideMapMeta<K, V>
 	public void setComponentGetters(List<Method> componentGetters)
 	{
 		this.componentGetters = componentGetters;
+	}
+
+	public List<Method> getComponentSetters()
+	{
+		return componentSetters;
+	}
+
+	public void setComponentSetters(List<Method> componentSetters)
+	{
+		this.componentSetters = componentSetters;
 	}
 }
