@@ -25,6 +25,7 @@ import parser.entity.BeanWithNoSerialVersionUID;
 import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.BeanWithNonPublicSerialVersionUID;
 import parser.entity.BeanWithNotSerializableId;
+import parser.entity.ChildBean;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -58,7 +59,8 @@ public class EntityParserTest
 		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(LONG_SRZ.getComparatorType());
+		assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(
+				LONG_SRZ.getComparatorType());
 		assertThat((Serializer<Long>) meta.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(meta.getPropertyMetas()).hasSize(5);
 
@@ -66,7 +68,8 @@ public class EntityParserTest
 		PropertyMeta<?> age = meta.getPropertyMetas().get("age_in_year");
 		ListMeta<String> friends = (ListMeta<String>) meta.getPropertyMetas().get("friends");
 		SetMeta<String> followers = (SetMeta<String>) meta.getPropertyMetas().get("followers");
-		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas().get("preferences");
+		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas()
+				.get("preferences");
 
 		assertThat(name).isNotNull();
 		assertThat(age).isNotNull();
@@ -91,7 +94,8 @@ public class EntityParserTest
 		assertThat(friends.newListInstance()).isNotNull();
 		assertThat(friends.newListInstance()).isEmpty();
 		assertThat(friends.isLazy()).isTrue();
-		assertThat((Class<ArrayList>) friends.newListInstance().getClass()).isEqualTo(ArrayList.class);
+		assertThat((Class<ArrayList>) friends.newListInstance().getClass()).isEqualTo(
+				ArrayList.class);
 
 		assertThat(followers.getPropertyName()).isEqualTo("followers");
 		assertThat(followers.getValueClass()).isEqualTo(String.class);
@@ -109,7 +113,8 @@ public class EntityParserTest
 		assertThat((Serializer<Integer>) preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
 		assertThat(preferences.newMapInstance()).isNotNull();
 		assertThat(preferences.newMapInstance()).isEmpty();
-		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(HashMap.class);
+		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(
+				HashMap.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -117,10 +122,24 @@ public class EntityParserTest
 	public void should_parse_entity_with_table_name() throws Exception
 	{
 
-		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, BeanWithColumnFamilyName.class);
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace,
+				BeanWithColumnFamilyName.class);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_inherited_bean() throws Exception
+	{
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, ChildBean.class);
+
+		assertThat(meta).isNotNull();
+		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
+		assertThat(meta.getPropertyMetas().get("name").getPropertyName()).isEqualTo("name");
+		assertThat(meta.getPropertyMetas().get("address").getPropertyName()).isEqualTo("address");
+		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName()).isEqualTo("nickname");
 	}
 
 	@Test(expected = IncorrectTypeException.class)

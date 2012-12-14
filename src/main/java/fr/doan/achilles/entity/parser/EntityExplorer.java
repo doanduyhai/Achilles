@@ -15,11 +15,6 @@ import org.springframework.util.SystemPropertyUtils;
 public class EntityExplorer
 {
 
-	public List<Class<?>> discoverEntities(String packageName)
-	{
-		return this.findMyTypes(packageName);
-	}
-
 	public List<Class<?>> discoverEntities(List<String> packageNames)
 	{
 		List<Class<?>> candidates = new ArrayList<Class<?>>();
@@ -33,10 +28,12 @@ public class EntityExplorer
 	private List<Class<?>> findMyTypes(String basePackage)
 	{
 		ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-		MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+		MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(
+				resourcePatternResolver);
 
 		List<Class<?>> candidates = new ArrayList<Class<?>>();
-		String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(basePackage) + "/" + "**/*.class";
+		String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
+				+ resolveBasePackage(basePackage) + "/" + "**/*.class";
 		try
 		{
 			Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
@@ -44,10 +41,12 @@ public class EntityExplorer
 			{
 				if (resource.isReadable())
 				{
-					MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
+					MetadataReader metadataReader = metadataReaderFactory
+							.getMetadataReader(resource);
 					if (isCandidate(metadataReader))
 					{
-						candidates.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
+						candidates.add(Class.forName(metadataReader.getClassMetadata()
+								.getClassName()));
 					}
 				}
 			}
@@ -59,7 +58,8 @@ public class EntityExplorer
 
 	private String resolveBasePackage(String basePackage)
 	{
-		return ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage));
+		return ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils
+				.resolvePlaceholders(basePackage));
 	}
 
 	private boolean isCandidate(MetadataReader metadataReader)
@@ -76,4 +76,5 @@ public class EntityExplorer
 		{}
 		return false;
 	}
+
 }

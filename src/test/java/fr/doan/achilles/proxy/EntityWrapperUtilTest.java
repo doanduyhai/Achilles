@@ -163,6 +163,7 @@ public class EntityWrapperUtilTest
 		assertThat(multiKeyList.get(2)).isEqualTo(12);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_multi_key_instance() throws Exception
 	{
@@ -189,7 +190,7 @@ public class EntityWrapperUtilTest
 		when(wideMapMeta.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKey(TweetMultiKey.class,
+		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKeyList(TweetMultiKey.class,
 				wideMapMeta, //
 				Arrays.asList(hCol1, hCol2, hCol3), //
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));

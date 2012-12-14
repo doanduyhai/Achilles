@@ -41,7 +41,7 @@ public class EntityPropertyHelper
 		{
 
 			String getter = this.deriveGetterName(field);
-			Method getterMethod = beanClass.getDeclaredMethod(getter, (Class<?>[]) null);
+			Method getterMethod = beanClass.getMethod(getter);
 			if (!Modifier.isPublic(getterMethod.getModifiers()))
 			{
 				throw new InvalidBeanException("The getter for field '" + fieldName
@@ -70,7 +70,7 @@ public class EntityPropertyHelper
 		try
 		{
 			String setter = this.deriveSetterName(fieldName);
-			Method setterMethod = beanClass.getDeclaredMethod(setter, field.getType());
+			Method setterMethod = beanClass.getMethod(setter, field.getType());
 
 			if (!Modifier.isPublic(setterMethod.getModifiers()))
 			{

@@ -25,6 +25,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.type.KeyValue;
+import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
@@ -223,6 +224,38 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 
 		assertThat(results.get(2).getKey().getTweet()).isEqualTo(uuid3);
 		assertThat(results.get(2).getKey().getUser()).isEqualTo(foo);
+	}
+
+	@Test
+	public void should_iterate() throws Exception
+	{
+		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+
+		KeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
+				new UserTweetKey(foo, uuid3), //
+				new UserTweetKey(qux, uuid5), //
+				false, 5);
+
+		assertThat(iter.hasNext());
+		KeyValue<UserTweetKey, String> keyValue1 = iter.next();
+		KeyValue<UserTweetKey, String> keyValue2 = iter.next();
+		KeyValue<UserTweetKey, String> keyValue3 = iter.next();
+
+		assertThat(keyValue1.getKey().getUser()).isEqualTo(foo);
+		assertThat(keyValue1.getKey().getTweet()).isEqualTo(uuid3);
+		assertThat(keyValue1.getValue()).isEqualTo("tweet3-foo");
+
+		assertThat(keyValue2.getKey().getUser()).isEqualTo(qux);
+		assertThat(keyValue2.getKey().getTweet()).isEqualTo(uuid4);
+		assertThat(keyValue2.getValue()).isEqualTo("tweet4-qux");
+
+		assertThat(keyValue3.getKey().getUser()).isEqualTo(qux);
+		assertThat(keyValue3.getKey().getTweet()).isEqualTo(uuid5);
+		assertThat(keyValue3.getValue()).isEqualTo("tweet5-qux");
 	}
 
 	private DynamicComposite buildComposite()

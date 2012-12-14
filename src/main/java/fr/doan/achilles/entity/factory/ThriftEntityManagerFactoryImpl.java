@@ -35,19 +35,27 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 	protected ThriftEntityManagerFactoryImpl() {}
 
-	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages) {
+	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages)
+	{
 		this(cluster, keyspace, entityPackages, false);
 	}
 
-	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages, boolean forceCFCreation) {
-		this(cluster, keyspace, Arrays.asList(StringUtils.split(entityPackages, ",")), forceCFCreation);
+	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace,
+			String entityPackages, boolean forceCFCreation)
+	{
+		this(cluster, keyspace, Arrays.asList(StringUtils.split(entityPackages, ",")),
+				forceCFCreation);
 	}
 
-	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages) {
+	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace,
+			List<String> entityPackages)
+	{
 		this(cluster, keyspace, entityPackages, false);
 	}
 
-	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages, boolean forceCFCreation) {
+	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace,
+			List<String> entityPackages, boolean forceCFCreation)
+	{
 		validateNotNull(cluster, "cluster");
 		validateNotNull(keyspace, "keyspace");
 		validateNotEmpty(entityPackages, "entityPackages");
@@ -64,7 +72,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	{
 		this.discoverEntyties();
 
-		this.columnFamilyHelper.validateColumnFamilies(this.entityMetaMap, this.forceColumnFamilyCreation);
+		this.columnFamilyHelper.validateColumnFamilies(this.entityMetaMap,
+				this.forceColumnFamilyCreation);
 	}
 
 	private void discoverEntyties()
@@ -82,8 +91,9 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		else
 		{
 
-			throw new IllegalArgumentException("No entity with javax.persistence.Table annotation found in the packages "
-					+ StringUtils.join(entityPackages, ","));
+			throw new IllegalArgumentException(
+					"No entity with javax.persistence.Table annotation found in the packages "
+							+ StringUtils.join(entityPackages, ","));
 		}
 	}
 

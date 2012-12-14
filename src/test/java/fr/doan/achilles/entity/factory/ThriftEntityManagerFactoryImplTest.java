@@ -22,7 +22,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.parser.EntityExplorer;
 import fr.doan.achilles.entity.parser.EntityParser;

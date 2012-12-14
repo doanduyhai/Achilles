@@ -70,37 +70,45 @@ public class EntityWrapperUtil
 		return multiKeyValues;
 	}
 
-	public <K, V> List<KeyValue<K, V>> buildMultiKey(Class<K> multiKeyClass,
+	public <K, V> List<KeyValue<K, V>> buildMultiKeyList(Class<K> multiKeyClass,
 			MultiKeyWideMapMeta<K, V> wideMapMeta,
 			List<HColumn<DynamicComposite, Object>> hColumns, List<Method> componentSetters)
 	{
 
 		List<KeyValue<K, V>> results = new ArrayList<KeyValue<K, V>>();
+
+		for (HColumn<DynamicComposite, Object> column : hColumns)
+		{
+			results.add(buildMultiKey(multiKeyClass, wideMapMeta, column, componentSetters));
+		}
+		return results;
+	}
+
+	public <K, V> KeyValue<K, V> buildMultiKey(Class<K> multiKeyClass,
+			MultiKeyWideMapMeta<K, V> wideMapMeta, HColumn<DynamicComposite, Object> column,
+			List<Method> componentSetters)
+	{
 		List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+		KeyValue<K, V> result = null;
 		try
 		{
+			K multiKeyInstance = multiKeyClass.newInstance();
+			List<Component<?>> components = column.getName().getComponents();
 
-			for (HColumn<DynamicComposite, Object> column : hColumns)
+			for (int i = 2; i < components.size(); i++)
 			{
-				K multiKeyInstance = multiKeyClass.newInstance();
-				List<Component<?>> components = column.getName().getComponents();
-
-				for (int i = 2; i < components.size(); i++)
-				{
-					Component<?> comp = components.get(i);
-					Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
-					componentSetters.get(i - 2).invoke(multiKeyInstance, compValue);
-				}
-
-				V value = wideMapMeta.get(column.getValue());
-				results.add(new KeyValue<K, V>(multiKeyInstance, value));
+				Component<?> comp = components.get(i);
+				Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
+				componentSetters.get(i - 2).invoke(multiKeyInstance, compValue);
 			}
+
+			V value = wideMapMeta.get(column.getValue());
+			result = new KeyValue<K, V>(multiKeyInstance, value, column.getTtl());
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
-
-		return results;
+		return result;
 	}
 }

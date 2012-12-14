@@ -17,7 +17,7 @@
 
   <dependencies>
 
- <dependency>
+	 <dependency>
             <groupId>me.prettyprint</groupId>
             <artifactId>hector-core</artifactId>
             <version>1.0-5</version>
@@ -36,7 +36,7 @@
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
             <version>1.0.2</version>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -46,11 +46,6 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
             <version>1.9.5</version>
-        </dependency>
-        <dependency>
-        	<groupId>org.projectlombok</groupId>
-        	<artifactId>lombok</artifactId>
-        	<version>0.10.8</version>
         </dependency>
         <dependency>
         	<groupId>org.apache.cassandra</groupId>

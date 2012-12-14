@@ -4,10 +4,13 @@ import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityM
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import me.prettyprint.hector.api.Keyspace;
@@ -21,8 +24,9 @@ import fr.doan.achilles.validation.Validator;
 
 public class EntityParser
 {
-
 	private PropertyParser parser = new PropertyParser();
+
+	private PropertyFilter filter = new PropertyFilter();
 
 	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass)
 	{
@@ -34,16 +38,18 @@ public class EntityParser
 		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
 		PropertyMeta<?> idMeta = null;
 
-		for (Field field : entityClass.getDeclaredFields())
+		List<Field> inheritedFields = getInheritedPrivateFields(entityClass);
+
+		for (Field field : inheritedFields)
 		{
-			if (field.getAnnotation(javax.persistence.Id.class) != null)
+			if (filter.hasAnnotation(field, Id.class))
 			{
 				idMeta = parser.parse(entityClass, field, field.getName());
 			}
 
-			else if (field.getAnnotation(javax.persistence.Column.class) != null)
+			else if (filter.hasAnnotation(field, Column.class))
 			{
-				Column column = field.getAnnotation(javax.persistence.Column.class);
+				Column column = field.getAnnotation(Column.class);
 				String propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field
 						.getName();
 				propertyMetas.put(propertyName, parser.parse(entityClass, field, propertyName));
@@ -135,4 +141,23 @@ public class EntityParser
 		return columnFamily;
 	}
 
+	private List<Field> getInheritedPrivateFields(Class<?> type)
+	{
+		List<Field> result = new ArrayList<Field>();
+
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField))
+				{
+					result.add(declaredField);
+				}
+			}
+			i = i.getSuperclass();
+		}
+
+		return result;
+	}
 }

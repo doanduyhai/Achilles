@@ -1,6 +1,7 @@
 package fr.doan.achilles.entity.type;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
@@ -15,10 +16,12 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
 {
-	private final ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator;
-	private final Serializer<?> keySerializer;
+	private ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator;
+	private Serializer<?> keySerializer;
 
-	public KeyValueIterator(ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator, Serializer<?> keySerializer) {
+	public KeyValueIterator(ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator,
+			Serializer<?> keySerializer)
+	{
 		this.columnSliceIterator = columnSliceIterator;
 		this.keySerializer = keySerializer;
 	}
@@ -42,6 +45,10 @@ public class KeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
 			K key = (K) composite.get(2, this.keySerializer);
 
 			keyValue = new KeyValue<K, V>(key, column.getValue(), column.getTtl());
+		}
+		else
+		{
+			throw new NoSuchElementException();
 		}
 		return keyValue;
 	}

@@ -3,12 +3,14 @@ package fr.doan.achilles.wrapper;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
+import fr.doan.achilles.entity.type.MultiKeyValueIterator;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
@@ -60,8 +62,41 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return util.buildMultiKey(wideMapMeta.getKeyClass(),
+		return util.buildMultiKeyList(wideMapMeta.getKeyClass(),
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
+	}
+
+	@Override
+	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
+	{
+		return iterator(start, end, true, reverse, count);
+	}
+
+	@Override
+	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
+			boolean reverse, int count)
+	{
+		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+	}
+
+	@Override
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public MultiKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+			boolean inclusiveEnd, boolean reverse, int count)
+	{
+
+		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
+				inclusiveEnd, reverse);
+
+		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
+				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
+
+		return new MultiKeyValueIterator(columnSliceIterator,
+				(MultiKeyWideMapMeta<K, V>) wideMapMeta, componentSetters);
 	}
 
 	@SuppressWarnings("unchecked")
