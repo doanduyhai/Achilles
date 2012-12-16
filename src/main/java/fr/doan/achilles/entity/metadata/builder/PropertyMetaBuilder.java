@@ -1,8 +1,10 @@
 package fr.doan.achilles.entity.metadata.builder;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
+import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import fr.doan.achilles.entity.metadata.ListLazyMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -28,16 +30,13 @@ public class PropertyMetaBuilder<K, V>
 	private PropertyType type;
 	private String propertyName;
 	private Class<K> keyClass;
-	private Serializer<K> keySerializer;
 	private Class<V> valueClass;
-	private Serializer<?> valueSerializer;
-	private Method getter;
-	private Method setter;
-	private boolean lazy;
-	private boolean singleKey;
-	private boolean joinColumn;
+	private Method[] accessors;
+	private boolean lazy = false;
+	private boolean singleKey = true;
+	private boolean joinColumn = false;
 
-	private List<Serializer<?>> componentSerializers;
+	private List<Class<?>> componentClasses;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
@@ -57,10 +56,13 @@ public class PropertyMetaBuilder<K, V>
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public PropertyMeta<K, V> build()
 	{
-
 		PropertyMeta<K, V> meta = null;
 		switch (type)
 		{
@@ -107,15 +109,30 @@ public class PropertyMetaBuilder<K, V>
 
 		meta.setPropertyName(propertyName);
 		meta.setKeyClass(keyClass);
-		meta.setKeySerializer(keySerializer);
+		if (keyClass != Void.class)
+		{
+
+			meta.setKeySerializer((Serializer) SerializerTypeInferer.getSerializer(keyClass));
+		}
 		meta.setValueClass(valueClass);
-		meta.setValueSerializer(valueSerializer);
-		meta.setGetter(getter);
-		meta.setSetter(setter);
+		meta.setValueSerializer((Serializer) SerializerTypeInferer.getSerializer(valueClass));
+		meta.setGetter(accessors[0]);
+		meta.setSetter(accessors[1]);
 		meta.setLazy(lazy);
 		meta.setSingleKey(singleKey);
 		meta.setJoinColumn(joinColumn);
-		meta.setComponentSerializers(componentSerializers);
+		meta.setComponentClasses(componentClasses);
+		if (componentClasses != null && componentClasses.size() > 0)
+		{
+			List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
+			for (Class<?> componentClass : componentClasses)
+			{
+				componentSerializers.add((Serializer) SerializerTypeInferer
+						.getSerializer(componentClass));
+			}
+			meta.setComponentSerializers(componentSerializers);
+		}
+
 		meta.setComponentGetters(componentGetters);
 		meta.setComponentSetters(componentSetters);
 
@@ -128,27 +145,9 @@ public class PropertyMetaBuilder<K, V>
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> keySerializer(Serializer<K> keySerializer)
+	public PropertyMetaBuilder<K, V> accessors(Method[] accessors)
 	{
-		this.keySerializer = keySerializer;
-		return this;
-	}
-
-	public PropertyMetaBuilder<K, V> valueSerializer(Serializer<V> valueSerializer)
-	{
-		this.valueSerializer = valueSerializer;
-		return this;
-	}
-
-	public PropertyMetaBuilder<K, V> getter(Method getter)
-	{
-		this.getter = getter;
-		return this;
-	}
-
-	public PropertyMetaBuilder<K, V> setter(Method setter)
-	{
-		this.setter = setter;
+		this.accessors = accessors;
 		return this;
 	}
 
@@ -170,9 +169,9 @@ public class PropertyMetaBuilder<K, V>
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> componentSerializers(List<Serializer<?>> componentSerializers)
+	public PropertyMetaBuilder<K, V> componentClasses(List<Class<?>> componentClasses)
 	{
-		this.componentSerializers = componentSerializers;
+		this.componentClasses = componentClasses;
 		return this;
 	}
 

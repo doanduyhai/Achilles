@@ -3,7 +3,7 @@ package fr.doan.achilles.wrapper;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class MapEntryWrapper<K, V> extends AbstractWrapper<V> implements Map.Entry<K, V>
+public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.Entry<K, V>
 {
 
 	private final Map.Entry<K, V> target;

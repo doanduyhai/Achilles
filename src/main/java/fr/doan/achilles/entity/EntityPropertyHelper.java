@@ -203,7 +203,7 @@ public class EntityPropertyHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID> ID getKey(Object entity, PropertyMeta<ID> idMeta)
+	public <ID> ID getKey(Object entity, PropertyMeta<Void, ID> idMeta)
 	{
 
 		try

@@ -64,8 +64,8 @@ public class EntityParserTest
 		assertThat((Serializer<Long>) meta.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(meta.getPropertyMetas()).hasSize(5);
 
-		PropertyMeta<?> name = meta.getPropertyMetas().get("name");
-		PropertyMeta<?> age = meta.getPropertyMetas().get("age_in_year");
+		PropertyMeta<?, ?> name = meta.getPropertyMetas().get("name");
+		PropertyMeta<?, ?> age = meta.getPropertyMetas().get("age_in_year");
 		ListMeta<String> friends = (ListMeta<String>) meta.getPropertyMetas().get("friends");
 		SetMeta<String> followers = (SetMeta<String>) meta.getPropertyMetas().get("followers");
 		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas()

@@ -4,22 +4,22 @@ import java.util.Set;
 
 import fr.doan.achilles.wrapper.SetWrapper;
 
-public class SetWrapperBuilder<E> extends AbstractWrapperBuilder<SetWrapperBuilder<E>, E>
+public class SetWrapperBuilder<V> extends AbstractWrapperBuilder<SetWrapperBuilder<V>, Void, V>
 {
-	private Set<E> target;
+	private Set<V> target;
 
-	public static <E> SetWrapperBuilder<E> builder(Set<E> target)
+	public static <V> SetWrapperBuilder<V> builder(Set<V> target)
 	{
-		return new SetWrapperBuilder<E>(target);
+		return new SetWrapperBuilder<V>(target);
 	}
 
-	public SetWrapperBuilder(Set<E> target) {
+	public SetWrapperBuilder(Set<V> target) {
 		this.target = target;
 	}
 
-	public SetWrapper<E> build()
+	public SetWrapper<V> build()
 	{
-		SetWrapper<E> setWrapper = new SetWrapper<E>(this.target);
+		SetWrapper<V> setWrapper = new SetWrapper<V>(this.target);
 		super.build(setWrapper);
 		return setWrapper;
 	}

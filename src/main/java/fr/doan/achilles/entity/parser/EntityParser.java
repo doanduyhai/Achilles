@@ -36,8 +36,8 @@ public class EntityParser
 		String columnFamily = inferColumnFamilyName(entityClass, canonicalName);
 		Long serialVersionUID = findSerialVersionUID(entityClass);
 
-		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
-		PropertyMeta<?> idMeta = null;
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		PropertyMeta<Void, ?> idMeta = null;
 
 		List<Field> inheritedFields = getInheritedPrivateFields(entityClass);
 

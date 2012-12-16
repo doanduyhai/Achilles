@@ -23,12 +23,12 @@ import fr.doan.achilles.wrapper.MapWrapper;
 public class MapWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -44,7 +44,8 @@ public class MapWrapperBuilderTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		MapWrapper<Integer, String> mapWrapper = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		MapWrapper<Integer, String> mapWrapper = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).build();
 
 		assertThat(mapWrapper.getDirtyMap()).isSameAs(dirtyMap);
 

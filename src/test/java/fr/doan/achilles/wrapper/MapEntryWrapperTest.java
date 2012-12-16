@@ -19,18 +19,17 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.MapEntryWrapper;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MapEntryWrapperTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -47,7 +46,8 @@ public class MapEntryWrapperTest
 		map.put(3, "75014");
 		Entry<Integer, String> mapEntry = map.entrySet().iterator().next();
 
-		MapEntryWrapper<Integer, String> mapEntryWrapper = new MapEntryWrapper<Integer, String>(mapEntry);
+		MapEntryWrapper<Integer, String> mapEntryWrapper = new MapEntryWrapper<Integer, String>(
+				mapEntry);
 
 		mapEntryWrapper.setDirtyMap(dirtyMap);
 		mapEntryWrapper.setSetter(setter);

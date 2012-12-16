@@ -18,19 +18,18 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.ListWrapper;
-import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ListWrapperBuilderTest
 {
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Void, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -42,7 +41,8 @@ public class ListWrapperBuilderTest
 	public void should_build() throws Exception
 	{
 		List<String> target = new ArrayList<String>();
-		ListWrapper<String> listWrapper = ListWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		ListWrapper<String> listWrapper = ListWrapperBuilder.builder(target).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).build();
 
 		assertThat(listWrapper.getTarget()).isSameAs(target);
 		assertThat(listWrapper.getDirtyMap()).isSameAs(dirtyMap);

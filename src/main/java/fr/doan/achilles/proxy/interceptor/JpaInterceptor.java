@@ -8,10 +8,8 @@ import java.util.Set;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
@@ -27,9 +25,9 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
-	private Map<Method, PropertyMeta<?>> getterMetas;
-	private Map<Method, PropertyMeta<?>> setterMetas;
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Set<Method> lazyLoaded;
 
 	private EntityLoader loader;
@@ -106,8 +104,7 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case WIDE_MAP:
-				WideMapMeta wideMapMeta = (WideMapMeta) propertyMeta;
-				result = buildWideMapWrapper(wideMapMeta);
+				result = buildWideMapWrapper(propertyMeta);
 				break;
 			default:
 				result = proxy.invoke(target, args);
@@ -116,7 +113,7 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		return result;
 	}
 
-	private <K extends Comparable<K>, V> Object buildWideMapWrapper(WideMapMeta<K, V> propertyMeta)
+	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 		Object result;
 
@@ -127,12 +124,11 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		}
 		else
 		{
-			MultiKeyWideMapMeta<K, V> multiKeyMeta = (MultiKeyWideMapMeta<K, V>) propertyMeta;
 
-			result = MultiKeyWideMapWrapperBuilder.builder(key, dao, multiKeyMeta)
-					.componentGetters(multiKeyMeta.getComponentGetters()) //
-					.componentSetters(multiKeyMeta.getComponentSetters()) //
-					.componentSerializers(multiKeyMeta.getComponentSerializers()) //
+			result = MultiKeyWideMapWrapperBuilder.builder(key, dao, propertyMeta)
+					.componentGetters(propertyMeta.getComponentGetters()) //
+					.componentSetters(propertyMeta.getComponentSetters()) //
+					.componentSerializers(propertyMeta.getComponentSerializers()) //
 					.build();
 		}
 
@@ -142,7 +138,7 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
-		PropertyMeta<?> propertyMeta = this.setterMetas.get(method);
+		PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
 
 		if (propertyMeta.propertyType() == PropertyType.WIDE_MAP)
 		{
@@ -156,7 +152,7 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		return result;
 	}
 
-	public Map<Method, PropertyMeta<?>> getDirtyMap()
+	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
 		return dirtyMap;
 	}
@@ -197,17 +193,17 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		this.idSetter = idSetter;
 	}
 
-	void setGetterMetas(Map<Method, PropertyMeta<?>> getterMetas)
+	void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas)
 	{
 		this.getterMetas = getterMetas;
 	}
 
-	void setSetterMetas(Map<Method, PropertyMeta<?>> setterMetas)
+	void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas)
 	{
 		this.setterMetas = setterMetas;
 	}
 
-	void setDirtyMap(Map<Method, PropertyMeta<?>> dirtyMap)
+	void setDirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
 		this.dirtyMap = dirtyMap;
 	}

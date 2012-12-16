@@ -61,7 +61,7 @@ public class EntityLoaderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<?, String> propertyMeta;
 
 	@Mock
 	private ListMeta<String> listMeta;
@@ -128,7 +128,7 @@ public class EntityLoaderTest
 	public void should_load_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.get("name")).thenReturn("name");
+		when(propertyMeta.getValue("name")).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
@@ -157,8 +157,8 @@ public class EntityLoaderTest
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(friends);
 
 		when(listMeta.newListInstance()).thenReturn(new ArrayList<String>());
-		when((String) listMeta.get("foo")).thenReturn("foo");
-		when((String) listMeta.get("bar")).thenReturn("bar");
+		when((String) listMeta.getValue("foo")).thenReturn("foo");
+		when((String) listMeta.getValue("bar")).thenReturn("bar");
 
 		List<String> value = loader.loadListProperty(1L, dao, listMeta);
 
@@ -184,8 +184,8 @@ public class EntityLoaderTest
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(followers);
 
 		when(setMeta.newSetInstance()).thenReturn(new HashSet<String>());
-		when((String) setMeta.get("George")).thenReturn("George");
-		when((String) setMeta.get("Paul")).thenReturn("Paul");
+		when((String) setMeta.getValue("George")).thenReturn("George");
+		when((String) setMeta.getValue("Paul")).thenReturn("Paul");
 
 		Set<String> value = loader.loadSetProperty(1L, dao, setMeta);
 
@@ -216,9 +216,9 @@ public class EntityLoaderTest
 
 		when(mapMeta.getKeyClass()).thenReturn(Integer.class);
 
-		when((String) mapMeta.get("FR")).thenReturn("FR");
-		when((String) mapMeta.get("Paris")).thenReturn("Paris");
-		when((String) mapMeta.get("75014")).thenReturn("75014");
+		when((String) mapMeta.getValue("FR")).thenReturn("FR");
+		when((String) mapMeta.getValue("Paris")).thenReturn("Paris");
+		when((String) mapMeta.getValue("75014")).thenReturn("75014");
 
 		Map<Integer, String> value = loader.loadMapProperty(1L, dao, mapMeta);
 

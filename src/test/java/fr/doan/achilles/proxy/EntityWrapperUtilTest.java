@@ -45,7 +45,7 @@ public class EntityWrapperUtilTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private PropertyMeta<Long> idMeta;
+	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
 	private MultiKeyWideMapMeta<TweetMultiKey, String> wideMapMeta;
@@ -183,15 +183,15 @@ public class EntityWrapperUtilTest
 		HColumn<DynamicComposite, Object> hCol3 = buildHColumn(
 				buildComposite("author3", uuid3, 13), "val3");
 
-		when(wideMapMeta.get("val1")).thenReturn("val1");
-		when(wideMapMeta.get("val2")).thenReturn("val2");
-		when(wideMapMeta.get("val3")).thenReturn("val3");
+		when(wideMapMeta.getValue("val1")).thenReturn("val1");
+		when(wideMapMeta.getValue("val2")).thenReturn("val2");
+		when(wideMapMeta.getValue("val3")).thenReturn("val3");
 
 		when(wideMapMeta.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKeyList(TweetMultiKey.class,
-				wideMapMeta, //
+		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKeyList(
+				TweetMultiKey.class, wideMapMeta, //
 				Arrays.asList(hCol1, hCol2, hCol3), //
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 

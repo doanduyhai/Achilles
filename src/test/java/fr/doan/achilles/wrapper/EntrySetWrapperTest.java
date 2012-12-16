@@ -26,12 +26,12 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 public class EntrySetWrapperTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -221,7 +221,8 @@ public class EntrySetWrapperTest
 
 	private EntrySetWrapper<Integer, String> prepareWrapper(Map<Integer, String> map)
 	{
-		EntrySetWrapper<Integer, String> wrapper = new EntrySetWrapper<Integer, String>(map.entrySet());
+		EntrySetWrapper<Integer, String> wrapper = new EntrySetWrapper<Integer, String>(
+				map.entrySet());
 
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);

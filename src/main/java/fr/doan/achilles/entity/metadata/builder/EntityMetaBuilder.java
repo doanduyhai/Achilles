@@ -19,20 +19,20 @@ import fr.doan.achilles.validation.Validator;
 public class EntityMetaBuilder<ID>
 {
 
-	private PropertyMeta<ID> idMeta;
+	private PropertyMeta<Void, ID> idMeta;
 	private String canonicalClassName;
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private GenericDao<?> dao;
-	private Map<String, PropertyMeta<?>> propertyMetas;
+	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
 
-	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<ID> idMeta)
+	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
 	{
 		return new EntityMetaBuilder<ID>(idMeta);
 	}
 
-	public EntityMetaBuilder(PropertyMeta<ID> idMeta) {
+	public EntityMetaBuilder(PropertyMeta<Void, ID> idMeta) {
 		this.idMeta = idMeta;
 	}
 
@@ -57,7 +57,8 @@ public class EntityMetaBuilder<ID>
 		}
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas");
-		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN, "columnFamilyName");
+		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN,
+				"columnFamilyName");
 
 		EntityMeta meta = new EntityMeta();
 
@@ -78,20 +79,22 @@ public class EntityMetaBuilder<ID>
 		return meta;
 	}
 
-	private Map<Method, PropertyMeta<?>> extractGetterMetas(Map<String, PropertyMeta<?>> propertyMetas)
+	private Map<Method, PropertyMeta<?, ?>> extractGetterMetas(
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
-		Map<Method, PropertyMeta<?>> getterMetas = new HashMap<Method, PropertyMeta<?>>();
-		for (PropertyMeta<?> propertyMeta : propertyMetas.values())
+		Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
+		for (PropertyMeta<?, ?> propertyMeta : propertyMetas.values())
 		{
 			getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		}
 		return getterMetas;
 	}
 
-	private Map<Method, PropertyMeta<?>> extractSetterMetas(Map<String, PropertyMeta<?>> propertyMetas)
+	private Map<Method, PropertyMeta<?, ?>> extractSetterMetas(
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
-		Map<Method, PropertyMeta<?>> setterMetas = new HashMap<Method, PropertyMeta<?>>();
-		for (PropertyMeta<?> propertyMeta : propertyMetas.values())
+		Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
+		for (PropertyMeta<?, ?> propertyMeta : propertyMetas.values())
 		{
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
 		}
@@ -121,7 +124,7 @@ public class EntityMetaBuilder<ID>
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> propertyMetas(Map<String, PropertyMeta<?>> propertyMetas)
+	public EntityMetaBuilder<ID> propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		this.propertyMetas = propertyMetas;
 		return this;

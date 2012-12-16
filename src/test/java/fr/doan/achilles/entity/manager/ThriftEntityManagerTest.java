@@ -79,7 +79,7 @@ public class ThriftEntityManagerTest
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		PropertyMeta<Long> propertyMeta = mock(PropertyMeta.class);
+		PropertyMeta<Void, Long> propertyMeta = mock(PropertyMeta.class);
 		when(entityMeta.getIdMeta()).thenReturn(propertyMeta);
 		when(propertyMeta.getGetter()).thenReturn(idGetter);
 

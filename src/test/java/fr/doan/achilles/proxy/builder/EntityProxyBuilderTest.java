@@ -33,16 +33,16 @@ public class EntityProxyBuilderTest
 	private GenericDao<Long> dao;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
 	@Mock
-	private PropertyMeta<Long> idMeta;
+	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Test
 	public void should_build_proxy() throws Exception

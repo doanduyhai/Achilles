@@ -5,7 +5,8 @@ import java.util.Map.Entry;
 
 import fr.doan.achilles.wrapper.EntryIteratorWrapper;
 
-public class EntryIteratorWrapperBuilder<K, V> extends AbstractWrapperBuilder<EntryIteratorWrapperBuilder<K, V>, V>
+public class EntryIteratorWrapperBuilder<K, V> extends
+		AbstractWrapperBuilder<EntryIteratorWrapperBuilder<K, V>, K, V>
 {
 	private Iterator<Entry<K, V>> target;
 

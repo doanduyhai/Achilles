@@ -7,7 +7,7 @@ import java.util.Set;
 
 import fr.doan.achilles.wrapper.builder.EntryIteratorWrapperBuilder;
 
-public class EntrySetWrapper<K, V> extends AbstractWrapper<V> implements Set<Entry<K, V>>
+public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<Entry<K, V>>
 {
 
 	private Set<Entry<K, V>> target;
@@ -56,7 +56,8 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<V> implements Set<Ent
 	@Override
 	public Iterator<Entry<K, V>> iterator()
 	{
-		return EntryIteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return EntryIteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override

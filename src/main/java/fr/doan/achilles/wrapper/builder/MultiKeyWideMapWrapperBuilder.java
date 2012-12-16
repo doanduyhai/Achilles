@@ -5,7 +5,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.MultiKeyWideMapWrapper;
 
 /**
@@ -21,12 +21,13 @@ public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuild
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
-	public MultiKeyWideMapWrapperBuilder(ID id, GenericDao<ID> dao, WideMapMeta<K, V> wideMapMeta) {
+	public MultiKeyWideMapWrapperBuilder(ID id, GenericDao<ID> dao, PropertyMeta<K, V> wideMapMeta)
+	{
 		super(id, dao, wideMapMeta);
 	}
 
 	public static <ID, K, V> MultiKeyWideMapWrapperBuilder<ID, K, V> builder(ID id,
-			GenericDao<ID> dao, WideMapMeta<K, V> wideMapMeta)
+			GenericDao<ID> dao, PropertyMeta<K, V> wideMapMeta)
 	{
 		return new MultiKeyWideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}

@@ -2,17 +2,17 @@ package fr.doan.achilles.wrapper;
 
 import java.util.ListIterator;
 
-public class ListIteratorWrapper<E> extends AbstractWrapper<E> implements ListIterator<E>
+public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V>
 {
 
-	private final ListIterator<E> target;
+	private final ListIterator<V> target;
 
-	public ListIteratorWrapper(ListIterator<E> target) {
+	public ListIteratorWrapper(ListIterator<V> target) {
 		this.target = target;
 	}
 
 	@Override
-	public void add(E e)
+	public void add(V e)
 	{
 		this.target.add(e);
 		this.markDirty();
@@ -31,7 +31,7 @@ public class ListIteratorWrapper<E> extends AbstractWrapper<E> implements ListIt
 	}
 
 	@Override
-	public E next()
+	public V next()
 	{
 		return this.target.next();
 	}
@@ -43,7 +43,7 @@ public class ListIteratorWrapper<E> extends AbstractWrapper<E> implements ListIt
 	}
 
 	@Override
-	public E previous()
+	public V previous()
 	{
 		return this.target.previous();
 	}
@@ -63,7 +63,7 @@ public class ListIteratorWrapper<E> extends AbstractWrapper<E> implements ListIt
 	}
 
 	@Override
-	public void set(E e)
+	public void set(V e)
 	{
 		this.target.set(e);
 		this.markDirty();

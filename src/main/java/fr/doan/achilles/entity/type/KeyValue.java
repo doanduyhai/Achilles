@@ -6,7 +6,7 @@ import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 
 /**
  * KeyValue
@@ -32,17 +32,18 @@ public class KeyValue<K, V>
 		this.ttl = 0;
 	}
 
-	public KeyValue(HColumn<DynamicComposite, Object> hColumn, Serializer<K> keySerializer,
-			WideMapMeta<K, V> wideMapMeta)
+	@SuppressWarnings("unchecked")
+	public KeyValue(HColumn<DynamicComposite, Object> hColumn, Serializer<?> keySerializer,
+			PropertyMeta<K, V> wideMapMeta)
 	{
-		this.key = hColumn.getName().get(2, keySerializer);
-		this.value = wideMapMeta.get(hColumn.getValue());
+		this.key = (K) hColumn.getName().get(2, keySerializer);
+		this.value = wideMapMeta.getValue(hColumn.getValue());
 		this.ttl = hColumn.getTtl();
 	}
 
 	public static <K, V> List<KeyValue<K, V>> fromList(
-			List<HColumn<DynamicComposite, Object>> hColumns, Serializer<K> keySerializer,
-			WideMapMeta<K, V> wideMapMeta)
+			List<HColumn<DynamicComposite, Object>> hColumns, Serializer<?> keySerializer,
+			PropertyMeta<K, V> wideMapMeta)
 	{
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 		if (hColumns != null && hColumns.size() > 0)

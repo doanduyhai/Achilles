@@ -33,16 +33,16 @@ public class JpaInterceptorBuilderTest
 	private GenericDao<Long> dao;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
 	@Mock
-	private PropertyMeta<Long> idMeta;
+	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
 	private Set<Method> lazyLoaded;
@@ -63,7 +63,8 @@ public class JpaInterceptorBuilderTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		JpaInterceptor<Long> interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity).build();
+		JpaInterceptor<Long> interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity)
+				.build();
 
 		assertThat(interceptor.getKey()).isEqualTo(1L);
 		assertThat(interceptor.getTarget()).isEqualTo(entity);

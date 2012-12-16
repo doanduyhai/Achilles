@@ -5,16 +5,16 @@ import java.util.Iterator;
 
 import fr.doan.achilles.wrapper.builder.IteratorWrapperBuilder;
 
-public class CollectionWrapper<E> extends AbstractWrapper<E> implements Collection<E>
+public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V>
 {
-	protected Collection<E> target;
+	protected Collection<V> target;
 
-	public CollectionWrapper(Collection<E> target) {
+	public CollectionWrapper(Collection<V> target) {
 		this.target = target;
 	}
 
 	@Override
-	public boolean add(E arg0)
+	public boolean add(V arg0)
 	{
 		boolean result = target.add(arg0);
 		this.markDirty();
@@ -22,7 +22,7 @@ public class CollectionWrapper<E> extends AbstractWrapper<E> implements Collecti
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends E> arg0)
+	public boolean addAll(Collection<? extends V> arg0)
 	{
 		boolean result = target.addAll(arg0);
 		if (result)
@@ -62,10 +62,10 @@ public class CollectionWrapper<E> extends AbstractWrapper<E> implements Collecti
 	}
 
 	@Override
-	public Iterator<E> iterator()
+	public Iterator<V> iterator()
 	{
-		return IteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
+		return IteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class CollectionWrapper<E> extends AbstractWrapper<E> implements Collecti
 		return this.target.toArray(arg0);
 	}
 
-	public Collection<E> getTarget()
+	public Collection<V> getTarget()
 	{
 		return this.target;
 	}

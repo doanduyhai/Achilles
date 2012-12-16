@@ -22,12 +22,12 @@ import fr.doan.achilles.wrapper.KeySetWrapper;
 public class ValueCollectionWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Void, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -48,8 +48,9 @@ public class ValueCollectionWrapperBuilderTest
 		targetMap.put(2, "Paris");
 		targetMap.put(3, "75014");
 
-		KeySetWrapper<Integer> wrapper = KeySetWrapperBuilder.builder(targetMap.keySet()).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta((PropertyMeta) propertyMeta).build();
+		KeySetWrapper<Integer> wrapper = KeySetWrapperBuilder.builder(targetMap.keySet())
+				.dirtyMap(dirtyMap).setter(setter).propertyMeta((PropertyMeta) propertyMeta)
+				.build();
 
 		wrapper.remove(1);
 

@@ -1,11 +1,14 @@
 package fr.doan.achilles.entity.parser;
 
-import static fr.doan.achilles.entity.metadata.builder.ListMetaBuilder.listMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.MapMetaBuilder.mapMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.MultiKeyWideMapMetaBuilder.multiKeyWideMapPropertyMetaBuiler;
-import static fr.doan.achilles.entity.metadata.builder.SetMetaBuilder.setMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder.simpleMetaBuilder;
-import static fr.doan.achilles.entity.metadata.builder.WideMapMetaBuilder.wideMapPropertyMetaBuiler;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.SET;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder.builder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,6 +34,7 @@ import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.IncorrectTypeException;
@@ -93,20 +97,23 @@ public class PropertyParser
 
 	private final EntityPropertyHelper helper = new EntityPropertyHelper();
 
-	public <V> PropertyMeta<V> parse(Class<?> beanClass, Field field, String propertyName)
+	@SuppressWarnings("unchecked")
+	public <K, V> PropertyMeta<K, V> parse(Class<?> beanClass, Field field, String propertyName)
 	{
 		Class<?> fieldType = field.getType();
 
-		PropertyMeta<V> propertyMeta;
+		PropertyMeta<K, V> propertyMeta;
 
 		if (List.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = parseListProperty(beanClass, field, propertyName, fieldType);
+			propertyMeta = (PropertyMeta<K, V>) parseListProperty(beanClass, field, propertyName,
+					fieldType);
 		}
 
 		else if (Set.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = parseSetProperty(beanClass, field, propertyName, fieldType);
+			propertyMeta = (PropertyMeta<K, V>) parseSetProperty(beanClass, field, propertyName,
+					fieldType);
 		}
 
 		else if (Map.class.isAssignableFrom(fieldType))
@@ -121,13 +128,13 @@ public class PropertyParser
 
 		else
 		{
-			propertyMeta = parseSimpleProperty(beanClass, field, propertyName);
+			propertyMeta = (PropertyMeta<K, V>) parseSimpleProperty(beanClass, field, propertyName);
 		}
 		return propertyMeta;
 	}
 
-	public <V> PropertyMeta<V> parseJoinColum(Class<?> beanClass, Field field,
-			Map<String, PropertyMeta<?>> propertyMetas)
+	public <K, V> PropertyMeta<K, V> parseJoinColum(Class<?> beanClass, Field field,
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		Validator.validateAllowedTypes(field.getType(), wideMapType,
 				"The JoinColumn '" + field.getName() + "' should be of type WideMap");
@@ -147,21 +154,24 @@ public class PropertyParser
 	}
 
 	@SuppressWarnings("unchecked")
-	private <V> PropertyMeta<V> parseSimpleProperty(Class<?> beanClass, Field field,
+	private <V> PropertyMeta<Void, V> parseSimpleProperty(Class<?> beanClass, Field field,
 			String propertyName)
 	{
 		Validator.validateSerializable(field.getType(), "property '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return simpleMetaBuilder((Class<V>) field.getType()).propertyName(propertyName)
-				.accessors(accessors).lazy(lazy).build();
+		PropertyType type = lazy ? LAZY_SIMPLE : SIMPLE;
+
+		return builder(Void.class, (Class<V>) field.getType()).type(type)
+				.propertyName(propertyName).accessors(accessors).lazy(lazy).build();
+
 	}
 
 	@SuppressWarnings(
 	{
 		"unchecked",
 	})
-	private <V> PropertyMeta<V> parseListProperty(Class<?> beanClass, Field field,
+	private <V> PropertyMeta<Void, V> parseListProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{
 
@@ -173,8 +183,11 @@ public class PropertyParser
 		Validator.validateSerializable(valueClass, "list value type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return listMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
+		PropertyType type = lazy ? LAZY_LIST : LIST;
+
+		return builder(Void.class, (Class<V>) valueClass).type(type).propertyName(propertyName)
 				.accessors(accessors).lazy(lazy).build();
+
 	}
 
 	@SuppressWarnings(
@@ -182,7 +195,7 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V> PropertyMeta<V> parseSetProperty(Class<?> beanClass, Field field,
+	private <V> PropertyMeta<Void, V> parseSetProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{
 
@@ -193,7 +206,9 @@ public class PropertyParser
 		Validator.validateSerializable(valueClass, "set value type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return setMetaBuilder((Class<V>) valueClass).propertyName(propertyName)
+		PropertyType type = lazy ? LAZY_SET : SET;
+
+		return builder(Void.class, (Class<V>) valueClass).type(type).propertyName(propertyName)
 				.accessors(accessors).lazy(lazy).build();
 	}
 
@@ -202,7 +217,7 @@ public class PropertyParser
 			"unchecked",
 			"rawtypes"
 	})
-	private <V> PropertyMeta<V> parseMapProperty(Class<?> beanClass, Field field,
+	private <K, V> PropertyMeta<K, V> parseMapProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{
 
@@ -235,19 +250,22 @@ public class PropertyParser
 		Validator.validateSerializable(keyType, "map key type of '" + field.getName() + "'");
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		boolean lazy = this.isLazy(field);
-		return mapMetaBuilder(keyType, valueClass).propertyName(propertyName).accessors(accessors)
-				.lazy(lazy).build();
+		PropertyType type = lazy ? LAZY_MAP : MAP;
+
+		return builder(keyType, valueClass).type(type).propertyName(propertyName)
+				.accessors(accessors).lazy(lazy).build();
+
 	}
 
 	@SuppressWarnings("unchecked")
-	private <V> PropertyMeta<V> parseWideMapProperty(Class<?> beanClass, Field field,
+	private <K, V> PropertyMeta<K, V> parseWideMapProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{
 		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
 		List<Method> componentGetters = new ArrayList<Method>();
 		List<Method> componentSetters = new ArrayList<Method>();
 
-		Class<?> keyClass;
+		Class<K> keyClass;
 		Class<V> valueClass;
 
 		Type genericType = field.getGenericType();
@@ -257,7 +275,7 @@ public class PropertyParser
 			Type[] actualTypeArguments = pt.getActualTypeArguments();
 			if (actualTypeArguments.length > 1)
 			{
-				keyClass = (Class<?>) actualTypeArguments[0];
+				keyClass = (Class<K>) actualTypeArguments[0];
 				valueClass = (Class<V>) actualTypeArguments[1];
 
 				if (MultiKey.class.isAssignableFrom(keyClass))
@@ -289,18 +307,19 @@ public class PropertyParser
 		Method[] accessors = helper.findAccessors(beanClass, field);
 		if (componentClasses.size() == 0)
 		{
-			return wideMapPropertyMetaBuiler(keyClass, valueClass).propertyName(propertyName)
-					.accessors(accessors).build();
+			return builder(keyClass, valueClass).type(PropertyType.WIDE_MAP)
+					.propertyName(propertyName).accessors(accessors).singleKey(true).build();
+
 		}
 		else
 		{
-			return multiKeyWideMapPropertyMetaBuiler(keyClass, valueClass)
+			return builder(keyClass, valueClass).type(PropertyType.WIDE_MAP)
+					.propertyName(propertyName).accessors(accessors).singleKey(false) //
 					.componentClasses(componentClasses) //
 					.componentGetters(componentGetters) //
 					.componentSetters(componentSetters) //
-					.propertyName(propertyName).accessors(accessors).build();
+					.build();
 		}
-
 	}
 
 	private void parseMultiKey(List<Class<?>> componentClasses, List<Method> componentGetters,

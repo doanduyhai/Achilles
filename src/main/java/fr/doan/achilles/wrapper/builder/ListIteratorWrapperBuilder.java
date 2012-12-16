@@ -4,22 +4,23 @@ import java.util.ListIterator;
 
 import fr.doan.achilles.wrapper.ListIteratorWrapper;
 
-public class ListIteratorWrapperBuilder<E> extends AbstractWrapperBuilder<ListIteratorWrapperBuilder<E>, E>
+public class ListIteratorWrapperBuilder<V> extends
+		AbstractWrapperBuilder<ListIteratorWrapperBuilder<V>, Void, V>
 {
-	private ListIterator<E> target;
+	private ListIterator<V> target;
 
-	public static <E> ListIteratorWrapperBuilder<E> builder(ListIterator<E> target)
+	public static <V> ListIteratorWrapperBuilder<V> builder(ListIterator<V> target)
 	{
-		return new ListIteratorWrapperBuilder<E>(target);
+		return new ListIteratorWrapperBuilder<V>(target);
 	}
 
-	public ListIteratorWrapperBuilder(ListIterator<E> target) {
+	public ListIteratorWrapperBuilder(ListIterator<V> target) {
 		this.target = target;
 	}
 
-	public ListIteratorWrapper<E> build()
+	public ListIteratorWrapper<V> build()
 	{
-		ListIteratorWrapper<E> listIteratorWrapper = new ListIteratorWrapper<E>(this.target);
+		ListIteratorWrapper<V> listIteratorWrapper = new ListIteratorWrapper<V>(this.target);
 		super.build(listIteratorWrapper);
 		return listIteratorWrapper;
 	}

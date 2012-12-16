@@ -4,22 +4,23 @@ import java.util.Collection;
 
 import fr.doan.achilles.wrapper.CollectionWrapper;
 
-public class CollectionWrapperBuilder<E> extends AbstractWrapperBuilder<CollectionWrapperBuilder<E>, E>
+public class CollectionWrapperBuilder<V> extends
+		AbstractWrapperBuilder<CollectionWrapperBuilder<V>, Void, V>
 {
-	private Collection<E> target;
+	private Collection<V> target;
 
-	public static <E> CollectionWrapperBuilder<E> builder(Collection<E> target)
+	public static <V> CollectionWrapperBuilder<V> builder(Collection<V> target)
 	{
-		return new CollectionWrapperBuilder<E>(target);
+		return new CollectionWrapperBuilder<V>(target);
 	}
 
-	public CollectionWrapperBuilder(Collection<E> target) {
+	public CollectionWrapperBuilder(Collection<V> target) {
 		this.target = target;
 	}
 
-	public CollectionWrapper<E> build()
+	public CollectionWrapper<V> build()
 	{
-		CollectionWrapper<E> collectionWrapper = new CollectionWrapper<E>(this.target);
+		CollectionWrapper<V> collectionWrapper = new CollectionWrapper<V>(this.target);
 		super.build(collectionWrapper);
 		return collectionWrapper;
 	}

@@ -65,7 +65,7 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 			this.lazyLoaded = new HashSet<Method>();
 		}
 		interceptor.setLazyLoaded(this.lazyLoaded);
-		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?>>());
+		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
 
 		try
 		{

@@ -63,7 +63,7 @@ public class EntityRefresherTest
 	private JpaInterceptor<Long> jpaInterceptor;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
 	private Set<Method> lazyLoaded;

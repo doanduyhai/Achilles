@@ -54,13 +54,13 @@ public class JpaInterceptorTest
 	private GenericDao<Long> dao;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
 	private Set<Method> lazyLoaded;
@@ -91,7 +91,7 @@ public class JpaInterceptorTest
 		nameGetter = CompleteBean.class.getDeclaredMethod("getName", (Class<?>[]) null);
 		nameSetter = CompleteBean.class.getDeclaredMethod("setName", String.class);
 
-		PropertyMeta<Long> idMeta = mock(PropertyMeta.class);
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);

@@ -21,12 +21,12 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 public class IteratorWrapperTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<Integer> propertyMeta;
+	private PropertyMeta<Void, Integer> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception

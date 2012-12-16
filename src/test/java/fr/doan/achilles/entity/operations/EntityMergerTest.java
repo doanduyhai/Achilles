@@ -48,10 +48,10 @@ public class EntityMergerTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<?, String> propertyMeta;
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
 	private GenericDao<Long> dao;
@@ -87,7 +87,7 @@ public class EntityMergerTest
 		when(entityMeta.getDao()).thenReturn(dao);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
-		Map<Method, PropertyMeta<?>> dirty = new HashMap<Method, PropertyMeta<?>>();
+		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 		dirty.put(ageSetter, propertyMeta);
 
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
@@ -114,7 +114,7 @@ public class EntityMergerTest
 		when(entityMeta.getDao()).thenReturn(dao);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
-		Map<Method, PropertyMeta<?>> dirty = new HashMap<Method, PropertyMeta<?>>();
+		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 		dirty.put(ageSetter, propertyMeta);
 
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
@@ -141,7 +141,7 @@ public class EntityMergerTest
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getDao()).thenReturn(dao);
 
-		Map<Method, PropertyMeta<?>> dirty = new HashMap<Method, PropertyMeta<?>>();
+		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());

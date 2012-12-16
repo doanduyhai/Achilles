@@ -1,6 +1,7 @@
 package fr.doan.achilles.entity;
 
-import static fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder.simpleMetaBuilder;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
@@ -10,7 +11,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import fr.doan.achilles.entity.EntityPropertyHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidBeanException;
 
@@ -187,7 +187,8 @@ public class EntityPropertyHelperTest
 	public void should_find_accessors() throws Exception
 	{
 
-		Method[] accessors = helper.findAccessors(Bean.class, Bean.class.getDeclaredField("ComplicatedAttributeName"));
+		Method[] accessors = helper.findAccessors(Bean.class,
+				Bean.class.getDeclaredField("complicatedAttributeName"));
 
 		assertThat(accessors).hasSize(2);
 		assertThat(accessors[0].getName()).isEqualTo("getComplicatedAttributeName");
@@ -198,7 +199,8 @@ public class EntityPropertyHelperTest
 	public void should_find_accessors_from_collection_types() throws Exception
 	{
 
-		Method[] accessors = helper.findAccessors(ComplexBean.class, ComplexBean.class.getDeclaredField("friends"));
+		Method[] accessors = helper.findAccessors(ComplexBean.class,
+				ComplexBean.class.getDeclaredField("friends"));
 
 		assertThat(accessors).hasSize(2);
 		assertThat(accessors[0].getName()).isEqualTo("getFriends");
@@ -211,7 +213,7 @@ public class EntityPropertyHelperTest
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
 
-		String value = (String) helper.getValueFromField(bean, "ComplicatedAttributeName");
+		String value = (String) helper.getValueFromField(bean, "complicatedAttributeName");
 		assertThat(value).isEqualTo("test");
 	}
 
@@ -230,7 +232,7 @@ public class EntityPropertyHelperTest
 	{
 		Bean bean = new Bean();
 
-		helper.setValueToField(bean, "ComplicatedAttributeName", "test");
+		helper.setValueToField(bean, "complicatedAttributeName", "test");
 		assertThat(bean.getComplicatedAttributeName()).isEqualTo("test");
 	}
 
@@ -249,7 +251,7 @@ public class EntityPropertyHelperTest
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
 
-		helper.setValueToField(bean, "ComplicatedAttributeName", null);
+		helper.setValueToField(bean, "complicatedAttributeName", null);
 		assertThat(bean.getComplicatedAttributeName()).isNull();
 	}
 
@@ -259,8 +261,10 @@ public class EntityPropertyHelperTest
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
 
-		Method[] accessors = helper.findAccessors(Bean.class, Bean.class.getDeclaredField("ComplicatedAttributeName"));
-		PropertyMeta<String> idMeta = simpleMetaBuilder(String.class).propertyName("ComplicatedAttributeName").accessors(accessors).build();
+		Method[] accessors = helper.findAccessors(Bean.class,
+				Bean.class.getDeclaredField("complicatedAttributeName"));
+		PropertyMeta<Void, String> idMeta = builder(Void.class, String.class).type(SIMPLE)
+				.propertyName("complicatedAttributeName").accessors(accessors).build();
 
 		String key = helper.getKey(bean, idMeta);
 		assertThat(key).isEqualTo("test");
@@ -269,16 +273,16 @@ public class EntityPropertyHelperTest
 	class Bean
 	{
 
-		private String ComplicatedAttributeName;
+		private String complicatedAttributeName;
 
 		public String getComplicatedAttributeName()
 		{
-			return ComplicatedAttributeName;
+			return complicatedAttributeName;
 		}
 
 		public void setComplicatedAttributeName(String complicatedAttributeName)
 		{
-			this.ComplicatedAttributeName = complicatedAttributeName;
+			this.complicatedAttributeName = complicatedAttributeName;
 		}
 	}
 

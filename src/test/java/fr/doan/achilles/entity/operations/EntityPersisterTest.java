@@ -62,7 +62,7 @@ public class EntityPersisterTest
 	private GenericDao<Long> dao;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<?, String> propertyMeta;
 
 	@Mock
 	private ListMeta<String> listMeta;

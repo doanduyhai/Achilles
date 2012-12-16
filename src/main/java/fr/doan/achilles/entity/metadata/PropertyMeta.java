@@ -1,12 +1,7 @@
 package fr.doan.achilles.entity.metadata;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import me.prettyprint.hector.api.Serializer;
 
@@ -15,15 +10,16 @@ public abstract class PropertyMeta<K, V>
 
 	private String propertyName;
 	private Class<K> keyClass;
-	private Serializer<K> keySerializer;
+	private Serializer<?> keySerializer;
 	private Class<V> valueClass;
 	private Serializer<?> valueSerializer;
 	private Method getter;
 	private Method setter;
-	private boolean lazy;
-	private boolean singleKey;
-	private boolean joinColumn;
+	private boolean lazy = false;
+	private boolean singleKey = true;
+	private boolean joinColumn = false;
 
+	private List<Class<?>> componentClasses;
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
@@ -50,7 +46,7 @@ public abstract class PropertyMeta<K, V>
 		this.keyClass = keyClass;
 	}
 
-	public Serializer<K> getKeySerializer()
+	public Serializer<?> getKeySerializer()
 	{
 		return keySerializer;
 	}
@@ -130,6 +126,16 @@ public abstract class PropertyMeta<K, V>
 		this.joinColumn = joinColumn;
 	}
 
+	public List<Class<?>> getComponentClasses()
+	{
+		return componentClasses;
+	}
+
+	public void setComponentClasses(List<Class<?>> componentClasses)
+	{
+		this.componentClasses = componentClasses;
+	}
+
 	public List<Serializer<?>> getComponentSerializers()
 	{
 		return componentSerializers;
@@ -160,19 +166,9 @@ public abstract class PropertyMeta<K, V>
 		this.componentSetters = componentSetters;
 	}
 
-	public List<V> newList()
+	public K getKey(Object object)
 	{
-		return new ArrayList<V>();
-	}
-
-	public Set<V> newSet()
-	{
-		return new HashSet<V>();
-	}
-
-	public Map<K, V> newMap()
-	{
-		return new HashMap<K, V>();
+		return keyClass.cast(object);
 	}
 
 	public V getValue(Object object)

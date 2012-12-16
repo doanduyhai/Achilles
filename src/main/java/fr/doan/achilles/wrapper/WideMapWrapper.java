@@ -7,11 +7,12 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import java.util.List;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
+import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
@@ -28,7 +29,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 	protected ID id;
 	protected GenericDao<ID> dao;
-	protected WideMapMeta<K, V> wideMapMeta;
+	protected PropertyMeta<K, V> wideMapMeta;
 
 	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
@@ -38,7 +39,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		DynamicComposite composite = buildComposite(key);
 		Object value = dao.getValue(id, composite);
 
-		return wideMapMeta.get(value);
+		return wideMapMeta.getValue(value);
 	}
 
 	@Override
@@ -148,10 +149,15 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
 	protected DynamicComposite buildComposite(K key)
 	{
 		return keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), key, wideMapMeta.getKeySerializer());
+				wideMapMeta.propertyType(), key, (Serializer) wideMapMeta.getKeySerializer());
 	}
 
 	protected DynamicComposite buildQueryComposite(K value, ComponentEquality equality)
@@ -229,7 +235,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		this.dao = dao;
 	}
 
-	public void setWideMapMeta(WideMapMeta<K, V> wideMapMeta)
+	public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
 	{
 		this.wideMapMeta = wideMapMeta;
 	}

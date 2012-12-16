@@ -23,12 +23,12 @@ import fr.doan.achilles.wrapper.IteratorWrapper;
 public class IteratorWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Void, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -42,8 +42,8 @@ public class IteratorWrapperBuilderTest
 		List<String> target = new ArrayList<String>();
 		target.add("a");
 
-		IteratorWrapper<String> iteratorWrapper = IteratorWrapperBuilder.builder(target.iterator()).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		IteratorWrapper<String> iteratorWrapper = IteratorWrapperBuilder.builder(target.iterator())
+				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 
 		assertThat(iteratorWrapper.getDirtyMap()).isSameAs(dirtyMap);
 

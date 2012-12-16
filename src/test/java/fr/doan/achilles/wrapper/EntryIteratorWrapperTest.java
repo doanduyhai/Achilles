@@ -22,12 +22,12 @@ public class EntryIteratorWrapperTest
 {
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -44,7 +44,8 @@ public class EntryIteratorWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(map.entrySet().iterator());
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+				map.entrySet().iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

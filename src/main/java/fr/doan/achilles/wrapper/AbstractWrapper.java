@@ -5,18 +5,18 @@ import java.util.Map;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
-public abstract class AbstractWrapper<E>
+public abstract class AbstractWrapper<K, V>
 {
-	protected Map<Method, PropertyMeta<?>> dirtyMap;
+	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Method setter;
-	protected PropertyMeta<E> propertyMeta;
+	protected PropertyMeta<K, V> propertyMeta;
 
-	public Map<Method, PropertyMeta<?>> getDirtyMap()
+	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
 		return dirtyMap;
 	}
 
-	public void setDirtyMap(Map<Method, PropertyMeta<?>> dirtyMap)
+	public void setDirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
 		this.dirtyMap = dirtyMap;
 	}
@@ -26,7 +26,7 @@ public abstract class AbstractWrapper<E>
 		this.setter = setter;
 	}
 
-	public void setPropertyMeta(PropertyMeta<E> propertyMeta)
+	public void setPropertyMeta(PropertyMeta<K, V> propertyMeta)
 	{
 		this.propertyMeta = propertyMeta;
 	}

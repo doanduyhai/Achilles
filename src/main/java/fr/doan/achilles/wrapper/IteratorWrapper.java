@@ -2,11 +2,11 @@ package fr.doan.achilles.wrapper;
 
 import java.util.Iterator;
 
-public class IteratorWrapper<E> extends AbstractWrapper<E> implements Iterator<E>
+public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iterator<V>
 {
-	protected Iterator<E> target;
+	protected Iterator<V> target;
 
-	public IteratorWrapper(Iterator<E> target) {
+	public IteratorWrapper(Iterator<V> target) {
 		this.target = target;
 	}
 
@@ -17,7 +17,7 @@ public class IteratorWrapper<E> extends AbstractWrapper<E> implements Iterator<E
 	}
 
 	@Override
-	public E next()
+	public V next()
 	{
 		return this.target.next();
 	}

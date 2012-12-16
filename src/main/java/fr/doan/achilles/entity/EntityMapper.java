@@ -32,7 +32,8 @@ import fr.doan.achilles.exception.BeanMappingException;
 public class EntityMapper
 {
 
-	public <T, ID> void mapColumnsToBean(ID key, List<Pair<DynamicComposite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
+	public <T, ID> void mapColumnsToBean(ID key, List<Pair<DynamicComposite, Object>> columns,
+			EntityMeta<ID> entityMeta, T entity)
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();
@@ -41,7 +42,7 @@ public class EntityMapper
 
 		mapIdToBean(key, entityMeta.getIdMeta(), entity);
 
-		Map<String, PropertyMeta<?>> propertyMetas = entityMeta.getPropertyMetas();
+		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
@@ -56,13 +57,13 @@ public class EntityMapper
 			else if (Arrays.equals(type, PropertyType.LIST.flag()))
 			{
 				ListMeta<?> listMeta = (ListMeta<?>) propertyMetas.get(propertyName);
-				addToList(listProperties, listMeta, listMeta.get(pair.right));
+				addToList(listProperties, listMeta, listMeta.getValue(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.SET.flag()))
 			{
 				SetMeta<?> setMeta = (SetMeta<?>) propertyMetas.get(propertyName);
-				addToSet(setProperties, setMeta, setMeta.get(pair.right));
+				addToSet(setProperties, setMeta, setMeta.getValue(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.MAP.flag()))
@@ -122,7 +123,8 @@ public class EntityMapper
 		set.add(value);
 	}
 
-	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapMeta<K, V> mapMeta, KeyValueHolder keyValueHolder)
+	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapMeta<K, V> mapMeta,
+			KeyValueHolder keyValueHolder)
 	{
 		String propertyName = mapMeta.getPropertyName();
 
@@ -136,10 +138,10 @@ public class EntityMapper
 		{
 			map = mapProperties.get(propertyName);
 		}
-		map.put(keyValueHolder.getKey(), mapMeta.get(keyValueHolder.getValue()));
+		map.put(keyValueHolder.getKey(), mapMeta.getValue(keyValueHolder.getValue()));
 	}
 
-	public <T, ID> void mapIdToBean(ID key, PropertyMeta<?> keyMeta, T entity)
+	public <T, ID> void mapIdToBean(ID key, PropertyMeta<?, ?> keyMeta, T entity)
 	{
 
 		try
@@ -152,19 +154,21 @@ public class EntityMapper
 		}
 	}
 
-	public <T, ID> void mapSimplePropertyToBean(Object value, PropertyMeta<?> propertyMeta, T entity)
+	public <T, ID> void mapSimplePropertyToBean(Object value, PropertyMeta<?, ?> propertyMeta,
+			T entity)
 	{
 		try
 		{
-			propertyMeta.getSetter().invoke(entity, propertyMeta.get(value));
+			propertyMeta.getSetter().invoke(entity, propertyMeta.getValue(value));
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + value + "' to entity " + entity, e);
+			throw new BeanMappingException("Cannot set value '" + value + "' to entity " + entity,
+					e);
 		}
 	}
 
-	public <T, ID> void mapListPropertyToBean(List<?> list, PropertyMeta<?> listMeta, T entity)
+	public <T, ID> void mapListPropertyToBean(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
 	{
 		try
 		{
@@ -176,7 +180,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T, ID> void mapSetPropertyToBean(Set<?> set, PropertyMeta<?> setMeta, T entity)
+	public <T, ID> void mapSetPropertyToBean(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
 	{
 		try
 		{
@@ -188,7 +192,7 @@ public class EntityMapper
 		}
 	}
 
-	public <T, ID> void mapMapPropertyToBean(Map<?, ?> map, PropertyMeta<?> mapMeta, T entity)
+	public <T, ID> void mapMapPropertyToBean(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
 	{
 		try
 		{

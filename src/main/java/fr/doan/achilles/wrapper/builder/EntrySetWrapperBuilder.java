@@ -5,7 +5,8 @@ import java.util.Set;
 
 import fr.doan.achilles.wrapper.EntrySetWrapper;
 
-public class EntrySetWrapperBuilder<K, V> extends AbstractWrapperBuilder<EntrySetWrapperBuilder<K, V>, V>
+public class EntrySetWrapperBuilder<K, V> extends
+		AbstractWrapperBuilder<EntrySetWrapperBuilder<K, V>, K, V>
 {
 	private Set<Entry<K, V>> target;
 

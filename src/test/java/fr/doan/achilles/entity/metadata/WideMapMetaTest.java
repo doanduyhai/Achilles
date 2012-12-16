@@ -32,7 +32,7 @@ public class WideMapMetaTest
 
 		Object test = "test";
 
-		String value = propertyMeta.get(test);
+		String value = propertyMeta.getValue(test);
 		assertThat(value).isEqualTo("test");
 	}
 

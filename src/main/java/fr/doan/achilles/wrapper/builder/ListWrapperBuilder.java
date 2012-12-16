@@ -4,22 +4,22 @@ import java.util.List;
 
 import fr.doan.achilles.wrapper.ListWrapper;
 
-public class ListWrapperBuilder<E> extends AbstractWrapperBuilder<ListWrapperBuilder<E>, E>
+public class ListWrapperBuilder<V> extends AbstractWrapperBuilder<ListWrapperBuilder<V>, Void, V>
 {
-	private List<E> target;
+	private List<V> target;
 
-	public static <E> ListWrapperBuilder<E> builder(List<E> target)
+	public static <V> ListWrapperBuilder<V> builder(List<V> target)
 	{
-		return new ListWrapperBuilder<E>(target);
+		return new ListWrapperBuilder<V>(target);
 	}
 
-	public ListWrapperBuilder(List<E> target) {
+	public ListWrapperBuilder(List<V> target) {
 		this.target = target;
 	}
 
-	public ListWrapper<E> build()
+	public ListWrapper<V> build()
 	{
-		ListWrapper<E> listWrapper = new ListWrapper<E>(this.target);
+		ListWrapper<V> listWrapper = new ListWrapper<V>(this.target);
 		super.build(listWrapper);
 		return listWrapper;
 	}

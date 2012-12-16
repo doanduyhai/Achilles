@@ -46,7 +46,7 @@ public class KeyValueTest
 		hColumn.setValue("test");
 		hColumn.setTtl(12);
 
-		when(wideMapMeta.get("test")).thenReturn("test");
+		when(wideMapMeta.getValue("test")).thenReturn("test");
 
 		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(hColumn, INT_SRZ,
 				wideMapMeta);
@@ -80,8 +80,8 @@ public class KeyValueTest
 		hColumn2.setValue("test2");
 		hColumn2.setTtl(11);
 
-		when(wideMapMeta.get("test1")).thenReturn("test1");
-		when(wideMapMeta.get("test2")).thenReturn("test2");
+		when(wideMapMeta.getValue("test1")).thenReturn("test1");
+		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 
 		List<KeyValue<Integer, String>> list = KeyValue.fromList(Arrays.asList(hColumn1, hColumn2),
 				INT_SRZ, wideMapMeta);

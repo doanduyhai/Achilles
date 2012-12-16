@@ -57,13 +57,13 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID, V> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<V> propertyMeta)
+	public <ID, V> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
 		DynamicComposite composite = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
 
-		return propertyMeta.get(value);
+		return propertyMeta.getValue(value);
 	}
 
 	public <ID, V> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListMeta<V> listPropertyMeta)
@@ -77,7 +77,7 @@ public class EntityLoader
 		List<V> list = listPropertyMeta.newListInstance();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
-			list.add(listPropertyMeta.get(pair.right));
+			list.add(listPropertyMeta.getValue(pair.right));
 		}
 		return list;
 	}
@@ -94,7 +94,7 @@ public class EntityLoader
 		Set<V> set = setPropertyMeta.newSetInstance();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
-			set.add(setPropertyMeta.get(pair.right));
+			set.add(setPropertyMeta.getValue(pair.right));
 		}
 		return set;
 	}
@@ -116,13 +116,13 @@ public class EntityLoader
 		{
 			KeyValueHolder holder = (KeyValueHolder) pair.right;
 
-			map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.get(holder.getValue()));
+			map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.getValue(holder.getValue()));
 		}
 		return map;
 	}
 
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao,
-			PropertyMeta<V> propertyMeta)
+			PropertyMeta<?, V> propertyMeta)
 	{
 		Object value = null;
 		switch (propertyMeta.propertyType())

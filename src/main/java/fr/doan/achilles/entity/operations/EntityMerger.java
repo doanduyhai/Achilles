@@ -38,11 +38,11 @@ public class EntityMerger
 			JpaInterceptor<ID> interceptor = (JpaInterceptor<ID>) factory.getCallback(0);
 			GenericDao<ID> dao = entityMeta.getDao();
 
-			Map<Method, PropertyMeta<?>> dirtyMap = interceptor.getDirtyMap();
+			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
-			for (Entry<Method, PropertyMeta<?>> entry : dirtyMap.entrySet())
+			for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 			{
-				PropertyMeta<?> propertyMeta = entry.getValue();
+				PropertyMeta<?, ?> propertyMeta = entry.getValue();
 				ID key = interceptor.getKey();
 				if (propertyMeta.propertyType().isMultiValue())
 				{

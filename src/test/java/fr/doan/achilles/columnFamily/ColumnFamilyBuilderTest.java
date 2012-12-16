@@ -41,10 +41,10 @@ public class ColumnFamilyBuilderTest
 	})
 	public void should_build_column_family() throws Exception
 	{
-		PropertyMeta<Long> propertyMeta = mock(PropertyMeta.class);
+		PropertyMeta<?, Long> propertyMeta = mock(PropertyMeta.class);
 		when((Serializer) propertyMeta.getValueSerializer()).thenReturn(STRING_SRZ);
 
-		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("age", propertyMeta);
 
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
@@ -58,11 +58,7 @@ public class ColumnFamilyBuilderTest
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
 		assertThat(cfDef.getName()).isEqualTo("myCF");
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.DYNAMICCOMPOSITETYPE);
-		assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
-
-		// assertThat(cfDef.getColumnMetadata()).hasSize(1);
-		// ColumnDefinition columnDef = cfDef.getColumnMetadata().get(0);
-		// assertThat(columnDef.getName().array()).isEqualTo("age".getBytes());
-		// assertThat(columnDef.getValidationClass()).isEqualTo(STRING_SRZ.getComparatorType().getTypeName());
+		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
+				LONG_SRZ.getComparatorType().getTypeName());
 	}
 }

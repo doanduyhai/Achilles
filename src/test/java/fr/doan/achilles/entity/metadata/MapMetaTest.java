@@ -14,7 +14,7 @@ public class MapMetaTest
 	{
 
 		MapMeta<Integer, String> mapMeta = new MapMeta<Integer, String>();
-		Map<?, String> map = mapMeta.newMap();
+		Map<?, String> map = mapMeta.newMapInstance();
 
 		assertThat(map).isInstanceOf(HashMap.class);
 	}

@@ -22,12 +22,12 @@ public class ListIteratorWrapperTest
 {
 
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<Integer> propertyMeta;
+	private PropertyMeta<Void, Integer> propertyMeta;
 
 	ListIteratorWrapper<Integer> wrapper;
 

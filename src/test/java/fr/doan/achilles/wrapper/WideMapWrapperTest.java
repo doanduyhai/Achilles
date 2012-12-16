@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
+import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -55,6 +56,11 @@ public class WideMapWrapperTest
 	@Mock
 	private ColumnSliceIterator<Long, DynamicComposite, Object> iterator;
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Before
 	public void setUp()
 	{
@@ -62,7 +68,7 @@ public class WideMapWrapperTest
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(WIDE_MAP);
-		when(propertyMeta.getKeySerializer()).thenReturn(INT_SRZ);
+		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 	}
 
 	@Test
@@ -176,6 +182,11 @@ public class WideMapWrapperTest
 		wrapper.findValues(1, 2, true, 10);
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
 	@Test
 	public void should_return_iterator_default() throws Exception
 	{
@@ -187,7 +198,7 @@ public class WideMapWrapperTest
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
 				.thenReturn(end);
 
-		when(propertyMeta.getKeySerializer()).thenReturn(Utils.INT_SRZ);
+		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
 		when(iterator.hasNext()).thenReturn(true);
 
@@ -212,6 +223,11 @@ public class WideMapWrapperTest
 
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
 	@Test
 	public void should_return_iterator_exclusive_bounds() throws Exception
 	{
@@ -223,7 +239,7 @@ public class WideMapWrapperTest
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 3, LESS_THAN_EQUAL))
 				.thenReturn(end);
 
-		when(propertyMeta.getKeySerializer()).thenReturn(Utils.INT_SRZ);
+		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
 		when(iterator.hasNext()).thenReturn(true);
 

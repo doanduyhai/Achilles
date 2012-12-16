@@ -23,12 +23,12 @@ import fr.doan.achilles.wrapper.EntryIteratorWrapper;
 public class EntryIteratorWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -44,8 +44,9 @@ public class EntryIteratorWrapperBuilderTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper<Integer, String> iteratorWrapper = EntryIteratorWrapperBuilder.builder(map.entrySet().iterator()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).build();
+		EntryIteratorWrapper<Integer, String> iteratorWrapper = EntryIteratorWrapperBuilder
+				.builder(map.entrySet().iterator()).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 
 		assertThat(iteratorWrapper.getDirtyMap()).isSameAs(dirtyMap);
 

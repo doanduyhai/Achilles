@@ -18,18 +18,17 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.CollectionWrapper;
-import fr.doan.achilles.wrapper.builder.CollectionWrapperBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CollectionWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Void, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -41,8 +40,8 @@ public class CollectionWrapperBuilderTest
 	public void should_build() throws Exception
 	{
 		List<String> target = new ArrayList<String>();
-		CollectionWrapper<String> collectionWrapper = CollectionWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
+		CollectionWrapper<String> collectionWrapper = CollectionWrapperBuilder.builder(target)
+				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 
 		assertThat(collectionWrapper.getDirtyMap()).isSameAs(dirtyMap);
 

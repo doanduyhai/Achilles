@@ -4,7 +4,8 @@ import java.util.Collection;
 
 import fr.doan.achilles.wrapper.ValueCollectionWrapper;
 
-public class ValueCollectionWrapperBuilder<V> extends AbstractWrapperBuilder<ValueCollectionWrapperBuilder<V>, V>
+public class ValueCollectionWrapperBuilder<V> extends
+		AbstractWrapperBuilder<ValueCollectionWrapperBuilder<V>, Void, V>
 {
 	private Collection<V> target;
 
@@ -19,7 +20,8 @@ public class ValueCollectionWrapperBuilder<V> extends AbstractWrapperBuilder<Val
 
 	public ValueCollectionWrapper<V> build()
 	{
-		ValueCollectionWrapper<V> valueCollectionWrapper = new ValueCollectionWrapper<V>(this.target);
+		ValueCollectionWrapper<V> valueCollectionWrapper = new ValueCollectionWrapper<V>(
+				this.target);
 		super.build(valueCollectionWrapper);
 		return valueCollectionWrapper;
 	}

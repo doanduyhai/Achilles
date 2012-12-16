@@ -7,24 +7,24 @@ import java.util.ListIterator;
 import fr.doan.achilles.wrapper.builder.ListIteratorWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 
-public class ListWrapper<E> extends CollectionWrapper<E> implements List<E>
+public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 {
 
-	public ListWrapper(List<E> target) {
+	public ListWrapper(List<V> target) {
 		super(target);
 	}
 
 	@Override
-	public void add(int arg0, E arg1)
+	public void add(int arg0, V arg1)
 	{
-		((List<E>) super.target).add(arg0, arg1);
+		((List<V>) super.target).add(arg0, arg1);
 		super.markDirty();
 	}
 
 	@Override
-	public boolean addAll(int arg0, Collection<? extends E> arg1)
+	public boolean addAll(int arg0, Collection<? extends V> arg1)
 	{
-		boolean result = ((List<E>) super.target).addAll(arg0, arg1);
+		boolean result = ((List<V>) super.target).addAll(arg0, arg1);
 		if (result)
 		{
 			super.markDirty();
@@ -33,67 +33,70 @@ public class ListWrapper<E> extends CollectionWrapper<E> implements List<E>
 	}
 
 	@Override
-	public E get(int arg0)
+	public V get(int arg0)
 	{
-		return ((List<E>) super.target).get(arg0);
+		return ((List<V>) super.target).get(arg0);
 	}
 
 	@Override
 	public int indexOf(Object arg0)
 	{
-		return ((List<E>) super.target).indexOf(arg0);
+		return ((List<V>) super.target).indexOf(arg0);
 	}
 
 	@Override
 	public int lastIndexOf(Object arg0)
 	{
-		return ((List<E>) super.target).lastIndexOf(arg0);
+		return ((List<V>) super.target).lastIndexOf(arg0);
 	}
 
 	@Override
-	public ListIterator<E> listIterator()
+	public ListIterator<V> listIterator()
 	{
-		ListIterator<E> target = ((List<E>) super.target).listIterator();
+		ListIterator<V> target = ((List<V>) super.target).listIterator();
 
-		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 	}
 
 	@Override
-	public ListIterator<E> listIterator(int arg0)
+	public ListIterator<V> listIterator(int arg0)
 	{
-		ListIterator<E> target = ((List<E>) super.target).listIterator(arg0);
+		ListIterator<V> target = ((List<V>) super.target).listIterator(arg0);
 
-		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 	}
 
 	@Override
-	public E remove(int arg0)
+	public V remove(int arg0)
 	{
-		E result = ((List<E>) super.target).remove(arg0);
+		V result = ((List<V>) super.target).remove(arg0);
 		super.markDirty();
 		return result;
 	}
 
 	@Override
-	public E set(int arg0, E arg1)
+	public V set(int arg0, V arg1)
 	{
-		E result = ((List<E>) super.target).set(arg0, arg1);
+		V result = ((List<V>) super.target).set(arg0, arg1);
 		super.markDirty();
 		return result;
 	}
 
 	@Override
-	public List<E> subList(int arg0, int arg1)
+	public List<V> subList(int arg0, int arg1)
 	{
-		List<E> target = ((List<E>) super.target).subList(arg0, arg1);
+		List<V> target = ((List<V>) super.target).subList(arg0, arg1);
 
-		return ListWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return ListWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 	}
 
 	@Override
-	public List<E> getTarget()
+	public List<V> getTarget()
 	{
-		return ((List<E>) super.target);
+		return ((List<V>) super.target);
 	}
 
 }

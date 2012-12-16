@@ -24,12 +24,12 @@ import fr.doan.achilles.wrapper.EntrySetWrapper;
 public class EntrySetWrapperBuilderTest
 {
 	@Mock
-	private Map<Method, PropertyMeta<?>> dirtyMap;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	private Method setter;
 
 	@Mock
-	private PropertyMeta<String> propertyMeta;
+	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Before
 	public void setUp() throws Exception
@@ -45,7 +45,8 @@ public class EntrySetWrapperBuilderTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> entrySetWrapper = EntrySetWrapperBuilder.builder(map.entrySet()).dirtyMap(dirtyMap).setter(setter)
+		EntrySetWrapper<Integer, String> entrySetWrapper = EntrySetWrapperBuilder
+				.builder(map.entrySet()).dirtyMap(dirtyMap).setter(setter)
 				.propertyMeta(propertyMeta).build();
 
 		assertThat(entrySetWrapper.getDirtyMap()).isSameAs(dirtyMap);

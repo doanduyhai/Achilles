@@ -102,7 +102,7 @@ public class EntityWrapperUtil
 				componentSetters.get(i - 2).invoke(multiKeyInstance, compValue);
 			}
 
-			V value = wideMapMeta.get(column.getValue());
+			V value = wideMapMeta.getValue(column.getValue());
 			result = new KeyValue<K, V>(multiKeyInstance, value, column.getTtl());
 		}
 		catch (Exception e)

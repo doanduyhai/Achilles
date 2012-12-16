@@ -4,22 +4,23 @@ import java.util.Iterator;
 
 import fr.doan.achilles.wrapper.IteratorWrapper;
 
-public class IteratorWrapperBuilder<E> extends AbstractWrapperBuilder<IteratorWrapperBuilder<E>, E>
+public class IteratorWrapperBuilder<V> extends
+		AbstractWrapperBuilder<IteratorWrapperBuilder<V>, Void, V>
 {
-	private Iterator<E> target;
+	private Iterator<V> target;
 
-	public static <E> IteratorWrapperBuilder<E> builder(Iterator<E> target)
+	public static <V> IteratorWrapperBuilder<V> builder(Iterator<V> target)
 	{
-		return new IteratorWrapperBuilder<E>(target);
+		return new IteratorWrapperBuilder<V>(target);
 	}
 
-	public IteratorWrapperBuilder(Iterator<E> target) {
+	public IteratorWrapperBuilder(Iterator<V> target) {
 		this.target = target;
 	}
 
-	public IteratorWrapper<E> build()
+	public IteratorWrapper<V> build()
 	{
-		IteratorWrapper<E> iteratorWrapper = new IteratorWrapper<E>(this.target);
+		IteratorWrapper<V> iteratorWrapper = new IteratorWrapper<V>(this.target);
 		super.build(iteratorWrapper);
 		return iteratorWrapper;
 	}

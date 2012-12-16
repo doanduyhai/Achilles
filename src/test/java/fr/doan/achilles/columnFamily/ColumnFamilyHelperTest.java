@@ -1,5 +1,6 @@
 package fr.doan.achilles.columnFamily;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -27,7 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
-import fr.doan.achilles.entity.metadata.builder.SimpleMetaBuilder;
+import fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,14 +59,15 @@ public class ColumnFamilyHelperTest
 
 	private final Method[] accessors = new Method[2];
 
-	private PropertyMeta<Long> idMeta;
+	private PropertyMeta<Void, Long> idMeta;
 
 	@Before
 	public void setUp() throws Exception
 	{
 		accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 		accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
-		idMeta = SimpleMetaBuilder.simpleMetaBuilder(Long.class).propertyName("id").accessors(accessors).build();
+		idMeta = PropertyMetaBuilder.builder(Void.class, Long.class).type(SIMPLE)
+				.propertyName("id").accessors(accessors).build();
 
 		ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
 		ReflectionTestUtils.setField(helper, "columnFamilyValidator", columnFamilyValidator);
@@ -82,7 +84,8 @@ public class ColumnFamilyHelperTest
 		cfDef.setKeyValidationClass("keyValidationClass");
 		cfDef.setComment("comment");
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+		when(keyspaceDefinition.getCfDefs()).thenReturn(
+				Arrays.asList((ColumnFamilyDefinition) cfDef));
 
 		ColumnFamilyDefinition discoveredCfDef = helper.discoverColumnFamily("testCF");
 
@@ -125,7 +128,8 @@ public class ColumnFamilyHelperTest
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		cfDef.setName("testCF");
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+		when(keyspaceDefinition.getCfDefs()).thenReturn(
+				Arrays.asList((ColumnFamilyDefinition) cfDef));
 
 		helper.validateColumnFamilies(entityMetaMap, true);
 		verify(columnFamilyValidator).validate(cfDef, meta);
@@ -138,7 +142,8 @@ public class ColumnFamilyHelperTest
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		cfDef.setName("testCF2");
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(Arrays.asList((ColumnFamilyDefinition) cfDef));
+		when(keyspaceDefinition.getCfDefs()).thenReturn(
+				Arrays.asList((ColumnFamilyDefinition) cfDef));
 
 		helper.validateColumnFamilies(entityMetaMap, true);
 		verify(columnFamilyBuilder).build(meta, "keyspace");
@@ -165,15 +170,17 @@ public class ColumnFamilyHelperTest
 
 	private void prepareData()
 	{
-		Map<String, PropertyMeta<?>> propertyMetas = new HashMap<String, PropertyMeta<?>>();
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
-		SimpleMeta<String> simplePropertyMeta = SimpleMetaBuilder.simpleMetaBuilder(String.class).propertyName("name")
+		SimpleMeta<String> simplePropertyMeta = (SimpleMeta<String>) PropertyMetaBuilder
+				.builder(Void.class, String.class).type(SIMPLE).propertyName("name")
 				.accessors(accessors).build();
 
 		propertyMetas.put("name", simplePropertyMeta);
 
-		meta = entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName("fr.doan.TestBean").columnFamilyName("testCF").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).build();
+		meta = entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName("fr.doan.TestBean")
+				.columnFamilyName("testCF").serialVersionUID(1L).propertyMetas(propertyMetas)
+				.build();
 		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		entityMetaMap.put(this.getClass(), meta);
 
