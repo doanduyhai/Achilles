@@ -39,7 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.google.common.collect.Sets;
 
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.EntityPropertyHelper;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -56,7 +56,7 @@ public class EntityPersisterTest
 	private EntityPersister persister = new EntityPersister();
 
 	@Mock
-	private EntityPropertyHelper helper;
+	private EntityHelper helper;
 
 	@Mock
 	private GenericDao<Long> dao;

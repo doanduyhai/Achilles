@@ -1,5 +1,6 @@
 package fr.doan.achilles.columnFamily;
 
+import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import mapping.entity.TweetMultiKey;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
@@ -60,5 +62,38 @@ public class ColumnFamilyBuilderTest
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.DYNAMICCOMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
 				LONG_SRZ.getComparatorType().getTypeName());
+	}
+
+	@Test
+	public void should_build_wide_row() throws Exception
+	{
+		ColumnFamilyDefinition cfDef = builder.buildWideRow("keyspace", "columnFamily", Long.class,
+				Integer.class, String.class);
+
+		assertThat(cfDef.getComparatorType()).isEqualTo(INT_SRZ.getComparatorType());
+		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
+				LONG_SRZ.getComparatorType().getTypeName());
+		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
+				STRING_SRZ.getComparatorType().getTypeName());
+
+		assertThat(cfDef.getComparatorTypeAlias()).isEmpty();
+
+	}
+
+	@Test
+	public void should_build_composite_wide_row() throws Exception
+	{
+		ColumnFamilyDefinition cfDef = builder.buildWideRow("keyspace", "columnFamily", Long.class,
+				TweetMultiKey.class, String.class);
+
+		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
+		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
+				LONG_SRZ.getComparatorType().getTypeName());
+		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
+				STRING_SRZ.getComparatorType().getTypeName());
+
+		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(
+				"ComparatorType(UUIDType,UTF8Type,BytesType)");
+
 	}
 }

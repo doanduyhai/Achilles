@@ -64,7 +64,6 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		this.entityPackages = entityPackages;
 		this.forceColumnFamilyCreation = forceCFCreation;
 		this.columnFamilyHelper = new ColumnFamilyHelper(this.cluster, this.keyspace);
-
 		this.bootstrap();
 	}
 
@@ -85,7 +84,14 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 			for (Class<?> clazz : classes)
 			{
-				entityMetaMap.put(clazz, entityParser.parseEntity(this.keyspace, clazz));
+				if (!entityMetaMap.containsKey(clazz))
+				{
+
+					EntityMeta<?> entityMeta = entityParser.parseEntity(this.keyspace, clazz,
+							entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+					entityMetaMap.put(clazz, entityMeta);
+				}
+
 			}
 		}
 		else

@@ -10,7 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidBeanException;
 
-public class EntityPropertyHelper
+public class EntityHelper
 {
 
 	protected String deriveGetterName(Field field)

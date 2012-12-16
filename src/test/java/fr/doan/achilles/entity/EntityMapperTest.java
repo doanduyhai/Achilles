@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -49,6 +50,14 @@ public class EntityMapperTest
 	@Mock
 	private ExecutingKeyspace keyspace;
 
+	@Mock
+	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+
+	@Mock
+	private ColumnFamilyHelper columnFamilyHelper;
+
+	private boolean forceColumnFamilyCreation = true;
+
 	private EntityMeta<Long> entityMeta;
 
 	private EntityMapper mapper = new EntityMapper();
@@ -56,7 +65,8 @@ public class EntityMapperTest
 	@Before
 	public void setUp()
 	{
-		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class);
+		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class,
+				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
 	}
 
 	@Test
@@ -82,7 +92,8 @@ public class EntityMapperTest
 	public void should_map_list_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		mapper.mapListPropertyToBean(Arrays.asList("foo", "bar"), entityMeta.getPropertyMetas().get("friends"), entity);
+		mapper.mapListPropertyToBean(Arrays.asList("foo", "bar"), entityMeta.getPropertyMetas()
+				.get("friends"), entity);
 
 		assertThat(entity.getFriends()).hasSize(2);
 		assertThat(entity.getFriends()).containsExactly("foo", "bar");
@@ -92,7 +103,8 @@ public class EntityMapperTest
 	public void should_map_set_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		mapper.mapSetPropertyToBean(Sets.newHashSet("George", "Paul"), entityMeta.getPropertyMetas().get("followers"), entity);
+		mapper.mapSetPropertyToBean(Sets.newHashSet("George", "Paul"), entityMeta
+				.getPropertyMetas().get("followers"), entity);
 
 		assertThat(entity.getFollowers()).hasSize(2);
 		assertThat(entity.getFollowers()).contains("George", "Paul");
@@ -107,7 +119,8 @@ public class EntityMapperTest
 		preferences.put(1, "FR");
 		preferences.put(2, "Paris");
 		preferences.put(3, "75014");
-		mapper.mapMapPropertyToBean(preferences, entityMeta.getPropertyMetas().get("preferences"), entity);
+		mapper.mapMapPropertyToBean(preferences, entityMeta.getPropertyMetas().get("preferences"),
+				entity);
 
 		assertThat(entity.getPreferences()).hasSize(3);
 		assertThat(entity.getPreferences().get(1)).isEqualTo("FR");
@@ -227,12 +240,17 @@ public class EntityMapperTest
 		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "foo"));
 		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "bar"));
 
-		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"), "George"));
-		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"), "Paul"));
+		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"),
+				"George"));
+		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"),
+				"Paul"));
 
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(1, "FR")));
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(2, "Paris")));
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"), new KeyValueHolder(3, "75014")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
+				new KeyValueHolder(1, "FR")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
+				new KeyValueHolder(2, "Paris")));
+		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
+				new KeyValueHolder(3, "75014")));
 
 		mapper.mapColumnsToBean(2L, columns, entityMeta, entity);
 

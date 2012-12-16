@@ -136,6 +136,16 @@ public class ColumnFamilyHelperTest
 	}
 
 	@Test
+	public void should_validate_wide_row() throws Exception
+	{
+		prepareData();
+		helper.createWideRow("cf", Long.class, Integer.class, String.class);
+
+		verify(columnFamilyBuilder).buildWideRow("keyspace", "cf", Long.class, Integer.class,
+				String.class);
+	}
+
+	@Test
 	public void should_validate_then_create_column_family_when_not_matching() throws Exception
 	{
 		prepareData();

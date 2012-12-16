@@ -1,6 +1,8 @@
 package fr.doan.achilles.entity.factory;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,8 +69,12 @@ public class ThriftEntityManagerFactoryImplTest
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(Long.class);
 		classes.add(String.class);
-		when(entityParser.parseEntity(keyspace, Long.class)).thenReturn(meta);
-		when(entityParser.parseEntity(keyspace, String.class)).thenReturn(meta);
+		when(
+				entityParser.parseEntity(eq(keyspace), eq(Long.class), (Map) any(Map.class),
+						eq(columnFamilyHelper), eq(true))).thenReturn(meta);
+		when(
+				entityParser.parseEntity(eq(keyspace), eq(String.class), (Map) any(Map.class),
+						eq(columnFamilyHelper), eq(true))).thenReturn(meta);
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
 
 		ReflectionTestUtils.setField(factory, "forceColumnFamilyCreation", true);

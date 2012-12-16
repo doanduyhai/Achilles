@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.metadata;
 
-
 /**
  * InternalMultiKeyWideMapPropertyMeta
  * 
@@ -30,6 +29,6 @@ public class MultiKeyWideMapMeta<K, V> extends PropertyMeta<K, V>
 
 	public boolean isJoinColumn()
 	{
-		return true;
+		return false;
 	}
 }

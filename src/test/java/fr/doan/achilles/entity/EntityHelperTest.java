@@ -15,10 +15,10 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidBeanException;
 
 @SuppressWarnings("unused")
-public class EntityPropertyHelperTest
+public class EntityHelperTest
 {
 
-	private final EntityPropertyHelper helper = new EntityPropertyHelper();
+	private final EntityHelper helper = new EntityHelper();
 
 	@Test
 	public void should_derive_getter() throws Exception

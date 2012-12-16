@@ -14,7 +14,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.Validate;
 
 import fr.doan.achilles.dao.GenericDao;
-import fr.doan.achilles.entity.EntityPropertyHelper;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -26,14 +26,14 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 public class EntityPersister
 {
 
-	private EntityPropertyHelper entityPropertyHelper = new EntityPropertyHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta)
 	{
 
-		ID key = entityPropertyHelper.getKey(entity, entityMeta.getIdMeta());
+		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
 		GenericDao<ID> dao = entityMeta.getDao();
 
@@ -70,7 +70,7 @@ public class EntityPersister
 
 	public <ID> void remove(Object entity, EntityMeta<ID> entityMeta)
 	{
-		ID key = entityPropertyHelper.getKey(entity, entityMeta.getIdMeta());
+		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
 		GenericDao<ID> dao = entityMeta.getDao();
 		dao.removeRow(key);
@@ -91,7 +91,7 @@ public class EntityPersister
 	{
 		DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
-		Object value = entityPropertyHelper.getValueFromField(entity, propertyMeta.getGetter());
+		Object value = entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
 		{
 			dao.insertColumn(key, name, value, mutator);
@@ -108,7 +108,7 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
-		List<?> list = (List<?>) entityPropertyHelper.getValueFromField(entity,
+		List<?> list = (List<?>) entityHelper.getValueFromField(entity,
 				propertyMeta.getGetter());
 		int count = 0;
 		if (list != null)
@@ -137,7 +137,7 @@ public class EntityPersister
 	private <ID> void batchSetProperty(Object entity, ID key, GenericDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		Set<?> set = (Set<?>) entityPropertyHelper.getValueFromField(entity,
+		Set<?> set = (Set<?>) entityHelper.getValueFromField(entity,
 				propertyMeta.getGetter());
 		if (set != null)
 		{
@@ -165,7 +165,7 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
-		Map<?, ?> map = (Map<?, ?>) entityPropertyHelper.getValueFromField(entity,
+		Map<?, ?> map = (Map<?, ?>) entityHelper.getValueFromField(entity,
 				propertyMeta.getGetter());
 		if (map != null)
 		{

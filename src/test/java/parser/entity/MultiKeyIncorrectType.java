@@ -1,25 +1,30 @@
 package parser.entity;
 
+import java.util.List;
+
+import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * MultiKeyWithNoAnnotation
+ * CorrectMultiKey
  * 
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWithNoAnnotation implements MultiKey
+public class MultiKeyIncorrectType implements MultiKey
 {
-	private String name;
+	@Key(order = 1)
+	private List<String> name;
 
+	@Key(order = 2)
 	private int rank;
 
-	public String getName()
+	public List<String> getName()
 	{
 		return name;
 	}
 
-	public void setName(String name)
+	public void setName(List<String> name)
 	{
 		this.name = name;
 	}
@@ -33,5 +38,4 @@ public class MultiKeyWithNoAnnotation implements MultiKey
 	{
 		this.rank = rank;
 	}
-
 }

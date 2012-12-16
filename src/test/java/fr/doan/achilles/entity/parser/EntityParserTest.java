@@ -5,9 +5,14 @@ import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
 
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -26,6 +31,7 @@ import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.BeanWithNonPublicSerialVersionUID;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
+import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
@@ -44,6 +50,14 @@ public class EntityParserTest
 	@Mock
 	private Keyspace keyspace;
 
+	@Mock
+	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+
+	@Mock
+	private ColumnFamilyHelper columnFamilyHelper;
+
+	private boolean forceColumnFamilyCreation = true;
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -52,7 +66,8 @@ public class EntityParserTest
 	@Test
 	public void should_parse_entity() throws Exception
 	{
-		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, Bean.class);
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, Bean.class,
+				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
 
 		assertThat(meta.getCanonicalClassName()).isEqualTo("parser.entity.Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
@@ -123,7 +138,8 @@ public class EntityParserTest
 	{
 
 		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace,
-				BeanWithColumnFamilyName.class);
+				BeanWithColumnFamilyName.class, entityMetaMap, columnFamilyHelper,
+				forceColumnFamilyCreation);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
@@ -133,7 +149,8 @@ public class EntityParserTest
 	@Test
 	public void should_parse_inherited_bean() throws Exception
 	{
-		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, ChildBean.class);
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, ChildBean.class,
+				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
@@ -142,42 +159,76 @@ public class EntityParserTest
 		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName()).isEqualTo("nickname");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_get_inherited_field_by_annotation() throws Exception
+	{
+		Field id = parser.getInheritedPrivateFields(ChildBean.class, Id.class);
+
+		assertThat(id.getName()).isEqualTo("id");
+		assertThat(id.getType()).isEqualTo((Class) Long.class);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_get_inherited_field_by_annotation_and_name() throws Exception
+	{
+		Field address = parser.getInheritedPrivateFields(ChildBean.class, Column.class, "address");
+
+		assertThat(address.getName()).isEqualTo("address");
+		assertThat(address.getType()).isEqualTo((Class) String.class);
+	}
+
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_table_annotation() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNoTableAnnotation.class);
+		parser.parseEntity(keyspace, BeanWithNoTableAnnotation.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
 	}
 
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_serialVersionUID() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNoSerialVersionUID.class);
+		parser.parseEntity(keyspace, BeanWithNoSerialVersionUID.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
 	}
 
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_non_public_serialVersionUID() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNonPublicSerialVersionUID.class);
+		parser.parseEntity(keyspace, BeanWithNonPublicSerialVersionUID.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
 	}
 
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNoId.class);
+		parser.parseEntity(keyspace, BeanWithNoId.class, entityMetaMap, columnFamilyHelper,
+				forceColumnFamilyCreation);
 	}
 
 	@Test(expected = ValidationException.class)
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
 
-		parser.parseEntity(keyspace, BeanWithNotSerializableId.class);
+		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
 	}
 
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
 
-		parser.parseEntity(keyspace, BeanWithNoColumn.class);
+		parser.parseEntity(keyspace, BeanWithNoColumn.class, entityMetaMap, columnFamilyHelper,
+				forceColumnFamilyCreation);
 	}
 
 }

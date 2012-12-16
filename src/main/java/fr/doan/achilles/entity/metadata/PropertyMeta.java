@@ -18,11 +18,18 @@ public abstract class PropertyMeta<K, V>
 	private boolean lazy = false;
 	private boolean singleKey = true;
 	private boolean joinColumn = false;
+	private boolean insertable = false;
+	private boolean entityValue = false;
 
 	private List<Class<?>> componentClasses;
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
+
+	private String joinColumnFamily;
+	private Method idGetter;
+	private Class<?> idClass;
+	private Serializer<?> idSerializer;
 
 	public abstract PropertyType propertyType();
 
@@ -126,6 +133,16 @@ public abstract class PropertyMeta<K, V>
 		this.joinColumn = joinColumn;
 	}
 
+	public boolean isInsertable()
+	{
+		return insertable;
+	}
+
+	public void setInsertable(boolean insertable)
+	{
+		this.insertable = insertable;
+	}
+
 	public List<Class<?>> getComponentClasses()
 	{
 		return componentClasses;
@@ -176,4 +193,53 @@ public abstract class PropertyMeta<K, V>
 		return this.valueClass.cast(object);
 	}
 
+	public boolean isEntityValue()
+	{
+		return entityValue;
+	}
+
+	public void setEntityValue(boolean entityValue)
+	{
+		this.entityValue = entityValue;
+	}
+
+	public String getJoinColumnFamily()
+	{
+		return joinColumnFamily;
+	}
+
+	public void setJoinColumnFamily(String joinColumnFamily)
+	{
+		this.joinColumnFamily = joinColumnFamily;
+	}
+
+	public Method getIdGetter()
+	{
+		return idGetter;
+	}
+
+	public void setIdGetter(Method idGetter)
+	{
+		this.idGetter = idGetter;
+	}
+
+	public Class<?> getIdClass()
+	{
+		return idClass;
+	}
+
+	public void setIdClass(Class<?> idClass)
+	{
+		this.idClass = idClass;
+	}
+
+	public Serializer<?> getIdSerializer()
+	{
+		return idSerializer;
+	}
+
+	public void setIdSerializer(Serializer<?> idSerializer)
+	{
+		this.idSerializer = idSerializer;
+	}
 }

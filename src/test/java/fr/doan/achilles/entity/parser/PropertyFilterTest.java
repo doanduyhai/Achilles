@@ -9,6 +9,7 @@ import mapping.entity.CompleteBean;
 import org.junit.Test;
 
 import parser.entity.ParentBean;
+import fr.doan.achilles.annotations.Lazy;
 
 /**
  * PropertyFilterTest
@@ -26,6 +27,22 @@ public class PropertyFilterTest
 		Field name = CompleteBean.class.getDeclaredField("name");
 
 		assertThat(filter.matches(name)).isTrue();
+	}
+
+	@Test
+	public void should_match_annotation() throws Exception
+	{
+		Field friends = CompleteBean.class.getDeclaredField("friends");
+
+		assertThat(filter.matches(friends, Lazy.class)).isTrue();
+	}
+
+	@Test
+	public void should_match_annotation_and_name() throws Exception
+	{
+		Field friends = CompleteBean.class.getDeclaredField("friends");
+
+		assertThat(filter.matches(friends, Lazy.class, "friends")).isTrue();
 	}
 
 	@Test

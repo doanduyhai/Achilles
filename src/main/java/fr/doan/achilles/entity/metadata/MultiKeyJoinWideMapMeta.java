@@ -1,14 +1,13 @@
 package fr.doan.achilles.entity.metadata;
 
 /**
- * JoinWideMapMeta
+ * MultiKeyJoinWideMap
  * 
  * @author DuyHai DOAN
  * 
  */
-public class JoinWideMapMeta<K, V> extends PropertyMeta<K, V>
+public class MultiKeyJoinWideMapMeta<K, V> extends PropertyMeta<K, V>
 {
-
 	@Override
 	public PropertyType propertyType()
 	{
@@ -18,7 +17,7 @@ public class JoinWideMapMeta<K, V> extends PropertyMeta<K, V>
 	@Override
 	public boolean isSingleKey()
 	{
-		return true;
+		return false;
 	}
 
 	@Override

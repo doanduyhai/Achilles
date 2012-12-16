@@ -35,6 +35,24 @@ public class PropertyFilter
 		return false;
 	}
 
+	public boolean matches(Field field, Class annotation)
+	{
+		if (field.getAnnotation(annotation) != null)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	public boolean matches(Field field, Class annotation, String propertyName)
+	{
+		if (field.getAnnotation(annotation) != null && field.getName().equals(propertyName))
+		{
+			return true;
+		}
+		return false;
+	}
+
 	public <T extends Annotation> boolean hasAnnotation(Field field, Class<T> annotationClass)
 	{
 		return field.getAnnotation(annotationClass) != null;

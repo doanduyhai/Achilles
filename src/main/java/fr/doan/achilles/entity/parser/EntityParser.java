@@ -18,6 +18,7 @@ import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.IncorrectTypeException;
@@ -29,7 +30,9 @@ public class EntityParser
 
 	private PropertyFilter filter = new PropertyFilter();
 
-	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass)
+	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass,
+			Map<Class<?>, EntityMeta<?>> entityMetaMap, ColumnFamilyHelper columnFamilyHelper,
+			boolean forceColumnFamilyCreation)
 	{
 		Validator.validateInstantiable(entityClass);
 		String canonicalName = findCanonicalName(entityClass);
@@ -148,7 +151,7 @@ public class EntityParser
 		return columnFamily;
 	}
 
-	private List<Field> getInheritedPrivateFields(Class<?> type)
+	public List<Field> getInheritedPrivateFields(Class<?> type)
 	{
 		List<Field> result = new ArrayList<Field>();
 
@@ -166,5 +169,39 @@ public class EntityParser
 		}
 
 		return result;
+	}
+
+	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation)
+	{
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField, annotation))
+				{
+					return declaredField;
+				}
+			}
+			i = i.getSuperclass();
+		}
+		return null;
+	}
+
+	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation, String name)
+	{
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField, annotation, name))
+				{
+					return declaredField;
+				}
+			}
+			i = i.getSuperclass();
+		}
+		return null;
 	}
 }
