@@ -1,18 +1,23 @@
 package fr.doan.achilles.entity.metadata;
 
+import java.lang.reflect.Method;
+
 /**
- * WideMapPropertyMeta
+ * JoinWideMapMeta
  * 
  * @author DuyHai DOAN
  * 
  */
-public class WideMapMeta<K, V> extends MapMeta<K, V>
+public class JoinWideMapMeta<K, V> extends MapMeta<K, V>
 {
+	private String joinColumnFamily;
+	private String joinKey;
+	private Method joinKeyGetter;
 
 	@Override
 	public PropertyType propertyType()
 	{
-		return PropertyType.WIDE_MAP;
+		return PropertyType.JOIN_WIDE_MAP;
 	}
 
 	public boolean isSingleKey()
@@ -28,6 +33,6 @@ public class WideMapMeta<K, V> extends MapMeta<K, V>
 
 	public boolean isJoinColumn()
 	{
-		return false;
+		return true;
 	}
 }

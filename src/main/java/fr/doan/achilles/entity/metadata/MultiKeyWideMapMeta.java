@@ -35,7 +35,7 @@ public class MultiKeyWideMapMeta<K, V> extends WideMapMeta<K, V>
 		return true;
 	}
 
-	public boolean isInternal()
+	public boolean isJoinColumn()
 	{
 		return true;
 	}

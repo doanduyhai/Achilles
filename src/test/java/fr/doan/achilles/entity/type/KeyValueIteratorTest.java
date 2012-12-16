@@ -3,7 +3,6 @@ package fr.doan.achilles.entity.type;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.NoSuchElementException;
@@ -46,11 +45,10 @@ public class KeyValueIteratorTest
 		assertThat(iterator.hasNext()).isTrue();
 	}
 
-	@Test
-	public void should_remove() throws Exception
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_call_remove() throws Exception
 	{
 		iterator.remove();
-		verify(columnSliceIterator).remove();
 	}
 
 	@SuppressWarnings("unchecked")

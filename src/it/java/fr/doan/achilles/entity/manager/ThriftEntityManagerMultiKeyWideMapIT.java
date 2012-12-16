@@ -258,6 +258,91 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 		assertThat(keyValue3.getValue()).isEqualTo("tweet5-qux");
 	}
 
+	@Test
+	public void should_iterate_desc_exclusive_start_inclusive_end_with_count() throws Exception
+	{
+		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+
+		KeyValueIterator<UserTweetKey, String> iter = //
+		userTweets.iterator( //
+				new UserTweetKey(qux, uuid5), false, //
+				new UserTweetKey(bar, uuid1), true, //
+				true, 2);
+
+		assertThat(iter.hasNext());
+
+		KeyValue<UserTweetKey, String> keyValue1 = iter.next();
+		KeyValue<UserTweetKey, String> keyValue2 = iter.next();
+
+		assertThat(keyValue1.getKey().getUser()).isEqualTo(qux);
+		assertThat(keyValue1.getKey().getTweet()).isEqualTo(uuid4);
+		assertThat(keyValue1.getValue()).isEqualTo("tweet4-qux");
+
+		assertThat(keyValue2.getKey().getUser()).isEqualTo(foo);
+		assertThat(keyValue2.getKey().getTweet()).isEqualTo(uuid3);
+		assertThat(keyValue2.getValue()).isEqualTo("tweet3-foo");
+
+	}
+
+	@Test
+	public void should_remove() throws Exception
+	{
+		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+
+		userTweets.removeValue(new UserTweetKey(bar, uuid2));
+
+		DynamicComposite startComp = buildComposite();
+		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
+		startComp.addComponent(3, uuid2, ComponentEquality.EQUAL);
+
+		DynamicComposite endComp = buildComposite();
+		endComp.addComponent(2, bar, ComponentEquality.EQUAL);
+		endComp.addComponent(3, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
+
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+				startComp, endComp, false, 20);
+
+		assertThat(columns).hasSize(0);
+	}
+
+	@Test
+	public void should_remove_inclusive_start_exclusive_end() throws Exception
+	{
+		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+
+		userTweets.removeValues( //
+				new UserTweetKey(bar, uuid2), true, //
+				new UserTweetKey(qux, uuid4), false);
+
+		DynamicComposite startComp = new DynamicComposite();
+		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
+		startComp.addComponent(1, "userTweets", ComponentEquality.EQUAL);
+
+		DynamicComposite endComp = new DynamicComposite();
+		endComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
+		endComp.addComponent(1, "userTweets", ComponentEquality.GREATER_THAN_EQUAL);
+
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+				startComp, endComp, false, 20);
+
+		assertThat(columns).hasSize(3);
+		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
+		assertThat(columns.get(1).right).isEqualTo("tweet4-qux");
+		assertThat(columns.get(2).right).isEqualTo("tweet5-qux");
+	}
+
 	private DynamicComposite buildComposite()
 	{
 		DynamicComposite startComp = new DynamicComposite();

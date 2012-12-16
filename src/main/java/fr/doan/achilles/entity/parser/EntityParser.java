@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import me.prettyprint.hector.api.Keyspace;
@@ -54,6 +55,10 @@ public class EntityParser
 						.getName();
 				propertyMetas.put(propertyName, parser.parse(entityClass, field, propertyName));
 			}
+			else if (filter.hasAnnotation(field, JoinColumn.class))
+			{
+
+			}
 
 		}
 
@@ -65,8 +70,10 @@ public class EntityParser
 
 		if (propertyMetas.isEmpty())
 		{
-			throw new IncorrectTypeException("The entity '" + entityClass.getCanonicalName()
-					+ "' should have at least one field with javax.persistence.Column annotation");
+			throw new IncorrectTypeException(
+					"The entity '"
+							+ entityClass.getCanonicalName()
+							+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
 		}
 
 		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName)

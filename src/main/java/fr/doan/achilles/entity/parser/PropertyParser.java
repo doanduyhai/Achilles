@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.JoinColumn;
+
+import org.apache.commons.lang.StringUtils;
+
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.EntityPropertyHelper;
@@ -36,6 +40,7 @@ public class PropertyParser
 {
 
 	private Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
+	private Set<Class<?>> wideMapType = new HashSet<Class<?>>();
 
 	public PropertyParser() {
 		// Bytes
@@ -82,6 +87,8 @@ public class PropertyParser
 		// UUID
 		allowedTypes.add(UUID.class);
 
+		// Wide Map
+		wideMapType.add(WideMap.class);
 	}
 
 	private final EntityPropertyHelper helper = new EntityPropertyHelper();
@@ -117,6 +124,25 @@ public class PropertyParser
 			propertyMeta = parseSimpleProperty(beanClass, field, propertyName);
 		}
 		return propertyMeta;
+	}
+
+	public <V> PropertyMeta<V> parseJoinColum(Class<?> beanClass, Field field,
+			Map<String, PropertyMeta<?>> propertyMetas)
+	{
+		Validator.validateAllowedTypes(field.getType(), wideMapType,
+				"The JoinColumn '" + field.getName() + "' should be of type WideMap");
+		JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+		String externalColumnFamily = joinColumn.table();
+
+		Validator.validateNotBlank(externalColumnFamily,
+				"The 'table' parameter should be set for the @JoinColumn annotation on field '"
+						+ field.getName() + "'");
+
+		String propertyName = StringUtils.isNotBlank(joinColumn.name()) ? joinColumn.name() : field
+				.getName();
+		boolean insertable = joinColumn.insertable();
+
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

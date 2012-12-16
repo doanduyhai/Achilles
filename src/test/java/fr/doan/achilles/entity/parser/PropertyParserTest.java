@@ -517,6 +517,13 @@ public class PropertyParserTest
 	}
 
 	@Test
+	public void should_parse_join_wide_map() throws Exception
+	{
+
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+	}
+
+	@Test
 	public void should_exception_when_field_not_serializable() throws Exception
 	{
 

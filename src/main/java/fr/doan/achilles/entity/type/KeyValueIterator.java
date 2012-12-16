@@ -56,7 +56,8 @@ public class KeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
 	@Override
 	public void remove()
 	{
-		this.columnSliceIterator.remove();
+		throw new UnsupportedOperationException(
+				"Remove from iterator is not supported. Please use removeValue() or removeValues() instead");
 	}
 
 }

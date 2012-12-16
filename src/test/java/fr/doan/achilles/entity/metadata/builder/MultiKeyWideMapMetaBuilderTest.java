@@ -56,6 +56,6 @@ public class MultiKeyWideMapMetaBuilderTest
 
 		assertThat(propertyMeta.getComponentSerializers()).containsExactly(STRING_SRZ, INT_SRZ,
 				DATE_SRZ);
-		assertThat(propertyMeta.isInternal()).isTrue();
+		assertThat(propertyMeta.isJoinColumn()).isTrue();
 	}
 }

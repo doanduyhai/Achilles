@@ -37,11 +37,11 @@ public class WideMapMetaTest
 	}
 
 	@Test
-	public void should_is_internal() throws Exception
+	public void should_not_be_join() throws Exception
 	{
-		boolean isInternal = propertyMeta.isInternal();
+		boolean isInternal = propertyMeta.isJoinColumn();
 
-		assertThat(isInternal).isTrue();
+		assertThat(isInternal).isFalse();
 	}
 
 	@Test

@@ -36,6 +36,6 @@ public class WideMapMetaBuilderTest
 		assertThat(propertyMeta.propertyType()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(propertyMeta.get("test")).isInstanceOf(String.class);
 		assertThat(propertyMeta.getKey(5)).isInstanceOf(Integer.class);
-		assertThat(propertyMeta.isInternal()).isTrue();
+		assertThat(propertyMeta.isJoinColumn()).isFalse();
 	}
 }
