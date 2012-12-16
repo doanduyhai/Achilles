@@ -6,7 +6,7 @@ package fr.doan.achilles.entity.metadata;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapMeta<K, V> extends MapMeta<K, V>
+public class WideMapMeta<K, V> extends PropertyMeta<K, V>
 {
 
 	@Override
@@ -15,6 +15,7 @@ public class WideMapMeta<K, V> extends MapMeta<K, V>
 		return PropertyType.WIDE_MAP;
 	}
 
+	@Override
 	public boolean isSingleKey()
 	{
 		return true;
@@ -26,6 +27,7 @@ public class WideMapMeta<K, V> extends MapMeta<K, V>
 		return true;
 	}
 
+	@Override
 	public boolean isJoinColumn()
 	{
 		return false;

@@ -131,6 +131,7 @@ public class PropertyParser
 	{
 		Validator.validateAllowedTypes(field.getType(), wideMapType,
 				"The JoinColumn '" + field.getName() + "' should be of type WideMap");
+
 		JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
 		String externalColumnFamily = joinColumn.table();
 

@@ -14,11 +14,11 @@ public class EntityMeta<ID>
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private Serializer<?> idSerializer;
-	private Map<String, PropertyMeta<?>> propertyMetas;
-	private PropertyMeta<ID> idMeta;
+	private Map<String, PropertyMeta<?, ?>> propertyMetas;
+	private PropertyMeta<Void, ID> idMeta;
 	private GenericDao<ID> dao;
-	private Map<Method, PropertyMeta<?>> getterMetas;
-	private Map<Method, PropertyMeta<?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
 	public String getCanonicalClassName()
 	{
@@ -60,22 +60,22 @@ public class EntityMeta<ID>
 		this.idSerializer = idSerializer;
 	}
 
-	public Map<String, PropertyMeta<?>> getPropertyMetas()
+	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
 	{
 		return propertyMetas;
 	}
 
-	public void setPropertyMetas(Map<String, PropertyMeta<?>> propertyMetas)
+	public void setPropertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		this.propertyMetas = propertyMetas;
 	}
 
-	public PropertyMeta<ID> getIdMeta()
+	public PropertyMeta<Void, ID> getIdMeta()
 	{
 		return idMeta;
 	}
 
-	public void setIdMeta(PropertyMeta<ID> idMeta)
+	public void setIdMeta(PropertyMeta<Void, ID> idMeta)
 	{
 		this.idMeta = idMeta;
 	}
@@ -90,22 +90,22 @@ public class EntityMeta<ID>
 		this.dao = dao;
 	}
 
-	public Map<Method, PropertyMeta<?>> getGetterMetas()
+	public Map<Method, PropertyMeta<?, ?>> getGetterMetas()
 	{
 		return getterMetas;
 	}
 
-	public void setGetterMetas(Map<Method, PropertyMeta<?>> getterMetas)
+	public void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas)
 	{
 		this.getterMetas = getterMetas;
 	}
 
-	public Map<Method, PropertyMeta<?>> getSetterMetas()
+	public Map<Method, PropertyMeta<?, ?>> getSetterMetas()
 	{
 		return setterMetas;
 	}
 
-	public void setSetterMetas(Map<Method, PropertyMeta<?>> setterMetas)
+	public void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas)
 	{
 		this.setterMetas = setterMetas;
 	}

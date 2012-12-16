@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.metadata;
 
-
 public class SetLazyMeta<V> extends SetMeta<V>
 {
 	@Override

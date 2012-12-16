@@ -3,7 +3,7 @@ package fr.doan.achilles.entity.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListMeta<V> extends SimpleMeta<V>
+public class ListMeta<V> extends PropertyMeta<Void, V>
 {
 
 	public List<V> newListInstance()
