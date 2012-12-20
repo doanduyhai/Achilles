@@ -43,20 +43,20 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 	}
 
 	@SuppressWarnings("unchecked")
-	public JpaInterceptor<ID> build()
+	public JpaEntityInterceptor<ID> build()
 	{
-		JpaInterceptor<ID> interceptor = new JpaInterceptor<ID>();
+		JpaEntityInterceptor<ID> interceptor = new JpaEntityInterceptor<ID>();
 
 		Validator.validateNotNull(this.target, "Target object");
 		Validator.validateNotNull(entityMeta.getGetterMetas(), "Getters metadata");
 		Validator.validateNotNull(entityMeta.getSetterMetas(), "Setters metadata");
-		Validator.validateNotNull(entityMeta.getDao(), "Dao for entity meta");
+		Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
 		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata");
 
 		interceptor.setTarget(target);
 		interceptor.setGetterMetas(entityMeta.getGetterMetas());
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
-		interceptor.setDao(entityMeta.getDao());
+		interceptor.setDao(entityMeta.getEntityDao());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 

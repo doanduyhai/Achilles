@@ -11,7 +11,8 @@ import me.prettyprint.hector.api.Serializer;
 
 import org.apache.commons.lang.StringUtils;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.validation.Validator;
@@ -23,9 +24,9 @@ public class EntityMetaBuilder<ID>
 	private String canonicalClassName;
 	private String columnFamilyName;
 	private Long serialVersionUID;
-	private GenericDao<?> dao;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
+	private boolean wideRow = false;
 
 	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
 	{
@@ -71,11 +72,16 @@ public class EntityMetaBuilder<ID>
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
 		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));
 		meta.setSetterMetas(Collections.unmodifiableMap(this.extractSetterMetas(propertyMetas)));
+		meta.setWideRow(wideRow);
 
-		this.dao = new GenericDao(keyspace, idSerializer, this.columnFamilyName);
-
-		meta.setDao(dao);
-
+		if (wideRow)
+		{
+			meta.setWideRowDao(new GenericMultiKeyWideRowDao(keyspace, idSerializer, this.columnFamilyName));
+		}
+		else
+		{
+			meta.setEntityDao(new GenericEntityDao(keyspace, idSerializer, this.columnFamilyName));
+		}
 		return meta;
 	}
 
@@ -133,6 +139,12 @@ public class EntityMetaBuilder<ID>
 	public EntityMetaBuilder<ID> keyspace(Keyspace keyspace)
 	{
 		this.keyspace = keyspace;
+		return this;
+	}
+
+	public EntityMetaBuilder<ID> wideRow(boolean wideRow)
+	{
+		this.wideRow = wideRow;
 		return this;
 	}
 }

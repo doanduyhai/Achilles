@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -23,11 +24,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.serializer.Utils;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -45,13 +46,16 @@ public class WideMapWrapperTest
 	private WideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private WideMapMeta<Integer, String> propertyMeta;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
+
+	@Mock
+	private CompositeHelper helper;
 
 	@Mock
 	private ColumnSliceIterator<Long, DynamicComposite, Object> iterator;
@@ -75,7 +79,7 @@ public class WideMapWrapperTest
 	public void should_get_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
 
 		wrapper.getValue(1);
 
@@ -87,7 +91,7 @@ public class WideMapWrapperTest
 	public void should_insert_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
 		wrapper.insertValue(1, "test");
 
@@ -99,7 +103,7 @@ public class WideMapWrapperTest
 	public void should_insert_value_with_ttl() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
 		wrapper.insertValue(1, "test", 12);
 
@@ -108,9 +112,14 @@ public class WideMapWrapperTest
 	}
 
 	@Test
-	public void should_find_values_asc_bounds_default() throws Exception
+	public void should_find_values_asc() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				GREATER_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
 				.thenReturn(start);
 
@@ -126,9 +135,13 @@ public class WideMapWrapperTest
 	public void should_find_values_asc_bounds_inclusive() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				GREATER_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
 				.thenReturn(end);
@@ -142,9 +155,13 @@ public class WideMapWrapperTest
 	public void should_find_values_asc_bounds_exclusive() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(false, false, false)).thenReturn(new ComponentEquality[]
+		{
+				GREATER_THAN_EQUAL,
+				LESS_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, GREATER_THAN_EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, LESS_THAN_EQUAL))
 				.thenReturn(end);
@@ -158,9 +175,13 @@ public class WideMapWrapperTest
 	public void should_find_values_asc_inclusive_start_exclusive_end() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(true, false, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				LESS_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, LESS_THAN_EQUAL))
 				.thenReturn(end);
@@ -168,18 +189,6 @@ public class WideMapWrapperTest
 		wrapper.findValues(1, true, 2, false, false, 10);
 
 		verify(dao).findRawColumnsRange(1L, start, end, false, 10);
-	}
-
-	@Test(expected = ValidationException.class)
-	public void should_exception_when_find_values_asc_and_start_greater_than_end() throws Exception
-	{
-		wrapper.findValues(2, 1, false, 10);
-	}
-
-	@Test(expected = ValidationException.class)
-	public void should_exception_when_find_values_desc_and_start_lesser_than_end() throws Exception
-	{
-		wrapper.findValues(1, 2, true, 10);
 	}
 
 	@SuppressWarnings(
@@ -191,9 +200,13 @@ public class WideMapWrapperTest
 	public void should_return_iterator_default() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				GREATER_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
 				.thenReturn(end);
@@ -232,9 +245,13 @@ public class WideMapWrapperTest
 	public void should_return_iterator_exclusive_bounds() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
+		when(helper.determineEquality(false, false, false)).thenReturn(new ComponentEquality[]
+		{
+				GREATER_THAN_EQUAL,
+				LESS_THAN_EQUAL
+		});
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, GREATER_THAN_EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 3, LESS_THAN_EQUAL))
 				.thenReturn(end);
@@ -287,7 +304,7 @@ public class WideMapWrapperTest
 	public void should_remove() throws Exception
 	{
 		DynamicComposite comp = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", WIDE_MAP, 5, INT_SRZ)).thenReturn(comp);
+		when(keyFactory.buildForInsert("name", WIDE_MAP, 5, INT_SRZ)).thenReturn(comp);
 
 		wrapper.removeValue(5);
 
@@ -297,10 +314,14 @@ public class WideMapWrapperTest
 	@Test
 	public void should_remove_columns() throws Exception
 	{
+		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				GREATER_THAN_EQUAL
+		});
 		DynamicComposite start = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 5, EQUAL))
 				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
 		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 10, GREATER_THAN_EQUAL))
 				.thenReturn(end);

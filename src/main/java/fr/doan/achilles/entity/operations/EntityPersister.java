@@ -13,7 +13,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.Validate;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -35,7 +35,7 @@ public class EntityPersister
 
 		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
-		GenericDao<ID> dao = entityMeta.getDao();
+		GenericEntityDao<ID> dao = entityMeta.getEntityDao();
 
 		Mutator<ID> mutator = dao.buildMutator();
 
@@ -72,11 +72,11 @@ public class EntityPersister
 	{
 		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
-		GenericDao<ID> dao = entityMeta.getDao();
+		GenericEntityDao<ID> dao = entityMeta.getEntityDao();
 		dao.removeRow(key);
 	}
 
-	public <ID, V> void removeProperty(ID key, GenericDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	public <ID, V> void removeProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
 		Validate.notNull(key, "key value");
 		DynamicComposite start = keyFactory.buildQueryComparator(propertyMeta.getPropertyName(),
@@ -86,10 +86,10 @@ public class EntityPersister
 		dao.removeColumnRange(key, start, end);
 	}
 
-	private <ID> void batchSimpleProperty(Object entity, ID key, GenericDao<ID> dao,
+	private <ID> void batchSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+		DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
@@ -98,13 +98,13 @@ public class EntityPersister
 		}
 	}
 
-	public <ID> void persistSimpleProperty(Object entity, ID key, GenericDao<ID> dao,
+	public <ID> void persistSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		this.batchSimpleProperty(entity, key, dao, propertyMeta, null);
 	}
 
-	private <ID> void batchListProperty(Object entity, ID key, GenericDao<ID> dao,
+	private <ID> void batchListProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
@@ -115,7 +115,7 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), count);
 				if (value != null)
 				{
@@ -126,7 +126,7 @@ public class EntityPersister
 		}
 	}
 
-	public <ID> void persistListProperty(Object entity, ID key, GenericDao<ID> dao,
+	public <ID> void persistListProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
@@ -134,7 +134,7 @@ public class EntityPersister
 		mutator.execute();
 	}
 
-	private <ID> void batchSetProperty(Object entity, ID key, GenericDao<ID> dao,
+	private <ID> void batchSetProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		Set<?> set = (Set<?>) entityHelper.getValueFromField(entity,
@@ -143,7 +143,7 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), value.hashCode());
 				if (value != null)
 				{
@@ -153,7 +153,7 @@ public class EntityPersister
 		}
 	}
 
-	public <ID> void persistSetProperty(Object entity, ID key, GenericDao<ID> dao,
+	public <ID> void persistSetProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
@@ -161,7 +161,7 @@ public class EntityPersister
 		mutator.execute();
 	}
 
-	private <ID> void batchMapProperty(Object entity, ID key, GenericDao<ID> dao,
+	private <ID> void batchMapProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
@@ -171,7 +171,7 @@ public class EntityPersister
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), entry.getKey().hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
@@ -180,7 +180,7 @@ public class EntityPersister
 		}
 	}
 
-	public <ID> void persistMapProperty(Object entity, ID key, GenericDao<ID> dao,
+	public <ID> void persistMapProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
@@ -189,7 +189,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, V> void persistProperty(Object entity, ID key, GenericDao<ID> dao,
+	public <ID, V> void persistProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta)
 	{
 

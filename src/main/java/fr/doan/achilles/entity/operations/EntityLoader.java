@@ -11,7 +11,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -39,7 +39,7 @@ public class EntityLoader
 		try
 		{
 
-			List<Pair<DynamicComposite, Object>> columns = entityMeta.getDao()
+			List<Pair<DynamicComposite, Object>> columns = entityMeta.getEntityDao()
 					.eagerFetchEntity(key);
 
 			if (columns.size() > 0)
@@ -57,16 +57,16 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID, V> V loadSimpleProperty(ID key, GenericDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite composite = keyFactory.buildForProperty(propertyMeta.getPropertyName(),
+		DynamicComposite composite = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.getValue(value);
 	}
 
-	public <ID, V> List<V> loadListProperty(ID key, GenericDao<ID> dao, ListMeta<V> listPropertyMeta)
+	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao, ListMeta<V> listPropertyMeta)
 	{
 		DynamicComposite start = keyFactory.buildQueryComparator(
 				listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
@@ -82,7 +82,7 @@ public class EntityLoader
 		return list;
 	}
 
-	public <ID, V> Set<V> loadSetProperty(ID key, GenericDao<ID> dao, SetMeta<V> setPropertyMeta)
+	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao, SetMeta<V> setPropertyMeta)
 	{
 
 		DynamicComposite start = keyFactory.buildQueryComparator(setPropertyMeta.getPropertyName(),
@@ -99,7 +99,7 @@ public class EntityLoader
 		return set;
 	}
 
-	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDao<ID> dao,
+	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericEntityDao<ID> dao,
 			MapMeta<K, V> mapPropertyMeta)
 	{
 
@@ -121,7 +121,7 @@ public class EntityLoader
 		return map;
 	}
 
-	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericDao<ID> dao,
+	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		Object value = null;

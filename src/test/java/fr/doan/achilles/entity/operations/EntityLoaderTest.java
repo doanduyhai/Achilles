@@ -36,7 +36,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -76,7 +76,7 @@ public class EntityLoaderTest
 	private EntityMapper mapper;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
@@ -95,7 +95,7 @@ public class EntityLoaderTest
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 		columns.add(new Pair<DynamicComposite, Object>(new DynamicComposite(), ""));
 
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
 		loader.load(CompleteBean.class, 1L, entityMeta);
 
@@ -108,7 +108,7 @@ public class EntityLoaderTest
 	{
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
 		CompleteBean bean = loader.load(CompleteBean.class, 1L, entityMeta);
 
@@ -120,7 +120,7 @@ public class EntityLoaderTest
 	public void should_exception_when_error() throws Exception
 	{
 
-		when(entityMeta.getDao()).thenThrow(new RuntimeException());
+		when(entityMeta.getEntityDao()).thenThrow(new RuntimeException());
 		loader.load(CompleteBean.class, 1L, entityMeta);
 	}
 
@@ -131,7 +131,7 @@ public class EntityLoaderTest
 		when(propertyMeta.getValue("name")).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", SIMPLE, 0)).thenReturn(composite);
 		when(dao.getValue(1L, composite)).thenReturn("name");
 
 		String value = (String) loader.loadSimpleProperty(1L, dao, propertyMeta);

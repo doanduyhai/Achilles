@@ -17,7 +17,7 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 
 public abstract class CassandraDaoTest
 {
@@ -92,8 +92,8 @@ public abstract class CassandraDaoTest
 		return keyspace;
 	}
 
-	public static <K> GenericDao<K> getDao(Serializer<K> keySerializer, String columnFamily)
+	public static <K> GenericEntityDao<K> getDao(Serializer<K> keySerializer, String columnFamily)
 	{
-		return new GenericDao<K>(keyspace, keySerializer, columnFamily);
+		return new GenericEntityDao<K>(keyspace, keySerializer, columnFamily);
 	}
 }

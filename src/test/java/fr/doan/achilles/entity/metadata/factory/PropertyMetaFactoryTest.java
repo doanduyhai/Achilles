@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.metadata.builder;
+package fr.doan.achilles.entity.metadata.factory;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
@@ -29,6 +29,7 @@ import org.junit.Test;
 import parser.entity.Bean;
 import parser.entity.MyMultiKey;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory;
 
 /**
  * PropertyMetaBuilderTest
@@ -36,7 +37,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
  * @author DuyHai DOAN
  * 
  */
-public class PropertyMetaBuilderTest
+public class PropertyMetaFactoryTest
 {
 	Method[] accessors = new Method[2];
 
@@ -51,7 +52,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_simple() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class).type(SIMPLE)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SIMPLE)
 				.propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(SIMPLE);
@@ -71,7 +72,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_simple_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
 				.type(LAZY_SIMPLE).propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(LAZY_SIMPLE);
@@ -90,7 +91,7 @@ public class PropertyMetaBuilderTest
 	@Test
 	public void should_build_simple_with_object_as_value() throws Exception
 	{
-		PropertyMeta<Void, Bean> built = PropertyMetaBuilder.builder(Bean.class).type(SIMPLE)
+		PropertyMeta<Void, Bean> built = PropertyMetaFactory.factory(Bean.class).type(SIMPLE)
 				.propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(SIMPLE);
@@ -111,7 +112,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_list() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class).type(LIST)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LIST)
 				.propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(LIST);
@@ -131,7 +132,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_list_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
 				.type(LAZY_LIST).propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(LAZY_LIST);
@@ -151,7 +152,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_set() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class).type(SET)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SET)
 				.propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(SET);
@@ -171,7 +172,7 @@ public class PropertyMetaBuilderTest
 	public void should_build_set_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaBuilder.builder(String.class).type(LAZY_SET)
+		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LAZY_SET)
 				.propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(LAZY_SET);
@@ -191,8 +192,8 @@ public class PropertyMetaBuilderTest
 	public void should_build_map() throws Exception
 	{
 
-		PropertyMeta<Integer, String> built = PropertyMetaBuilder
-				.builder(Integer.class, String.class).type(MAP).propertyName("prop")
+		PropertyMeta<Integer, String> built = PropertyMetaFactory
+				.factory(Integer.class, String.class).type(MAP).propertyName("prop")
 				.accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(MAP);
@@ -216,7 +217,7 @@ public class PropertyMetaBuilderTest
 	@Test
 	public void should_build_map_with_object_as_key() throws Exception
 	{
-		PropertyMeta<Bean, String> built = PropertyMetaBuilder.builder(Bean.class, String.class)
+		PropertyMeta<Bean, String> built = PropertyMetaFactory.factory(Bean.class, String.class)
 				.type(MAP).propertyName("prop").accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(MAP);
@@ -242,8 +243,8 @@ public class PropertyMetaBuilderTest
 	public void should_build_map_lazy() throws Exception
 	{
 
-		PropertyMeta<Integer, String> built = PropertyMetaBuilder
-				.builder(Integer.class, String.class).type(LAZY_MAP).propertyName("prop")
+		PropertyMeta<Integer, String> built = PropertyMetaFactory
+				.factory(Integer.class, String.class).type(LAZY_MAP).propertyName("prop")
 				.accessors(accessors).build();
 
 		assertThat(built.propertyType()).isEqualTo(LAZY_MAP);
@@ -268,8 +269,8 @@ public class PropertyMetaBuilderTest
 	public void should_build_wide_map() throws Exception
 	{
 
-		PropertyMeta<Integer, String> built = PropertyMetaBuilder
-				.builder(Integer.class, String.class).type(WIDE_MAP).propertyName("prop")
+		PropertyMeta<Integer, String> built = PropertyMetaFactory
+				.factory(Integer.class, String.class).type(WIDE_MAP).propertyName("prop")
 				.accessors(accessors).singleKey(true).build();
 
 		assertThat(built.propertyType()).isEqualTo(WIDE_MAP);
@@ -298,8 +299,8 @@ public class PropertyMetaBuilderTest
 		List<Class<?>> componentClasses = mock(List.class);
 		List<Method> componentGetters = mock(List.class);
 		List<Method> componentSetters = mock(List.class);
-		PropertyMeta<MyMultiKey, String> built = PropertyMetaBuilder
-				.builder(MyMultiKey.class, String.class) //
+		PropertyMeta<MyMultiKey, String> built = PropertyMetaFactory
+				.factory(MyMultiKey.class, String.class) //
 				.type(WIDE_MAP).propertyName("prop") //
 				.accessors(accessors) //
 				.componentClasses(componentClasses) //
@@ -340,8 +341,8 @@ public class PropertyMetaBuilderTest
 	public void should_build_join_wide_map_with_bean() throws Exception
 	{
 		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
-		PropertyMeta<Integer, CompleteBean> meta = PropertyMetaBuilder
-				.builder(Integer.class, CompleteBean.class) //
+		PropertyMeta<Integer, CompleteBean> meta = PropertyMetaFactory
+				.factory(Integer.class, CompleteBean.class) //
 				.type(JOIN_WIDE_MAP).propertyName("name") //
 				.accessors(accessors) //
 				.singleKey(true) //
@@ -374,8 +375,8 @@ public class PropertyMetaBuilderTest
 	public void should_build_join_wide_map_with_wide_row() throws Exception
 	{
 		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
-		PropertyMeta<Integer, String> meta = PropertyMetaBuilder
-				.builder(Integer.class, String.class) //
+		PropertyMeta<Integer, String> meta = PropertyMetaFactory
+				.factory(Integer.class, String.class) //
 				.type(JOIN_WIDE_MAP).propertyName("name") //
 				.accessors(accessors) //
 				.singleKey(true) //

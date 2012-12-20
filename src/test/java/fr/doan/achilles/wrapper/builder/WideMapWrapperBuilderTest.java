@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.wrapper.WideMapWrapper;
 
@@ -21,7 +21,7 @@ import fr.doan.achilles.wrapper.WideMapWrapper;
 public class WideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericDao<Integer> dao;
+	private GenericEntityDao<Integer> dao;
 
 	@Mock
 	private WideMapMeta<Integer, String> wideMapMeta;

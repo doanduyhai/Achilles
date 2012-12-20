@@ -1,11 +1,11 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.wrapper.builder.ListIteratorWrapperBuilder.builder;
+import static fr.doan.achilles.wrapper.builder.ListWrapperBuilder.builder;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
-
-import fr.doan.achilles.wrapper.builder.ListIteratorWrapperBuilder;
-import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 
 public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 {
@@ -55,8 +55,7 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator();
 
-		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override
@@ -64,8 +63,7 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator(arg0);
 
-		return ListIteratorWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override
@@ -89,8 +87,7 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		List<V> target = ((List<V>) super.target).subList(arg0, arg1);
 
-		return ListWrapperBuilder.builder(target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override

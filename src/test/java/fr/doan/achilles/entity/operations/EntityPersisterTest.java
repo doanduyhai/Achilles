@@ -38,7 +38,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Sets;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -59,7 +59,7 @@ public class EntityPersisterTest
 	private EntityHelper helper;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private PropertyMeta<?, String> propertyMeta;
@@ -100,7 +100,7 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
@@ -116,7 +116,7 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.buildForInsert("name", SIMPLE, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(method);
 		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
 
@@ -135,8 +135,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
-		when(keyFactory.buildForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
+		when(keyFactory.buildForInsert("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(keyFactory.buildForInsert("friends", LAZY_LIST, 1)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao,
 				propertyMeta, mutator);
@@ -155,8 +155,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("friends", LAZY_LIST, 0)).thenReturn(composite);
-		when(keyFactory.buildForProperty("friends", LAZY_LIST, 1)).thenReturn(composite);
+		when(keyFactory.buildForInsert("friends", LAZY_LIST, 0)).thenReturn(composite);
+		when(keyFactory.buildForInsert("friends", LAZY_LIST, 1)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao,
 				propertyMeta);
@@ -175,9 +175,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("followers", SET, "George".hashCode())).thenReturn(
+		when(keyFactory.buildForInsert("followers", SET, "George".hashCode())).thenReturn(
 				composite);
-		when(keyFactory.buildForProperty("followers", SET, "Paul".hashCode()))
+		when(keyFactory.buildForInsert("followers", SET, "Paul".hashCode()))
 				.thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao,
@@ -198,9 +198,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("followers", SET, "George".hashCode())).thenReturn(
+		when(keyFactory.buildForInsert("followers", SET, "George".hashCode())).thenReturn(
 				composite);
-		when(keyFactory.buildForProperty("followers", SET, "Paul".hashCode()))
+		when(keyFactory.buildForInsert("followers", SET, "Paul".hashCode()))
 				.thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao,
@@ -224,9 +224,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao,
 				propertyMeta, mutator);
@@ -267,9 +267,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 1)).thenReturn(composite);
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 2)).thenReturn(composite);
-		when(keyFactory.buildForProperty("preferences", LAZY_MAP, 3)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 1)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 2)).thenReturn(composite);
+		when(keyFactory.buildForInsert("preferences", LAZY_MAP, 3)).thenReturn(composite);
 
 		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao,
 				propertyMeta);

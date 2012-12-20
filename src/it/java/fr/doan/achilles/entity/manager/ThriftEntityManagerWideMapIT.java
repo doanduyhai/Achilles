@@ -23,7 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.WideMap;
@@ -32,7 +32,7 @@ public class ThriftEntityManagerWideMapIT
 {
 
 	private final String ENTITY_PACKAGE = "mapping.entity";
-	private GenericDao<Long> dao = getDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getDao(LONG_SRZ,
 			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

@@ -3,8 +3,6 @@ package fr.doan.achilles.entity.parser;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,37 +10,40 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Table;
 
 import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.annotations.WideRow;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.validation.Validator;
 
 public class EntityParser
 {
 	private PropertyParser parser = new PropertyParser();
-
 	private PropertyFilter filter = new PropertyFilter();
+	private EntityHelper helper = new EntityHelper();
 
 	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass,
 			Map<Class<?>, EntityMeta<?>> entityMetaMap, ColumnFamilyHelper columnFamilyHelper,
 			boolean forceColumnFamilyCreation)
 	{
 		Validator.validateInstantiable(entityClass);
-		String canonicalName = findCanonicalName(entityClass);
-		String columnFamily = inferColumnFamilyName(entityClass, canonicalName);
-		Long serialVersionUID = findSerialVersionUID(entityClass);
+		String canonicalName = entityClass.getCanonicalName();
+		String columnFamily = helper.inferColumnFamilyName(entityClass, canonicalName);
+		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
+		boolean wideRow = entityClass.getAnnotation(WideRow.class) != null ? true : false;
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		PropertyMeta<Void, ?> idMeta = null;
 
-		List<Field> inheritedFields = getInheritedPrivateFields(entityClass);
+		List<Field> inheritedFields = helper.getInheritedPrivateFields(entityClass);
 
 		for (Field field : inheritedFields)
 		{
@@ -65,12 +66,27 @@ public class EntityParser
 
 		}
 
+		validateIdMeta(entityClass, idMeta);
+		validatePropertyMetas(entityClass, propertyMetas);
+		validateWideRow(entityClass, wideRow, propertyMetas);
+
+		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName)
+				.columnFamilyName(columnFamily).serialVersionUID(serialVersionUID)
+				.propertyMetas(propertyMetas).wideRow(wideRow).build();
+	}
+
+	private void validateIdMeta(Class<?> entityClass, PropertyMeta<Void, ?> idMeta)
+	{
 		if (idMeta == null)
 		{
 			throw new IncorrectTypeException("The entity '" + entityClass.getCanonicalName()
 					+ "' should have at least one field with javax.persistence.Id annotation");
 		}
+	}
 
+	private void validatePropertyMetas(Class<?> entityClass,
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
+	{
 		if (propertyMetas.isEmpty())
 		{
 			throw new IncorrectTypeException(
@@ -78,130 +94,23 @@ public class EntityParser
 							+ entityClass.getCanonicalName()
 							+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
 		}
-
-		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName)
-				.columnFamilyName(columnFamily).serialVersionUID(serialVersionUID)
-				.propertyMetas(propertyMetas).build();
 	}
 
-	private String findCanonicalName(Class<?> entity)
+	private void validateWideRow(Class<?> entityClass, boolean wideRow,
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
-		if (StringUtils.isNotBlank(entity.getCanonicalName()))
+		if (wideRow)
 		{
-			return entity.getCanonicalName();
-		}
-		else
-		{
-			return entity.getName();
+			Validator.validateSize(propertyMetas, 1,
+					"The WideRow entity '" + entityClass.getCanonicalName()
+							+ "' should not have more than one property annotated with @Column");
+
+			PropertyType type = propertyMetas.entrySet().iterator().next().getValue()
+					.propertyType();
+
+			Validator.validateTrue(type == PropertyType.WIDE_MAP, "The WideRow entity '"
+					+ entityClass.getCanonicalName() + "' should have a @Column of type WideMap");
 		}
 	}
 
-	private Long findSerialVersionUID(Class<?> entity)
-	{
-		Long serialVersionUID = null;
-		try
-		{
-			Field declaredSerialVersionUID = entity.getDeclaredField("serialVersionUID");
-			declaredSerialVersionUID.setAccessible(true);
-			serialVersionUID = declaredSerialVersionUID.getLong(null);
-
-			if (!Modifier.isPublic(declaredSerialVersionUID.getModifiers()))
-			{
-				throw new IncorrectTypeException(
-						"The 'serialVersionUID' property should be publicly accessible for entity '"
-								+ entity.getCanonicalName() + "'");
-			}
-		}
-		catch (NoSuchFieldException e)
-		{
-			throw new IncorrectTypeException(
-					"The 'serialVersionUID' property should be declared for entity '"
-							+ entity.getCanonicalName() + "'", e);
-		}
-		catch (IllegalAccessException e)
-		{
-			throw new IncorrectTypeException(
-					"The 'serialVersionUID' property should be publicly accessible for entity '"
-							+ entity.getCanonicalName() + "'", e);
-		}
-		return serialVersionUID;
-	}
-
-	private String inferColumnFamilyName(Class<?> entity, String canonicalName)
-	{
-		Table table = entity.getAnnotation(javax.persistence.Table.class);
-		String columnFamily;
-		if (table != null)
-		{
-			if (StringUtils.isNotBlank(table.name()))
-			{
-				columnFamily = table.name();
-
-			}
-			else
-			{
-				columnFamily = canonicalName;
-			}
-		}
-		else
-		{
-			throw new IncorrectTypeException("The entity '" + entity.getCanonicalName()
-					+ "' should have javax.persistence.Table annotation");
-		}
-		return columnFamily;
-	}
-
-	public List<Field> getInheritedPrivateFields(Class<?> type)
-	{
-		List<Field> result = new ArrayList<Field>();
-
-		Class<?> i = type;
-		while (i != null && i != Object.class)
-		{
-			for (Field declaredField : i.getDeclaredFields())
-			{
-				if (filter.matches(declaredField))
-				{
-					result.add(declaredField);
-				}
-			}
-			i = i.getSuperclass();
-		}
-
-		return result;
-	}
-
-	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation)
-	{
-		Class<?> i = type;
-		while (i != null && i != Object.class)
-		{
-			for (Field declaredField : i.getDeclaredFields())
-			{
-				if (filter.matches(declaredField, annotation))
-				{
-					return declaredField;
-				}
-			}
-			i = i.getSuperclass();
-		}
-		return null;
-	}
-
-	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation, String name)
-	{
-		Class<?> i = type;
-		while (i != null && i != Object.class)
-		{
-			for (Field declaredField : i.getDeclaredFields())
-			{
-				if (filter.matches(declaredField, annotation, name))
-				{
-					return declaredField;
-				}
-			}
-			i = i.getSuperclass();
-		}
-		return null;
-	}
 }

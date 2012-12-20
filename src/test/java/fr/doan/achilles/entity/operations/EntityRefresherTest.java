@@ -21,7 +21,7 @@ import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
  * EntityRefresherTest
@@ -60,7 +60,7 @@ public class EntityRefresherTest
 	private Factory proxy;
 
 	@Mock
-	private JpaInterceptor<Long> jpaInterceptor;
+	private JpaEntityInterceptor<Long> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
@@ -73,10 +73,10 @@ public class EntityRefresherTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(proxy.getCallback(0)).thenReturn(jpaInterceptor);
-		when(jpaInterceptor.getTarget()).thenReturn(bean);
-		when(jpaInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(jpaInterceptor.getLazyLoaded()).thenReturn(lazyLoaded);
+		when(proxy.getCallback(0)).thenReturn(jpaEntityInterceptor);
+		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
+		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(jpaEntityInterceptor.getLazyLoaded()).thenReturn(lazyLoaded);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(util.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
 		when(loader.load(eq(CompleteBean.class), eq(12L), eq(entityMeta))).thenReturn(bean);
@@ -86,6 +86,6 @@ public class EntityRefresherTest
 		verify(entityValidator).validateEntity(proxy, entityMetaMap);
 		verify(dirtyMap).clear();
 		verify(lazyLoaded).clear();
-		verify(jpaInterceptor).setTarget(bean);
+		verify(jpaEntityInterceptor).setTarget(bean);
 	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import net.sf.cglib.proxy.Factory;
@@ -70,7 +71,7 @@ public class EntityWrapperUtil
 		return multiKeyValues;
 	}
 
-	public <K, V> List<KeyValue<K, V>> buildMultiKeyList(Class<K> multiKeyClass,
+	public <K, V> List<KeyValue<K, V>> buildMultiKeyListForDynamicComposite(Class<K> multiKeyClass,
 			MultiKeyWideMapMeta<K, V> wideMapMeta,
 			List<HColumn<DynamicComposite, Object>> hColumns, List<Method> componentSetters)
 	{
@@ -79,12 +80,28 @@ public class EntityWrapperUtil
 
 		for (HColumn<DynamicComposite, Object> column : hColumns)
 		{
-			results.add(buildMultiKey(multiKeyClass, wideMapMeta, column, componentSetters));
+			results.add(buildMultiKeyForDynamicComposite(multiKeyClass, wideMapMeta, column,
+					componentSetters));
 		}
 		return results;
 	}
 
-	public <K, V> KeyValue<K, V> buildMultiKey(Class<K> multiKeyClass,
+	public <K, V> List<KeyValue<K, V>> buildMultiKeyListForComposite(Class<K> multiKeyClass,
+			MultiKeyWideMapMeta<K, V> wideMapMeta, List<HColumn<Composite, Object>> hColumns,
+			List<Method> componentSetters)
+	{
+
+		List<KeyValue<K, V>> results = new ArrayList<KeyValue<K, V>>();
+
+		for (HColumn<Composite, Object> column : hColumns)
+		{
+			results.add(buildMultiKeyForComposite(multiKeyClass, wideMapMeta, column,
+					componentSetters));
+		}
+		return results;
+	}
+
+	public <K, V> KeyValue<K, V> buildMultiKeyForDynamicComposite(Class<K> multiKeyClass,
 			MultiKeyWideMapMeta<K, V> wideMapMeta, HColumn<DynamicComposite, Object> column,
 			List<Method> componentSetters)
 	{
@@ -100,6 +117,34 @@ public class EntityWrapperUtil
 				Component<?> comp = components.get(i);
 				Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
 				componentSetters.get(i - 2).invoke(multiKeyInstance, compValue);
+			}
+
+			V value = wideMapMeta.getValue(column.getValue());
+			result = new KeyValue<K, V>(multiKeyInstance, value, column.getTtl());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public <K, V> KeyValue<K, V> buildMultiKeyForComposite(Class<K> multiKeyClass,
+			MultiKeyWideMapMeta<K, V> wideMapMeta, HColumn<Composite, Object> column,
+			List<Method> componentSetters)
+	{
+		List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+		KeyValue<K, V> result = null;
+		try
+		{
+			K multiKeyInstance = multiKeyClass.newInstance();
+			List<Component<?>> components = column.getName().getComponents();
+
+			for (int i = 0; i < components.size(); i++)
+			{
+				Component<?> comp = components.get(i);
+				Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+				componentSetters.get(i).invoke(multiKeyInstance, compValue);
 			}
 
 			V value = wideMapMeta.getValue(column.getValue());

@@ -1,11 +1,11 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.wrapper.builder.EntryIteratorWrapperBuilder.builder;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import fr.doan.achilles.wrapper.builder.EntryIteratorWrapperBuilder;
 
 public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<Entry<K, V>>
 {
@@ -56,8 +56,8 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 	@Override
 	public Iterator<Entry<K, V>> iterator()
 	{
-		return EntryIteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).build();
+		return builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 	}
 
 	@Override

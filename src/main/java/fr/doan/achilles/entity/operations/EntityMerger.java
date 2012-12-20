@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sf.cglib.proxy.Factory;
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.validation.Validator;
 
 @SuppressWarnings(
@@ -35,8 +35,8 @@ public class EntityMerger
 		if (util.isProxy(entity))
 		{
 			Factory factory = (Factory) entity;
-			JpaInterceptor<ID> interceptor = (JpaInterceptor<ID>) factory.getCallback(0);
-			GenericDao<ID> dao = entityMeta.getDao();
+			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory.getCallback(0);
+			GenericEntityDao<ID> dao = entityMeta.getEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 

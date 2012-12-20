@@ -30,7 +30,6 @@ public abstract class AbstractDao<K, N, V>
 {
 
 	protected Keyspace keyspace;
-
 	protected Serializer<K> keySerializer;
 	protected Serializer<N> columnNameSerializer;
 	protected Serializer<V> valueSerializer;
@@ -38,9 +37,9 @@ public abstract class AbstractDao<K, N, V>
 
 	protected int DEFAULT_LENGTH = 50;
 
-	public AbstractDao() {}
+	protected AbstractDao() {}
 
-	public AbstractDao(Keyspace keyspace) {
+	protected AbstractDao(Keyspace keyspace) {
 		Validator.validateNotNull(keyspace, "keyspace");
 		this.keyspace = keyspace;
 	}
@@ -316,7 +315,11 @@ public abstract class AbstractDao<K, N, V>
 		{
 			return column.getValue();
 		}
+	}
 
+	public Mutator<K> buildMutator()
+	{
+		return HFactory.createMutator(this.keyspace, this.keySerializer);
 	}
 
 }

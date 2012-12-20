@@ -33,7 +33,7 @@ import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -77,7 +77,7 @@ public class EntityWrapperUtilTest
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		JpaInterceptor<Long> interceptor = new JpaInterceptor<Long>();
+		JpaEntityInterceptor<Long> interceptor = new JpaEntityInterceptor<Long>();
 		interceptor.setTarget(entity);
 
 		enhancer.setCallback(interceptor);
@@ -190,7 +190,7 @@ public class EntityWrapperUtilTest
 		when(wideMapMeta.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKeyList(
+		List<KeyValue<TweetMultiKey, String>> multiKeys = util.buildMultiKeyListForDynamicComposite(
 				TweetMultiKey.class, wideMapMeta, //
 				Arrays.asList(hCol1, hCol2, hCol3), //
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));

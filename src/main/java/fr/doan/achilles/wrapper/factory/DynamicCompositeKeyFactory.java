@@ -13,6 +13,7 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import fr.doan.achilles.entity.metadata.PropertyType;
+import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -24,7 +25,9 @@ import fr.doan.achilles.validation.Validator;
 public class DynamicCompositeKeyFactory
 {
 
-	public DynamicComposite buildForProperty(String propertyName, PropertyType type,
+	private CompositeHelper helper = new CompositeHelper();
+
+	public DynamicComposite buildForInsert(String propertyName, PropertyType type,
 			int hashOrPosition)
 	{
 		DynamicComposite composite = new DynamicComposite();
@@ -37,7 +40,7 @@ public class DynamicCompositeKeyFactory
 		return composite;
 	}
 
-	public <T> DynamicComposite buildForProperty(String propertyName, PropertyType type, T value,
+	public <T> DynamicComposite buildForInsert(String propertyName, PropertyType type, T value,
 			Serializer<T> valueSerializer)
 	{
 		DynamicComposite composite = new DynamicComposite();
@@ -84,7 +87,7 @@ public class DynamicCompositeKeyFactory
 			"unchecked",
 			"rawtypes"
 	})
-	public DynamicComposite buildForProperty(String propertyName, PropertyType type,
+	public DynamicComposite buildForInsert(String propertyName, PropertyType type,
 			List<Object> keyValues, List<Serializer<?>> serializers)
 	{
 		int srzCount = serializers.size();
@@ -129,7 +132,7 @@ public class DynamicCompositeKeyFactory
 		Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
 				+ " values for the key of WideMap '" + propertyName + "'");
 
-		int lastNotNullIndex = validateNoHole(propertyName, keyValues);
+		int lastNotNullIndex = helper.validateNoHole(propertyName, keyValues);
 
 		DynamicComposite composite = new DynamicComposite();
 		composite.setComponent(0, type.flag(), BYTE_SRZ,
@@ -170,30 +173,5 @@ public class DynamicCompositeKeyFactory
 		ComponentEquality equality = inclusive ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
 		return buildQueryComparator(propertyName, type, keyValues, serializers, equality);
 
-	}
-
-	public int validateNoHole(String propertyName, List<Object> keyValues)
-	{
-		boolean nullFlag = false;
-		int lastNotNullIndex = 0;
-		for (Object keyValue : keyValues)
-		{
-			if (keyValue != null)
-			{
-				if (nullFlag)
-				{
-					throw new IllegalArgumentException(
-							"There should not be any null value between two non-null keys of WideMap '"
-									+ propertyName + "'");
-				}
-				lastNotNullIndex++;
-			}
-			else
-			{
-				nullFlag = true;
-			}
-		}
-		lastNotNullIndex--;
-		return lastNotNullIndex;
 	}
 }

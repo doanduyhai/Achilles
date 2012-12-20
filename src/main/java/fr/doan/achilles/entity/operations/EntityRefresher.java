@@ -6,7 +6,7 @@ import java.util.Map;
 import net.sf.cglib.proxy.Factory;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
  * EntityRefresher
@@ -31,7 +31,7 @@ public class EntityRefresher
 		entityValidator.validateEntity(entity, entityMetaMap);
 
 		Factory proxy = (Factory) entity;
-		JpaInterceptor interceptor = (JpaInterceptor) proxy.getCallback(0);
+		JpaEntityInterceptor interceptor = (JpaEntityInterceptor) proxy.getCallback(0);
 
 		Class<?> entityClass = interceptor.getTarget().getClass();
 		EntityMeta<?> entityMeta = entityMetaMap.get(entityClass);

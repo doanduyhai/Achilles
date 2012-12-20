@@ -1,9 +1,9 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.wrapper.builder.IteratorWrapperBuilder.builder;
+
 import java.util.Collection;
 import java.util.Iterator;
-
-import fr.doan.achilles.wrapper.builder.IteratorWrapperBuilder;
 
 public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V>
 {
@@ -64,8 +64,8 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public Iterator<V> iterator()
 	{
-		return IteratorWrapperBuilder.builder(this.target.iterator()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).build();
+		return builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta(propertyMeta).build();
 	}
 
 	@Override

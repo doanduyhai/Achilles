@@ -19,11 +19,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GenericDaoTest
+public class GenericEntityDaoTest
 {
 
 	@InjectMocks
-	private final GenericDao<Long> dao = new GenericDao<Long>();
+	private final GenericEntityDao<Long> dao = new GenericEntityDao<Long>();
 
 	@Mock
 	private ExecutingKeyspace keyspace;

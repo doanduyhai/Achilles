@@ -35,6 +35,7 @@ import fr.doan.achilles.serializer.Utils;
  * @author DuyHai DOAN
  * 
  */
+
 public class DynamicCompositeKeyFactoryTest
 {
 
@@ -44,7 +45,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_build_composite_for_simple_property() throws Exception
 	{
 
-		DynamicComposite comp = keyFactory.buildForProperty("name", SIMPLE, 0);
+		DynamicComposite comp = keyFactory.buildForInsert("name", SIMPLE, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("name");
@@ -55,7 +56,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_build_composite_for_list_property() throws Exception
 	{
 
-		DynamicComposite comp = keyFactory.buildForProperty("friends", LIST, 0);
+		DynamicComposite comp = keyFactory.buildForInsert("friends", LIST, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(LIST.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
@@ -66,7 +67,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_build_composite_for_set_property() throws Exception
 	{
 
-		DynamicComposite comp = keyFactory.buildForProperty("followers", SET, 12345);
+		DynamicComposite comp = keyFactory.buildForInsert("followers", SET, 12345);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SET.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("followers");
@@ -77,7 +78,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_build_composite_for_map_property() throws Exception
 	{
 
-		DynamicComposite comp = keyFactory.buildForProperty("preferences", MAP, -123933);
+		DynamicComposite comp = keyFactory.buildForInsert("preferences", MAP, -123933);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(MAP.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("preferences");
@@ -121,7 +122,7 @@ public class DynamicCompositeKeyFactoryTest
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", uuid);
 
-		DynamicComposite comp = keyFactory.buildForProperty("property", WIDE_MAP, keyValues,
+		DynamicComposite comp = keyFactory.buildForInsert("property", WIDE_MAP, keyValues,
 				serializers);
 
 		assertThat(comp.getComponents()).hasSize(5);
@@ -140,7 +141,7 @@ public class DynamicCompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a");
 
-		keyFactory.buildForProperty("property", WIDE_MAP, keyValues, serializers);
+		keyFactory.buildForInsert("property", WIDE_MAP, keyValues, serializers);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -151,7 +152,7 @@ public class DynamicCompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
 
-		keyFactory.buildForProperty("property", WIDE_MAP, keyValues, serializers);
+		keyFactory.buildForInsert("property", WIDE_MAP, keyValues, serializers);
 	}
 
 	@Test
@@ -226,32 +227,5 @@ public class DynamicCompositeKeyFactoryTest
 		assertThat(comp.getComponents()).hasSize(3);
 		assertThat(comp.getComponents().get(2).getEquality()).isEqualTo(LESS_THAN_EQUAL);
 
-	}
-
-	@Test
-	public void should_validate_no_hole() throws Exception
-	{
-		List<Object> keyValues = Arrays.asList((Object) "a", "b", null, null);
-
-		int lastNotNullIndex = keyFactory.validateNoHole("sdfsdf", keyValues);
-
-		assertThat(lastNotNullIndex).isEqualTo(1);
-
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_hole() throws Exception
-	{
-		List<Object> keyValues = Arrays.asList((Object) "a", null, "b");
-
-		keyFactory.validateNoHole("sdfsdf", keyValues);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_starting_with_hole() throws Exception
-	{
-		List<Object> keyValues = Arrays.asList((Object) null, "a", "b");
-
-		keyFactory.validateNoHole("sdfsdf", keyValues);
 	}
 }

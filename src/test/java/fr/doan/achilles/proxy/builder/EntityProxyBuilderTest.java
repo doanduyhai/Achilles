@@ -14,11 +14,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityProxyBuilderTest
@@ -30,7 +30,7 @@ public class EntityProxyBuilderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -58,7 +58,7 @@ public class EntityProxyBuilderTest
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
 		when(idMeta.getGetter()).thenReturn(idGetter);
@@ -71,7 +71,7 @@ public class EntityProxyBuilderTest
 		Factory factory = (Factory) proxy;
 
 		assertThat(factory.getCallbacks()).hasSize(1);
-		assertThat(factory.getCallback(0)).isInstanceOf(JpaInterceptor.class);
+		assertThat(factory.getCallback(0)).isInstanceOf(JpaEntityInterceptor.class);
 
 	}
 

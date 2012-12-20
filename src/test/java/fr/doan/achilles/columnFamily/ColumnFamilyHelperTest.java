@@ -28,7 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
-import fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder;
+import fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -66,7 +66,7 @@ public class ColumnFamilyHelperTest
 	{
 		accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 		accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
-		idMeta = PropertyMetaBuilder.builder(Void.class, Long.class).type(SIMPLE)
+		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
 				.propertyName("id").accessors(accessors).build();
 
 		ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
@@ -182,8 +182,8 @@ public class ColumnFamilyHelperTest
 	{
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
-		SimpleMeta<String> simplePropertyMeta = (SimpleMeta<String>) PropertyMetaBuilder
-				.builder(Void.class, String.class).type(SIMPLE).propertyName("name")
+		SimpleMeta<String> simplePropertyMeta = (SimpleMeta<String>) PropertyMetaFactory
+				.factory(Void.class, String.class).type(SIMPLE).propertyName("name")
 				.accessors(accessors).build();
 
 		propertyMetas.put("name", simplePropertyMeta);

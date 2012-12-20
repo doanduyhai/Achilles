@@ -1,13 +1,14 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.wrapper.builder.EntrySetWrapperBuilder.builder;
+import static fr.doan.achilles.wrapper.builder.KeySetWrapperBuilder.builder;
+import static fr.doan.achilles.wrapper.builder.ValueCollectionWrapperBuilder.builder;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.builder.EntrySetWrapperBuilder;
-import fr.doan.achilles.wrapper.builder.KeySetWrapperBuilder;
-import fr.doan.achilles.wrapper.builder.ValueCollectionWrapperBuilder;
 
 public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 {
@@ -52,9 +53,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0)
 		{
-			EntrySetWrapper<K, V> wrapperSet = EntrySetWrapperBuilder.builder(targetEntrySet)
-					.dirtyMap(dirtyMap).setter(setter).propertyMeta((PropertyMeta) propertyMeta)
-					.build();
+			EntrySetWrapper<K, V> wrapperSet = builder(targetEntrySet).dirtyMap(dirtyMap)
+					.setter(setter).propertyMeta((PropertyMeta) propertyMeta).build();
 			targetEntrySet = wrapperSet;
 		}
 		return targetEntrySet;
@@ -83,9 +83,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<K> keySet = this.target.keySet();
 		if (keySet.size() > 0)
 		{
-			KeySetWrapper<K> keySetWrapper = KeySetWrapperBuilder.builder(keySet)
-					.dirtyMap(dirtyMap).setter(setter).propertyMeta((PropertyMeta) propertyMeta)
-					.build();
+			KeySetWrapper<K> keySetWrapper = builder(keySet).dirtyMap(dirtyMap).setter(setter)
+					.propertyMeta((PropertyMeta) propertyMeta).build();
 			keySet = keySetWrapper;
 		}
 		return keySet;
@@ -134,9 +133,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 
 		if (values.size() > 0)
 		{
-			ValueCollectionWrapper<V> collectionWrapper = ValueCollectionWrapperBuilder
-					.builder(values).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta((PropertyMeta) propertyMeta).build();
+			ValueCollectionWrapper<V> collectionWrapper = builder(values).dirtyMap(dirtyMap)
+					.setter(setter).propertyMeta((PropertyMeta) propertyMeta).build();
 			values = collectionWrapper;
 		}
 		return values;

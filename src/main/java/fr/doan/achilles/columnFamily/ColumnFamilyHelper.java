@@ -11,6 +11,7 @@ import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
 public class ColumnFamilyHelper
@@ -49,8 +50,22 @@ public class ColumnFamilyHelper
 
 	public void createColumnFamily(EntityMeta<?> entityMeta)
 	{
-		ColumnFamilyDefinition cfDef = this.columnFamilyBuilder.build(entityMeta,
-				this.keyspace.getKeyspaceName());
+		ColumnFamilyDefinition cfDef;
+		if (entityMeta.isWideRow())
+		{
+			PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator()
+					.next();
+			cfDef = this.columnFamilyBuilder.buildWideRow(this.keyspace.getKeyspaceName(),
+					entityMeta.getCanonicalClassName(), //
+					entityMeta.getIdMeta().getValueClass(), //
+					wideMapMeta.getKeyClass(), //
+					wideMapMeta.getValueClass());
+		}
+		else
+		{
+			cfDef = this.columnFamilyBuilder.build(entityMeta, this.keyspace.getKeyspaceName());
+
+		}
 		this.addColumnFamily(cfDef);
 	}
 

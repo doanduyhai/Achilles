@@ -7,7 +7,7 @@ import java.util.Set;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
@@ -17,11 +17,11 @@ import fr.doan.achilles.wrapper.builder.MultiKeyWideMapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
 
-public class JpaInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
+public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
 	private Object target;
-	private GenericDao<ID> dao;
+	private GenericEntityDao<ID> dao;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -173,7 +173,7 @@ public class JpaInterceptor<ID> implements MethodInterceptor, AchillesIntercepto
 		this.target = target;
 	}
 
-	void setDao(GenericDao<ID> dao)
+	void setDao(GenericEntityDao<ID> dao)
 	{
 		this.dao = dao;
 	}

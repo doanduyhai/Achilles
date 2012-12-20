@@ -26,18 +26,18 @@ import org.apache.cassandra.utils.Pair;
 import org.junit.After;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.KeyValueHolder;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class ThriftEntityManagerOperationsIT
 {
 
 	private final String ENTITY_PACKAGE = "mapping.entity";
-	private GenericDao<Long> dao = getDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getDao(LONG_SRZ,
 			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -158,7 +158,7 @@ public class ThriftEntityManagerOperationsIT
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
-		JpaInterceptor interceptor = (JpaInterceptor) factory.getCallback(0);
+		JpaEntityInterceptor interceptor = (JpaEntityInterceptor) factory.getCallback(0);
 
 		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
@@ -337,10 +337,10 @@ public class ThriftEntityManagerOperationsIT
 		bean.getFriends();
 
 		DynamicComposite nameComposite = keyFactory
-				.buildForProperty("name", PropertyType.SIMPLE, 0);
+				.buildForInsert("name", PropertyType.SIMPLE, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
-		DynamicComposite friend3Composite = keyFactory.buildForProperty("friends",
+		DynamicComposite friend3Composite = keyFactory.buildForInsert("friends",
 				PropertyType.LAZY_LIST, 2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 

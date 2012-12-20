@@ -24,9 +24,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import parser.entity.CorrectMultiKey;
 import parser.entity.MultiKeyIncorrectType;
 import parser.entity.MultiKeyNotInstantiable;
+import parser.entity.MultiKeyWithDuplicateOrder;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.ValidationException;
 
 /**
@@ -122,6 +124,19 @@ public class PropertyHelperTest
 
 		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
 				MultiKeyWithNoAnnotation.class);
+	}
+
+	@Test
+	public void should_exception_when_multi_key_has_duplicate_order() throws Exception
+	{
+		when(componentClasses.isEmpty()).thenReturn(false);
+		expectedEx.expect(BeanMappingException.class);
+
+		expectedEx.expectMessage("The order '1' is duplicated in MultiKey '"
+				+ MultiKeyWithDuplicateOrder.class.getCanonicalName() + "'");
+
+		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
+				MultiKeyWithDuplicateOrder.class);
 	}
 
 	@Test

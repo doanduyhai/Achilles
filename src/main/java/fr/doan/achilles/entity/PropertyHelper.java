@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -86,13 +87,24 @@ public class PropertyHelper
 		int keyCount = 0;
 		Map<Integer, Field> components = new HashMap<Integer, Field>();
 
+		Set<Integer> orders = new HashSet<Integer>();
 		for (Field multiKeyField : keyClass.getDeclaredFields())
 		{
 			Key keyAnnotation = multiKeyField.getAnnotation(Key.class);
 			if (keyAnnotation != null)
 			{
 				keyCount++;
-				keySum += keyAnnotation.order();
+				int order = keyAnnotation.order();
+				if (orders.contains(order))
+				{
+					throw new BeanMappingException("The order '" + order
+							+ "' is duplicated in MultiKey '" + keyClass.getCanonicalName() + "'");
+				}
+				else
+				{
+					orders.add(order);
+				}
+				keySum += order;
 
 				Class<?> keySubType = multiKeyField.getType();
 				Validator.validateAllowedTypes(

@@ -1,9 +1,5 @@
 package fr.doan.achilles.wrapper;
 
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
-
 import java.util.List;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
@@ -11,12 +7,12 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
-import fr.doan.achilles.validation.Validator;
+import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
@@ -28,10 +24,11 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 	protected ID id;
-	protected GenericDao<ID> dao;
+	protected GenericEntityDao<ID> dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 
 	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	protected CompositeHelper helper = new CompositeHelper();
 
 	@Override
 	public V getValue(K key)
@@ -74,7 +71,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		validateBounds(start, end, reverse);
+		helper.validateBounds(start, end, reverse);
 
 		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
 				inclusiveEnd, reverse);
@@ -82,7 +79,8 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return KeyValue.fromList(hColumns, wideMapMeta.getKeySerializer(), wideMapMeta);
+		return KeyValue.fromListOfDynamicCompositeHColums(hColumns, wideMapMeta.getKeySerializer(),
+				wideMapMeta);
 	}
 
 	@Override
@@ -141,7 +139,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
-		validateBounds(start, end, false);
+		helper.validateBounds(start, end, false);
 
 		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
 				inclusiveEnd, false);
@@ -156,8 +154,8 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 	})
 	protected DynamicComposite buildComposite(K key)
 	{
-		return keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), key, (Serializer) wideMapMeta.getKeySerializer());
+		return keyFactory.buildForInsert(wideMapMeta.getPropertyName(), wideMapMeta.propertyType(),
+				key, (Serializer) wideMapMeta.getKeySerializer());
 	}
 
 	protected DynamicComposite buildQueryComposite(K value, ComponentEquality equality)
@@ -166,56 +164,13 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 				wideMapMeta.propertyType(), value, equality);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected void validateBounds(K start, K end, boolean reverse)
-	{
-
-		if (start != null && end != null)
-		{
-			Comparable<K> startComp = (Comparable<K>) start;
-
-			if (reverse)
-			{
-				Validator
-						.validateTrue(startComp.compareTo(end) >= 0,
-								"For reverse range query, start value should be greater or equal to end value");
-			}
-			else
-			{
-				Validator.validateTrue(startComp.compareTo(end) <= 0,
-						"For range query, start value should be lesser or equal to end value");
-			}
-		}
-	}
-
-	protected ComponentEquality[] determineEquality(boolean inclusiveStart, boolean inclusiveEnd,
-			boolean reverse)
-	{
-		ComponentEquality[] result = new ComponentEquality[2];
-		ComponentEquality start;
-		ComponentEquality end;
-		if (reverse)
-		{
-			start = inclusiveStart ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
-			end = inclusiveEnd ? EQUAL : GREATER_THAN_EQUAL;
-		}
-		else
-		{
-			start = inclusiveStart ? EQUAL : GREATER_THAN_EQUAL;
-			end = inclusiveEnd ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
-		}
-
-		result[0] = start;
-		result[1] = end;
-		return result;
-	}
-
 	protected DynamicComposite[] buildQueryComposites(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse)
 	{
 		DynamicComposite[] queryComp = new DynamicComposite[2];
 
-		ComponentEquality[] equalities = determineEquality(inclusiveStart, inclusiveEnd, reverse);
+		ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd,
+				reverse);
 		DynamicComposite startComp = buildQueryComposite(start, equalities[0]);
 		DynamicComposite endComp = buildQueryComposite(end, equalities[1]);
 
@@ -230,7 +185,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericDao<ID> dao)
+	public void setDao(GenericEntityDao<ID> dao)
 	{
 		this.dao = dao;
 	}

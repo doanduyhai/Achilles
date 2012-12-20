@@ -1,9 +1,9 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.wrapper.builder.MapEntryWrapperBuilder.builder;
+
 import java.util.Iterator;
 import java.util.Map.Entry;
-
-import fr.doan.achilles.wrapper.builder.MapEntryWrapperBuilder;
 
 public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 		Iterator<Entry<K, V>>
@@ -25,8 +25,7 @@ public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 	public Entry<K, V> next()
 	{
 		Entry<K, V> entry = this.target.next();
-		return MapEntryWrapperBuilder.builder(entry).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		return builder(entry).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override

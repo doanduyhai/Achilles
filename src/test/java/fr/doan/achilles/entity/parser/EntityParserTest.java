@@ -1,23 +1,22 @@
 package fr.doan.achilles.entity.parser;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -26,11 +25,11 @@ import parser.entity.Bean;
 import parser.entity.BeanWithColumnFamilyName;
 import parser.entity.BeanWithNoColumn;
 import parser.entity.BeanWithNoId;
-import parser.entity.BeanWithNoSerialVersionUID;
-import parser.entity.BeanWithNoTableAnnotation;
-import parser.entity.BeanWithNonPublicSerialVersionUID;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
+import parser.entity.WideRowBean;
+import parser.entity.WideRowBeanWithTwoColumns;
+import parser.entity.WideRowBeanWithWrongColumnType;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -46,6 +45,9 @@ import fr.doan.achilles.serializer.Utils;
 public class EntityParserTest
 {
 	private final EntityParser parser = new EntityParser();
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Mock
 	private Keyspace keyspace;
@@ -159,55 +161,6 @@ public class EntityParserTest
 		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName()).isEqualTo("nickname");
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_get_inherited_field_by_annotation() throws Exception
-	{
-		Field id = parser.getInheritedPrivateFields(ChildBean.class, Id.class);
-
-		assertThat(id.getName()).isEqualTo("id");
-		assertThat(id.getType()).isEqualTo((Class) Long.class);
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_get_inherited_field_by_annotation_and_name() throws Exception
-	{
-		Field address = parser.getInheritedPrivateFields(ChildBean.class, Column.class, "address");
-
-		assertThat(address.getName()).isEqualTo("address");
-		assertThat(address.getType()).isEqualTo((Class) String.class);
-	}
-
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_table_annotation() throws Exception
-	{
-		parser.parseEntity(keyspace, BeanWithNoTableAnnotation.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
-	}
-
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_no_serialVersionUID() throws Exception
-	{
-		parser.parseEntity(keyspace, BeanWithNoSerialVersionUID.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
-	}
-
-	@Test(expected = IncorrectTypeException.class)
-	public void should_exception_when_entity_has_non_public_serialVersionUID() throws Exception
-	{
-		parser.parseEntity(keyspace, BeanWithNonPublicSerialVersionUID.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
-	}
-
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
@@ -218,7 +171,6 @@ public class EntityParserTest
 	@Test(expected = ValidationException.class)
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
-
 		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, entityMetaMap,
 				columnFamilyHelper, forceColumnFamilyCreation);
 	}
@@ -226,9 +178,49 @@ public class EntityParserTest
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
-
 		parser.parseEntity(keyspace, BeanWithNoColumn.class, entityMetaMap, columnFamilyHelper,
 				forceColumnFamilyCreation);
+	}
+
+	@Test
+	public void should_parse_wide_row() throws Exception
+	{
+		EntityMeta<?> meta = parser.parseEntity(keyspace, WideRowBean.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
+
+		assertThat(meta.isWideRow()).isTrue();
+
+		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
+		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
+
+		assertThat(meta.getPropertyMetas()).hasSize(1);
+		assertThat(meta.getPropertyMetas().get("values").propertyType()).isEqualTo(WIDE_MAP);
+	}
+
+	@Test
+	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
+	{
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The WideRow entity '"
+				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
+				+ "' should not have more than one property annotated with @Column");
+
+		parser.parseEntity(keyspace, WideRowBeanWithTwoColumns.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
+
+	}
+
+	@Test
+	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
+	{
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The WideRow entity '"
+				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
+				+ "' should have a @Column of type WideMap");
+
+		parser.parseEntity(keyspace, WideRowBeanWithWrongColumnType.class, entityMetaMap,
+				columnFamilyHelper, forceColumnFamilyCreation);
+
 	}
 
 }

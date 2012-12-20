@@ -83,7 +83,7 @@ public class KeyValueTest
 		when(wideMapMeta.getValue("test1")).thenReturn("test1");
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 
-		List<KeyValue<Integer, String>> list = KeyValue.fromList(Arrays.asList(hColumn1, hColumn2),
+		List<KeyValue<Integer, String>> list = KeyValue.fromListOfDynamicCompositeHColums(Arrays.asList(hColumn1, hColumn2),
 				INT_SRZ, wideMapMeta);
 
 		assertThat(list).hasSize(2);

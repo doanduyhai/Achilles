@@ -9,7 +9,7 @@ import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
-import static fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder.builder;
+import static fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -152,7 +152,7 @@ public class PropertyParser
 					"The 'table' parameter should be set for the @JoinColumn annotation on field '"
 							+ field.getName() + "'");
 
-			Field id = entityParser.getInheritedPrivateFields(beanClass, Id.class);
+			Field id = entityHelper.getInheritedPrivateFields(beanClass, Id.class);
 			idClass = id.getType();
 			idGetter = entityHelper.findGetter(beanClass, id);
 			columnFamilyHelper.validateWideRow(externalColumnFamily, forceColumnFamilyCreation,
@@ -163,7 +163,7 @@ public class PropertyParser
 
 		if (componentClasses.size() == 0)
 		{
-			return builder(keyClass, valueClass) //
+			return factory(keyClass, valueClass) //
 					.type(JOIN_WIDE_MAP) //
 					.propertyName(propertyName) //
 					.accessors(accessors) //
@@ -177,7 +177,7 @@ public class PropertyParser
 		}
 		else
 		{
-			return builder(keyClass, valueClass) //
+			return factory(keyClass, valueClass) //
 					.type(JOIN_WIDE_MAP) //
 					.propertyName(propertyName) //
 					.accessors(accessors) //
@@ -202,7 +202,7 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
-		return builder((Class<V>) field.getType()).type(type).propertyName(propertyName)
+		return factory((Class<V>) field.getType()).type(type).propertyName(propertyName)
 				.accessors(accessors).build();
 
 	}
@@ -224,7 +224,7 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-		return builder((Class<V>) valueClass).type(type).propertyName(propertyName)
+		return factory((Class<V>) valueClass).type(type).propertyName(propertyName)
 				.accessors(accessors).build();
 
 	}
@@ -246,7 +246,7 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-		return builder((Class<V>) valueClass).type(type).propertyName(propertyName)
+		return factory((Class<V>) valueClass).type(type).propertyName(propertyName)
 				.accessors(accessors).build();
 	}
 
@@ -289,7 +289,7 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-		return builder(keyType, valueClass).type(type).propertyName(propertyName)
+		return factory(keyType, valueClass).type(type).propertyName(propertyName)
 				.accessors(accessors).build();
 
 	}
@@ -345,13 +345,13 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		if (componentClasses.size() == 0)
 		{
-			return builder(keyClass, valueClass).type(PropertyType.WIDE_MAP)
+			return factory(keyClass, valueClass).type(PropertyType.WIDE_MAP)
 					.propertyName(propertyName).accessors(accessors).singleKey(true).build();
 
 		}
 		else
 		{
-			return builder(keyClass, valueClass).type(PropertyType.WIDE_MAP)
+			return factory(keyClass, valueClass).type(PropertyType.WIDE_MAP)
 					.propertyName(propertyName).accessors(accessors).singleKey(false) //
 					.componentClasses(componentClasses) //
 					.componentGetters(componentGetters) //

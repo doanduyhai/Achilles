@@ -70,7 +70,7 @@ public class MultiKeyValueIteratorTest
 		when(columnSliceIterator.next()).thenReturn((HColumn) column);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 
-		when(util.buildMultiKey(TweetMultiKey.class, multiKeyWideMapMeta, column, componentSetters))
+		when(util.buildMultiKeyForDynamicComposite(TweetMultiKey.class, multiKeyWideMapMeta, column, componentSetters))
 				.thenReturn(keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();

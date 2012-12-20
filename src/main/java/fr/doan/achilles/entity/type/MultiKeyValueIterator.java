@@ -42,7 +42,7 @@ public class MultiKeyValueIterator<K, V> extends KeyValueIterator<K, V>
 		{
 			HColumn<DynamicComposite, V> column = this.columnSliceIterator.next();
 
-			keyValue = util.buildMultiKey(multiKeyWideMapMeta.getKeyClass(), multiKeyWideMapMeta,
+			keyValue = util.buildMultiKeyForDynamicComposite(multiKeyWideMapMeta.getKeyClass(), multiKeyWideMapMeta,
 					(HColumn<DynamicComposite, Object>) column, componentSetters);
 		}
 		else

@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.metadata.builder;
+package fr.doan.achilles.entity.metadata.factory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import fr.doan.achilles.entity.metadata.WideMapMeta;
  * @author DuyHai DOAN
  * 
  */
-public class PropertyMetaBuilder<K, V>
+public class PropertyMetaFactory<K, V>
 {
 	private PropertyType type;
 	private String propertyName;
@@ -48,22 +48,22 @@ public class PropertyMetaBuilder<K, V>
 	private Class<?> idClass;
 	private Method idGetter;
 
-	public PropertyMetaBuilder(Class<K> keyClass, Class<V> valueClass) {
+	public PropertyMetaFactory(Class<K> keyClass, Class<V> valueClass) {
 		this.keyClass = keyClass;
 		this.valueClass = valueClass;
 	}
 
-	public static <K, V> PropertyMetaBuilder<K, V> builder(Class<K> keyClass, Class<V> valueClass)
+	public static <K, V> PropertyMetaFactory<K, V> factory(Class<K> keyClass, Class<V> valueClass)
 	{
-		return new PropertyMetaBuilder<K, V>(keyClass, valueClass);
+		return new PropertyMetaFactory<K, V>(keyClass, valueClass);
 	}
 
-	public static <V> PropertyMetaBuilder<Void, V> builder(Class<V> valueClass)
+	public static <V> PropertyMetaFactory<Void, V> factory(Class<V> valueClass)
 	{
-		return new PropertyMetaBuilder<Void, V>(Void.class, valueClass);
+		return new PropertyMetaFactory<Void, V>(Void.class, valueClass);
 	}
 
-	public PropertyMetaBuilder<K, V> propertyName(String propertyName)
+	public PropertyMetaFactory<K, V> propertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
 		return this;
@@ -182,73 +182,73 @@ public class PropertyMetaBuilder<K, V>
 		return meta;
 	}
 
-	public PropertyMetaBuilder<K, V> type(PropertyType type)
+	public PropertyMetaFactory<K, V> type(PropertyType type)
 	{
 		this.type = type;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> accessors(Method[] accessors)
+	public PropertyMetaFactory<K, V> accessors(Method[] accessors)
 	{
 		this.accessors = accessors;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> singleKey(boolean singleKey)
+	public PropertyMetaFactory<K, V> singleKey(boolean singleKey)
 	{
 		this.singleKey = singleKey;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> joinColumn(boolean joinColumn)
+	public PropertyMetaFactory<K, V> joinColumn(boolean joinColumn)
 	{
 		this.joinColumn = joinColumn;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> insertable(boolean insertable)
+	public PropertyMetaFactory<K, V> insertable(boolean insertable)
 	{
 		this.insertable = insertable;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> entityValue(boolean entityValue)
+	public PropertyMetaFactory<K, V> entityValue(boolean entityValue)
 	{
 		this.entityValue = entityValue;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> componentClasses(List<Class<?>> componentClasses)
+	public PropertyMetaFactory<K, V> componentClasses(List<Class<?>> componentClasses)
 	{
 		this.componentClasses = componentClasses;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> componentGetters(List<Method> componentGetters)
+	public PropertyMetaFactory<K, V> componentGetters(List<Method> componentGetters)
 	{
 		this.componentGetters = componentGetters;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> componentSetters(List<Method> componentSetters)
+	public PropertyMetaFactory<K, V> componentSetters(List<Method> componentSetters)
 	{
 		this.componentSetters = componentSetters;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> joinColumnFamily(String joinColumnFamily)
+	public PropertyMetaFactory<K, V> joinColumnFamily(String joinColumnFamily)
 	{
 		this.joinColumnFamily = joinColumnFamily;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> idClass(Class<?> idClass)
+	public PropertyMetaFactory<K, V> idClass(Class<?> idClass)
 	{
 		this.idClass = idClass;
 		return this;
 	}
 
-	public PropertyMetaBuilder<K, V> idGetter(Method idGetter)
+	public PropertyMetaFactory<K, V> idGetter(Method idGetter)
 	{
 		this.idGetter = idGetter;
 		return this;

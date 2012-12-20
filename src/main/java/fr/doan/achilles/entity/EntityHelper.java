@@ -1,17 +1,23 @@
 package fr.doan.achilles.entity;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Table;
 
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.parser.PropertyFilter;
+import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
 
 public class EntityHelper
 {
+
+	private PropertyFilter filter = new PropertyFilter();
 
 	protected String deriveGetterName(Field field)
 	{
@@ -42,12 +48,7 @@ public class EntityHelper
 
 			String getter = this.deriveGetterName(field);
 			Method getterMethod = beanClass.getMethod(getter);
-			if (!Modifier.isPublic(getterMethod.getModifiers()))
-			{
-				throw new InvalidBeanException("The getter for field '" + fieldName
-						+ "' should be public");
-			}
-			else if (getterMethod.getReturnType() != field.getType())
+			if (getterMethod.getReturnType() != field.getType())
 			{
 				throw new InvalidBeanException("The getter for field '" + fieldName
 						+ "' does not return correct type");
@@ -72,15 +73,10 @@ public class EntityHelper
 			String setter = this.deriveSetterName(fieldName);
 			Method setterMethod = beanClass.getMethod(setter, field.getType());
 
-			if (!Modifier.isPublic(setterMethod.getModifiers()))
+			if (!setterMethod.getReturnType().toString().equals("void"))
 			{
 				throw new InvalidBeanException("The setter for field '" + fieldName
-						+ "' should be public");
-			}
-			else if (!setterMethod.getReturnType().toString().equals("void"))
-			{
-				throw new InvalidBeanException("The setter for field '" + fieldName
-						+ "' does not exist");
+						+ "' does not return correct type or does not have the correct parameter");
 			}
 
 			return setterMethod;
@@ -104,48 +100,6 @@ public class EntityHelper
 		return accessors;
 	}
 
-	private Field extractField(Class<?> beanClass, String fieldName)
-	{
-		Field field = null;
-		try
-		{
-			field = beanClass.getDeclaredField(fieldName);
-		}
-		catch (SecurityException e)
-		{
-			throw new InvalidBeanException("The field '" + fieldName + "' cannot be accessed");
-		}
-		catch (NoSuchFieldException e)
-		{
-			throw new InvalidBeanException("The field '" + fieldName + "' does not exist");
-		}
-		return field;
-	}
-
-	public Object getValueFromField(Object target, String fieldName)
-	{
-
-		Object value = null;
-
-		if (target != null)
-		{
-			Field field = extractField(target.getClass(), fieldName);
-			String getter = deriveGetterName(field);
-
-			try
-			{
-				Method getterMethod = target.getClass()
-						.getDeclaredMethod(getter, (Class<?>[]) null);
-				value = getValueFromField(target, getterMethod);
-			}
-			catch (Exception e)
-			{
-
-			}
-		}
-		return value;
-	}
-
 	public Object getValueFromField(Object target, Method getter)
 	{
 
@@ -166,42 +120,6 @@ public class EntityHelper
 		return value;
 	}
 
-	public void setValueToField(Object target, String fieldName, Object value)
-	{
-
-		if (target != null)
-		{
-			Field field = extractField(target.getClass(), fieldName);
-			String setter = deriveSetterName(fieldName);
-
-			try
-			{
-				Method setterMethod = target.getClass().getDeclaredMethod(setter, field.getType());
-				setValueToField(target, setterMethod, value);
-			}
-			catch (Exception e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public void setValueToField(Object target, Method setter, Object value)
-	{
-
-		if (target != null)
-		{
-			try
-			{
-				setter.invoke(target, value);
-			}
-			catch (Exception e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	public <ID> ID getKey(Object entity, PropertyMeta<Void, ID> idMeta)
 	{
@@ -210,17 +128,112 @@ public class EntityHelper
 		{
 			return (ID) idMeta.getGetter().invoke(entity);
 		}
-		catch (IllegalArgumentException e)
+		catch (Exception e)
 		{
 			return null;
+		}
+	}
+
+	public Long findSerialVersionUID(Class<?> entity)
+	{
+		Long serialVersionUID = null;
+		try
+		{
+			Field declaredSerialVersionUID = entity.getDeclaredField("serialVersionUID");
+			declaredSerialVersionUID.setAccessible(true);
+			serialVersionUID = declaredSerialVersionUID.getLong(null);
+
+		}
+		catch (NoSuchFieldException e)
+		{
+			throw new IncorrectTypeException(
+					"The 'serialVersionUID' property should be declared for entity '"
+							+ entity.getCanonicalName() + "'", e);
 		}
 		catch (IllegalAccessException e)
 		{
-			return null;
+			throw new IncorrectTypeException(
+					"The 'serialVersionUID' property should be publicly accessible for entity '"
+							+ entity.getCanonicalName() + "'", e);
 		}
-		catch (InvocationTargetException e)
+		return serialVersionUID;
+	}
+
+	public String inferColumnFamilyName(Class<?> entity, String canonicalName)
+	{
+		Table table = entity.getAnnotation(javax.persistence.Table.class);
+		String columnFamily;
+		if (table != null)
 		{
-			return null;
+			if (StringUtils.isNotBlank(table.name()))
+			{
+				columnFamily = table.name();
+
+			}
+			else
+			{
+				columnFamily = canonicalName;
+			}
 		}
+		else
+		{
+			throw new IncorrectTypeException("The entity '" + entity.getCanonicalName()
+					+ "' should have @Table annotation");
+		}
+		return columnFamily;
+	}
+
+	public List<Field> getInheritedPrivateFields(Class<?> type)
+	{
+		List<Field> result = new ArrayList<Field>();
+
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField))
+				{
+					result.add(declaredField);
+				}
+			}
+			i = i.getSuperclass();
+		}
+
+		return result;
+	}
+
+	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation)
+	{
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField, annotation))
+				{
+					return declaredField;
+				}
+			}
+			i = i.getSuperclass();
+		}
+		return null;
+	}
+
+	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation, String name)
+	{
+		Class<?> i = type;
+		while (i != null && i != Object.class)
+		{
+			for (Field declaredField : i.getDeclaredFields())
+			{
+				if (filter.matches(declaredField, annotation, name))
+				{
+					return declaredField;
+				}
+			}
+			i = i.getSuperclass();
+		}
+		return null;
 	}
 }

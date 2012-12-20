@@ -1,22 +1,36 @@
 package fr.doan.achilles.entity;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
-import static fr.doan.achilles.entity.metadata.builder.PropertyMetaBuilder.builder;
+import static fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import javax.persistence.Column;
+import javax.persistence.Id;
 
+import mapping.entity.CompleteBean;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import parser.entity.BeanWithColumnFamilyName;
+import parser.entity.BeanWithNoTableAnnotation;
+import parser.entity.ChildBean;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
 
 @SuppressWarnings("unused")
 public class EntityHelperTest
 {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	private final EntityHelper helper = new EntityHelper();
 
@@ -58,7 +72,7 @@ public class EntityHelperTest
 		assertThat(helper.deriveSetterName("a")).isEqualTo("setA");
 	}
 
-	@Test(expected = InvalidBeanException.class)
+	@Test
 	public void should_exception_when_no_getter() throws Exception
 	{
 
@@ -67,10 +81,13 @@ public class EntityHelperTest
 			String name;
 		}
 
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
+		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expectMessage("The getter for field 'name' does not exist");
+
+		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
-	@Test(expected = InvalidBeanException.class)
+	@Test
 	public void should_exception_when_no_setter() throws Exception
 	{
 
@@ -83,27 +100,14 @@ public class EntityHelperTest
 				return name;
 			}
 		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
+
+		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expectMessage("The setter for field 'name' does not exist");
+
+		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
-	@Test(expected = InvalidBeanException.class)
-	public void should_exception_when_non_public_getter() throws Exception
-	{
-
-		class Test
-		{
-			String name;
-
-			private String getName()
-			{
-				return name;
-			}
-
-		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
-	}
-
-	@Test(expected = InvalidBeanException.class)
+	@Test
 	public void should_exception_when_incorrect_getter() throws Exception
 	{
 
@@ -117,51 +121,13 @@ public class EntityHelperTest
 			}
 
 		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
+		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expectMessage("The getter for field 'name' does not return correct type");
+
+		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
-	@Test(expected = InvalidBeanException.class)
-	public void should_exception_when_non_public_setter() throws Exception
-	{
-
-		class Test
-		{
-			String name;
-
-			public String getName()
-			{
-				return name;
-			}
-
-			private void setName(String name)
-			{
-				this.name = name;
-			}
-		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
-	}
-
-	@Test(expected = InvalidBeanException.class)
-	public void should_exception_when_setter_taking_wrong_type() throws Exception
-	{
-
-		class Test
-		{
-			String name;
-
-			public String getName()
-			{
-				return name;
-			}
-
-			public void setName(Long name)
-			{}
-
-		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
-	}
-
-	@Test(expected = InvalidBeanException.class)
+	@Test
 	public void should_exception_when_setter_returning_wrong_type() throws Exception
 	{
 
@@ -180,7 +146,35 @@ public class EntityHelperTest
 			}
 
 		}
-		helper.findAccessors(Test.class, Test.class.getDeclaredField("name"));
+		expectedEx.expect(InvalidBeanException.class);
+		expectedEx
+				.expectMessage("The setter for field 'name' does not return correct type or does not have the correct parameter");
+
+		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
+	}
+
+	@Test
+	public void should_exception_when_setter_taking_wrong_type() throws Exception
+	{
+
+		class Test
+		{
+			String name;
+
+			public String getName()
+			{
+				return name;
+			}
+
+			public void setName(Long name)
+			{}
+
+		}
+
+		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expectMessage("The setter for field 'name' does not exist or is incorrect");
+
+		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -212,8 +206,9 @@ public class EntityHelperTest
 	{
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
+		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
 
-		String value = (String) helper.getValueFromField(bean, "complicatedAttributeName");
+		String value = (String) helper.getValueFromField(bean, getter);
 		assertThat(value).isEqualTo("test");
 	}
 
@@ -223,36 +218,10 @@ public class EntityHelperTest
 	{
 		ComplexBean bean = new ComplexBean();
 		bean.setFriends(Arrays.asList("foo", "bar"));
-		List<String> value = (List<String>) helper.getValueFromField(bean, "friends");
+		Method getter = ComplexBean.class.getDeclaredMethod("getFriends");
+
+		List<String> value = (List<String>) helper.getValueFromField(bean, getter);
 		assertThat(value).containsExactly("foo", "bar");
-	}
-
-	@Test
-	public void should_set_value_to_field() throws Exception
-	{
-		Bean bean = new Bean();
-
-		helper.setValueToField(bean, "complicatedAttributeName", "test");
-		assertThat(bean.getComplicatedAttributeName()).isEqualTo("test");
-	}
-
-	@Test
-	public void should_set_value_to_collection_field() throws Exception
-	{
-		ComplexBean bean = new ComplexBean();
-		bean.setFriends(Arrays.asList("foo", "bar"));
-		helper.setValueToField(bean, "friends", new ArrayList<String>());
-		assertThat(bean.getFriends()).isEmpty();
-	}
-
-	@Test
-	public void should_set_null_value_to_field() throws Exception
-	{
-		Bean bean = new Bean();
-		bean.setComplicatedAttributeName("test");
-
-		helper.setValueToField(bean, "complicatedAttributeName", null);
-		assertThat(bean.getComplicatedAttributeName()).isNull();
 	}
 
 	@Test
@@ -263,11 +232,101 @@ public class EntityHelperTest
 
 		Method[] accessors = helper.findAccessors(Bean.class,
 				Bean.class.getDeclaredField("complicatedAttributeName"));
-		PropertyMeta<Void, String> idMeta = builder(Void.class, String.class).type(SIMPLE)
+		PropertyMeta<Void, String> idMeta = factory(Void.class, String.class).type(SIMPLE)
 				.propertyName("complicatedAttributeName").accessors(accessors).build();
 
 		String key = helper.getKey(bean, idMeta);
 		assertThat(key).isEqualTo("test");
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_get_inherited_field_by_annotation() throws Exception
+	{
+		Field id = helper.getInheritedPrivateFields(ChildBean.class, Id.class);
+
+		assertThat(id.getName()).isEqualTo("id");
+		assertThat(id.getType()).isEqualTo((Class) Long.class);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_get_inherited_field_by_annotation_and_name() throws Exception
+	{
+		Field address = helper.getInheritedPrivateFields(ChildBean.class, Column.class, "address");
+
+		assertThat(address.getName()).isEqualTo("address");
+		assertThat(address.getType()).isEqualTo((Class) String.class);
+	}
+
+	@Test
+	public void should_find_serial_version_UID() throws Exception
+	{
+		class Test
+		{
+			private static final long serialVersionUID = 1542L;
+		}
+
+		Long serialUID = helper.findSerialVersionUID(Test.class);
+		assertThat(serialUID).isEqualTo(1542L);
+	}
+
+	@Test
+	public void should_exception_when_no_serial_version_UID() throws Exception
+	{
+		class Test
+		{
+			private static final long fieldName = 1542L;
+		}
+
+		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx
+				.expectMessage("The 'serialVersionUID' property should be declared for entity 'null'");
+
+		helper.findSerialVersionUID(Test.class);
+	}
+
+	@Test
+	public void should_infer_column_family_from_annotation() throws Exception
+	{
+		String cfName = helper.inferColumnFamilyName(BeanWithColumnFamilyName.class,
+				"canonicalName");
+		assertThat(cfName).isEqualTo("myOwnCF");
+	}
+
+	@Test
+	public void should_infer_column_family_from_default_name() throws Exception
+	{
+		String cfName = helper.inferColumnFamilyName(CompleteBean.class, "canonicalName");
+		assertThat(cfName).isEqualTo("canonicalName");
+	}
+
+	@Test
+	public void should_exception_when_infering_column_family_for_bean_with_no_annotation()
+			throws Exception
+	{
+
+		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expectMessage("The entity '"
+				+ BeanWithNoTableAnnotation.class.getCanonicalName()
+				+ "' should have @Table annotation");
+
+		helper.inferColumnFamilyName(BeanWithNoTableAnnotation.class, "canonicalName");
+
+	}
+
+	@Test
+	public void should_condition() throws Exception
+	{
+
 	}
 
 	class Bean
@@ -299,6 +358,5 @@ public class EntityHelperTest
 		{
 			this.friends = friends;
 		}
-
 	}
 }

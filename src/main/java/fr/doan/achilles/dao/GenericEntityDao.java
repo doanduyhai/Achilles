@@ -11,32 +11,33 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import me.prettyprint.hector.api.factory.HFactory;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.cassandra.utils.Pair;
 
-import fr.doan.achilles.validation.Validator;
-
-public class GenericDao<K> extends AbstractDao<K, DynamicComposite, Object>
+public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, Object>
 {
 
 	private DynamicComposite startCompositeForEagerFetch;
 	private DynamicComposite endCompositeForEagerFetch;
 
-	protected GenericDao() {
-		initComposites();
+	protected GenericEntityDao() {
+		this.initComposites();
 	}
 
-	public GenericDao(Keyspace keyspace, Serializer<K> keySrz, String cf) {
+	public GenericEntityDao(Keyspace keyspace, Serializer<K> keySrz, String cf) {
 		super(keyspace);
-		initComposites();
-		Validator.validateNotBlank(cf, "columnFamily");
-		Validator.validateNotNull(keySrz, "keySerializer for columnFamily ='" + columnFamily + "'");
+		this.initComposites();
 		keySerializer = keySrz;
 		columnFamily = cf;
 		columnNameSerializer = DYNA_COMP_SRZ;
 		valueSerializer = OBJECT_SRZ;
+	}
+
+	public List<Pair<DynamicComposite, Object>> eagerFetchEntity(K key)
+	{
+
+		return this.findColumnsRange(key, startCompositeForEagerFetch, endCompositeForEagerFetch,
+				false, Integer.MAX_VALUE);
 	}
 
 	private void initComposites()
@@ -47,17 +48,5 @@ public class GenericDao<K> extends AbstractDao<K, DynamicComposite, Object>
 		endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
 				ComponentEquality.GREATER_THAN_EQUAL);
-	}
-
-	public Mutator<K> buildMutator()
-	{
-		return HFactory.createMutator(this.keyspace, this.keySerializer);
-	}
-
-	public List<Pair<DynamicComposite, Object>> eagerFetchEntity(K key)
-	{
-
-		return this.findColumnsRange(key, startCompositeForEagerFetch, endCompositeForEagerFetch,
-				false, Integer.MAX_VALUE);
 	}
 }

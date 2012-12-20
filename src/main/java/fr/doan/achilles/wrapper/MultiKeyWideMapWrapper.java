@@ -11,8 +11,8 @@ import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.MultiKeyValueIterator;
+import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
-import fr.doan.achilles.validation.Validator;
 
 /**
  * MultiKeyWideMapWrapper
@@ -28,6 +28,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 	private List<Method> componentSetters;
 
 	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private CompositeHelper helper = new CompositeHelper();
 
 	@Override
 	protected DynamicComposite buildComposite(K key)
@@ -35,8 +36,8 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 		List<Object> componentValues = util.determineMultiKey(key, componentGetters);
 
-		return keyFactory.buildForProperty(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers);
+		return keyFactory.buildForInsert(wideMapMeta.getPropertyName(), wideMapMeta.propertyType(),
+				componentValues, componentSerializers);
 
 	}
 
@@ -54,7 +55,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		validateBounds(start, end, reverse);
+		helper.validateMultiKeyBounds(start, end, reverse, componentGetters, wideMapMeta);
 
 		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
 				inclusiveEnd, reverse);
@@ -62,7 +63,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return util.buildMultiKeyList(wideMapMeta.getKeyClass(),
+		return util.buildMultiKeyListForDynamicComposite(wideMapMeta.getKeyClass(),
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
 	}
 
@@ -97,49 +98,6 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 		return new MultiKeyValueIterator(columnSliceIterator,
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta, componentSetters);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void validateBounds(K start, K end, boolean reverse)
-	{
-
-		if (start != null && end != null)
-		{
-
-			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
-			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
-
-			keyFactory.validateNoHole(wideMapMeta.getPropertyName(), startComponentValues);
-			keyFactory.validateNoHole(wideMapMeta.getPropertyName(), endComponentValues);
-
-			for (int i = 0; i < startComponentValues.size(); i++)
-			{
-
-				Comparable<Object> startValue = (Comparable<Object>) startComponentValues.get(i);
-				Object endValue = endComponentValues.get(i);
-
-				if (reverse)
-				{
-					if (startValue != null && endValue != null)
-					{
-						Validator
-								.validateTrue(startValue.compareTo(endValue) >= 0,
-										"For multiKey descending range query, startKey value should be greater or equal to end endKey");
-					}
-
-				}
-				else
-				{
-					if (startValue != null && endValue != null)
-					{
-						Validator
-								.validateTrue(startValue.compareTo(endValue) <= 0,
-										"For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
-					}
-				}
-			}
-		}
 	}
 
 	public void setComponentSerializers(List<Serializer<?>> componentSerializers)

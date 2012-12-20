@@ -1,0 +1,54 @@
+package parser.entity;
+
+import java.util.Date;
+
+import fr.doan.achilles.annotations.Key;
+import fr.doan.achilles.entity.type.MultiKey;
+
+/**
+ * MultiKeyWithNoAnnotation
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public class MultiKeyWithDuplicateOrder implements MultiKey
+{
+	@Key(order = 1)
+	private String name;
+
+	@Key(order = 1)
+	private int rank;
+
+	@Key(order = 4)
+	private Date date;
+
+	public String getName()
+	{
+		return name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+
+	public int getRank()
+	{
+		return rank;
+	}
+
+	public void setRank(int rank)
+	{
+		this.rank = rank;
+	}
+
+	public Date getDate()
+	{
+		return date;
+	}
+
+	public void setDate(Date date)
+	{
+		this.date = date;
+	}
+}

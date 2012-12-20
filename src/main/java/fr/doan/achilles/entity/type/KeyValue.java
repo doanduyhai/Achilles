@@ -41,7 +41,7 @@ public class KeyValue<K, V>
 		this.ttl = hColumn.getTtl();
 	}
 
-	public static <K, V> List<KeyValue<K, V>> fromList(
+	public static <K, V> List<KeyValue<K, V>> fromListOfDynamicCompositeHColums(
 			List<HColumn<DynamicComposite, Object>> hColumns, Serializer<?> keySerializer,
 			PropertyMeta<K, V> wideMapMeta)
 	{
@@ -51,6 +51,22 @@ public class KeyValue<K, V>
 			for (HColumn<DynamicComposite, Object> hColumn : hColumns)
 			{
 				result.add(new KeyValue<K, V>(hColumn, keySerializer, wideMapMeta));
+			}
+		}
+		return result;
+	}
+
+	public static <K, V> List<KeyValue<K, V>> fromListOfSimpleHColums(
+			List<HColumn<K, Object>> hColumns, Serializer<?> keySerializer,
+			PropertyMeta<K, V> wideMapMeta)
+	{
+		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
+		if (hColumns != null && hColumns.size() > 0)
+		{
+			for (HColumn<K, Object> hColumn : hColumns)
+			{
+				V value = wideMapMeta.getValue(hColumn.getValue());
+				result.add(new KeyValue<K, V>(hColumn.getName(), value, hColumn.getTtl()));
 			}
 		}
 		return result;

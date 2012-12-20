@@ -4,7 +4,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
 
 public class EntityMeta<ID>
 {
@@ -16,9 +17,11 @@ public class EntityMeta<ID>
 	private Serializer<?> idSerializer;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
-	private GenericDao<ID> dao;
+	private GenericEntityDao<ID> entityDao;
+	private GenericMultiKeyWideRowDao<ID> wideRowDao;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
+	private boolean wideRow = false;
 
 	public String getCanonicalClassName()
 	{
@@ -80,14 +83,14 @@ public class EntityMeta<ID>
 		this.idMeta = idMeta;
 	}
 
-	public GenericDao<ID> getDao()
+	public GenericEntityDao<ID> getEntityDao()
 	{
-		return dao;
+		return entityDao;
 	}
 
-	public void setDao(GenericDao<ID> dao)
+	public void setEntityDao(GenericEntityDao<ID> entityDao)
 	{
-		this.dao = dao;
+		this.entityDao = entityDao;
 	}
 
 	public Map<Method, PropertyMeta<?, ?>> getGetterMetas()
@@ -110,4 +113,23 @@ public class EntityMeta<ID>
 		this.setterMetas = setterMetas;
 	}
 
+	public boolean isWideRow()
+	{
+		return wideRow;
+	}
+
+	public void setWideRow(boolean wideRow)
+	{
+		this.wideRow = wideRow;
+	}
+
+	public GenericMultiKeyWideRowDao<ID> getWideRowDao()
+	{
+		return wideRowDao;
+	}
+
+	public void setWideRowDao(GenericMultiKeyWideRowDao<ID> wideRowDao)
+	{
+		this.wideRowDao = wideRowDao;
+	}
 }

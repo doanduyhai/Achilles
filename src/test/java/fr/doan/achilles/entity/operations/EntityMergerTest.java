@@ -19,14 +19,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
-import fr.doan.achilles.proxy.interceptor.JpaInterceptor;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMergerTest
@@ -42,7 +42,7 @@ public class EntityMergerTest
 	private EntityProxyBuilder<Long> interceptorBuilder;
 
 	@Mock
-	private JpaInterceptor<Long> interceptor;
+	private JpaEntityInterceptor<Long> interceptor;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -54,7 +54,7 @@ public class EntityMergerTest
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private EntityWrapperUtil util;
@@ -84,7 +84,7 @@ public class EntityMergerTest
 		when(util.isProxy(entity)).thenReturn(true);
 
 		when(factory.getCallback(0)).thenReturn(interceptor);
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
@@ -111,7 +111,7 @@ public class EntityMergerTest
 		when(util.isProxy(entity)).thenReturn(true);
 
 		when(factory.getCallback(0)).thenReturn(interceptor);
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
@@ -139,7 +139,7 @@ public class EntityMergerTest
 		when(util.isProxy(entity)).thenReturn(true);
 
 		when(factory.getCallback(0)).thenReturn(interceptor);
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 

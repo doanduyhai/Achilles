@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -40,7 +40,7 @@ import fr.doan.achilles.wrapper.SetWrapper;
 		"unchecked"
 })
 @RunWith(MockitoJUnitRunner.class)
-public class JpaInterceptorTest
+public class JpaEntityInterceptorTest
 {
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
@@ -48,10 +48,10 @@ public class JpaInterceptorTest
 	@Mock
 	private EntityMeta<Long> entityMeta;
 
-	private JpaInterceptor<Long> interceptor;
+	private JpaEntityInterceptor<Long> interceptor;
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -98,7 +98,7 @@ public class JpaInterceptorTest
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getDao()).thenReturn(dao);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);

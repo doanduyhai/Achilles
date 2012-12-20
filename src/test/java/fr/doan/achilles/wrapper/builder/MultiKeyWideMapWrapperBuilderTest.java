@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.CorrectMultiKey;
-import fr.doan.achilles.dao.GenericDao;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.wrapper.MultiKeyWideMapWrapper;
 
@@ -30,7 +30,7 @@ public class MultiKeyWideMapWrapperBuilderTest
 {
 
 	@Mock
-	private GenericDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta;

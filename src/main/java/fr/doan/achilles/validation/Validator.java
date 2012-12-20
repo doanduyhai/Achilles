@@ -23,11 +23,11 @@ public class Validator
 		}
 	}
 
-	public static void validateNotNull(Object arg, String label)
+	public static void validateNotNull(Object arg, String msg)
 	{
 		if (arg == null)
 		{
-			throw new ValidationException("The property '" + label + "' should not be null");
+			throw new ValidationException(msg);
 		}
 	}
 

@@ -1,6 +1,10 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -9,7 +13,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.HColumn;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -17,10 +25,13 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.CorrectMultiKey;
+import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.entity.type.KeyValue;
+import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -33,11 +44,20 @@ import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 @RunWith(MockitoJUnitRunner.class)
 public class MultiKeyWideMapWrapperTest
 {
+	@InjectMocks
+	private MultiKeyWideMapWrapper<Long, CorrectMultiKey, String> wrapper;
+
 	@Mock
 	private List<Serializer<?>> componentSerializers;
 
 	@Mock
+	private GenericEntityDao<Long> dao;
+
+	@Mock
 	private List<Method> componentGetters;
+
+	@Mock
+	private List<Method> componentSetters;
 
 	@Mock
 	private EntityWrapperUtil util;
@@ -46,10 +66,10 @@ public class MultiKeyWideMapWrapperTest
 	private DynamicCompositeKeyFactory keyFactory;
 
 	@Mock
-	private MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta;
+	private CompositeHelper helper;
 
-	@InjectMocks
-	private MultiKeyWideMapWrapper<Long, CorrectMultiKey, String> wrapper;
+	@Mock
+	private MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta;
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
@@ -64,12 +84,12 @@ public class MultiKeyWideMapWrapperTest
 
 		wrapper.buildComposite(multiKey);
 
-		verify(keyFactory).buildForProperty(wideMapMeta.getPropertyName(),
+		verify(keyFactory).buildForInsert(wideMapMeta.getPropertyName(),
 				wideMapMeta.propertyType(), componentValues, componentSerializers);
 	}
 
 	@Test
-	public void should_build_query_composite_start() throws Exception
+	public void should_build_query_composite() throws Exception
 	{
 
 		CorrectMultiKey multiKey = new CorrectMultiKey();
@@ -81,93 +101,57 @@ public class MultiKeyWideMapWrapperTest
 
 		verify(keyFactory).buildQueryComparator(wideMapMeta.getPropertyName(),
 				wideMapMeta.propertyType(), componentValues, componentSerializers,
+
 				GREATER_THAN_EQUAL);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
-	public void should_validate_bounds() throws Exception
+	public void should_find_values() throws Exception
 	{
 		CorrectMultiKey start = new CorrectMultiKey();
 		CorrectMultiKey end = new CorrectMultiKey();
+		DynamicComposite startComp = new DynamicComposite();
+		DynamicComposite endComp = new DynamicComposite();
+		List<Object> startCompValues = mock(List.class);
+		List<Object> endCompValues = mock(List.class);
+		HColumn<DynamicComposite, Object> hColumn = mock(HColumn.class);
+		List<HColumn<DynamicComposite, Object>> hColumns = Arrays.asList(hColumn);
+		KeyValue<CorrectMultiKey, String> keyValue = new KeyValue<CorrectMultiKey, String>(start,
+				"value");
+		List<KeyValue<CorrectMultiKey, String>> keyValues = Arrays.asList(keyValue);
 
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
-		List<Object> endComponentValues = Arrays.asList((Object) "abc", 20);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
+		{
+				EQUAL,
+				GREATER_THAN_EQUAL
+		});
+		when(wideMapMeta.getPropertyName()).thenReturn("prop");
+		when(wideMapMeta.propertyType()).thenReturn(WIDE_MAP);
+		when(util.determineMultiKey(start, componentGetters)).thenReturn(startCompValues);
+		when(util.determineMultiKey(end, componentGetters)).thenReturn(endCompValues);
+		when(
+				keyFactory.buildQueryComparator("prop", WIDE_MAP, startCompValues,
+						componentSerializers, EQUAL)).thenReturn(startComp);
+		when(
+				keyFactory.buildQueryComparator("prop", WIDE_MAP, endCompValues,
+						componentSerializers, GREATER_THAN_EQUAL)).thenReturn(endComp);
 
-		wrapper.validateBounds(start, end, false);
+		when(dao.findRawColumnsRange(10L, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(wideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(
+				util.buildMultiKeyListForDynamicComposite(CorrectMultiKey.class, wideMapMeta,
+						hColumns, componentSetters)).thenReturn(keyValues);
+
+		List<KeyValue<CorrectMultiKey, String>> result = wrapper.findValues(start, end, false, 10);
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isSameAs(keyValue);
 	}
 
-	@Test
-	public void should_validate_asc_bounds_with_nulls() throws Exception
+	@Before
+	public void setUp()
 	{
-		CorrectMultiKey start = new CorrectMultiKey();
-		CorrectMultiKey end = new CorrectMultiKey();
-
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", null);
-		List<Object> endComponentValues = Arrays.asList((Object) "abd", null);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-
-		wrapper.validateBounds(start, end, false);
-	}
-
-	@Test
-	public void should_exception_when_asc_start_greater_than_end() throws Exception
-	{
-		CorrectMultiKey start = new CorrectMultiKey();
-		CorrectMultiKey end = new CorrectMultiKey();
-
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
-		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-
-		expectedEx.expect(ValidationException.class);
-		expectedEx
-				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
-
-		wrapper.validateBounds(start, end, false);
-	}
-
-	@Test
-	public void should_exception_when_asc_hole_in_start() throws Exception
-	{
-		CorrectMultiKey start = new CorrectMultiKey();
-		CorrectMultiKey end = new CorrectMultiKey();
-
-		List<Object> startComponentValues = Arrays.asList((Object) null, 10);
-		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-		when(wideMapMeta.getPropertyName()).thenReturn("name");
-
-		when(keyFactory.validateNoHole("name", startComponentValues))
-				.thenThrow(
-						new ValidationException(
-								"There should not be any null value between two non-null keys of WideMap 'name'"));
-		expectedEx.expect(ValidationException.class);
-		expectedEx
-				.expectMessage("There should not be any null value between two non-null keys of WideMap 'name'");
-
-		wrapper.validateBounds(start, end, false);
-	}
-
-	@Test
-	public void should_exception_when_desc_start_lesser_than_end() throws Exception
-	{
-		CorrectMultiKey start = new CorrectMultiKey();
-		CorrectMultiKey end = new CorrectMultiKey();
-
-		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
-		List<Object> endComponentValues = Arrays.asList((Object) "def", 10);
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-
-		expectedEx.expect(ValidationException.class);
-		expectedEx
-				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
-
-		wrapper.validateBounds(start, end, true);
+		ReflectionTestUtils.setField(wrapper, "id", 10L);
 	}
 }
