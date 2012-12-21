@@ -14,16 +14,22 @@ import fr.doan.achilles.wrapper.MultiKeyWideMapWrapper;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuilder<ID, K, V>
+public class MultiKeyWideMapWrapperBuilder<ID, K, V>
 {
+	private ID id;
+	private GenericEntityDao<ID> dao;
+	private PropertyMeta<K, V> wideMapMeta;
 
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
-	public MultiKeyWideMapWrapperBuilder(ID id, GenericEntityDao<ID> dao, PropertyMeta<K, V> wideMapMeta)
+	public MultiKeyWideMapWrapperBuilder(ID id, GenericEntityDao<ID> dao,
+			PropertyMeta<K, V> wideMapMeta)
 	{
-		super(id, dao, wideMapMeta);
+		this.id = id;
+		this.dao = dao;
+		this.wideMapMeta = wideMapMeta;
 	}
 
 	public static <ID, K, V> MultiKeyWideMapWrapperBuilder<ID, K, V> builder(ID id,
@@ -35,7 +41,9 @@ public class MultiKeyWideMapWrapperBuilder<ID, K, V> extends WideMapWrapperBuild
 	public MultiKeyWideMapWrapper<ID, K, V> build()
 	{
 		MultiKeyWideMapWrapper<ID, K, V> wrapper = new MultiKeyWideMapWrapper<ID, K, V>();
-		super.build(wrapper);
+		wrapper.setId(id);
+		wrapper.setDao(dao);
+		wrapper.setWideMapMeta(wideMapMeta);
 
 		wrapper.setComponentGetters(componentGetters);
 		wrapper.setComponentSetters(componentSetters);

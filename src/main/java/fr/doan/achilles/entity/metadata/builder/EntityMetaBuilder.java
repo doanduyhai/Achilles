@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.validation.Validator;
@@ -76,7 +77,18 @@ public class EntityMetaBuilder<ID>
 
 		if (wideRow)
 		{
-			meta.setWideRowDao(new GenericMultiKeyWideRowDao(keyspace, idSerializer, this.columnFamilyName));
+			PropertyMeta<?, ?> propertyMeta = propertyMetas.entrySet().iterator().next().getValue();
+			if (propertyMeta.isSingleKey())
+			{
+				meta.setWideRowDao(new GenericWideRowDao(keyspace, idSerializer, propertyMeta
+						.getKeySerializer(), this.columnFamilyName));
+			}
+			else
+			{
+
+				meta.setWideRowMultiKeyDao(new GenericMultiKeyWideRowDao(keyspace, idSerializer,
+						this.columnFamilyName));
+			}
 		}
 		else
 		{

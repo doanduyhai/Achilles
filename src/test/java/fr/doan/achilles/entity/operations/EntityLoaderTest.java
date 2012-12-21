@@ -131,7 +131,7 @@ public class EntityLoaderTest
 		when(propertyMeta.getValue("name")).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForInsert("name", SIMPLE, 0)).thenReturn(composite);
+		when(keyFactory.createForInsert("name", SIMPLE, 0)).thenReturn(composite);
 		when(dao.getValue(1L, composite)).thenReturn("name");
 
 		String value = (String) loader.loadSimpleProperty(1L, dao, propertyMeta);
@@ -151,8 +151,8 @@ public class EntityLoaderTest
 		friends.add(new Pair<DynamicComposite, Object>(start, "foo"));
 		friends.add(new Pair<DynamicComposite, Object>(end, "bar"));
 
-		when(keyFactory.buildQueryComparator("friends", LAZY_LIST, EQUAL)).thenReturn(start);
-		when(keyFactory.buildQueryComparator("friends", LAZY_LIST, GREATER_THAN_EQUAL)).thenReturn(
+		when(keyFactory.createForQuery("friends", LAZY_LIST, EQUAL)).thenReturn(start);
+		when(keyFactory.createForQuery("friends", LAZY_LIST, GREATER_THAN_EQUAL)).thenReturn(
 				end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(friends);
 
@@ -179,8 +179,8 @@ public class EntityLoaderTest
 		followers.add(new Pair<DynamicComposite, Object>(start, "George"));
 		followers.add(new Pair<DynamicComposite, Object>(end, "Paul"));
 
-		when(keyFactory.buildQueryComparator("followers", SET, EQUAL)).thenReturn(start);
-		when(keyFactory.buildQueryComparator("followers", SET, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.createForQuery("followers", SET, EQUAL)).thenReturn(start);
+		when(keyFactory.createForQuery("followers", SET, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(followers);
 
 		when(setMeta.newSetInstance()).thenReturn(new HashSet<String>());
@@ -208,8 +208,8 @@ public class EntityLoaderTest
 		preferences.add(new Pair<DynamicComposite, Object>(middle, new KeyValueHolder(2, "Paris")));
 		preferences.add(new Pair<DynamicComposite, Object>(end, new KeyValueHolder(3, "75014")));
 
-		when(keyFactory.buildQueryComparator("preferences", LAZY_MAP, EQUAL)).thenReturn(start);
-		when(keyFactory.buildQueryComparator("preferences", LAZY_MAP, GREATER_THAN_EQUAL))
+		when(keyFactory.createForQuery("preferences", LAZY_MAP, EQUAL)).thenReturn(start);
+		when(keyFactory.createForQuery("preferences", LAZY_MAP, GREATER_THAN_EQUAL))
 				.thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE))
 				.thenReturn(preferences);

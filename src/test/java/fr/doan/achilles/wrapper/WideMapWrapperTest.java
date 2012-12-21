@@ -4,16 +4,16 @@ import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.Utils.DYNA_COMP_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -79,9 +79,9 @@ public class WideMapWrapperTest
 	public void should_get_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
 
-		wrapper.getValue(1);
+		wrapper.get(1);
 
 		verify(dao).getValue(1L, composite);
 
@@ -91,9 +91,9 @@ public class WideMapWrapperTest
 	public void should_insert_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
-		wrapper.insertValue(1, "test");
+		wrapper.insert(1, "test");
 
 		verify(dao).setValue(1L, composite, "test");
 
@@ -103,117 +103,124 @@ public class WideMapWrapperTest
 	public void should_insert_value_with_ttl() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.buildForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
 
-		wrapper.insertValue(1, "test", 12);
+		wrapper.insert(1, "test", 12);
 
 		verify(dao).setValue(1L, composite, "test", 12);
 
 	}
 
+	@SuppressWarnings(
+	{
+		"unchecked",
+	})
 	@Test
 	public void should_find_values_asc() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
-		{
-				EQUAL,
-				GREATER_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
-				.thenReturn(start);
-
 		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
-				.thenReturn(end);
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		wrapper.findValues(1, 2, false, 10);
-		verify(dao).findRawColumnsRange(1L, start, end, false, 10);
-	}
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
 
-	@Test
-	public void should_find_values_asc_bounds_inclusive() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
-		{
-				EQUAL,
-				GREATER_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
-				.thenReturn(start);
-		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
-				.thenReturn(end);
+		when(dao.findRawColumnsRange(1L, start, end, false, 10)).thenReturn(hColumns);
+		List<KeyValue<Integer, String>> result = wrapper.findRange(1, 2, false, 10);
 
-		wrapper.findValues(1, 2, true, false, 10);
-
-		verify(dao).findRawColumnsRange(1L, start, end, false, 10);
-	}
-
-	@Test
-	public void should_find_values_asc_bounds_exclusive() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(false, false, false)).thenReturn(new ComponentEquality[]
-		{
-				GREATER_THAN_EQUAL,
-				LESS_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, GREATER_THAN_EQUAL))
-				.thenReturn(start);
-		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, LESS_THAN_EQUAL))
-				.thenReturn(end);
-
-		wrapper.findValues(1, 2, false, false, 10);
-
-		verify(dao).findRawColumnsRange(1L, start, end, false, 10);
-	}
-
-	@Test
-	public void should_find_values_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(true, false, false)).thenReturn(new ComponentEquality[]
-		{
-				EQUAL,
-				LESS_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
-				.thenReturn(start);
-		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, LESS_THAN_EQUAL))
-				.thenReturn(end);
-
-		wrapper.findValues(1, true, 2, false, false, 10);
-
-		verify(dao).findRawColumnsRange(1L, start, end, false, 10);
+		assertThat(result).isNotNull();
+		assertThat(result).isEmpty();
 	}
 
 	@SuppressWarnings(
 	{
-			"rawtypes",
-			"unchecked"
+		"unchecked",
 	})
+	@Test
+	public void should_find_values_asc_bounds_inclusive() throws Exception
+	{
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+
+		when(dao.findRawColumnsRange(1L, start, end, false, 10)).thenReturn(hColumns);
+		List<KeyValue<Integer, String>> result = wrapper.findRange(1, 2, true, false, 10);
+
+		assertThat(result).isNotNull();
+		assertThat(result).isEmpty();
+	}
+
+	@SuppressWarnings(
+	{
+		"unchecked",
+	})
+	@Test
+	public void should_find_values_asc_bounds_exclusive() throws Exception
+	{
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, false, 2, false, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+		when(dao.findRawColumnsRange(1L, start, end, false, 10)).thenReturn(hColumns);
+		List<KeyValue<Integer, String>> result = wrapper.findRange(1, 2, false, false, 10);
+
+		assertThat(result).isNotNull();
+		assertThat(result).isEmpty();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_find_values_asc_inclusive_start_exclusive_end() throws Exception
+	{
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, false, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+		when(dao.findRawColumnsRange(1L, start, end, false, 10)).thenReturn(hColumns);
+
+		List<KeyValue<Integer, String>> result = wrapper.findRange(1, true, 2, false, false, 10);
+
+		assertThat(result).isNotNull();
+		assertThat(result).isEmpty();
+	}
+
 	@Test
 	public void should_return_iterator_default() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
-		{
-				EQUAL,
-				GREATER_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, EQUAL))
-				.thenReturn(start);
 		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 2, GREATER_THAN_EQUAL))
-				.thenReturn(end);
 
-		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
-		when(iterator.hasNext()).thenReturn(true);
 
 		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
 				DYNA_COMP_SRZ, OBJECT_SRZ);
@@ -225,10 +232,10 @@ public class WideMapWrapperTest
 		hColumn.setValue("test");
 		hColumn.setTtl(12);
 
+		when(iterator.hasNext()).thenReturn(true, false);
 		when(iterator.next()).thenReturn(hColumn);
 		KeyValueIterator<Integer, String> keyValueIter = wrapper.iterator(1, 2, false, 10);
 
-		assertThat(keyValueIter.hasNext()).isTrue();
 		KeyValue<Integer, String> keyValue = keyValueIter.next();
 		assertThat(keyValue.getKey()).isEqualTo(1);
 		assertThat(keyValue.getValue()).isEqualTo("test");
@@ -236,29 +243,20 @@ public class WideMapWrapperTest
 
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Test
 	public void should_return_iterator_exclusive_bounds() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
-		when(helper.determineEquality(false, false, false)).thenReturn(new ComponentEquality[]
-		{
-				GREATER_THAN_EQUAL,
-				LESS_THAN_EQUAL
-		});
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 1, GREATER_THAN_EQUAL))
-				.thenReturn(start);
 		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 3, LESS_THAN_EQUAL))
-				.thenReturn(end);
 
-		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		when(keyFactory.createForQuery("name", WIDE_MAP, 1, false, 3, false, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
-		when(iterator.hasNext()).thenReturn(true);
 
 		HColumn<DynamicComposite, Object> hColumn1 = new HColumnImpl<DynamicComposite, Object>(
 				DYNA_COMP_SRZ, OBJECT_SRZ);
@@ -270,33 +268,14 @@ public class WideMapWrapperTest
 		hColumn1.setValue("test1");
 		hColumn1.setTtl(11);
 
-		HColumn<DynamicComposite, Object> hColumn2 = new HColumnImpl<DynamicComposite, Object>(
-				DYNA_COMP_SRZ, OBJECT_SRZ);
-		DynamicComposite dynComp2 = new DynamicComposite();
-		dynComp2.setComponent(0, 10, INT_SRZ);
-		dynComp2.setComponent(1, 10, INT_SRZ);
-		dynComp2.setComponent(2, 2, INT_SRZ);
-		hColumn2.setName(dynComp2);
-		hColumn2.setValue("test2");
-		hColumn2.setTtl(12);
-
-		HColumn<DynamicComposite, Object> hColumn3 = new HColumnImpl<DynamicComposite, Object>(
-				DYNA_COMP_SRZ, OBJECT_SRZ);
-		DynamicComposite dynComp3 = new DynamicComposite();
-		dynComp3.setComponent(0, 10, INT_SRZ);
-		dynComp3.setComponent(1, 10, INT_SRZ);
-		dynComp3.setComponent(2, 3, INT_SRZ);
-		hColumn3.setName(dynComp3);
-		hColumn3.setValue("test3");
-		hColumn3.setTtl(13);
-
-		when(iterator.next()).thenReturn(hColumn2);
+		when(iterator.hasNext()).thenReturn(true);
+		when(iterator.next()).thenReturn(hColumn1);
 		KeyValueIterator<Integer, String> keyValueIter = wrapper.iterator(1, 3, false, false, 10);
 
 		KeyValue<Integer, String> keyValue = keyValueIter.next();
-		assertThat(keyValue.getKey()).isEqualTo(2);
-		assertThat(keyValue.getValue()).isEqualTo("test2");
-		assertThat(keyValue.getTtl()).isEqualTo(12);
+		assertThat(keyValue.getKey()).isEqualTo(1);
+		assertThat(keyValue.getValue()).isEqualTo("test1");
+		assertThat(keyValue.getTtl()).isEqualTo(11);
 
 	}
 
@@ -304,29 +283,26 @@ public class WideMapWrapperTest
 	public void should_remove() throws Exception
 	{
 		DynamicComposite comp = new DynamicComposite();
-		when(keyFactory.buildForInsert("name", WIDE_MAP, 5, INT_SRZ)).thenReturn(comp);
+		when(keyFactory.createForInsert("name", WIDE_MAP, 5, INT_SRZ)).thenReturn(comp);
 
-		wrapper.removeValue(5);
+		wrapper.remove(5);
 
 		verify(dao).removeColumn(1L, comp);
 	}
 
 	@Test
-	public void should_remove_columns() throws Exception
+	public void should_remove_range() throws Exception
 	{
-		when(helper.determineEquality(true, true, false)).thenReturn(new ComponentEquality[]
-		{
-				EQUAL,
-				GREATER_THAN_EQUAL
-		});
 		DynamicComposite start = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 5, EQUAL))
-				.thenReturn(start);
 		DynamicComposite end = new DynamicComposite();
-		when(keyFactory.buildQueryComparator("name", WIDE_MAP, (Object) 10, GREATER_THAN_EQUAL))
-				.thenReturn(end);
 
-		wrapper.removeValues(5, 10);
+		when(keyFactory.createForQuery("name", WIDE_MAP, 5, true, 10, true, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+		wrapper.removeRange(5, 10);
 
 		verify(dao).removeColumnRange(1L, start, end);
 	}

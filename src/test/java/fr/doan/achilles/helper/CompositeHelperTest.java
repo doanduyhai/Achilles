@@ -55,7 +55,7 @@ public class CompositeHelperTest
 	{
 		List<Object> keyValues = Arrays.asList((Object) "a", "b", null, null);
 
-		int lastNotNullIndex = helper.validateNoHole("sdfsdf", keyValues);
+		int lastNotNullIndex = helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
 
 		assertThat(lastNotNullIndex).isEqualTo(1);
 
@@ -66,7 +66,7 @@ public class CompositeHelperTest
 	{
 		List<Object> keyValues = Arrays.asList((Object) "a", null, "b");
 
-		helper.validateNoHole("sdfsdf", keyValues);
+		helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -74,25 +74,25 @@ public class CompositeHelperTest
 	{
 		List<Object> keyValues = Arrays.asList((Object) null, "a", "b");
 
-		helper.validateNoHole("sdfsdf", keyValues);
+		helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
 	}
 
 	@Test
 	public void should_validate_bounds() throws Exception
 	{
-		helper.validateBounds(12, 15, false);
+		helper.checkBounds(12, 15, false);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_start_null() throws Exception
 	{
-		helper.validateBounds(null, 15, false);
+		helper.checkBounds(null, 15, false);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_end_null() throws Exception
 	{
-		helper.validateBounds(12, null, false);
+		helper.checkBounds(12, null, false);
 	}
 
 	@Test
@@ -102,7 +102,7 @@ public class CompositeHelperTest
 		expectedEx.expect(ValidationException.class);
 		expectedEx.expectMessage("For range query, start value should be lesser or equal to end");
 
-		helper.validateBounds(15, 12, false);
+		helper.checkBounds(15, 12, false);
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For reverse range query, start value should be greater or equal to end value");
 
-		helper.validateBounds(12, 15, true);
+		helper.checkBounds(12, 15, true);
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class CompositeHelperTest
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.validateMultiKeyBounds(start, end, false, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class CompositeHelperTest
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.validateMultiKeyBounds(start, end, false, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -159,7 +159,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
 
-		helper.validateMultiKeyBounds(start, end, false, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -177,7 +177,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("There should not be any null value between two non-null keys of WideMap 'name'");
 
-		helper.validateMultiKeyBounds(start, end, false, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -195,7 +195,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
 
-		helper.validateMultiKeyBounds(start, end, true, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, true);
 	}
 
 	// Ascending order

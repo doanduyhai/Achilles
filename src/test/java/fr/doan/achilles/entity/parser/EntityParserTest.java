@@ -182,6 +182,11 @@ public class EntityParserTest
 				forceColumnFamilyCreation);
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
 	@Test
 	public void should_parse_wide_row() throws Exception
 	{

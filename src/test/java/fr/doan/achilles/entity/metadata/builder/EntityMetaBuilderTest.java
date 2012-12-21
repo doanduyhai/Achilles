@@ -16,11 +16,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.Bean;
+import parser.entity.CorrectMultiKey;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -97,7 +101,7 @@ public class EntityMetaBuilderTest
 
 		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
-		assertThat(meta.getWideRowDao()).isNull();
+		assertThat(meta.getWideRowMultiKeyDao()).isNull();
 		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericEntityDao.class);
 	}
 
@@ -107,8 +111,8 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		SimpleMeta<String> simpleMeta = new SimpleMeta<String>();
-		propertyMetas.put("name", simpleMeta);
+		WideMapMeta<Integer, String> wideMapMeta = new WideMapMeta<Integer, String>();
+		propertyMetas.put("name", wideMapMeta);
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
@@ -118,6 +122,30 @@ public class EntityMetaBuilderTest
 
 		assertThat(meta.isWideRow()).isTrue();
 		assertThat(meta.getEntityDao()).isNull();
-		assertThat(meta.getWideRowDao()).isExactlyInstanceOf(GenericMultiKeyWideRowDao.class);
+		assertThat(meta.getWideRowMultiKeyDao()).isNull();
+		assertThat(meta.getWideRowDao()).isExactlyInstanceOf(GenericWideRowDao.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_meta_for_multikey_wide_row() throws Exception
+	{
+
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta = new MultiKeyWideMapMeta<CorrectMultiKey, String>();
+
+		propertyMetas.put("name", wideMapMeta);
+
+		when(idMeta.getValueClass()).thenReturn(Long.class);
+
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean")
+				.serialVersionUID(1L).propertyMetas(propertyMetas).columnFamilyName("toto")
+				.keyspace(keyspace).wideRow(true).build();
+
+		assertThat(meta.isWideRow()).isTrue();
+		assertThat(meta.getEntityDao()).isNull();
+		assertThat(meta.getWideRowDao()).isNull();
+		assertThat(meta.getWideRowMultiKeyDao()).isExactlyInstanceOf(
+				GenericMultiKeyWideRowDao.class);
 	}
 }

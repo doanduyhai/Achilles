@@ -83,7 +83,7 @@ public class ThriftEntityManagerWideMapIT
 	@Test
 	public void should_insert_value_with_ttl() throws Exception
 	{
-		tweets.insertValue(uuid1, "tweet1", 15);
+		tweets.insert(uuid1, "tweet1", 15);
 		DynamicComposite startComp = buildComposite();
 		startComp.addComponent(2, uuid1, ComponentEquality.EQUAL);
 
@@ -100,7 +100,7 @@ public class ThriftEntityManagerWideMapIT
 	@Test
 	public void should_not_find_value_after_ttl_expiration() throws Exception
 	{
-		tweets.insertValue(uuid1, "tweet1", 1);
+		tweets.insert(uuid1, "tweet1", 1);
 
 		Thread.sleep(1001);
 
@@ -120,7 +120,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert3Tweets();
 
-		assertThat(tweets.getValue(uuid1)).isEqualTo("tweet1");
+		assertThat(tweets.get(uuid1)).isEqualTo("tweet1");
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(uuid1, uuid5, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid1, uuid5, false, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -144,7 +144,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(uuid2, uuid5, false, 3);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid2, uuid5, false, 3);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet2");
@@ -159,7 +159,7 @@ public class ThriftEntityManagerWideMapIT
 		insert5Tweets();
 
 		List<KeyValue<UUID, String>> foundTweets = tweets
-				.findValues(uuid2, uuid5, false, false, 10);
+				.findRange(uuid2, uuid5, false, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet3");
@@ -172,7 +172,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues( //
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange( //
 				uuid4, false, //
 				uuid2, true, //
 				true, 10);
@@ -187,7 +187,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, uuid2, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, uuid2, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -199,7 +199,7 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -253,9 +253,9 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert3Tweets();
 
-		tweets.removeValue(uuid1);
+		tweets.remove(uuid1);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet2");
@@ -267,9 +267,9 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeValues(uuid2, uuid4);
+		tweets.removeRange(uuid2, uuid4);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -281,9 +281,9 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeValues(uuid2, uuid5, false);
+		tweets.removeRange(uuid2, uuid5, false);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -296,9 +296,9 @@ public class ThriftEntityManagerWideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeValues(uuid2, true, uuid5, false);
+		tweets.removeRange(uuid2, true, uuid5, false);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findValues(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -315,18 +315,18 @@ public class ThriftEntityManagerWideMapIT
 
 	private void insert3Tweets()
 	{
-		tweets.insertValue(uuid1, "tweet1");
-		tweets.insertValue(uuid2, "tweet2");
-		tweets.insertValue(uuid3, "tweet3");
+		tweets.insert(uuid1, "tweet1");
+		tweets.insert(uuid2, "tweet2");
+		tweets.insert(uuid3, "tweet3");
 	}
 
 	private void insert5Tweets()
 	{
-		tweets.insertValue(uuid1, "tweet1");
-		tweets.insertValue(uuid2, "tweet2");
-		tweets.insertValue(uuid3, "tweet3");
-		tweets.insertValue(uuid4, "tweet4");
-		tweets.insertValue(uuid5, "tweet5");
+		tweets.insert(uuid1, "tweet1");
+		tweets.insert(uuid2, "tweet2");
+		tweets.insert(uuid3, "tweet3");
+		tweets.insert(uuid4, "tweet4");
+		tweets.insert(uuid5, "tweet5");
 	}
 
 	@After

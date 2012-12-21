@@ -24,7 +24,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	protected PropertyMeta<K, V> wideMapMeta;
 
 	@Override
-	public V getValue(K key)
+	public V get(K key)
 	{
 		Object value = dao.getValue(id, key);
 
@@ -32,32 +32,32 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void insertValue(K key, V value, int ttl)
+	public void insert(K key, V value, int ttl)
 	{
 		dao.setValue(id, key, (Object) value, ttl);
 	}
 
 	@Override
-	public void insertValue(K key, V value)
+	public void insert(K key, V value)
 	{
 		dao.setValue(id, key, (Object) value);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, K end, boolean reverse, int count)
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count)
 	{
-		return findValues(start, end, true, reverse, count);
+		return findRange(start, end, true, reverse, count);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, K end, boolean inclusiveBounds,
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
-		return findValues(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
+	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
@@ -99,26 +99,26 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void removeValue(K key)
+	public void remove(K key)
 	{
 
 		dao.removeColumn(id, key);
 	}
 
 	@Override
-	public void removeValues(K start, K end)
+	public void removeRange(K start, K end)
 	{
-		removeValues(start, end, true);
+		removeRange(start, end, true);
 	}
 
 	@Override
-	public void removeValues(K start, K end, boolean inclusiveBounds)
+	public void removeRange(K start, K end, boolean inclusiveBounds)
 	{
-		removeValues(start, inclusiveBounds, end, inclusiveBounds);
+		removeRange(start, inclusiveBounds, end, inclusiveBounds);
 	}
 
 	@Override
-	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
 		validateBounds(start, end, false);

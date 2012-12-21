@@ -5,14 +5,13 @@ import java.util.List;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.type.KeyValue;
 import fr.doan.achilles.entity.type.MultiKeyValueIterator;
-import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
+import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * MultiKeyWideMapWrapper
@@ -20,15 +19,15 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
+public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 {
+
+	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
-
-	private EntityWrapperUtil util = new EntityWrapperUtil();
-	private CompositeHelper helper = new CompositeHelper();
 
 	@Override
 	protected DynamicComposite buildComposite(K key)
@@ -36,29 +35,27 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 		List<Object> componentValues = util.determineMultiKey(key, componentGetters);
 
-		return keyFactory.buildForInsert(wideMapMeta.getPropertyName(), wideMapMeta.propertyType(),
-				componentValues, componentSerializers);
+		return keyFactory.createForInsertMultiKey(wideMapMeta.getPropertyName(),
+				wideMapMeta.propertyType(), componentValues, componentSerializers);
 
 	}
 
 	@Override
-	protected DynamicComposite buildQueryComposite(K start, ComponentEquality equality)
-	{
-		List<Object> componentValues = util.determineMultiKey(start, componentGetters);
-
-		return keyFactory.buildQueryComparator(wideMapMeta.getPropertyName(),
-				wideMapMeta.propertyType(), componentValues, componentSerializers, equality);
-	}
-
-	@Override
-	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
+	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		helper.validateMultiKeyBounds(start, end, reverse, componentGetters, wideMapMeta);
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, reverse);
 
-		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
-				inclusiveEnd, reverse);
+		DynamicComposite[] queryComps = keyFactory.createForMultiKeyQuery( //
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), //
+				componentSerializers, //
+				componentGetters, //
+				start, //
+				inclusiveStart, //
+				end, //
+				inclusiveEnd, //
+				reverse);
 
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
@@ -70,14 +67,14 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 	@Override
 	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
 	{
-		return iterator(start, end, true, reverse, count);
+		return this.iterator(start, end, true, reverse, count);
 	}
 
 	@Override
 	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
-		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+		return this.iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
@@ -90,8 +87,15 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		DynamicComposite[] queryComps = buildQueryComposites(start, inclusiveStart, end,
-				inclusiveEnd, reverse);
+		DynamicComposite[] queryComps = keyFactory.createForMultiKeyQuery( //
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), //
+				componentSerializers, //
+				componentGetters, //
+				start, //
+				inclusiveStart, //
+				end, //
+				inclusiveEnd, //
+				reverse);
 
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
 				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
@@ -115,4 +119,22 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		this.componentSetters = componentSetters;
 	}
 
+	@Override
+	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	{
+
+		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
+
+		DynamicComposite[] queryComps = keyFactory.createForMultiKeyQuery( //
+				wideMapMeta.getPropertyName(), wideMapMeta.propertyType(), //
+				componentSerializers, //
+				componentGetters, //
+				start, //
+				inclusiveStart, //
+				end, //
+				inclusiveEnd, //
+				false);
+
+		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
+	}
 }

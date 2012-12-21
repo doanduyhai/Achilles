@@ -59,7 +59,7 @@ public class EntityLoader
 
 	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite composite = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
+		DynamicComposite composite = keyFactory.createForInsert(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = dao.getValue(key, composite);
 
@@ -68,9 +68,9 @@ public class EntityLoader
 
 	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao, ListMeta<V> listPropertyMeta)
 	{
-		DynamicComposite start = keyFactory.buildQueryComparator(
+		DynamicComposite start = keyFactory.createForQuery(
 				listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.buildQueryComparator(listPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createForQuery(listPropertyMeta.getPropertyName(),
 				listPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
@@ -85,9 +85,9 @@ public class EntityLoader
 	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao, SetMeta<V> setPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.buildQueryComparator(setPropertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createForQuery(setPropertyMeta.getPropertyName(),
 				setPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.buildQueryComparator(setPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createForQuery(setPropertyMeta.getPropertyName(),
 				setPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
@@ -103,9 +103,9 @@ public class EntityLoader
 			MapMeta<K, V> mapPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.buildQueryComparator(mapPropertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createForQuery(mapPropertyMeta.getPropertyName(),
 				mapPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.buildQueryComparator(mapPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createForQuery(mapPropertyMeta.getPropertyName(),
 				mapPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);

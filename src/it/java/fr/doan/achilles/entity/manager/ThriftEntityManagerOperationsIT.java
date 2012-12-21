@@ -337,10 +337,10 @@ public class ThriftEntityManagerOperationsIT
 		bean.getFriends();
 
 		DynamicComposite nameComposite = keyFactory
-				.buildForInsert("name", PropertyType.SIMPLE, 0);
+				.createForInsert("name", PropertyType.SIMPLE, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
-		DynamicComposite friend3Composite = keyFactory.buildForInsert("friends",
+		DynamicComposite friend3Composite = keyFactory.createForInsert("friends",
 				PropertyType.LAZY_LIST, 2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 

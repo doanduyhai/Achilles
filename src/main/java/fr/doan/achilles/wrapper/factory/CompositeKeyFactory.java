@@ -68,7 +68,7 @@ public class CompositeKeyFactory
 		Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
 				+ " values for the key of WideMap '" + propertyName + "'");
 
-		int lastNotNullIndex = helper.validateNoHole(propertyName, keyValues);
+		int lastNotNullIndex = helper.findLastNonNullIndexForComponents(propertyName, keyValues);
 
 		Composite composite = new Composite();
 		for (int i = 0; i <= lastNotNullIndex; i++)

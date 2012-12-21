@@ -22,7 +22,7 @@ public class CompositeHelper
 {
 	private EntityWrapperUtil util = new EntityWrapperUtil();
 
-	public int validateNoHole(String propertyName, List<Object> keyValues)
+	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{
 		boolean nullFlag = false;
 		int lastNotNullIndex = 0;
@@ -48,7 +48,7 @@ public class CompositeHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K> void validateBounds(K start, K end, boolean reverse)
+	public <K> void checkBounds(K start, K end, boolean reverse)
 	{
 
 		if (start != null && end != null)
@@ -70,8 +70,8 @@ public class CompositeHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, V> void validateMultiKeyBounds(K start, K end, boolean reverse,
-			List<Method> componentGetters, PropertyMeta<K, V> wideMapMeta)
+	public <K, V> void checkMultiKeyBounds(List<Method> componentGetters,
+			PropertyMeta<K, V> wideMapMeta, K start, K end, boolean reverse)
 	{
 
 		if (start != null && end != null)
@@ -80,8 +80,10 @@ public class CompositeHelper
 			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
 			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
 
-			this.validateNoHole(wideMapMeta.getPropertyName(), startComponentValues);
-			this.validateNoHole(wideMapMeta.getPropertyName(), endComponentValues);
+			this.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(),
+					startComponentValues);
+			this.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(),
+					endComponentValues);
 
 			for (int i = 0; i < startComponentValues.size(); i++)
 			{

@@ -79,9 +79,9 @@ public class EntityPersister
 	public <ID, V> void removeProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
 		Validate.notNull(key, "key value");
-		DynamicComposite start = keyFactory.buildQueryComparator(propertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createForQuery(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), ComponentEquality.EQUAL);
-		DynamicComposite end = keyFactory.buildQueryComparator(propertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createForQuery(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		dao.removeColumnRange(key, start, end);
 	}
@@ -89,7 +89,7 @@ public class EntityPersister
 	private <ID> void batchSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
+		DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), 0);
 		Object value = entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
@@ -115,7 +115,7 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), count);
 				if (value != null)
 				{
@@ -143,7 +143,7 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), value.hashCode());
 				if (value != null)
 				{
@@ -171,7 +171,7 @@ public class EntityPersister
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.buildForInsert(propertyMeta.getPropertyName(),
+				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
 						propertyMeta.propertyType(), entry.getKey().hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());

@@ -71,11 +71,11 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	public void should_insert_values() throws Exception
 	{
 
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		DynamicComposite startComp = buildComposite();
 		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
@@ -97,7 +97,7 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_insert_values_with_ttl() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
 
 		DynamicComposite startComp = buildComposite();
 		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
@@ -117,9 +117,9 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	public void should_get_value_by_key() throws Exception
 	{
 		UserTweetKey userTweetKey = new UserTweetKey(bar, uuid1);
-		userTweets.insertValue(userTweetKey, "tweet1-bar");
+		userTweets.insert(userTweetKey, "tweet1-bar");
 
-		assertThat(userTweets.getValue(userTweetKey)).isEqualTo("tweet1-bar");
+		assertThat(userTweets.get(userTweetKey)).isEqualTo("tweet1-bar");
 	}
 
 	@Test
@@ -127,13 +127,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 			throws Exception
 	{
 
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findValues( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(foo, uuid3), true, //
 				true, 10);
@@ -151,13 +151,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_having_null() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findValues( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
 				new UserTweetKey(bar, null), true, //
 				new UserTweetKey(foo, uuid3), true, //
 				false, 10);
@@ -177,13 +177,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_end_having_null() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findValues( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
 				new UserTweetKey(bar, uuid1), true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -203,13 +203,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_completely_null() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findValues( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
 				null, true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -229,11 +229,11 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_iterate() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
 				new UserTweetKey(foo, uuid3), //
@@ -261,11 +261,11 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_iterate_desc_exclusive_start_inclusive_end_with_count() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
 		userTweets.iterator( //
@@ -291,13 +291,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_remove() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.removeValue(new UserTweetKey(bar, uuid2));
+		userTweets.remove(new UserTweetKey(bar, uuid2));
 
 		DynamicComposite startComp = buildComposite();
 		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
@@ -316,13 +316,13 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 	@Test
 	public void should_remove_inclusive_start_exclusive_end() throws Exception
 	{
-		userTweets.insertValue(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insertValue(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insertValue(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insertValue(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insertValue(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.removeValues( //
+		userTweets.removeRange( //
 				new UserTweetKey(bar, uuid2), true, //
 				new UserTweetKey(qux, uuid4), false);
 

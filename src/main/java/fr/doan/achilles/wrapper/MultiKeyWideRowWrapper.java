@@ -44,7 +44,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	private CompositeHelper helper = new CompositeHelper();
 
 	@Override
-	public V getValue(K key)
+	public V get(K key)
 	{
 		Composite composite = buildCompositeForInsert(key);
 		Object value = dao.getValue(id, composite);
@@ -53,34 +53,34 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void insertValue(K key, V value, int ttl)
+	public void insert(K key, V value, int ttl)
 	{
 		Composite composite = buildCompositeForInsert(key);
 		dao.setValue(id, composite, (Object) value, ttl);
 	}
 
 	@Override
-	public void insertValue(K key, V value)
+	public void insert(K key, V value)
 	{
 		Composite composite = buildCompositeForInsert(key);
 		dao.setValue(id, composite, (Object) value);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, K end, boolean reverse, int count)
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count)
 	{
-		return this.findValues(start, true, end, true, reverse, count);
+		return this.findRange(start, true, end, true, reverse, count);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, K end, boolean inclusiveBounds,
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
-		return this.findValues(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+		return this.findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findValues(K start, boolean inclusiveStart, K end,
+	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
@@ -130,7 +130,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void removeValue(K key)
+	public void remove(K key)
 	{
 		Composite comp = buildCompositeForInsert(key);
 
@@ -138,19 +138,19 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void removeValues(K start, K end)
+	public void removeRange(K start, K end)
 	{
-		removeValues(start, end, true);
+		removeRange(start, end, true);
 	}
 
 	@Override
-	public void removeValues(K start, K end, boolean inclusiveBounds)
+	public void removeRange(K start, K end, boolean inclusiveBounds)
 	{
-		removeValues(start, inclusiveBounds, end, inclusiveBounds);
+		removeRange(start, inclusiveBounds, end, inclusiveBounds);
 	}
 
 	@Override
-	public void removeValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
 		validateBounds(start, end, false);
@@ -226,8 +226,8 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
 			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
 
-			helper.validateNoHole(wideMapMeta.getPropertyName(), startComponentValues);
-			helper.validateNoHole(wideMapMeta.getPropertyName(), endComponentValues);
+			helper.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(), startComponentValues);
+			helper.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(), endComponentValues);
 
 			for (int i = 0; i < startComponentValues.size(); i++)
 			{
