@@ -70,13 +70,14 @@ public class ColumnFamilyBuilderTest
 		ColumnFamilyDefinition cfDef = builder.buildWideRow("keyspace", "columnFamily", Long.class,
 				Integer.class, String.class);
 
-		assertThat(cfDef.getComparatorType()).isEqualTo(INT_SRZ.getComparatorType());
+		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
 				LONG_SRZ.getComparatorType().getTypeName());
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				STRING_SRZ.getComparatorType().getTypeName());
 
-		assertThat(cfDef.getComparatorTypeAlias()).isEmpty();
+		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(
+				"CompositeType(" + INT_SRZ.getComparatorType().getTypeName() + ")");
 
 	}
 
@@ -93,7 +94,7 @@ public class ColumnFamilyBuilderTest
 				STRING_SRZ.getComparatorType().getTypeName());
 
 		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(
-				"ComparatorType(UUIDType,UTF8Type,BytesType)");
+				"CompositeType(UUIDType,UTF8Type,BytesType)");
 
 	}
 }

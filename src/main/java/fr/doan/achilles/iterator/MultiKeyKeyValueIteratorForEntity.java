@@ -5,29 +5,31 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
- * CompositeKeyValueIterator
+ * MultiKeyValueIterator
  * 
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyKeyValueIterator<K, V> extends KeyValueIterator<K, V>
+public class MultiKeyKeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 {
-	private ColumnSliceIterator<?, Composite, Object> columnSliceIterator;
+	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
 	private List<Method> componentSetters;
 	private MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta;
+
 	private EntityWrapperUtil util = new EntityWrapperUtil();
 
-	public MultiKeyKeyValueIterator(ColumnSliceIterator<?, Composite, Object> columnSliceIterator,
+	public MultiKeyKeyValueIteratorForEntity(
+			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
 			List<Method> componentSetters, MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta)
 	{
-		super();
 		this.columnSliceIterator = columnSliceIterator;
 		this.componentSetters = componentSetters;
 		this.multiKeyWideMapMeta = multiKeyWideMapMeta;
@@ -45,10 +47,11 @@ public class MultiKeyKeyValueIterator<K, V> extends KeyValueIterator<K, V>
 		KeyValue<K, V> keyValue = null;
 		if (this.columnSliceIterator.hasNext())
 		{
-			HColumn<Composite, Object> column = this.columnSliceIterator.next();
+			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
 
-			keyValue = util.buildMultiKeyForComposite(multiKeyWideMapMeta.getKeyClass(),
-					multiKeyWideMapMeta, column, componentSetters);
+			keyValue = util.buildMultiKeyForDynamicComposite(multiKeyWideMapMeta.getKeyClass(),
+					multiKeyWideMapMeta, (HColumn<DynamicComposite, Object>) column,
+					componentSetters);
 		}
 		else
 		{

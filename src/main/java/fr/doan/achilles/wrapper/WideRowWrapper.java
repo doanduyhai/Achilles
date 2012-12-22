@@ -6,12 +6,11 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
-import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
-import fr.doan.achilles.iterator.KeyValueIterator;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
@@ -38,15 +37,15 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public void insert(K key, V value, int ttl)
-	{
-		dao.setValue(id, key, (Object) value, ttl);
-	}
-
-	@Override
 	public void insert(K key, V value)
 	{
 		dao.setValue(id, key, (Object) value);
+	}
+
+	@Override
+	public void insert(K key, V value, int ttl)
+	{
+		dao.setValue(id, key, (Object) value, ttl);
 	}
 
 	@Override
@@ -59,6 +58,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
 			int count)
 	{
+
 		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
@@ -66,7 +66,6 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
-
 		helper.checkBounds(start, end, reverse);
 
 		List<HColumn<K, Object>> hColumns = dao.findRawColumnsRange(id, start, end, reverse, count);
@@ -76,35 +75,27 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
-			int count)
+	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
 	{
 		return iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
+	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
 		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
 		ColumnSliceIterator<ID, K, Object> columnSliceIterator = dao.getColumnsIterator(id, start,
 				end, reverse, count);
 
-		// return iteratorFactory.createKeyValueIterator(columnSliceIterator, wideMapMeta);
-
-		return null;
+		return iteratorFactory.createKeyValueIteratorForWideRow(columnSliceIterator, wideMapMeta);
 	}
 
 	@Override
@@ -129,7 +120,6 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	@Override
 	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
-
 		helper.checkBounds(start, end, false);
 		dao.removeColumnRange(id, start, end);
 	}

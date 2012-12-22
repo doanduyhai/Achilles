@@ -23,10 +23,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
-import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
+import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 import fr.doan.achilles.serializer.Utils;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
@@ -228,14 +229,13 @@ public class WideMapWrapperTest
 
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
 
-		DynamicCompositeKeyValueIterator<Integer, String> iterator = mock(DynamicCompositeKeyValueIterator.class);
+		KeyValueIteratorForEntity<Integer, String> iterator = mock(KeyValueIteratorForEntity.class);
 
 		when(
-				iteratorFactory.createDynamicCompositeKeyValueIterator(columnSliceIterator,
+				iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator,
 						INT_SRZ, wideMapMeta)).thenReturn(iterator);
 
-		DynamicCompositeKeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, false,
-				10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, false, 10);
 
 		assertThat(expected).isSameAs(iterator);
 
@@ -257,14 +257,13 @@ public class WideMapWrapperTest
 
 		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
 
-		DynamicCompositeKeyValueIterator<Integer, String> iterator = mock(DynamicCompositeKeyValueIterator.class);
+		KeyValueIteratorForEntity<Integer, String> iterator = mock(KeyValueIteratorForEntity.class);
 
 		when(
-				iteratorFactory.createDynamicCompositeKeyValueIterator(columnSliceIterator,
+				iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator,
 						INT_SRZ, wideMapMeta)).thenReturn(iterator);
 
-		DynamicCompositeKeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, false,
-				false, 10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, false, false, 10);
 
 		assertThat(expected).isSameAs(iterator);
 

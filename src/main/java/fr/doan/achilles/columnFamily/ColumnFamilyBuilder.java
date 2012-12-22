@@ -44,10 +44,10 @@ public class ColumnFamilyBuilder
 		ComparatorType comparatorType;
 		List<String> comparatorTypes = new ArrayList<String>();
 		String comparatorTypesAlias = null;
+		comparatorType = ComparatorType.COMPOSITETYPE;
 
 		if (MultiKey.class.isAssignableFrom(nameClass))
 		{
-			comparatorType = ComparatorType.COMPOSITETYPE;
 
 			List<Class<?>> componentClasses = new ArrayList<Class<?>>();
 			List<Method> componentGetters = new ArrayList<Method>();
@@ -62,22 +62,21 @@ public class ColumnFamilyBuilder
 				comparatorTypes.add(srz.getComparatorType().getTypeName());
 			}
 
-			comparatorTypesAlias = "ComparatorType(" + StringUtils.join(comparatorTypes, ',') + ")";
+			comparatorTypesAlias = "CompositeType(" + StringUtils.join(comparatorTypes, ',') + ")";
 		}
 		else
 		{
 			Serializer<?> nameSerializer = SerializerTypeInferer.getSerializer(nameClass);
-			comparatorType = nameSerializer.getComparatorType();
+
+			comparatorTypesAlias = "CompositeType("
+					+ nameSerializer.getComparatorType().getTypeName() + ")";
 		}
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, comparatorType);
 
 		cfDef.setKeyValidationClass(keySerializer.getComparatorType().getTypeName());
-		if (comparatorTypesAlias != null)
-		{
-			cfDef.setComparatorTypeAlias(comparatorTypesAlias);
-		}
+		cfDef.setComparatorTypeAlias(comparatorTypesAlias);
 
 		Serializer<?> valueSerializer = SerializerTypeInferer.getSerializer(valueClass);
 

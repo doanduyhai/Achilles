@@ -1,14 +1,13 @@
 package fr.doan.achilles.iterator;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * KeyValueIterator
@@ -16,18 +15,18 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public class DynamicCompositeKeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
+public class KeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 {
-	protected ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
-	private Serializer<?> keySerializer;
+	protected ColumnSliceIterator<?, K, Object> columnSliceIterator;
+	private KeyValueFactory factory = new KeyValueFactory();
 	private PropertyMeta<K, V> wideMapMeta;
 
-	public DynamicCompositeKeyValueIterator(
-			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
-			Serializer<?> keySerializer, PropertyMeta<K, V> wideMapMeta)
+	protected KeyValueIteratorForWideRow() {}
+
+	public KeyValueIteratorForWideRow(ColumnSliceIterator<?, K, Object> columnSliceIterator,
+			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
-		this.keySerializer = keySerializer;
 		this.wideMapMeta = wideMapMeta;
 	}
 
@@ -37,19 +36,15 @@ public class DynamicCompositeKeyValueIterator<K, V> implements Iterator<KeyValue
 		return this.columnSliceIterator.hasNext();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public KeyValue<K, V> next()
 	{
 		KeyValue<K, V> keyValue = null;
 		if (this.columnSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
-
-			DynamicComposite composite = column.getName();
-			K key = (K) composite.get(2, this.keySerializer);
+			HColumn<K, Object> column = this.columnSliceIterator.next();
 			V value = wideMapMeta.getValue(column.getValue());
-			keyValue = new KeyValue<K, V>(key, value, column.getTtl());
+			keyValue = factory.create(column.getName(), value, column.getTtl());
 		}
 		else
 		{

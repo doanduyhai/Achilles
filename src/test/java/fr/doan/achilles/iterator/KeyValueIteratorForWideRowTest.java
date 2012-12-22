@@ -31,11 +31,11 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValueIteratorTest
+public class KeyValueIteratorForWideRowTest
 {
 
 	@InjectMocks
-	private KeyValueIterator<Integer, String> iterator;
+	private KeyValueIteratorForWideRow<Integer, String> iterator;
 
 	@Mock
 	private KeyValueFactory factory;

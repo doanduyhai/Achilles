@@ -37,11 +37,11 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class MultiKeyKeyValueIteratorTest
+public class MultiKeyKeyValueIteratorForWideRowTest
 {
 
 	@InjectMocks
-	private MultiKeyKeyValueIterator<CorrectMultiKey, String> iterator;
+	private MultiKeyKeyValueIteratorForWideRow<CorrectMultiKey, String> iterator;
 
 	@Mock
 	private ColumnSliceIterator<CorrectMultiKey, Composite, Object> columnSliceIterator;

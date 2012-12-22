@@ -19,10 +19,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
-import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
-import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
-import fr.doan.achilles.iterator.KeyValueIterator;
-import fr.doan.achilles.iterator.MultiKeyKeyValueIterator;
+import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
+import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
+import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
+import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForWideRow;
 
 /**
  * IteratorFactoryTest
@@ -56,7 +56,7 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIterator(
+		KeyValueIteratorForWideRow<Integer, String> iterator = factory.createKeyValueIteratorForWideRow(
 				columnSliceIterator, wideMapMeta);
 
 		when(columnSliceIterator.hasNext()).thenReturn(true, false, true);
@@ -69,8 +69,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_multikey_key_value_iterator() throws Exception
 	{
-		MultiKeyKeyValueIterator<Integer, String> iterator = factory
-				.createMultiKeyKeyValueIterator(columnSliceComposite, componentSetters,
+		MultiKeyKeyValueIteratorForWideRow<Integer, String> iterator = factory
+				.createMultiKeyKeyValueIteratorForWideRow(columnSliceComposite, componentSetters,
 						multiKeyWideMapMeta);
 
 		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
@@ -83,8 +83,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_dynamic_composite_key_value_iterator() throws Exception
 	{
-		DynamicCompositeKeyValueIterator<Integer, String> iterator = factory
-				.createDynamicCompositeKeyValueIterator(columnSliceDynamicComposite,
+		KeyValueIteratorForEntity<Integer, String> iterator = factory
+				.createKeyValueIteratorForEntity(columnSliceDynamicComposite,
 						(Serializer<?>) LONG_SRZ, wideMapMeta);
 
 		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);
@@ -97,8 +97,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_multikey_dynamic_composite_key_value_iterator() throws Exception
 	{
-		DynamicCompositeMultiKeyValueIterator<Integer, String> iterator = factory
-				.createDynamicCompositeMultiKeyKeyValueIterator(columnSliceDynamicComposite,
+		MultiKeyKeyValueIteratorForEntity<Integer, String> iterator = factory
+				.createMultiKeyKeyValueIteratorForEntity(columnSliceDynamicComposite,
 						componentSetters, multiKeyWideMapMeta);
 
 		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);

@@ -9,7 +9,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
+import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -64,14 +64,14 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
 	}
 
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, K end, boolean reverse,
 			int count)
 	{
 		return this.iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, K end,
 			boolean inclusiveBounds, boolean reverse, int count)
 	{
 		return this.iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
@@ -83,7 +83,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 			"unchecked",
 			"rawtypes"
 	})
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, boolean inclusiveStart,
 			K end, boolean inclusiveEnd, boolean reverse, int count)
 	{
 
@@ -100,7 +100,7 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
 				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
-		return new DynamicCompositeMultiKeyValueIterator(columnSliceIterator, componentSetters,
+		return new MultiKeyKeyValueIteratorForEntity(columnSliceIterator, componentSetters,
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta);
 	}
 

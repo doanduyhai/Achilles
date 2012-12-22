@@ -23,7 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
+import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
@@ -33,7 +33,7 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicCompositeMultiKeyValueIteratorTest
+public class MultiKeyKeyValueIteratorForEntityTest
 {
 
 	@Mock
@@ -49,7 +49,7 @@ public class DynamicCompositeMultiKeyValueIteratorTest
 	private EntityWrapperUtil util;
 
 	@InjectMocks
-	private DynamicCompositeMultiKeyValueIterator<TweetMultiKey, String> iterator;
+	private MultiKeyKeyValueIteratorForEntity<TweetMultiKey, String> iterator;
 
 	@Before
 	public void setUp()

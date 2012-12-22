@@ -3,7 +3,6 @@ package fr.doan.achilles.entity.type;
 import java.util.List;
 
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
 
 /**
  * WideRow
@@ -21,18 +20,18 @@ public interface WideMap<K, V>
 
 	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count);
 
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count);
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
+			int count);
 
 	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count);
 
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count);
+	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count);
 
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
+	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count);
 
-	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count);
 
 	public void remove(K key);

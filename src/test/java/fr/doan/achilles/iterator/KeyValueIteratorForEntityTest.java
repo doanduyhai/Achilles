@@ -29,11 +29,11 @@ import fr.doan.achilles.holder.KeyValue;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicCompositeKeyValueIteratorTest
+public class KeyValueIteratorForEntityTest
 {
 
 	@InjectMocks
-	private DynamicCompositeKeyValueIterator<Integer, String> iterator;
+	private KeyValueIteratorForEntity<Integer, String> iterator;
 
 	@Mock
 	private ColumnSliceIterator<?, DynamicComposite, String> columnSliceIterator;

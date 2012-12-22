@@ -18,7 +18,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
+import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 import fr.doan.achilles.wrapper.factory.CompositeKeyFactory;
@@ -97,14 +97,14 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, K end, boolean reverse,
 			int count)
 	{
 		return iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, K end,
 			boolean inclusiveBounds, boolean reverse, int count)
 	{
 		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
@@ -116,7 +116,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 			"unchecked",
 			"rawtypes"
 	})
-	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart,
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, boolean inclusiveStart,
 			K end, boolean inclusiveEnd, boolean reverse, int count)
 	{
 
@@ -126,7 +126,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 		ColumnSliceIterator<ID, Composite, Object> columnSliceIterator = dao.getColumnsIterator(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return new DynamicCompositeMultiKeyValueIterator(columnSliceIterator, componentSetters,
+		return new MultiKeyKeyValueIteratorForEntity(columnSliceIterator, componentSetters,
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta);
 	}
 
