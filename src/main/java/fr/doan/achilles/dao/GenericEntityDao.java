@@ -35,7 +35,6 @@ public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, Object
 
 	public List<Pair<DynamicComposite, Object>> eagerFetchEntity(K key)
 	{
-
 		return this.findColumnsRange(key, startCompositeForEagerFetch, endCompositeForEagerFetch,
 				false, Integer.MAX_VALUE);
 	}

@@ -32,26 +32,29 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	private IteratorFactory iteratorFactory = new IteratorFactory();
 	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 
+	private Composite buildComposite(K key)
+	{
+		Composite comp = compositeKeyFactory.createBaseComposite(wideMapMeta, key);
+		return comp;
+	}
+
 	@Override
 	public V get(K key)
 	{
-		Composite comp = compositeKeyFactory.createBaseForQuery(key);
-		Object value = dao.getValue(id, comp);
+		Object value = dao.getValue(id, buildComposite(key));
 		return wideMapMeta.getValue(value);
 	}
 
 	@Override
 	public void insert(K key, V value)
 	{
-		Composite comp = compositeKeyFactory.createBaseForQuery(key);
-		dao.setValue(id, comp, value);
+		dao.setValue(id, buildComposite(key), value);
 	}
 
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		Composite comp = compositeKeyFactory.createBaseForQuery(key);
-		dao.setValue(id, comp, value, ttl);
+		dao.setValue(id, buildComposite(key), value, ttl);
 	}
 
 	@Override
@@ -74,13 +77,13 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	{
 		helper.checkBounds(wideMapMeta, start, end, reverse);
 
-		Composite[] composites = compositeKeyFactory.createForQuery(start, inclusiveStart, end,
-				inclusiveEnd, reverse);
+		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+				inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createFromColumnList(hColumns, wideMapMeta);
+		return keyValueFactory.createListForWideRow(wideMapMeta, hColumns);
 	}
 
 	@Override
@@ -101,8 +104,8 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		Composite[] composites = compositeKeyFactory.createForQuery(start, inclusiveStart, end,
-				inclusiveEnd, reverse);
+		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+				inclusiveStart, end, inclusiveEnd, reverse);
 
 		ColumnSliceIterator<ID, Composite, Object> columnSliceIterator = dao.getColumnsIterator(id,
 				composites[0], composites[1], reverse, count);
@@ -114,9 +117,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	@Override
 	public void remove(K key)
 	{
-
-		Composite comp = compositeKeyFactory.createBaseForQuery(key);
-		dao.removeColumn(id, comp);
+		dao.removeColumn(id, buildComposite(key));
 	}
 
 	@Override
@@ -135,8 +136,8 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 		helper.checkBounds(wideMapMeta, start, end, false);
-		Composite[] composites = compositeKeyFactory.createForQuery(start, inclusiveStart, end,
-				inclusiveEnd, false);
+		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+				inclusiveStart, end, inclusiveEnd, false);
 		dao.removeColumnRange(id, composites[0], composites[1]);
 	}
 

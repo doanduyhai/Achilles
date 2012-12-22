@@ -367,13 +367,13 @@ public class ThriftEntityManagerOperationsIT
 		PropertyMeta<Void, String> nameMeta = new SimpleMeta<String>();
 		nameMeta.setPropertyName("name");
 
-		DynamicComposite nameComposite = keyFactory.createBaseForInsert(nameMeta, 0);
+		DynamicComposite nameComposite = keyFactory.createForBatchInsert(nameMeta, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta<Void, String> listLazyMeta = new ListLazyMeta<String>();
 		listLazyMeta.setPropertyName("friends");
 
-		DynamicComposite friend3Composite = keyFactory.createBaseForInsert(listLazyMeta, 2);
+		DynamicComposite friend3Composite = keyFactory.createForBatchInsert(listLazyMeta, 2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 
 		em.refresh(bean);

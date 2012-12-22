@@ -106,7 +106,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_from_column_list() throws Exception
+	public void should_create_from_composite_column_list() throws Exception
 	{
 		HColumn<Composite, Object> hColumn1 = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
 				OBJECT_SRZ);
@@ -129,17 +129,15 @@ public class KeyValueFactoryTest
 		hColumn3.setName(comp3);
 		hColumn3.setValue("test3");
 
+		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
-		when(wideMapMeta.getKey(1)).thenReturn(1);
 		when(wideMapMeta.getValue("test1")).thenReturn("test1");
-		when(wideMapMeta.getKey(2)).thenReturn(2);
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
-		when(wideMapMeta.getKey(3)).thenReturn(3);
 		when(wideMapMeta.getValue("test3")).thenReturn("test3");
 
-		List<KeyValue<Integer, String>> builtList = factory.createFromColumnList(//
-				Arrays.asList(hColumn1, hColumn2, hColumn3), //
-				wideMapMeta);
+		List<KeyValue<Integer, String>> builtList = factory.createListForWideRow(//
+				wideMapMeta, //
+				Arrays.asList(hColumn1, hColumn2, hColumn3));
 
 		assertThat(builtList).hasSize(3);
 
@@ -206,7 +204,7 @@ public class KeyValueFactoryTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_create_multi_key_dynamic_composite_hcolumn() throws Exception
+	public void should_create_multikey_from_composite_hcolumn_list() throws Exception
 	{
 		Method authorSetter = TweetMultiKey.class.getDeclaredMethod("setAuthor", String.class);
 		Method idSetter = TweetMultiKey.class.getDeclaredMethod("setId", UUID.class);
@@ -217,12 +215,64 @@ public class KeyValueFactoryTest
 		UUID uuid2 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		UUID uuid3 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 
-		HColumn<DynamicComposite, Object> hCol1 = buildHColumn(
-				buildComposite("author1", uuid1, 11), "val1");
-		HColumn<DynamicComposite, Object> hCol2 = buildHColumn(
-				buildComposite("author2", uuid2, 12), "val2");
-		HColumn<DynamicComposite, Object> hCol3 = buildHColumn(
-				buildComposite("author3", uuid3, 13), "val3");
+		HColumn<Composite, Object> hCol1 = buildHColumn(buildComposite("author1", uuid1, 11),
+				"val1");
+		HColumn<Composite, Object> hCol2 = buildHColumn(buildComposite("author2", uuid2, 12),
+				"val2");
+		HColumn<Composite, Object> hCol3 = buildHColumn(buildComposite("author3", uuid3, 13),
+				"val3");
+
+		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
+
+		when(multiKeyWideMeta.getComponentSerializers()).thenReturn(
+				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
+		when(multiKeyWideMeta.getComponentSetters()).thenReturn(
+				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
+
+		when(multiKeyWideMeta.getValue("val1")).thenReturn("val1");
+		when(multiKeyWideMeta.getValue("val2")).thenReturn("val2");
+		when(multiKeyWideMeta.getValue("val3")).thenReturn("val3");
+
+		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForWideRow(
+				multiKeyWideMeta, Arrays.asList(hCol1, hCol2, hCol3));
+
+		assertThat(multiKeys).hasSize(3);
+
+		assertThat(multiKeys.get(0).getKey().getAuthor()).isEqualTo("author1");
+		assertThat(multiKeys.get(0).getKey().getId()).isEqualTo(uuid1);
+		assertThat(multiKeys.get(0).getKey().getRetweetCount()).isEqualTo(11);
+		assertThat(multiKeys.get(0).getValue()).isEqualTo("val1");
+
+		assertThat(multiKeys.get(1).getKey().getAuthor()).isEqualTo("author2");
+		assertThat(multiKeys.get(1).getKey().getId()).isEqualTo(uuid2);
+		assertThat(multiKeys.get(1).getKey().getRetweetCount()).isEqualTo(12);
+		assertThat(multiKeys.get(1).getValue()).isEqualTo("val2");
+
+		assertThat(multiKeys.get(2).getKey().getAuthor()).isEqualTo("author3");
+		assertThat(multiKeys.get(2).getKey().getId()).isEqualTo(uuid3);
+		assertThat(multiKeys.get(2).getKey().getRetweetCount()).isEqualTo(13);
+		assertThat(multiKeys.get(2).getValue()).isEqualTo("val3");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_create_multikey_from_dynamic_composite_hcolumn_list() throws Exception
+	{
+		Method authorSetter = TweetMultiKey.class.getDeclaredMethod("setAuthor", String.class);
+		Method idSetter = TweetMultiKey.class.getDeclaredMethod("setId", UUID.class);
+		Method retweetCountSetter = TweetMultiKey.class.getDeclaredMethod("setRetweetCount",
+				int.class);
+
+		UUID uuid1 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID uuid2 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID uuid3 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		HColumn<DynamicComposite, Object> hCol1 = buildDynamicHColumn(
+				buildDynamicComposite("author1", uuid1, 11), "val1");
+		HColumn<DynamicComposite, Object> hCol2 = buildDynamicHColumn(
+				buildDynamicComposite("author2", uuid2, 12), "val2");
+		HColumn<DynamicComposite, Object> hCol3 = buildDynamicHColumn(
+				buildDynamicComposite("author3", uuid3, 13), "val3");
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 
@@ -256,7 +306,18 @@ public class KeyValueFactoryTest
 		assertThat(multiKeys.get(2).getValue()).isEqualTo("val3");
 	}
 
-	private HColumn<DynamicComposite, Object> buildHColumn(DynamicComposite comp, String value)
+	private HColumn<Composite, Object> buildHColumn(Composite comp, String value)
+	{
+		HColumn<Composite, Object> hColumn = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
+				OBJECT_SRZ);
+
+		hColumn.setName(comp);
+		hColumn.setValue(value);
+		return hColumn;
+	}
+
+	private HColumn<DynamicComposite, Object> buildDynamicHColumn(DynamicComposite comp,
+			String value)
 	{
 		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
 				Utils.DYNA_COMP_SRZ, Utils.OBJECT_SRZ);
@@ -266,7 +327,17 @@ public class KeyValueFactoryTest
 		return hColumn;
 	}
 
-	private DynamicComposite buildComposite(String author, UUID uuid, int retweetCount)
+	private Composite buildComposite(String author, UUID uuid, int retweetCount)
+	{
+		Composite composite = new Composite();
+		composite.setComponent(0, author, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(1, uuid, UUID_SRZ, UUID_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(2, retweetCount, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
+
+		return composite;
+	}
+
+	private DynamicComposite buildDynamicComposite(String author, UUID uuid, int retweetCount)
 	{
 		DynamicComposite composite = new DynamicComposite();
 		composite.setComponent(0, PropertyType.WIDE_MAP.flag(), BYTE_SRZ, BYTE_SRZ

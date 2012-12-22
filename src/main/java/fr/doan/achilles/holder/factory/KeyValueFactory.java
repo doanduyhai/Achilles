@@ -88,18 +88,59 @@ public class KeyValueFactory
 		return result;
 	}
 
-	public <K, V> List<KeyValue<K, V>> createFromColumnList(
-			List<HColumn<Composite, Object>> hColumns, PropertyMeta<K, V> wideMapMeta)
+	@SuppressWarnings("unchecked")
+	public <K, V> KeyValue<K, V> createForWideRow(PropertyMeta<K, V> wideMapMeta,
+			HColumn<Composite, Object> hColumn)
+	{
+		K key;
+		V value;
+		int ttl;
+
+		if (wideMapMeta.isSingleKey())
+		{
+			key = (K) hColumn.getName().get(0, wideMapMeta.getKeySerializer());
+			value = wideMapMeta.getValue(hColumn.getValue());
+			ttl = hColumn.getTtl();
+		}
+		else
+		{
+			Class<K> multiKeyClass = wideMapMeta.getKeyClass();
+			List<Method> componentSetters = wideMapMeta.getComponentSetters();
+			List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+			try
+			{
+				key = multiKeyClass.newInstance();
+				List<Component<?>> components = hColumn.getName().getComponents();
+
+				for (int i = 0; i < components.size(); i++)
+				{
+					Component<?> comp = components.get(i);
+					Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+					componentSetters.get(i).invoke(key, compValue);
+				}
+
+				value = wideMapMeta.getValue(hColumn.getValue());
+				ttl = hColumn.getTtl();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(), e);
+			}
+		}
+
+		return create(key, value, ttl);
+	}
+
+	public <K, V> List<KeyValue<K, V>> createListForWideRow(PropertyMeta<K, V> wideMapMeta,
+			List<HColumn<Composite, Object>> hColumns)
 	{
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 		if (hColumns != null && hColumns.size() > 0)
 		{
 			for (HColumn<Composite, Object> hColumn : hColumns)
 			{
-				V value = wideMapMeta.getValue(hColumn.getValue());
-				K key = wideMapMeta
-						.getKey(hColumn.getName().get(0, wideMapMeta.getKeySerializer()));
-				result.add(create(key, value, hColumn.getTtl()));
+				result.add(createForWideRow(wideMapMeta, hColumn));
 			}
 		}
 		return result;

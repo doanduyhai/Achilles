@@ -80,7 +80,7 @@ public class WideRowWrapperTest
 		ReflectionTestUtils.setField(wrapper, "id", id);
 
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
-		when(compositeKeyFactory.createBaseForQuery(12)).thenReturn(comp);
+		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class WideRowWrapperTest
 	{
 
 		Composite comp = new Composite();
-		when(compositeKeyFactory.createBaseForQuery(12)).thenReturn(comp);
+		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 		when(dao.getValue(id, comp)).thenReturn("test");
 		when(wideMapMeta.getValue("test")).thenReturn("test");
 
@@ -120,7 +120,7 @@ public class WideRowWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(12, true, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
@@ -128,7 +128,7 @@ public class WideRowWrapperTest
 				});
 
 		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
-		when(keyValueFactory.createFromColumnList(hColumns, wideMapMeta)).thenReturn(keyValues)
+		when(keyValueFactory.createListForWideRow(wideMapMeta, hColumns)).thenReturn(keyValues)
 				.thenReturn(keyValues);
 
 		List<KeyValue<Integer, String>> expected = wrapper.findRange(12, 15, false, 10);
@@ -144,7 +144,7 @@ public class WideRowWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(12, true, 15, false, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, false, false)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
@@ -163,7 +163,7 @@ public class WideRowWrapperTest
 	public void should_remove() throws Exception
 	{
 		Composite comp = new Composite();
-		when(compositeKeyFactory.createBaseForQuery(12)).thenReturn(comp);
+		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 
 		wrapper.remove(12);
 
@@ -176,7 +176,7 @@ public class WideRowWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(12, false, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, false, 15, true, false)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,

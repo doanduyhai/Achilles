@@ -8,9 +8,10 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * CompositeKeyValueIterator
@@ -21,8 +22,8 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
 public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 {
 	private ColumnSliceIterator<?, Composite, Object> columnSliceIterator;
-	private MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta;
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private PropertyMeta<K, V> multiKeyWideMapMeta;
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	public MultiKeyKeyValueIteratorForWideRow(
 			ColumnSliceIterator<?, Composite, Object> columnSliceIterator,
@@ -46,7 +47,7 @@ public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterato
 		{
 			HColumn<Composite, Object> column = this.columnSliceIterator.next();
 
-			keyValue = util.buildMultiKeyForComposite(multiKeyWideMapMeta, column);
+			keyValue = factory.createForWideRow(multiKeyWideMapMeta, column);
 		}
 		else
 		{

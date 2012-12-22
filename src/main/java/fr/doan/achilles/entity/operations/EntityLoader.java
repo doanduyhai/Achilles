@@ -60,7 +60,7 @@ public class EntityLoader
 	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite composite = keyFactory.createBaseForInsert(propertyMeta, 0);
+		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.getValue(value);

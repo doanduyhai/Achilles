@@ -13,6 +13,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import mapping.entity.TweetMultiKey;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -89,7 +91,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 
-		DynamicComposite comp = keyFactory.createBaseForInsert(propertyMeta, 0);
+		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("name");
@@ -118,7 +120,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 		when(propertyMeta.propertyType()).thenReturn(LIST);
 
-		DynamicComposite comp = keyFactory.createBaseForInsert(propertyMeta, 0);
+		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(LIST.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
@@ -131,7 +133,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 		when(propertyMeta.propertyType()).thenReturn(SET);
 
-		DynamicComposite comp = keyFactory.createBaseForInsert(propertyMeta, 12345);
+		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 12345);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SET.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("followers");
@@ -144,7 +146,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 		when(propertyMeta.propertyType()).thenReturn(MAP);
 
-		DynamicComposite comp = keyFactory.createBaseForInsert(propertyMeta, -123933);
+		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, -123933);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(MAP.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("preferences");
@@ -254,21 +256,26 @@ public class DynamicCompositeKeyFactoryTest
 		keyFactory.createForInsert(multiKeyPropertyMeta, keyValues);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_for_multikey_query() throws Exception
 	{
+		TweetMultiKey tweetKey = new TweetMultiKey();
 		List<Serializer<?>> serializers = new ArrayList<Serializer<?>>();
 		serializers.add(INT_SRZ);
 		serializers.add(STRING_SRZ);
 		serializers.add(LONG_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "abc", 50L);
+		List<Method> componentGetters = mock(List.class);
 
+		when(multiKeyPropertyMeta.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
+		when(util.determineMultiKey(tweetKey, componentGetters)).thenReturn(keyValues);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(2);
 
-		DynamicComposite comp = keyFactory.createForQuery(multiKeyPropertyMeta, keyValues,
+		DynamicComposite comp = keyFactory.createForQuery(multiKeyPropertyMeta, tweetKey,
 				LESS_THAN_EQUAL);
 
 		assertThat(comp.getComponents()).hasSize(5);

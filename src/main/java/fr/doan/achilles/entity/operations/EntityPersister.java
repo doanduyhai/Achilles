@@ -89,7 +89,7 @@ public class EntityPersister
 	private <ID> void batchSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, 0);
+		DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, 0);
 		Object value = entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
 		{
@@ -113,7 +113,7 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, count);
+				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, count);
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -139,8 +139,7 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta,
-						value.hashCode());
+				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, value.hashCode());
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -167,7 +166,7 @@ public class EntityPersister
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, entry.getKey()
+				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, entry.getKey()
 						.hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());

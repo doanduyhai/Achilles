@@ -24,19 +24,23 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
 public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 
-	protected ID id;
-	protected GenericEntityDao<ID> dao;
-	protected PropertyMeta<K, V> wideMapMeta;
-	protected CompositeHelper helper = new CompositeHelper();
-	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
-	protected IteratorFactory iteratorFactory = new IteratorFactory();
-	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private ID id;
+	private GenericEntityDao<ID> dao;
+	private PropertyMeta<K, V> wideMapMeta;
+	private CompositeHelper helper = new CompositeHelper();
+	private KeyValueFactory keyValueFactory = new KeyValueFactory();
+	private IteratorFactory iteratorFactory = new IteratorFactory();
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+
+	private DynamicComposite buildComposite(K key)
+	{
+		return keyFactory.createForInsert(wideMapMeta, key);
+	}
 
 	@Override
 	public V get(K key)
 	{
 		Object value = dao.getValue(id, buildComposite(key));
-
 		return wideMapMeta.getValue(value);
 	}
 
@@ -79,11 +83,6 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 				queryComps[0], queryComps[1], reverse, count);
 
 		return keyValueFactory.createListForWideMap(wideMapMeta, hColumns);
-	}
-
-	protected DynamicComposite buildComposite(K key)
-	{
-		return keyFactory.createForInsert(wideMapMeta, key);
 	}
 
 	@Override

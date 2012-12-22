@@ -131,7 +131,7 @@ public class EntityLoaderTest
 		when(propertyMeta.getValue("name")).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createBaseForInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(composite);
 		when(dao.getValue(1L, composite)).thenReturn("name");
 
 		String value = (String) loader.loadSimpleProperty(1L, dao, propertyMeta);
