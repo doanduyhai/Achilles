@@ -35,6 +35,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.CorrectMultiKey;
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.helper.CompositeHelper;
@@ -42,7 +43,6 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.serializer.Utils;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * MultiKeyWideMapWrapperTest

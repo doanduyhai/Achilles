@@ -6,9 +6,9 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * WideMap

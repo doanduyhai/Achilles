@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
@@ -30,7 +31,6 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
 import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 import fr.doan.achilles.serializer.Utils;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
  * InternalWideMapWrapperTest

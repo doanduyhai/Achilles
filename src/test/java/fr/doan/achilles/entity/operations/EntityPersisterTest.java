@@ -38,6 +38,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Sets;
 
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -46,7 +47,6 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityPersisterTest
@@ -398,8 +398,8 @@ public class EntityPersisterTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery("name", MAP, EQUAL)).thenReturn(start);
-		when(keyFactory.createForQuery("name", MAP, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(keyFactory.createBaseForQuery("name", MAP, EQUAL)).thenReturn(start);
+		when(keyFactory.createBaseForQuery("name", MAP, GREATER_THAN_EQUAL)).thenReturn(end);
 
 		persister.removeProperty(1L, dao, propertyMeta);
 

@@ -11,6 +11,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -20,7 +21,6 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.validation.Validator;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class EntityLoader
 {
@@ -68,9 +68,9 @@ public class EntityLoader
 
 	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao, ListMeta<V> listPropertyMeta)
 	{
-		DynamicComposite start = keyFactory.createForQuery(
+		DynamicComposite start = keyFactory.createBaseForQuery(
 				listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createForQuery(listPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta.getPropertyName(),
 				listPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
@@ -85,9 +85,9 @@ public class EntityLoader
 	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao, SetMeta<V> setPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.createForQuery(setPropertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createBaseForQuery(setPropertyMeta.getPropertyName(),
 				setPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createForQuery(setPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta.getPropertyName(),
 				setPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
@@ -103,9 +103,9 @@ public class EntityLoader
 			MapMeta<K, V> mapPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.createForQuery(mapPropertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createBaseForQuery(mapPropertyMeta.getPropertyName(),
 				mapPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createForQuery(mapPropertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta.getPropertyName(),
 				mapPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);

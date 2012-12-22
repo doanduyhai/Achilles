@@ -13,6 +13,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.Validate;
 
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -21,7 +22,6 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
-import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class EntityPersister
 {
@@ -79,9 +79,9 @@ public class EntityPersister
 	public <ID, V> void removeProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
 		Validate.notNull(key, "key value");
-		DynamicComposite start = keyFactory.createForQuery(propertyMeta.getPropertyName(),
+		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), ComponentEquality.EQUAL);
-		DynamicComposite end = keyFactory.createForQuery(propertyMeta.getPropertyName(),
+		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta.getPropertyName(),
 				propertyMeta.propertyType(), GREATER_THAN_EQUAL);
 		dao.removeColumnRange(key, start, end);
 	}

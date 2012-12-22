@@ -12,6 +12,7 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+import fr.doan.achilles.composite.factory.CompositeKeyFactory;
 import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -21,7 +22,6 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
-import fr.doan.achilles.wrapper.factory.CompositeKeyFactory;
 
 /**
  * WideMap
@@ -203,7 +203,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	{
 		List<Object> componentValues = util.determineMultiKey(start, componentGetters);
 
-		return keyFactory.buildQueryComparator(wideMapMeta.getPropertyName(), componentValues,
+		return keyFactory.createForQueryMultiKey(wideMapMeta.getPropertyName(), componentValues,
 				componentSerializers, equality);
 	}
 
@@ -212,7 +212,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 
 		List<Object> componentValues = util.determineMultiKey(key, componentGetters);
 
-		return keyFactory.buildForInsert(wideMapMeta.getPropertyName(), componentValues,
+		return keyFactory.createForInsert(wideMapMeta.getPropertyName(), componentValues,
 				componentSerializers);
 
 	}
