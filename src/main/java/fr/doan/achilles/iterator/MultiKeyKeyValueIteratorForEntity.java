@@ -1,16 +1,14 @@
 package fr.doan.achilles.iterator;
 
-import java.lang.reflect.Method;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * MultiKeyValueIterator
@@ -21,18 +19,16 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
 public class MultiKeyKeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 {
 	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
-	private List<Method> componentSetters;
-	private MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta;
+	private PropertyMeta<K, V> multiKeyWideMapMeta;
 
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	public MultiKeyKeyValueIteratorForEntity(
 			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
-			List<Method> componentSetters, MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta)
+			PropertyMeta<K, V> propertyMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
-		this.componentSetters = componentSetters;
-		this.multiKeyWideMapMeta = multiKeyWideMapMeta;
+		this.multiKeyWideMapMeta = propertyMeta;
 	}
 
 	@Override
@@ -49,9 +45,7 @@ public class MultiKeyKeyValueIteratorForEntity<K, V> implements KeyValueIterator
 		{
 			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
 
-			keyValue = util.buildMultiKeyForDynamicComposite(multiKeyWideMapMeta.getKeyClass(),
-					multiKeyWideMapMeta, (HColumn<DynamicComposite, Object>) column,
-					componentSetters);
+			keyValue = factory.createForWideMap(multiKeyWideMapMeta, column);
 		}
 		else
 		{

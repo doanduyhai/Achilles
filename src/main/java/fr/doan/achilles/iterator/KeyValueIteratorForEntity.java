@@ -3,7 +3,6 @@ package fr.doan.achilles.iterator;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -19,15 +18,13 @@ import fr.doan.achilles.holder.KeyValue;
 public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 {
 	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
-	private Serializer<?> keySerializer;
 	private PropertyMeta<K, V> wideMapMeta;
 
 	public KeyValueIteratorForEntity(
 			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
-			Serializer<?> keySerializer, PropertyMeta<K, V> wideMapMeta)
+			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
-		this.keySerializer = keySerializer;
 		this.wideMapMeta = wideMapMeta;
 	}
 
@@ -47,7 +44,7 @@ public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
 
 			DynamicComposite composite = column.getName();
-			K key = (K) composite.get(2, this.keySerializer);
+			K key = (K) composite.get(2, wideMapMeta.getKeySerializer());
 			V value = wideMapMeta.getValue(column.getValue());
 			keyValue = new KeyValue<K, V>(key, value, column.getTtl());
 		}

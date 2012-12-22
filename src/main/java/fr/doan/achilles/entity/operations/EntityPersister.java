@@ -76,21 +76,20 @@ public class EntityPersister
 		dao.removeRow(key);
 	}
 
-	public <ID, V> void removeProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	public <ID, V> void removeProperty(ID key, GenericEntityDao<ID> dao,
+			PropertyMeta<?, V> propertyMeta)
 	{
 		Validate.notNull(key, "key value");
-		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta.getPropertyName(),
-				propertyMeta.propertyType(), ComponentEquality.EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta.getPropertyName(),
-				propertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta,
+				ComponentEquality.EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		dao.removeColumnRange(key, start, end);
 	}
 
 	private <ID> void batchSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
-				propertyMeta.propertyType(), 0);
+		DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, 0);
 		Object value = entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
 		{
@@ -108,15 +107,13 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
-		List<?> list = (List<?>) entityHelper.getValueFromField(entity,
-				propertyMeta.getGetter());
+		List<?> list = (List<?>) entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		int count = 0;
 		if (list != null)
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
-						propertyMeta.propertyType(), count);
+				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, count);
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -137,14 +134,13 @@ public class EntityPersister
 	private <ID> void batchSetProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		Set<?> set = (Set<?>) entityHelper.getValueFromField(entity,
-				propertyMeta.getGetter());
+		Set<?> set = (Set<?>) entityHelper.getValueFromField(entity, propertyMeta.getGetter());
 		if (set != null)
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
-						propertyMeta.propertyType(), value.hashCode());
+				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta,
+						value.hashCode());
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -165,14 +161,14 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
-		Map<?, ?> map = (Map<?, ?>) entityHelper.getValueFromField(entity,
-				propertyMeta.getGetter());
+		Map<?, ?> map = (Map<?, ?>) entityHelper
+				.getValueFromField(entity, propertyMeta.getGetter());
 		if (map != null)
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.createForInsert(propertyMeta.getPropertyName(),
-						propertyMeta.propertyType(), entry.getKey().hashCode());
+				DynamicComposite name = keyFactory.createBaseForInsert(propertyMeta, entry.getKey()
+						.hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
 				dao.insertColumn(key, name, value, mutator);

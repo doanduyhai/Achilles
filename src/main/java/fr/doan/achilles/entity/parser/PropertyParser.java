@@ -207,10 +207,7 @@ public class PropertyParser
 
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked",
-	})
+	@SuppressWarnings("unchecked")
 	private <V> PropertyMeta<Void, V> parseListProperty(Class<?> beanClass, Field field,
 			String propertyName, Class<?> fieldType)
 	{

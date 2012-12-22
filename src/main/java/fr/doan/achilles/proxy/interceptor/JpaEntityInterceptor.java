@@ -13,7 +13,6 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
-import fr.doan.achilles.wrapper.builder.MultiKeyWideMapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
 
@@ -115,24 +114,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		Object result;
-
-		if (propertyMeta.isSingleKey())
-		{
-
-			result = WideMapWrapperBuilder.builder(key, dao, propertyMeta).build();
-		}
-		else
-		{
-
-			result = MultiKeyWideMapWrapperBuilder.builder(key, dao, propertyMeta)
-					.componentGetters(propertyMeta.getComponentGetters()) //
-					.componentSetters(propertyMeta.getComponentSetters()) //
-					.componentSerializers(propertyMeta.getComponentSerializers()) //
-					.build();
-		}
-
-		return result;
+		return WideMapWrapperBuilder.builder(key, dao, propertyMeta).build();
 	}
 
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)

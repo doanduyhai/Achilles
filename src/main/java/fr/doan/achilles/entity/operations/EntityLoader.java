@@ -57,21 +57,20 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao,
+			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite composite = keyFactory.createForInsert(propertyMeta.getPropertyName(),
-				propertyMeta.propertyType(), 0);
+		DynamicComposite composite = keyFactory.createBaseForInsert(propertyMeta, 0);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.getValue(value);
 	}
 
-	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao, ListMeta<V> listPropertyMeta)
+	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao,
+			ListMeta<V> listPropertyMeta)
 	{
-		DynamicComposite start = keyFactory.createBaseForQuery(
-				listPropertyMeta.getPropertyName(), listPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta.getPropertyName(),
-				listPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		DynamicComposite start = keyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
 		List<V> list = listPropertyMeta.newListInstance();
@@ -82,13 +81,12 @@ public class EntityLoader
 		return list;
 	}
 
-	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao, SetMeta<V> setPropertyMeta)
+	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao,
+			SetMeta<V> setPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.createBaseForQuery(setPropertyMeta.getPropertyName(),
-				setPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta.getPropertyName(),
-				setPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		DynamicComposite start = keyFactory.createBaseForQuery(setPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
 		Set<V> set = setPropertyMeta.newSetInstance();
@@ -103,10 +101,8 @@ public class EntityLoader
 			MapMeta<K, V> mapPropertyMeta)
 	{
 
-		DynamicComposite start = keyFactory.createBaseForQuery(mapPropertyMeta.getPropertyName(),
-				mapPropertyMeta.propertyType(), EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta.getPropertyName(),
-				mapPropertyMeta.propertyType(), GREATER_THAN_EQUAL);
+		DynamicComposite start = keyFactory.createBaseForQuery(mapPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(key, start, end, false,
 				Integer.MAX_VALUE);
 		Map<K, V> map = mapPropertyMeta.newMapInstance();

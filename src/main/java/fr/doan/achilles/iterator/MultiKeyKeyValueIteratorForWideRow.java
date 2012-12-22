@@ -21,7 +21,6 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
 public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 {
 	private ColumnSliceIterator<?, Composite, Object> columnSliceIterator;
-	private List<Method> componentSetters;
 	private MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta;
 	private EntityWrapperUtil util = new EntityWrapperUtil();
 
@@ -30,7 +29,6 @@ public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterato
 			List<Method> componentSetters, MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
-		this.componentSetters = componentSetters;
 		this.multiKeyWideMapMeta = multiKeyWideMapMeta;
 	}
 
@@ -48,8 +46,7 @@ public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterato
 		{
 			HColumn<Composite, Object> column = this.columnSliceIterator.next();
 
-			keyValue = util.buildMultiKeyForComposite(multiKeyWideMapMeta.getKeyClass(),
-					multiKeyWideMapMeta, column, componentSetters);
+			keyValue = util.buildMultiKeyForComposite(multiKeyWideMapMeta, column);
 		}
 		else
 		{

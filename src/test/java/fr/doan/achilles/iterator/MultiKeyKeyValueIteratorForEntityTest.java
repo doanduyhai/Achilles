@@ -23,8 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * MultiKeyValueIteratorTest
@@ -46,7 +45,7 @@ public class MultiKeyKeyValueIteratorForEntityTest
 	private MultiKeyWideMapMeta<TweetMultiKey, String> multiKeyWideMapMeta;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	@InjectMocks
 	private MultiKeyKeyValueIteratorForEntity<TweetMultiKey, String> iterator;
@@ -54,7 +53,7 @@ public class MultiKeyKeyValueIteratorForEntityTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(iterator, "util", util);
+		ReflectionTestUtils.setField(iterator, "factory", factory);
 	}
 
 	@SuppressWarnings(
@@ -71,9 +70,9 @@ public class MultiKeyKeyValueIteratorForEntityTest
 		when(columnSliceIterator.hasNext()).thenReturn(true);
 		when(columnSliceIterator.next()).thenReturn((HColumn) column);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
+		when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
-		when(util.buildMultiKeyForDynamicComposite(TweetMultiKey.class, multiKeyWideMapMeta, column, componentSetters))
-				.thenReturn(keyValue);
+		when(factory.createForWideMap(multiKeyWideMapMeta, column)).thenReturn(keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();
 

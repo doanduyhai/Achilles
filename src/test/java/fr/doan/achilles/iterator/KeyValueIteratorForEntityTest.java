@@ -1,5 +1,6 @@
 package fr.doan.achilles.iterator;
 
+import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -57,7 +58,11 @@ public class KeyValueIteratorForEntityTest
 		iterator.remove();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_give_next() throws Exception
 	{
@@ -73,6 +78,10 @@ public class KeyValueIteratorForEntityTest
 		when(column.getTtl()).thenReturn(120);
 
 		when(wideMapMeta.getValue("val")).thenReturn("val");
+		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+
+		when(comp.get(2, INT_SRZ)).thenReturn(12);
+
 		KeyValue<Integer, String> keyValue = iterator.next();
 
 		assertThat(keyValue.getKey()).isEqualTo(12);

@@ -48,66 +48,63 @@ public class CompositeHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K> void checkBounds(K start, K end, boolean reverse)
+	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end, boolean reverse)
 	{
 
 		if (start != null && end != null)
 		{
-			Comparable<K> startComp = (Comparable<K>) start;
-
-			if (reverse)
+			if (wideMapMeta.isSingleKey())
 			{
-				Validator
-						.validateTrue(startComp.compareTo(end) >= 0,
-								"For reverse range query, start value should be greater or equal to end value");
-			}
-			else
-			{
-				Validator.validateTrue(startComp.compareTo(end) <= 0,
-						"For range query, start value should be lesser or equal to end value");
-			}
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <K, V> void checkMultiKeyBounds(List<Method> componentGetters,
-			PropertyMeta<K, V> wideMapMeta, K start, K end, boolean reverse)
-	{
-
-		if (start != null && end != null)
-		{
-
-			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
-			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
-
-			this.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(),
-					startComponentValues);
-			this.findLastNonNullIndexForComponents(wideMapMeta.getPropertyName(),
-					endComponentValues);
-
-			for (int i = 0; i < startComponentValues.size(); i++)
-			{
-
-				Comparable<Object> startValue = (Comparable<Object>) startComponentValues.get(i);
-				Object endValue = endComponentValues.get(i);
+				Comparable<K> startComp = (Comparable<K>) start;
 
 				if (reverse)
 				{
-					if (startValue != null && endValue != null)
-					{
-						Validator
-								.validateTrue(startValue.compareTo(endValue) >= 0,
-										"For multiKey descending range query, startKey value should be greater or equal to end endKey");
-					}
-
+					Validator
+							.validateTrue(startComp.compareTo(end) >= 0,
+									"For reverse range query, start value should be greater or equal to end value");
 				}
 				else
 				{
-					if (startValue != null && endValue != null)
+					Validator.validateTrue(startComp.compareTo(end) <= 0,
+							"For range query, start value should be lesser or equal to end value");
+				}
+			}
+			else
+			{
+				List<Method> componentGetters = wideMapMeta.getComponentGetters();
+				String propertyName = wideMapMeta.getPropertyName();
+
+				List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
+				List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
+
+				this.findLastNonNullIndexForComponents(propertyName, startComponentValues);
+				this.findLastNonNullIndexForComponents(propertyName, endComponentValues);
+
+				for (int i = 0; i < startComponentValues.size(); i++)
+				{
+
+					Comparable<Object> startValue = (Comparable<Object>) startComponentValues
+							.get(i);
+					Object endValue = endComponentValues.get(i);
+
+					if (reverse)
 					{
-						Validator
-								.validateTrue(startValue.compareTo(endValue) <= 0,
-										"For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
+						if (startValue != null && endValue != null)
+						{
+							Validator
+									.validateTrue(startValue.compareTo(endValue) >= 0,
+											"For multiKey descending range query, startKey value should be greater or equal to end endKey");
+						}
+
+					}
+					else
+					{
+						if (startValue != null && endValue != null)
+						{
+							Validator
+									.validateTrue(startValue.compareTo(endValue) <= 0,
+											"For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
+						}
 					}
 				}
 			}

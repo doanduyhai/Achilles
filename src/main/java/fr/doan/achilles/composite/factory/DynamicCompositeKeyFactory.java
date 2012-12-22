@@ -4,11 +4,14 @@ import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+
 import java.lang.reflect.Method;
 import java.util.List;
+
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
@@ -20,138 +23,185 @@ import fr.doan.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public class DynamicCompositeKeyFactory {
+public class DynamicCompositeKeyFactory
+{
 
-    private CompositeHelper helper = new CompositeHelper();
-    private EntityWrapperUtil util = new EntityWrapperUtil();
+	private CompositeHelper helper = new CompositeHelper();
+	private EntityWrapperUtil util = new EntityWrapperUtil();
 
-    public DynamicComposite createForInsert(String propertyName, PropertyType type, int hashOrPosition) {
-        DynamicComposite composite = new DynamicComposite();
-        composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(2, hashOrPosition, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
-        return composite;
-    }
+	public <K, V> DynamicComposite createBaseForInsert(PropertyMeta<K, V> propertyMeta,
+			int hashOrPosition)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		composite.setComponent(0, propertyMeta.propertyType().flag(), BYTE_SRZ, BYTE_SRZ
+				.getComparatorType().getTypeName());
+		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
+		composite.setComponent(2, hashOrPosition, INT_SRZ, INT_SRZ.getComparatorType()
+				.getTypeName());
+		return composite;
+	}
 
-    public <T> DynamicComposite createForInsert(String propertyName, PropertyType type, T value,
-            Serializer<T> valueSerializer) {
-        DynamicComposite composite = new DynamicComposite();
-        composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(2, value, valueSerializer, valueSerializer.getComparatorType().getTypeName());
-        return composite;
-    }
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	public <K, V, T> DynamicComposite createForInsert(PropertyMeta<K, V> propertyMeta, T key)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		PropertyType type = propertyMeta.propertyType();
+		String propertyName = propertyMeta.getPropertyName();
+		Serializer keySerializer = propertyMeta.getKeySerializer();
 
-    public DynamicComposite createBaseForQuery(String propertyName, PropertyType type, ComponentEquality equality) {
-        DynamicComposite composite = new DynamicComposite();
-        composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-        composite.addComponent(1, propertyName, equality);
+		if (propertyMeta.isSingleKey())
+		{
 
-        return composite;
-    }
+			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
+					.getTypeName());
+			composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType()
+					.getTypeName());
+			composite.setComponent(2, key, keySerializer, keySerializer.getComparatorType()
+					.getTypeName());
+		}
+		else
+		{
+			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
+			int srzCount = componentSerializers.size();
+			List<Object> keyValues = util
+					.determineMultiKey(key, propertyMeta.getComponentGetters());
+			int valueCount = keyValues.size();
 
-    public DynamicComposite createForQuery(String propertyName, PropertyType type, Object value,
-            ComponentEquality equality) {
-        DynamicComposite composite = new DynamicComposite();
-        composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
+			Validator.validateTrue(srzCount == valueCount, "There should be " + srzCount
+					+ " values for the key of WideMap '" + propertyName + "'");
 
-        if (value != null) {
-            composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
-            composite.addComponent(2, value, equality);
-        } else {
-            composite.addComponent(1, propertyName, equality);
-        }
+			for (Object keyValue : keyValues)
+			{
+				Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '"
+						+ propertyName + "' should not be null");
+			}
 
-        return composite;
-    }
+			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
+					.getTypeName());
+			composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType()
+					.getTypeName());
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public DynamicComposite createForInsertMultiKey(String propertyName, PropertyType type, List<Object> keyValues,
-            List<Serializer<?>> serializers) {
-        int srzCount = serializers.size();
-        int valueCount = keyValues.size();
+			for (int i = 0; i < srzCount; i++)
+			{
+				Serializer srz = componentSerializers.get(i);
+				composite.setComponent(i + 2, keyValues.get(i), srz, srz.getComparatorType()
+						.getTypeName());
+			}
+		}
+		return composite;
+	}
 
-        Validator.validateTrue(srzCount == valueCount, "There should be " + srzCount
-                + " values for the key of WideMap '" + propertyName + "'");
+	public <K, V> DynamicComposite createBaseForQuery(PropertyMeta<K, V> propertyMeta,
+			ComponentEquality equality)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		composite.addComponent(0, propertyMeta.propertyType().flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, propertyMeta.getPropertyName(), equality);
 
-        for (Object keyValue : keyValues) {
-            Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '" + propertyName
-                    + "' should not be null");
-        }
+		return composite;
+	}
 
-        DynamicComposite composite = new DynamicComposite();
-        composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public <K, V, T> DynamicComposite createForQuery(PropertyMeta<K, V> propertyMeta, T value,
+			ComponentEquality equality)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		PropertyType type = propertyMeta.propertyType();
+		String propertyName = propertyMeta.getPropertyName();
 
-        for (int i = 0; i < srzCount; i++) {
-            Serializer srz = serializers.get(i);
-            composite.setComponent(i + 2, keyValues.get(i), srz, srz.getComparatorType().getTypeName());
-        }
+		if (propertyMeta.isSingleKey())
+		{
+			composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
 
-        return composite;
-    }
+			if (value != null)
+			{
+				composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+				composite.addComponent(2, value, equality);
+			}
+			else
+			{
+				composite.addComponent(1, propertyName, equality);
+			}
+		}
+		else
+		{
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public DynamicComposite createForQueryMultiKey(String propertyName, PropertyType type, List<Object> keyValues,
-            List<Serializer<?>> serializers, ComponentEquality equality) {
-        int srzCount = serializers.size();
-        int valueCount = keyValues.size();
+			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
+			List<Object> keyValues = (List<Object>) value;
 
-        Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
-                + " values for the key of WideMap '" + propertyName + "'");
+			int srzCount = componentSerializers.size();
+			int valueCount = keyValues.size();
 
-        int lastNotNullIndex = helper.findLastNonNullIndexForComponents(propertyName, keyValues);
+			Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
+					+ " values for the key of WideMap '" + propertyName + "'");
 
-        DynamicComposite composite = new DynamicComposite();
-        composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType().getTypeName(), EQUAL);
-        composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName(), EQUAL);
+			int lastNotNullIndex = helper
+					.findLastNonNullIndexForComponents(propertyName, keyValues);
 
-        for (int i = 0; i <= lastNotNullIndex; i++) {
-            Serializer srz = serializers.get(i);
-            Object keyValue = keyValues.get(i);
-            if (i < lastNotNullIndex) {
-                composite.setComponent(i + 2, keyValue, srz, srz.getComparatorType().getTypeName(), EQUAL);
-            } else {
-                composite.setComponent(i + 2, keyValue, srz, srz.getComparatorType().getTypeName(), equality);
-            }
-        }
+			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
+					.getTypeName(), EQUAL);
+			composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType()
+					.getTypeName(), EQUAL);
 
-        return composite;
-    }
+			for (int i = 0; i <= lastNotNullIndex; i++)
+			{
+				Serializer srz = componentSerializers.get(i);
+				Object keyValue = keyValues.get(i);
+				if (i < lastNotNullIndex)
+				{
+					composite.setComponent(i + 2, keyValue, srz, srz.getComparatorType()
+							.getTypeName(), EQUAL);
+				}
+				else
+				{
+					composite.setComponent(i + 2, keyValue, srz, srz.getComparatorType()
+							.getTypeName(), equality);
+				}
+			}
+		}
+		return composite;
+	}
 
-    public <K> DynamicComposite[] createForQuery(String propertyName, PropertyType propertyType, K start,
-            boolean inclusiveStart, K end, boolean inclusiveEnd, boolean reverse) {
-        DynamicComposite[] queryComp = new DynamicComposite[2];
+	public <K, V> DynamicComposite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start,
+			boolean inclusiveStart, K end, boolean inclusiveEnd, boolean reverse)
+	{
+		DynamicComposite[] queryComp = new DynamicComposite[2];
 
-        ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd, reverse);
+		ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd,
+				reverse);
 
-        DynamicComposite startComp = this.createForQuery(propertyName, propertyType, start, equalities[0]);
-        DynamicComposite endComp = this.createForQuery(propertyName, propertyType, end, equalities[1]);
+		DynamicComposite startComp;
+		DynamicComposite endComp;
 
-        queryComp[0] = startComp;
-        queryComp[1] = endComp;
+		if (propertyMeta.isSingleKey())
+		{
+			startComp = this.createForQuery(propertyMeta, start, equalities[0]);
+			endComp = this.createForQuery(propertyMeta, end, equalities[1]);
+		}
+		else
+		{
 
-        return queryComp;
-    }
+			List<Method> componentGetters = propertyMeta.getComponentGetters();
 
-    public <K> DynamicComposite[] createForMultiKeyQuery(String propertyName, PropertyType propertyType,
-            List<Serializer<?>> componentSerializers, List<Method> componentGetters, K start, boolean inclusiveStart,
-            K end, boolean inclusiveEnd, boolean reverse) {
-        DynamicComposite[] queryComp = new DynamicComposite[2];
-        ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd, reverse);
+			List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
+			List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
 
-        List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
-        List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
+			startComp = this.createForQuery(propertyMeta, startComponentValues, equalities[0]);
+			endComp = this.createForQuery(propertyMeta, endComponentValues, equalities[1]);
+		}
 
-        DynamicComposite startComp = this.createForQueryMultiKey(propertyName, propertyType, startComponentValues,
-                componentSerializers, equalities[0]);
-        DynamicComposite endComp = this.createForQueryMultiKey(propertyName, propertyType, endComponentValues,
-                componentSerializers, equalities[1]);
+		queryComp[0] = startComp;
+		queryComp[1] = endComp;
 
-        queryComp[0] = startComp;
-        queryComp[1] = endComp;
-
-        return queryComp;
-    }
-
+		return queryComp;
+	}
 }

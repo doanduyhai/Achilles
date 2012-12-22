@@ -89,10 +89,10 @@ public class MultiKeyKeyValueIteratorForWideRowTest
 
 		when(columnSliceIterator.hasNext()).thenReturn(true, false);
 		when(columnSliceIterator.next()).thenReturn(hColumn);
+		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
-		when(
-				util.buildMultiKeyForComposite(CorrectMultiKey.class, multiKeyWideMapMeta, hColumn,
-						componentSetters)).thenReturn(keyValue);
+		when(util.buildMultiKeyForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 

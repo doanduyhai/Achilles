@@ -14,7 +14,6 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
 import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
@@ -40,8 +39,8 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 	private List<Method> componentSetters;
 
 	private EntityWrapperUtil util = new EntityWrapperUtil();
-	private CompositeKeyFactory keyFactory = new CompositeKeyFactory();
 	private CompositeHelper helper = new CompositeHelper();
+	private CompositeKeyFactory keyFactory = new CompositeKeyFactory();
 
 	@Override
 	public V get(K key)
@@ -84,7 +83,7 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, reverse);
+		helper.checkBounds(wideMapMeta, start, end, reverse);
 
 		Composite[] queryComps = buildQueryComposites(start, inclusiveStart, end, inclusiveEnd,
 				reverse);
@@ -92,8 +91,10 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], reverse, count);
 
-		return util.buildMultiKeyListForComposite(wideMapMeta.getKeyClass(),
-				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
+		// return util.buildMultiKeyListForComposite(wideMapMeta.getKeyClass(),
+		// (MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
+
+		return null;
 	}
 
 	@Override
@@ -116,8 +117,8 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 			"unchecked",
 			"rawtypes"
 	})
-	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, boolean inclusiveStart,
-			K end, boolean inclusiveEnd, boolean reverse, int count)
+	public MultiKeyKeyValueIteratorForEntity<K, V> iterator(K start, boolean inclusiveStart, K end,
+			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
 		Composite[] queryComps = buildQueryComposites(start, inclusiveStart, end, inclusiveEnd,
@@ -126,8 +127,10 @@ public class MultiKeyWideRowWrapper<ID, K, V> implements WideMap<K, V>
 		ColumnSliceIterator<ID, Composite, Object> columnSliceIterator = dao.getColumnsIterator(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return new MultiKeyKeyValueIteratorForEntity(columnSliceIterator, componentSetters,
-				(MultiKeyWideMapMeta<K, V>) wideMapMeta);
+		// return new MultiKeyKeyValueIteratorForEntity(columnSliceIterator, componentSetters,
+		// (MultiKeyWideMapMeta<K, V>) wideMapMeta);
+
+		return null;
 	}
 
 	@Override

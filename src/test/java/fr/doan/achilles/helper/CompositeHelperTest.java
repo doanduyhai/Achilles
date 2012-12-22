@@ -12,6 +12,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.CorrectMultiKey;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 
@@ -48,7 +49,17 @@ public class CompositeHelperTest
 	private EntityWrapperUtil util;
 
 	@Mock
-	private MultiKeyWideMapMeta<CorrectMultiKey, String> wideMapMeta;
+	private PropertyMeta<Integer, String> wideMapMeta;
+
+	@Mock
+	private PropertyMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
+
+	@Before
+	public void setUp()
+	{
+		when(wideMapMeta.isSingleKey()).thenReturn(true);
+		when(multiKeyWideMapMeta.isSingleKey()).thenReturn(false);
+	}
 
 	@Test
 	public void should_validate_no_hole() throws Exception
@@ -80,19 +91,19 @@ public class CompositeHelperTest
 	@Test
 	public void should_validate_bounds() throws Exception
 	{
-		helper.checkBounds(12, 15, false);
+		helper.checkBounds(wideMapMeta, 12, 15, false);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_start_null() throws Exception
 	{
-		helper.checkBounds(null, 15, false);
+		helper.checkBounds(wideMapMeta, null, 15, false);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_end_null() throws Exception
 	{
-		helper.checkBounds(12, null, false);
+		helper.checkBounds(wideMapMeta, 12, null, false);
 	}
 
 	@Test
@@ -102,7 +113,7 @@ public class CompositeHelperTest
 		expectedEx.expect(ValidationException.class);
 		expectedEx.expectMessage("For range query, start value should be lesser or equal to end");
 
-		helper.checkBounds(15, 12, false);
+		helper.checkBounds(wideMapMeta, 15, 12, false);
 	}
 
 	@Test
@@ -113,7 +124,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For reverse range query, start value should be greater or equal to end value");
 
-		helper.checkBounds(12, 15, true);
+		helper.checkBounds(wideMapMeta, 12, 15, true);
 	}
 
 	@Test
@@ -124,10 +135,12 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 20);
+		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -138,10 +151,12 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", null);
 		List<Object> endComponentValues = Arrays.asList((Object) "abd", null);
+		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -152,6 +167,8 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
+		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
@@ -159,7 +176,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -170,14 +187,15 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) null, 10);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
+		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
-		when(wideMapMeta.getPropertyName()).thenReturn("name");
 		expectedEx.expect(IllegalArgumentException.class);
 		expectedEx
-				.expectMessage("There should not be any null value between two non-null keys of WideMap 'name'");
+				.expectMessage("There should not be any null value between two non-null keys of WideMap 'any_property'");
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
 
 	@Test
@@ -188,6 +206,8 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "def", 10);
+		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
 		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
 		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
@@ -195,7 +215,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
 
-		helper.checkMultiKeyBounds(componentGetters, wideMapMeta, start, end, true);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, true);
 	}
 
 	// Ascending order

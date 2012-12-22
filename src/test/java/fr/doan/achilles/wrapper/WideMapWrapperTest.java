@@ -30,7 +30,6 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
-import fr.doan.achilles.serializer.Utils;
 
 /**
  * InternalWideMapWrapperTest
@@ -85,7 +84,7 @@ public class WideMapWrapperTest
 	public void should_get_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert("name", WIDE_MAP, 1, Utils.INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
 
 		wrapper.get(1);
 
@@ -97,7 +96,7 @@ public class WideMapWrapperTest
 	public void should_insert_value() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
 
 		wrapper.insert(1, "test");
 
@@ -109,7 +108,7 @@ public class WideMapWrapperTest
 	public void should_insert_value_with_ttl() throws Exception
 	{
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert("name", WIDE_MAP, 1, INT_SRZ)).thenReturn(composite);
+		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
 
 		wrapper.insert(1, "test", 12);
 
@@ -117,10 +116,7 @@ public class WideMapWrapperTest
 
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked",
-	})
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_values_asc() throws Exception
 	{
@@ -128,7 +124,7 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, true, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -142,10 +138,7 @@ public class WideMapWrapperTest
 		assertThat(result).isEmpty();
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked",
-	})
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_values_asc_bounds_inclusive() throws Exception
 	{
@@ -153,7 +146,7 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, true, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -167,10 +160,7 @@ public class WideMapWrapperTest
 		assertThat(result).isEmpty();
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked",
-	})
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_values_asc_bounds_exclusive() throws Exception
 	{
@@ -178,7 +168,7 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, false, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, false, 2, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -199,7 +189,7 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -220,7 +210,7 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, true, 2, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, true, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -231,9 +221,8 @@ public class WideMapWrapperTest
 
 		KeyValueIteratorForEntity<Integer, String> iterator = mock(KeyValueIteratorForEntity.class);
 
-		when(
-				iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator,
-						INT_SRZ, wideMapMeta)).thenReturn(iterator);
+		when(iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator, wideMapMeta))
+				.thenReturn(iterator);
 
 		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, false, 10);
 
@@ -248,7 +237,7 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 1, false, 3, false, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, false, 3, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -259,9 +248,8 @@ public class WideMapWrapperTest
 
 		KeyValueIteratorForEntity<Integer, String> iterator = mock(KeyValueIteratorForEntity.class);
 
-		when(
-				iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator,
-						INT_SRZ, wideMapMeta)).thenReturn(iterator);
+		when(iteratorFactory.createKeyValueIteratorForEntity(columnSliceIterator, wideMapMeta))
+				.thenReturn(iterator);
 
 		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, false, false, 10);
 
@@ -273,7 +261,7 @@ public class WideMapWrapperTest
 	public void should_remove() throws Exception
 	{
 		DynamicComposite comp = new DynamicComposite();
-		when(keyFactory.createForInsert("name", WIDE_MAP, 5, INT_SRZ)).thenReturn(comp);
+		when(keyFactory.createForInsert(wideMapMeta, 5)).thenReturn(comp);
 
 		wrapper.remove(5);
 
@@ -286,7 +274,7 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery("name", WIDE_MAP, 5, true, 10, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 5, true, 10, true, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
