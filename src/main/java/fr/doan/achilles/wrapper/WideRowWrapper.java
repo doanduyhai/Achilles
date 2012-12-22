@@ -6,10 +6,13 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
-import fr.doan.achilles.validation.Validator;
+import fr.doan.achilles.helper.CompositeHelper;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
+import fr.doan.achilles.iterator.KeyValueIterator;
+import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
  * WideMap
@@ -19,15 +22,18 @@ import fr.doan.achilles.validation.Validator;
  */
 public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 {
-	protected ID id;
-	protected GenericWideRowDao<ID, K> dao;
-	protected PropertyMeta<K, V> wideMapMeta;
+	private ID id;
+	private GenericWideRowDao<ID, K> dao;
+	private PropertyMeta<K, V> wideMapMeta;
+
+	private CompositeHelper helper = new CompositeHelper();
+	private KeyValueFactory keyValueFactory = new KeyValueFactory();
+	private IteratorFactory iteratorFactory = new IteratorFactory();
 
 	@Override
 	public V get(K key)
 	{
 		Object value = dao.getValue(id, key);
-
 		return wideMapMeta.getValue(value);
 	}
 
@@ -50,8 +56,8 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count)
+	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
+			int count)
 	{
 		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
@@ -61,22 +67,23 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		validateBounds(start, end, reverse);
+		helper.checkBounds(start, end, reverse);
 
 		List<HColumn<K, Object>> hColumns = dao.findRawColumnsRange(id, start, end, reverse, count);
 
-		return KeyValue.fromListOfSimpleHColums(hColumns, wideMapMeta.getKeySerializer(),
+		return keyValueFactory.createFromColumnList(hColumns, wideMapMeta.getKeySerializer(),
 				wideMapMeta);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
+			int count)
 	{
 		return iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
 		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
@@ -88,14 +95,16 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 			"unchecked",
 			"rawtypes"
 	})
-	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
 		ColumnSliceIterator<ID, K, Object> columnSliceIterator = dao.getColumnsIterator(id, start,
 				end, reverse, count);
 
-		return new KeyValueIterator(columnSliceIterator, wideMapMeta.getKeySerializer());
+		// return iteratorFactory.createKeyValueIterator(columnSliceIterator, wideMapMeta);
+
+		return null;
 	}
 
 	@Override
@@ -121,30 +130,8 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
-		validateBounds(start, end, false);
+		helper.checkBounds(start, end, false);
 		dao.removeColumnRange(id, start, end);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected void validateBounds(K start, K end, boolean reverse)
-	{
-
-		if (start != null && end != null)
-		{
-			Comparable<K> startComp = (Comparable<K>) start;
-
-			if (reverse)
-			{
-				Validator
-						.validateTrue(startComp.compareTo(end) >= 0,
-								"For reverse range query, start value should be greater or equal to end value");
-			}
-			else
-			{
-				Validator.validateTrue(startComp.compareTo(end) <= 0,
-						"For range query, start value should be lesser or equal to end value");
-			}
-		}
 	}
 
 	public void setId(ID id)

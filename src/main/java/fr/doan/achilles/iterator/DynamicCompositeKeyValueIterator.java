@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.type;
+package fr.doan.achilles.iterator;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -7,6 +7,8 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.holder.KeyValue;
 
 /**
  * KeyValueIterator
@@ -14,16 +16,19 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
+public class DynamicCompositeKeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
 {
-	private ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator;
+	protected ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
 	private Serializer<?> keySerializer;
+	private PropertyMeta<K, V> wideMapMeta;
 
-	public KeyValueIterator(ColumnSliceIterator<?, DynamicComposite, V> columnSliceIterator,
-			Serializer<?> keySerializer)
+	public DynamicCompositeKeyValueIterator(
+			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
+			Serializer<?> keySerializer, PropertyMeta<K, V> wideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
 		this.keySerializer = keySerializer;
+		this.wideMapMeta = wideMapMeta;
 	}
 
 	@Override
@@ -39,12 +44,12 @@ public class KeyValueIterator<K, V> implements Iterator<KeyValue<K, V>>
 		KeyValue<K, V> keyValue = null;
 		if (this.columnSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, V> column = this.columnSliceIterator.next();
+			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
 
 			DynamicComposite composite = column.getName();
 			K key = (K) composite.get(2, this.keySerializer);
-
-			keyValue = new KeyValue<K, V>(key, column.getValue(), column.getTtl());
+			V value = wideMapMeta.getValue(column.getValue());
+			keyValue = new KeyValue<K, V>(key, value, column.getTtl());
 		}
 		else
 		{

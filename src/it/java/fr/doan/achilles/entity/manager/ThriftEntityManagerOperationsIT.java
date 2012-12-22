@@ -29,7 +29,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -124,6 +124,31 @@ public class ThriftEntityManagerOperationsIT
 		assertThat(bar.left.get(1, STRING_SRZ)).isEqualTo("friends");
 		assertThat(bar.right).isEqualTo("bar");
 
+	}
+
+	@Test
+	public void should_persist_with_null_fields() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+
+		em.persist(bean);
+
+		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
+		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
+
+		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
+		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
+				ComponentEquality.GREATER_THAN_EQUAL);
+
+		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+
+		assertThat(columns).hasSize(1);
+
+		Pair<DynamicComposite, Object> name = columns.get(0);
+
+		assertThat(name.left.get(1, STRING_SRZ)).isEqualTo("name");
+		assertThat(name.right).isEqualTo("DuyHai");
 	}
 
 	@Test
@@ -336,8 +361,7 @@ public class ThriftEntityManagerOperationsIT
 
 		bean.getFriends();
 
-		DynamicComposite nameComposite = keyFactory
-				.createForInsert("name", PropertyType.SIMPLE, 0);
+		DynamicComposite nameComposite = keyFactory.createForInsert("name", PropertyType.SIMPLE, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		DynamicComposite friend3Composite = keyFactory.createForInsert("friends",

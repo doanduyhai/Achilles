@@ -20,7 +20,7 @@ import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
-import fr.doan.achilles.entity.type.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 public class EntityPersister

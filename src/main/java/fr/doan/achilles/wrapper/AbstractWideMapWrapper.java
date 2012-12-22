@@ -5,10 +5,12 @@ import java.util.List;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
+import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
  * AbstractWideMapWrapper
@@ -22,6 +24,8 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 	protected GenericEntityDao<ID> dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 	protected CompositeHelper helper = new CompositeHelper();
+	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
+	protected IteratorFactory iteratorFactory = new IteratorFactory();
 
 	@Override
 	public V get(K key)
@@ -59,13 +63,14 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 	protected abstract DynamicComposite buildComposite(K key);
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
+			int count)
 	{
 		return iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
 			boolean reverse, int count)
 	{
 		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);

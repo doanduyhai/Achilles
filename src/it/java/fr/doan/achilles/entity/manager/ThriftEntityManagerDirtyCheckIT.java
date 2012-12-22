@@ -28,7 +28,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValueHolder;
 
 /**
  * ThriftEntityManagerDirtyCheckIT

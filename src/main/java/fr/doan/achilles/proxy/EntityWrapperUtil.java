@@ -12,7 +12,7 @@ import me.prettyprint.hector.api.beans.HColumn;
 import net.sf.cglib.proxy.Factory;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
-import fr.doan.achilles.entity.type.KeyValue;
+import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
 public class EntityWrapperUtil

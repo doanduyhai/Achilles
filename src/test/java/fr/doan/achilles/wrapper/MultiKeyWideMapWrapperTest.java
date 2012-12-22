@@ -37,9 +37,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import parser.entity.CorrectMultiKey;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.MultiKeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.serializer.Utils;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
@@ -200,7 +200,7 @@ public class MultiKeyWideMapWrapperTest
 		when(componentSetters.get(0)).thenReturn(nameSetter);
 		when(componentSetters.get(1)).thenReturn(rankSetter);
 
-		MultiKeyValueIterator<CorrectMultiKey, String> result = wrapper.iterator(start, end, false,
+		DynamicCompositeMultiKeyValueIterator<CorrectMultiKey, String> result = wrapper.iterator(start, end, false,
 				10);
 
 		KeyValue<CorrectMultiKey, String> actual = result.next();

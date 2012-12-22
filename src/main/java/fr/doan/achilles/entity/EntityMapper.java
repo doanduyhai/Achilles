@@ -21,8 +21,8 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetMeta;
-import fr.doan.achilles.entity.type.KeyValueHolder;
 import fr.doan.achilles.exception.BeanMappingException;
+import fr.doan.achilles.holder.KeyValueHolder;
 
 @SuppressWarnings(
 {

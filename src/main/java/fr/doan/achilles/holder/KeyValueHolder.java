@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.type;
+package fr.doan.achilles.holder;
 
 import java.io.Serializable;
 

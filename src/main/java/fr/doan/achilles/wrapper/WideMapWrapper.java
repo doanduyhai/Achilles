@@ -6,8 +6,8 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.KeyValueIterator;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
 /**
@@ -34,17 +34,12 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return KeyValue.fromListOfDynamicCompositeHColums(hColumns, wideMapMeta.getKeySerializer(),
-				wideMapMeta);
+		return keyValueFactory.createFromDynamicCompositeColumnList(hColumns,
+				wideMapMeta.getKeySerializer(), wideMapMeta);
 	}
 
 	@Override
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+	public DynamicCompositeKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
@@ -54,7 +49,8 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
 				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
-		return new KeyValueIterator(columnSliceIterator, wideMapMeta.getKeySerializer());
+		return iteratorFactory.createDynamicCompositeKeyValueIterator(columnSliceIterator,
+				wideMapMeta.getKeySerializer(), wideMapMeta);
 	}
 
 	@Override

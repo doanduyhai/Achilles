@@ -32,7 +32,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.KeyValue;
+import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.serializer.Utils;
 

@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.type;
+package fr.doan.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -18,6 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.holder.KeyValue;
+
 /**
  * KeyValueIteratorTest
  * 
@@ -26,17 +29,20 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValueIteratorTest
+public class DynamicCompositeKeyValueIteratorTest
 {
 
 	@InjectMocks
-	private KeyValueIterator<Integer, String> iterator;
+	private DynamicCompositeKeyValueIterator<Integer, String> iterator;
 
 	@Mock
 	private ColumnSliceIterator<?, DynamicComposite, String> columnSliceIterator;
 
 	@Mock
 	private Serializer<?> keySerializer;
+
+	@Mock
+	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Test
 	public void should_has_next() throws Exception
@@ -66,6 +72,7 @@ public class KeyValueIteratorTest
 		when(column.getValue()).thenReturn("val");
 		when(column.getTtl()).thenReturn(120);
 
+		when(wideMapMeta.getValue("val")).thenReturn("val");
 		KeyValue<Integer, String> keyValue = iterator.next();
 
 		assertThat(keyValue.getKey()).isEqualTo(12);

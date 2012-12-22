@@ -1,9 +1,7 @@
 package fr.doan.achilles.wrapper;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.DYNA_COMP_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -11,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -26,9 +23,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
+import fr.doan.achilles.iterator.factory.IteratorFactory;
 import fr.doan.achilles.serializer.Utils;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -49,16 +48,22 @@ public class WideMapWrapperTest
 	private GenericEntityDao<Long> dao;
 
 	@Mock
-	private WideMapMeta<Integer, String> propertyMeta;
+	private WideMapMeta<Integer, String> wideMapMeta;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
 
 	@Mock
+	private KeyValueFactory keyValueFactory;
+
+	@Mock
+	protected IteratorFactory iteratorFactory;
+
+	@Mock
 	private CompositeHelper helper;
 
 	@Mock
-	private ColumnSliceIterator<Long, DynamicComposite, Object> iterator;
+	private ColumnSliceIterator<Long, DynamicComposite, Object> columnSliceIterator;
 
 	@SuppressWarnings(
 	{
@@ -70,9 +75,9 @@ public class WideMapWrapperTest
 	{
 		wrapper.setId(1L);
 
-		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(WIDE_MAP);
-		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		when(wideMapMeta.getPropertyName()).thenReturn("name");
+		when(wideMapMeta.propertyType()).thenReturn(WIDE_MAP);
+		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 	}
 
 	@Test
@@ -207,6 +212,7 @@ public class WideMapWrapperTest
 		assertThat(result).isEmpty();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_iterator_default() throws Exception
 	{
@@ -220,29 +226,22 @@ public class WideMapWrapperTest
 						end
 				});
 
-		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
+		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
 
-		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
-				DYNA_COMP_SRZ, OBJECT_SRZ);
-		DynamicComposite dynComp = new DynamicComposite();
-		dynComp.setComponent(0, 10, INT_SRZ);
-		dynComp.setComponent(1, 10, INT_SRZ);
-		dynComp.setComponent(2, 1, INT_SRZ);
-		hColumn.setName(dynComp);
-		hColumn.setValue("test");
-		hColumn.setTtl(12);
+		DynamicCompositeKeyValueIterator<Integer, String> iterator = mock(DynamicCompositeKeyValueIterator.class);
 
-		when(iterator.hasNext()).thenReturn(true, false);
-		when(iterator.next()).thenReturn(hColumn);
-		KeyValueIterator<Integer, String> keyValueIter = wrapper.iterator(1, 2, false, 10);
+		when(
+				iteratorFactory.createDynamicCompositeKeyValueIterator(columnSliceIterator,
+						INT_SRZ, wideMapMeta)).thenReturn(iterator);
 
-		KeyValue<Integer, String> keyValue = keyValueIter.next();
-		assertThat(keyValue.getKey()).isEqualTo(1);
-		assertThat(keyValue.getValue()).isEqualTo("test");
-		assertThat(keyValue.getTtl()).isEqualTo(12);
+		DynamicCompositeKeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, false,
+				10);
+
+		assertThat(expected).isSameAs(iterator);
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_iterator_exclusive_bounds() throws Exception
 	{
@@ -256,26 +255,18 @@ public class WideMapWrapperTest
 						end
 				});
 
-		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(iterator);
+		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
 
-		HColumn<DynamicComposite, Object> hColumn1 = new HColumnImpl<DynamicComposite, Object>(
-				DYNA_COMP_SRZ, OBJECT_SRZ);
-		DynamicComposite dynComp1 = new DynamicComposite();
-		dynComp1.setComponent(0, 10, INT_SRZ);
-		dynComp1.setComponent(1, 10, INT_SRZ);
-		dynComp1.setComponent(2, 1, INT_SRZ);
-		hColumn1.setName(dynComp1);
-		hColumn1.setValue("test1");
-		hColumn1.setTtl(11);
+		DynamicCompositeKeyValueIterator<Integer, String> iterator = mock(DynamicCompositeKeyValueIterator.class);
 
-		when(iterator.hasNext()).thenReturn(true);
-		when(iterator.next()).thenReturn(hColumn1);
-		KeyValueIterator<Integer, String> keyValueIter = wrapper.iterator(1, 3, false, false, 10);
+		when(
+				iteratorFactory.createDynamicCompositeKeyValueIterator(columnSliceIterator,
+						INT_SRZ, wideMapMeta)).thenReturn(iterator);
 
-		KeyValue<Integer, String> keyValue = keyValueIter.next();
-		assertThat(keyValue.getKey()).isEqualTo(1);
-		assertThat(keyValue.getValue()).isEqualTo("test1");
-		assertThat(keyValue.getTtl()).isEqualTo(11);
+		DynamicCompositeKeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, false,
+				false, 10);
+
+		assertThat(expected).isSameAs(iterator);
 
 	}
 

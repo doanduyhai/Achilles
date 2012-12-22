@@ -24,9 +24,9 @@ import org.junit.Test;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.iterator.DynamicCompositeKeyValueIterator;
 
 /**
  * ThriftEntityManagerMultiKeyWideMapIT
@@ -235,7 +235,7 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		KeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
+		DynamicCompositeKeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
 				new UserTweetKey(foo, uuid3), //
 				new UserTweetKey(qux, uuid5), //
 				false, 5);
@@ -267,7 +267,7 @@ public class ThriftEntityManagerMultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		KeyValueIterator<UserTweetKey, String> iter = //
+		DynamicCompositeKeyValueIterator<UserTweetKey, String> iter = //
 		userTweets.iterator( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(bar, uuid1), true, //

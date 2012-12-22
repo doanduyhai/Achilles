@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.type;
+package fr.doan.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -22,6 +22,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
@@ -31,7 +33,7 @@ import fr.doan.achilles.proxy.EntityWrapperUtil;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class MultiKeyValueIteratorTest
+public class DynamicCompositeMultiKeyValueIteratorTest
 {
 
 	@Mock
@@ -47,7 +49,7 @@ public class MultiKeyValueIteratorTest
 	private EntityWrapperUtil util;
 
 	@InjectMocks
-	private MultiKeyValueIterator<TweetMultiKey, String> iterator;
+	private DynamicCompositeMultiKeyValueIterator<TweetMultiKey, String> iterator;
 
 	@Before
 	public void setUp()

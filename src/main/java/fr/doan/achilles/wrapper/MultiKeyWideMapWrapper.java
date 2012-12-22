@@ -8,8 +8,8 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
-import fr.doan.achilles.entity.type.KeyValue;
-import fr.doan.achilles.entity.type.MultiKeyValueIterator;
+import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.iterator.DynamicCompositeMultiKeyValueIterator;
 import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.wrapper.factory.DynamicCompositeKeyFactory;
 
@@ -64,15 +64,15 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 				(MultiKeyWideMapMeta<K, V>) wideMapMeta, hColumns, componentSetters);
 	}
 
-	@Override
-	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
+	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end, boolean reverse,
+			int count)
 	{
 		return this.iterator(start, end, true, reverse, count);
 	}
 
 	@Override
-	public MultiKeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count)
+	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, K end,
+			boolean inclusiveBounds, boolean reverse, int count)
 	{
 		return this.iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
@@ -83,8 +83,8 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 			"unchecked",
 			"rawtypes"
 	})
-	public MultiKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public DynamicCompositeMultiKeyValueIterator<K, V> iterator(K start, boolean inclusiveStart,
+			K end, boolean inclusiveEnd, boolean reverse, int count)
 	{
 
 		DynamicComposite[] queryComps = keyFactory.createForMultiKeyQuery( //
@@ -100,8 +100,8 @@ public class MultiKeyWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
 				.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
-		return new MultiKeyValueIterator(columnSliceIterator,
-				(MultiKeyWideMapMeta<K, V>) wideMapMeta, componentSetters);
+		return new DynamicCompositeMultiKeyValueIterator(columnSliceIterator, componentSetters,
+				(MultiKeyWideMapMeta<K, V>) wideMapMeta);
 	}
 
 	public void setComponentSerializers(List<Serializer<?>> componentSerializers)
