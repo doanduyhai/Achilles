@@ -1,29 +1,22 @@
 package fr.doan.achilles.columnFamily;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 import me.prettyprint.hector.api.factory.HFactory;
-
-import org.apache.commons.lang.StringUtils;
-
 import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.type.MultiKey;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 
 public class ColumnFamilyBuilder
 {
 
 	private static final String DYNAMIC_TYPE_ALIASES = "(a=>AsciiType,b=>BytesType,c=>BooleanType,d=>DateType,e=>DecimalType,z=>DoubleType,f=>FloatType,i=>IntegerType,j=>Int32Type,x=>LexicalUUIDType,l=>LongType,t=>TimeUUIDType,s=>UTF8Type,u=>UUIDType)";
 
-	private PropertyHelper propertyHelper = new PropertyHelper();
+	private PropertyHelper helper = new PropertyHelper();
 
-	public <ID> ColumnFamilyDefinition build(EntityMeta<ID> entityMeta, String keyspaceName)
+	public <ID> ColumnFamilyDefinition buildForEntity(EntityMeta<ID> entityMeta, String keyspaceName)
 	{
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
@@ -36,41 +29,19 @@ public class ColumnFamilyBuilder
 		return cfDef;
 	}
 
-	public <K, N, V> ColumnFamilyDefinition buildWideRow(String keyspaceName,
-			String columnFamilyName, Class<K> keyClass, Class<N> nameClass, Class<V> valueClass)
+	public <ID> ColumnFamilyDefinition buildForWideRow(EntityMeta<ID> entityMeta,
+			String keyspaceName)
 	{
 
+		PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator().next();
+		String columnFamilyName = entityMeta.getColumnFamilyName();
+		Class<ID> keyClass = entityMeta.getIdMeta().getValueClass();
+		Class<?> valueClass = wideMapMeta.getValueClass();
+
 		Serializer<?> keySerializer = SerializerTypeInferer.getSerializer(keyClass);
-		ComparatorType comparatorType;
-		List<String> comparatorTypes = new ArrayList<String>();
-		String comparatorTypesAlias = null;
-		comparatorType = ComparatorType.COMPOSITETYPE;
-
-		if (MultiKey.class.isAssignableFrom(nameClass))
-		{
-
-			List<Class<?>> componentClasses = new ArrayList<Class<?>>();
-			List<Method> componentGetters = new ArrayList<Method>();
-			List<Method> componentSetters = new ArrayList<Method>();
-
-			propertyHelper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-					nameClass);
-
-			for (Class<?> clazz : componentClasses)
-			{
-				Serializer<?> srz = SerializerTypeInferer.getSerializer(clazz);
-				comparatorTypes.add(srz.getComparatorType().getTypeName());
-			}
-
-			comparatorTypesAlias = "CompositeType(" + StringUtils.join(comparatorTypes, ',') + ")";
-		}
-		else
-		{
-			Serializer<?> nameSerializer = SerializerTypeInferer.getSerializer(nameClass);
-
-			comparatorTypesAlias = "CompositeType("
-					+ nameSerializer.getComparatorType().getTypeName() + ")";
-		}
+		ComparatorType comparatorType = ComparatorType.COMPOSITETYPE;
+		String comparatorTypesAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
+				true);
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, comparatorType);
@@ -85,4 +56,5 @@ public class ColumnFamilyBuilder
 
 		return cfDef;
 	}
+
 }

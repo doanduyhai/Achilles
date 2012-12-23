@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.PropertyFilter;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
 
@@ -95,7 +96,14 @@ public class EntityHelper
 		Method[] accessors = new Method[2];
 
 		accessors[0] = findGetter(beanClass, field);
-		accessors[1] = findSetter(beanClass, field);
+		if (field.getType() != WideMap.class)
+		{
+			accessors[1] = findSetter(beanClass, field);
+		}
+		else
+		{
+			accessors[1] = null;
+		}
 
 		return accessors;
 	}

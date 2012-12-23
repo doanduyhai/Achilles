@@ -16,8 +16,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
+import me.prettyprint.hector.api.Serializer;
+
+import org.apache.commons.lang.StringUtils;
+
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.validation.Validator;
 
@@ -194,5 +202,62 @@ public class PropertyHelper
 			lazy = true;
 		}
 		return lazy;
+	}
+
+	public <ID> String determineCompatatorTypeAliasForWideRow(EntityMeta<ID> entityMeta,
+			boolean forCreation)
+	{
+		PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator().next();
+		Class<?> nameClass = wideMapMeta.getKeyClass();
+		List<String> comparatorTypes = new ArrayList<String>();
+		String comparatorTypesAlias;
+
+		if (MultiKey.class.isAssignableFrom(nameClass))
+		{
+			List<Class<?>> componentClasses = new ArrayList<Class<?>>();
+			List<Method> componentGetters = new ArrayList<Method>();
+			List<Method> componentSetters = new ArrayList<Method>();
+
+			this.parseMultiKey(componentClasses, componentGetters, componentSetters, nameClass);
+
+			for (Class<?> clazz : componentClasses)
+			{
+				Serializer<?> srz = SerializerTypeInferer.getSerializer(clazz);
+				if (forCreation)
+				{
+					comparatorTypes.add(srz.getComparatorType().getTypeName());
+				}
+				else
+				{
+					comparatorTypes.add("org.apache.cassandra.db.marshal."
+							+ srz.getComparatorType().getTypeName());
+				}
+			}
+			if (forCreation)
+			{
+				comparatorTypesAlias = "(" + StringUtils.join(comparatorTypes, ',') + ")";
+			}
+			else
+			{
+				comparatorTypesAlias = "CompositeType(" + StringUtils.join(comparatorTypes, ',')
+						+ ")";
+			}
+		}
+		else
+		{
+			String typeAlias = SerializerTypeInferer.getSerializer(nameClass).getComparatorType()
+					.getTypeName();
+			if (forCreation)
+			{
+				comparatorTypesAlias = "(" + typeAlias + ")";
+			}
+			else
+			{
+				comparatorTypesAlias = "CompositeType(org.apache.cassandra.db.marshal." + typeAlias
+						+ ")";
+			}
+		}
+
+		return comparatorTypesAlias;
 	}
 }

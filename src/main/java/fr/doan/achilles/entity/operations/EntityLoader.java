@@ -39,13 +39,22 @@ public class EntityLoader
 		try
 		{
 
-			List<Pair<DynamicComposite, Object>> columns = entityMeta.getEntityDao()
-					.eagerFetchEntity(key);
-
-			if (columns.size() > 0)
+			if (entityMeta.isWideRow())
 			{
 				entity = entityClass.newInstance();
-				mapper.mapColumnsToBean(key, columns, entityMeta, entity);
+				entityMeta.getIdMeta().getSetter().invoke(entity, key);
+
+			}
+			else
+			{
+				List<Pair<DynamicComposite, Object>> columns = entityMeta.getEntityDao()
+						.eagerFetchEntity(key);
+				if (columns.size() > 0)
+				{
+					entity = entityClass.newInstance();
+					mapper.mapColumnsToBean(key, columns, entityMeta, entity);
+					entityMeta.getIdMeta().getSetter().invoke(entity, key);
+				}
 			}
 
 		}

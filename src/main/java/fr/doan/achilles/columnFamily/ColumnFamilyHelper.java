@@ -11,7 +11,6 @@ import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
 public class ColumnFamilyHelper
@@ -53,27 +52,15 @@ public class ColumnFamilyHelper
 		ColumnFamilyDefinition cfDef;
 		if (entityMeta.isWideRow())
 		{
-			PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator()
-					.next();
-			cfDef = this.columnFamilyBuilder.buildWideRow(this.keyspace.getKeyspaceName(),
-					entityMeta.getCanonicalClassName(), //
-					entityMeta.getIdMeta().getValueClass(), //
-					wideMapMeta.getKeyClass(), //
-					wideMapMeta.getValueClass());
+			cfDef = this.columnFamilyBuilder.buildForWideRow(entityMeta,
+					this.keyspace.getKeyspaceName());
 		}
 		else
 		{
-			cfDef = this.columnFamilyBuilder.build(entityMeta, this.keyspace.getKeyspaceName());
+			cfDef = this.columnFamilyBuilder.buildForEntity(entityMeta,
+					this.keyspace.getKeyspaceName());
 
 		}
-		this.addColumnFamily(cfDef);
-	}
-
-	public <K, N, V> void createWideRow(String columnFamilyName, Class<K> keyClass,
-			Class<N> nameClass, Class<V> valueClass)
-	{
-		ColumnFamilyDefinition cfDef = this.columnFamilyBuilder.buildWideRow(
-				this.keyspace.getKeyspaceName(), columnFamilyName, keyClass, nameClass, valueClass);
 		this.addColumnFamily(cfDef);
 	}
 
@@ -105,22 +92,22 @@ public class ColumnFamilyHelper
 		}
 	}
 
-	public <K, N, V> void validateWideRow(String columnFamilyName,
-			boolean forceColumnFamilyCreation, Class<K> keyClass, Class<N> nameClass,
-			Class<V> valueClass)
-	{
-		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(columnFamilyName);
-		if (cfDef == null)
-		{
-			if (forceColumnFamilyCreation)
-			{
-				this.createWideRow(columnFamilyName, keyClass, nameClass, valueClass);
-			}
-			else
-			{
-				throw new InvalidColumnFamilyException("The required column family '"
-						+ columnFamilyName + "' does not exist");
-			}
-		}
-	}
+	// public <K, N, V> void validateWideRow(String columnFamilyName,
+	// boolean forceColumnFamilyCreation, Class<K> keyClass, Class<N> nameClass,
+	// Class<V> valueClass)
+	// {
+	// ColumnFamilyDefinition cfDef = this.discoverColumnFamily(columnFamilyName);
+	// if (cfDef == null)
+	// {
+	// if (forceColumnFamilyCreation)
+	// {
+	// this.createColumnFamily(entry.getValue());
+	// }
+	// else
+	// {
+	// throw new InvalidColumnFamilyException("The required column family '"
+	// + columnFamilyName + "' does not exist");
+	// }
+	// }
+	// }
 }

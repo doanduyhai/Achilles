@@ -13,11 +13,13 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.WideRowBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
@@ -89,18 +92,41 @@ public class EntityLoaderTest
 		bean = CompleteBeanTestBuilder.builder().buid();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_load_entity() throws Exception
 	{
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 		columns.add(new Pair<DynamicComposite, Object>(new DynamicComposite(), ""));
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
+		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getSetter()).thenReturn(idSetter);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
-		loader.load(CompleteBean.class, 1L, entityMeta);
+		CompleteBean loaded = loader.load(CompleteBean.class, 1L, entityMeta);
 
 		verify(mapper).mapColumnsToBean(eq(1L), eq(columns), eq(entityMeta),
 				any(CompleteBean.class));
+
+		assertThat(loaded.getId()).isEqualTo(1L);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_load_widerow() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
+		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);
+
+		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getSetter()).thenReturn(idSetter);
+
+		WideRowBean loaded = loader.load(WideRowBean.class, 452L, entityMeta);
+
+		assertThat(loaded.getId()).isEqualTo(452L);
 	}
 
 	@Test

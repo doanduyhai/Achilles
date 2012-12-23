@@ -27,7 +27,13 @@ import parser.entity.MultiKeyNotInstantiable;
 import parser.entity.MultiKeyWithDuplicateOrder;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
+
+import com.google.common.collect.Maps;
+
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.ValidationException;
 
@@ -250,4 +256,70 @@ public class PropertyHelperTest
 		assertThat(helper.isLazy(field)).isTrue();
 	}
 
+	@Test
+	public void should_determine_composite_type_alias_for_widerow() throws Exception
+	{
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		PropertyMeta<Integer, String> propertyMeta = new WideMapMeta<Integer, String>();
+		propertyMeta.setKeyClass(Integer.class);
+		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
+		propertyMap.put("map", propertyMeta);
+		entityMeta.setPropertyMetas(propertyMap);
+
+		String compatatorTypeAlias = helper
+				.determineCompatatorTypeAliasForWideRow(entityMeta, true);
+
+		assertThat(compatatorTypeAlias).isEqualTo("(BytesType)");
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_multikey_widerow() throws Exception
+	{
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		PropertyMeta<TweetMultiKey, String> propertyMeta = new WideMapMeta<TweetMultiKey, String>();
+		propertyMeta.setKeyClass(TweetMultiKey.class);
+		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
+		propertyMap.put("values", propertyMeta);
+		entityMeta.setPropertyMetas(propertyMap);
+
+		String compatatorTypeAlias = helper
+				.determineCompatatorTypeAliasForWideRow(entityMeta, true);
+
+		assertThat(compatatorTypeAlias).isEqualTo("(UUIDType,UTF8Type,BytesType)");
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_widerow_check() throws Exception
+	{
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		PropertyMeta<Integer, String> propertyMeta = new WideMapMeta<Integer, String>();
+		propertyMeta.setKeyClass(Integer.class);
+		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
+		propertyMap.put("map", propertyMeta);
+		entityMeta.setPropertyMetas(propertyMap);
+
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
+				false);
+
+		assertThat(compatatorTypeAlias).isEqualTo(
+				"CompositeType(org.apache.cassandra.db.marshal.BytesType)");
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_multikey_widerow_check() throws Exception
+	{
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		PropertyMeta<TweetMultiKey, String> propertyMeta = new WideMapMeta<TweetMultiKey, String>();
+		propertyMeta.setKeyClass(TweetMultiKey.class);
+		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
+		propertyMap.put("values", propertyMeta);
+		entityMeta.setPropertyMetas(propertyMap);
+
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
+				false);
+
+		assertThat(compatatorTypeAlias)
+				.isEqualTo(
+						"CompositeType(org.apache.cassandra.db.marshal.UUIDType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.BytesType)");
+	}
 }

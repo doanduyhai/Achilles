@@ -35,8 +35,7 @@ public class EntityParser
 			boolean forceColumnFamilyCreation)
 	{
 		Validator.validateInstantiable(entityClass);
-		String canonicalName = entityClass.getCanonicalName();
-		String columnFamily = helper.inferColumnFamilyName(entityClass, canonicalName);
+		String columnFamily = helper.inferColumnFamilyName(entityClass, entityClass.getCanonicalName());
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
 		boolean wideRow = entityClass.getAnnotation(WideRow.class) != null ? true : false;
 
@@ -70,7 +69,7 @@ public class EntityParser
 		validatePropertyMetas(entityClass, propertyMetas);
 		validateWideRow(entityClass, wideRow, propertyMetas);
 
-		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(canonicalName)
+		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(entityClass.getCanonicalName())
 				.columnFamilyName(columnFamily).serialVersionUID(serialVersionUID)
 				.propertyMetas(propertyMetas).wideRow(wideRow).build();
 	}

@@ -1,15 +1,8 @@
 package fr.doan.achilles.entity.parser;
 
-import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,27 +11,18 @@ import java.util.UUID;
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
 
-import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import parser.entity.Bean;
-import parser.entity.BeanWithJoinColumnAsEntity;
-import parser.entity.BeanWithJoinColumnAsWideRow;
-import parser.entity.BeanWithMultiKeyJoinColumnAsEntity;
-import parser.entity.BeanWithMultiKeyJoinColumnAsWideRow;
 import parser.entity.CorrectMultiKey;
 import parser.entity.CorrectMultiKeyUnorderedKeys;
 import parser.entity.MultiKeyNotInstantiable;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
 import fr.doan.achilles.annotations.Lazy;
-import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
@@ -635,177 +619,177 @@ public class PropertyParserTest
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_join_wide_map_with_entity() throws Exception
-	{
-		Field wide = BeanWithJoinColumnAsEntity.class.getDeclaredField("wide");
-		Method idGetter = Bean.class.getDeclaredMethod("getId");
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		Keyspace keyspace = mock(ExecutingKeyspace.class);
-		EntityParser entityParser = new EntityParser();
-		ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-
-		PropertyMeta<Integer, BeanWithJoinColumnAsEntity> meta = //
-		parser.parseJoinColum( //
-				BeanWithJoinColumnAsEntity.class, //
-				wide, //
-				entityMetaMap, //
-				keyspace, //
-				entityParser, //
-				columnFamilyHelper, true);
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("wide");
-		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isInsertable()).isTrue();
-		assertThat(meta.isEntityValue()).isTrue();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-
-		assertThat(entityMetaMap).hasSize(1);
-		EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
-		assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
-		assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
-		assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
-		assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_join_wide_map_with_wide_row() throws Exception
-	{
-		Field wideRow = BeanWithJoinColumnAsWideRow.class.getDeclaredField("wideRow");
-		Method idGetter = BeanWithJoinColumnAsWideRow.class.getDeclaredMethod("getId");
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		Keyspace keyspace = mock(ExecutingKeyspace.class);
-		EntityParser entityParser = new EntityParser();
-		ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-
-		PropertyMeta<Integer, String> meta = //
-		parser.parseJoinColum( //
-				BeanWithJoinColumnAsWideRow.class, //
-				wideRow, //
-				entityMetaMap, //
-				keyspace, //
-				entityParser, //
-				columnFamilyHelper, true);
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("wideRow");
-		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isInsertable()).isTrue();
-		assertThat(meta.isEntityValue()).isFalse();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-
-		assertThat(entityMetaMap).hasSize(0);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_join_wide_map_with_multikey_entity() throws Exception
-	{
-		Field wide = BeanWithMultiKeyJoinColumnAsEntity.class.getDeclaredField("wide");
-		Method idGetter = Bean.class.getDeclaredMethod("getId");
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		Keyspace keyspace = mock(ExecutingKeyspace.class);
-		EntityParser entityParser = new EntityParser();
-		ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-
-		PropertyMeta<Integer, BeanWithMultiKeyJoinColumnAsEntity> meta = //
-		parser.parseJoinColum( //
-				BeanWithMultiKeyJoinColumnAsEntity.class, //
-				wide, //
-				entityMetaMap, //
-				keyspace, //
-				entityParser, //
-				columnFamilyHelper, true);
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("wide");
-		assertThat(meta.isSingleKey()).isFalse();
-		assertThat(meta.isInsertable()).isTrue();
-		assertThat(meta.isEntityValue()).isTrue();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-
-		assertThat(entityMetaMap).hasSize(1);
-		EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
-		assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
-		assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
-		assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
-		assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
-
-		assertThat(meta.getComponentClasses()).hasSize(2);
-		assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
-		assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
-
-		assertThat(meta.getComponentSerializers()).hasSize(2);
-		assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
-		assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
-
-		assertThat(meta.getComponentGetters()).hasSize(2);
-		assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-		assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
-
-		assertThat(meta.getComponentSetters()).hasSize(2);
-		assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
-		assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_join_wide_map_with_multikey_wide_row() throws Exception
-	{
-		Field wideRow = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredField("wideRow");
-		Method idGetter = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredMethod("getId");
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		Keyspace keyspace = mock(ExecutingKeyspace.class);
-		EntityParser entityParser = new EntityParser();
-		ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-
-		PropertyMeta<Integer, String> meta = //
-		parser.parseJoinColum( //
-				BeanWithMultiKeyJoinColumnAsWideRow.class, //
-				wideRow, //
-				entityMetaMap, //
-				keyspace, //
-				entityParser, //
-				columnFamilyHelper, true);
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("wideRow");
-		assertThat(meta.isSingleKey()).isFalse();
-		assertThat(meta.isInsertable()).isTrue();
-		assertThat(meta.isEntityValue()).isFalse();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-
-		assertThat(entityMetaMap).hasSize(0);
-
-		assertThat(meta.getComponentClasses()).hasSize(2);
-		assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
-		assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
-
-		assertThat(meta.getComponentSerializers()).hasSize(2);
-		assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
-		assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
-
-		assertThat(meta.getComponentGetters()).hasSize(2);
-		assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-		assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
-
-		assertThat(meta.getComponentSetters()).hasSize(2);
-		assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
-		assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
-	}
+	// @SuppressWarnings("unchecked")
+	// @Test
+	// public void should_parse_join_wide_map_with_entity() throws Exception
+	// {
+	// Field wide = BeanWithJoinColumnAsEntity.class.getDeclaredField("wide");
+	// Method idGetter = Bean.class.getDeclaredMethod("getId");
+	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	// Keyspace keyspace = mock(ExecutingKeyspace.class);
+	// EntityParser entityParser = new EntityParser();
+	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
+	//
+	// PropertyMeta<Integer, BeanWithJoinColumnAsEntity> meta = //
+	// parser.parseJoinColum( //
+	// BeanWithJoinColumnAsEntity.class, //
+	// wide, //
+	// entityMetaMap, //
+	// keyspace, //
+	// entityParser, //
+	// columnFamilyHelper, true);
+	//
+	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+	// assertThat(meta.getPropertyName()).isEqualTo("wide");
+	// assertThat(meta.isSingleKey()).isTrue();
+	// assertThat(meta.isInsertable()).isTrue();
+	// assertThat(meta.isEntityValue()).isTrue();
+	// assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
+	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
+	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
+	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	//
+	// assertThat(entityMetaMap).hasSize(1);
+	// EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
+	// assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
+	// assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
+	// assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	// assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
+	// }
+	//
+	// @SuppressWarnings("unchecked")
+	// @Test
+	// public void should_parse_join_wide_map_with_wide_row() throws Exception
+	// {
+	// Field wideRow = BeanWithJoinColumnAsWideRow.class.getDeclaredField("wideRow");
+	// Method idGetter = BeanWithJoinColumnAsWideRow.class.getDeclaredMethod("getId");
+	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	// Keyspace keyspace = mock(ExecutingKeyspace.class);
+	// EntityParser entityParser = new EntityParser();
+	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
+	//
+	// PropertyMeta<Integer, String> meta = //
+	// parser.parseJoinColum( //
+	// BeanWithJoinColumnAsWideRow.class, //
+	// wideRow, //
+	// entityMetaMap, //
+	// keyspace, //
+	// entityParser, //
+	// columnFamilyHelper, true);
+	//
+	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+	// assertThat(meta.getPropertyName()).isEqualTo("wideRow");
+	// assertThat(meta.isSingleKey()).isTrue();
+	// assertThat(meta.isInsertable()).isTrue();
+	// assertThat(meta.isEntityValue()).isFalse();
+	// assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
+	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
+	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
+	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	//
+	// assertThat(entityMetaMap).hasSize(0);
+	// }
+	//
+	// @SuppressWarnings("unchecked")
+	// @Test
+	// public void should_parse_join_wide_map_with_multikey_entity() throws Exception
+	// {
+	// Field wide = BeanWithMultiKeyJoinColumnAsEntity.class.getDeclaredField("wide");
+	// Method idGetter = Bean.class.getDeclaredMethod("getId");
+	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	// Keyspace keyspace = mock(ExecutingKeyspace.class);
+	// EntityParser entityParser = new EntityParser();
+	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
+	//
+	// PropertyMeta<Integer, BeanWithMultiKeyJoinColumnAsEntity> meta = //
+	// parser.parseJoinColum( //
+	// BeanWithMultiKeyJoinColumnAsEntity.class, //
+	// wide, //
+	// entityMetaMap, //
+	// keyspace, //
+	// entityParser, //
+	// columnFamilyHelper, true);
+	//
+	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+	// assertThat(meta.getPropertyName()).isEqualTo("wide");
+	// assertThat(meta.isSingleKey()).isFalse();
+	// assertThat(meta.isInsertable()).isTrue();
+	// assertThat(meta.isEntityValue()).isTrue();
+	// assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
+	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
+	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
+	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	//
+	// assertThat(entityMetaMap).hasSize(1);
+	// EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
+	// assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
+	// assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
+	// assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	// assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
+	//
+	// assertThat(meta.getComponentClasses()).hasSize(2);
+	// assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
+	// assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
+	//
+	// assertThat(meta.getComponentSerializers()).hasSize(2);
+	// assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
+	// assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
+	//
+	// assertThat(meta.getComponentGetters()).hasSize(2);
+	// assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+	// assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+	//
+	// assertThat(meta.getComponentSetters()).hasSize(2);
+	// assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
+	// assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
+	// }
+	//
+	// @SuppressWarnings("unchecked")
+	// @Test
+	// public void should_parse_join_wide_map_with_multikey_wide_row() throws Exception
+	// {
+	// Field wideRow = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredField("wideRow");
+	// Method idGetter = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredMethod("getId");
+	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	// Keyspace keyspace = mock(ExecutingKeyspace.class);
+	// EntityParser entityParser = new EntityParser();
+	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
+	//
+	// PropertyMeta<Integer, String> meta = //
+	// parser.parseJoinColum( //
+	// BeanWithMultiKeyJoinColumnAsWideRow.class, //
+	// wideRow, //
+	// entityMetaMap, //
+	// keyspace, //
+	// entityParser, //
+	// columnFamilyHelper, true);
+	//
+	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+	// assertThat(meta.getPropertyName()).isEqualTo("wideRow");
+	// assertThat(meta.isSingleKey()).isFalse();
+	// assertThat(meta.isInsertable()).isTrue();
+	// assertThat(meta.isEntityValue()).isFalse();
+	// assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
+	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
+	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
+	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
+	//
+	// assertThat(entityMetaMap).hasSize(0);
+	//
+	// assertThat(meta.getComponentClasses()).hasSize(2);
+	// assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
+	// assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
+	//
+	// assertThat(meta.getComponentSerializers()).hasSize(2);
+	// assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
+	// assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
+	//
+	// assertThat(meta.getComponentGetters()).hasSize(2);
+	// assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+	// assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+	//
+	// assertThat(meta.getComponentSetters()).hasSize(2);
+	// assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
+	// assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
+	// }
 }

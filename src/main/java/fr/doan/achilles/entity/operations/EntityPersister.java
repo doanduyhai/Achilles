@@ -14,6 +14,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.Validate;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
+import fr.doan.achilles.dao.AbstractDao;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -72,7 +73,16 @@ public class EntityPersister
 	{
 		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
 		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
-		GenericEntityDao<ID> dao = entityMeta.getEntityDao();
+
+		AbstractDao<ID, ?, ?> dao;
+		if (entityMeta.isWideRow())
+		{
+			dao = entityMeta.getEntityDao();
+		}
+		else
+		{
+			dao = entityMeta.getEntityDao();
+		}
 		dao.removeRow(key);
 	}
 
@@ -139,7 +149,8 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, value.hashCode());
+				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta,
+						value.hashCode());
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -166,8 +177,8 @@ public class EntityPersister
 		{
 			for (Entry<?, ?> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, entry.getKey()
-						.hashCode());
+				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, entry
+						.getKey().hashCode());
 
 				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
 				dao.insertColumn(key, name, value, mutator);

@@ -202,6 +202,17 @@ public class EntityHelperTest
 	}
 
 	@Test
+	public void should_find_accessors_from_widemap_type() throws Exception
+	{
+		Method[] accessors = helper.findAccessors(CompleteBean.class,
+				CompleteBean.class.getDeclaredField("tweets"));
+
+		assertThat(accessors).hasSize(2);
+		assertThat(accessors[0].getName()).isEqualTo("getTweets");
+		assertThat(accessors[1]).isNull();
+	}
+
+	@Test
 	public void should_get_value_from_field() throws Exception
 	{
 		Bean bean = new Bean();

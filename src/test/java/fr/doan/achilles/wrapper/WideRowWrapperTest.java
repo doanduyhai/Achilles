@@ -22,7 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
-import fr.doan.achilles.dao.GenericMultiKeyWideRowDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
@@ -45,7 +45,7 @@ public class WideRowWrapperTest
 	private WideRowWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericMultiKeyWideRowDao<Long> dao;
+	private GenericWideRowDao<Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
