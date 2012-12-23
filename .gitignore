@@ -21,3 +21,4 @@ release.properties
 *~
 .cache
 .springBeans
+test-output
