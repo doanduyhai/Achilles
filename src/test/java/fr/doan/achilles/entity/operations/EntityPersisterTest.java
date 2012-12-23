@@ -12,9 +12,11 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
@@ -36,12 +38,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import parser.entity.WideRowBean;
+
 import com.google.common.collect.Sets;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -404,5 +409,17 @@ public class EntityPersisterTest
 		persister.removeProperty(1L, dao, propertyMeta);
 
 		verify(dao).removeColumnRange(1L, start, end);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_persist_widerow() throws Exception
+	{
+		EntityMeta<Long> entityMeta = mock(EntityMeta.class);
+		when(entityMeta.isWideRow()).thenReturn(true);
+		persister.persist(new WideRowBean(), entityMeta);
+
+		verifyZeroInteractions(helper);
+
 	}
 }

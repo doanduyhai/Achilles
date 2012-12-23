@@ -90,7 +90,7 @@ public class KeyValueFactory
 
 	@SuppressWarnings("unchecked")
 	public <K, V> KeyValue<K, V> createForWideRow(PropertyMeta<K, V> wideMapMeta,
-			HColumn<Composite, Object> hColumn)
+			HColumn<Composite, V> hColumn)
 	{
 		K key;
 		V value;
@@ -133,12 +133,12 @@ public class KeyValueFactory
 	}
 
 	public <K, V> List<KeyValue<K, V>> createListForWideRow(PropertyMeta<K, V> wideMapMeta,
-			List<HColumn<Composite, Object>> hColumns)
+			List<HColumn<Composite, V>> hColumns)
 	{
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 		if (hColumns != null && hColumns.size() > 0)
 		{
-			for (HColumn<Composite, Object> hColumn : hColumns)
+			for (HColumn<Composite, V> hColumn : hColumns)
 			{
 				result.add(createForWideRow(wideMapMeta, hColumn));
 			}

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 
 public abstract class CassandraDaoTest
 {
@@ -41,7 +42,8 @@ public abstract class CassandraDaoTest
 		{
 			final File temporaryCassandraYaml = prepareEmbeddedCassandraConfig();
 
-			EmbeddedCassandraServerHelper.startEmbeddedCassandra(temporaryCassandraYaml, EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR);
+			EmbeddedCassandraServerHelper.startEmbeddedCassandra(temporaryCassandraYaml,
+					EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR);
 			Runtime.getRuntime().addShutdownHook(new Thread()
 			{
 				@Override
@@ -57,10 +59,12 @@ public abstract class CassandraDaoTest
 		{
 			throw new IllegalStateException("Cannot start cassandra embedded", e1);
 		}
-		DataLoader dataLoader = new DataLoader(CASSANDRA_TEST_CLUSTER_NAME, CASSANDRA_TEST_HOST + ":" + CASSANDRA_TEST_PORT);
+		DataLoader dataLoader = new DataLoader(CASSANDRA_TEST_CLUSTER_NAME, CASSANDRA_TEST_HOST
+				+ ":" + CASSANDRA_TEST_PORT);
 		dataLoader.load(new ClassPathJsonDataSet(CASSANDRA_TEST_COLUMN_FAMILIES_CONFIG));
 
-		cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":" + CASSANDRA_TEST_PORT);
+		cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
+				+ CASSANDRA_TEST_PORT);
 		keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
 	}
 
@@ -92,8 +96,15 @@ public abstract class CassandraDaoTest
 		return keyspace;
 	}
 
-	public static <K> GenericEntityDao<K> getDao(Serializer<K> keySerializer, String columnFamily)
+	public static <K> GenericEntityDao<K> getEntityDao(Serializer<K> keySerializer,
+			String columnFamily)
 	{
 		return new GenericEntityDao<K>(keyspace, keySerializer, columnFamily);
+	}
+
+	public static <K, V> GenericWideRowDao<K, V> getWideRowDao(Serializer<K> keySerializer,
+			Serializer<V> valueSerializer, String columnFamily)
+	{
+		return new GenericWideRowDao<K, V>(keyspace, keySerializer, valueSerializer, columnFamily);
 	}
 }

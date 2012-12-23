@@ -45,7 +45,7 @@ public class WideRowWrapperTest
 	private WideRowWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericWideRowDao<Long> dao;
+	private GenericWideRowDao<Long, String> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
@@ -115,7 +115,7 @@ public class WideRowWrapperTest
 	@Test
 	public void should_find_range() throws Exception
 	{
-		List<HColumn<Composite, Object>> hColumns = mock(List.class);
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
 		List<KeyValue<Integer, String>> keyValues = mock(List.class);
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
@@ -140,7 +140,7 @@ public class WideRowWrapperTest
 	public void should_get_iterator() throws Exception
 	{
 		KeyValueIteratorForWideRow<Integer, String> keyValues = mock(KeyValueIteratorForWideRow.class);
-		ColumnSliceIterator<Long, Composite, Object> iterator = mock(ColumnSliceIterator.class);
+		ColumnSliceIterator<Long, Composite, String> iterator = mock(ColumnSliceIterator.class);
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 

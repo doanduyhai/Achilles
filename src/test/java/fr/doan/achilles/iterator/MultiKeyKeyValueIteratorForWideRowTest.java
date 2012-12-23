@@ -2,7 +2,6 @@ package fr.doan.achilles.iterator;
 
 import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -44,7 +43,7 @@ public class MultiKeyKeyValueIteratorForWideRowTest
 	private MultiKeyKeyValueIteratorForWideRow<CorrectMultiKey, String> iterator;
 
 	@Mock
-	private ColumnSliceIterator<CorrectMultiKey, Composite, Object> columnSliceIterator;
+	private ColumnSliceIterator<CorrectMultiKey, Composite, String> columnSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -78,8 +77,8 @@ public class MultiKeyKeyValueIteratorForWideRowTest
 	public void should_give_next_element() throws Exception
 	{
 		KeyValue<CorrectMultiKey, String> keyValue = mock(KeyValue.class);
-		HColumn<Composite, Object> hColumn = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
-				OBJECT_SRZ);
+		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
+				STRING_SRZ);
 		Composite comp = new Composite();
 		comp.setComponent(0, 12, INT_SRZ);
 		comp.setComponent(1, "name", STRING_SRZ);

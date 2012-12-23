@@ -1,7 +1,7 @@
-package fr.doan.achilles.entity.manager;
+package integration.tests;
 
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getDao;
+import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.normalizeColumnFamilyName;
@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
@@ -34,10 +36,10 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerMultiKeyWideMapIT
+public class MultiKeyWideMapIT
 {
 	private final String ENTITY_PACKAGE = "mapping.entity";
-	private GenericEntityDao<Long> dao = getDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

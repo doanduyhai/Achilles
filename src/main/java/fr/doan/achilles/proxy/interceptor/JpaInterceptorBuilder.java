@@ -50,13 +50,24 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 		Validator.validateNotNull(this.target, "Target object");
 		Validator.validateNotNull(entityMeta.getGetterMetas(), "Getters metadata");
 		Validator.validateNotNull(entityMeta.getSetterMetas(), "Setters metadata");
-		Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
+		if (entityMeta.isWideRow())
+		{
+			interceptor.setWideRow(true);
+			Validator.validateNotNull(entityMeta.getWideRowDao(), "Dao for entity meta");
+			interceptor.setWideRowDao(entityMeta.getWideRowDao());
+		}
+		else
+		{
+			interceptor.setWideRow(false);
+			Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
+			interceptor.setEntityDao(entityMeta.getEntityDao());
+
+		}
 		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata");
 
 		interceptor.setTarget(target);
 		interceptor.setGetterMetas(entityMeta.getGetterMetas());
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
-		interceptor.setDao(entityMeta.getEntityDao());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 

@@ -76,7 +76,10 @@ public class EntityMetaBuilder<ID>
 
 		if (wideRow)
 		{
-			meta.setWideRowDao(new GenericWideRowDao(keyspace, idSerializer, this.columnFamilyName));
+			Serializer<?> valueSerializer = propertyMetas.entrySet().iterator().next().getValue()
+					.getValueSerializer();
+			meta.setWideRowDao(new GenericWideRowDao(keyspace, idSerializer, valueSerializer,
+					this.columnFamilyName));
 		}
 		else
 		{

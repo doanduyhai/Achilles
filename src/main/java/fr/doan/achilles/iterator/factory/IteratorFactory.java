@@ -1,12 +1,8 @@
 package fr.doan.achilles.iterator.factory;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
@@ -22,19 +18,18 @@ import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForWideRow;
  */
 public class IteratorFactory
 {
-	public <K, V> KeyValueIteratorForWideRow<K, V> createKeyValueIteratorForWideRow(
-			ColumnSliceIterator<?, Composite, Object> columnSliceIterator,
-			PropertyMeta<K, V> wideMapMeta)
+	public <K, V> KeyValueIterator<K, V> createKeyValueIteratorForWideRow(
+			ColumnSliceIterator<?, Composite, V> columnSliceIterator,
+			PropertyMeta<K, V> propertyMeta)
 	{
-		return new KeyValueIteratorForWideRow<K, V>(columnSliceIterator, wideMapMeta);
-	}
-
-	public <K, V> MultiKeyKeyValueIteratorForWideRow<K, V> createMultiKeyKeyValueIteratorForWideRow(
-			ColumnSliceIterator<?, Composite, Object> columnSliceIterator,
-			List<Method> componentSetters, MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta)
-	{
-		return new MultiKeyKeyValueIteratorForWideRow<K, V>(columnSliceIterator, componentSetters,
-				multiKeyWideMapMeta);
+		if (propertyMeta.isSingleKey())
+		{
+			return new KeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);
+		}
+		else
+		{
+			return new MultiKeyKeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);
+		}
 	}
 
 	@SuppressWarnings(

@@ -1,13 +1,10 @@
 package fr.doan.achilles.iterator;
 
-import java.lang.reflect.Method;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
@@ -21,13 +18,13 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  */
 public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 {
-	private ColumnSliceIterator<?, Composite, Object> columnSliceIterator;
+	private ColumnSliceIterator<?, Composite, V> columnSliceIterator;
 	private PropertyMeta<K, V> multiKeyWideMapMeta;
 	private KeyValueFactory factory = new KeyValueFactory();
 
 	public MultiKeyKeyValueIteratorForWideRow(
-			ColumnSliceIterator<?, Composite, Object> columnSliceIterator,
-			List<Method> componentSetters, MultiKeyWideMapMeta<K, V> multiKeyWideMapMeta)
+			ColumnSliceIterator<?, Composite, V> columnSliceIterator,
+			PropertyMeta<K, V> multiKeyWideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
 		this.multiKeyWideMapMeta = multiKeyWideMapMeta;
@@ -45,7 +42,7 @@ public class MultiKeyKeyValueIteratorForWideRow<K, V> implements KeyValueIterato
 		KeyValue<K, V> keyValue = null;
 		if (this.columnSliceIterator.hasNext())
 		{
-			HColumn<Composite, Object> column = this.columnSliceIterator.next();
+			HColumn<Composite, V> column = this.columnSliceIterator.next();
 
 			keyValue = factory.createForWideRow(multiKeyWideMapMeta, column);
 		}

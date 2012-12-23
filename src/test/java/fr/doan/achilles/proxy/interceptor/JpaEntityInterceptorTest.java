@@ -1,5 +1,7 @@
 package fr.doan.achilles.proxy.interceptor;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.WideRowBean;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.junit.Before;
@@ -33,6 +36,7 @@ import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.ListWrapper;
 import fr.doan.achilles.wrapper.MapWrapper;
 import fr.doan.achilles.wrapper.SetWrapper;
+import fr.doan.achilles.wrapper.WideRowWrapper;
 
 @SuppressWarnings(
 {
@@ -108,6 +112,7 @@ public class JpaEntityInterceptorTest
 
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
+		ReflectionTestUtils.setField(interceptor, "wideRow", false);
 	}
 
 	@Test
@@ -232,13 +237,30 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.isLazy()).thenReturn(false);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_MAP);
+		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
 
 		when(proxy.invoke(entity, null)).thenReturn(new HashMap<Integer, String>());
 
 		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(MapWrapper.class);
+	}
+
+	@Test
+	public void should_create_widerow_wrapper() throws Throwable
+	{
+		WideRowBean bean = new WideRowBean();
+		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
+		
+		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
+		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.isLazy()).thenReturn(false);
+		when(propertyMeta.propertyType()).thenReturn(WIDE_MAP);
+		ReflectionTestUtils.setField(interceptor, "wideRow", true);
+
+		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
+
+		assertThat(name).isInstanceOf(WideRowWrapper.class);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

@@ -1,7 +1,7 @@
-package fr.doan.achilles.entity.manager;
+package integration.tests;
 
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getDao;
+import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
@@ -29,6 +29,8 @@ import org.junit.Test;
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.ListLazyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
@@ -36,11 +38,11 @@ import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
-public class ThriftEntityManagerOperationsIT
+public class OperationsIT
 {
 
 	private final String ENTITY_PACKAGE = "mapping.entity";
-	private GenericEntityDao<Long> dao = getDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

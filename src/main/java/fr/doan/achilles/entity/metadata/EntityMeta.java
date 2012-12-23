@@ -18,7 +18,7 @@ public class EntityMeta<ID>
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
 	private GenericEntityDao<ID> entityDao;
-	private GenericWideRowDao<ID> wideRowDao;
+	private GenericWideRowDao<ID, ?> wideRowDao;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean wideRow = false;
@@ -123,12 +123,12 @@ public class EntityMeta<ID>
 		this.wideRow = wideRow;
 	}
 
-	public GenericWideRowDao<ID> getWideRowDao()
+	public GenericWideRowDao<ID, ?> getWideRowDao()
 	{
 		return wideRowDao;
 	}
 
-	public void setWideRowDao(GenericWideRowDao<ID> wideRowDao)
+	public void setWideRowDao(GenericWideRowDao<ID, ?> wideRowDao)
 	{
 		this.wideRowDao = wideRowDao;
 	}

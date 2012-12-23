@@ -308,9 +308,13 @@ public class PropertyParser
 				}
 				else
 				{
-					Validator.validateAllowedTypes(keyClass, propertyHelper.allowedTypes,
-							"The class '" + keyClass.getCanonicalName()
-									+ "' is not allowed as WideMap key");
+					Validator
+							.validateAllowedTypes(
+									keyClass,
+									propertyHelper.allowedTypes,
+									"The class '"
+											+ keyClass.getCanonicalName()
+											+ "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
 				}
 			}
 			else

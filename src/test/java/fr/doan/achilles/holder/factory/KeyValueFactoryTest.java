@@ -108,22 +108,22 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_from_composite_column_list() throws Exception
 	{
-		HColumn<Composite, Object> hColumn1 = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
-				OBJECT_SRZ);
+		HColumn<Composite, String> hColumn1 = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
+				STRING_SRZ);
 		Composite comp1 = new Composite();
 		comp1.addComponent(0, 1, EQUAL);
 		hColumn1.setName(comp1);
 		hColumn1.setValue("test1");
 
-		HColumn<Composite, Object> hColumn2 = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
-				OBJECT_SRZ);
+		HColumn<Composite, String> hColumn2 = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
+				STRING_SRZ);
 		Composite comp2 = new Composite();
 		comp2.addComponent(0, 2, EQUAL);
 		hColumn2.setName(comp2);
 		hColumn2.setValue("test2");
 
-		HColumn<Composite, Object> hColumn3 = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
-				OBJECT_SRZ);
+		HColumn<Composite, String> hColumn3 = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
+				STRING_SRZ);
 		Composite comp3 = new Composite();
 		comp3.addComponent(0, 3, EQUAL);
 		hColumn3.setName(comp3);
@@ -215,11 +215,11 @@ public class KeyValueFactoryTest
 		UUID uuid2 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		UUID uuid3 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 
-		HColumn<Composite, Object> hCol1 = buildHColumn(buildComposite("author1", uuid1, 11),
+		HColumn<Composite, String> hCol1 = buildHColumn(buildComposite("author1", uuid1, 11),
 				"val1");
-		HColumn<Composite, Object> hCol2 = buildHColumn(buildComposite("author2", uuid2, 12),
+		HColumn<Composite, String> hCol2 = buildHColumn(buildComposite("author2", uuid2, 12),
 				"val2");
-		HColumn<Composite, Object> hCol3 = buildHColumn(buildComposite("author3", uuid3, 13),
+		HColumn<Composite, String> hCol3 = buildHColumn(buildComposite("author3", uuid3, 13),
 				"val3");
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
@@ -306,10 +306,10 @@ public class KeyValueFactoryTest
 		assertThat(multiKeys.get(2).getValue()).isEqualTo("val3");
 	}
 
-	private HColumn<Composite, Object> buildHColumn(Composite comp, String value)
+	private HColumn<Composite, String> buildHColumn(Composite comp, String value)
 	{
-		HColumn<Composite, Object> hColumn = new HColumnImpl<Composite, Object>(COMPOSITE_SRZ,
-				OBJECT_SRZ);
+		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
+				STRING_SRZ);
 
 		hColumn.setName(comp);
 		hColumn.setValue(value);

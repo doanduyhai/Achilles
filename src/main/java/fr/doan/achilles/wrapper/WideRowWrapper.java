@@ -24,7 +24,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
 public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 {
 	private ID id;
-	private GenericWideRowDao<ID> dao;
+	private GenericWideRowDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
 
 	private CompositeHelper helper = new CompositeHelper();
@@ -80,7 +80,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, composites[0],
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
 		return keyValueFactory.createListForWideRow(wideMapMeta, hColumns);
@@ -107,7 +107,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
-		ColumnSliceIterator<ID, Composite, Object> columnSliceIterator = dao.getColumnsIterator(id,
+		ColumnSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
 				composites[0], composites[1], reverse, count);
 
 		return iteratorFactory.createKeyValueIteratorForWideRow(columnSliceIterator, wideMapMeta);
@@ -146,7 +146,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericWideRowDao<ID> dao)
+	public void setDao(GenericWideRowDao<ID, V> dao)
 	{
 		this.dao = dao;
 	}

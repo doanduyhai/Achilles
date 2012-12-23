@@ -33,39 +33,42 @@ public class EntityPersister
 
 	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta)
 	{
-
-		ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
-		Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
-		GenericEntityDao<ID> dao = entityMeta.getEntityDao();
-
-		Mutator<ID> mutator = dao.buildMutator();
-
-		for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
+		if (!entityMeta.isWideRow())
 		{
-			PropertyMeta<?, ?> propertyMeta = entry.getValue();
-			switch (propertyMeta.propertyType())
+			ID key = entityHelper.getKey(entity, entityMeta.getIdMeta());
+			Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName()
+					+ "'");
+			GenericEntityDao<ID> dao = entityMeta.getEntityDao();
+
+			Mutator<ID> mutator = dao.buildMutator();
+
+			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
-				case SIMPLE:
-				case LAZY_SIMPLE:
-					this.batchSimpleProperty(entity, key, dao, propertyMeta, mutator);
-					break;
-				case LIST:
-				case LAZY_LIST:
-					this.batchListProperty(entity, key, dao, propertyMeta, mutator);
-					break;
-				case SET:
-				case LAZY_SET:
-					this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
-					break;
-				case MAP:
-				case LAZY_MAP:
-					this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
-					break;
-				default:
-					break;
+				PropertyMeta<?, ?> propertyMeta = entry.getValue();
+				switch (propertyMeta.propertyType())
+				{
+					case SIMPLE:
+					case LAZY_SIMPLE:
+						this.batchSimpleProperty(entity, key, dao, propertyMeta, mutator);
+						break;
+					case LIST:
+					case LAZY_LIST:
+						this.batchListProperty(entity, key, dao, propertyMeta, mutator);
+						break;
+					case SET:
+					case LAZY_SET:
+						this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
+						break;
+					case MAP:
+					case LAZY_MAP:
+						this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
+						break;
+					default:
+						break;
+				}
 			}
+			mutator.execute();
 		}
-		mutator.execute();
 
 	}
 

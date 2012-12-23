@@ -8,6 +8,7 @@ import java.util.Set;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
@@ -15,12 +16,14 @@ import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
+import fr.doan.achilles.wrapper.builder.WideRowWrapperBuilder;
 
 public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
 	private Object target;
-	private GenericEntityDao<ID> dao;
+	private GenericEntityDao<ID> entityDao;
+	private GenericWideRowDao<ID, ?> wideRowDao;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -28,6 +31,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Set<Method> lazyLoaded;
+	private Boolean wideRow;
 
 	private EntityLoader loader;
 
@@ -78,7 +82,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		PropertyMeta propertyMeta = this.getterMetas.get(method);
 		if (propertyMeta.isLazy() && !this.lazyLoaded.contains(method))
 		{
-			this.loader.loadPropertyIntoObject(target, key, dao, propertyMeta);
+			this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);
 			this.lazyLoaded.add(method);
 		}
 
@@ -103,7 +107,14 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case WIDE_MAP:
-				result = buildWideMapWrapper(propertyMeta);
+				if (wideRow)
+				{
+					result = buildWideRowWrapper(propertyMeta);
+				}
+				else
+				{
+					result = buildWideMapWrapper(propertyMeta);
+				}
 				break;
 			default:
 				result = proxy.invoke(target, args);
@@ -114,7 +125,14 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		return WideMapWrapperBuilder.builder(key, dao, propertyMeta).build();
+		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta).build();
+	}
+
+	@SuppressWarnings("unchecked")
+	private <K extends Comparable<K>, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta)
+	{
+		return WideRowWrapperBuilder.builder(key, (GenericWideRowDao<ID, V>) wideRowDao,
+				propertyMeta).build();
 	}
 
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
@@ -155,9 +173,14 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.target = target;
 	}
 
-	void setDao(GenericEntityDao<ID> dao)
+	void setEntityDao(GenericEntityDao<ID> dao)
 	{
-		this.dao = dao;
+		this.entityDao = dao;
+	}
+
+	public <V> void setWideRowDao(GenericWideRowDao<ID, V> wideRowDao)
+	{
+		this.wideRowDao = wideRowDao;
 	}
 
 	void setKey(ID key)
@@ -200,4 +223,13 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.loader = loader;
 	}
 
+	public void setWideRow(Boolean wideRow)
+	{
+		this.wideRow = wideRow;
+	}
+
+	public Boolean getWideRow()
+	{
+		return wideRow;
+	}
 }

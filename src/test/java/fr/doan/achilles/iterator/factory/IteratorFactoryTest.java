@@ -33,7 +33,7 @@ public class IteratorFactoryTest
 	private IteratorFactory factory = new IteratorFactory();
 
 	@Mock
-	private ColumnSliceIterator<?, Composite, Object> columnSliceComposite;
+	private ColumnSliceIterator<?, Composite, String> columnSliceComposite;
 
 	@Mock
 	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceDynamicComposite;
@@ -50,11 +50,13 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_key_value_iterator() throws Exception
 	{
-		KeyValueIteratorForWideRow<Integer, String> iterator = factory
-				.createKeyValueIteratorForWideRow(columnSliceComposite, wideMapMeta);
-
+		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
 
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForWideRow(
+				columnSliceComposite, wideMapMeta);
+
+		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorForWideRow.class);
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThat(iterator.hasNext()).isTrue();
@@ -63,12 +65,13 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_multikey_key_value_iterator() throws Exception
 	{
-		MultiKeyKeyValueIteratorForWideRow<Integer, String> iterator = factory
-				.createMultiKeyKeyValueIteratorForWideRow(columnSliceComposite, componentSetters,
-						multiKeyWideMapMeta);
-
+		when(wideMapMeta.isSingleKey()).thenReturn(false);
 		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
 
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForWideRow(
+				columnSliceComposite, multiKeyWideMapMeta);
+
+		assertThat(iterator).isExactlyInstanceOf(MultiKeyKeyValueIteratorForWideRow.class);
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThat(iterator.hasNext()).isTrue();
