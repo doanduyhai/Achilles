@@ -1,5 +1,6 @@
 package fr.doan.achilles.proxy.interceptor;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,11 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
+import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
@@ -33,7 +36,8 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Set<Method> lazyLoaded;
 	private Boolean wideRow;
 
-	private EntityLoader loader;
+	private EntityLoader loader = new EntityLoader();
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
 	@Override
 	public Object getTarget()
@@ -80,10 +84,14 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	{
 		Object result;
 		PropertyMeta propertyMeta = this.getterMetas.get(method);
-		if (propertyMeta.isLazy() && !this.lazyLoaded.contains(method))
+		if (propertyMeta.isLazy() //
+				&& !propertyMeta.isJoinColumn() //
+				&& !this.lazyLoaded.contains(method))
 		{
 			this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);
 			this.lazyLoaded.add(method);
+
+			// TODO exclude @Join simple property here
 		}
 
 		switch (propertyMeta.propertyType())
@@ -116,11 +124,37 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
+			case JOIN_SIMPLE:
+
+				result = loadJoinColumn(key, propertyMeta);
+				break;
+			// TODO
+			// case JOIN_WIDE_META
+			// build JoinWideMetaWrapper
+			// case JOIN_WIDE_ROW @Column(table="external_cf")
+			// build JoinWideRow wrapper
 			default:
 				result = proxy.invoke(target, args);
 				break;
 		}
 		return result;
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	private <V> V loadJoinColumn(ID key, PropertyMeta<Void, V> joinPropertyMeta)
+	{
+		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinMetaData().getEntityMeta();
+		Object joinId = this.loader.loadJoinProperty(key, entityDao, joinPropertyMeta,
+				joinEntityMeta.getIdMeta());
+		V joinEntity = (V) this.loader.load(joinPropertyMeta.getValueClass(),
+				(Serializable) joinId, joinEntityMeta);
+
+		return (V) this.interceptorBuilder.build(joinEntity, joinPropertyMeta.getJoinMetaData()
+				.getEntityMeta());
 	}
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)

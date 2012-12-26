@@ -1,7 +1,11 @@
 package fr.doan.achilles.columnFamily;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -92,22 +96,37 @@ public class ColumnFamilyHelper
 		}
 	}
 
-	// public <K, N, V> void validateWideRow(String columnFamilyName,
-	// boolean forceColumnFamilyCreation, Class<K> keyClass, Class<N> nameClass,
-	// Class<V> valueClass)
-	// {
-	// ColumnFamilyDefinition cfDef = this.discoverColumnFamily(columnFamilyName);
-	// if (cfDef == null)
-	// {
-	// if (forceColumnFamilyCreation)
-	// {
-	// this.createColumnFamily(entry.getValue());
-	// }
-	// else
-	// {
-	// throw new InvalidColumnFamilyException("The required column family '"
-	// + columnFamilyName + "' does not exist");
-	// }
-	// }
-	// }
+	public static String normalizeCanonicalName(String canonicalName)
+	{
+		String newCanonicalName = canonicalName.replaceAll("\\.", "_").replaceAll("\\$", "_I_");
+		if (newCanonicalName.length() < 48)
+		{
+			return newCanonicalName;
+		}
+		else
+		{
+			String packagaName = canonicalName.replaceAll("(.+)\\..+", "$1");
+			String className = canonicalName.replaceAll(".+\\.(.+)", "$1");
+			String firstPackage = canonicalName.replaceAll("^([a-zA-Z0-9]{2}).+$", "$1");
+			Pattern pattern = Pattern.compile("\\.([a-zA-Z0-9]{2})");
+
+			Matcher matcher = pattern.matcher(packagaName);
+
+			List<String> shortPackages = new ArrayList<String>();
+			shortPackages.add(firstPackage);
+			while (matcher.find())
+			{
+				shortPackages.add(matcher.group(1));
+			}
+
+			String normalized = StringUtils.join(shortPackages, '_') + '_' + className;
+
+			if (normalized.length() > 48)
+			{
+				normalized = className;
+			}
+
+			return normalized;
+		}
+	}
 }

@@ -24,7 +24,7 @@ import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 public class EntityProxyBuilderTest
 {
 
-	private EntityProxyBuilder<Long> builder = new EntityProxyBuilder<Long>();
+	private EntityProxyBuilder builder = new EntityProxyBuilder();
 
 	@Mock
 	private EntityMeta<Long> entityMeta;

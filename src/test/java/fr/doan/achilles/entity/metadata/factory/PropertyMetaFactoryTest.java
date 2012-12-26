@@ -1,6 +1,5 @@
 package fr.doan.achilles.entity.metadata.factory;
 
-import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
@@ -11,7 +10,6 @@ import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -20,16 +18,12 @@ import static org.mockito.Mockito.mock;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import mapping.entity.CompleteBean;
-import me.prettyprint.hector.api.Serializer;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import parser.entity.Bean;
 import parser.entity.MyMultiKey;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory;
 
 /**
  * PropertyMetaBuilderTest
@@ -330,74 +324,5 @@ public class PropertyMetaFactoryTest
 		assertThat(built.isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isFalse();
 		assertThat(built.isJoinColumn()).isFalse();
-	}
-
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
-	@Test
-	public void should_build_join_wide_map_with_bean() throws Exception
-	{
-		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
-		PropertyMeta<Integer, CompleteBean> meta = PropertyMetaFactory
-				.factory(Integer.class, CompleteBean.class) //
-				.type(JOIN_WIDE_MAP).propertyName("name") //
-				.accessors(accessors) //
-				.singleKey(true) //
-				.insertable(false) //
-				.entityValue(true) //
-				.joinColumnFamily("externalCF") //
-				.idGetter(idGetter) //
-				.idClass(Long.class) //
-				.build();
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("name");
-		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isLazy()).isTrue();
-		assertThat(meta.isJoinColumn()).isTrue();
-		assertThat(meta.isInsertable()).isFalse();
-		assertThat(meta.isEntityValue()).isTrue();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("externalCF");
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	}
-
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
-	@Test
-	public void should_build_join_wide_map_with_wide_row() throws Exception
-	{
-		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
-		PropertyMeta<Integer, String> meta = PropertyMetaFactory
-				.factory(Integer.class, String.class) //
-				.type(JOIN_WIDE_MAP).propertyName("name") //
-				.accessors(accessors) //
-				.singleKey(true) //
-				.insertable(false) //
-				.entityValue(false) //
-				.joinColumnFamily("externalCF") //
-				.idGetter(idGetter) //
-				.idClass(Long.class) //
-				.build();
-
-		assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("name");
-		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isLazy()).isTrue();
-		assertThat(meta.isJoinColumn()).isTrue();
-		assertThat(meta.isInsertable()).isFalse();
-		assertThat(meta.isEntityValue()).isFalse();
-		assertThat(meta.getJoinColumnFamily()).isEqualTo("externalCF");
-
-		assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-		assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-		assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
 	}
 }

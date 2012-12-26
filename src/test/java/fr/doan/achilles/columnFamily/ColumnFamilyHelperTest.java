@@ -135,16 +135,6 @@ public class ColumnFamilyHelperTest
 		verify(columnFamilyValidator).validate(cfDef, meta);
 	}
 
-	// @Test
-	// public void should_validate_wide_row() throws Exception
-	// {
-	// prepareData();
-	// helper.createWideRow("cf", Long.class, Integer.class, String.class);
-	//
-	// verify(columnFamilyBuilder).buildForWideRow("keyspace", "cf", Long.class, Integer.class,
-	// String.class);
-	// }
-
 	@Test
 	public void should_validate_then_create_column_family_when_not_matching() throws Exception
 	{
@@ -176,6 +166,37 @@ public class ColumnFamilyHelperTest
 		when(keyspaceDefinition.getCfDefs()).thenReturn(null);
 
 		helper.validateColumnFamilies(entityMetaMap, false);
+	}
+
+	@Test
+	public void should_normalize_canonical_classname() throws Exception
+	{
+		String canonicalName = "fr.doan.achilles.entity.metadata.ClassName";
+
+		String normalized = ColumnFamilyHelper.normalizeCanonicalName(canonicalName);
+
+		assertThat(normalized).isEqualTo("fr_doan_achilles_entity_metadata_ClassName");
+	}
+
+	@Test
+	public void should_normalize_canonical_classname_by_shortening_package() throws Exception
+	{
+		String canonicalName = "fr.doan.achilles.entity.metadata.very.long.package.name.ClassName";
+
+		String normalized = ColumnFamilyHelper.normalizeCanonicalName(canonicalName);
+
+		assertThat(normalized).isEqualTo("fr_do_ac_en_me_ve_lo_pa_na_ClassName");
+	}
+
+	@Test
+	public void should_normalize_canonical_classname_when_exceeding_48_characters()
+			throws Exception
+	{
+		String canonicalName = "fr.doan.achilles.entity.metadata.ItIsAVeryLongClassNameNearing48Characters";
+
+		String normalized = ColumnFamilyHelper.normalizeCanonicalName(canonicalName);
+
+		assertThat(normalized).isEqualTo("ItIsAVeryLongClassNameNearing48Characters");
 	}
 
 	private void prepareData()

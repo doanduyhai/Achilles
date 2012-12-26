@@ -1,4 +1,4 @@
-package mapping.entity;
+package integration.tests.entity;
 
 import java.io.Serializable;
 import java.util.List;
@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Key;
@@ -48,9 +47,6 @@ public class CompleteBean implements Serializable
 
 	@Column
 	private WideMap<UserTweetKey, String> userTweets;
-
-	@JoinColumn
-	private UserBean user;
 
 	public Long getId()
 	{
@@ -140,16 +136,6 @@ public class CompleteBean implements Serializable
 	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
 	{
 		this.userTweets = userTweets;
-	}
-
-	public UserBean getUser()
-	{
-		return user;
-	}
-
-	public void setUser(UserBean user)
-	{
-		this.user = user;
 	}
 
 	public static class UserTweetKey implements MultiKey

@@ -11,6 +11,7 @@ import me.prettyprint.hector.api.Serializer;
 
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -50,11 +51,11 @@ public class EntityMetaBuilder<ID>
 		Validator.validateNotBlank(canonicalClassName, "canonicalClassName");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = normalizeColumnFamilyName(columnFamilyName);
+			columnFamilyName = ColumnFamilyHelper.normalizeCanonicalName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = normalizeColumnFamilyName(canonicalClassName);
+			columnFamilyName = ColumnFamilyHelper.normalizeCanonicalName(canonicalClassName);
 		}
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas");
@@ -108,11 +109,6 @@ public class EntityMetaBuilder<ID>
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
 		}
 		return setterMetas;
-	}
-
-	public static String normalizeColumnFamilyName(String columnFamilyName)
-	{
-		return columnFamilyName.replaceAll("\\.", "_").replaceAll("\\$", "_I_");
 	}
 
 	public EntityMetaBuilder<ID> canonicalClassName(String canonicalClassName)

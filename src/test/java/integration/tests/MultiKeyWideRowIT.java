@@ -1,19 +1,19 @@
 package integration.tests;
 
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.normalizeColumnFamilyName;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import integration.tests.entity.MultiKeyWideRowBean;
+import integration.tests.entity.WideRowMultiKey;
 
 import java.util.Iterator;
 import java.util.List;
 
-import mapping.entity.MultiKeyWideRowBean;
-import mapping.entity.WideRowMultiKey;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.cassandra.utils.Pair;
@@ -31,9 +31,9 @@ import fr.doan.achilles.holder.KeyValue;
 public class MultiKeyWideRowIT
 {
 
-	private final String ENTITY_PACKAGE = "mapping.entity";
+	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericWideRowDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
-			STRING_SRZ, normalizeColumnFamilyName(MultiKeyWideRowBean.class.getCanonicalName()));
+			STRING_SRZ, normalizeCanonicalName(MultiKeyWideRowBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);

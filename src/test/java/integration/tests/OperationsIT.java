@@ -1,15 +1,17 @@
 package integration.tests;
 
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
-import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.normalizeColumnFamilyName;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import integration.tests.entity.CompleteBean;
+import integration.tests.entity.CompleteBeanTestBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -17,7 +19,6 @@ import java.util.List;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 
-import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import net.sf.cglib.proxy.Factory;
@@ -29,7 +30,6 @@ import org.junit.Test;
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.ListLazyMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -41,9 +41,9 @@ import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 public class OperationsIT
 {
 
-	private final String ENTITY_PACKAGE = "mapping.entity";
+	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
+			normalizeCanonicalName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
@@ -383,6 +383,20 @@ public class OperationsIT
 		assertThat(bean.getName()).isEqualTo("DuyHai_modified");
 		assertThat(bean.getFriends()).hasSize(3);
 		assertThat(bean.getFriends().get(2)).isEqualTo("qux");
+
+	}
+
+	@Test
+	public void should_find_unmapped_field() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
+				.label("label").age(35L).addFriends("foo", "bar") //
+				.addFollowers("George", "Paul").addPreference(1, "FR") //
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+		bean = em.merge(bean);
+
+		assertThat(bean.getLabel()).isEqualTo("label");
 
 	}
 

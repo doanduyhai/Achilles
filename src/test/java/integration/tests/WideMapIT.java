@@ -1,18 +1,19 @@
 package integration.tests;
 
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.normalizeColumnFamilyName;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import integration.tests.entity.CompleteBean;
+import integration.tests.entity.CompleteBeanTestBuilder;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -25,7 +26,6 @@ import org.junit.Test;
 
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
@@ -33,9 +33,9 @@ import fr.doan.achilles.holder.KeyValue;
 public class WideMapIT
 {
 
-	private final String ENTITY_PACKAGE = "mapping.entity";
+	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizeColumnFamilyName(CompleteBean.class.getCanonicalName()));
+			normalizeCanonicalName(CompleteBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
@@ -160,8 +160,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets
-				.findRange(uuid2, uuid5, false, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid2, uuid5, false, false, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet3");

@@ -1,4 +1,4 @@
-package fr.doan.achilles.entity.manager;
+package integration.tests.entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import mapping.entity.CompleteBean;
 
 import org.apache.commons.lang.math.RandomUtils;
 

@@ -39,7 +39,7 @@ public class EntityMergerTest
 	private EntityPersister persister;
 
 	@Mock
-	private EntityProxyBuilder<Long> interceptorBuilder;
+	private EntityProxyBuilder interceptorBuilder;
 
 	@Mock
 	private JpaEntityInterceptor<Long> interceptor;

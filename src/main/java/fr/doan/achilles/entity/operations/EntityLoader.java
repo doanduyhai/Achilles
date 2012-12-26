@@ -66,7 +66,7 @@ public class EntityLoader
 		return entity;
 	}
 
-	public <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -75,7 +75,16 @@ public class EntityLoader
 		return propertyMeta.getValue(value);
 	}
 
-	public <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao,
+	public <ID, JOIN_ID, V> JOIN_ID loadJoinProperty(ID key, GenericEntityDao<ID> dao,
+			PropertyMeta<Void, V> propertyMeta, PropertyMeta<Void, JOIN_ID> joinIdPropertyMeta)
+	{
+		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Object value = dao.getValue(key, composite);
+
+		return joinIdPropertyMeta.getValue(value);
+	}
+
+	protected <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao,
 			ListMeta<V> listPropertyMeta)
 	{
 		DynamicComposite start = keyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
@@ -90,7 +99,7 @@ public class EntityLoader
 		return list;
 	}
 
-	public <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao,
 			SetMeta<V> setPropertyMeta)
 	{
 
@@ -106,7 +115,7 @@ public class EntityLoader
 		return set;
 	}
 
-	public <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericEntityDao<ID> dao,
 			MapMeta<K, V> mapPropertyMeta)
 	{
 

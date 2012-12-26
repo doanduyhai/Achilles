@@ -1,16 +1,16 @@
 package integration.tests;
 
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.normalizeColumnFamilyName;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import integration.tests.entity.WideRowBean;
 
 import java.util.Iterator;
 import java.util.List;
 
-import mapping.entity.WideRowBean;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -30,9 +30,9 @@ import fr.doan.achilles.holder.KeyValue;
 public class WideRowIT
 {
 
-	private final String ENTITY_PACKAGE = "mapping.entity";
+	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericWideRowDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
-			STRING_SRZ, normalizeColumnFamilyName(WideRowBean.class.getCanonicalName()));
+			STRING_SRZ, normalizeCanonicalName(WideRowBean.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);

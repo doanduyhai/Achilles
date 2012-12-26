@@ -37,16 +37,10 @@ public class PropertyMetaFactory<K, V>
 	private boolean lazy = false;
 	private boolean singleKey = true;
 	private boolean joinColumn = false;
-	private boolean insertable = false;
-	private boolean entityValue = false;
 
 	private List<Class<?>> componentClasses;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
-
-	private String joinColumnFamily;
-	private Class<?> idClass;
-	private Method idGetter;
 
 	public PropertyMetaFactory(Class<K> keyClass, Class<V> valueClass) {
 		this.keyClass = keyClass;
@@ -151,8 +145,6 @@ public class PropertyMetaFactory<K, V>
 		meta.setLazy(lazy);
 		meta.setSingleKey(singleKey);
 		meta.setJoinColumn(joinColumn);
-		meta.setInsertable(insertable);
-		meta.setEntityValue(entityValue);
 
 		meta.setComponentClasses(componentClasses);
 		if (componentClasses != null && componentClasses.size() > 0)
@@ -168,16 +160,6 @@ public class PropertyMetaFactory<K, V>
 
 		meta.setComponentGetters(componentGetters);
 		meta.setComponentSetters(componentSetters);
-
-		meta.setJoinColumnFamily(joinColumnFamily);
-
-		meta.setIdClass(idClass);
-		if (idClass != null)
-		{
-			meta.setIdSerializer((Serializer) SerializerTypeInferer.getSerializer(idClass));
-		}
-
-		meta.setIdGetter(idGetter);
 
 		return meta;
 	}
@@ -206,18 +188,6 @@ public class PropertyMetaFactory<K, V>
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> insertable(boolean insertable)
-	{
-		this.insertable = insertable;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> entityValue(boolean entityValue)
-	{
-		this.entityValue = entityValue;
-		return this;
-	}
-
 	public PropertyMetaFactory<K, V> componentClasses(List<Class<?>> componentClasses)
 	{
 		this.componentClasses = componentClasses;
@@ -233,24 +203,6 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMetaFactory<K, V> componentSetters(List<Method> componentSetters)
 	{
 		this.componentSetters = componentSetters;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> joinColumnFamily(String joinColumnFamily)
-	{
-		this.joinColumnFamily = joinColumnFamily;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> idClass(Class<?> idClass)
-	{
-		this.idClass = idClass;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> idGetter(Method idGetter)
-	{
-		this.idGetter = idGetter;
 		return this;
 	}
 }

@@ -25,10 +25,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.WideRowBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
+import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
@@ -47,7 +49,9 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -74,6 +78,9 @@ public class EntityLoaderTest
 
 	@Mock
 	private MapMeta<Integer, String> mapMeta;
+
+	@Mock
+	private SimpleMeta<CompleteBean> joinMeta;
 
 	@Mock
 	private EntityMapper mapper;
@@ -253,6 +260,27 @@ public class EntityLoaderTest
 		assertThat(value).containsValue("Paris");
 		assertThat(value).containsKey(3);
 		assertThat(value).containsValue("75014");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_load_join_property() throws Exception
+	{
+		PropertyMeta<Void, UUID> joinIdPropertyMeta = mock(PropertyMeta.class);
+		DynamicComposite composite = new DynamicComposite();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		when(joinMeta.propertyType()).thenReturn(PropertyType.JOIN_SIMPLE);
+		when(joinMeta.getPropertyName()).thenReturn("joinSimple");
+
+		when(keyFactory.createBaseForQuery(joinMeta, EQUAL)).thenReturn(composite);
+		when(dao.getValue(1L, composite)).thenReturn(uuid);
+		when(joinIdPropertyMeta.getValue(uuid)).thenReturn(uuid);
+		EntityLoader spy = spy(loader);
+
+		UUID joinId = spy.loadJoinProperty(1L, dao, joinMeta, joinIdPropertyMeta);
+
+		assertThat(joinId).isEqualTo(uuid);
 	}
 
 	@Test
