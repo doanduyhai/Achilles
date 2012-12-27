@@ -33,12 +33,12 @@ import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinMeta;
-import fr.doan.achilles.entity.metadata.JoinMetaData;
+import fr.doan.achilles.entity.metadata.JoinMetaHolder;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
+import fr.doan.achilles.entity.operations.JoinEntityLoader;
 import fr.doan.achilles.wrapper.ListWrapper;
 import fr.doan.achilles.wrapper.MapWrapper;
 import fr.doan.achilles.wrapper.SetWrapper;
@@ -79,7 +79,7 @@ public class JpaEntityInterceptorTest
 	private EntityLoader loader;
 
 	@Mock
-	private EntityProxyBuilder interceptorBuilder;
+	private JoinEntityLoader joinEntityLoader;
 
 	@Mock
 	private MethodProxy proxy;
@@ -126,7 +126,7 @@ public class JpaEntityInterceptorTest
 
 		ReflectionTestUtils.setField(interceptor, "key", key);
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
-		ReflectionTestUtils.setField(interceptor, "interceptorBuilder", interceptorBuilder);
+		ReflectionTestUtils.setField(interceptor, "joinEntityLoader", joinEntityLoader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
 		ReflectionTestUtils.setField(interceptor, "wideRow", false);
 	}
@@ -283,14 +283,14 @@ public class JpaEntityInterceptorTest
 	public void should_load_join_column() throws Throwable
 	{
 		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
-		JoinMetaData<Long, UserBean> joinMetaData = new JoinMetaData<Long, UserBean>();
+		JoinMetaHolder<Long> joinMetaData = new JoinMetaHolder<Long>();
 		PropertyMeta<Void, Long> joinIdMeta = new SimpleMeta<Long>();
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setIdMeta(joinIdMeta);
 		joinMetaData.setEntityMeta(joinEntityMeta);
 
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
-		joinPropertyMeta.setJoinMetaData(joinMetaData);
+		joinPropertyMeta.setJoinMetaHolder(joinMetaData);
 		joinPropertyMeta.setValueClass(UserBean.class);
 
 		Long joinId = 754L;
@@ -300,8 +300,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.get(userGetter)).thenReturn((PropertyMeta) joinPropertyMeta);
 
 		when(loader.loadJoinProperty(key, dao, joinPropertyMeta, joinIdMeta)).thenReturn(joinId);
-		when(loader.load(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
-		when(interceptorBuilder.build(userBean, joinEntityMeta)).thenReturn(userBean);
+		when(joinEntityLoader.loadJoinEntity(joinId, joinPropertyMeta)).thenReturn(userBean);
 
 		Object expected = this.interceptor.intercept(entity, userGetter, (Object[]) null, proxy);
 

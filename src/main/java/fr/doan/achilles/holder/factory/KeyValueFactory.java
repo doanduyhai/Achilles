@@ -10,6 +10,7 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.operations.JoinEntityLoader;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
@@ -20,6 +21,8 @@ import fr.doan.achilles.holder.KeyValue;
  */
 public class KeyValueFactory
 {
+	private JoinEntityLoader joinEntityLoader = new JoinEntityLoader();
+
 	public <K, V> KeyValue<K, V> create(K key, V value, int ttl)
 	{
 		return new KeyValue<K, V>(key, value, ttl);
@@ -41,7 +44,7 @@ public class KeyValueFactory
 		if (wideMapMeta.isSingleKey())
 		{
 			key = (K) hColumn.getName().get(2, wideMapMeta.getKeySerializer());
-			value = wideMapMeta.getValue(hColumn.getValue());
+			value = extractValueFromHColumn(wideMapMeta, hColumn);
 			ttl = hColumn.getTtl();
 		}
 		else
@@ -61,7 +64,7 @@ public class KeyValueFactory
 					componentSetters.get(i - 2).invoke(key, compValue);
 				}
 
-				value = wideMapMeta.getValue(hColumn.getValue());
+				value = extractValueFromHColumn(wideMapMeta, hColumn);
 				ttl = hColumn.getTtl();
 			}
 			catch (Exception e)
@@ -72,6 +75,25 @@ public class KeyValueFactory
 		}
 
 		return create(key, value, ttl);
+	}
+
+	private <K, V> V extractValueFromHColumn(PropertyMeta<K, V> wideMapMeta,
+			HColumn<DynamicComposite, Object> hColumn)
+	{
+		V value = null;
+		Object hColumnValue = hColumn.getValue();
+		if (wideMapMeta.isJoinColumn())
+		{
+			if (hColumnValue != null)
+			{
+				value = joinEntityLoader.loadJoinEntity(hColumnValue, wideMapMeta);
+			}
+		}
+		else
+		{
+			value = wideMapMeta.getValue(hColumnValue);
+		}
+		return value;
 	}
 
 	public <K, V> List<KeyValue<K, V>> createListForWideMap(PropertyMeta<K, V> wideMapMeta,

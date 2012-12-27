@@ -1,6 +1,5 @@
 package fr.doan.achilles.proxy.interceptor;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
+import fr.doan.achilles.entity.operations.JoinEntityLoader;
 import fr.doan.achilles.wrapper.builder.ListWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.MapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
@@ -37,7 +36,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Boolean wideRow;
 
 	private EntityLoader loader = new EntityLoader();
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	private JoinEntityLoader joinEntityLoader = new JoinEntityLoader();
 
 	@Override
 	public Object getTarget()
@@ -125,7 +124,6 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 				}
 				break;
 			case JOIN_SIMPLE:
-
 				result = loadJoinColumn(key, propertyMeta);
 				break;
 			// TODO
@@ -147,14 +145,11 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	})
 	private <V> V loadJoinColumn(ID key, PropertyMeta<Void, V> joinPropertyMeta)
 	{
-		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinMetaData().getEntityMeta();
+		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinMetaHolder().getEntityMeta();
 		Object joinId = this.loader.loadJoinProperty(key, entityDao, joinPropertyMeta,
 				joinEntityMeta.getIdMeta());
-		V joinEntity = (V) this.loader.load(joinPropertyMeta.getValueClass(),
-				(Serializable) joinId, joinEntityMeta);
 
-		return (V) this.interceptorBuilder.build(joinEntity, joinPropertyMeta.getJoinMetaData()
-				.getEntityMeta());
+		return joinEntityLoader.loadJoinEntity(joinId, joinPropertyMeta);
 	}
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)

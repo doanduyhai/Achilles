@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import mapping.entity.TweetMultiKey;
+import mapping.entity.UserBean;
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.Serializer;
@@ -24,14 +25,17 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
+import fr.doan.achilles.entity.operations.JoinEntityLoader;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.serializer.Utils;
 
@@ -53,6 +57,18 @@ public class KeyValueFactoryTest
 
 	@Mock
 	private PropertyMeta<TweetMultiKey, String> multiKeyWideMeta;
+
+	@Mock
+	private PropertyMeta<Integer, UserBean> joinPropertyMeta;
+
+	@Mock
+	private JoinEntityLoader joinEntityLoader;
+
+	@Before
+	public void setUp()
+	{
+		ReflectionTestUtils.setField(factory, "joinEntityLoader", joinEntityLoader);
+	}
 
 	@Test
 	public void should_create() throws Exception
@@ -97,6 +113,37 @@ public class KeyValueFactoryTest
 
 		assertThat(keyValue.getKey()).isEqualTo(1);
 		assertThat(keyValue.getValue()).isEqualTo("test");
+		assertThat(keyValue.getTtl()).isEqualTo(12);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_create_join_entity_from_dynamic_composite_hcolumn() throws Exception
+	{
+		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
+				DYNA_COMP_SRZ, OBJECT_SRZ);
+		DynamicComposite dynComp = new DynamicComposite();
+		dynComp.setComponent(0, 10, INT_SRZ);
+		dynComp.setComponent(1, 10, INT_SRZ);
+		dynComp.setComponent(2, 1, INT_SRZ);
+		hColumn.setName(dynComp);
+		hColumn.setValue("test");
+		hColumn.setTtl(12);
+
+		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		when(joinPropertyMeta.isSingleKey()).thenReturn(true);
+		when(joinPropertyMeta.isJoinColumn()).thenReturn(true);
+
+		UserBean userBean = new UserBean();
+		when(joinEntityLoader.loadJoinEntity("test", joinPropertyMeta)).thenReturn(userBean);
+		KeyValue<Integer, UserBean> keyValue = factory.createForWideMap(joinPropertyMeta, hColumn);
+
+		assertThat(keyValue.getKey()).isEqualTo(1);
+		assertThat(keyValue.getValue()).isSameAs(userBean);
 		assertThat(keyValue.getTtl()).isEqualTo(12);
 	}
 

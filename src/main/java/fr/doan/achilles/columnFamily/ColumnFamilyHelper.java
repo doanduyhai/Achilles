@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
+import fr.doan.achilles.validation.Validator;
 
 public class ColumnFamilyHelper
 {
@@ -125,6 +126,13 @@ public class ColumnFamilyHelper
 			{
 				normalized = className;
 			}
+
+			Validator
+					.validateTrue(
+							normalized.length() <= 48,
+							"The column family '"
+									+ normalized
+									+ "' is too long. The maximum length for a column family name is 48 characters");
 
 			return normalized;
 		}

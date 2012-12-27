@@ -30,6 +30,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
+import fr.doan.achilles.exception.ValidationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyHelperTest
@@ -197,6 +198,15 @@ public class ColumnFamilyHelperTest
 		String normalized = ColumnFamilyHelper.normalizeCanonicalName(canonicalName);
 
 		assertThat(normalized).isEqualTo("ItIsAVeryLongClassNameNearing48Characters");
+	}
+
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_even_class_name_exceeeds_48_characters() throws Exception
+	{
+		String canonicalName = "fr.ItIsAVeryLooooooooooooooooooooooooooooooooooongClassNameNearing48Characters";
+
+		ColumnFamilyHelper.normalizeCanonicalName(canonicalName);
+
 	}
 
 	private void prepareData()

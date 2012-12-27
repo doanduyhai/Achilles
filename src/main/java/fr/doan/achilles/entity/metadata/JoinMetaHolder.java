@@ -10,17 +10,18 @@ import me.prettyprint.hector.api.Serializer;
  * @author DuyHai DOAN
  * 
  */
-public class JoinMetaData<K, V>
+public class JoinMetaHolder<K>
 {
 
 	private Class<K> idClass;
 	private Serializer<K> idSerializer;
 	private Method idGetter;
 	private EntityMeta<K> entityMeta;
+	private boolean insertable = false;
 
-	public JoinMetaData() {}
+	public JoinMetaHolder() {}
 
-	public JoinMetaData(Class<K> idClass) {
+	public JoinMetaHolder(Class<K> idClass) {
 		this.idClass = idClass;
 	}
 
@@ -62,5 +63,15 @@ public class JoinMetaData<K, V>
 	public void setEntityMeta(EntityMeta<K> entityMeta)
 	{
 		this.entityMeta = entityMeta;
+	}
+
+	public boolean isInsertable()
+	{
+		return insertable;
+	}
+
+	public void setInsertable(boolean insertable)
+	{
+		this.insertable = insertable;
 	}
 }
