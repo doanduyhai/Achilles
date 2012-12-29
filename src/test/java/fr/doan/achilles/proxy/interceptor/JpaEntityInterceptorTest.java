@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import mapping.entity.WideRowBean;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -32,13 +31,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.JoinMeta;
-import fr.doan.achilles.entity.metadata.JoinMetaHolder;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.entity.operations.JoinEntityLoader;
 import fr.doan.achilles.wrapper.ListWrapper;
 import fr.doan.achilles.wrapper.MapWrapper;
 import fr.doan.achilles.wrapper.SetWrapper;
@@ -77,9 +72,6 @@ public class JpaEntityInterceptorTest
 
 	@Mock
 	private EntityLoader loader;
-
-	@Mock
-	private JoinEntityLoader joinEntityLoader;
 
 	@Mock
 	private MethodProxy proxy;
@@ -126,7 +118,6 @@ public class JpaEntityInterceptorTest
 
 		ReflectionTestUtils.setField(interceptor, "key", key);
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
-		ReflectionTestUtils.setField(interceptor, "joinEntityLoader", joinEntityLoader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
 		ReflectionTestUtils.setField(interceptor, "wideRow", false);
 	}
@@ -277,34 +268,6 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(WideRowWrapper.class);
-	}
-
-	@Test
-	public void should_load_join_column() throws Throwable
-	{
-		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
-		JoinMetaHolder<Long> joinMetaData = new JoinMetaHolder<Long>();
-		PropertyMeta<Void, Long> joinIdMeta = new SimpleMeta<Long>();
-		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		joinEntityMeta.setIdMeta(joinIdMeta);
-		joinMetaData.setEntityMeta(joinEntityMeta);
-
-		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
-		joinPropertyMeta.setJoinMetaHolder(joinMetaData);
-		joinPropertyMeta.setValueClass(UserBean.class);
-
-		Long joinId = 754L;
-		UserBean userBean = new UserBean();
-
-		when(getterMetas.containsKey(userGetter)).thenReturn(true);
-		when(getterMetas.get(userGetter)).thenReturn((PropertyMeta) joinPropertyMeta);
-
-		when(loader.loadJoinProperty(key, dao, joinPropertyMeta, joinIdMeta)).thenReturn(joinId);
-		when(joinEntityLoader.loadJoinEntity(joinId, joinPropertyMeta)).thenReturn(userBean);
-
-		Object expected = this.interceptor.intercept(entity, userGetter, (Object[]) null, proxy);
-
-		assertThat(expected).isSameAs(userBean);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

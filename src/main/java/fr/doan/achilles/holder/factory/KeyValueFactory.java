@@ -10,7 +10,7 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.operations.JoinEntityLoader;
+import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
@@ -21,7 +21,7 @@ import fr.doan.achilles.holder.KeyValue;
  */
 public class KeyValueFactory
 {
-	private JoinEntityLoader joinEntityLoader = new JoinEntityLoader();
+	private EntityLoader loader = new EntityLoader();
 
 	public <K, V> KeyValue<K, V> create(K key, V value, int ttl)
 	{
@@ -77,6 +77,7 @@ public class KeyValueFactory
 		return create(key, value, ttl);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <K, V> V extractValueFromHColumn(PropertyMeta<K, V> wideMapMeta,
 			HColumn<DynamicComposite, Object> hColumn)
 	{
@@ -84,10 +85,9 @@ public class KeyValueFactory
 		Object hColumnValue = hColumn.getValue();
 		if (wideMapMeta.isJoinColumn())
 		{
-			if (hColumnValue != null)
-			{
-				value = joinEntityLoader.loadJoinEntity(hColumnValue, wideMapMeta);
-			}
+
+			value = (V) loader.loadJoinEntity(wideMapMeta.getValueClass(), hColumnValue,
+					wideMapMeta.getJoinProperties().getEntityMeta());
 		}
 		else
 		{

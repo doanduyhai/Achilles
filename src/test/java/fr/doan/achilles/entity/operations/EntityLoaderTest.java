@@ -25,41 +25,46 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
 import mapping.entity.WideRowBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
+import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityLoaderTest
 {
 
 	@InjectMocks
-	private EntityLoader loader = new EntityLoader();
+	private EntityLoader loader;
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -91,12 +96,19 @@ public class EntityLoaderTest
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
 
+	@Mock
+	private EntityProxyBuilder interceptorBuilder;
+
+	@Captor
+	ArgumentCaptor<UserBean> userBeanCaptor;
+
 	private CompleteBean bean;
 
 	@Before
 	public void setUp()
 	{
 		bean = CompleteBeanTestBuilder.builder().buid();
+		ReflectionTestUtils.setField(loader, "interceptorBuilder", interceptorBuilder);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -262,27 +274,6 @@ public class EntityLoaderTest
 		assertThat(value).containsValue("75014");
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_load_join_property() throws Exception
-	{
-		PropertyMeta<Void, UUID> joinIdPropertyMeta = mock(PropertyMeta.class);
-		DynamicComposite composite = new DynamicComposite();
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-		when(joinMeta.propertyType()).thenReturn(PropertyType.JOIN_SIMPLE);
-		when(joinMeta.getPropertyName()).thenReturn("joinSimple");
-
-		when(keyFactory.createBaseForQuery(joinMeta, EQUAL)).thenReturn(composite);
-		when(dao.getValue(1L, composite)).thenReturn(uuid);
-		when(joinIdPropertyMeta.getValue(uuid)).thenReturn(uuid);
-		EntityLoader spy = spy(loader);
-
-		UUID joinId = spy.loadJoinProperty(1L, dao, joinMeta, joinIdPropertyMeta);
-
-		assertThat(joinId).isEqualTo(uuid);
-	}
-
 	@Test
 	public void should_load_simple_property_into_object() throws Exception
 	{
@@ -369,5 +360,83 @@ public class EntityLoaderTest
 
 		verify(spy).loadMapProperty(1L, dao, mapMeta);
 		verify(mapMeta).getSetter();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_load_join_entity_into_object() throws Exception
+	{
+		Long joinId = 45L;
+
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(dao);
+		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
+
+		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		idMeta.setSetter(idSetter);
+		entityMeta.setIdMeta(idMeta);
+
+		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		joinProperties.setEntityMeta(entityMeta);
+
+		PropertyMeta<Integer, UserBean> joinPropertyMeta = new JoinWideMapMeta<Integer, UserBean>();
+		joinPropertyMeta.setValueClass(UserBean.class);
+		joinPropertyMeta.setJoinProperties(joinProperties);
+
+		UserBean userBean = new UserBean();
+
+		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		when(columns.size()).thenReturn(1);
+		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
+
+		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
+				userBean);
+
+		UserBean expected = this.loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
+
+		assertThat(expected).isSameAs(userBean);
+		assertThat(userBeanCaptor.getValue().getUserId()).isEqualTo(joinId);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_load_join_column() throws Throwable
+	{
+		Long joinId = 45L, id = 545L;
+
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(dao);
+		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
+		Method userSetter = CompleteBean.class.getDeclaredMethod("setUser", UserBean.class);
+
+		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		idMeta.setSetter(idSetter);
+		entityMeta.setIdMeta(idMeta);
+
+		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		joinProperties.setEntityMeta(entityMeta);
+
+		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
+		joinPropertyMeta.setValueClass(UserBean.class);
+		joinPropertyMeta.setJoinProperties(joinProperties);
+		joinPropertyMeta.setSetter(userSetter);
+
+		UserBean userBean = new UserBean();
+		userBean.setUserId(joinId);
+
+		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		when(columns.size()).thenReturn(1);
+
+		DynamicComposite comp = new DynamicComposite();
+		when(keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL)).thenReturn(comp);
+		when(dao.getValue(id, comp)).thenReturn(joinId);
+		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
+		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
+				userBean);
+
+		loader.loadPropertyIntoObject(bean, id, dao, joinPropertyMeta);
+
+		assertThat(userBeanCaptor.getValue().getUserId()).isEqualTo(joinId);
+		assertThat(bean.getUser()).isSameAs(userBean);
 	}
 }

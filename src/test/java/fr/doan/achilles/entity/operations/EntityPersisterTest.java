@@ -51,6 +51,7 @@ import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
+import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -421,5 +422,35 @@ public class EntityPersisterTest
 
 		verifyZeroInteractions(helper);
 
+	}
+
+	@Test
+	public void should_remove_entity() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		Long idValue = 7856L;
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setEntityDao(dao);
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().buid();
+
+		when(helper.getKey(bean, idMeta)).thenReturn(idValue);
+
+		persister.remove(bean, entityMeta);
+
+		verify(dao).removeRow(idValue);
+	}
+
+	@Test
+	public void should_remove_entity_by_id() throws Exception
+	{
+		Long idValue = 7856L;
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(dao);
+
+		persister.removeById(idValue, entityMeta);
+
+		verify(dao).removeRow(idValue);
 	}
 }

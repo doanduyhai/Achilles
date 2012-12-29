@@ -229,6 +229,12 @@ public abstract class AbstractDao<K, N, V>
 	}
 
 	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
+			boolean reverse)
+	{
+		return getColumnsIterator(key, startName, null, reverse, DEFAULT_LENGTH);
+	}
+
+	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
 			boolean reverse, int length)
 	{
 		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,

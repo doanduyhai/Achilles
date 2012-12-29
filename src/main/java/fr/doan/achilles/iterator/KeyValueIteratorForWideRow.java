@@ -44,9 +44,7 @@ public class KeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 		if (this.columnSliceIterator.hasNext())
 		{
 			HColumn<Composite, V> column = this.columnSliceIterator.next();
-			V value = wideMapMeta.getValue(column.getValue());
-			K key = wideMapMeta.getKey(column.getName().get(0, wideMapMeta.getKeySerializer()));
-			keyValue = factory.create(key, value, column.getTtl());
+			keyValue = factory.createForWideRow(wideMapMeta, column);
 		}
 		else
 		{

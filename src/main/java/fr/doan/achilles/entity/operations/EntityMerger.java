@@ -13,10 +13,6 @@ import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.validation.Validator;
 
-@SuppressWarnings(
-{
-	"rawtypes"
-})
 public class EntityMerger
 {
 	private EntityPersister persister = new EntityPersister();
@@ -35,7 +31,8 @@ public class EntityMerger
 		if (util.isProxy(entity))
 		{
 			Factory factory = (Factory) entity;
-			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory.getCallback(0);
+			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory
+					.getCallback(0);
 			GenericEntityDao<ID> dao = entityMeta.getEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();

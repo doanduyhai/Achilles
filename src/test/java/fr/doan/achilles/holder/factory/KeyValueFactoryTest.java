@@ -33,9 +33,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.operations.JoinEntityLoader;
+import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.serializer.Utils;
 
@@ -62,12 +64,12 @@ public class KeyValueFactoryTest
 	private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
 	@Mock
-	private JoinEntityLoader joinEntityLoader;
+	private EntityLoader loader;
 
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(factory, "joinEntityLoader", joinEntityLoader);
+		ReflectionTestUtils.setField(factory, "loader", loader);
 	}
 
 	@Test
@@ -124,6 +126,7 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_join_entity_from_dynamic_composite_hcolumn() throws Exception
 	{
+		Integer joinId = 114523;
 		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
 				DYNA_COMP_SRZ, OBJECT_SRZ);
 		DynamicComposite dynComp = new DynamicComposite();
@@ -131,15 +134,22 @@ public class KeyValueFactoryTest
 		dynComp.setComponent(1, 10, INT_SRZ);
 		dynComp.setComponent(2, 1, INT_SRZ);
 		hColumn.setName(dynComp);
-		hColumn.setValue("test");
+		hColumn.setValue(joinId);
 		hColumn.setTtl(12);
+
+		EntityMeta<Integer> joinEntityMeta = new EntityMeta<Integer>();
+		JoinProperties<Integer> joinProperties = new JoinProperties<Integer>();
+		joinProperties.setEntityMeta(joinEntityMeta);
 
 		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(joinPropertyMeta.isSingleKey()).thenReturn(true);
 		when(joinPropertyMeta.isJoinColumn()).thenReturn(true);
+		when(joinPropertyMeta.getValueClass()).thenReturn(UserBean.class);
+		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
 		UserBean userBean = new UserBean();
-		when(joinEntityLoader.loadJoinEntity("test", joinPropertyMeta)).thenReturn(userBean);
+		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+
 		KeyValue<Integer, UserBean> keyValue = factory.createForWideMap(joinPropertyMeta, hColumn);
 
 		assertThat(keyValue.getKey()).isEqualTo(1);

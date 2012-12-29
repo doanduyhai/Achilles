@@ -8,6 +8,7 @@ import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * KeyValueIterator
@@ -19,6 +20,7 @@ public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 {
 	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	public KeyValueIteratorForEntity(
 			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
@@ -34,7 +36,6 @@ public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 		return this.columnSliceIterator.hasNext();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public KeyValue<K, V> next()
 	{
@@ -43,10 +44,7 @@ public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
 		{
 			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
 
-			DynamicComposite composite = column.getName();
-			K key = (K) composite.get(2, wideMapMeta.getKeySerializer());
-			V value = wideMapMeta.getValue(column.getValue());
-			keyValue = new KeyValue<K, V>(key, value, column.getTtl());
+			keyValue = factory.createForWideMap(wideMapMeta, column);
 		}
 		else
 		{

@@ -23,7 +23,12 @@ public class EntityValidator
 
 		Class baseClass = util.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(baseClass);
+		validateEntity(entity, entityMeta);
 
+	}
+
+	public void validateEntity(Object entity, EntityMeta<?> entityMeta)
+	{
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed");
 

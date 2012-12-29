@@ -20,13 +20,13 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
 public class EntityLoader
 {
-
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 	private EntityMapper mapper = new EntityMapper();
-
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
@@ -73,15 +73,6 @@ public class EntityLoader
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.getValue(value);
-	}
-
-	public <ID, JOIN_ID, V> JOIN_ID loadJoinProperty(ID key, GenericEntityDao<ID> dao,
-			PropertyMeta<Void, V> propertyMeta, PropertyMeta<Void, JOIN_ID> joinIdPropertyMeta)
-	{
-		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		Object value = dao.getValue(key, composite);
-
-		return joinIdPropertyMeta.getValue(value);
 	}
 
 	protected <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao,
@@ -157,6 +148,8 @@ public class EntityLoader
 			case LAZY_MAP:
 				value = this.loadMapProperty(key, dao, (MapMeta<?, ?>) propertyMeta);
 				break;
+			case JOIN_SIMPLE:
+				value = this.loadJoinColumn(key, dao, propertyMeta);
 			default:
 				break;
 		}
@@ -166,5 +159,28 @@ public class EntityLoader
 		}
 		catch (Exception e)
 		{}
+	}
+
+	public <JOIN_ID, V> V loadJoinEntity(Class<V> entityClass, JOIN_ID joinId,
+			EntityMeta<JOIN_ID> joinEntityMeta)
+	{
+		V joinEntity = (V) this.load(entityClass, joinId, joinEntityMeta);
+
+		return (V) this.interceptorBuilder.build(joinEntity, joinEntityMeta);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	protected <ID, V> V loadJoinColumn(ID key, GenericEntityDao<ID> dao,
+			PropertyMeta<?, V> joinPropertyMeta)
+	{
+		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinProperties().getEntityMeta();
+		DynamicComposite composite = keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL);
+		Object joinId = dao.getValue(key, composite);
+
+		return (V) this.loadJoinEntity(joinPropertyMeta.getValueClass(), joinId, joinEntityMeta);
 	}
 }

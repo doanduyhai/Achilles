@@ -19,7 +19,7 @@ public abstract class PropertyMeta<K, V>
 	private boolean singleKey = true;
 	private boolean joinColumn = false;
 
-	private JoinMetaHolder<?> joinMetaHolder;
+	private JoinProperties<?> joinProperties;
 	private List<Class<?>> componentClasses;
 	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
@@ -177,13 +177,13 @@ public abstract class PropertyMeta<K, V>
 		return this.valueClass.cast(object);
 	}
 
-	public JoinMetaHolder<?> getJoinMetaHolder()
+	public JoinProperties<?> getJoinProperties()
 	{
-		return joinMetaHolder;
+		return joinProperties;
 	}
 
-	public void setJoinMetaHolder(JoinMetaHolder<?> joinMetaHolder)
+	public void setJoinProperties(JoinProperties<?> joinProperties)
 	{
-		this.joinMetaHolder = joinMetaHolder;
+		this.joinProperties = joinProperties;
 	}
 }

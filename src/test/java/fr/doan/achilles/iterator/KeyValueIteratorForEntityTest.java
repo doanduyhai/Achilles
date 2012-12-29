@@ -1,26 +1,29 @@
 package fr.doan.achilles.iterator;
 
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.NoSuchElementException;
 
+import mapping.entity.TweetMultiKey;
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * KeyValueIteratorTest
@@ -33,29 +36,25 @@ import fr.doan.achilles.holder.KeyValue;
 public class KeyValueIteratorForEntityTest
 {
 
-	@InjectMocks
-	private KeyValueIteratorForEntity<Integer, String> iterator;
-
 	@Mock
 	private ColumnSliceIterator<?, DynamicComposite, String> columnSliceIterator;
 
 	@Mock
-	private Serializer<?> keySerializer;
+	private List<Method> componentSetters;
 
 	@Mock
-	private PropertyMeta<Integer, String> wideMapMeta;
+	private MultiKeyWideMapMeta<TweetMultiKey, String> multiKeyWideMapMeta;
 
-	@Test
-	public void should_has_next() throws Exception
-	{
-		when(columnSliceIterator.hasNext()).thenReturn(true);
-		assertThat(iterator.hasNext()).isTrue();
-	}
+	@Mock
+	private KeyValueFactory factory = new KeyValueFactory();
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_call_remove() throws Exception
+	@InjectMocks
+	private KeyValueIteratorForEntity<TweetMultiKey, String> iterator;
+
+	@Before
+	public void setUp()
 	{
-		iterator.remove();
+		ReflectionTestUtils.setField(iterator, "factory", factory);
 	}
 
 	@SuppressWarnings(
@@ -66,31 +65,23 @@ public class KeyValueIteratorForEntityTest
 	@Test
 	public void should_give_next() throws Exception
 	{
-		HColumn<DynamicComposite, String> column = mock(HColumn.class);
-		DynamicComposite comp = mock(DynamicComposite.class);
+		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
+		KeyValue<TweetMultiKey, String> keyValue = mock(KeyValue.class);
 
 		when(columnSliceIterator.hasNext()).thenReturn(true);
-		when(columnSliceIterator.next()).thenReturn(column);
-		when(column.getName()).thenReturn(comp);
+		when(columnSliceIterator.next()).thenReturn((HColumn) column);
+		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
+		when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
-		doReturn(12).when(comp).get(2, keySerializer);
-		when(column.getValue()).thenReturn("val");
-		when(column.getTtl()).thenReturn(120);
+		when(factory.createForWideMap(multiKeyWideMapMeta, column)).thenReturn(keyValue);
 
-		when(wideMapMeta.getValue("val")).thenReturn("val");
-		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		KeyValue<TweetMultiKey, String> expected = iterator.next();
 
-		when(comp.get(2, INT_SRZ)).thenReturn(12);
-
-		KeyValue<Integer, String> keyValue = iterator.next();
-
-		assertThat(keyValue.getKey()).isEqualTo(12);
-		assertThat(keyValue.getValue()).isEqualTo("val");
-		assertThat(keyValue.getTtl()).isEqualTo(120);
+		assertThat(expected).isSameAs(keyValue);
 	}
 
 	@Test(expected = NoSuchElementException.class)
-	public void should_exception_when_no_next() throws Exception
+	public void should_exception_when_no_more_element() throws Exception
 	{
 		when(columnSliceIterator.hasNext()).thenReturn(false);
 		iterator.next();

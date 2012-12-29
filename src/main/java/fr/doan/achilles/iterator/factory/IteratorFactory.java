@@ -7,8 +7,6 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
 import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
-import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForEntity;
-import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForWideRow;
 
 /**
  * IteratorFactory
@@ -22,14 +20,7 @@ public class IteratorFactory
 			ColumnSliceIterator<?, Composite, V> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		if (propertyMeta.isSingleKey())
-		{
-			return new KeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);
-		}
-		else
-		{
-			return new MultiKeyKeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);
-		}
+		return new KeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);
 	}
 
 	@SuppressWarnings(
@@ -41,15 +32,7 @@ public class IteratorFactory
 			ColumnSliceIterator<?, DynamicComposite, ?> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		if (propertyMeta.isSingleKey())
-		{
-			return new KeyValueIteratorForEntity<K, V>((ColumnSliceIterator) columnSliceIterator,
-					propertyMeta);
-		}
-		else
-		{
-			return new MultiKeyKeyValueIteratorForEntity<K, V>(
-					(ColumnSliceIterator) columnSliceIterator, propertyMeta);
-		}
+		return new KeyValueIteratorForEntity<K, V>((ColumnSliceIterator) columnSliceIterator,
+				propertyMeta);
 	}
 }

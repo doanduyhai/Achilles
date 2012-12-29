@@ -19,7 +19,6 @@ import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
-import fr.doan.achilles.iterator.MultiKeyKeyValueIteratorForWideRow;
 
 /**
  * IteratorFactoryTest
@@ -63,21 +62,6 @@ public class IteratorFactoryTest
 	}
 
 	@Test
-	public void should_create_multikey_key_value_iterator() throws Exception
-	{
-		when(wideMapMeta.isSingleKey()).thenReturn(false);
-		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
-
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForWideRow(
-				columnSliceComposite, multiKeyWideMapMeta);
-
-		assertThat(iterator).isExactlyInstanceOf(MultiKeyKeyValueIteratorForWideRow.class);
-		assertThat(iterator.hasNext()).isTrue();
-		assertThat(iterator.hasNext()).isFalse();
-		assertThat(iterator.hasNext()).isTrue();
-	}
-
-	@Test
 	public void should_create_dynamic_composite_key_value_iterator() throws Exception
 	{
 		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForEntity(
@@ -90,16 +74,4 @@ public class IteratorFactoryTest
 		assertThat(iterator.hasNext()).isTrue();
 	}
 
-	@Test
-	public void should_create_multikey_dynamic_composite_key_value_iterator() throws Exception
-	{
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForEntity(
-				columnSliceDynamicComposite, multiKeyWideMapMeta);
-
-		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);
-
-		assertThat(iterator.hasNext()).isTrue();
-		assertThat(iterator.hasNext()).isFalse();
-		assertThat(iterator.hasNext()).isTrue();
-	}
 }

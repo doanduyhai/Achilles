@@ -56,6 +56,14 @@ public class EntityValidatorTest
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
 
+	@Test
+	public void should_validate_from_entity_meta() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		when(util.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
+		entityValidator.validateEntity(bean, entityMeta);
+	}
+
 	@Test(expected = ValidationException.class)
 	public void should_exception_when_no_meta_found() throws Exception
 	{

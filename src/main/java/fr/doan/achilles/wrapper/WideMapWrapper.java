@@ -24,15 +24,15 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
 public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 
-	private ID id;
-	private GenericEntityDao<ID> dao;
-	private PropertyMeta<K, V> wideMapMeta;
-	private CompositeHelper helper = new CompositeHelper();
-	private KeyValueFactory keyValueFactory = new KeyValueFactory();
-	private IteratorFactory iteratorFactory = new IteratorFactory();
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	protected ID id;
+	protected GenericEntityDao<ID> dao;
+	protected PropertyMeta<K, V> wideMapMeta;
+	protected CompositeHelper helper = new CompositeHelper();
+	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
+	protected IteratorFactory iteratorFactory = new IteratorFactory();
+	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
-	private DynamicComposite buildComposite(K key)
+	protected DynamicComposite buildComposite(K key)
 	{
 		return keyFactory.createForInsert(wideMapMeta, key);
 	}
