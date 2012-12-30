@@ -12,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.exception.ValidationException;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
  * EntityValidatorTest
@@ -36,7 +36,7 @@ public class EntityValidatorTest
 	private EntityValidator entityValidator;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper helper;
 
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
@@ -49,9 +49,9 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(util.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(util.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
+		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -60,7 +60,7 @@ public class EntityValidatorTest
 	public void should_validate_from_entity_meta() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		when(util.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
+		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
@@ -69,7 +69,7 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(util.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(null);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
@@ -80,9 +80,9 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(util.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(util.determinePrimaryKey(bean, entityMeta)).thenReturn(null);
+		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(null);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}

@@ -1,7 +1,6 @@
 package fr.doan.achilles.entity.metadata;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
 
@@ -15,17 +14,17 @@ public abstract class PropertyMeta<K, V>
 	private Serializer<?> valueSerializer;
 	private Method getter;
 	private Method setter;
-	private boolean lazy = false;
-	private boolean singleKey = true;
-	private boolean joinColumn = false;
 
-	private JoinProperties<?> joinProperties;
-	private List<Class<?>> componentClasses;
-	private List<Serializer<?>> componentSerializers;
-	private List<Method> componentGetters;
-	private List<Method> componentSetters;
+	private JoinProperties joinProperties;
+	private MultiKeyProperties multiKeyProperties;
 
 	public abstract PropertyType propertyType();
+
+	public abstract boolean isSingleKey();
+
+	public abstract boolean isLazy();
+
+	public abstract boolean isJoinColumn();
 
 	public String getPropertyName()
 	{
@@ -97,74 +96,14 @@ public abstract class PropertyMeta<K, V>
 		this.setter = setter;
 	}
 
-	public boolean isLazy()
+	public MultiKeyProperties getMultiKeyProperties()
 	{
-		return lazy;
+		return multiKeyProperties;
 	}
 
-	public void setLazy(boolean lazy)
+	public void setMultiKeyProperties(MultiKeyProperties multiKeyProperties)
 	{
-		this.lazy = lazy;
-	}
-
-	public boolean isSingleKey()
-	{
-		return singleKey;
-	}
-
-	public void setSingleKey(boolean singleKey)
-	{
-		this.singleKey = singleKey;
-	}
-
-	public boolean isJoinColumn()
-	{
-		return joinColumn;
-	}
-
-	public void setJoinColumn(boolean joinColumn)
-	{
-		this.joinColumn = joinColumn;
-	}
-
-	public List<Class<?>> getComponentClasses()
-	{
-		return componentClasses;
-	}
-
-	public void setComponentClasses(List<Class<?>> componentClasses)
-	{
-		this.componentClasses = componentClasses;
-	}
-
-	public List<Serializer<?>> getComponentSerializers()
-	{
-		return componentSerializers;
-	}
-
-	public void setComponentSerializers(List<Serializer<?>> componentSerializers)
-	{
-		this.componentSerializers = componentSerializers;
-	}
-
-	public List<Method> getComponentGetters()
-	{
-		return componentGetters;
-	}
-
-	public void setComponentGetters(List<Method> componentGetters)
-	{
-		this.componentGetters = componentGetters;
-	}
-
-	public List<Method> getComponentSetters()
-	{
-		return componentSetters;
-	}
-
-	public void setComponentSetters(List<Method> componentSetters)
-	{
-		this.componentSetters = componentSetters;
+		this.multiKeyProperties = multiKeyProperties;
 	}
 
 	public K getKey(Object object)
@@ -177,12 +116,12 @@ public abstract class PropertyMeta<K, V>
 		return this.valueClass.cast(object);
 	}
 
-	public JoinProperties<?> getJoinProperties()
+	public JoinProperties getJoinProperties()
 	{
 		return joinProperties;
 	}
 
-	public void setJoinProperties(JoinProperties<?> joinProperties)
+	public void setJoinProperties(JoinProperties joinProperties)
 	{
 		this.joinProperties = joinProperties;
 	}

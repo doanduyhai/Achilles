@@ -31,10 +31,15 @@ public class WideMapWrapperBuilder<ID, K, V>
 	public WideMapWrapper<ID, K, V> build()
 	{
 		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
+		build(wrapper);
+		return wrapper;
+	}
+
+	protected void build(WideMapWrapper<ID, K, V> wrapper)
+	{
 		wrapper.setId(id);
 		wrapper.setDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);
-		return wrapper;
 	}
 
 }

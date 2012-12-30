@@ -1,5 +1,6 @@
 package fr.doan.achilles.entity.operations;
 
+import static javax.persistence.CascadeType.MERGE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.Factory;
 
@@ -20,11 +22,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
@@ -57,7 +61,7 @@ public class EntityMergerTest
 	private GenericEntityDao<Long> dao;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper helper;
 
 	@Mock
 	private Bean entity;
@@ -80,9 +84,7 @@ public class EntityMergerTest
 	public void should_merge_proxy_with_simple_dirty() throws Exception
 	{
 		Factory factory = (Factory) entity;
-
-		when(util.isProxy(entity)).thenReturn(true);
-
+		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 
@@ -107,9 +109,7 @@ public class EntityMergerTest
 	public void should_merge_proxy_with_multi_value_dirty() throws Exception
 	{
 		Factory factory = (Factory) entity;
-
-		when(util.isProxy(entity)).thenReturn(true);
-
+		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 
@@ -135,9 +135,7 @@ public class EntityMergerTest
 	public void should_merge_proxy_with_no_dirty() throws Exception
 	{
 		Factory factory = (Factory) entity;
-
-		when(util.isProxy(entity)).thenReturn(true);
-
+		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 
@@ -152,6 +150,48 @@ public class EntityMergerTest
 
 		verifyZeroInteractions(persister);
 		verify(dirtyMap).clear();
+	}
+
+	@Test
+	public void should_merge_proxy_with_join_entity() throws Exception
+	{
+		Factory factory = (Factory) entity;
+		when(helper.isProxy(entity)).thenReturn(true);
+		when(factory.getCallback(0)).thenReturn(interceptor);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
+		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
+
+		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
+
+		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinEntityMeta);
+		joinProperties.addCascadeType(MERGE);
+
+		Method userGetter = Bean.class.getMethod("getUser");
+		Method userSetter = Bean.class.getMethod("setUser", UserBean.class);
+
+		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
+		joinPropertyMeta.setJoinProperties(joinProperties);
+		joinPropertyMeta.setGetter(userGetter);
+		joinPropertyMeta.setSetter(userSetter);
+
+		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
+		propertyMetaMap.put("joinEntity", joinPropertyMeta);
+
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
+
+		UserBean userBean = new UserBean();
+
+		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+		when(interceptorBuilder.build(userBean, joinEntityMeta)).thenReturn(userBean);
+
+		merger.mergeEntity(entity, entityMeta);
+
+		verify(persister).persist(userBean, joinEntityMeta);
+		verify(helper).setValueToField(entity, userSetter, userBean);
+
 	}
 
 	class Bean extends CompleteBean implements Factory

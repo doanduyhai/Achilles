@@ -31,10 +31,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.helper.CompositeHelper;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
  * CompositeKeyFactoryTest
@@ -55,13 +56,16 @@ public class CompositeKeyFactoryTest
 	private CompositeHelper helper;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper entityHelper;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
 	private PropertyMeta<TweetMultiKey, String> multiKeyWideMapMeta;
+
+	@Mock
+	private MultiKeyProperties multiKeyProperties;
 
 	@SuppressWarnings(
 	{
@@ -72,7 +76,7 @@ public class CompositeKeyFactoryTest
 	public void setUp()
 	{
 		ReflectionTestUtils.setField(factory, "helper", helper);
-		ReflectionTestUtils.setField(factory, "util", util);
+		ReflectionTestUtils.setField(factory, "entityHelper", entityHelper);
 
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(wideMapMeta.getPropertyName()).thenReturn("property");
@@ -80,6 +84,7 @@ public class CompositeKeyFactoryTest
 
 		when(multiKeyWideMapMeta.isSingleKey()).thenReturn(false);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("property");
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
 	@Test
@@ -102,9 +107,9 @@ public class CompositeKeyFactoryTest
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", uuid);
 
-		when(multiKeyWideMapMeta.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(util.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
 		Composite comp = factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
 
@@ -124,9 +129,9 @@ public class CompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a");
 
-		when(multiKeyWideMapMeta.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(util.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
 		expectedEx.expect(ValidationException.class);
 		expectedEx.expectMessage("There should be 3 values for the key of WideMap 'property'");
@@ -145,9 +150,9 @@ public class CompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
 
-		when(multiKeyWideMapMeta.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(util.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
 		expectedEx.expect(ValidationException.class);
 		expectedEx
@@ -185,9 +190,9 @@ public class CompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
 
-		when(multiKeyWideMapMeta.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(util.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
 
@@ -242,11 +247,11 @@ public class CompositeKeyFactoryTest
 						LESS_THAN_EQUAL,
 						GREATER_THAN_EQUAL
 				});
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(util.determineMultiKey(tweetKey1, componentGetters)).thenReturn(keyValues1);
-		when(util.determineMultiKey(tweetKey2, componentGetters)).thenReturn(keyValues2);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(entityHelper.determineMultiKey(tweetKey1, componentGetters)).thenReturn(keyValues1);
+		when(entityHelper.determineMultiKey(tweetKey2, componentGetters)).thenReturn(keyValues2);
 
-		when(multiKeyWideMapMeta.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues1)).thenReturn(1);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues2)).thenReturn(2);

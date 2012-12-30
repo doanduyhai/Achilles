@@ -7,4 +7,22 @@ public class ListLazyMeta<V> extends ListMeta<V>
 	{
 		return PropertyType.LAZY_LIST;
 	}
+
+	@Override
+	public boolean isSingleKey()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isLazy()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isJoinColumn()
+	{
+		return false;
+	}
 }

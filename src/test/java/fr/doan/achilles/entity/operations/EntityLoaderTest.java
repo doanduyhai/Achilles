@@ -13,6 +13,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -45,6 +46,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -56,6 +58,7 @@ import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
@@ -99,8 +102,14 @@ public class EntityLoaderTest
 	@Mock
 	private EntityProxyBuilder interceptorBuilder;
 
+	@Mock
+	private EntityHelper helper;
+
 	@Captor
 	ArgumentCaptor<UserBean> userBeanCaptor;
+
+	@Captor
+	ArgumentCaptor<Long> idCaptor;
 
 	private CompleteBean bean;
 
@@ -109,6 +118,7 @@ public class EntityLoaderTest
 	{
 		bean = CompleteBeanTestBuilder.builder().buid();
 		ReflectionTestUtils.setField(loader, "interceptorBuilder", interceptorBuilder);
+		ReflectionTestUtils.setField(loader, "helper", helper);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -123,13 +133,17 @@ public class EntityLoaderTest
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getSetter()).thenReturn(idSetter);
+
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
-		CompleteBean loaded = loader.load(CompleteBean.class, 1L, entityMeta);
+		doNothing().when(helper).setValueToField(any(CompleteBean.class), eq(idSetter),
+				idCaptor.capture());
+
+		loader.load(CompleteBean.class, 1L, entityMeta);
 
 		verify(mapper).mapColumnsToBean(eq(1L), eq(columns), eq(entityMeta),
 				any(CompleteBean.class));
 
-		assertThat(loaded.getId()).isEqualTo(1L);
+		assertThat(idCaptor.getValue()).isEqualTo(1L);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -142,10 +156,12 @@ public class EntityLoaderTest
 		when(entityMeta.isWideRow()).thenReturn(true);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getSetter()).thenReturn(idSetter);
+		doNothing().when(helper).setValueToField(any(CompleteBean.class), eq(idSetter),
+				idCaptor.capture());
 
-		WideRowBean loaded = loader.load(WideRowBean.class, 452L, entityMeta);
+		loader.load(WideRowBean.class, 452L, entityMeta);
 
-		assertThat(loaded.getId()).isEqualTo(452L);
+		assertThat(idCaptor.getValue()).isEqualTo(452L);
 	}
 
 	@Test
@@ -376,7 +392,7 @@ public class EntityLoaderTest
 		idMeta.setSetter(idSetter);
 		entityMeta.setIdMeta(idMeta);
 
-		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(entityMeta);
 
 		PropertyMeta<Integer, UserBean> joinPropertyMeta = new JoinWideMapMeta<Integer, UserBean>();
@@ -388,14 +404,15 @@ public class EntityLoaderTest
 		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
 		when(columns.size()).thenReturn(1);
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
-
+		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
+				idCaptor.capture());
 		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
 				userBean);
 
 		UserBean expected = this.loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
 
 		assertThat(expected).isSameAs(userBean);
-		assertThat(userBeanCaptor.getValue().getUserId()).isEqualTo(joinId);
+		assertThat(idCaptor.getValue()).isEqualTo(joinId);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -413,7 +430,7 @@ public class EntityLoaderTest
 		idMeta.setSetter(idSetter);
 		entityMeta.setIdMeta(idMeta);
 
-		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(entityMeta);
 
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
@@ -431,12 +448,34 @@ public class EntityLoaderTest
 		when(keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL)).thenReturn(comp);
 		when(dao.getValue(id, comp)).thenReturn(joinId);
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
+		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
+				idCaptor.capture());
 		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
 				userBean);
+		doNothing().when(helper)
+				.setValueToField(eq(bean), eq(userSetter), userBeanCaptor.capture());
 
 		loader.loadPropertyIntoObject(bean, id, dao, joinPropertyMeta);
 
-		assertThat(userBeanCaptor.getValue().getUserId()).isEqualTo(joinId);
-		assertThat(bean.getUser()).isSameAs(userBean);
+		assertThat(userBeanCaptor.getValue()).isSameAs(userBean);
+		assertThat(idCaptor.getValue()).isEqualTo(joinId);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(expected = ValidationException.class)
+	public void should_exception_when_join_entity_not_found() throws Exception
+	{
+		Long joinId = 45L;
+
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(dao);
+
+		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+
+		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
+		when(columns.size()).thenReturn(0);
+
+		loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
+
 	}
 }

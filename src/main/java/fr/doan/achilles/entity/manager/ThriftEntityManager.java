@@ -9,13 +9,13 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.entity.operations.EntityRefresher;
 import fr.doan.achilles.entity.operations.EntityValidator;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
@@ -33,7 +33,7 @@ public class ThriftEntityManager implements EntityManager
 	private EntityLoader loader = new EntityLoader();
 	private EntityMerger merger = new EntityMerger();
 	private EntityRefresher entityRefresher = new EntityRefresher();
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper helper = new EntityHelper();
 	private EntityValidator entityValidator = new EntityValidator();
 
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
@@ -46,7 +46,7 @@ public class ThriftEntityManager implements EntityManager
 	public void persist(Object entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		if (util.isProxy(entity))
+		if (helper.isProxy(entity))
 		{
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
@@ -61,7 +61,7 @@ public class ThriftEntityManager implements EntityManager
 	public <T> T merge(T entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		Class baseClass = util.deriveBaseClass(entity);
+		Class baseClass = helper.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
 		return this.merger.mergeEntity(entity, entityMeta);
 	}
@@ -132,7 +132,7 @@ public class ThriftEntityManager implements EntityManager
 	public void refresh(Object entity)
 	{
 
-		if (!util.isProxy(entity))
+		if (!helper.isProxy(entity))
 		{
 			throw new IllegalStateException("The entity " + entity + " is not in 'managed' state");
 		}

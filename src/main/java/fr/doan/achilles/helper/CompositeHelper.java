@@ -8,8 +8,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -20,7 +20,7 @@ import fr.doan.achilles.validation.Validator;
  */
 public class CompositeHelper
 {
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper helper = new EntityHelper();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{
@@ -71,11 +71,13 @@ public class CompositeHelper
 			}
 			else
 			{
-				List<Method> componentGetters = wideMapMeta.getComponentGetters();
+				List<Method> componentGetters = wideMapMeta.getMultiKeyProperties()
+						.getComponentGetters();
 				String propertyName = wideMapMeta.getPropertyName();
 
-				List<Object> startComponentValues = util.determineMultiKey(start, componentGetters);
-				List<Object> endComponentValues = util.determineMultiKey(end, componentGetters);
+				List<Object> startComponentValues = helper.determineMultiKey(start,
+						componentGetters);
+				List<Object> endComponentValues = helper.determineMultiKey(end, componentGetters);
 
 				this.findLastNonNullIndexForComponents(propertyName, startComponentValues);
 				this.findLastNonNullIndexForComponents(propertyName, endComponentValues);

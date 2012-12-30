@@ -17,10 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
@@ -42,7 +42,7 @@ public class EntityRefresherTest
 	private EntityRefresher entityRefresher;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper helper;
 
 	@Mock
 	private EntityValidator entityValidator;
@@ -78,7 +78,7 @@ public class EntityRefresherTest
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(jpaEntityInterceptor.getLazyLoaded()).thenReturn(lazyLoaded);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(util.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
+		when(helper.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
 		when(loader.load(eq(CompleteBean.class), eq(12L), eq(entityMeta))).thenReturn(bean);
 
 		entityRefresher.refresh(proxy, entityMetaMap);

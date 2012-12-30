@@ -1,6 +1,10 @@
 package fr.doan.achilles.entity.parser;
 
+import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static javax.persistence.CascadeType.MERGE;
+import static javax.persistence.CascadeType.PERSIST;
+import static javax.persistence.CascadeType.REMOVE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.List;
@@ -10,7 +14,13 @@ import java.util.UUID;
 
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
+import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Rule;
@@ -23,8 +33,12 @@ import parser.entity.MultiKeyNotInstantiable;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.metadata.JoinMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
+import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
@@ -32,6 +46,7 @@ import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.metadata.WideMapMeta;
 import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
@@ -105,6 +120,117 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("name"), "firstname");
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_simple_join_property() throws Exception
+	{
+		class Test
+		{
+			@ManyToOne(cascade =
+			{
+					PERSIST,
+					MERGE
+			})
+			@JoinColumn
+			private UserBean user;
+
+			public UserBean getUser()
+			{
+				return user;
+			}
+
+			public void setUser(UserBean user)
+			{
+				this.user = user;
+			}
+
+		}
+
+		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("user"), "user");
+
+		assertThat(meta).isInstanceOf(JoinMeta.class);
+		assertThat(meta.getPropertyName()).isEqualTo("user");
+		assertThat(meta.getValueClass()).isEqualTo(UserBean.class);
+		assertThat((Serializer<Object>) meta.getValueSerializer()).isEqualTo(OBJECT_SRZ);
+
+		assertThat(meta.getGetter().getName()).isEqualTo("getUser");
+		assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(UserBean.class);
+		assertThat(meta.getSetter().getName()).isEqualTo("setUser");
+		assertThat((Class) meta.getSetter().getParameterTypes()[0]).isEqualTo(UserBean.class);
+
+		assertThat(meta.propertyType()).isEqualTo(PropertyType.JOIN_SIMPLE);
+
+		JoinProperties joinProperties = meta.getJoinProperties();
+		assertThat(joinProperties.getCascadeTypes()).containsExactly(PERSIST, MERGE);
+	}
+
+	@Test
+	public void should_exception_when_simple_join_property_has_incorrect_annotation()
+			throws Exception
+	{
+		class Test
+		{
+			@OneToOne(cascade =
+			{
+					PERSIST,
+					MERGE
+			})
+			@JoinColumn
+			private UserBean user;
+
+			public UserBean getUser()
+			{
+				return user;
+			}
+
+			public void setUser(UserBean user)
+			{
+				this.user = user;
+			}
+
+		}
+
+		expectedEx.expect(BeanMappingException.class);
+		expectedEx
+				.expectMessage("Incorrect annotation. Only @ManyToOne is allowed for the join property 'user'");
+
+		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("user"), "user");
+	}
+
+	@Test
+	public void should_exception_when_simple_join_property_has_cascade_remove() throws Exception
+	{
+		class Test
+		{
+			@ManyToOne(cascade =
+			{
+					PERSIST,
+					REMOVE
+			})
+			@JoinColumn
+			private UserBean user;
+
+			public UserBean getUser()
+			{
+				return user;
+			}
+
+			public void setUser(UserBean user)
+			{
+				this.user = user;
+			}
+
+		}
+
+		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expectMessage("CascadeType.REMOVE is not supported for join columns");
+
+		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("user"), "user");
 	}
 
 	@Test
@@ -378,18 +504,20 @@ public class PropertyParserTest
 
 		assertThat(wideMapMeta.getKeyClass()).isEqualTo(CorrectMultiKey.class);
 
-		assertThat(wideMapMeta.getComponentGetters()).hasSize(2);
-		assertThat(wideMapMeta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-		assertThat(wideMapMeta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+		MultiKeyProperties multiKeyProperties = wideMapMeta.getMultiKeyProperties();
 
-		assertThat(wideMapMeta.getComponentSetters()).hasSize(2);
-		assertThat(wideMapMeta.getComponentSetters().get(0).getName()).isEqualTo("setName");
-		assertThat(wideMapMeta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
+		assertThat(multiKeyProperties.getComponentGetters()).hasSize(2);
+		assertThat(multiKeyProperties.getComponentGetters().get(0).getName()).isEqualTo("getName");
+		assertThat(multiKeyProperties.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
-		assertThat(wideMapMeta.getComponentSerializers()).hasSize(2);
-		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(0)).isEqualTo(
+		assertThat(multiKeyProperties.getComponentSetters()).hasSize(2);
+		assertThat(multiKeyProperties.getComponentSetters().get(0).getName()).isEqualTo("setName");
+		assertThat(multiKeyProperties.getComponentSetters().get(1).getName()).isEqualTo("setRank");
+
+		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
+		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(0)).isEqualTo(
 				Utils.STRING_SRZ);
-		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(1)).isEqualTo(
+		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(1)).isEqualTo(
 				Utils.INT_SRZ);
 	}
 
@@ -425,14 +553,16 @@ public class PropertyParserTest
 
 		assertThat(wideMapMeta.getKeyClass()).isEqualTo(CorrectMultiKeyUnorderedKeys.class);
 
-		assertThat(wideMapMeta.getComponentGetters()).hasSize(2);
-		assertThat(wideMapMeta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-		assertThat(wideMapMeta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+		MultiKeyProperties multiKeyProperties = wideMapMeta.getMultiKeyProperties();
 
-		assertThat(wideMapMeta.getComponentSerializers()).hasSize(2);
-		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(0)).isEqualTo(
+		assertThat(multiKeyProperties.getComponentGetters()).hasSize(2);
+		assertThat(multiKeyProperties.getComponentGetters().get(0).getName()).isEqualTo("getName");
+		assertThat(multiKeyProperties.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+
+		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
+		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(0)).isEqualTo(
 				Utils.STRING_SRZ);
-		assertThat((Serializer) wideMapMeta.getComponentSerializers().get(1)).isEqualTo(
+		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(1)).isEqualTo(
 				Utils.INT_SRZ);
 	}
 
@@ -515,8 +645,79 @@ public class PropertyParserTest
 	@Test
 	public void should_parse_join_wide_map() throws Exception
 	{
+		class Test
+		{
+			@ManyToMany(cascade =
+			{
+					PERSIST,
+					MERGE
+			})
+			@JoinColumn
+			private WideMap<UUID, UserBean> users;
 
-		// parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+			public WideMap<UUID, UserBean> getUsers()
+			{
+				return users;
+			}
+
+			public void setUsers(WideMap<UUID, UserBean> users)
+			{
+				this.users = users;
+			}
+
+		}
+
+		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("users"), "users");
+
+		assertThat(meta).isInstanceOf(JoinWideMapMeta.class);
+		assertThat(meta.getPropertyName()).isEqualTo("users");
+		assertThat(meta.getValueClass()).isEqualTo(UserBean.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(OBJECT_SRZ);
+		assertThat(meta.propertyType()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
+
+		JoinWideMapMeta<UUID, UserBean> wideMapMeta = (JoinWideMapMeta<UUID, UserBean>) meta;
+		assertThat(wideMapMeta.getKeyClass()).isEqualTo(UUID.class);
+		assertThat((Serializer) wideMapMeta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
+
+		JoinProperties joinProperties = meta.getJoinProperties();
+		assertThat(joinProperties).isNotNull();
+
+		assertThat(joinProperties.getCascadeTypes()).containsExactly(PERSIST, MERGE);
+
+	}
+
+	@Test
+	public void should_exception_when_join_wide_map_has_incorrect_annotation() throws Exception
+	{
+		class Test
+		{
+			@OneToMany(cascade =
+			{
+					PERSIST,
+					MERGE
+			})
+			@JoinColumn
+			private WideMap<UUID, UserBean> users;
+
+			public WideMap<UUID, UserBean> getUsers()
+			{
+				return users;
+			}
+
+			public void setUsers(WideMap<UUID, UserBean> users)
+			{
+				this.users = users;
+			}
+		}
+
+		expectedEx.expect(BeanMappingException.class);
+		expectedEx
+				.expectMessage("Incorrect annotation. Only @ManyToMany is allowed for the join property 'users'");
+
+		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
+				Test.class.getDeclaredField("users"), "users");
+
 	}
 
 	@Test
@@ -619,177 +820,4 @@ public class PropertyParserTest
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
 
-	// @SuppressWarnings("unchecked")
-	// @Test
-	// public void should_parse_join_wide_map_with_entity() throws Exception
-	// {
-	// Field wide = BeanWithJoinColumnAsEntity.class.getDeclaredField("wide");
-	// Method idGetter = Bean.class.getDeclaredMethod("getId");
-	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	// Keyspace keyspace = mock(ExecutingKeyspace.class);
-	// EntityParser entityParser = new EntityParser();
-	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-	//
-	// PropertyMeta<Integer, BeanWithJoinColumnAsEntity> meta = //
-	// parser.parseJoinColum( //
-	// BeanWithJoinColumnAsEntity.class, //
-	// wide, //
-	// entityMetaMap, //
-	// keyspace, //
-	// entityParser, //
-	// columnFamilyHelper, true);
-	//
-	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-	// assertThat(meta.getPropertyName()).isEqualTo("wide");
-	// assertThat(meta.isSingleKey()).isTrue();
-	// assertThat(meta.isInsertable()).isTrue();
-	// assertThat(meta.isEntityValue()).isTrue();
-	// assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
-	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	//
-	// assertThat(entityMetaMap).hasSize(1);
-	// EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
-	// assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
-	// assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
-	// assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	// assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
-	// }
-	//
-	// @SuppressWarnings("unchecked")
-	// @Test
-	// public void should_parse_join_wide_map_with_wide_row() throws Exception
-	// {
-	// Field wideRow = BeanWithJoinColumnAsWideRow.class.getDeclaredField("wideRow");
-	// Method idGetter = BeanWithJoinColumnAsWideRow.class.getDeclaredMethod("getId");
-	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	// Keyspace keyspace = mock(ExecutingKeyspace.class);
-	// EntityParser entityParser = new EntityParser();
-	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-	//
-	// PropertyMeta<Integer, String> meta = //
-	// parser.parseJoinColum( //
-	// BeanWithJoinColumnAsWideRow.class, //
-	// wideRow, //
-	// entityMetaMap, //
-	// keyspace, //
-	// entityParser, //
-	// columnFamilyHelper, true);
-	//
-	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-	// assertThat(meta.getPropertyName()).isEqualTo("wideRow");
-	// assertThat(meta.isSingleKey()).isTrue();
-	// assertThat(meta.isInsertable()).isTrue();
-	// assertThat(meta.isEntityValue()).isFalse();
-	// assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
-	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	//
-	// assertThat(entityMetaMap).hasSize(0);
-	// }
-	//
-	// @SuppressWarnings("unchecked")
-	// @Test
-	// public void should_parse_join_wide_map_with_multikey_entity() throws Exception
-	// {
-	// Field wide = BeanWithMultiKeyJoinColumnAsEntity.class.getDeclaredField("wide");
-	// Method idGetter = Bean.class.getDeclaredMethod("getId");
-	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	// Keyspace keyspace = mock(ExecutingKeyspace.class);
-	// EntityParser entityParser = new EntityParser();
-	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-	//
-	// PropertyMeta<Integer, BeanWithMultiKeyJoinColumnAsEntity> meta = //
-	// parser.parseJoinColum( //
-	// BeanWithMultiKeyJoinColumnAsEntity.class, //
-	// wide, //
-	// entityMetaMap, //
-	// keyspace, //
-	// entityParser, //
-	// columnFamilyHelper, true);
-	//
-	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-	// assertThat(meta.getPropertyName()).isEqualTo("wide");
-	// assertThat(meta.isSingleKey()).isFalse();
-	// assertThat(meta.isInsertable()).isTrue();
-	// assertThat(meta.isEntityValue()).isTrue();
-	// assertThat(meta.getJoinColumnFamily()).isEqualTo("parser_entity_Bean");
-	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	//
-	// assertThat(entityMetaMap).hasSize(1);
-	// EntityMeta<?> entityMeta = entityMetaMap.get(Bean.class);
-	// assertThat(entityMeta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
-	// assertThat(entityMeta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
-	// assertThat(entityMeta.getIdMeta().getValueSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	// assertThat(entityMeta.getIdMeta().getGetter()).isEqualTo(idGetter);
-	//
-	// assertThat(meta.getComponentClasses()).hasSize(2);
-	// assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
-	// assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
-	//
-	// assertThat(meta.getComponentSerializers()).hasSize(2);
-	// assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
-	// assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
-	//
-	// assertThat(meta.getComponentGetters()).hasSize(2);
-	// assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-	// assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
-	//
-	// assertThat(meta.getComponentSetters()).hasSize(2);
-	// assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
-	// assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
-	// }
-	//
-	// @SuppressWarnings("unchecked")
-	// @Test
-	// public void should_parse_join_wide_map_with_multikey_wide_row() throws Exception
-	// {
-	// Field wideRow = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredField("wideRow");
-	// Method idGetter = BeanWithMultiKeyJoinColumnAsWideRow.class.getDeclaredMethod("getId");
-	// Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	// Keyspace keyspace = mock(ExecutingKeyspace.class);
-	// EntityParser entityParser = new EntityParser();
-	// ColumnFamilyHelper columnFamilyHelper = mock(ColumnFamilyHelper.class);
-	//
-	// PropertyMeta<Integer, String> meta = //
-	// parser.parseJoinColum( //
-	// BeanWithMultiKeyJoinColumnAsWideRow.class, //
-	// wideRow, //
-	// entityMetaMap, //
-	// keyspace, //
-	// entityParser, //
-	// columnFamilyHelper, true);
-	//
-	// assertThat(meta.propertyType()).isEqualTo(JOIN_WIDE_MAP);
-	// assertThat(meta.getPropertyName()).isEqualTo("wideRow");
-	// assertThat(meta.isSingleKey()).isFalse();
-	// assertThat(meta.isInsertable()).isTrue();
-	// assertThat(meta.isEntityValue()).isFalse();
-	// assertThat(meta.getJoinColumnFamily()).isEqualTo("my_wide_row_cf");
-	// assertThat(meta.getIdGetter()).isEqualTo(idGetter);
-	// assertThat(meta.getIdClass()).isEqualTo((Class) Long.class);
-	// assertThat(meta.getIdSerializer()).isEqualTo((Serializer) LONG_SRZ);
-	//
-	// assertThat(entityMetaMap).hasSize(0);
-	//
-	// assertThat(meta.getComponentClasses()).hasSize(2);
-	// assertThat(meta.getComponentClasses().get(0)).isEqualTo((Class) String.class);
-	// assertThat(meta.getComponentClasses().get(1)).isEqualTo((Class) int.class);
-	//
-	// assertThat(meta.getComponentSerializers()).hasSize(2);
-	// assertThat(meta.getComponentSerializers().get(0)).isEqualTo((Serializer) STRING_SRZ);
-	// assertThat(meta.getComponentSerializers().get(1)).isEqualTo((Serializer) INT_SRZ);
-	//
-	// assertThat(meta.getComponentGetters()).hasSize(2);
-	// assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
-	// assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
-	//
-	// assertThat(meta.getComponentSetters()).hasSize(2);
-	// assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
-	// assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
-	// }
 }

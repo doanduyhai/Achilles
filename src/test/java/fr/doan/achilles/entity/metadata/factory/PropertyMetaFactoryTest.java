@@ -14,8 +14,10 @@ import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Before;
@@ -290,9 +292,14 @@ public class PropertyMetaFactoryTest
 	public void should_build_multi_key_wide_map() throws Exception
 	{
 
+		Iterator<Class<?>> iterator = mock(Iterator.class);
 		List<Class<?>> componentClasses = mock(List.class);
 		List<Method> componentGetters = mock(List.class);
 		List<Method> componentSetters = mock(List.class);
+		when(componentClasses.size()).thenReturn(1);
+		when(componentClasses.iterator()).thenReturn(iterator);
+		when(iterator.hasNext()).thenReturn(false);
+
 		PropertyMeta<MyMultiKey, String> built = PropertyMetaFactory
 				.factory(MyMultiKey.class, String.class) //
 				.type(WIDE_MAP).propertyName("prop") //
@@ -310,11 +317,11 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getKeyClass()).isEqualTo(MyMultiKey.class);
 		assertThat(built.getKeySerializer()).isNull();
 
-		assertThat(built.getComponentClasses()).isSameAs(componentClasses);
+		assertThat(built.getMultiKeyProperties().getComponentClasses()).isSameAs(componentClasses);
 
-		assertThat(built.getComponentGetters()).isSameAs(componentGetters);
+		assertThat(built.getMultiKeyProperties().getComponentGetters()).isSameAs(componentGetters);
 
-		assertThat(built.getComponentSetters()).isSameAs(componentSetters);
+		assertThat(built.getMultiKeyProperties().getComponentSetters()).isSameAs(componentSetters);
 
 		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);

@@ -7,9 +7,10 @@ import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.helper.CompositeHelper;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -22,7 +23,7 @@ public class CompositeKeyFactory
 {
 
 	private CompositeHelper helper = new CompositeHelper();
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	@SuppressWarnings(
 	{
@@ -45,9 +46,10 @@ public class CompositeKeyFactory
 		}
 		else
 		{
-			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
-			List<Object> keyValues = util.determineMultiKey(keyValue,
-					propertyMeta.getComponentGetters());
+			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Object> keyValues = entityHelper.determineMultiKey(keyValue,
+					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
 
@@ -94,9 +96,10 @@ public class CompositeKeyFactory
 		}
 		else
 		{
-			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
-			List<Object> keyValues = util.determineMultiKey(keyValue,
-					propertyMeta.getComponentGetters());
+			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Object> keyValues = entityHelper.determineMultiKey(keyValue,
+					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
 

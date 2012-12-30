@@ -1,5 +1,7 @@
 package fr.doan.achilles.entity.operations;
 
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 
 import java.util.List;
@@ -51,22 +53,22 @@ public class EntityPersister
 				{
 					case SIMPLE:
 					case LAZY_SIMPLE:
-						this.batchSimpleProperty(entity, key, dao, propertyMeta, mutator);
+						this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, mutator);
 						break;
 					case LIST:
 					case LAZY_LIST:
-						this.batchListProperty(entity, key, dao, propertyMeta, mutator);
+						this.batchPersistListProperty(entity, key, dao, propertyMeta, mutator);
 						break;
 					case SET:
 					case LAZY_SET:
-						this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
+						this.batchPersistSetProperty(entity, key, dao, propertyMeta, mutator);
 						break;
 					case MAP:
 					case LAZY_MAP:
-						this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
+						this.batchPersistMapProperty(entity, key, dao, propertyMeta, mutator);
 						break;
 					case JOIN_SIMPLE:
-						this.batchJoinEntity(entity, key, dao, propertyMeta, mutator);
+						this.batchPersistJoinEntity(entity, key, dao, propertyMeta, mutator);
 					default:
 						break;
 				}
@@ -76,7 +78,7 @@ public class EntityPersister
 
 	}
 
-	private <ID> void batchSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
+	private <ID> void batchPersistSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, 0);
@@ -87,18 +89,18 @@ public class EntityPersister
 		}
 	}
 
-	public <ID> void batchJoinEntity(Object entity, ID key, GenericEntityDao<ID> dao,
+	public <ID> void batchPersistJoinEntity(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		JoinProperties<?> joinProperties = propertyMeta.getJoinProperties();
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		Object joinEntity = null;
 		try
 		{
-			joinEntity = propertyMeta.getGetter().invoke(entity);
+			joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
 
 			if (joinEntity != null)
 			{
-				Object joinId = this.persistOrEnsureJoinEntityExists(joinEntity, joinProperties);
+				Object joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties);
 
 				DynamicComposite joinName = keyFactory.createForBatchInsert(propertyMeta, 0);
 				dao.insertColumn(key, joinName, joinId, mutator);
@@ -112,17 +114,16 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	public <JOIN_ID, V> JOIN_ID persistOrEnsureJoinEntityExists(V joinEntity,
-			JoinProperties<JOIN_ID> joinProperties)
+	public <JOIN_ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
+			JoinProperties joinProperties)
 	{
 		EntityMeta<JOIN_ID> joinEntityMeta = joinProperties.getEntityMeta();
 		JOIN_ID joinId = helper.getKey(joinEntity, joinEntityMeta.getIdMeta());
 		Validate.notNull(joinId, "key value for entity '" + joinEntityMeta.getCanonicalClassName()
 				+ "' should not be null");
 
-		CascadeType cascadeType = joinProperties.getCascadeType();
-		if (cascadeType != null
-				&& (cascadeType == CascadeType.PERSIST || cascadeType == CascadeType.ALL))
+		List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
+		if (cascadeTypes.contains(PERSIST) || cascadeTypes.contains(ALL))
 		{
 			this.persist(joinEntity, joinEntityMeta);
 		}
@@ -146,16 +147,16 @@ public class EntityPersister
 	public <ID> void persistSimpleProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		this.batchSimpleProperty(entity, key, dao, propertyMeta, null);
+		this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, null);
 	}
 
 	public <ID> void persistJoinEntity(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		this.batchJoinEntity(entity, key, dao, propertyMeta, null);
+		this.batchPersistJoinEntity(entity, key, dao, propertyMeta, null);
 	}
 
-	private <ID> void batchListProperty(Object entity, ID key, GenericEntityDao<ID> dao,
+	private <ID> void batchPersistListProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
@@ -179,11 +180,11 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		this.batchListProperty(entity, key, dao, propertyMeta, mutator);
+		this.batchPersistListProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
 	}
 
-	private <ID> void batchSetProperty(Object entity, ID key, GenericEntityDao<ID> dao,
+	private <ID> void batchPersistSetProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		Set<?> set = (Set<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
@@ -205,11 +206,11 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		this.batchSetProperty(entity, key, dao, propertyMeta, mutator);
+		this.batchPersistSetProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
 	}
 
-	private <ID> void batchMapProperty(Object entity, ID key, GenericEntityDao<ID> dao,
+	private <ID> void batchPersistMapProperty(Object entity, ID key, GenericEntityDao<ID> dao,
 			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 
@@ -231,7 +232,7 @@ public class EntityPersister
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		Mutator<ID> mutator = dao.buildMutator();
-		this.batchMapProperty(entity, key, dao, propertyMeta, mutator);
+		this.batchPersistMapProperty(entity, key, dao, propertyMeta, mutator);
 		mutator.execute();
 	}
 

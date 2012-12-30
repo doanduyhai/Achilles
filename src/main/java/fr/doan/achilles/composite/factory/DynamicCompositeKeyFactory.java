@@ -11,10 +11,11 @@ import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.helper.CompositeHelper;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -27,7 +28,7 @@ public class DynamicCompositeKeyFactory
 {
 
 	private CompositeHelper helper = new CompositeHelper();
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	public <K, V> DynamicComposite createForBatchInsert(PropertyMeta<K, V> propertyMeta,
 			int hashOrPosition)
@@ -66,9 +67,10 @@ public class DynamicCompositeKeyFactory
 		}
 		else
 		{
-			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
-			List<Object> keyValues = util
-					.determineMultiKey(key, propertyMeta.getComponentGetters());
+			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Object> keyValues = entityHelper.determineMultiKey(key,
+					multiKeyProperties.getComponentGetters());
 
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
@@ -135,11 +137,11 @@ public class DynamicCompositeKeyFactory
 		}
 		else
 		{
+			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Method> componentGetters = multiKeyProperties.getComponentGetters();
 
-			List<Serializer<?>> componentSerializers = propertyMeta.getComponentSerializers();
-			List<Method> componentGetters = propertyMeta.getComponentGetters();
-
-			List<Object> keyValues = util.determineMultiKey(value, componentGetters);
+			List<Object> keyValues = entityHelper.determineMultiKey(value, componentGetters);
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
 

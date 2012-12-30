@@ -32,6 +32,8 @@ import fr.doan.achilles.holder.KeyValueHolder;
 public class EntityMapper
 {
 
+	private EntityHelper helper = new EntityHelper();
+
 	public <T, ID> void mapColumnsToBean(ID key, List<Pair<DynamicComposite, Object>> columns,
 			EntityMeta<ID> entityMeta, T entity)
 	{
@@ -146,7 +148,7 @@ public class EntityMapper
 
 		try
 		{
-			keyMeta.getSetter().invoke(entity, key);
+			helper.setValueToField(entity, keyMeta.getSetter(), key);
 		}
 		catch (Exception e)
 		{
@@ -159,7 +161,7 @@ public class EntityMapper
 	{
 		try
 		{
-			propertyMeta.getSetter().invoke(entity, propertyMeta.getValue(value));
+			helper.setValueToField(entity, propertyMeta.getSetter(), propertyMeta.getValue(value));
 		}
 		catch (Exception e)
 		{
@@ -172,7 +174,7 @@ public class EntityMapper
 	{
 		try
 		{
-			listMeta.getSetter().invoke(entity, list);
+			helper.setValueToField(entity, listMeta.getSetter(), list);
 		}
 		catch (Exception e)
 		{
@@ -184,7 +186,7 @@ public class EntityMapper
 	{
 		try
 		{
-			setMeta.getSetter().invoke(entity, set);
+			helper.setValueToField(entity, setMeta.getSetter(), set);
 		}
 		catch (Exception e)
 		{
@@ -196,7 +198,7 @@ public class EntityMapper
 	{
 		try
 		{
-			mapMeta.getSetter().invoke(entity, map);
+			helper.setValueToField(entity, mapMeta.getSetter(), map);
 		}
 		catch (Exception e)
 		{

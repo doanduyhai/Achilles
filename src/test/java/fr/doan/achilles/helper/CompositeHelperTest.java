@@ -22,9 +22,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.CorrectMultiKey;
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.ValidationException;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
  * CompositeHelperTest
@@ -46,13 +47,16 @@ public class CompositeHelperTest
 	private List<Method> componentGetters;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper entityHelper;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
 	private PropertyMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
+
+	@Mock
+	MultiKeyProperties multiKeyProperties;
 
 	@Before
 	public void setUp()
@@ -135,10 +139,13 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 20);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
@@ -151,10 +158,13 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", null);
 		List<Object> endComponentValues = Arrays.asList((Object) "abd", null);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
 	}
@@ -167,10 +177,13 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		expectedEx.expect(ValidationException.class);
 		expectedEx
@@ -187,10 +200,13 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) null, 10);
 		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 		expectedEx.expect(IllegalArgumentException.class);
 		expectedEx
 				.expectMessage("There should not be any null value between two non-null keys of WideMap 'any_property'");
@@ -206,10 +222,13 @@ public class CompositeHelperTest
 
 		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
 		List<Object> endComponentValues = Arrays.asList((Object) "def", 10);
-		when(multiKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startComponentValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		expectedEx.expect(ValidationException.class);
 		expectedEx

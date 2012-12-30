@@ -3,34 +3,57 @@ package fr.doan.achilles.entity;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.TweetMultiKey;
+import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.NoOp;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.BeanWithColumnFamilyName;
 import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.ChildBean;
+import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
+import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
+import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 @SuppressWarnings("unused")
+@RunWith(MockitoJUnitRunner.class)
 public class EntityHelperTest
 {
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
+
+	@Mock
+	private EntityMeta<Long> entityMeta;
+
+	@Mock
+	private PropertyMeta<Void, Long> idMeta;
+
+	@Mock
+	private MultiKeyWideMapMeta<TweetMultiKey, String> wideMapMeta;
 
 	private final EntityHelper helper = new EntityHelper();
 
@@ -223,6 +246,17 @@ public class EntityHelperTest
 		assertThat(value).isEqualTo("test");
 	}
 
+	@Test
+	public void should_set_value_to_field() throws Exception
+	{
+		Bean bean = new Bean();
+		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+
+		helper.setValueToField(bean, setter, "fecezzef");
+
+		assertThat(bean.getComplicatedAttributeName()).isEqualTo("fecezzef");
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_value_from_collection_field() throws Exception
@@ -335,9 +369,116 @@ public class EntityHelperTest
 	}
 
 	@Test
-	public void should_condition() throws Exception
+	public void should_proxy_true() throws Exception
 	{
+		Enhancer enhancer = new Enhancer();
 
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(NoOp.INSTANCE);
+
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+
+		assertThat(helper.isProxy(proxy)).isTrue();
+	}
+
+	@Test
+	public void should_proxy_false() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(1L).buid();
+		assertThat(helper.isProxy(bean)).isFalse();
+	}
+
+	@Test
+	public void should_derive_base_class() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(entity.getClass());
+
+		JpaEntityInterceptor<Long> interceptor = new JpaEntityInterceptor<Long>();
+		interceptor.setTarget(entity);
+
+		enhancer.setCallback(interceptor);
+
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+
+		assertThat(helper.deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
+	}
+
+	@Test
+	public void should_determine_primary_key() throws Exception
+	{
+		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
+
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getGetter()).thenReturn(idGetter);
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+
+		Object key = helper.determinePrimaryKey(bean, entityMeta);
+
+		assertThat(key).isEqualTo(12L);
+	}
+
+	@Test
+	public void should_determine_null_primary_key() throws Exception
+	{
+		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
+
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getGetter()).thenReturn(idGetter);
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().buid();
+
+		Object key = helper.determinePrimaryKey(bean, entityMeta);
+
+		assertThat(key).isNull();
+
+	}
+
+	@Test
+	public void should_determine_multikey() throws Exception
+	{
+		Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");
+		Method authorGetter = TweetMultiKey.class.getDeclaredMethod("getAuthor");
+		Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
+
+		TweetMultiKey multiKey = new TweetMultiKey();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		multiKey.setId(uuid);
+		multiKey.setAuthor("author");
+		multiKey.setRetweetCount(12);
+
+		List<Object> multiKeyList = helper.determineMultiKey(multiKey,
+				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
+
+		assertThat(multiKeyList).hasSize(3);
+		assertThat(multiKeyList.get(0)).isEqualTo(uuid);
+		assertThat(multiKeyList.get(1)).isEqualTo("author");
+		assertThat(multiKeyList.get(2)).isEqualTo(12);
+	}
+
+	@Test
+	public void should_determine_multikey_with_null() throws Exception
+	{
+		Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");
+		Method authorGetter = TweetMultiKey.class.getDeclaredMethod("getAuthor");
+		Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
+
+		TweetMultiKey multiKey = new TweetMultiKey();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		multiKey.setId(uuid);
+		multiKey.setRetweetCount(12);
+
+		List<Object> multiKeyList = helper.determineMultiKey(multiKey,
+				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
+
+		assertThat(multiKeyList).hasSize(3);
+		assertThat(multiKeyList.get(0)).isEqualTo(uuid);
+		assertThat(multiKeyList.get(1)).isNull();
+		assertThat(multiKeyList.get(2)).isEqualTo(12);
 	}
 
 	class Bean

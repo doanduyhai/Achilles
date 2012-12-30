@@ -1,14 +1,22 @@
 package fr.doan.achilles.entity.operations;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.MERGE;
+
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.persistence.CascadeType;
+
 import net.sf.cglib.proxy.Factory;
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.validation.Validator;
@@ -19,7 +27,7 @@ public class EntityMerger
 
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
@@ -28,7 +36,7 @@ public class EntityMerger
 		Validator.validateNotNull(entityMeta, "entityMeta");
 
 		T proxy;
-		if (util.isProxy(entity))
+		if (helper.isProxy(entity))
 		{
 			Factory factory = (Factory) entity;
 			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory
@@ -47,8 +55,30 @@ public class EntityMerger
 				}
 				this.persister.persistProperty(entity, key, dao, propertyMeta);
 			}
-
 			dirtyMap.clear();
+
+			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
+			{
+
+				PropertyMeta<?, ?> propertyMeta = entry.getValue();
+				if (propertyMeta.propertyType() == JOIN_SIMPLE)
+				{
+
+					JoinProperties joinProperties = propertyMeta.getJoinProperties();
+					List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
+					if (cascadeTypes.contains(MERGE) || cascadeTypes.contains(ALL))
+					{
+						Object joinEntity = helper.getValueFromField(entity,
+								propertyMeta.getGetter());
+						if (joinEntity != null)
+						{
+							Object mergedEntity = this.mergeEntity(joinEntity,
+									joinProperties.getEntityMeta());
+							helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
+						}
+					}
+				}
+			}
 			proxy = entity;
 		}
 		else

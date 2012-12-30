@@ -1,6 +1,12 @@
 package fr.doan.achilles.entity.metadata;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import javax.persistence.CascadeType;
+
+import fr.doan.achilles.exception.BeanMappingException;
 
 /**
  * JoinMetaData
@@ -8,69 +14,44 @@ import javax.persistence.CascadeType;
  * @author DuyHai DOAN
  * 
  */
-public class JoinProperties<K>
+@SuppressWarnings("rawtypes")
+public class JoinProperties
 {
 
-	private EntityMeta<K> entityMeta;
-	private CascadeType cascadeType;
-	// private boolean insertable = false;
-	// private boolean updatable = false;
-	private boolean nullable = true;
+	private EntityMeta entityMeta;
+	private List<CascadeType> cascadeTypes = new ArrayList<CascadeType>();
 
-	public JoinProperties() {}
-
-	public JoinProperties(EntityMeta<K> entityMeta) {
-		this.entityMeta = entityMeta;
-	}
-
-	@SuppressWarnings("rawtypes")
 	public EntityMeta getEntityMeta()
 	{
 		return entityMeta;
 	}
 
-	public void setEntityMeta(EntityMeta<K> entityMeta)
+	public void setEntityMeta(EntityMeta entityMeta)
 	{
 		this.entityMeta = entityMeta;
 	}
 
-	public CascadeType getCascadeType()
+	public List<CascadeType> getCascadeTypes()
 	{
-		return cascadeType;
+		return cascadeTypes;
 	}
 
-	public void setCascadeType(CascadeType cascadeType)
+	public void setCascadeTypes(List<CascadeType> cascadeTypes)
 	{
-		this.cascadeType = cascadeType;
+		this.cascadeTypes = cascadeTypes;
 	}
 
-	// public boolean isInsertable()
-	// {
-	// return insertable;
-	// }
-	//
-	// public void setInsertable(boolean insertable)
-	// {
-	// this.insertable = insertable;
-	// }
-	//
-	// public boolean isUpdatable()
-	// {
-	// return updatable;
-	// }
-	//
-	// public void setUpdatable(boolean updatable)
-	// {
-	// this.updatable = updatable;
-	// }
-
-	public boolean isNullable()
+	public void addCascadeType(CascadeType cascadeType)
 	{
-		return nullable;
+		this.cascadeTypes.add(cascadeType);
 	}
 
-	public void setNullable(boolean nullable)
+	public void addCascadeType(Collection<CascadeType> cascadeTypesCollection)
 	{
-		this.nullable = nullable;
+		if (cascadeTypesCollection.contains(CascadeType.REMOVE))
+		{
+			throw new BeanMappingException("CascadeType.REMOVE is not supported for join columns");
+		}
+		this.cascadeTypes.addAll(cascadeTypesCollection);
 	}
 }

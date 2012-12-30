@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -51,10 +52,14 @@ public class KeyValueIteratorForEntityTest
 	@InjectMocks
 	private KeyValueIteratorForEntity<TweetMultiKey, String> iterator;
 
+	@Mock
+	private MultiKeyProperties multiKeyProperties;
+
 	@Before
 	public void setUp()
 	{
 		ReflectionTestUtils.setField(iterator, "factory", factory);
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
 	@SuppressWarnings(
@@ -71,7 +76,7 @@ public class KeyValueIteratorForEntityTest
 		when(columnSliceIterator.hasNext()).thenReturn(true);
 		when(columnSliceIterator.next()).thenReturn((HColumn) column);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
-		when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
+		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
 		when(factory.createForWideMap(multiKeyWideMapMeta, column)).thenReturn(keyValue);
 

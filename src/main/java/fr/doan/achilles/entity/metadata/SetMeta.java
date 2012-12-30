@@ -16,4 +16,22 @@ public class SetMeta<V> extends PropertyMeta<Void, V>
 		return PropertyType.SET;
 	}
 
+	@Override
+	public boolean isSingleKey()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isLazy()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isJoinColumn()
+	{
+		return false;
+	}
+
 }

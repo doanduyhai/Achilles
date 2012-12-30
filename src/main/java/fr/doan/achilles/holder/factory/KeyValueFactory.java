@@ -9,6 +9,8 @@ import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValue;
@@ -22,6 +24,7 @@ import fr.doan.achilles.holder.KeyValue;
 public class KeyValueFactory
 {
 	private EntityLoader loader = new EntityLoader();
+	private EntityHelper helper = new EntityHelper();
 
 	public <K, V> KeyValue<K, V> create(K key, V value, int ttl)
 	{
@@ -49,9 +52,10 @@ public class KeyValueFactory
 		}
 		else
 		{
+			MultiKeyProperties multiKeyProperties = wideMapMeta.getMultiKeyProperties();
 			Class<K> multiKeyClass = wideMapMeta.getKeyClass();
-			List<Method> componentSetters = wideMapMeta.getComponentSetters();
-			List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+			List<Method> componentSetters = multiKeyProperties.getComponentSetters();
+			List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
 			try
 			{
 				key = multiKeyClass.newInstance();
@@ -61,7 +65,7 @@ public class KeyValueFactory
 				{
 					Component<?> comp = components.get(i);
 					Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
-					componentSetters.get(i - 2).invoke(key, compValue);
+					helper.setValueToField(key, componentSetters.get(i - 2), compValue);
 				}
 
 				value = extractValueFromHColumn(wideMapMeta, hColumn);
@@ -126,9 +130,10 @@ public class KeyValueFactory
 		}
 		else
 		{
+			MultiKeyProperties multiKeyProperties = wideMapMeta.getMultiKeyProperties();
 			Class<K> multiKeyClass = wideMapMeta.getKeyClass();
-			List<Method> componentSetters = wideMapMeta.getComponentSetters();
-			List<Serializer<?>> serializers = wideMapMeta.getComponentSerializers();
+			List<Method> componentSetters = multiKeyProperties.getComponentSetters();
+			List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
 			try
 			{
 				key = multiKeyClass.newInstance();
@@ -138,7 +143,7 @@ public class KeyValueFactory
 				{
 					Component<?> comp = components.get(i);
 					Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
-					componentSetters.get(i).invoke(key, compValue);
+					helper.setValueToField(key, componentSetters.get(i), compValue);
 				}
 
 				value = wideMapMeta.getValue(hColumn.getValue());

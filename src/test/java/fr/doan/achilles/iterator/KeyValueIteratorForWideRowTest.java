@@ -25,6 +25,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.CorrectMultiKey;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -52,6 +53,9 @@ public class KeyValueIteratorForWideRowTest
 	private MultiKeyWideMapMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
 
 	@Mock
+	private MultiKeyProperties multiKeyProperties;
+
+	@Mock
 	private KeyValueFactory factory;
 
 	@Before
@@ -59,6 +63,7 @@ public class KeyValueIteratorForWideRowTest
 	{
 		ReflectionTestUtils.setField(iterator, "factory", factory);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
 	@Test
@@ -89,7 +94,7 @@ public class KeyValueIteratorForWideRowTest
 		when(columnSliceIterator.hasNext()).thenReturn(true, false);
 		when(columnSliceIterator.next()).thenReturn(hColumn);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
-		when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
+		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
 		when(factory.createForWideRow(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 

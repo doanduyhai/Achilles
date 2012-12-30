@@ -7,13 +7,17 @@ import java.util.List;
 
 import javax.persistence.Table;
 
+import net.sf.cglib.proxy.Factory;
+
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.PropertyFilter;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
+import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
 public class EntityHelper
 {
@@ -126,6 +130,22 @@ public class EntityHelper
 			}
 		}
 		return value;
+	}
+
+	public void setValueToField(Object target, Method setter, Object... args)
+	{
+		if (target != null)
+		{
+
+			try
+			{
+				setter.invoke(target, args);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -243,5 +263,59 @@ public class EntityHelper
 			i = i.getSuperclass();
 		}
 		return null;
+	}
+
+	public boolean isProxy(Object entity)
+	{
+		return Factory.class.isAssignableFrom(entity.getClass());
+	}
+
+	@SuppressWarnings("rawtypes")
+	public Class deriveBaseClass(Object entity)
+	{
+		Class baseClass = entity.getClass();
+		if (isProxy(entity))
+		{
+			Factory proxy = (Factory) entity;
+			AchillesInterceptor interceptor = (AchillesInterceptor) proxy.getCallback(0);
+			baseClass = interceptor.getTarget().getClass();
+		}
+
+		return baseClass;
+	}
+
+	public Object determinePrimaryKey(Object entity, EntityMeta<?> entityMeta)
+	{
+		Object key;
+		try
+		{
+			key = entityMeta.getIdMeta().getGetter().invoke(entity);
+		}
+		catch (Exception e)
+		{
+			key = null;
+		}
+		return key;
+	}
+
+	public List<Object> determineMultiKey(Object entity, List<Method> componentGetters)
+	{
+		List<Object> multiKeyValues = new ArrayList<Object>();
+
+		for (Method getter : componentGetters)
+		{
+			Object key = null;
+			try
+			{
+				key = getter.invoke(entity);
+			}
+			catch (Exception e)
+			{
+				// TODO, log error
+			}
+			multiKeyValues.add(key);
+		}
+
+		return multiKeyValues;
 	}
 }

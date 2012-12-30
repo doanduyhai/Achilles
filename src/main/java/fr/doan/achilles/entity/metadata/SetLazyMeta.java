@@ -7,4 +7,22 @@ public class SetLazyMeta<V> extends SetMeta<V>
 	{
 		return PropertyType.LAZY_SET;
 	}
+
+	@Override
+	public boolean isSingleKey()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isLazy()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isJoinColumn()
+	{
+		return false;
+	}
 }

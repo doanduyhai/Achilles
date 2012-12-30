@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 
@@ -18,8 +19,10 @@ import org.apache.commons.lang.StringUtils;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityExplorer;
 import fr.doan.achilles.entity.parser.EntityParser;
+import fr.doan.achilles.exception.BeanMappingException;
 
 public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory
 {
@@ -69,17 +72,17 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 	private void bootstrap()
 	{
-		this.discoverEntyties();
+		this.discoverEntities();
 
 		this.columnFamilyHelper.validateColumnFamilies(this.entityMetaMap,
 				this.forceColumnFamilyCreation);
 	}
 
-	private void discoverEntyties()
+	private void discoverEntities()
 	{
 		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
-
-		if (classes != null)
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+		if (!classes.isEmpty())
 		{
 
 			for (Class<?> clazz : classes)
@@ -88,10 +91,23 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 				{
 
 					EntityMeta<?> entityMeta = entityParser.parseEntity(this.keyspace, clazz,
-							entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+							joinPropertyMetaToBeFilled);
 					entityMetaMap.put(clazz, entityMeta);
 				}
+			}
 
+			for (Entry<PropertyMeta<?, ?>, Class<?>> entry : joinPropertyMetaToBeFilled.entrySet())
+			{
+				if (entityMetaMap.containsKey(entry.getValue()))
+				{
+					entry.getKey().getJoinProperties()
+							.setEntityMeta(entityMetaMap.get(entry.getValue()));
+				}
+				else
+				{
+					throw new BeanMappingException("Cannot find mapping for join entity '"
+							+ entry.getValue().getCanonicalName() + "'");
+				}
 			}
 		}
 		else

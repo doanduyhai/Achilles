@@ -27,7 +27,7 @@ import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JpaInterceptorBuilderTest
+public class JpaEntityInterceptorBuilderTest
 {
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -69,7 +69,7 @@ public class JpaInterceptorBuilderTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		JpaEntityInterceptor<Long> interceptor = JpaInterceptorBuilder.builder(entityMeta)
+		JpaEntityInterceptor<Long> interceptor = JpaEntityInterceptorBuilder.builder(entityMeta)
 				.target(entity).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(1L);
@@ -115,7 +115,7 @@ public class JpaInterceptorBuilderTest
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.isWideRow()).thenReturn(true);
 
-		JpaEntityInterceptor<Long> interceptor = JpaInterceptorBuilder.builder(entityMeta)
+		JpaEntityInterceptor<Long> interceptor = JpaEntityInterceptorBuilder.builder(entityMeta)
 				.target(entity).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(1545L);

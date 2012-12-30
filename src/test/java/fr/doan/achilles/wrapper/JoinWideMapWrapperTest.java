@@ -2,18 +2,14 @@ package fr.doan.achilles.wrapper;
 
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.PERSIST;
-import static javax.persistence.CascadeType.REMOVE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
 import mapping.entity.UserBean;
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import me.prettyprint.hector.api.beans.HColumn;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,11 +38,6 @@ import fr.doan.achilles.helper.CompositeHelper;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 @RunWith(MockitoJUnitRunner.class)
 public class JoinWideMapWrapperTest
 {
@@ -95,7 +86,7 @@ public class JoinWideMapWrapperTest
 		DynamicComposite comp = new DynamicComposite();
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 
 		when(joinWideMapMeta.getValueClass()).thenReturn(UserBean.class);
@@ -114,8 +105,8 @@ public class JoinWideMapWrapperTest
 	public void should_insert_value_and_entity_when_insertable() throws Exception
 	{
 
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-		joinProperties.setCascadeType(PERSIST);
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.addCascadeType(PERSIST);
 
 		int key = 4567;
 		UserBean userBean = new UserBean();
@@ -125,8 +116,7 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(persister.persistOrEnsureJoinEntityExists(userBean, joinProperties))
-				.thenReturn(userId);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 
 		wrapper.insert(key, userBean);
 
@@ -143,8 +133,8 @@ public class JoinWideMapWrapperTest
 	@Test
 	public void should_insert_value_and_entity_with_ttl() throws Exception
 	{
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-		joinProperties.setCascadeType(ALL);
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.addCascadeType(ALL);
 
 		int key = 4567;
 		UserBean userBean = new UserBean();
@@ -154,115 +144,14 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(persister.persistOrEnsureJoinEntityExists(userBean, joinProperties))
-				.thenReturn(userId);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 
 		wrapper.insert(key, userBean, 150);
 
 		verify(dao).setValue(id, comp, userId, 150);
 	}
 
-	@Test
-	public void should_remove_value_only() throws Exception
-	{
-		int key = 4567;
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-
-		DynamicComposite comp = new DynamicComposite();
-
-		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
-		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-
-		wrapper.remove(key);
-
-		verify(dao).removeColumn(id, comp);
-	}
-
-	@Test
-	public void should_remove_value_and_entity() throws Exception
-	{
-		int key = 4567;
-		long userId = 475L;
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-		joinProperties.setCascadeType(REMOVE);
-
-		DynamicComposite comp = new DynamicComposite();
-
-		when(dao.getValue(id, comp)).thenReturn(userId);
-		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
-		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-
-		wrapper.remove(key);
-
-		verify(persister).removeById(userId, joinProperties.getEntityMeta());
-		verify(dao).removeColumn(id, comp);
-	}
-
-	@Test
-	public void should_remove_range_value_only() throws Exception
-	{
-		int start = 12, end = 15;
-		boolean inclusiveStart = true, inclusiveEnd = false, reverse = false;
-
-		DynamicComposite startComp = new DynamicComposite();
-		DynamicComposite endComp = new DynamicComposite();
-
-		DynamicComposite[] queryComps = new DynamicComposite[]
-		{
-				startComp,
-				endComp
-		};
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-
-		when(
-				keyFactory.createForQuery(joinWideMapMeta, start, inclusiveStart, end,
-						inclusiveEnd, false)).thenReturn(queryComps);
-		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-
-		wrapper.removeRange(start, inclusiveStart, end, inclusiveEnd);
-
-		verify(helper).checkBounds(joinWideMapMeta, start, end, reverse);
-		verify(dao).removeColumnRange(id, startComp, endComp);
-	}
-
-	@Test
-	public void should_remove_range_value_and_entity() throws Exception
-	{
-		int start = 12, end = 15;
-		boolean inclusiveStart = true, inclusiveEnd = false, reverse = false;
-		long userId = 475L;
-
-		DynamicComposite startComp = new DynamicComposite();
-		DynamicComposite endComp = new DynamicComposite();
-
-		DynamicComposite[] queryComps = new DynamicComposite[]
-		{
-				startComp,
-				endComp
-		};
-		JoinProperties<Long> joinProperties = prepareJoinProperties();
-		joinProperties.setCascadeType(ALL);
-
-		ColumnSliceIterator<Long, DynamicComposite, Object> iterator = mock(ColumnSliceIterator.class);
-		HColumn<DynamicComposite, Object> hColumn = mock(HColumn.class);
-
-		when(
-				keyFactory.createForQuery(joinWideMapMeta, start, inclusiveStart, end,
-						inclusiveEnd, false)).thenReturn(queryComps);
-		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-
-		when(dao.getColumnsIterator(id, startComp, endComp, false)).thenReturn(iterator);
-		when(iterator.hasNext()).thenReturn(true, false);
-		when(iterator.next()).thenReturn(hColumn);
-		when(hColumn.getValue()).thenReturn(userId);
-		wrapper.removeRange(start, inclusiveStart, end, inclusiveEnd);
-
-		verify(helper).checkBounds(joinWideMapMeta, start, end, reverse);
-		verify(persister).removeById(userId, joinProperties.getEntityMeta());
-		verify(dao).removeColumnRange(id, startComp, endComp);
-	}
-
-	private JoinProperties<Long> prepareJoinProperties() throws Exception
+	private JoinProperties prepareJoinProperties() throws Exception
 	{
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setCanonicalClassName("canonicalClassName");
@@ -271,7 +160,7 @@ public class JoinWideMapWrapperTest
 		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
 		idMeta.setGetter(idGetter);
 		joinEntityMeta.setIdMeta(idMeta);
-		JoinProperties<Long> joinProperties = new JoinProperties<Long>();
+		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 
 		return joinProperties;

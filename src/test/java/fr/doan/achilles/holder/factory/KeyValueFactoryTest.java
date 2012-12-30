@@ -35,6 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
@@ -61,6 +62,9 @@ public class KeyValueFactoryTest
 	private PropertyMeta<TweetMultiKey, String> multiKeyWideMeta;
 
 	@Mock
+	private MultiKeyProperties multiKeyProperties;
+
+	@Mock
 	private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
 	@Mock
@@ -70,6 +74,7 @@ public class KeyValueFactoryTest
 	public void setUp()
 	{
 		ReflectionTestUtils.setField(factory, "loader", loader);
+		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
 	@Test
@@ -138,7 +143,7 @@ public class KeyValueFactoryTest
 		hColumn.setTtl(12);
 
 		EntityMeta<Integer> joinEntityMeta = new EntityMeta<Integer>();
-		JoinProperties<Integer> joinProperties = new JoinProperties<Integer>();
+		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 
 		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
@@ -281,9 +286,9 @@ public class KeyValueFactoryTest
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 
-		when(multiKeyWideMeta.getComponentSerializers()).thenReturn(
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
-		when(multiKeyWideMeta.getComponentSetters()).thenReturn(
+		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
 		when(multiKeyWideMeta.getValue("val1")).thenReturn("val1");
@@ -333,9 +338,9 @@ public class KeyValueFactoryTest
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 
-		when(multiKeyWideMeta.getComponentSerializers()).thenReturn(
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
-		when(multiKeyWideMeta.getComponentSetters()).thenReturn(
+		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
 		when(multiKeyWideMeta.getValue("val1")).thenReturn("val1");

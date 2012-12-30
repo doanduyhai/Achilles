@@ -113,7 +113,7 @@ public class JpaEntityInterceptorTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		interceptor = JpaInterceptorBuilder.builder(entityMeta).target(entity)
+		interceptor = JpaEntityInterceptorBuilder.builder(entityMeta).target(entity)
 				.lazyLoaded(lazyLoaded).build();
 
 		ReflectionTestUtils.setField(interceptor, "key", key);

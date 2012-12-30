@@ -117,6 +117,9 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
+			case JOIN_WIDE_MAP:
+				result = null;
+				break;
 			// TODO
 			// case JOIN_WIDE_META
 			// build JoinWideMetaWrapper

@@ -16,7 +16,6 @@ import me.prettyprint.hector.api.Keyspace;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.annotations.WideRow;
-import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -31,11 +30,11 @@ public class EntityParser
 	private EntityHelper helper = new EntityHelper();
 
 	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass,
-			Map<Class<?>, EntityMeta<?>> entityMetaMap, ColumnFamilyHelper columnFamilyHelper,
-			boolean forceColumnFamilyCreation)
+			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
 	{
 		Validator.validateInstantiable(entityClass);
-		String columnFamily = helper.inferColumnFamilyName(entityClass, entityClass.getCanonicalName());
+		String columnFamily = helper.inferColumnFamilyName(entityClass,
+				entityClass.getCanonicalName());
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
 		boolean wideRow = entityClass.getAnnotation(WideRow.class) != null ? true : false;
 
@@ -60,7 +59,13 @@ public class EntityParser
 			}
 			else if (filter.hasAnnotation(field, JoinColumn.class))
 			{
-
+				JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+				String propertyName = StringUtils.isNotBlank(joinColumn.name()) ? joinColumn.name()
+						: field.getName();
+				PropertyMeta<?, ?> joinPropertyMeta = parser
+						.parse(entityClass, field, propertyName);
+				propertyMetas.put(propertyName, joinPropertyMeta);
+				joinPropertyMetaToBeFilled.put(joinPropertyMeta, joinPropertyMeta.getValueClass());
 			}
 
 		}
@@ -69,9 +74,10 @@ public class EntityParser
 		validatePropertyMetas(entityClass, propertyMetas);
 		validateWideRow(entityClass, wideRow, propertyMetas);
 
-		return entityMetaBuilder(idMeta).keyspace(keyspace).canonicalClassName(entityClass.getCanonicalName())
-				.columnFamilyName(columnFamily).serialVersionUID(serialVersionUID)
-				.propertyMetas(propertyMetas).wideRow(wideRow).build();
+		return entityMetaBuilder(idMeta).keyspace(keyspace)
+				.canonicalClassName(entityClass.getCanonicalName()).columnFamilyName(columnFamily)
+				.serialVersionUID(serialVersionUID).propertyMetas(propertyMetas).wideRow(wideRow)
+				.build();
 	}
 
 	private void validateIdMeta(Class<?> entityClass, PropertyMeta<Void, ?> idMeta)

@@ -1,5 +1,9 @@
 package parser.entity;
 
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.MERGE;
+import static javax.persistence.CascadeType.PERSIST;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -7,9 +11,13 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Lazy;
+import fr.doan.achilles.entity.type.WideMap;
 
 @Table
 public class Bean implements Serializable
@@ -34,6 +42,18 @@ public class Bean implements Serializable
 
 	@Column
 	private Map<Integer, String> preferences;
+
+	@ManyToOne(cascade = ALL)
+	@JoinColumn
+	private UserBean creator;
+
+	@ManyToMany(cascade =
+	{
+			PERSIST,
+			MERGE
+	})
+	@JoinColumn(name = "linked_users")
+	private WideMap<String, UserBean> users;
 
 	public Long getId()
 	{
@@ -95,4 +115,18 @@ public class Bean implements Serializable
 		this.preferences = preferences;
 	}
 
+	public UserBean getCreator()
+	{
+		return creator;
+	}
+
+	public void setCreator(UserBean creator)
+	{
+		this.creator = creator;
+	}
+
+	public WideMap<String, UserBean> getUsers()
+	{
+		return users;
+	}
 }

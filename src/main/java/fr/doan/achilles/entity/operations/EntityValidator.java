@@ -2,8 +2,8 @@ package fr.doan.achilles.entity.operations;
 
 import java.util.Map;
 
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -14,14 +14,14 @@ import fr.doan.achilles.validation.Validator;
  */
 public class EntityValidator
 {
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
 		Validator.validateNotNull(entity, "entity");
 
-		Class baseClass = util.deriveBaseClass(entity);
+		Class baseClass = helper.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(baseClass);
 		validateEntity(entity, entityMeta);
 
@@ -32,7 +32,7 @@ public class EntityValidator
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed");
 
-		Object id = util.determinePrimaryKey(entity, entityMeta);
+		Object id = helper.determinePrimaryKey(entity, entityMeta);
 		if (id == null)
 		{
 			throw new IllegalArgumentException("Cannot get primary key for entity "

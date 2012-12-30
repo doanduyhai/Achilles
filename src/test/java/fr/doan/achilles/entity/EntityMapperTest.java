@@ -5,6 +5,8 @@ import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +24,12 @@ import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -32,6 +38,7 @@ import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.holder.KeyValueHolder;
@@ -44,8 +51,11 @@ import fr.doan.achilles.holder.KeyValueHolder;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMapperTest
 {
+	@InjectMocks
+	private EntityMapper mapper;
 
-	private EntityParser parser = new EntityParser();
+	@Mock
+	private EntityHelper helper;
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -54,19 +64,37 @@ public class EntityMapperTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
+
+	@Mock
 	private ColumnFamilyHelper columnFamilyHelper;
 
-	private boolean forceColumnFamilyCreation = true;
+	@Captor
+	ArgumentCaptor<Long> idCaptor;
+
+	@Captor
+	ArgumentCaptor<String> simpleCaptor;
+
+	@Captor
+	ArgumentCaptor<List> listCaptor;
+
+	@Captor
+	ArgumentCaptor<Set> setCaptor;
+
+	@Captor
+	ArgumentCaptor<Map> mapCaptor;
+
+	private EntityParser parser = new EntityParser();
 
 	private EntityMeta<Long> entityMeta;
-
-	private EntityMapper mapper = new EntityMapper();
 
 	@Before
 	public void setUp()
 	{
+		ReflectionTestUtils.setField(mapper, "helper", helper);
+
 		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class,
-				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+				joinPropertyMetaToBeFilled);
 	}
 
 	@Test
@@ -74,40 +102,58 @@ public class EntityMapperTest
 	{
 
 		CompleteBean entity = new CompleteBean();
+		doNothing().when(helper).setValueToField(eq(entity),
+				eq(entityMeta.getIdMeta().getSetter()), idCaptor.capture());
+
 		mapper.mapIdToBean(1L, entityMeta.getIdMeta(), entity);
 
-		assertThat(entity.getId()).isEqualTo(1L);
+		assertThat(idCaptor.getValue()).isEqualTo(1L);
 	}
 
 	@Test
 	public void should_map_simple_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		mapper.mapSimplePropertyToBean("name", entityMeta.getPropertyMetas().get("name"), entity);
+		PropertyMeta<?, ?> namePropertyMeta = entityMeta.getPropertyMetas().get("name");
 
-		assertThat(entity.getName()).isEqualTo("name");
+		doNothing().when(helper).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
+				simpleCaptor.capture());
+
+		mapper.mapSimplePropertyToBean("name", namePropertyMeta, entity);
+
+		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 	}
 
 	@Test
 	public void should_map_list_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		mapper.mapListPropertyToBean(Arrays.asList("foo", "bar"), entityMeta.getPropertyMetas()
-				.get("friends"), entity);
 
-		assertThat(entity.getFriends()).hasSize(2);
-		assertThat(entity.getFriends()).containsExactly("foo", "bar");
+		PropertyMeta<?, ?> listPropertyMeta = entityMeta.getPropertyMetas().get("friends");
+
+		doNothing().when(helper).setValueToField(eq(entity), eq(listPropertyMeta.getSetter()),
+				listCaptor.capture());
+
+		mapper.mapListPropertyToBean(Arrays.asList("foo", "bar"), listPropertyMeta, entity);
+
+		assertThat(listCaptor.getValue()).hasSize(2);
+		assertThat(listCaptor.getValue()).containsExactly("foo", "bar");
 	}
 
 	@Test
 	public void should_map_set_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		mapper.mapSetPropertyToBean(Sets.newHashSet("George", "Paul"), entityMeta
-				.getPropertyMetas().get("followers"), entity);
 
-		assertThat(entity.getFollowers()).hasSize(2);
-		assertThat(entity.getFollowers()).contains("George", "Paul");
+		PropertyMeta<?, ?> setPropertyMeta = entityMeta.getPropertyMetas().get("followers");
+
+		doNothing().when(helper).setValueToField(eq(entity), eq(setPropertyMeta.getSetter()),
+				setCaptor.capture());
+
+		mapper.mapSetPropertyToBean(Sets.newHashSet("George", "Paul"), setPropertyMeta, entity);
+
+		assertThat(setCaptor.getValue()).hasSize(2);
+		assertThat(setCaptor.getValue()).contains("George", "Paul");
 	}
 
 	@Test
@@ -119,13 +165,18 @@ public class EntityMapperTest
 		preferences.put(1, "FR");
 		preferences.put(2, "Paris");
 		preferences.put(3, "75014");
-		mapper.mapMapPropertyToBean(preferences, entityMeta.getPropertyMetas().get("preferences"),
-				entity);
 
-		assertThat(entity.getPreferences()).hasSize(3);
-		assertThat(entity.getPreferences().get(1)).isEqualTo("FR");
-		assertThat(entity.getPreferences().get(2)).isEqualTo("Paris");
-		assertThat(entity.getPreferences().get(3)).isEqualTo("75014");
+		PropertyMeta<?, ?> mapPropertyMeta = entityMeta.getPropertyMetas().get("preferences");
+
+		doNothing().when(helper).setValueToField(eq(entity), eq(mapPropertyMeta.getSetter()),
+				mapCaptor.capture());
+
+		mapper.mapMapPropertyToBean(preferences, mapPropertyMeta, entity);
+
+		assertThat(mapCaptor.getValue()).hasSize(3);
+		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
+		assertThat(mapCaptor.getValue().get(2)).isEqualTo("Paris");
+		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
 	}
 
 	@Test
@@ -233,6 +284,12 @@ public class EntityMapperTest
 
 		CompleteBean entity = new CompleteBean();
 
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		PropertyMeta<?, ?> simpleMeta = entityMeta.getPropertyMetas().get("name");
+		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
+		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
+		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 
 		columns.add(new Pair<DynamicComposite, Object>(buildSimplePropertyComposite("name"), "name"));
@@ -252,21 +309,32 @@ public class EntityMapperTest
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
 				new KeyValueHolder(3, "75014")));
 
+		doNothing().when(helper).setValueToField(eq(entity), eq(idMeta.getSetter()),
+				idCaptor.capture());
+		doNothing().when(helper).setValueToField(eq(entity), eq(simpleMeta.getSetter()),
+				simpleCaptor.capture());
+		doNothing().when(helper).setValueToField(eq(entity), eq(listMeta.getSetter()),
+				listCaptor.capture());
+		doNothing().when(helper).setValueToField(eq(entity), eq(setMeta.getSetter()),
+				setCaptor.capture());
+		doNothing().when(helper).setValueToField(eq(entity), eq(mapMeta.getSetter()),
+				mapCaptor.capture());
+
 		mapper.mapColumnsToBean(2L, columns, entityMeta, entity);
 
-		assertThat(entity.getId()).isEqualTo(2L);
-		assertThat(entity.getName()).isEqualTo("name");
+		assertThat(idCaptor.getValue()).isEqualTo(2L);
+		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 
-		assertThat(entity.getFriends()).hasSize(2);
-		assertThat(entity.getFriends()).containsExactly("foo", "bar");
+		assertThat(listCaptor.getValue()).hasSize(2);
+		assertThat(listCaptor.getValue()).containsExactly("foo", "bar");
 
-		assertThat(entity.getFollowers()).hasSize(2);
-		assertThat(entity.getFollowers()).contains("George", "Paul");
+		assertThat(setCaptor.getValue()).hasSize(2);
+		assertThat(setCaptor.getValue()).contains("George", "Paul");
 
-		assertThat(entity.getPreferences()).hasSize(3);
-		assertThat(entity.getPreferences().get(1)).isEqualTo("FR");
-		assertThat(entity.getPreferences().get(2)).isEqualTo("Paris");
-		assertThat(entity.getPreferences().get(3)).isEqualTo("75014");
+		assertThat(mapCaptor.getValue()).hasSize(3);
+		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
+		assertThat(mapCaptor.getValue().get(2)).isEqualTo("Paris");
+		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
 	}
 
 	private DynamicComposite buildSimplePropertyComposite(String propertyName)

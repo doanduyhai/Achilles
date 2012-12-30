@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityExplorer;
 import fr.doan.achilles.entity.parser.EntityParser;
 
@@ -52,6 +53,9 @@ public class ThriftEntityManagerFactoryImplTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
+
+	@Mock
 	private EntityMeta meta;
 
 	@Mock
@@ -69,13 +73,11 @@ public class ThriftEntityManagerFactoryImplTest
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(Long.class);
 		classes.add(String.class);
-		when(
-				entityParser.parseEntity(eq(keyspace), eq(Long.class), (Map) any(Map.class),
-						eq(columnFamilyHelper), eq(true))).thenReturn(meta);
-		when(
-				entityParser.parseEntity(eq(keyspace), eq(String.class), (Map) any(Map.class),
-						eq(columnFamilyHelper), eq(true))).thenReturn(meta);
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
+		when(entityParser.parseEntity(eq(keyspace), eq(Long.class), any(Map.class))).thenReturn(
+				meta);
+		when(entityParser.parseEntity(eq(keyspace), eq(String.class), any(Map.class))).thenReturn(
+				meta);
 
 		ReflectionTestUtils.setField(factory, "forceColumnFamilyCreation", true);
 		ReflectionTestUtils.invokeMethod(factory, "bootstrap", (Object[]) null);
@@ -89,7 +91,7 @@ public class ThriftEntityManagerFactoryImplTest
 	@Test(expected = IllegalArgumentException.class)
 	public void should_exception_when_no_entity_found() throws Exception
 	{
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(null);
+		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(new ArrayList<Class<?>>());
 
 		ReflectionTestUtils.invokeMethod(factory, "bootstrap", (Object[]) null);
 	}

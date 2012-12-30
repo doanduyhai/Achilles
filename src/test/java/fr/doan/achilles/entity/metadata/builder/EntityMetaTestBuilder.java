@@ -1,13 +1,12 @@
 package fr.doan.achilles.entity.metadata.builder;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import me.prettyprint.hector.api.Keyspace;
-import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
 
 public class EntityMetaTestBuilder
@@ -21,14 +20,13 @@ public class EntityMetaTestBuilder
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID extends Serializable> EntityMeta<ID> build(Keyspace keyspace, GenericEntityDao<ID> dao,
-			Class<?> entityClass, ColumnFamilyHelper columnFamilyHelper,
-			boolean forceColumnFamilyCreation)
+	public <ID extends Serializable> EntityMeta<ID> build(Keyspace keyspace,
+			GenericEntityDao<ID> dao, Class<?> entityClass,
+			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetasToBeFilled)
 	{
 
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) parser.parseEntity(keyspace, entityClass,
-				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+				joinPropertyMetasToBeFilled);
 		entityMeta.setEntityDao(dao);
 
 		return entityMeta;

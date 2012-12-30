@@ -13,6 +13,7 @@ import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
@@ -28,6 +29,7 @@ public class EntityLoader
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 	private EntityMapper mapper = new EntityMapper();
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private EntityHelper helper = new EntityHelper();
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{
@@ -42,8 +44,7 @@ public class EntityLoader
 			if (entityMeta.isWideRow())
 			{
 				entity = entityClass.newInstance();
-				entityMeta.getIdMeta().getSetter().invoke(entity, key);
-
+				helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
 			}
 			else
 			{
@@ -53,7 +54,8 @@ public class EntityLoader
 				{
 					entity = entityClass.newInstance();
 					mapper.mapColumnsToBean(key, columns, entityMeta, entity);
-					entityMeta.getIdMeta().getSetter().invoke(entity, key);
+					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
+
 				}
 			}
 
@@ -150,21 +152,20 @@ public class EntityLoader
 				break;
 			case JOIN_SIMPLE:
 				value = this.loadJoinColumn(key, dao, propertyMeta);
-			default:
 				break;
+			default:
+				return;
 		}
-		try
-		{
-			propertyMeta.getSetter().invoke(realObject, value);
-		}
-		catch (Exception e)
-		{}
+		helper.setValueToField(realObject, propertyMeta.getSetter(), value);
 	}
 
 	public <JOIN_ID, V> V loadJoinEntity(Class<V> entityClass, JOIN_ID joinId,
 			EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 		V joinEntity = (V) this.load(entityClass, joinId, joinEntityMeta);
+
+		Validator.validateNotNull(joinEntity, "The join entity '" + entityClass.getCanonicalName()
+				+ "' with id '" + joinId + "' cannot be found");
 
 		return (V) this.interceptorBuilder.build(joinEntity, joinEntityMeta);
 	}

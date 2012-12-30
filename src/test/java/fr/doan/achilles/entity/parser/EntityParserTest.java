@@ -1,10 +1,17 @@
 package fr.doan.achilles.entity.parser;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
 import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.MERGE;
+import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +25,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -27,11 +36,14 @@ import parser.entity.BeanWithNoColumn;
 import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
+import parser.entity.UserBean;
 import parser.entity.WideRowBean;
 import parser.entity.WideRowBeanWithTwoColumns;
 import parser.entity.WideRowBeanWithWrongColumnType;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinMeta;
+import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -56,9 +68,16 @@ public class EntityParserTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
+
+	@Mock
 	private ColumnFamilyHelper columnFamilyHelper;
 
-	private boolean forceColumnFamilyCreation = true;
+	@Captor
+	ArgumentCaptor<Class<?>> classCaptor;
+
+	@Captor
+	ArgumentCaptor<PropertyMeta<?, ?>> propertyMetaCaptor;
 
 	@SuppressWarnings(
 	{
@@ -69,7 +88,7 @@ public class EntityParserTest
 	public void should_parse_entity() throws Exception
 	{
 		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, Bean.class,
-				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+				joinPropertyMetaToBeFilled);
 
 		assertThat(meta.getCanonicalClassName()).isEqualTo("parser.entity.Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
@@ -79,7 +98,7 @@ public class EntityParserTest
 		assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(
 				LONG_SRZ.getComparatorType());
 		assertThat((Serializer<Long>) meta.getIdSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(meta.getPropertyMetas()).hasSize(5);
+		assertThat(meta.getPropertyMetas()).hasSize(7);
 
 		PropertyMeta<?, ?> name = meta.getPropertyMetas().get("name");
 		PropertyMeta<?, ?> age = meta.getPropertyMetas().get("age_in_year");
@@ -88,11 +107,17 @@ public class EntityParserTest
 		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas()
 				.get("preferences");
 
+		JoinMeta<UserBean> creator = (JoinMeta<UserBean>) meta.getPropertyMetas().get("creator");
+		JoinWideMapMeta<String, UserBean> linkedUsers = (JoinWideMapMeta<String, UserBean>) meta
+				.getPropertyMetas().get("linked_users");
+
 		assertThat(name).isNotNull();
 		assertThat(age).isNotNull();
 		assertThat(friends).isNotNull();
 		assertThat(followers).isNotNull();
 		assertThat(preferences).isNotNull();
+		assertThat(creator).isNotNull();
+		assertThat(linkedUsers).isNotNull();
 
 		assertThat(name.getPropertyName()).isEqualTo("name");
 		assertThat((Class<String>) name.getValueClass()).isEqualTo(String.class);
@@ -132,6 +157,26 @@ public class EntityParserTest
 		assertThat(preferences.newMapInstance()).isEmpty();
 		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(
 				HashMap.class);
+
+		assertThat(creator.getPropertyName()).isEqualTo("creator");
+		assertThat(creator.getValueClass()).isEqualTo(UserBean.class);
+		assertThat((Serializer<Object>) creator.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat(creator.propertyType()).isEqualTo(JOIN_SIMPLE);
+		assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(ALL);
+
+		assertThat(linkedUsers.getPropertyName()).isEqualTo("linked_users");
+		assertThat(linkedUsers.getValueClass()).isEqualTo(UserBean.class);
+		assertThat((Serializer<Object>) linkedUsers.getValueSerializer()).isEqualTo(
+				Utils.OBJECT_SRZ);
+		assertThat(linkedUsers.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+		assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).containsExactly(PERSIST,
+				MERGE);
+
+		verify(joinPropertyMetaToBeFilled, times(2)).put(propertyMetaCaptor.capture(),
+				classCaptor.capture());
+
+		assertThat(classCaptor.getAllValues()).containsExactly(UserBean.class, UserBean.class);
+		assertThat(propertyMetaCaptor.getAllValues()).containsExactly(creator, linkedUsers);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -140,8 +185,7 @@ public class EntityParserTest
 	{
 
 		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace,
-				BeanWithColumnFamilyName.class, entityMetaMap, columnFamilyHelper,
-				forceColumnFamilyCreation);
+				BeanWithColumnFamilyName.class, joinPropertyMetaToBeFilled);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
@@ -152,7 +196,7 @@ public class EntityParserTest
 	public void should_parse_inherited_bean() throws Exception
 	{
 		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, ChildBean.class,
-				entityMetaMap, columnFamilyHelper, forceColumnFamilyCreation);
+				joinPropertyMetaToBeFilled);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
@@ -164,22 +208,19 @@ public class EntityParserTest
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNoId.class, entityMetaMap, columnFamilyHelper,
-				forceColumnFamilyCreation);
+		parser.parseEntity(keyspace, BeanWithNoId.class, joinPropertyMetaToBeFilled);
 	}
 
 	@Test(expected = ValidationException.class)
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
+		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, joinPropertyMetaToBeFilled);
 	}
 
 	@Test(expected = IncorrectTypeException.class)
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
-		parser.parseEntity(keyspace, BeanWithNoColumn.class, entityMetaMap, columnFamilyHelper,
-				forceColumnFamilyCreation);
+		parser.parseEntity(keyspace, BeanWithNoColumn.class, joinPropertyMetaToBeFilled);
 	}
 
 	@SuppressWarnings(
@@ -190,8 +231,8 @@ public class EntityParserTest
 	@Test
 	public void should_parse_wide_row() throws Exception
 	{
-		EntityMeta<?> meta = parser.parseEntity(keyspace, WideRowBean.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
+		EntityMeta<?> meta = parser.parseEntity(keyspace, WideRowBean.class,
+				joinPropertyMetaToBeFilled);
 
 		assertThat(meta.isWideRow()).isTrue();
 
@@ -210,8 +251,7 @@ public class EntityParserTest
 				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
-		parser.parseEntity(keyspace, WideRowBeanWithTwoColumns.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
+		parser.parseEntity(keyspace, WideRowBeanWithTwoColumns.class, joinPropertyMetaToBeFilled);
 
 	}
 
@@ -223,8 +263,8 @@ public class EntityParserTest
 				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have a @Column of type WideMap");
 
-		parser.parseEntity(keyspace, WideRowBeanWithWrongColumnType.class, entityMetaMap,
-				columnFamilyHelper, forceColumnFamilyCreation);
+		parser.parseEntity(keyspace, WideRowBeanWithWrongColumnType.class,
+				joinPropertyMetaToBeFilled);
 
 	}
 

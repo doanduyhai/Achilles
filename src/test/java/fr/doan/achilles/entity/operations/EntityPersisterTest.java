@@ -1,5 +1,6 @@
 package fr.doan.achilles.entity.operations;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
@@ -8,6 +9,7 @@ import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
+import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -25,9 +27,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.cassandra.model.MutatorImpl;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +39,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.WideRowBean;
 
@@ -47,6 +49,7 @@ import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.ListMeta;
 import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -59,13 +62,19 @@ public class EntityPersisterTest
 {
 
 	@InjectMocks
-	private EntityPersister persister = new EntityPersister();
+	private EntityPersister persister;
 
 	@Mock
 	private EntityHelper helper;
 
 	@Mock
+	private EntityLoader loader;
+
+	@Mock
 	private GenericEntityDao<Long> dao;
+
+	@Mock
+	private EntityMeta<Long> entityMeta;
 
 	@Mock
 	private PropertyMeta<?, String> propertyMeta;
@@ -85,35 +94,62 @@ public class EntityPersisterTest
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
 
-	private MutatorImpl<Long> mutator = new MutatorImpl<Long>(keyspace);
+	@Mock
+	private Mutator<Long> mutator;
 
-	private Method method;
+	private Method anyMethod;
 
 	private CompleteBean entity;
+
+	private UserBean userBean;
+
+	private Long id = 7856L;
+
+	private Long joinId = 32548L;
 
 	@Before
 	public void setUp() throws Exception
 	{
-		method = this.getClass().getDeclaredMethod("setUp", (Class<?>[]) null);
-		entity = CompleteBeanTestBuilder.builder().id(1L).name("name").age(52L)
+
+		anyMethod = this.getClass().getDeclaredMethod("setUp");
+		entity = CompleteBeanTestBuilder.builder().id(id).name("name").age(52L)
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.buid();
+
+		userBean = new UserBean();
+		userBean.setUserId(joinId);
+		entity.setUser(userBean);
+
+		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.getCanonicalClassName()).thenReturn(CompleteBean.class.getCanonicalName());
+		when(entityMeta.getEntityDao()).thenReturn(dao);
+
+		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
+		propertyMetaMap.put("name", propertyMeta);
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
+
+		when(dao.buildMutator()).thenReturn(mutator);
+		when(helper.getKey(entity, idMeta)).thenReturn(id);
 	}
 
 	@Test
 	public void should_batch_simple_property() throws Exception
 	{
+
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
-		when(propertyMeta.getGetter()).thenReturn(method);
-		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 
-		ReflectionTestUtils.invokeMethod(persister, "batchSimpleProperty", entity, 1L, dao,
-				propertyMeta, mutator);
+		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(1L, composite, "testValue", mutator);
+		verify(dao).insertColumn(id, composite, "testValue", mutator);
 	}
 
 	@Test
@@ -123,11 +159,10 @@ public class EntityPersisterTest
 		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
-		when(propertyMeta.getGetter()).thenReturn(method);
-		when(helper.getValueFromField(entity, method)).thenReturn("testValue");
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 
-		ReflectionTestUtils.invokeMethod(persister, "persistSimpleProperty", entity, 1L, dao,
-				propertyMeta);
+		persister.persistSimpleProperty(entity, 1L, dao, propertyMeta);
 
 		verify(dao).insertColumn(1L, composite, "testValue", null);
 	}
@@ -135,20 +170,19 @@ public class EntityPersisterTest
 	@Test
 	public void should_batch_list_property() throws Exception
 	{
-		when(propertyMeta.getGetter()).thenReturn(method);
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
-		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
 		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchListProperty", entity, 1L, dao,
-				propertyMeta, mutator);
+		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(1L, composite, "foo", mutator);
-		verify(dao).insertColumn(1L, composite, "bar", mutator);
+		verify(dao).insertColumn(id, composite, "foo", mutator);
+		verify(dao).insertColumn(id, composite, "bar", mutator);
 	}
 
 	@Test
@@ -156,28 +190,27 @@ public class EntityPersisterTest
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
-		when(propertyMeta.getGetter()).thenReturn(method);
-		when(helper.getValueFromField(entity, method)).thenReturn(Arrays.asList("foo", "bar"));
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
 		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistListProperty", entity, 1L, dao,
-				propertyMeta);
+		persister.persistListProperty(entity, id, dao, propertyMeta);
 
-		verify(dao).insertColumn(1L, composite, "foo", mutator);
-		verify(dao).insertColumn(1L, composite, "bar", mutator);
+		verify(dao).insertColumn(id, composite, "foo", mutator);
+		verify(dao).insertColumn(id, composite, "bar", mutator);
 	}
 
 	@Test
 	public void should_batch_set_property() throws Exception
 	{
-		when(propertyMeta.getGetter()).thenReturn(method);
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.propertyType()).thenReturn(SET);
-		when(helper.getValueFromField(entity, method))
-				.thenReturn(Sets.newHashSet("George", "Paul"));
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
+				Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -186,21 +219,20 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsert(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchSetProperty", entity, 1L, dao,
-				propertyMeta, mutator);
+		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(1L, composite, "George", mutator);
-		verify(dao).insertColumn(1L, composite, "Paul", mutator);
+		verify(dao).insertColumn(id, composite, "George", mutator);
+		verify(dao).insertColumn(id, composite, "Paul", mutator);
 	}
 
 	@Test
 	public void should_persist_set_property() throws Exception
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.getGetter()).thenReturn(method);
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.propertyType()).thenReturn(SET);
-		when(helper.getValueFromField(entity, method))
-				.thenReturn(Sets.newHashSet("George", "Paul"));
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
+				Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -209,24 +241,23 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsert(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistSetProperty", entity, 1L, dao,
-				propertyMeta);
+		persister.persistSetProperty(entity, id, dao, propertyMeta);
 
-		verify(dao).insertColumn(1L, composite, "George", mutator);
-		verify(dao).insertColumn(1L, composite, "Paul", mutator);
+		verify(dao).insertColumn(id, composite, "George", mutator);
+		verify(dao).insertColumn(id, composite, "Paul", mutator);
 	}
 
 	@Test
 	public void should_batch_map_property() throws Exception
 	{
-		when(propertyMeta.getGetter()).thenReturn(method);
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		when(helper.getValueFromField(entity, method)).thenReturn(map);
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(map);
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -234,13 +265,12 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsert(propertyMeta, 2)).thenReturn(composite);
 		when(keyFactory.createForBatchInsert(propertyMeta, 3)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "batchMapProperty", entity, 1L, dao,
-				propertyMeta, mutator);
+		persister.persist(entity, entityMeta);
 
 		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
 				.forClass(KeyValueHolder.class);
 
-		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(),
+		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
@@ -263,13 +293,13 @@ public class EntityPersisterTest
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
-		when(propertyMeta.getGetter()).thenReturn(method);
+		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		when(helper.getValueFromField(entity, method)).thenReturn(map);
+		when(helper.getValueFromField(entity, anyMethod)).thenReturn(map);
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -277,13 +307,12 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsert(propertyMeta, 2)).thenReturn(composite);
 		when(keyFactory.createForBatchInsert(propertyMeta, 3)).thenReturn(composite);
 
-		ReflectionTestUtils.invokeMethod(persister, "persistMapProperty", entity, 1L, dao,
-				propertyMeta);
+		persister.persistMapProperty(entity, id, dao, propertyMeta);
 
 		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
 				.forClass(KeyValueHolder.class);
 
-		verify(dao, times(3)).insertColumn(eq(1L), eq(composite), keyValueHolderCaptor.capture(),
+		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
@@ -299,6 +328,97 @@ public class EntityPersisterTest
 
 		assertThat(holder3.getKey()).isEqualTo(3);
 		assertThat(holder3.getValue()).isEqualTo("75014");
+	}
+
+	@SuppressWarnings(
+	{
+		"unchecked"
+	})
+	@Test
+	public void should_batch_join_entity_when_cascade_persist() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+
+		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
+
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(propertyMeta.getGetter()).thenReturn(userGetter);
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+
+		DynamicComposite composite = new DynamicComposite();
+		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+
+		persister.persist(entity, entityMeta);
+
+		verify(dao).insertColumn(id, composite, joinId, mutator);
+	}
+
+	@SuppressWarnings(
+	{
+		"unchecked"
+	})
+	@Test
+	public void should_not_batch_join_entity_when_no_cascade() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.getCascadeTypes().clear();
+
+		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
+
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(propertyMeta.getGetter()).thenReturn(userGetter);
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+
+		when(loader.load(UserBean.class, joinId, joinProperties.getEntityMeta())).thenReturn(
+				userBean);
+
+		DynamicComposite composite = new DynamicComposite();
+		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+
+		persister.persist(entity, entityMeta);
+
+		verify(dao).insertColumn(id, composite, joinId, mutator);
+	}
+
+	@SuppressWarnings(
+	{
+		"unchecked"
+	})
+	@Test
+	public void should_persist_join_entity_when_cascade_persist() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+
+		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
+
+		when(propertyMeta.getPropertyName()).thenReturn("name");
+		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(propertyMeta.getGetter()).thenReturn(userGetter);
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+
+		DynamicComposite composite = new DynamicComposite();
+		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+
+		persister.persistProperty(entity, id, dao, propertyMeta);
+
+		verify(dao).insertColumn(id, composite, joinId, null);
 	}
 
 	@Test
@@ -452,5 +572,23 @@ public class EntityPersisterTest
 		persister.removeById(idValue, entityMeta);
 
 		verify(dao).removeRow(idValue);
+	}
+
+	private JoinProperties prepareJoinProperties() throws Exception
+	{
+		Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
+		PropertyMeta<Void, Long> joinIdMeta = new SimpleMeta<Long>();
+		joinIdMeta.setGetter(userIdGetter);
+
+		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
+		joinEntityMeta.setIdMeta(joinIdMeta);
+		joinEntityMeta.setEntityDao(dao);
+		joinEntityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinEntityMeta);
+		joinProperties.addCascadeType(PERSIST);
+
+		return joinProperties;
 	}
 }

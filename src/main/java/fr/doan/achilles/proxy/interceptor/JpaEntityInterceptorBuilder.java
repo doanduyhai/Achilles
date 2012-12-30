@@ -6,37 +6,39 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.validation.Validator;
 
-public class JpaInterceptorBuilder<ID extends Serializable>
+public class JpaEntityInterceptorBuilder<ID extends Serializable>
 {
 
 	private Object target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
 	private EntityMeta<ID> entityMeta;
+	private EntityHelper helper = new EntityHelper();
 
-	public static <ID extends Serializable> JpaInterceptorBuilder<ID> builder(
+	public static <ID extends Serializable> JpaEntityInterceptorBuilder<ID> builder(
 			EntityMeta<ID> entityMeta)
 	{
-		return new JpaInterceptorBuilder<ID>(entityMeta);
+		return new JpaEntityInterceptorBuilder<ID>(entityMeta);
 	}
 
-	public JpaInterceptorBuilder(EntityMeta<ID> entityMeta) {
+	public JpaEntityInterceptorBuilder(EntityMeta<ID> entityMeta) {
 		Validator.validateNotNull(entityMeta, "entityMeta");
 		this.entityMeta = entityMeta;
 	}
 
-	public JpaInterceptorBuilder<ID> target(Object target)
+	public JpaEntityInterceptorBuilder<ID> target(Object target)
 	{
 		Validator.validateNotNull(target, "Target object");
 		this.target = target;
 		return this;
 	}
 
-	public JpaInterceptorBuilder<ID> lazyLoaded(Set<Method> lazyLoaded)
+	public JpaEntityInterceptorBuilder<ID> lazyLoaded(Set<Method> lazyLoaded)
 	{
 		this.lazyLoaded = lazyLoaded;
 		return this;
@@ -77,13 +79,8 @@ public class JpaInterceptorBuilder<ID extends Serializable>
 		}
 		interceptor.setLazyLoaded(this.lazyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
-
-		try
-		{
-			interceptor.setKey((ID) entityMeta.getIdMeta().getGetter().invoke(target));
-		}
-		catch (Exception e)
-		{}
+		interceptor.setKey((ID) helper
+				.getValueFromField(target, entityMeta.getIdMeta().getGetter()));
 
 		interceptor.setLoader(new EntityLoader());
 		return interceptor;

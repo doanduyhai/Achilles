@@ -36,11 +36,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.CorrectMultiKey;
+import fr.doan.achilles.entity.EntityHelper;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.helper.CompositeHelper;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 
 /**
  * DynamicCompositeKeyFactoryTest
@@ -58,7 +59,7 @@ public class DynamicCompositeKeyFactoryTest
 	private CompositeHelper helper;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper entityHelper;
 
 	@Mock
 	private List<Method> componentGetters;
@@ -68,6 +69,9 @@ public class DynamicCompositeKeyFactoryTest
 
 	@Mock
 	private PropertyMeta<CorrectMultiKey, String> multiKeyPropertyMeta;
+
+	@Mock
+	private MultiKeyProperties multiKeyProperties;
 
 	@SuppressWarnings(
 	{
@@ -82,6 +86,7 @@ public class DynamicCompositeKeyFactoryTest
 
 		when(multiKeyPropertyMeta.propertyType()).thenReturn(WIDE_MAP);
 		when(multiKeyPropertyMeta.isSingleKey()).thenReturn(false);
+		when(multiKeyPropertyMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
 	@Test
@@ -213,10 +218,11 @@ public class DynamicCompositeKeyFactoryTest
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", uuid);
 
-		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
-		when(util.determineMultiKey(key, propertyMeta.getComponentGetters())).thenReturn(keyValues);
+		when(entityHelper.determineMultiKey(key, multiKeyProperties.getComponentGetters()))
+				.thenReturn(keyValues);
 
 		DynamicComposite comp = keyFactory.createForInsert(multiKeyPropertyMeta, key);
 
@@ -236,7 +242,7 @@ public class DynamicCompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a");
 
-		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
 		keyFactory.createForInsert(multiKeyPropertyMeta, keyValues);
@@ -250,7 +256,7 @@ public class DynamicCompositeKeyFactoryTest
 				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
 
-		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
 		keyFactory.createForInsert(multiKeyPropertyMeta, keyValues);
@@ -268,11 +274,11 @@ public class DynamicCompositeKeyFactoryTest
 		List<Object> keyValues = Arrays.asList((Object) 1, "abc", 50L);
 		List<Method> componentGetters = mock(List.class);
 
-		when(multiKeyPropertyMeta.getComponentGetters()).thenReturn(componentGetters);
-		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
-		when(util.determineMultiKey(tweetKey, componentGetters)).thenReturn(keyValues);
+		when(entityHelper.determineMultiKey(tweetKey, componentGetters)).thenReturn(keyValues);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(2);
 
 		DynamicComposite comp = keyFactory.createForQuery(multiKeyPropertyMeta, tweetKey,
@@ -322,9 +328,9 @@ public class DynamicCompositeKeyFactoryTest
 
 		boolean inclusiveStart = true, inclusiveEnd = true, reverse = false;
 
-		when(multiKeyPropertyMeta.getComponentSerializers()).thenReturn(componentSerializers);
+		when(multiKeyProperties.getComponentSerializers()).thenReturn(componentSerializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
-		when(multiKeyPropertyMeta.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 
 		when(helper.determineEquality(inclusiveStart, inclusiveEnd, reverse)).thenReturn(
 				new ComponentEquality[]
@@ -336,8 +342,8 @@ public class DynamicCompositeKeyFactoryTest
 		List<Object> startCompValues = Arrays.asList((Object) "test", 1, 2L);
 		List<Object> endCompValues = Arrays.asList((Object) "toto", 3, 12L);
 
-		when(util.determineMultiKey(start, componentGetters)).thenReturn(startCompValues);
-		when(util.determineMultiKey(end, componentGetters)).thenReturn(endCompValues);
+		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(startCompValues);
+		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endCompValues);
 		when(helper.findLastNonNullIndexForComponents("property", startCompValues)).thenReturn(2);
 		when(helper.findLastNonNullIndexForComponents("property", endCompValues)).thenReturn(2);
 

@@ -21,12 +21,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.Bean;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
 @SuppressWarnings(
@@ -57,7 +57,7 @@ public class ThriftEntityManagerTest
 	private EntityProxyBuilder interceptorBuilder;
 
 	@Mock
-	private EntityWrapperUtil util;
+	private EntityHelper helper;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -73,7 +73,7 @@ public class ThriftEntityManagerTest
 		ReflectionTestUtils.setField(merger, "persister", persister);
 		ReflectionTestUtils.setField(em, "loader", loader);
 		ReflectionTestUtils.setField(em, "merger", merger);
-		ReflectionTestUtils.setField(em, "util", util);
+		ReflectionTestUtils.setField(em, "helper", helper);
 		ReflectionTestUtils.setField(em, "interceptorBuilder", interceptorBuilder);
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
@@ -88,7 +88,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_persist() throws Exception
 	{
-		when(util.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		em.persist(entity);
 
@@ -98,16 +98,16 @@ public class ThriftEntityManagerTest
 	@Test(expected = IllegalStateException.class)
 	public void should_exception_trying_to_persist_a_managed_entity() throws Exception
 	{
-		when(util.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
-		when(util.isProxy(entity)).thenReturn(true);
+		when(helper.isProxy(entity)).thenReturn(true);
 		em.persist(entity);
 	}
 
 	@Test
 	public void should_merge() throws Exception
 	{
-		when(util.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		when(merger.mergeEntity(entity, entityMeta)).thenReturn(entity);
 
@@ -119,7 +119,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_remove() throws Exception
 	{
-		when(util.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		em.remove(entity);
 		verify(persister).remove(entity, entityMeta);

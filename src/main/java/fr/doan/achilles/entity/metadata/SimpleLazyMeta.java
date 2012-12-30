@@ -7,4 +7,22 @@ public class SimpleLazyMeta<V> extends PropertyMeta<Void, V>
 	{
 		return PropertyType.LAZY_SIMPLE;
 	}
+
+	@Override
+	public boolean isSingleKey()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isLazy()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isJoinColumn()
+	{
+		return false;
+	}
 }

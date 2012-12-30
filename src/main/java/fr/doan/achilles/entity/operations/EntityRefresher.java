@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 
 import net.sf.cglib.proxy.Factory;
+import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.proxy.EntityWrapperUtil;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
@@ -17,7 +17,7 @@ import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 public class EntityRefresher
 {
 
-	private EntityWrapperUtil util = new EntityWrapperUtil();
+	private EntityHelper helper = new EntityHelper();
 	private EntityValidator entityValidator = new EntityValidator();
 	private EntityLoader loader = new EntityLoader();
 
@@ -35,7 +35,7 @@ public class EntityRefresher
 
 		Class<?> entityClass = interceptor.getTarget().getClass();
 		EntityMeta<?> entityMeta = entityMetaMap.get(entityClass);
-		Object primaryKey = util.determinePrimaryKey(entity, entityMeta);
+		Object primaryKey = helper.determinePrimaryKey(entity, entityMeta);
 
 		Object freshEntity = this.loader.load(entityClass, (Serializable) primaryKey,
 				(EntityMeta) entityMeta);
