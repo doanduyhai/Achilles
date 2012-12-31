@@ -1,80 +1,86 @@
 package fr.doan.achilles.entity.parser;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.SystemPropertyUtils;
+public class EntityExplorer {
 
-public class EntityExplorer
-{
+    public List<Class<?>> discoverEntities(List<String> packageNames) throws ClassNotFoundException, IOException {
+        List<Class<?>> candidates = new ArrayList<Class<?>>();
+        for (String packageName : packageNames) {
+            candidates.addAll(this.listCandidateClassesFromPackage(packageName, javax.persistence.Table.class));
+        }
+        return candidates;
+    }
 
-	public List<Class<?>> discoverEntities(List<String> packageNames)
-	{
-		List<Class<?>> candidates = new ArrayList<Class<?>>();
-		for (String packageName : packageNames)
-		{
-			candidates.addAll(this.findMyTypes(packageName));
-		}
-		return candidates;
-	}
+    public List<Class<?>> listCandidateClassesFromPackage(String packageName,
+            Class<? extends Annotation> annotationClass) throws ClassNotFoundException, IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        assert classLoader != null;
+        String path = packageName.replace('.', File.separatorChar);
+        Enumeration<URL> resources = classLoader.getResources(path);
+        List<String> dirs = new ArrayList<String>();
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            dirs.add(URLDecoder.decode(resource.getFile(), "UTF-8"));
+        }
+        TreeSet<String> classes = new TreeSet<String>();
+        for (String directory : dirs) {
+            classes.addAll(findClasses(directory, packageName));
+        }
+        ArrayList<Class<?>> classList = new ArrayList<Class<?>>();
+        for (String className : classes) {
+            Class<?> clazz = Class.forName(className);
+            if (clazz.isAnnotationPresent(annotationClass)) {
+                classList.add(clazz);
+            }
+        }
+        return classList;
+    }
 
-	private List<Class<?>> findMyTypes(String basePackage)
-	{
-		ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-		MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(
-				resourcePatternResolver);
-
-		List<Class<?>> candidates = new ArrayList<Class<?>>();
-		String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
-				+ resolveBasePackage(basePackage) + "/" + "**/*.class";
-		try
-		{
-			Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
-			for (Resource resource : resources)
-			{
-				if (resource.isReadable())
-				{
-					MetadataReader metadataReader = metadataReaderFactory
-							.getMetadataReader(resource);
-					if (isCandidate(metadataReader))
-					{
-						candidates.add(Class.forName(metadataReader.getClassMetadata()
-								.getClassName()));
-					}
-				}
-			}
-		}
-		catch (Exception ex)
-		{}
-		return candidates;
-	}
-
-	private String resolveBasePackage(String basePackage)
-	{
-		return ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils
-				.resolvePlaceholders(basePackage));
-	}
-
-	private boolean isCandidate(MetadataReader metadataReader)
-	{
-		try
-		{
-			Class<?> c = Class.forName(metadataReader.getClassMetadata().getClassName());
-			if (c.getAnnotation(javax.persistence.Table.class) != null)
-			{
-				return true;
-			}
-		}
-		catch (Throwable e)
-		{}
-		return false;
-	}
+    private static TreeSet<String> findClasses(String path, String packageName) throws MalformedURLException,
+            IOException {
+        TreeSet<String> classes = new TreeSet<String>();
+        if (path.startsWith("file:") && path.contains("!")) {
+            String[] split = path.split("!");
+            URL jar = new URL(split[0]);
+            ZipInputStream zip = new ZipInputStream(jar.openStream());
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (entry.getName().endsWith(".class")) {
+                    String className = entry.getName().replaceAll("[$].*", "").replaceAll("[.]class", "")
+                            .replace(File.separatorChar, '.');
+                    if (className.startsWith(packageName)) {
+                        classes.add(className);
+                    }
+                }
+            }
+        }
+        File dir = new File(path);
+        if (!dir.exists()) {
+            return classes;
+        }
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                assert !file.getName().contains(".");
+                classes.addAll(findClasses(file.getAbsolutePath(), packageName + "." + file.getName()));
+            } else if (file.getName().endsWith(".class")) {
+                String className = packageName + '.' + file.getName().substring(0, file.getName().length() - 6);
+                classes.add(className);
+            }
+        }
+        return classes;
+    }
 
 }
