@@ -15,12 +15,16 @@ import java.util.UUID;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.apache.cassandra.utils.Pair;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
+import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
 
 /**
@@ -30,13 +34,14 @@ import fr.doan.achilles.serializer.Utils;
  * 
  */
 public class SimpleJoinColumnIT {
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
     private final String ENTITY_PACKAGE = "integration.tests.entity";
 
     private GenericEntityDao<UUID> tweetDao = getEntityDao(Utils.UUID_SRZ,
             normalizeCanonicalName(Tweet.class.getCanonicalName()));
-
-    private GenericEntityDao<Long> userDao = getEntityDao(Utils.LONG_SRZ,
-            normalizeCanonicalName(User.class.getCanonicalName()));
 
     private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(getCluster(), getKeyspace(),
             ENTITY_PACKAGE, true);
@@ -45,7 +50,7 @@ public class SimpleJoinColumnIT {
 
     private Tweet tweet;
     private User creator;
-    private Long creatorId = 3849L;
+    private Long creatorId = RandomUtils.nextLong();
 
     @Before
     public void setUp() {
@@ -135,6 +140,18 @@ public class SimpleJoinColumnIT {
         assertThat(joinUser.getFirstname()).isEqualTo("fn");
         assertThat(joinUser.getLastname()).isEqualTo("ln");
 
+    }
+
+    @Test
+    public void should_exception_when_persisting_join_user_without_existing_entity_in_db() throws Exception {
+
+        creator = UserTestBuilder.user().id(RandomUtils.nextLong()).buid();
+        tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator).buid();
+
+        expectedEx.expect(ValidationException.class);
+        expectedEx.expectMessage("The entity '" + User.class.getCanonicalName() + "' with id '" + creator.getId()
+                + "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
+        em.persist(tweet);
     }
 
     @After

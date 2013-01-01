@@ -1,7 +1,6 @@
 package integration.tests.entity;
 
 import java.io.Serializable;
-import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -24,17 +23,13 @@ public class User implements Serializable {
     @Column
     private String lastname;
 
-    @ManyToMany
-    @JoinColumn
-    private WideMap<Long, User> friends;
-
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinColumn
-    private WideMap<UUID, Tweet> tweets;
+    private WideMap<Integer, Tweet> tweets;
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinColumn
-    private WideMap<UUID, Tweet> timeline;
+    private WideMap<Long, Tweet> timeline;
 
     public Long getId() {
         return id;
@@ -60,28 +55,12 @@ public class User implements Serializable {
         this.lastname = lastname;
     }
 
-    public WideMap<Long, User> getFriends() {
-        return friends;
-    }
-
-    public void setFriends(WideMap<Long, User> friends) {
-        this.friends = friends;
-    }
-
-    public WideMap<UUID, Tweet> getTweets() {
+    public WideMap<Integer, Tweet> getTweets() {
         return tweets;
     }
 
-    public void setTweets(WideMap<UUID, Tweet> tweets) {
-        this.tweets = tweets;
-    }
-
-    public WideMap<UUID, Tweet> getTimeline() {
+    public WideMap<Long, Tweet> getTimeline() {
         return timeline;
-    }
-
-    public void setTimeline(WideMap<UUID, Tweet> timeline) {
-        this.timeline = timeline;
     }
 
 }

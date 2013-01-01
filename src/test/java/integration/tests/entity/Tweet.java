@@ -5,10 +5,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import fr.doan.achilles.entity.type.WideMap;
 
 @Table
 public class Tweet implements Serializable {
@@ -24,10 +22,6 @@ public class Tweet implements Serializable {
 
     @Column
     private String content;
-
-    @ManyToMany
-    @JoinColumn
-    private WideMap<Long, User> inTimelineOfUsers;
 
     public UUID getId() {
         return id;
@@ -52,13 +46,4 @@ public class Tweet implements Serializable {
     public void setContent(String content) {
         this.content = content;
     }
-
-    public WideMap<Long, User> getInTimelineOfUsers() {
-        return inTimelineOfUsers;
-    }
-
-    public void setInTimelineOfUsers(WideMap<Long, User> inTimelineOfUsers) {
-        this.inTimelineOfUsers = inTimelineOfUsers;
-    }
-
 }

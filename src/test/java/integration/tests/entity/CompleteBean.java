@@ -24,6 +24,8 @@ public class CompleteBean implements Serializable {
     @Column
     private String name;
 
+    @Lazy
+    @Column
     private String label;
 
     @Column(name = "age_in_years")
