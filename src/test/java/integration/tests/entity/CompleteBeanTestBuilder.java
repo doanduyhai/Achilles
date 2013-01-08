@@ -10,6 +10,12 @@ import java.util.Set;
 
 import org.apache.commons.lang.math.RandomUtils;
 
+/**
+ * CompleteBeanTestBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class CompleteBeanTestBuilder
 {
 

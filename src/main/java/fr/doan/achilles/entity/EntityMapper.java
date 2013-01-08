@@ -1,8 +1,8 @@
 package fr.doan.achilles.entity;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
-import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +21,12 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.holder.KeyValueHolder;
 
+/**
+ * EntityMapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"unchecked",

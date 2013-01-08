@@ -6,8 +6,8 @@ import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
@@ -53,8 +53,14 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.ValidationException;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * EntityParserTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest
 {
@@ -157,7 +163,8 @@ public class EntityParserTest
 		assertThat((Serializer<String>) preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
 		assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
 		assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
-		assertThat((Serializer<Integer>) preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+		assertThat((Serializer<Integer>) preferences.getKeySerializer()).isEqualTo(
+				SerializerUtils.INT_SRZ);
 		assertThat(preferences.newMapInstance()).isNotNull();
 		assertThat(preferences.newMapInstance()).isEmpty();
 		assertThat((Class<HashMap>) preferences.newMapInstance().getClass()).isEqualTo(
@@ -165,13 +172,14 @@ public class EntityParserTest
 
 		assertThat(creator.getPropertyName()).isEqualTo("creator");
 		assertThat(creator.getValueClass()).isEqualTo(UserBean.class);
-		assertThat((Serializer) creator.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat((Serializer) creator.getValueSerializer()).isEqualTo(SerializerUtils.OBJECT_SRZ);
 		assertThat(creator.type()).isEqualTo(JOIN_SIMPLE);
 		assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(ALL);
 
 		assertThat(linkedUsers.getPropertyName()).isEqualTo("linked_users");
 		assertThat(linkedUsers.getValueClass()).isEqualTo(UserBean.class);
-		assertThat((Serializer) linkedUsers.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat((Serializer) linkedUsers.getValueSerializer()).isEqualTo(
+				SerializerUtils.OBJECT_SRZ);
 		assertThat(linkedUsers.type()).isEqualTo(JOIN_WIDE_MAP);
 		assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).containsExactly(PERSIST,
 				MERGE);

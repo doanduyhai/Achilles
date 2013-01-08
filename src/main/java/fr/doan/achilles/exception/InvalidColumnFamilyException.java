@@ -1,5 +1,11 @@
 package fr.doan.achilles.exception;
 
+/**
+ * InvalidColumnFamilyException
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class InvalidColumnFamilyException extends RuntimeException
 {
 

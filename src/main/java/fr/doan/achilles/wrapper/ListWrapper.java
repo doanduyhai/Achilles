@@ -7,6 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * ListWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 {
 

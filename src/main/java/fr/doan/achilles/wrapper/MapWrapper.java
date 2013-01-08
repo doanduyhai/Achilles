@@ -10,6 +10,12 @@ import java.util.Set;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * MapWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 {
 

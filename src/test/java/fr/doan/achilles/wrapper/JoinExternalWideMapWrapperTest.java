@@ -26,7 +26,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -55,7 +55,7 @@ public class JoinExternalWideMapWrapperTest
 	private JoinExternalWideMapWrapper<Long, Long, Integer, UserBean> wrapper;
 
 	@Mock
-	private GenericWideRowDao<Long, Long> dao;
+	private GenericCompositeDao<Long, Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, UserBean> externalJoinWideMapMeta;

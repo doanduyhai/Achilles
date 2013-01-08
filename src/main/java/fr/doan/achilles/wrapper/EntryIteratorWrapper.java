@@ -5,6 +5,12 @@ import static fr.doan.achilles.wrapper.builder.MapEntryWrapperBuilder.builder;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+/**
+ * EntryIteratorWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 		Iterator<Entry<K, V>>
 {

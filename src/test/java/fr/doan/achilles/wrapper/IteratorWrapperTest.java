@@ -17,6 +17,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * IteratorWrapperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class IteratorWrapperTest
 {

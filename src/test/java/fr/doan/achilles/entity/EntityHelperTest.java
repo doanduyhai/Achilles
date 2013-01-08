@@ -37,6 +37,12 @@ import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
+/**
+ * EntityHelperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings("unused")
 @RunWith(MockitoJUnitRunner.class)
 public class EntityHelperTest

@@ -10,7 +10,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 
 /**
- * PropertyMetaBuilder
+ * PropertyMetaFactory
  * 
  * @author DuyHai DOAN
  * 

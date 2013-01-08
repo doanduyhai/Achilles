@@ -25,16 +25,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
- * ThriftEntityManagerDirtyCheckIT
+ * JoinWideMapIT
  * 
  * @author DuyHai DOAN
  * 
@@ -47,10 +47,10 @@ public class JoinWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericEntityDao<UUID> tweetDao = getEntityDao(Utils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> userDao = getEntityDao(Utils.LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

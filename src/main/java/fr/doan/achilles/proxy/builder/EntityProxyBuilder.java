@@ -5,6 +5,12 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * EntityProxyBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityProxyBuilder
 {
 
@@ -21,8 +27,8 @@ public class EntityProxyBuilder
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		enhancer.setCallback(JpaEntityInterceptorBuilder.builder((EntityMeta) entityMeta).target(entity)
-				.build());
+		enhancer.setCallback(JpaEntityInterceptorBuilder.builder((EntityMeta) entityMeta)
+				.target(entity).build());
 
 		return (T) enhancer.create();
 	}

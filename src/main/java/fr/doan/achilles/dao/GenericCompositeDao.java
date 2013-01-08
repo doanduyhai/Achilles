@@ -1,20 +1,20 @@
 package fr.doan.achilles.dao;
 
-import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 
 /**
- * GenericWideRowDao
+ * GenericCompositeDao
  * 
  * @author DuyHai DOAN
  * 
  */
-public class GenericWideRowDao<K, V> extends AbstractDao<K, Composite, V>
+public class GenericCompositeDao<K, V> extends AbstractDao<K, Composite, V>
 {
 
-	public GenericWideRowDao(Keyspace keyspace, Serializer<K> keySrz, Serializer<V> valSrz,
+	public GenericCompositeDao(Keyspace keyspace, Serializer<K> keySrz, Serializer<V> valSrz,
 			String cf)
 	{
 		super(keyspace);

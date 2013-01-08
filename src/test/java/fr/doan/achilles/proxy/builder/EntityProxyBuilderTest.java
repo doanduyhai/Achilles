@@ -14,12 +14,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
+/**
+ * EntityProxyBuilderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityProxyBuilderTest
 {
@@ -30,7 +36,7 @@ public class EntityProxyBuilderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;

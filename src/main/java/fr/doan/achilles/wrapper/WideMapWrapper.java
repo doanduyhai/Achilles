@@ -6,7 +6,7 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
@@ -16,7 +16,7 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
- * WideMap
+ * WideMapWrapper
  * 
  * @author DuyHai DOAN
  * 
@@ -25,7 +25,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 
 	protected ID id;
-	protected GenericEntityDao<ID> dao;
+	protected GenericDynamicCompositeDao<ID> dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 	protected CompositeHelper helper = new CompositeHelper();
 	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
@@ -147,7 +147,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericEntityDao<ID> dao)
+	public void setDao(GenericDynamicCompositeDao<ID> dao)
 	{
 		this.dao = dao;
 	}

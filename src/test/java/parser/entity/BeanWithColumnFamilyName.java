@@ -6,6 +6,12 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * BeanWithColumnFamilyName
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table(name = "myOwnCF")
 public class BeanWithColumnFamilyName implements Serializable
 {

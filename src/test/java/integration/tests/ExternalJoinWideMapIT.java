@@ -5,8 +5,8 @@ import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.UUID_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
@@ -23,16 +23,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
- * ThriftEntityManagerDirtyCheckIT
+ * ExternalJoinWideMapIT
  * 
  * @author DuyHai DOAN
  * 
@@ -45,10 +45,10 @@ public class ExternalJoinWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericEntityDao<UUID> tweetDao = getEntityDao(Utils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericWideRowDao<Long, UUID> externalJoinWideMapDao = getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, UUID> externalJoinWideMapDao = getWideRowDao(LONG_SRZ,
 			UUID_SRZ, normalizerAndValidateColumnFamilyName("retweets_cf"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

@@ -2,6 +2,12 @@ package fr.doan.achilles.wrapper;
 
 import java.util.Iterator;
 
+/**
+ * IteratorWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iterator<V>
 {
 	protected Iterator<V> target;

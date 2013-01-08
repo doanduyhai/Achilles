@@ -4,8 +4,8 @@ import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndVali
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.WideRowBean;
 
@@ -21,17 +21,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
 
+/**
+ * WideRowIT
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class WideRowIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericWideRowDao<Long, String> dao = getWideRowDao(LONG_SRZ, STRING_SRZ,
+	private GenericCompositeDao<Long, String> dao = getWideRowDao(LONG_SRZ, STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(WideRowBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

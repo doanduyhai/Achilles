@@ -12,6 +12,12 @@ import org.junit.Test;
 
 import fr.doan.achilles.exception.ValidationException;
 
+/**
+ * ValidatorTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ValidatorTest
 {
 

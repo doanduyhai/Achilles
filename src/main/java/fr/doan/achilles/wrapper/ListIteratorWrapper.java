@@ -2,6 +2,12 @@ package fr.doan.achilles.wrapper;
 
 import java.util.ListIterator;
 
+/**
+ * ListIteratorWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V>
 {
 

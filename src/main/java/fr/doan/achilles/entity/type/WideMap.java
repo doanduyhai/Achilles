@@ -5,7 +5,7 @@ import java.util.List;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
- * WideRow
+ * WideMap
  * 
  * @author DuyHai DOAN
  * 

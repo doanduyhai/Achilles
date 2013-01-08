@@ -1,5 +1,11 @@
 package fr.doan.achilles.exception;
 
+/**
+ * IncorrectTypeException
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class IncorrectTypeException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;

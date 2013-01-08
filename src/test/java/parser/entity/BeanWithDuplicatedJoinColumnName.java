@@ -7,6 +7,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
+/**
+ * BeanWithDuplicatedJoinColumnName
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithDuplicatedJoinColumnName implements Serializable
 {

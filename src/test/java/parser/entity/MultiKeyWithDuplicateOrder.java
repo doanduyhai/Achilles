@@ -6,7 +6,7 @@ import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * MultiKeyWithNoAnnotation
+ * MultiKeyWithDuplicateOrder
  * 
  * @author DuyHai DOAN
  * 

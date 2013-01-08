@@ -4,7 +4,7 @@ import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.entity.type.MultiKey;
 
 /**
- * CorrectMultiKey
+ * CorrectMultiKeyUnorderedKeys
  * 
  * @author DuyHai DOAN
  * 

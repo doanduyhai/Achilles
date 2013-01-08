@@ -1,5 +1,11 @@
 package fr.doan.achilles.exception;
 
+/**
+ * BeanMappingException
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class BeanMappingException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;

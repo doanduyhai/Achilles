@@ -1,5 +1,12 @@
 package fr.doan.achilles.validation;
 
-public abstract class AbstractClass {
+/**
+ * AbstractClass
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public abstract class AbstractClass
+{
 
 }

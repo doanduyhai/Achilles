@@ -7,8 +7,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import fr.doan.achilles.wrapper.SetWrapper;
-
+/**
+ * SetWrapperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class SetWrapperTest
 {
 

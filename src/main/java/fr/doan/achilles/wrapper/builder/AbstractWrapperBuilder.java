@@ -6,6 +6,12 @@ import java.util.Map;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.AbstractWrapper;
 
+/**
+ * AbstractWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings("unchecked")
 public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T, K, V>, K, V>
 {

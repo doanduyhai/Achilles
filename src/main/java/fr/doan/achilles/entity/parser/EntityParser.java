@@ -25,6 +25,12 @@ import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * EntityParser
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityParser
 {
 	private PropertyParser parser = new PropertyParser();

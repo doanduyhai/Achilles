@@ -1,7 +1,7 @@
 package fr.doan.achilles.columnFamily;
 
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,6 +25,12 @@ import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * ColumnFamilyBuilderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyBuilderTest
 {

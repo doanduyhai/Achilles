@@ -1,5 +1,11 @@
 package fr.doan.achilles.exception;
 
+/**
+ * InvalidBeanException
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class InvalidBeanException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;

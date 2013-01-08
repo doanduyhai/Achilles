@@ -4,9 +4,15 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 
+/**
+ * EntityMeta
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityMeta<ID>
 {
 
@@ -17,8 +23,8 @@ public class EntityMeta<ID>
 	private Serializer<?> idSerializer;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
-	private GenericEntityDao<ID> entityDao;
-	private GenericWideRowDao<ID, ?> wideRowDao;
+	private GenericDynamicCompositeDao<ID> entityDao;
+	private GenericCompositeDao<ID, ?> wideRowDao;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean wideRow = false;
@@ -83,12 +89,12 @@ public class EntityMeta<ID>
 		this.idMeta = idMeta;
 	}
 
-	public GenericEntityDao<ID> getEntityDao()
+	public GenericDynamicCompositeDao<ID> getEntityDao()
 	{
 		return entityDao;
 	}
 
-	public void setEntityDao(GenericEntityDao<ID> entityDao)
+	public void setEntityDao(GenericDynamicCompositeDao<ID> entityDao)
 	{
 		this.entityDao = entityDao;
 	}
@@ -123,12 +129,12 @@ public class EntityMeta<ID>
 		this.wideRow = wideRow;
 	}
 
-	public GenericWideRowDao<ID, ?> getWideRowDao()
+	public GenericCompositeDao<ID, ?> getWideRowDao()
 	{
 		return wideRowDao;
 	}
 
-	public void setWideRowDao(GenericWideRowDao<ID, ?> wideRowDao)
+	public void setWideRowDao(GenericCompositeDao<ID, ?> wideRowDao)
 	{
 		this.wideRowDao = wideRowDao;
 	}

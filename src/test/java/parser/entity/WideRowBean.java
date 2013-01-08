@@ -10,7 +10,7 @@ import fr.doan.achilles.annotations.WideRow;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
- * WideRow
+ * WideRowBean
  * 
  * @author DuyHai DOAN
  * 

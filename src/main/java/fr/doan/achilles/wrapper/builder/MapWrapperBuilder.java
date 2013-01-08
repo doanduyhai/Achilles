@@ -4,6 +4,12 @@ import java.util.Map;
 
 import fr.doan.achilles.wrapper.MapWrapper;
 
+/**
+ * MapWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class MapWrapperBuilder<K, V> extends AbstractWrapperBuilder<MapWrapperBuilder<K, V>, K, V>
 {
 	private Map<K, V> target;

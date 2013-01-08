@@ -40,6 +40,12 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.holder.KeyValueHolder;
 
+/**
+ * EntityMapperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"unchecked",

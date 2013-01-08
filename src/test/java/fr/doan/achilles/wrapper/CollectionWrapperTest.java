@@ -21,6 +21,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * CollectionWrapperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class CollectionWrapperTest
 {

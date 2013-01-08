@@ -29,7 +29,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import me.prettyprint.hector.api.Keyspace;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
@@ -43,6 +43,12 @@ import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * PropertyParser
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class PropertyParser
 {
 
@@ -228,7 +234,7 @@ public class PropertyParser
 		String externalColumnFamilyName = field.getAnnotation(Column.class).table();
 		PropertyMeta<K, V> propertyMeta = this.parseWideMapProperty(beanClass, field, propertyName);
 		propertyMeta.setType(EXTERNAL_WIDE_MAP);
-		GenericWideRowDao<ID, V> dao = new GenericWideRowDao<ID, V>(keyspace,
+		GenericCompositeDao<ID, V> dao = new GenericCompositeDao<ID, V>(keyspace,
 				idMeta.getValueSerializer(), propertyMeta.getValueSerializer(),
 				externalColumnFamilyName);
 

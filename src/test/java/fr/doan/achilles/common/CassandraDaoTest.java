@@ -17,9 +17,15 @@ import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 
+/**
+ * CassandraDaoTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public abstract class CassandraDaoTest
 {
 
@@ -78,7 +84,7 @@ public abstract class CassandraDaoTest
 		log.info(" Temporary cassandra.yaml file = {}", temporaryCassandraYaml.getAbsolutePath());
 
 		String storagePort = "storage_port: " + (7001 + RandomUtils.nextInt(990));
-		// CASSANDRA_TEST_PORT = 9161 + RandomUtils.nextInt(800);
+		CASSANDRA_TEST_PORT = 9161 + RandomUtils.nextInt(800);
 		String rcpPort = "rpc_port: " + CASSANDRA_TEST_PORT;
 		log.info(" Random embedded Cassandra RPC port = {}", CASSANDRA_TEST_PORT);
 		FileUtils.writeLines(temporaryCassandraYaml, Arrays.asList(storagePort, rcpPort), true);
@@ -96,15 +102,15 @@ public abstract class CassandraDaoTest
 		return keyspace;
 	}
 
-	public static <K> GenericEntityDao<K> getEntityDao(Serializer<K> keySerializer,
+	public static <K> GenericDynamicCompositeDao<K> getEntityDao(Serializer<K> keySerializer,
 			String columnFamily)
 	{
-		return new GenericEntityDao<K>(keyspace, keySerializer, columnFamily);
+		return new GenericDynamicCompositeDao<K>(keyspace, keySerializer, columnFamily);
 	}
 
-	public static <K, V> GenericWideRowDao<K, V> getWideRowDao(Serializer<K> keySerializer,
+	public static <K, V> GenericCompositeDao<K, V> getWideRowDao(Serializer<K> keySerializer,
 			Serializer<V> valueSerializer, String columnFamily)
 	{
-		return new GenericWideRowDao<K, V>(keyspace, keySerializer, valueSerializer, columnFamily);
+		return new GenericCompositeDao<K, V>(keyspace, keySerializer, valueSerializer, columnFamily);
 	}
 }

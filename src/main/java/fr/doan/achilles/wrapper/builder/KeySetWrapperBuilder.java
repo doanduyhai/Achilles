@@ -5,6 +5,12 @@ import java.util.Set;
 import fr.doan.achilles.wrapper.AbstractWrapper;
 import fr.doan.achilles.wrapper.KeySetWrapper;
 
+/**
+ * KeySetWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class KeySetWrapperBuilder<K> extends
 		AbstractWrapperBuilder<KeySetWrapperBuilder<K>, K, Void>
 {

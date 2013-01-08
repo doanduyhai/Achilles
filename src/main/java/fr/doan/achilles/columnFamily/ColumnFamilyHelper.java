@@ -12,12 +12,18 @@ import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 
 import org.apache.commons.lang.StringUtils;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
+/**
+ * ColumnFamilyHelper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ColumnFamilyHelper
 {
 	private Cluster cluster;
@@ -90,7 +96,7 @@ public class ColumnFamilyHelper
 						.getExternalWideMapProperties();
 				if (externalWideMapProperties != null)
 				{
-					GenericWideRowDao<?, ?> externalWideMapDao = externalWideMapProperties
+					GenericCompositeDao<?, ?> externalWideMapDao = externalWideMapProperties
 							.getExternalWideMapDao();
 					this.validateOrCreateCFForExternalWideMap(propertyMeta, entityMeta.getIdMeta()
 							.getValueClass(), forceColumnFamilyCreation, externalWideMapDao

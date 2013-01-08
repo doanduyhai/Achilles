@@ -19,6 +19,12 @@ import javax.persistence.Table;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.WideMap;
 
+/**
+ * Bean
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class Bean implements Serializable
 {

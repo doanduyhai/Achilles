@@ -9,6 +9,12 @@ import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * ColumnFamilyBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ColumnFamilyBuilder
 {
 

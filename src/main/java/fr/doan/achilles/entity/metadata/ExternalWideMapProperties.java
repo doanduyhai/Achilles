@@ -1,7 +1,7 @@
 package fr.doan.achilles.entity.metadata;
 
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 
 /**
  * ExternalWideMapProperties
@@ -12,13 +12,13 @@ import fr.doan.achilles.dao.GenericWideRowDao;
 public class ExternalWideMapProperties<ID>
 {
 	private String externalColumnFamilyName;
-	private GenericWideRowDao<ID, ?> externalWideMapDao;
+	private GenericCompositeDao<ID, ?> externalWideMapDao;
 	private Serializer<ID> idSerializer;
 
 	public ExternalWideMapProperties() {}
 
-	public ExternalWideMapProperties(String externalColumnFamilyName, GenericWideRowDao<ID, ?> dao,
-			Serializer<ID> idSerializer)
+	public ExternalWideMapProperties(String externalColumnFamilyName,
+			GenericCompositeDao<ID, ?> dao, Serializer<ID> idSerializer)
 	{
 		this.externalColumnFamilyName = externalColumnFamilyName;
 		this.externalWideMapDao = dao;
@@ -30,12 +30,12 @@ public class ExternalWideMapProperties<ID>
 		return externalColumnFamilyName;
 	}
 
-	public GenericWideRowDao<ID, ?> getExternalWideMapDao()
+	public GenericCompositeDao<ID, ?> getExternalWideMapDao()
 	{
 		return externalWideMapDao;
 	}
 
-	public void setExternalWideMapDao(GenericWideRowDao<ID, ?> externalWideMapDao)
+	public void setExternalWideMapDao(GenericCompositeDao<ID, ?> externalWideMapDao)
 	{
 		this.externalWideMapDao = externalWideMapDao;
 	}

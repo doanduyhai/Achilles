@@ -17,13 +17,19 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.Bean;
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * EntityMetaBuilderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaBuilderTest
 {
@@ -32,7 +38,7 @@ public class EntityMetaBuilderTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private GenericEntityDao<?> dao;
+	private GenericDynamicCompositeDao<?> dao;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
@@ -67,7 +73,7 @@ public class EntityMetaBuilderTest
 		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
 		assertThat(meta.getIdMeta()).isSameAs(idMeta);
 		assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(
-				Utils.LONG_SRZ.getComparatorType());
+				SerializerUtils.LONG_SRZ.getComparatorType());
 		assertThat(meta.getPropertyMetas()).containsKey("name");
 		assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
 
@@ -101,7 +107,7 @@ public class EntityMetaBuilderTest
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
 		assertThat(meta.getWideRowDao()).isNull();
-		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericEntityDao.class);
+		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericDynamicCompositeDao.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -122,6 +128,6 @@ public class EntityMetaBuilderTest
 
 		assertThat(meta.isWideRow()).isTrue();
 		assertThat(meta.getEntityDao()).isNull();
-		assertThat(meta.getWideRowDao()).isExactlyInstanceOf(GenericWideRowDao.class);
+		assertThat(meta.getWideRowDao()).isExactlyInstanceOf(GenericCompositeDao.class);
 	}
 }

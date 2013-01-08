@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import javax.persistence.CascadeType;
 
 import net.sf.cglib.proxy.Factory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
@@ -21,6 +21,12 @@ import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * EntityMerger
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityMerger
 {
 	private EntityPersister persister = new EntityPersister();
@@ -41,7 +47,7 @@ public class EntityMerger
 			Factory factory = (Factory) entity;
 			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory
 					.getCallback(0);
-			GenericEntityDao<ID> dao = entityMeta.getEntityDao();
+			GenericDynamicCompositeDao<ID> dao = entityMeta.getEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 

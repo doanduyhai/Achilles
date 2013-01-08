@@ -11,7 +11,7 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
- * KeyValueIterator
+ * KeyValueIteratorForWideRow
  * 
  * @author DuyHai DOAN
  * 

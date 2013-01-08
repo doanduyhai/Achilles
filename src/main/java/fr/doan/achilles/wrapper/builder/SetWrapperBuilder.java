@@ -4,6 +4,12 @@ import java.util.Set;
 
 import fr.doan.achilles.wrapper.SetWrapper;
 
+/**
+ * SetWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class SetWrapperBuilder<V> extends AbstractWrapperBuilder<SetWrapperBuilder<V>, Void, V>
 {
 	private Set<V> target;

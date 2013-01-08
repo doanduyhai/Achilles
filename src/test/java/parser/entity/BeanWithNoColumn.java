@@ -5,6 +5,12 @@ import java.io.Serializable;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * BeanWithNoColumn
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithNoColumn implements Serializable
 {

@@ -5,6 +5,12 @@ import java.util.Set;
 
 import fr.doan.achilles.wrapper.EntrySetWrapper;
 
+/**
+ * EntrySetWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntrySetWrapperBuilder<K, V> extends
 		AbstractWrapperBuilder<EntrySetWrapperBuilder<K, V>, K, V>
 {

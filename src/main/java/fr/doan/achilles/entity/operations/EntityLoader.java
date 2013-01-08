@@ -12,7 +12,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -21,6 +21,12 @@ import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * EntityLoader
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityLoader
 {
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
@@ -65,7 +71,7 @@ public class EntityLoader
 		return entity;
 	}
 
-	protected <ID, V> V loadSimpleProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> V loadSimpleProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -75,7 +81,7 @@ public class EntityLoader
 		return propertyMeta.getValue(value);
 	}
 
-	protected <ID, V> List<V> loadListProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> List<V> loadListProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> listPropertyMeta)
 	{
 		DynamicComposite start = keyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
@@ -90,7 +96,7 @@ public class EntityLoader
 		return list;
 	}
 
-	protected <ID, V> Set<V> loadSetProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> Set<V> loadSetProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> setPropertyMeta)
 	{
 
@@ -106,7 +112,7 @@ public class EntityLoader
 		return set;
 	}
 
-	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericEntityDao<ID> dao,
+	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<K, V> mapPropertyMeta)
 	{
 
@@ -126,8 +132,8 @@ public class EntityLoader
 		return map;
 	}
 
-	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key, GenericEntityDao<ID> dao,
-			PropertyMeta<?, V> propertyMeta)
+	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
+			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> propertyMeta)
 	{
 		Object value = null;
 		switch (propertyMeta.type())
@@ -173,7 +179,7 @@ public class EntityLoader
 			"unchecked",
 			"rawtypes"
 	})
-	protected <ID, V> V loadJoinColumn(ID key, GenericEntityDao<ID> dao,
+	protected <ID, V> V loadJoinColumn(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> joinPropertyMeta)
 	{
 		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinProperties().getEntityMeta();

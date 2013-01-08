@@ -2,7 +2,7 @@ package fr.doan.achilles.columnFamily;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -27,14 +27,20 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.factory.PropertyMetaFactory;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * ColumnFamilyHelperTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyHelperTest
 {
@@ -163,7 +169,7 @@ public class ColumnFamilyHelperTest
 	@Test
 	public void should_validate_column_family_for_external_wide_map() throws Exception
 	{
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
 		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
 				"externalCF", externalWideMapDao, LONG_SRZ);
@@ -218,7 +224,7 @@ public class ColumnFamilyHelperTest
 	public void should_validate_then_create_column_family_for_external_wide_map_when_null()
 			throws Exception
 	{
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
 		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
 				"externalCF", externalWideMapDao, LONG_SRZ);
@@ -261,10 +267,10 @@ public class ColumnFamilyHelperTest
 	public void should_exception_because_column_family_not_found_for_external_wide_map()
 			throws Exception
 	{
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
 		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", externalWideMapDao, Utils.LONG_SRZ);
+				"externalCF", externalWideMapDao, SerializerUtils.LONG_SRZ);
 		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
 		externalWideMapMeta.setPropertyName("externalWideMap");
 

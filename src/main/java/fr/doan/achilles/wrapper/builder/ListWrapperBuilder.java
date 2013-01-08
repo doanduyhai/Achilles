@@ -4,6 +4,12 @@ import java.util.List;
 
 import fr.doan.achilles.wrapper.ListWrapper;
 
+/**
+ * ListWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ListWrapperBuilder<V> extends AbstractWrapperBuilder<ListWrapperBuilder<V>, Void, V>
 {
 	private List<V> target;

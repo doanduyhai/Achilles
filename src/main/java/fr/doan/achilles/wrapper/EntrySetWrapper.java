@@ -7,6 +7,12 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/**
+ * EntrySetWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<Entry<K, V>>
 {
 

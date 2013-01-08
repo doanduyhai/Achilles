@@ -10,6 +10,12 @@ import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideMap;
 
+/**
+ * BeanWithExternalJoinWideMap
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithExternalJoinWideMap implements Serializable
 {

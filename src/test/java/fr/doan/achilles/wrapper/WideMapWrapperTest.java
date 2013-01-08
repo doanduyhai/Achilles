@@ -1,7 +1,7 @@
 package fr.doan.achilles.wrapper;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
@@ -32,7 +32,7 @@ import fr.doan.achilles.iterator.KeyValueIteratorForEntity;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
- * InternalWideMapWrapperTest
+ * WideMapWrapperTest
  * 
  * @author DuyHai DOAN
  * 
@@ -45,7 +45,7 @@ public class WideMapWrapperTest
 	private WideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;

@@ -24,7 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.JoinProperties;
@@ -32,8 +32,14 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityExplorer;
 import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * ThriftEntityManagerFactoryImplTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings(
 {
@@ -154,7 +160,7 @@ public class ThriftEntityManagerFactoryImplTest
 		when(longPropertyMeta.getJoinProperties()).thenReturn(joinProperties);
 
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", null, Utils.LONG_SRZ);
+				"externalCF", null, SerializerUtils.LONG_SRZ);
 		when(longPropertyMeta.getExternalWideMapProperties()).thenReturn(
 				(ExternalWideMapProperties) externalWideMapProperties);
 
@@ -164,7 +170,7 @@ public class ThriftEntityManagerFactoryImplTest
 		factory.discoverEntities(joinPropertyMetaToBeFilled);
 
 		assertThat(joinProperties.getEntityMeta()).isSameAs(entityMeta1);
-		GenericWideRowDao<Long, ?> externalWideMapDao = externalWideMapProperties
+		GenericCompositeDao<Long, ?> externalWideMapDao = externalWideMapProperties
 				.getExternalWideMapDao();
 		assertThat(externalWideMapDao).isNotNull();
 		assertThat(externalWideMapDao.getColumnFamily()).isEqualTo("externalCF");

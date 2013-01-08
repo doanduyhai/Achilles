@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.WideRowWrapper;
 
@@ -22,7 +22,7 @@ import fr.doan.achilles.wrapper.WideRowWrapper;
 public class WideRowWrapperBuilderTest
 {
 	@Mock
-	private GenericWideRowDao<Integer, String> dao;
+	private GenericCompositeDao<Integer, String> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;

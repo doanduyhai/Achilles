@@ -8,6 +8,12 @@ import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideMap;
 
+/**
+ * BeanWithObjectAsWideMapValue
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithObjectAsWideMapValue implements Serializable
 {

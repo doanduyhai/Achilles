@@ -6,7 +6,7 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideMap;
@@ -16,7 +16,7 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
- * WideMap
+ * WideRowWrapper
  * 
  * @author DuyHai DOAN
  * 
@@ -24,7 +24,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
 public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 {
 	protected ID id;
-	protected GenericWideRowDao<ID, V> dao;
+	protected GenericCompositeDao<ID, V> dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 
 	protected CompositeHelper helper = new CompositeHelper();
@@ -88,7 +88,8 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createListForWideRowOrExternalWideMapMeta(wideMapMeta, (List) hColumns);
+		return keyValueFactory.createListForWideRowOrExternalWideMapMeta(wideMapMeta,
+				(List) hColumns);
 	}
 
 	@Override
@@ -151,7 +152,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericWideRowDao<ID, V> dao)
+	public void setDao(GenericCompositeDao<ID, V> dao)
 	{
 		this.dao = dao;
 	}

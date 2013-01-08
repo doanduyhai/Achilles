@@ -11,6 +11,12 @@ import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideMap;
 
+/**
+ * User
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class User implements Serializable
 {

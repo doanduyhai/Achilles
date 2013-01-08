@@ -3,8 +3,8 @@ package integration.tests;
 import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -22,17 +22,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 import fr.doan.achilles.common.CassandraDaoTest;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
 
+/**
+ * MultiKeyWideRowIT
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class MultiKeyWideRowIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericWideRowDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
 			STRING_SRZ, normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

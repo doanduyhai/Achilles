@@ -19,6 +19,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.MapEntryWrapper;
 
+/**
+ * MapEntryWrapperBuilderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class MapEntryWrapperBuilderTest
 {

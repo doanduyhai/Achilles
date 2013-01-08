@@ -1,8 +1,8 @@
 package fr.doan.achilles.composite.factory;
 
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
-import static fr.doan.achilles.serializer.Utils.UUID_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;

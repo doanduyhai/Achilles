@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import javax.persistence.Table;
 
+/**
+ * BeanWithNoId
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithNoId implements Serializable
 {

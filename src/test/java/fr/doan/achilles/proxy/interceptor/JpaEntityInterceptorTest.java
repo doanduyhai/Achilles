@@ -31,15 +31,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 import fr.doan.achilles.wrapper.JoinWideMapWrapper;
 import fr.doan.achilles.wrapper.ListWrapper;
@@ -48,6 +48,12 @@ import fr.doan.achilles.wrapper.SetWrapper;
 import fr.doan.achilles.wrapper.WideMapWrapper;
 import fr.doan.achilles.wrapper.WideRowWrapper;
 
+/**
+ * JpaEntityInterceptorTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"rawtypes",
@@ -65,7 +71,7 @@ public class JpaEntityInterceptorTest
 	private JpaEntityInterceptor<Long> interceptor;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -319,9 +325,9 @@ public class JpaEntityInterceptorTest
 	{
 		CompleteBean bean = new CompleteBean();
 		Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"geo_positions", externalWideMapDao, Utils.LONG_SRZ);
+				"geo_positions", externalWideMapDao, SerializerUtils.LONG_SRZ);
 
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
@@ -346,9 +352,9 @@ public class JpaEntityInterceptorTest
 		CompleteBean bean = new CompleteBean();
 		Method joinUsersGetter = CompleteBean.class.getDeclaredMethod("getJoinUsers");
 
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"join_users", externalWideMapDao, Utils.LONG_SRZ);
+				"join_users", externalWideMapDao, SerializerUtils.LONG_SRZ);
 
 		when(getterMetas.containsKey(joinUsersGetter)).thenReturn(true);
 		when(getterMetas.get(joinUsersGetter)).thenReturn(propertyMeta);

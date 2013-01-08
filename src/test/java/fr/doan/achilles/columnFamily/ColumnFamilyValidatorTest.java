@@ -1,7 +1,7 @@
 package fr.doan.achilles.columnFamily;
 
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -26,6 +26,12 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
+/**
+ * ColumnFamilyValidatorTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings("rawtypes")
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyValidatorTest

@@ -1,5 +1,12 @@
 package fr.doan.achilles.validation;
 
-public interface TestInterface {
+/**
+ * TestInterface
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public interface TestInterface
+{
 
 }

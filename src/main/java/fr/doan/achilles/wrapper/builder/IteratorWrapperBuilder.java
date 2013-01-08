@@ -4,6 +4,12 @@ import java.util.Iterator;
 
 import fr.doan.achilles.wrapper.IteratorWrapper;
 
+/**
+ * IteratorWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class IteratorWrapperBuilder<V> extends
 		AbstractWrapperBuilder<IteratorWrapperBuilder<V>, Void, V>
 {

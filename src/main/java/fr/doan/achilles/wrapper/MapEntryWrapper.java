@@ -3,6 +3,12 @@ package fr.doan.achilles.wrapper;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * MapEntryWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.Entry<K, V>
 {
 

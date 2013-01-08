@@ -1,8 +1,8 @@
 package fr.doan.achilles.entity.parser;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static javax.persistence.CascadeType.REMOVE;
@@ -47,8 +47,14 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.ValidationException;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * PropertyParserTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"unused",
@@ -359,7 +365,7 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFriends");
 		assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(List.class);
@@ -392,7 +398,7 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat(meta.getValueClass()).isEqualTo(Long.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.LONG_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.LONG_SRZ);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFollowers");
 		assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(Set.class);
@@ -425,7 +431,7 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.MAP);
 
 		assertThat(meta.getKeyClass()).isEqualTo(Integer.class);
@@ -435,7 +441,7 @@ public class PropertyParserTest
 		assertThat(meta.getSetter().getName()).isEqualTo("setPreferences");
 		assertThat((Class) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
 
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.INT_SRZ);
 	}
 
 	@Test
@@ -462,11 +468,11 @@ public class PropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 
 		assertThat(meta.getKeyClass()).isEqualTo(UUID.class);
 
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -491,7 +497,7 @@ public class PropertyParserTest
 
 		Keyspace keyspace = mock(ExecutingKeyspace.class);
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
-		when(idMeta.getValueSerializer()).thenReturn(Utils.LONG_SRZ);
+		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
 
 		PropertyMeta<UUID, String> meta = parser.parseExternalWideMapProperty(keyspace, idMeta,
 				Test.class, Test.class.getDeclaredField("tweets"), "tweets");
@@ -499,15 +505,15 @@ public class PropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.EXTERNAL_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 
 		assertThat(meta.getKeyClass()).isEqualTo(UUID.class);
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
 		ExternalWideMapProperties<?> externalWideMapProperties = meta
 				.getExternalWideMapProperties();
 		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNotNull();
 		assertThat((Serializer) externalWideMapProperties.getIdSerializer()).isEqualTo(
-				Utils.LONG_SRZ);
+				SerializerUtils.LONG_SRZ);
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo("tablename");
 	}
 
@@ -560,7 +566,7 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.isSingleKey()).isFalse();
 
@@ -578,9 +584,9 @@ public class PropertyParserTest
 
 		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
 		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(0)).isEqualTo(
-				Utils.STRING_SRZ);
+				SerializerUtils.STRING_SRZ);
 		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(1)).isEqualTo(
-				Utils.INT_SRZ);
+				SerializerUtils.INT_SRZ);
 	}
 
 	@Test
@@ -607,7 +613,7 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.STRING_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.isSingleKey()).isFalse();
 
@@ -621,9 +627,9 @@ public class PropertyParserTest
 
 		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
 		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(0)).isEqualTo(
-				Utils.STRING_SRZ);
+				SerializerUtils.STRING_SRZ);
 		assertThat((Serializer) multiKeyProperties.getComponentSerializers().get(1)).isEqualTo(
-				Utils.INT_SRZ);
+				SerializerUtils.INT_SRZ);
 	}
 
 	@Test
@@ -741,7 +747,7 @@ public class PropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 
 		assertThat(meta.getKeyClass()).isEqualTo(UUID.class);
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(Utils.UUID_SRZ);
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
 
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties).isNotNull();
@@ -768,7 +774,7 @@ public class PropertyParserTest
 
 		Keyspace keyspace = mock(ExecutingKeyspace.class);
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
-		when(idMeta.getValueSerializer()).thenReturn(Utils.LONG_SRZ);
+		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
 
 		PropertyMeta<Integer, UserBean> meta = parser.parseExternalJoinWideMapProperty(keyspace,
 				idMeta, Test.class, Test.class.getDeclaredField("users"), "users");
@@ -776,15 +782,15 @@ public class PropertyParserTest
 		assertThat(meta.type()).isEqualTo(EXTERNAL_JOIN_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("users");
 		assertThat(meta.getValueClass()).isEqualTo(UserBean.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.OBJECT_SRZ);
 
 		assertThat(meta.getKeyClass()).isEqualTo(Integer.class);
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.INT_SRZ);
 		ExternalWideMapProperties<?> externalWideMapProperties = meta
 				.getExternalWideMapProperties();
 		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
 		assertThat((Serializer) externalWideMapProperties.getIdSerializer()).isEqualTo(
-				Utils.LONG_SRZ);
+				SerializerUtils.LONG_SRZ);
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo("tablename");
 	}
 

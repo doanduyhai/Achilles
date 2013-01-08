@@ -4,6 +4,12 @@ import java.util.Collection;
 
 import fr.doan.achilles.wrapper.CollectionWrapper;
 
+/**
+ * CollectionWrapperBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class CollectionWrapperBuilder<V> extends
 		AbstractWrapperBuilder<CollectionWrapperBuilder<V>, Void, V>
 {

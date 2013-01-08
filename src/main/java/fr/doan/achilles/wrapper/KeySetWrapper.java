@@ -3,6 +3,12 @@ package fr.doan.achilles.wrapper;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * KeySetWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class KeySetWrapper<K> extends SetWrapper<K>
 {
 

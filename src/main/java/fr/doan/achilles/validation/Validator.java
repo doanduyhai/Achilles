@@ -13,6 +13,12 @@ import org.apache.commons.lang.StringUtils;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.exception.ValidationException;
 
+/**
+ * Validator
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class Validator
 {
 	public static void validateNotBlank(String arg, String label)

@@ -6,7 +6,7 @@ import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
@@ -27,7 +27,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
 public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K, V>
 {
 	private ID id;
-	private GenericWideRowDao<ID, JOIN_ID> externalWideMapDao;
+	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;
 	private PropertyMeta<K, V> externalWideMapMeta;
 
 	private EntityPersister persister = new EntityPersister();
@@ -180,7 +180,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K,
 		this.id = id;
 	}
 
-	public void setExternalWideMapDao(GenericWideRowDao<ID, JOIN_ID> externalWideMapDao)
+	public void setExternalWideMapDao(GenericCompositeDao<ID, JOIN_ID> externalWideMapDao)
 	{
 		this.externalWideMapDao = externalWideMapDao;
 	}

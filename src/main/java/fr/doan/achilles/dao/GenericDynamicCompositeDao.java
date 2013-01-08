@@ -2,8 +2,8 @@ package fr.doan.achilles.dao;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
-import static fr.doan.achilles.serializer.Utils.DYNA_COMP_SRZ;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 
 import java.util.List;
 
@@ -14,17 +14,23 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 
-public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, Object>
+/**
+ * GenericDynamicCompositeDao
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposite, Object>
 {
 
 	private DynamicComposite startCompositeForEagerFetch;
 	private DynamicComposite endCompositeForEagerFetch;
 
-	protected GenericEntityDao() {
+	protected GenericDynamicCompositeDao() {
 		this.initComposites();
 	}
 
-	public GenericEntityDao(Keyspace keyspace, Serializer<K> keySrz, String cf) {
+	public GenericDynamicCompositeDao(Keyspace keyspace, Serializer<K> keySrz, String cf) {
 		super(keyspace);
 		this.initComposites();
 		keySerializer = keySrz;

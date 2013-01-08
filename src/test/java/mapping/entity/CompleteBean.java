@@ -18,6 +18,12 @@ import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 
+/**
+ * CompleteBean
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class CompleteBean implements Serializable
 {

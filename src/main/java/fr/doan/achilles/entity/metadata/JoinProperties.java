@@ -9,7 +9,7 @@ import javax.persistence.CascadeType;
 import fr.doan.achilles.exception.BeanMappingException;
 
 /**
- * JoinMetaData
+ * JoinProperties
  * 
  * @author DuyHai DOAN
  * 

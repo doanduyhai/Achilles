@@ -1,5 +1,12 @@
 package fr.doan.achilles.validation;
 
-class PrivateEntity {
+/**
+ * PrivateEntity
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+class PrivateEntity
+{
 
 }

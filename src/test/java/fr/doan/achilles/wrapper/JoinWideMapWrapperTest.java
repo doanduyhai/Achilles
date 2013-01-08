@@ -22,7 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -48,7 +48,7 @@ public class JoinWideMapWrapperTest
 	private JoinWideMapWrapper<Long, Integer, UserBean> wrapper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, UserBean> joinWideMapMeta;

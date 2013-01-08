@@ -9,6 +9,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+/**
+ * Tweet
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class Tweet implements Serializable
 {

@@ -29,6 +29,12 @@ import fr.doan.achilles.entity.operations.EntityMerger;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
+/**
+ * ThriftEntityManagerTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"rawtypes",

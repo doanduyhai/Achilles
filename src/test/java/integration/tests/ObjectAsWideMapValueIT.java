@@ -5,7 +5,7 @@ import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.BeanWithObjectAsWideMapValue;
 import integration.tests.entity.BeanWithObjectAsWideMapValue.Holder;
@@ -21,17 +21,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
 
+/**
+ * ObjectAsWideMapValueIT
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ObjectAsWideMapValueIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

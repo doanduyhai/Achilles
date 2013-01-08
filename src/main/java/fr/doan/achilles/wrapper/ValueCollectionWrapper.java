@@ -2,6 +2,12 @@ package fr.doan.achilles.wrapper;
 
 import java.util.Collection;
 
+/**
+ * ValueCollectionWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ValueCollectionWrapper<V> extends CollectionWrapper<V>
 {
 

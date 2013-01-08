@@ -5,6 +5,12 @@ import java.util.Map;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 
+/**
+ * AbstractWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public abstract class AbstractWrapper<K, V>
 {
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;

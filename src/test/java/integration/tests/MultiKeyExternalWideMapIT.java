@@ -4,8 +4,8 @@ import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndVali
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBean.UserTweetKey;
@@ -23,7 +23,7 @@ import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
@@ -31,7 +31,7 @@ import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
- * ThriftEntityManagerMultiKeyWideMapIT
+ * MultiKeyExternalWideMapIT
  * 
  * @author DuyHai DOAN
  * 
@@ -40,7 +40,7 @@ public class MultiKeyExternalWideMapIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericWideRowDao<Long, String> multiKeyExternalWideMapDao = getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, String> multiKeyExternalWideMapDao = getWideRowDao(LONG_SRZ,
 			STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

@@ -4,7 +4,7 @@ import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndVali
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -29,14 +29,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 /**
- * ThriftEntityManagerDirtyCheckIT
+ * DirtyCheckIT
  * 
  * @author DuyHai DOAN
  * 
@@ -44,7 +44,7 @@ import fr.doan.achilles.holder.KeyValueHolder;
 public class DirtyCheckIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

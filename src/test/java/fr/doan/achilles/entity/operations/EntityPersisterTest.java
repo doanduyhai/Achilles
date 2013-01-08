@@ -45,7 +45,7 @@ import parser.entity.WideRowBean;
 import com.google.common.collect.Sets;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -53,6 +53,12 @@ import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 
+/**
+ * EntityPersisterTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityPersisterTest
 {
@@ -67,7 +73,7 @@ public class EntityPersisterTest
 	private EntityLoader loader;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;

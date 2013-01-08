@@ -9,6 +9,12 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
 
+/**
+ * ColumnFamilyValidator
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ColumnFamilyValidator
 {
 	private PropertyHelper helper = new PropertyHelper();

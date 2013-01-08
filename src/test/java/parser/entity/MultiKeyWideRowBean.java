@@ -11,7 +11,7 @@ import fr.doan.achilles.annotations.WideRow;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
- * WideRow
+ * MultiKeyWideRowBean
  * 
  * @author DuyHai DOAN
  * 

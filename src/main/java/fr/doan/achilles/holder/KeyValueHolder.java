@@ -2,6 +2,12 @@ package fr.doan.achilles.holder;
 
 import java.io.Serializable;
 
+/**
+ * KeyValueHolder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class KeyValueHolder implements Serializable
 {
 

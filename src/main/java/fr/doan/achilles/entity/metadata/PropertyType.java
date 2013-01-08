@@ -1,5 +1,11 @@
 package fr.doan.achilles.entity.metadata;
 
+/**
+ * PropertyType
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public enum PropertyType
 {
 

@@ -1,8 +1,8 @@
 package fr.doan.achilles.composite.factory;
 
-import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 
 import java.lang.reflect.Method;

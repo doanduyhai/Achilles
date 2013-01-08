@@ -1,12 +1,12 @@
 package fr.doan.achilles.holder.factory;
 
-import static fr.doan.achilles.serializer.Utils.BYTE_SRZ;
-import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
-import static fr.doan.achilles.serializer.Utils.DYNA_COMP_SRZ;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.OBJECT_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
-import static fr.doan.achilles.serializer.Utils.UUID_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -40,7 +40,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
  * KeyValueFactoryTest
@@ -426,7 +426,7 @@ public class KeyValueFactoryTest
 			String value)
 	{
 		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
-				Utils.DYNA_COMP_SRZ, Utils.OBJECT_SRZ);
+				SerializerUtils.DYNA_COMP_SRZ, SerializerUtils.OBJECT_SRZ);
 
 		hColumn.setName(comp);
 		hColumn.setValue(value);

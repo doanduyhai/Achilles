@@ -1,5 +1,12 @@
 package fr.doan.achilles.validation;
 
-public class NormalClass {
+/**
+ * NormalClass
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public class NormalClass
+{
 
 }

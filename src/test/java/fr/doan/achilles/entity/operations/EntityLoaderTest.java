@@ -46,7 +46,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -58,6 +58,12 @@ import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
+/**
+ * EntityLoaderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityLoaderTest
 {
@@ -90,7 +96,7 @@ public class EntityLoaderTest
 	private EntityMapper mapper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;

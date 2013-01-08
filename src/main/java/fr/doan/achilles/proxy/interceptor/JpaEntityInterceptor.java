@@ -7,8 +7,8 @@ import java.util.Set;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.wrapper.builder.JoinExternalWideMapWrapperBuilder;
@@ -19,12 +19,18 @@ import fr.doan.achilles.wrapper.builder.SetWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideMapWrapperBuilder;
 import fr.doan.achilles.wrapper.builder.WideRowWrapperBuilder;
 
+/**
+ * JpaEntityInterceptor
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
 	private Object target;
-	private GenericEntityDao<ID> entityDao;
-	private GenericWideRowDao<ID, ?> wideRowDao;
+	private GenericDynamicCompositeDao<ID> entityDao;
+	private GenericCompositeDao<ID, ?> wideRowDao;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -141,7 +147,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	{
 		return WideRowWrapperBuilder.builder(
 				key,
-				(GenericWideRowDao<ID, V>) propertyMeta.getExternalWideMapProperties()
+				(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
 						.getExternalWideMapDao(), propertyMeta).build();
 	}
 
@@ -151,7 +157,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	{
 		return JoinExternalWideMapWrapperBuilder.builder(
 				key,
-				(GenericWideRowDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
+				(GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
 						.getExternalWideMapDao(), propertyMeta).build();
 	}
 
@@ -169,7 +175,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	@SuppressWarnings("unchecked")
 	private <K extends Comparable<K>, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		return WideRowWrapperBuilder.builder(key, (GenericWideRowDao<ID, V>) wideRowDao,
+		return WideRowWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) wideRowDao,
 				propertyMeta).build();
 	}
 
@@ -215,12 +221,12 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.target = target;
 	}
 
-	void setEntityDao(GenericEntityDao<ID> dao)
+	void setEntityDao(GenericDynamicCompositeDao<ID> dao)
 	{
 		this.entityDao = dao;
 	}
 
-	public <V> void setWideRowDao(GenericWideRowDao<ID, V> wideRowDao)
+	public <V> void setWideRowDao(GenericCompositeDao<ID, V> wideRowDao)
 	{
 		this.wideRowDao = wideRowDao;
 	}

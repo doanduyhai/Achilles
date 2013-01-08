@@ -16,20 +16,26 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 
+/**
+ * GenericDynamicCompositeDaoTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
-public class GenericEntityDaoTest
+public class GenericDynamicCompositeDaoTest
 {
 
 	@InjectMocks
-	private final GenericEntityDao<Long> dao = new GenericEntityDao<Long>();
+	private final GenericDynamicCompositeDao<Long> dao = new GenericDynamicCompositeDao<Long>();
 
 	@Mock
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private final Serializer<Long> serializer = Utils.LONG_SRZ;
+	private final Serializer<Long> serializer = SerializerUtils.LONG_SRZ;
 
 	@Test
 	public void should_build_mutator() throws Exception

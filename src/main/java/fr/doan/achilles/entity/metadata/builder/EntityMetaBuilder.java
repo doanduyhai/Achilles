@@ -12,12 +12,18 @@ import me.prettyprint.hector.api.Serializer;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * EntityMetaBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityMetaBuilder<ID>
 {
 
@@ -51,7 +57,8 @@ public class EntityMetaBuilder<ID>
 		Validator.validateNotBlank(className, "canonicalClassName");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(columnFamilyName);
+			columnFamilyName = ColumnFamilyHelper
+					.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
@@ -79,12 +86,13 @@ public class EntityMetaBuilder<ID>
 		{
 			Serializer<?> valueSerializer = propertyMetas.entrySet().iterator().next().getValue()
 					.getValueSerializer();
-			meta.setWideRowDao(new GenericWideRowDao(keyspace, idSerializer, valueSerializer,
+			meta.setWideRowDao(new GenericCompositeDao(keyspace, idSerializer, valueSerializer,
 					this.columnFamilyName));
 		}
 		else
 		{
-			meta.setEntityDao(new GenericEntityDao(keyspace, idSerializer, this.columnFamilyName));
+			meta.setEntityDao(new GenericDynamicCompositeDao(keyspace, idSerializer,
+					this.columnFamilyName));
 		}
 		return meta;
 	}

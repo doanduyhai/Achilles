@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 
@@ -22,7 +22,7 @@ import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 public class JoinExternalWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericWideRowDao<Integer, Long> dao;
+	private GenericCompositeDao<Integer, Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> joinExternalWideMapMeta;

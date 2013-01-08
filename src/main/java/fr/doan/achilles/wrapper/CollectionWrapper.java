@@ -5,6 +5,12 @@ import static fr.doan.achilles.wrapper.builder.IteratorWrapperBuilder.builder;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * CollectionWrapper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V>
 {
 	protected Collection<V> target;

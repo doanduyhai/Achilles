@@ -18,14 +18,20 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 
+/**
+ * JpaEntityInterceptorBuilderTest
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class JpaEntityInterceptorBuilderTest
 {
@@ -33,10 +39,10 @@ public class JpaEntityInterceptorBuilderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
-	private GenericWideRowDao<Long, String> wideRowDao;
+	private GenericCompositeDao<Long, String> wideRowDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -103,7 +109,7 @@ public class JpaEntityInterceptorBuilderTest
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getWideRowDao()).thenReturn((GenericWideRowDao) wideRowDao);
+		when(entityMeta.getWideRowDao()).thenReturn((GenericCompositeDao) wideRowDao);
 
 		Method idGetter = WideRowBean.class.getDeclaredMethod("getId");
 		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);

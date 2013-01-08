@@ -10,6 +10,12 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.Serializer;
 
+/**
+ * PropertyMeta<K, V>
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class PropertyMeta<K, V>
 {
 	private PropertyType type;

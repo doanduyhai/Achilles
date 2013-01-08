@@ -1,8 +1,8 @@
 package fr.doan.achilles.iterator;
 
-import static fr.doan.achilles.serializer.Utils.COMPOSITE_SRZ;
-import static fr.doan.achilles.serializer.Utils.INT_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,7 +31,7 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
- * KeyValueIteratorTest
+ * KeyValueIteratorForWideRowTest
  * 
  * @author DuyHai DOAN
  * 
@@ -96,7 +96,8 @@ public class KeyValueIteratorForWideRowTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForWideRowOrExternalWideMapMeta(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
+		when(factory.createForWideRowOrExternalWideMapMeta(multiKeyWideMapMeta, hColumn))
+				.thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 

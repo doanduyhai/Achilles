@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import fr.doan.achilles.annotations.WideRow;
 
 /**
- * WideRow
+ * WideRowBeanWithWrongColumnType
  * 
  * @author DuyHai DOAN
  * 

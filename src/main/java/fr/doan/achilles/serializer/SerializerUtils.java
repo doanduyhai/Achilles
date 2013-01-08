@@ -13,7 +13,13 @@ import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.serializers.TimeUUIDSerializer;
 import me.prettyprint.cassandra.serializers.UUIDSerializer;
 
-public class Utils
+/**
+ * SerializerUtils
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public class SerializerUtils
 {
 	public static final StringSerializer STRING_SRZ = StringSerializer.get();
 	public static final LongSerializer LONG_SRZ = LongSerializer.get();

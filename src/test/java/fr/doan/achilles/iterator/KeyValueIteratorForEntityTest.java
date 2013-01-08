@@ -27,12 +27,11 @@ import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
- * KeyValueIteratorTest
+ * KeyValueIteratorForEntityTest
  * 
  * @author DuyHai DOAN
  * 
  */
-
 @RunWith(MockitoJUnitRunner.class)
 public class KeyValueIteratorForEntityTest
 {

@@ -12,6 +12,12 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * JpaEntityInterceptorBuilder
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class JpaEntityInterceptorBuilder<ID extends Serializable>
 {
 

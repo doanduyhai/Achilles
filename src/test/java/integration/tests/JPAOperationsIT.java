@@ -7,8 +7,8 @@ import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
-import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
-import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -30,7 +30,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -38,11 +38,17 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
+/**
+ * JPAOperationsIT
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class JPAOperationsIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

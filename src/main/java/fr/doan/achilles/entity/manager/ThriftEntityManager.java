@@ -19,6 +19,12 @@ import fr.doan.achilles.entity.operations.EntityValidator;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * ThriftEntityManager
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @SuppressWarnings(
 {
 		"unchecked",

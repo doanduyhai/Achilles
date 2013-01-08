@@ -18,7 +18,7 @@ import me.prettyprint.hector.api.Keyspace;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
-import fr.doan.achilles.dao.GenericWideRowDao;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
@@ -27,6 +27,12 @@ import fr.doan.achilles.entity.parser.EntityExplorer;
 import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.exception.BeanMappingException;
 
+/**
+ * ThriftEntityManagerFactoryImpl
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory
 {
 
@@ -130,7 +136,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 					if (externalWideMapProperties != null)
 					{
 						externalWideMapProperties.setExternalWideMapDao( //
-								new GenericWideRowDao(keyspace, //
+								new GenericCompositeDao(keyspace, //
 										externalWideMapProperties.getIdSerializer(), //
 										joinEntityMeta.getIdSerializer(), //
 										externalWideMapProperties.getExternalColumnFamilyName()));

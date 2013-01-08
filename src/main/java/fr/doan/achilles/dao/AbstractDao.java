@@ -23,9 +23,15 @@ import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.apache.cassandra.utils.Pair;
 
-import fr.doan.achilles.serializer.Utils;
+import fr.doan.achilles.serializer.SerializerUtils;
 import fr.doan.achilles.validation.Validator;
 
+/**
+ * AbstractDao
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public abstract class AbstractDao<K, N, V>
 {
 
@@ -48,14 +54,14 @@ public abstract class AbstractDao<K, N, V>
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		mutator.insert(key, columnFamily,
-				HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
+				HFactory.createColumn(name, null, columnNameSerializer, SerializerUtils.OBJECT_SRZ));
 		mutator.execute();
 	}
 
 	public void insertNameBatch(K key, N name, Mutator<K> mutator)
 	{
 		mutator.insert(key, columnFamily,
-				HFactory.createColumn(name, null, columnNameSerializer, Utils.OBJECT_SRZ));
+				HFactory.createColumn(name, null, columnNameSerializer, SerializerUtils.OBJECT_SRZ));
 	}
 
 	public void insertColumn(K key, N name, V value, int ttl, Mutator<K> mutator)

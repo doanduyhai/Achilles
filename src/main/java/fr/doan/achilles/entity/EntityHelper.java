@@ -19,6 +19,12 @@ import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
 import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
+/**
+ * EntityHelper
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 public class EntityHelper
 {
 

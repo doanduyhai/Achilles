@@ -6,6 +6,12 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * BeanWithDuplicatedColumnName
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @Table
 public class BeanWithDuplicatedColumnName implements Serializable
 {
