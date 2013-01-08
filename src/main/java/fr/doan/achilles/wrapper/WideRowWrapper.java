@@ -23,16 +23,16 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  */
 public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 {
-	private ID id;
-	private GenericWideRowDao<ID, V> dao;
-	private PropertyMeta<K, V> wideMapMeta;
+	protected ID id;
+	protected GenericWideRowDao<ID, V> dao;
+	protected PropertyMeta<K, V> wideMapMeta;
 
-	private CompositeHelper helper = new CompositeHelper();
-	private KeyValueFactory keyValueFactory = new KeyValueFactory();
-	private IteratorFactory iteratorFactory = new IteratorFactory();
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	protected CompositeHelper helper = new CompositeHelper();
+	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
+	protected IteratorFactory iteratorFactory = new IteratorFactory();
+	protected CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 
-	private Composite buildComposite(K key)
+	protected Composite buildComposite(K key)
 	{
 		Composite comp = compositeKeyFactory.createBaseComposite(wideMapMeta, key);
 		return comp;
@@ -71,6 +71,11 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Override
 	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
@@ -83,7 +88,7 @@ public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createListForWideRow(wideMapMeta, hColumns);
+		return keyValueFactory.createListForWideRowOrExternalWideMapMeta(wideMapMeta, (List) hColumns);
 	}
 
 	@Override

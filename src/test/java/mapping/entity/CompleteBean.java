@@ -9,6 +9,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Key;
@@ -49,8 +51,16 @@ public class CompleteBean implements Serializable
 	@Column
 	private WideMap<UserTweetKey, String> userTweets;
 
+	@Column(table = "geo_positions")
+	private WideMap<UUID, String> geoPositions;
+
+	@ManyToOne
 	@JoinColumn
 	private UserBean user;
+
+	@ManyToMany
+	@JoinColumn(table = "join_users")
+	private WideMap<Long, UserBean> joinUsers;
 
 	public Long getId()
 	{
@@ -150,6 +160,21 @@ public class CompleteBean implements Serializable
 	public void setUser(UserBean user)
 	{
 		this.user = user;
+	}
+
+	public WideMap<UUID, String> getGeoPositions()
+	{
+		return geoPositions;
+	}
+
+	public void setGeoPositions(WideMap<UUID, String> geoPositions)
+	{
+		this.geoPositions = geoPositions;
+	}
+
+	public WideMap<Long, UserBean> getJoinUsers()
+	{
+		return joinUsers;
 	}
 
 	public static class UserTweetKey implements MultiKey

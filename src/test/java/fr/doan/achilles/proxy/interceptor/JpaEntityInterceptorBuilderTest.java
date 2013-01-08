@@ -23,7 +23,7 @@ import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -108,7 +108,9 @@ public class JpaEntityInterceptorBuilderTest
 		Method idGetter = WideRowBean.class.getDeclaredMethod("getId");
 		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);
 
-		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
+		idMeta.setType(PropertyType.SIMPLE);
+
 		idMeta.setGetter(idGetter);
 		idMeta.setSetter(idSetter);
 

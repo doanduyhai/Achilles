@@ -145,4 +145,12 @@ public class Validator
 			throw new ValidationException(message);
 		}
 	}
+
+	public static void validateFalse(boolean condition, String message)
+	{
+		if (condition)
+		{
+			throw new ValidationException(message);
+		}
+	}
 }

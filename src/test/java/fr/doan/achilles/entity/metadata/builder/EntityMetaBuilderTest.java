@@ -1,5 +1,6 @@
 package fr.doan.achilles.entity.metadata.builder;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -20,8 +21,7 @@ import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.serializer.Utils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -47,7 +47,9 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		SimpleMeta<String> simpleMeta = new SimpleMeta<String>();
+		PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
+		simpleMeta.setType(SIMPLE);
+
 		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
 		simpleMeta.setGetter(getter);
 
@@ -58,11 +60,11 @@ public class EntityMetaBuilderTest
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean")
-				.serialVersionUID(1L).propertyMetas(propertyMetas).keyspace(keyspace).build();
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+				.propertyMetas(propertyMetas).keyspace(keyspace).build();
 
-		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("fr_doan_Bean");
+		assertThat(meta.getClassName()).isEqualTo("Bean");
+		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
 		assertThat(meta.getIdMeta()).isSameAs(idMeta);
 		assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(
 				Utils.LONG_SRZ.getComparatorType());
@@ -87,16 +89,16 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		SimpleMeta<String> simpleMeta = new SimpleMeta<String>();
+		PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
+		simpleMeta.setType(SIMPLE);
 		propertyMetas.put("name", simpleMeta);
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean")
-				.serialVersionUID(1L).propertyMetas(propertyMetas).columnFamilyName("toto")
-				.keyspace(keyspace).build();
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace).build();
 
-		assertThat(meta.getCanonicalClassName()).isEqualTo("fr.doan.Bean");
+		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
 		assertThat(meta.getWideRowDao()).isNull();
 		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericEntityDao.class);
@@ -108,14 +110,15 @@ public class EntityMetaBuilderTest
 	{
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		WideMapMeta<Integer, String> wideMapMeta = new WideMapMeta<Integer, String>();
+		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
+		wideMapMeta.setType(PropertyType.WIDE_MAP);
 		propertyMetas.put("name", wideMapMeta);
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).canonicalClassName("fr.doan.Bean")
-				.serialVersionUID(1L).propertyMetas(propertyMetas).columnFamilyName("toto")
-				.keyspace(keyspace).wideRow(true).build();
+		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace)
+				.wideRow(true).build();
 
 		assertThat(meta.isWideRow()).isTrue();
 		assertThat(meta.getEntityDao()).isNull();

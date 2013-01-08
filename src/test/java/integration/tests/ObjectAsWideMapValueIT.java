@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
@@ -32,7 +32,7 @@ public class ObjectAsWideMapValueIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizeCanonicalName(BeanWithObjectAsWideMapValue.class.getCanonicalName()));
+			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);

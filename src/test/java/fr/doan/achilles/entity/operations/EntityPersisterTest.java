@@ -50,11 +50,7 @@ import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
-import fr.doan.achilles.entity.metadata.ListMeta;
-import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SetMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -80,13 +76,13 @@ public class EntityPersisterTest
 	private PropertyMeta<?, String> propertyMeta;
 
 	@Mock
-	private ListMeta<String> listMeta;
+	private PropertyMeta<Void, String> listMeta;
 
 	@Mock
-	private SetMeta<String> setMeta;
+	private PropertyMeta<Void, String> setMeta;
 
 	@Mock
-	private MapMeta<Integer, String> mapMeta;
+	private PropertyMeta<Integer, String> mapMeta;
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -120,11 +116,12 @@ public class EntityPersisterTest
 		userBean.setUserId(joinId);
 		entity.setUser(userBean);
 
-		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
+		idMeta.setType(SIMPLE);
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when(entityMeta.getCanonicalClassName()).thenReturn(CompleteBean.class.getCanonicalName());
+		when(entityMeta.getClassName()).thenReturn(CompleteBean.class.getCanonicalName());
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 
 		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
@@ -140,7 +137,7 @@ public class EntityPersisterTest
 	{
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
@@ -156,7 +153,7 @@ public class EntityPersisterTest
 	public void should_persist_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
@@ -171,7 +168,7 @@ public class EntityPersisterTest
 	public void should_batch_list_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
+		when(propertyMeta.type()).thenReturn(LAZY_LIST);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
@@ -189,7 +186,7 @@ public class EntityPersisterTest
 	public void should_persist_list_property() throws Exception
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.propertyType()).thenReturn(LAZY_LIST);
+		when(propertyMeta.type()).thenReturn(LAZY_LIST);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
@@ -208,7 +205,7 @@ public class EntityPersisterTest
 	public void should_batch_set_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(propertyMeta.propertyType()).thenReturn(SET);
+		when(propertyMeta.type()).thenReturn(SET);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
 				Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
@@ -230,7 +227,7 @@ public class EntityPersisterTest
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(propertyMeta.propertyType()).thenReturn(SET);
+		when(propertyMeta.type()).thenReturn(SET);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
 				Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
@@ -251,7 +248,7 @@ public class EntityPersisterTest
 	public void should_batch_map_property() throws Exception
 	{
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
+		when(propertyMeta.type()).thenReturn(LAZY_MAP);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
@@ -292,7 +289,7 @@ public class EntityPersisterTest
 	public void should_persist_map_property() throws Exception
 	{
 		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.propertyType()).thenReturn(LAZY_MAP);
+		when(propertyMeta.type()).thenReturn(LAZY_MAP);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
@@ -342,7 +339,7 @@ public class EntityPersisterTest
 		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
@@ -372,7 +369,7 @@ public class EntityPersisterTest
 		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
@@ -404,7 +401,7 @@ public class EntityPersisterTest
 		Method userGetter = CompleteBean.class.getDeclaredMethod("getUser");
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(JOIN_SIMPLE);
+		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
@@ -424,7 +421,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_simple_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 		EntityPersister spy = spy(persister);
 		spy.persistProperty(entity, 1L, dao, propertyMeta);
 		verify(spy).persistSimpleProperty(entity, 1L, dao, propertyMeta);
@@ -434,7 +431,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_simple_lazy_property_into_object() throws Exception
 	{
-		when(propertyMeta.propertyType()).thenReturn(LAZY_SIMPLE);
+		when(propertyMeta.type()).thenReturn(LAZY_SIMPLE);
 		EntityPersister spy = spy(persister);
 		spy.persistProperty(entity, 1L, dao, propertyMeta);
 
@@ -444,7 +441,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_list_property_into_object() throws Exception
 	{
-		when(listMeta.propertyType()).thenReturn(LIST);
+		when(listMeta.type()).thenReturn(LIST);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -457,7 +454,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_list_lazy_property_into_object() throws Exception
 	{
-		when(listMeta.propertyType()).thenReturn(LAZY_LIST);
+		when(listMeta.type()).thenReturn(LAZY_LIST);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -469,7 +466,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_set_property_into_object() throws Exception
 	{
-		when(setMeta.propertyType()).thenReturn(SET);
+		when(setMeta.type()).thenReturn(SET);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -481,7 +478,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_set_lazy_property_into_object() throws Exception
 	{
-		when(setMeta.propertyType()).thenReturn(LAZY_SET);
+		when(setMeta.type()).thenReturn(LAZY_SET);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -493,7 +490,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_map_property_into_object() throws Exception
 	{
-		when(mapMeta.propertyType()).thenReturn(MAP);
+		when(mapMeta.type()).thenReturn(MAP);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -506,7 +503,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_map_lazy_property_into_object() throws Exception
 	{
-		when(mapMeta.propertyType()).thenReturn(LAZY_MAP);
+		when(mapMeta.type()).thenReturn(LAZY_MAP);
 		EntityPersister spy = spy(persister);
 
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -519,7 +516,7 @@ public class EntityPersisterTest
 	public void should_remove_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(MAP);
+		when(propertyMeta.type()).thenReturn(MAP);
 
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
@@ -547,7 +544,9 @@ public class EntityPersisterTest
 	@Test
 	public void should_remove_entity() throws Exception
 	{
-		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
+		idMeta.setType(SIMPLE);
+
 		Long idValue = 7856L;
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		entityMeta.setIdMeta(idMeta);
@@ -577,7 +576,9 @@ public class EntityPersisterTest
 	private JoinProperties prepareJoinProperties() throws Exception
 	{
 		Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
-		PropertyMeta<Void, Long> joinIdMeta = new SimpleMeta<Long>();
+		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+		joinIdMeta.setType(JOIN_SIMPLE);
+
 		joinIdMeta.setGetter(userIdGetter);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();

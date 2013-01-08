@@ -25,9 +25,8 @@ import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
-import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.helper.CompositeHelper;
@@ -52,7 +51,7 @@ public class JoinWideMapWrapperTest
 	private GenericEntityDao<Long> dao;
 
 	@Mock
-	private JoinWideMapMeta<Integer, UserBean> joinWideMapMeta;
+	private PropertyMeta<Integer, UserBean> joinWideMapMeta;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
@@ -154,10 +153,11 @@ public class JoinWideMapWrapperTest
 	private JoinProperties prepareJoinProperties() throws Exception
 	{
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		joinEntityMeta.setCanonicalClassName("canonicalClassName");
+		joinEntityMeta.setClassName("canonicalClassName");
 
 		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
-		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
+		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
+		idMeta.setType(PropertyType.SIMPLE);
 		idMeta.setGetter(idGetter);
 		joinEntityMeta.setIdMeta(idMeta);
 		JoinProperties joinProperties = new JoinProperties();

@@ -2,10 +2,10 @@ package integration.tests;
 
 import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static fr.doan.achilles.serializer.Utils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBean.UserTweetKey;
@@ -16,14 +16,14 @@ import java.util.UUID;
 
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.dao.GenericEntityDao;
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
@@ -36,11 +36,12 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideMapIT
+public class MultiKeyExternalWideMapIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
+
+	private GenericWideRowDao<Long, String> multiKeyExternalWideMapDao = getWideRowDao(LONG_SRZ,
+			STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
@@ -49,7 +50,7 @@ public class MultiKeyWideMapIT
 
 	private CompleteBean bean;
 
-	private WideMap<UserTweetKey, String> userTweets;
+	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
 
 	private UUID uuid1 = TimeUUIDUtils.getTimeUUID(1);
 	private UUID uuid2 = TimeUUIDUtils.getTimeUUID(2);
@@ -66,27 +67,27 @@ public class MultiKeyWideMapIT
 	{
 		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 		bean = em.merge(bean);
-		userTweets = bean.getUserTweets();
+		multiKeyExternalWideMap = bean.getMultiKeyExternalWideMap();
 	}
 
 	@Test
 	public void should_insert_values() throws Exception
 	{
 
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		DynamicComposite startComp = buildComposite();
-		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
+		Composite startComp = new Composite();
+		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = buildComposite();
-		endComp.addComponent(2, qux, ComponentEquality.GREATER_THAN_EQUAL);
+		Composite endComp = new Composite();
+		endComp.addComponent(0, qux, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(
+				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(5);
 		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
@@ -99,16 +100,16 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_insert_values_with_ttl() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
 
-		DynamicComposite startComp = buildComposite();
-		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
+		Composite startComp = new Composite();
+		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = buildComposite();
-		endComp.addComponent(2, bar, ComponentEquality.GREATER_THAN_EQUAL);
+		Composite endComp = new Composite();
+		endComp.addComponent(0, bar, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<HColumn<DynamicComposite, Object>> columns = dao.findRawColumnsRange(bean.getId(),
-				startComp, endComp, false, 10);
+		List<HColumn<Composite, String>> columns = multiKeyExternalWideMapDao.findRawColumnsRange(
+				bean.getId(), startComp, endComp, false, 10);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(150);
@@ -119,9 +120,9 @@ public class MultiKeyWideMapIT
 	public void should_get_value_by_key() throws Exception
 	{
 		UserTweetKey userTweetKey = new UserTweetKey(bar, uuid1);
-		userTweets.insert(userTweetKey, "tweet1-bar");
+		multiKeyExternalWideMap.insert(userTweetKey, "tweet1-bar");
 
-		assertThat(userTweets.get(userTweetKey)).isEqualTo("tweet1-bar");
+		assertThat(multiKeyExternalWideMap.get(userTweetKey)).isEqualTo("tweet1-bar");
 	}
 
 	@Test
@@ -129,13 +130,13 @@ public class MultiKeyWideMapIT
 			throws Exception
 	{
 
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(foo, uuid3), true, //
 				true, 10);
@@ -153,13 +154,13 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_having_null() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
 				new UserTweetKey(bar, null), true, //
 				new UserTweetKey(foo, uuid3), true, //
 				false, 10);
@@ -179,13 +180,13 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_end_having_null() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
 				new UserTweetKey(bar, uuid1), true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -205,13 +206,13 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_completely_null() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
 				null, true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -231,13 +232,13 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_iterate() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		KeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
+		KeyValueIterator<UserTweetKey, String> iter = multiKeyExternalWideMap.iterator( //
 				new UserTweetKey(foo, uuid3), //
 				new UserTweetKey(qux, uuid5), //
 				false, 5);
@@ -263,14 +264,14 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_iterate_desc_exclusive_start_inclusive_end_with_count() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
-		userTweets.iterator( //
+		multiKeyExternalWideMap.iterator( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(bar, uuid1), true, //
 				true, 2);
@@ -293,24 +294,24 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_remove() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.remove(new UserTweetKey(bar, uuid2));
+		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2));
 
-		DynamicComposite startComp = buildComposite();
-		startComp.addComponent(2, bar, ComponentEquality.EQUAL);
-		startComp.addComponent(3, uuid2, ComponentEquality.EQUAL);
+		Composite startComp = new Composite();
+		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
+		startComp.addComponent(1, uuid2, ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = buildComposite();
-		endComp.addComponent(2, bar, ComponentEquality.EQUAL);
-		endComp.addComponent(3, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
+		Composite endComp = new Composite();
+		endComp.addComponent(0, bar, ComponentEquality.EQUAL);
+		endComp.addComponent(1, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(
+				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(0);
 	}
@@ -318,26 +319,18 @@ public class MultiKeyWideMapIT
 	@Test
 	public void should_remove_inclusive_start_exclusive_end() throws Exception
 	{
-		userTweets.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		userTweets.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		userTweets.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.removeRange( //
+		multiKeyExternalWideMap.removeRange( //
 				new UserTweetKey(bar, uuid2), true, //
 				new UserTweetKey(qux, uuid4), false);
 
-		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "userTweets", ComponentEquality.EQUAL);
-
-		DynamicComposite endComp = new DynamicComposite();
-		endComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		endComp.addComponent(1, "userTweets", ComponentEquality.GREATER_THAN_EQUAL);
-
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(
+				bean.getId(), null, null, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
@@ -345,11 +338,4 @@ public class MultiKeyWideMapIT
 		assertThat(columns.get(2).right).isEqualTo("tweet5-qux");
 	}
 
-	private DynamicComposite buildComposite()
-	{
-		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "userTweets", ComponentEquality.EQUAL);
-		return startComp;
-	}
 }

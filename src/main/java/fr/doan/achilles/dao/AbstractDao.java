@@ -328,4 +328,8 @@ public abstract class AbstractDao<K, N, V>
 		return HFactory.createMutator(this.keyspace, this.keySerializer);
 	}
 
+	public String getColumnFamily()
+	{
+		return columnFamily;
+	}
 }

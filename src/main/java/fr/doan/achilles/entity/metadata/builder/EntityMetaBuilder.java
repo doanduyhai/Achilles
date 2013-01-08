@@ -22,7 +22,7 @@ public class EntityMetaBuilder<ID>
 {
 
 	private PropertyMeta<Void, ID> idMeta;
-	private String canonicalClassName;
+	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
@@ -48,14 +48,14 @@ public class EntityMetaBuilder<ID>
 
 		Validator.validateNotNull(keyspace, "keyspace");
 		Validator.validateNotNull(idMeta, "idMeta");
-		Validator.validateNotBlank(canonicalClassName, "canonicalClassName");
+		Validator.validateNotBlank(className, "canonicalClassName");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ColumnFamilyHelper.normalizeCanonicalName(columnFamilyName);
+			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = ColumnFamilyHelper.normalizeCanonicalName(canonicalClassName);
+			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(className);
 		}
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas");
@@ -67,7 +67,7 @@ public class EntityMetaBuilder<ID>
 		meta.setIdMeta(idMeta);
 		Serializer<?> idSerializer = SerializerTypeInferer.getSerializer(idMeta.getValueClass());
 		meta.setIdSerializer(idSerializer);
-		meta.setCanonicalClassName(canonicalClassName);
+		meta.setClassName(className);
 		meta.setColumnFamilyName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
@@ -111,9 +111,9 @@ public class EntityMetaBuilder<ID>
 		return setterMetas;
 	}
 
-	public EntityMetaBuilder<ID> canonicalClassName(String canonicalClassName)
+	public EntityMetaBuilder<ID> className(String className)
 	{
-		this.canonicalClassName = canonicalClassName;
+		this.className = className;
 		return this;
 	}
 

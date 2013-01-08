@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.wrapper.JoinWideMapWrapper;
 
 /**
@@ -25,7 +25,7 @@ public class JoinWideMapWrapperBuilderTest
 	private GenericEntityDao<Integer> dao;
 
 	@Mock
-	private JoinWideMapMeta<Integer, String> joinWideMapMeta;
+	private PropertyMeta<Integer, String> joinWideMapMeta;
 
 	@Test
 	public void should_build() throws Exception

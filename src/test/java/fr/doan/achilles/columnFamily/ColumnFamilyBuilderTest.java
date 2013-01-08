@@ -21,13 +21,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.google.common.collect.Maps;
-
 import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyBuilderTest
@@ -55,7 +51,7 @@ public class ColumnFamilyBuilderTest
 			"unchecked",
 			"rawtypes"
 	})
-	public void should_build_column_family() throws Exception
+	public void should_build_dynamic_composite_column_family() throws Exception
 	{
 		PropertyMeta<?, Long> propertyMeta = mock(PropertyMeta.class);
 		when((Serializer) propertyMeta.getValueSerializer()).thenReturn(STRING_SRZ);
@@ -66,9 +62,9 @@ public class ColumnFamilyBuilderTest
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
-		when(entityMeta.getCanonicalClassName()).thenReturn("fr.doan.test.bean");
+		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
-		ColumnFamilyDefinition cfDef = builder.buildForEntity(entityMeta, "keyspace");
+		ColumnFamilyDefinition cfDef = builder.buildDynamicCompositeCF(entityMeta, "keyspace");
 
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
@@ -79,25 +75,16 @@ public class ColumnFamilyBuilderTest
 	}
 
 	@Test
-	public void should_build_wide_row() throws Exception
+	public void should_build_composite_column_family() throws Exception
 	{
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, String> wideMapMeta = new WideMapMeta<Integer, String>();
+		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
 		wideMapMeta.setValueClass(String.class);
 
-		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
-		propertyMap.put("map", wideMapMeta);
-		entityMeta.setPropertyMetas(propertyMap);
-		entityMeta.setColumnFamilyName("cf");
-
-		PropertyMeta<Void, Long> idMeta = new SimpleMeta<Long>();
-		idMeta.setValueClass(Long.class);
-		entityMeta.setIdMeta(idMeta);
-
-		when(helper.determineCompatatorTypeAliasForWideRow(entityMeta, true)).thenReturn(
+		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = builder.buildForWideRow(entityMeta, "keyspace");
+		ColumnFamilyDefinition cfDef = builder.buildCompositeCF("keyspace", wideMapMeta,
+				Long.class, "cf");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(

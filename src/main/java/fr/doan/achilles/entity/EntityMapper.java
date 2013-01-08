@@ -16,11 +16,8 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListMeta;
-import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.holder.KeyValueHolder;
 
@@ -58,19 +55,21 @@ public class EntityMapper
 
 			else if (Arrays.equals(type, PropertyType.LIST.flag()))
 			{
-				ListMeta<?> listMeta = (ListMeta<?>) propertyMetas.get(propertyName);
+				PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) propertyMetas
+						.get(propertyName);
 				addToList(listProperties, listMeta, listMeta.getValue(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.SET.flag()))
 			{
-				SetMeta<?> setMeta = (SetMeta<?>) propertyMetas.get(propertyName);
+				PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) propertyMetas
+						.get(propertyName);
 				addToSet(setProperties, setMeta, setMeta.getValue(pair.right));
 			}
 
 			else if (Arrays.equals(type, PropertyType.MAP.flag()))
 			{
-				MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) propertyMetas.get(propertyName);
+				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMetas.get(propertyName);
 				addToMap(mapProperties, mapMeta, (KeyValueHolder) pair.right);
 			}
 		}
@@ -92,7 +91,8 @@ public class EntityMapper
 
 	}
 
-	protected void addToList(Map<String, List> listProperties, ListMeta<?> listMeta, Object value)
+	protected void addToList(Map<String, List> listProperties, PropertyMeta<Void, ?> listMeta,
+			Object value)
 	{
 		String propertyName = listMeta.getPropertyName();
 		List list = null;
@@ -108,7 +108,8 @@ public class EntityMapper
 		list.add(value);
 	}
 
-	protected void addToSet(Map<String, Set> setProperties, SetMeta<?> setMeta, Object value)
+	protected void addToSet(Map<String, Set> setProperties, PropertyMeta<Void, ?> setMeta,
+			Object value)
 	{
 		String propertyName = setMeta.getPropertyName();
 
@@ -125,7 +126,7 @@ public class EntityMapper
 		set.add(value);
 	}
 
-	protected <K, V> void addToMap(Map<String, Map> mapProperties, MapMeta<K, V> mapMeta,
+	protected <K, V> void addToMap(Map<String, Map> mapProperties, PropertyMeta<K, V> mapMeta,
 			KeyValueHolder keyValueHolder)
 	{
 		String propertyName = mapMeta.getPropertyName();

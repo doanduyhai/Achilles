@@ -25,7 +25,6 @@ import fr.doan.achilles.dao.GenericEntityDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.JoinMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
@@ -95,7 +94,8 @@ public class EntityMergerTest
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
 		when(interceptor.getKey()).thenReturn(1L);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.SIMPLE);
+		when(interceptor.getTarget()).thenReturn(entity);
+		when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
 
 		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
 
@@ -120,7 +120,8 @@ public class EntityMergerTest
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
 		when(interceptor.getKey()).thenReturn(1L);
-		when(propertyMeta.propertyType()).thenReturn(PropertyType.LAZY_SET);
+		when(interceptor.getTarget()).thenReturn(entity);
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SET);
 
 		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
 
@@ -172,7 +173,12 @@ public class EntityMergerTest
 		Method userGetter = Bean.class.getMethod("getUser");
 		Method userSetter = Bean.class.getMethod("setUser", UserBean.class);
 
-		PropertyMeta<Void, UserBean> joinPropertyMeta = new JoinMeta<UserBean>();
+		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
+		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
+		joinPropertyMeta.setSingleKey(true);
+		joinPropertyMeta.setLazy(true);
+		joinPropertyMeta.setJoinColumn(true);
+
 		joinPropertyMeta.setJoinProperties(joinProperties);
 		joinPropertyMeta.setGetter(userGetter);
 		joinPropertyMeta.setSetter(userSetter);

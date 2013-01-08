@@ -1,5 +1,7 @@
 package fr.doan.achilles.entity.parser;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
@@ -32,6 +34,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.Bean;
 import parser.entity.BeanWithColumnFamilyName;
+import parser.entity.BeanWithDuplicatedColumnName;
+import parser.entity.BeanWithDuplicatedJoinColumnName;
+import parser.entity.BeanWithExternalJoinWideMap;
+import parser.entity.BeanWithExternalWideMap;
 import parser.entity.BeanWithNoColumn;
 import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithNotSerializableId;
@@ -42,13 +48,9 @@ import parser.entity.WideRowBeanWithTwoColumns;
 import parser.entity.WideRowBeanWithWrongColumnType;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.JoinMeta;
-import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
-import fr.doan.achilles.entity.metadata.ListMeta;
-import fr.doan.achilles.entity.metadata.MapMeta;
+import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.Utils;
@@ -90,8 +92,8 @@ public class EntityParserTest
 		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace, Bean.class,
 				joinPropertyMetaToBeFilled);
 
-		assertThat(meta.getCanonicalClassName()).isEqualTo("parser.entity.Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("parser_entity_Bean");
+		assertThat(meta.getClassName()).isEqualTo("parser.entity.Bean");
+		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
 		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
@@ -102,13 +104,16 @@ public class EntityParserTest
 
 		PropertyMeta<?, ?> name = meta.getPropertyMetas().get("name");
 		PropertyMeta<?, ?> age = meta.getPropertyMetas().get("age_in_year");
-		ListMeta<String> friends = (ListMeta<String>) meta.getPropertyMetas().get("friends");
-		SetMeta<String> followers = (SetMeta<String>) meta.getPropertyMetas().get("followers");
-		MapMeta<Integer, String> preferences = (MapMeta<Integer, String>) meta.getPropertyMetas()
-				.get("preferences");
+		PropertyMeta<Void, String> friends = (PropertyMeta<Void, String>) meta.getPropertyMetas()
+				.get("friends");
+		PropertyMeta<Void, String> followers = (PropertyMeta<Void, String>) meta.getPropertyMetas()
+				.get("followers");
+		PropertyMeta<Integer, String> preferences = (PropertyMeta<Integer, String>) meta
+				.getPropertyMetas().get("preferences");
 
-		JoinMeta<UserBean> creator = (JoinMeta<UserBean>) meta.getPropertyMetas().get("creator");
-		JoinWideMapMeta<String, UserBean> linkedUsers = (JoinWideMapMeta<String, UserBean>) meta
+		PropertyMeta<Void, UserBean> creator = (PropertyMeta<Void, UserBean>) meta
+				.getPropertyMetas().get("creator");
+		PropertyMeta<String, UserBean> linkedUsers = (PropertyMeta<String, UserBean>) meta
 				.getPropertyMetas().get("linked_users");
 
 		assertThat(name).isNotNull();
@@ -122,17 +127,17 @@ public class EntityParserTest
 		assertThat(name.getPropertyName()).isEqualTo("name");
 		assertThat((Class<String>) name.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) name.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(name.propertyType()).isEqualTo(SIMPLE);
+		assertThat(name.type()).isEqualTo(SIMPLE);
 
 		assertThat(age.getPropertyName()).isEqualTo("age_in_year");
 		assertThat((Class<Long>) age.getValueClass()).isEqualTo(Long.class);
 		assertThat((Serializer<Long>) age.getValueSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(age.propertyType()).isEqualTo(SIMPLE);
+		assertThat(age.type()).isEqualTo(SIMPLE);
 
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
 		assertThat((Class<String>) friends.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) friends.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(friends.propertyType()).isEqualTo(PropertyType.LAZY_LIST);
+		assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
 		assertThat(friends.newListInstance()).isNotNull();
 		assertThat(friends.newListInstance()).isEmpty();
 		assertThat(friends.isLazy()).isTrue();
@@ -142,7 +147,7 @@ public class EntityParserTest
 		assertThat(followers.getPropertyName()).isEqualTo("followers");
 		assertThat(followers.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) followers.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(followers.propertyType()).isEqualTo(PropertyType.SET);
+		assertThat(followers.type()).isEqualTo(PropertyType.SET);
 		assertThat(followers.newSetInstance()).isNotNull();
 		assertThat(followers.newSetInstance()).isEmpty();
 		assertThat((Class<HashSet>) followers.newSetInstance().getClass()).isEqualTo(HashSet.class);
@@ -150,7 +155,7 @@ public class EntityParserTest
 		assertThat(preferences.getPropertyName()).isEqualTo("preferences");
 		assertThat(preferences.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) preferences.getValueSerializer()).isEqualTo(STRING_SRZ);
-		assertThat(preferences.propertyType()).isEqualTo(PropertyType.MAP);
+		assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
 		assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
 		assertThat((Serializer<Integer>) preferences.getKeySerializer()).isEqualTo(Utils.INT_SRZ);
 		assertThat(preferences.newMapInstance()).isNotNull();
@@ -160,15 +165,14 @@ public class EntityParserTest
 
 		assertThat(creator.getPropertyName()).isEqualTo("creator");
 		assertThat(creator.getValueClass()).isEqualTo(UserBean.class);
-		assertThat((Serializer<Object>) creator.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
-		assertThat(creator.propertyType()).isEqualTo(JOIN_SIMPLE);
+		assertThat((Serializer) creator.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat(creator.type()).isEqualTo(JOIN_SIMPLE);
 		assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(ALL);
 
 		assertThat(linkedUsers.getPropertyName()).isEqualTo("linked_users");
 		assertThat(linkedUsers.getValueClass()).isEqualTo(UserBean.class);
-		assertThat((Serializer<Object>) linkedUsers.getValueSerializer()).isEqualTo(
-				Utils.OBJECT_SRZ);
-		assertThat(linkedUsers.propertyType()).isEqualTo(JOIN_WIDE_MAP);
+		assertThat((Serializer) linkedUsers.getValueSerializer()).isEqualTo(Utils.OBJECT_SRZ);
+		assertThat(linkedUsers.type()).isEqualTo(JOIN_WIDE_MAP);
 		assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).containsExactly(PERSIST,
 				MERGE);
 
@@ -205,22 +209,90 @@ public class EntityParserTest
 		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName()).isEqualTo("nickname");
 	}
 
-	@Test(expected = IncorrectTypeException.class)
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_bean_with_external_wide_map() throws Exception
+	{
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace,
+				BeanWithExternalWideMap.class, joinPropertyMetaToBeFilled);
+
+		assertThat(meta).isNotNull();
+		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
+		assertThat(usersPropertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
+		ExternalWideMapProperties<?> externalWideMapProperties = usersPropertyMeta
+				.getExternalWideMapProperties();
+
+		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
+				"external_users");
+		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNotNull();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_bean_with_external_join_wide_map() throws Exception
+	{
+		EntityMeta<Long> meta = (EntityMeta<Long>) parser.parseEntity(keyspace,
+				BeanWithExternalJoinWideMap.class, joinPropertyMetaToBeFilled);
+
+		assertThat(meta).isNotNull();
+		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
+		assertThat(usersPropertyMeta.type()).isEqualTo(EXTERNAL_JOIN_WIDE_MAP);
+		ExternalWideMapProperties<?> externalWideMapProperties = usersPropertyMeta
+				.getExternalWideMapProperties();
+
+		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
+				"external_users");
+		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
+		verify(joinPropertyMetaToBeFilled).put(usersPropertyMeta, UserBean.class);
+	}
+
+	@Test
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
+		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
+				+ "' should have at least one field with javax.persistence.Id annotation");
 		parser.parseEntity(keyspace, BeanWithNoId.class, joinPropertyMetaToBeFilled);
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The property 'id' should be Serializable");
 		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, joinPropertyMetaToBeFilled);
 	}
 
-	@Test(expected = IncorrectTypeException.class)
+	@Test
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
+		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx
+				.expectMessage("The entity '"
+						+ BeanWithNoColumn.class.getCanonicalName()
+						+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
 		parser.parseEntity(keyspace, BeanWithNoColumn.class, joinPropertyMetaToBeFilled);
+	}
+
+	@Test
+	public void should_exception_when_entity_has_duplicated_column_name() throws Exception
+	{
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The property 'name' is already used for the entity '"
+				+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
+
+		parser.parseEntity(keyspace, BeanWithDuplicatedColumnName.class, joinPropertyMetaToBeFilled);
+	}
+
+	@Test
+	public void should_exception_when_entity_has_duplicated_join_column_name() throws Exception
+	{
+		expectedEx.expect(ValidationException.class);
+		expectedEx.expectMessage("The property 'name' is already used for the entity '"
+				+ BeanWithDuplicatedJoinColumnName.class.getCanonicalName() + "'");
+
+		parser.parseEntity(keyspace, BeanWithDuplicatedJoinColumnName.class,
+				joinPropertyMetaToBeFilled);
 	}
 
 	@SuppressWarnings(
@@ -240,7 +312,7 @@ public class EntityParserTest
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
 
 		assertThat(meta.getPropertyMetas()).hasSize(1);
-		assertThat(meta.getPropertyMetas().get("values").propertyType()).isEqualTo(WIDE_MAP);
+		assertThat(meta.getPropertyMetas().get("values").type()).isEqualTo(WIDE_MAP);
 	}
 
 	@Test

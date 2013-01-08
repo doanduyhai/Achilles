@@ -22,7 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 
@@ -44,7 +44,7 @@ public class KeyValueIteratorForEntityTest
 	private List<Method> componentSetters;
 
 	@Mock
-	private MultiKeyWideMapMeta<TweetMultiKey, String> multiKeyWideMapMeta;
+	private PropertyMeta<TweetMultiKey, String> multiKeyWideMapMeta;
 
 	@Mock
 	private KeyValueFactory factory = new KeyValueFactory();

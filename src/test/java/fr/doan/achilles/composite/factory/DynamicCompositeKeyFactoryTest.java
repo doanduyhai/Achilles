@@ -84,7 +84,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.isSingleKey()).thenReturn(true);
 		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) STRING_SRZ);
 
-		when(multiKeyPropertyMeta.propertyType()).thenReturn(WIDE_MAP);
+		when(multiKeyPropertyMeta.type()).thenReturn(WIDE_MAP);
 		when(multiKeyPropertyMeta.isSingleKey()).thenReturn(false);
 		when(multiKeyPropertyMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
@@ -94,7 +94,7 @@ public class DynamicCompositeKeyFactoryTest
 	{
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 
 		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
 
@@ -108,7 +108,7 @@ public class DynamicCompositeKeyFactoryTest
 	{
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 
 		DynamicComposite comp = keyFactory.createForInsert(propertyMeta, "256");
 
@@ -123,7 +123,7 @@ public class DynamicCompositeKeyFactoryTest
 	{
 
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
-		when(propertyMeta.propertyType()).thenReturn(LIST);
+		when(propertyMeta.type()).thenReturn(LIST);
 
 		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
 
@@ -136,7 +136,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_create_for_insert_set_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
-		when(propertyMeta.propertyType()).thenReturn(SET);
+		when(propertyMeta.type()).thenReturn(SET);
 
 		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 12345);
 
@@ -149,7 +149,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_create_for_insert_map_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
-		when(propertyMeta.propertyType()).thenReturn(MAP);
+		when(propertyMeta.type()).thenReturn(MAP);
 
 		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, -123933);
 
@@ -162,7 +162,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_create_for_query_with_null_value() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
-		when(propertyMeta.propertyType()).thenReturn(LIST);
+		when(propertyMeta.type()).thenReturn(LIST);
 
 		DynamicComposite comp = keyFactory.createForQuery(propertyMeta, null, LESS_THAN_EQUAL);
 
@@ -178,7 +178,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_create_for_query_without_value() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
-		when(propertyMeta.propertyType()).thenReturn(LIST);
+		when(propertyMeta.type()).thenReturn(LIST);
 
 		DynamicComposite comp = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 
@@ -193,7 +193,7 @@ public class DynamicCompositeKeyFactoryTest
 	public void should_create_for_query_with_value() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
-		when(propertyMeta.propertyType()).thenReturn(LIST);
+		when(propertyMeta.type()).thenReturn(LIST);
 
 		List<Integer> list = Arrays.asList(1, 2, 3);
 		DynamicComposite comp = keyFactory.createForQuery(propertyMeta, list, GREATER_THAN_EQUAL);
@@ -295,7 +295,7 @@ public class DynamicCompositeKeyFactoryTest
 		boolean inclusiveStart = true, inclusiveEnd = true, reverse = false;
 
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.propertyType()).thenReturn(SIMPLE);
+		when(propertyMeta.type()).thenReturn(SIMPLE);
 
 		when(helper.determineEquality(inclusiveStart, inclusiveEnd, reverse)).thenReturn(
 				new ComponentEquality[]

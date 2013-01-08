@@ -23,7 +23,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericEntityDao;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
@@ -48,7 +48,7 @@ public class WideMapWrapperTest
 	private GenericEntityDao<Long> dao;
 
 	@Mock
-	private WideMapMeta<Integer, String> wideMapMeta;
+	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
@@ -76,7 +76,7 @@ public class WideMapWrapperTest
 		wrapper.setId(1L);
 
 		when(wideMapMeta.getPropertyName()).thenReturn("name");
-		when(wideMapMeta.propertyType()).thenReturn(WIDE_MAP);
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 	}
 

@@ -1,28 +1,13 @@
 package fr.doan.achilles.entity.metadata.factory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.entity.metadata.JoinMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
-import fr.doan.achilles.entity.metadata.JoinWideMapMeta;
-import fr.doan.achilles.entity.metadata.ListLazyMeta;
-import fr.doan.achilles.entity.metadata.ListMeta;
-import fr.doan.achilles.entity.metadata.MapLazyMeta;
-import fr.doan.achilles.entity.metadata.MapMeta;
-import fr.doan.achilles.entity.metadata.MultiKeyJoinWideMapMeta;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.metadata.SetLazyMeta;
-import fr.doan.achilles.entity.metadata.SetMeta;
-import fr.doan.achilles.entity.metadata.SimpleLazyMeta;
-import fr.doan.achilles.entity.metadata.SimpleMeta;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
 
 /**
  * PropertyMetaBuilder
@@ -37,12 +22,9 @@ public class PropertyMetaFactory<K, V>
 	private Class<K> keyClass;
 	private Class<V> valueClass;
 	private Method[] accessors;
-	private boolean singleKey = true;
-	private JoinProperties joinProperties;
 
-	private List<Class<?>> componentClasses;
-	private List<Method> componentGetters;
-	private List<Method> componentSetters;
+	private JoinProperties joinProperties;
+	private MultiKeyProperties multiKeyProperties;
 
 	public PropertyMetaFactory(Class<K> keyClass, Class<V> valueClass) {
 		this.keyClass = keyClass;
@@ -73,54 +55,39 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMeta<K, V> build()
 	{
 		PropertyMeta<K, V> meta = null;
+		boolean lazy = false;
+		boolean joinColumn = false;
+		boolean singleKey = multiKeyProperties == null ? true : false;
 		switch (type)
 		{
 			case SIMPLE:
-				meta = (PropertyMeta<K, V>) new SimpleMeta<V>();
+			case LIST:
+			case SET:
+				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
 				break;
 			case LAZY_SIMPLE:
-				meta = (PropertyMeta<K, V>) new SimpleLazyMeta<V>();
-				break;
-			case LIST:
-				meta = (PropertyMeta<K, V>) new ListMeta<V>();
-				break;
 			case LAZY_LIST:
-				meta = (PropertyMeta<K, V>) new ListLazyMeta<V>();
-				break;
-			case SET:
-				meta = (PropertyMeta<K, V>) new SetMeta<V>();
-				break;
 			case LAZY_SET:
-				meta = (PropertyMeta<K, V>) new SetLazyMeta<V>();
+				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
+				lazy = true;
 				break;
 			case MAP:
-				meta = new MapMeta<K, V>();
+				meta = new PropertyMeta<K, V>();
 				break;
 			case LAZY_MAP:
-				meta = new MapLazyMeta<K, V>();
-				break;
 			case WIDE_MAP:
-				if (singleKey)
-				{
-					meta = new WideMapMeta<K, V>();
-				}
-				else
-				{
-					meta = new MultiKeyWideMapMeta<K, V>();
-				}
+				meta = new PropertyMeta<K, V>();
+				lazy = true;
 				break;
 			case JOIN_SIMPLE:
-				meta = (PropertyMeta<K, V>) new JoinMeta<V>();
+				lazy = true;
+				joinColumn = true;
+				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
 				break;
 			case JOIN_WIDE_MAP:
-				if (singleKey)
-				{
-					meta = new JoinWideMapMeta<K, V>();
-				}
-				else
-				{
-					meta = new MultiKeyJoinWideMapMeta<K, V>();
-				}
+				lazy = true;
+				joinColumn = true;
+				meta = new PropertyMeta<K, V>();
 				break;
 
 			default:
@@ -128,6 +95,7 @@ public class PropertyMetaFactory<K, V>
 						+ "' is not supported for PropertyMeta builder");
 		}
 
+		meta.setType(type);
 		meta.setPropertyName(propertyName);
 		meta.setKeyClass(keyClass);
 		if (keyClass != Void.class)
@@ -139,27 +107,12 @@ public class PropertyMetaFactory<K, V>
 		meta.setGetter(accessors[0]);
 		meta.setSetter(accessors[1]);
 
-		if (componentClasses != null && componentClasses.size() > 0)
-		{
-			MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		meta.setJoinProperties(joinProperties);
+		meta.setMultiKeyProperties(multiKeyProperties);
 
-			multiKeyProperties.setComponentClasses(componentClasses);
-			List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
-			for (Class<?> componentClass : componentClasses)
-			{
-				componentSerializers.add((Serializer) SerializerTypeInferer
-						.getSerializer(componentClass));
-			}
-			multiKeyProperties.setComponentSerializers(componentSerializers);
-			multiKeyProperties.setComponentGetters(componentGetters);
-			multiKeyProperties.setComponentSetters(componentSetters);
-			meta.setMultiKeyProperties(multiKeyProperties);
-		}
-
-		if (joinProperties != null)
-		{
-			meta.setJoinProperties(joinProperties);
-		}
+		meta.setLazy(lazy);
+		meta.setSingleKey(singleKey);
+		meta.setJoinColumn(joinColumn);
 
 		return meta;
 	}
@@ -176,33 +129,16 @@ public class PropertyMetaFactory<K, V>
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> singleKey(boolean singleKey)
-	{
-		this.singleKey = singleKey;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> componentClasses(List<Class<?>> componentClasses)
-	{
-		this.componentClasses = componentClasses;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> componentGetters(List<Method> componentGetters)
-	{
-		this.componentGetters = componentGetters;
-		return this;
-	}
-
-	public PropertyMetaFactory<K, V> componentSetters(List<Method> componentSetters)
-	{
-		this.componentSetters = componentSetters;
-		return this;
-	}
-
 	public PropertyMetaFactory<K, V> joinProperties(JoinProperties joinProperties)
 	{
 		this.joinProperties = joinProperties;
 		return this;
 	}
+
+	public PropertyMetaFactory<K, V> multiKeyProperties(MultiKeyProperties multiKeyProperties)
+	{
+		this.multiKeyProperties = multiKeyProperties;
+		return this;
+	}
+
 }

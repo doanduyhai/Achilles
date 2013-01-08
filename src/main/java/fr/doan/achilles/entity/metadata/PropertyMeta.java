@@ -1,30 +1,58 @@
 package fr.doan.achilles.entity.metadata;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import me.prettyprint.hector.api.Serializer;
 
-public abstract class PropertyMeta<K, V>
+public class PropertyMeta<K, V>
 {
-
+	private PropertyType type;
 	private String propertyName;
 	private Class<K> keyClass;
-	private Serializer<?> keySerializer;
+	private Serializer<K> keySerializer;
 	private Class<V> valueClass;
-	private Serializer<?> valueSerializer;
+	private Serializer<V> valueSerializer;
 	private Method getter;
 	private Method setter;
 
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
+	private ExternalWideMapProperties<?> externalWideMapProperties;
 
-	public abstract PropertyType propertyType();
+	private boolean singleKey;
+	private boolean lazy;
+	private boolean joinColumn;
 
-	public abstract boolean isSingleKey();
+	public PropertyType type()
+	{
+		return type;
+	}
 
-	public abstract boolean isLazy();
+	public void setType(PropertyType propertyType)
+	{
+		this.type = propertyType;
+	}
 
-	public abstract boolean isJoinColumn();
+	public List<V> newListInstance()
+	{
+		return new ArrayList<V>();
+	}
+
+	public Set<V> newSetInstance()
+	{
+		return new HashSet<V>();
+	}
+
+	public Map<K, V> newMapInstance()
+	{
+		return new HashMap<K, V>();
+	}
 
 	public String getPropertyName()
 	{
@@ -46,7 +74,7 @@ public abstract class PropertyMeta<K, V>
 		this.keyClass = keyClass;
 	}
 
-	public Serializer<?> getKeySerializer()
+	public Serializer<K> getKeySerializer()
 	{
 		return keySerializer;
 	}
@@ -66,12 +94,12 @@ public abstract class PropertyMeta<K, V>
 		this.valueClass = valueClass;
 	}
 
-	public Serializer<?> getValueSerializer()
+	public Serializer<V> getValueSerializer()
 	{
 		return valueSerializer;
 	}
 
-	public void setValueSerializer(Serializer<?> valueSerializer)
+	public void setValueSerializer(Serializer<V> valueSerializer)
 	{
 		this.valueSerializer = valueSerializer;
 	}
@@ -124,5 +152,45 @@ public abstract class PropertyMeta<K, V>
 	public void setJoinProperties(JoinProperties joinProperties)
 	{
 		this.joinProperties = joinProperties;
+	}
+
+	public ExternalWideMapProperties<?> getExternalWideMapProperties()
+	{
+		return externalWideMapProperties;
+	}
+
+	public void setExternalWideMapProperties(ExternalWideMapProperties<?> externalWideMapProperties)
+	{
+		this.externalWideMapProperties = externalWideMapProperties;
+	}
+
+	public boolean isSingleKey()
+	{
+		return singleKey;
+	}
+
+	public void setSingleKey(boolean singleKey)
+	{
+		this.singleKey = singleKey;
+	}
+
+	public boolean isLazy()
+	{
+		return lazy;
+	}
+
+	public void setLazy(boolean lazy)
+	{
+		this.lazy = lazy;
+	}
+
+	public boolean isJoinColumn()
+	{
+		return joinColumn;
+	}
+
+	public void setJoinColumn(boolean joinColumn)
+	{
+		this.joinColumn = joinColumn;
 	}
 }

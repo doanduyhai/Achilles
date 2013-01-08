@@ -26,7 +26,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.CorrectMultiKey;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
 
@@ -50,7 +50,7 @@ public class KeyValueIteratorForWideRowTest
 	private List<Method> componentSetters;
 
 	@Mock
-	private MultiKeyWideMapMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
+	private PropertyMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
 
 	@Mock
 	private MultiKeyProperties multiKeyProperties;
@@ -96,7 +96,7 @@ public class KeyValueIteratorForWideRowTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForWideRow(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
+		when(factory.createForWideRowOrExternalWideMapMeta(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 

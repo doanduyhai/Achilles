@@ -1,7 +1,5 @@
 package fr.doan.achilles.columnFamily;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -14,9 +12,11 @@ import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 
 import org.apache.commons.lang.StringUtils;
 
+import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.InvalidColumnFamilyException;
-import fr.doan.achilles.validation.Validator;
 
 public class ColumnFamilyHelper
 {
@@ -24,6 +24,7 @@ public class ColumnFamilyHelper
 	private Keyspace keyspace;
 	private ColumnFamilyBuilder columnFamilyBuilder = new ColumnFamilyBuilder();
 	private ColumnFamilyValidator columnFamilyValidator = new ColumnFamilyValidator();
+	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 
 	public ColumnFamilyHelper(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
@@ -57,84 +58,120 @@ public class ColumnFamilyHelper
 		ColumnFamilyDefinition cfDef;
 		if (entityMeta.isWideRow())
 		{
-			cfDef = this.columnFamilyBuilder.buildForWideRow(entityMeta,
-					this.keyspace.getKeyspaceName());
+
+			PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
+					.next();
+			cfDef = this.columnFamilyBuilder.buildCompositeCF(this.keyspace.getKeyspaceName(),
+					propertyMeta, entityMeta.getIdMeta().getValueClass(),
+					entityMeta.getColumnFamilyName());
 		}
 		else
 		{
-			cfDef = this.columnFamilyBuilder.buildForEntity(entityMeta,
+			cfDef = this.columnFamilyBuilder.buildDynamicCompositeCF(entityMeta,
 					this.keyspace.getKeyspaceName());
 
 		}
 		this.addColumnFamily(cfDef);
 	}
 
-	public void validateColumnFamilies(Map<Class<?>, EntityMeta<?>> entityMetaMap,
+	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta<?>> entityMetaMap,
 			boolean forceColumnFamilyCreation)
 	{
 		for (Entry<Class<?>, EntityMeta<?>> entry : entityMetaMap.entrySet())
 		{
-			ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entry.getValue()
-					.getColumnFamilyName());
-			if (cfDef == null)
+
+			EntityMeta<?> entityMeta = entry.getValue();
+			for (Entry<String, PropertyMeta<?, ?>> entryMeta : entityMeta.getPropertyMetas()
+					.entrySet())
 			{
-				if (forceColumnFamilyCreation)
+				PropertyMeta<?, ?> propertyMeta = entryMeta.getValue();
+
+				ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
+						.getExternalWideMapProperties();
+				if (externalWideMapProperties != null)
 				{
-					this.createColumnFamily(entry.getValue());
-				}
-				else
-				{
-					throw new InvalidColumnFamilyException("The required column family '"
-							+ entry.getValue().getColumnFamilyName()
-							+ "' does not exist for entity '"
-							+ entry.getValue().getCanonicalClassName() + "'");
+					GenericWideRowDao<?, ?> externalWideMapDao = externalWideMapProperties
+							.getExternalWideMapDao();
+					this.validateOrCreateCFForExternalWideMap(propertyMeta, entityMeta.getIdMeta()
+							.getValueClass(), forceColumnFamilyCreation, externalWideMapDao
+							.getColumnFamily());
 				}
 			}
-			else
-			{
-				this.columnFamilyValidator.validate(cfDef, entry.getValue());
-			}
+
+			this.validateOrCreateCFForEntity(entityMeta, forceColumnFamilyCreation);
 		}
 	}
 
-	public static String normalizeCanonicalName(String canonicalName)
+	private <ID> void validateOrCreateCFForExternalWideMap(PropertyMeta<?, ?> propertyMeta,
+			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName)
 	{
-		String newCanonicalName = canonicalName.replaceAll("\\.", "_").replaceAll("\\$", "_I_");
-		if (newCanonicalName.length() < 48)
+
+		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(externalColumnFamilyName);
+		if (cfDef == null)
 		{
-			return newCanonicalName;
+			if (forceColumnFamilyCreation)
+			{
+				cfDef = this.columnFamilyBuilder.buildCompositeCF(this.keyspace.getKeyspaceName(),
+						propertyMeta, keyClass, externalColumnFamilyName);
+				this.cluster.addColumnFamily(cfDef, true);
+			}
+			else
+			{
+				throw new InvalidColumnFamilyException("The required column family '"
+						+ externalColumnFamilyName + "' does not exist for field '"
+						+ propertyMeta.getPropertyName() + "'");
+			}
 		}
 		else
 		{
-			String packagaName = canonicalName.replaceAll("(.+)\\..+", "$1");
-			String className = canonicalName.replaceAll(".+\\.(.+)", "$1");
-			String firstPackage = canonicalName.replaceAll("^([a-zA-Z0-9]{2}).+$", "$1");
-			Pattern pattern = Pattern.compile("\\.([a-zA-Z0-9]{2})");
+			this.columnFamilyValidator.validateCFWithPropertyMeta(cfDef, propertyMeta,
+					externalColumnFamilyName);
+		}
+	}
 
-			Matcher matcher = pattern.matcher(packagaName);
-
-			List<String> shortPackages = new ArrayList<String>();
-			shortPackages.add(firstPackage);
-			while (matcher.find())
+	public void validateOrCreateCFForEntity(EntityMeta<?> entityMeta,
+			boolean forceColumnFamilyCreation)
+	{
+		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getColumnFamilyName());
+		if (cfDef == null)
+		{
+			if (forceColumnFamilyCreation)
 			{
-				shortPackages.add(matcher.group(1));
+				this.createColumnFamily(entityMeta);
 			}
-
-			String normalized = StringUtils.join(shortPackages, '_') + '_' + className;
-
-			if (normalized.length() > 48)
+			else
 			{
-				normalized = className;
+				throw new InvalidColumnFamilyException("The required column family '"
+						+ entityMeta.getColumnFamilyName() + "' does not exist for entity '"
+						+ entityMeta.getClassName() + "'");
 			}
+		}
+		else
+		{
+			this.columnFamilyValidator.validateCFWithEntityMeta(cfDef, entityMeta);
+		}
+	}
 
-			Validator
-					.validateTrue(
-							normalized.length() <= 48,
-							"The column family '"
-									+ normalized
-									+ "' is too long. The maximum length for a column family name is 48 characters");
+	public static String normalizerAndValidateColumnFamilyName(String cfName)
+	{
 
-			return normalized;
+		Matcher nameMatcher = CF_PATTERN.matcher(cfName);
+
+		if (nameMatcher.matches())
+		{
+			return cfName;
+		}
+		else if (cfName.contains("."))
+		{
+			String className = cfName.replaceAll(".+\\.(.+)", "$1");
+			return normalizerAndValidateColumnFamilyName(className);
+		}
+		else
+		{
+			throw new InvalidColumnFamilyException(
+					"The column family name '"
+							+ cfName
+							+ "' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
 		}
 	}
 }

@@ -5,151 +5,209 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 
 @Table
-public class CompleteBean implements Serializable {
+public class CompleteBean implements Serializable
+{
 
-    public static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
-    @Id
-    private Long id;
+	@Id
+	private Long id;
 
-    @Column
-    private String name;
+	@Column
+	private String name;
 
-    @Lazy
-    @Column
-    private String label;
+	@Lazy
+	@Column
+	private String label;
 
-    @Column(name = "age_in_years")
-    private Long age;
+	@Column(name = "age_in_years")
+	private Long age;
 
-    @Lazy
-    @Column
-    private List<String> friends;
+	@Lazy
+	@Column
+	private List<String> friends;
 
-    @Column
-    private Set<String> followers;
+	@Column
+	private Set<String> followers;
 
-    @Column
-    private Map<Integer, String> preferences;
+	@Column
+	private Map<Integer, String> preferences;
 
-    @Column
-    private WideMap<UUID, String> tweets;
+	@Column
+	private WideMap<UUID, String> tweets;
 
-    @Column
-    private WideMap<UserTweetKey, String> userTweets;
+	@Column
+	private WideMap<UserTweetKey, String> userTweets;
 
-    public Long getId() {
-        return id;
-    }
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn
+	private Tweet welcomeTweet;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Column(table = "ExternalWideMap")
+	private WideMap<Integer, String> externalWideMap;
 
-    public String getName() {
-        return name;
-    }
+	@Column(table = "MultiKeyExternalWideMap")
+	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public Long getId()
+	{
+		return id;
+	}
 
-    public String getLabel() {
-        return label;
-    }
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
+	public String getName()
+	{
+		return name;
+	}
 
-    public List<String> getFriends() {
-        return friends;
-    }
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 
-    public void setFriends(List<String> friends) {
-        this.friends = friends;
-    }
+	public String getLabel()
+	{
+		return label;
+	}
 
-    public Set<String> getFollowers() {
-        return followers;
-    }
+	public void setLabel(String label)
+	{
+		this.label = label;
+	}
 
-    public void setFollowers(Set<String> followers) {
-        this.followers = followers;
-    }
+	public List<String> getFriends()
+	{
+		return friends;
+	}
 
-    public Map<Integer, String> getPreferences() {
-        return preferences;
-    }
+	public void setFriends(List<String> friends)
+	{
+		this.friends = friends;
+	}
 
-    public void setPreferences(Map<Integer, String> preferences) {
-        this.preferences = preferences;
-    }
+	public Set<String> getFollowers()
+	{
+		return followers;
+	}
 
-    public Long getAge() {
-        return age;
-    }
+	public void setFollowers(Set<String> followers)
+	{
+		this.followers = followers;
+	}
 
-    public void setAge(Long age) {
-        this.age = age;
-    }
+	public Map<Integer, String> getPreferences()
+	{
+		return preferences;
+	}
 
-    public WideMap<UUID, String> getTweets() {
-        return tweets;
-    }
+	public void setPreferences(Map<Integer, String> preferences)
+	{
+		this.preferences = preferences;
+	}
 
-    public void setTweets(WideMap<UUID, String> tweets) {
-        this.tweets = tweets;
-    }
+	public Long getAge()
+	{
+		return age;
+	}
 
-    public WideMap<UserTweetKey, String> getUserTweets() {
-        return userTweets;
-    }
+	public void setAge(Long age)
+	{
+		this.age = age;
+	}
 
-    public void setUserTweets(WideMap<UserTweetKey, String> userTweets) {
-        this.userTweets = userTweets;
-    }
+	public WideMap<UUID, String> getTweets()
+	{
+		return tweets;
+	}
 
-    public static class UserTweetKey implements MultiKey {
-        @Key(order = 1)
-        private String user;
+	public void setTweets(WideMap<UUID, String> tweets)
+	{
+		this.tweets = tweets;
+	}
 
-        @Key(order = 2)
-        private UUID tweet;
+	public WideMap<UserTweetKey, String> getUserTweets()
+	{
+		return userTweets;
+	}
 
-        public UserTweetKey() {
-        }
+	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
+	{
+		this.userTweets = userTweets;
+	}
 
-        public UserTweetKey(String user, UUID tweet) {
-            super();
-            this.user = user;
-            this.tweet = tweet;
-        }
+	public Tweet getWelcomeTweet()
+	{
+		return welcomeTweet;
+	}
 
-        public String getUser() {
-            return user;
-        }
+	public void setWelcomeTweet(Tweet welcomeTweet)
+	{
+		this.welcomeTweet = welcomeTweet;
+	}
 
-        public void setUser(String user) {
-            this.user = user;
-        }
+	public WideMap<Integer, String> getExternalWideMap()
+	{
+		return externalWideMap;
+	}
 
-        public UUID getTweet() {
-            return tweet;
-        }
+	public WideMap<UserTweetKey, String> getMultiKeyExternalWideMap()
+	{
+		return multiKeyExternalWideMap;
+	}
 
-        public void setTweet(UUID tweet) {
-            this.tweet = tweet;
-        }
+	public static class UserTweetKey implements MultiKey
+	{
+		@Key(order = 1)
+		private String user;
 
-    }
+		@Key(order = 2)
+		private UUID tweet;
+
+		public UserTweetKey() {}
+
+		public UserTweetKey(String user, UUID tweet) {
+			super();
+			this.user = user;
+			this.tweet = tweet;
+		}
+
+		public String getUser()
+		{
+			return user;
+		}
+
+		public void setUser(String user)
+		{
+			this.user = user;
+		}
+
+		public UUID getTweet()
+		{
+			return tweet;
+		}
+
+		public void setTweet(UUID tweet)
+		{
+			this.tweet = tweet;
+		}
+
+	}
 }

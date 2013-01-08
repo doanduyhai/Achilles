@@ -32,7 +32,7 @@ public class EntityPersister {
     public <ID> void persist(Object entity, EntityMeta<ID> entityMeta) {
         if (!entityMeta.isWideRow()) {
             ID key = helper.getKey(entity, entityMeta.getIdMeta());
-            Validate.notNull(key, "key value for entity '" + entityMeta.getCanonicalClassName()
+            Validate.notNull(key, "key value for entity '" + entityMeta.getClassName()
                     + "' should not be null");
             GenericEntityDao<ID> dao = entityMeta.getEntityDao();
 
@@ -40,7 +40,7 @@ public class EntityPersister {
 
             for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet()) {
                 PropertyMeta<?, ?> propertyMeta = entry.getValue();
-                switch (propertyMeta.propertyType()) {
+                switch (propertyMeta.type()) {
                     case SIMPLE:
                     case LAZY_SIMPLE:
                         this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, mutator);
@@ -95,7 +95,7 @@ public class EntityPersister {
     public <JOIN_ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity, JoinProperties joinProperties) {
         EntityMeta<JOIN_ID> joinEntityMeta = joinProperties.getEntityMeta();
         JOIN_ID joinId = helper.getKey(joinEntity, joinEntityMeta.getIdMeta());
-        Validate.notNull(joinId, "key value for entity '" + joinEntityMeta.getCanonicalClassName()
+        Validate.notNull(joinId, "key value for entity '" + joinEntityMeta.getClassName()
                 + "' should not be null");
 
         List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
@@ -104,7 +104,7 @@ public class EntityPersister {
         } else {
             Object loadedEntity = loader.load(joinEntity.getClass(), joinId, joinEntityMeta);
             Validator.validateNotNull(loadedEntity, "The entity '"
-                    + joinProperties.getEntityMeta().getCanonicalClassName() + "' with id '" + joinId
+                    + joinProperties.getEntityMeta().getClassName() + "' with id '" + joinId
                     + "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
         }
 
@@ -189,7 +189,7 @@ public class EntityPersister {
     public <ID, V> void persistProperty(Object entity, ID key, GenericEntityDao<ID> dao,
             PropertyMeta<?, V> propertyMeta) {
 
-        switch (propertyMeta.propertyType()) {
+        switch (propertyMeta.type()) {
             case SIMPLE:
             case LAZY_SIMPLE:
                 this.persistSimpleProperty(entity, key, dao, propertyMeta);
@@ -219,7 +219,7 @@ public class EntityPersister {
     }
 
     public <ID> void removeById(ID id, EntityMeta<ID> entityMeta) {
-        Validate.notNull(id, "key value for entity '" + entityMeta.getCanonicalClassName() + "'");
+        Validate.notNull(id, "key value for entity '" + entityMeta.getClassName() + "'");
 
         AbstractDao<ID, ?, ?> dao;
         if (entityMeta.isWideRow()) {

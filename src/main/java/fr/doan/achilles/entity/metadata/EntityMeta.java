@@ -11,7 +11,7 @@ public class EntityMeta<ID>
 {
 
 	public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";
-	private String canonicalClassName;
+	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private Serializer<?> idSerializer;
@@ -23,14 +23,14 @@ public class EntityMeta<ID>
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean wideRow = false;
 
-	public String getCanonicalClassName()
+	public String getClassName()
 	{
-		return canonicalClassName;
+		return className;
 	}
 
-	public void setCanonicalClassName(String canonicalClassName)
+	public void setClassName(String className)
 	{
-		this.canonicalClassName = canonicalClassName;
+		this.className = className;
 	}
 
 	public String getColumnFamilyName()

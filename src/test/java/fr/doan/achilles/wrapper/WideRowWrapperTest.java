@@ -111,7 +111,11 @@ public class WideRowWrapperTest
 		verify(dao).setValue(id, comp, "test", 452);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_find_range() throws Exception
 	{
@@ -128,8 +132,9 @@ public class WideRowWrapperTest
 				});
 
 		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
-		when(keyValueFactory.createListForWideRow(wideMapMeta, hColumns)).thenReturn(keyValues)
-				.thenReturn(keyValues);
+		when(
+				keyValueFactory.createListForWideRowOrExternalWideMapMeta(wideMapMeta,
+						(List) hColumns)).thenReturn(keyValues).thenReturn(keyValues);
 
 		List<KeyValue<Integer, String>> expected = wrapper.findRange(12, 15, false, 10);
 		assertThat(expected).isSameAs(keyValues);

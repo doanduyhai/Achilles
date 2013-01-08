@@ -17,7 +17,7 @@ import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
 public class IteratorFactory
 {
 	public <K, V> KeyValueIterator<K, V> createKeyValueIteratorForWideRow(
-			ColumnSliceIterator<?, Composite, V> columnSliceIterator,
+			ColumnSliceIterator<?, Composite, ?> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		return new KeyValueIteratorForWideRow<K, V>(columnSliceIterator, propertyMeta);

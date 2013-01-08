@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
@@ -33,7 +33,7 @@ public class MultiKeyWideRowIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericWideRowDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
-			STRING_SRZ, normalizeCanonicalName(MultiKeyWideRowBean.class.getCanonicalName()));
+			STRING_SRZ, normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);

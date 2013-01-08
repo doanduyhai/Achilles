@@ -15,8 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
 
@@ -41,10 +40,10 @@ public class IteratorFactoryTest
 	private List<Method> componentSetters;
 
 	@Mock
-	private WideMapMeta<Integer, String> wideMapMeta;
+	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
-	private MultiKeyWideMapMeta<Integer, String> multiKeyWideMapMeta;
+	private PropertyMeta<Integer, String> multiKeyWideMapMeta;
 
 	@Test
 	public void should_create_key_value_iterator() throws Exception

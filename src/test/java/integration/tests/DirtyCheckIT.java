@@ -1,13 +1,17 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizeCanonicalName;
+import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
 import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.serializer.Utils.LONG_SRZ;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
+import integration.tests.entity.Tweet;
+import integration.tests.entity.TweetTestBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
@@ -42,7 +45,7 @@ public class DirtyCheckIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizeCanonicalName(CompleteBean.class.getCanonicalName()));
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
@@ -546,39 +549,116 @@ public class DirtyCheckIT
 		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("75014");
 	}
 
+	@Test
+	public void should_dirty_check_simple_property() throws Exception
+	{
+		bean.setName("another_name");
+
+		em.merge(bean);
+
+		DynamicComposite compo = new DynamicComposite();
+		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
+		compo.addComponent(1, "name", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
+
+		Object reloadedName = dao.getValue(bean.getId(), compo);
+
+		assertThat(reloadedName).isEqualTo("another_name");
+	}
+
+	@Test
+	public void should_dirty_check_lazy_simple_property() throws Exception
+	{
+		bean.setLabel("label");
+
+		em.merge(bean);
+
+		DynamicComposite compo = new DynamicComposite();
+		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
+		compo.addComponent(1, "label", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
+
+		Object reloadedLabel = dao.getValue(bean.getId(), compo);
+
+		assertThat(reloadedLabel).isEqualTo("label");
+	}
+
+	@Test
+	public void should_dirty_check_lazy_simple_property_after_loading() throws Exception
+	{
+		assertThat(bean.getLabel()).isNull();
+
+		bean.setLabel("label");
+
+		em.merge(bean);
+
+		DynamicComposite compo = new DynamicComposite();
+		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
+		compo.addComponent(1, "label", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
+
+		Object reloadedLabel = dao.getValue(bean.getId(), compo);
+
+		assertThat(reloadedLabel).isEqualTo("label");
+	}
+
+	@Test
+	public void should_cascade_dirty_check_join_simple_property() throws Exception
+	{
+		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("Welcome").buid();
+
+		CompleteBean myBean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		myBean.setWelcomeTweet(welcomeTweet);
+
+		myBean = em.merge(myBean);
+
+		Tweet welcomeTweetFromBean = myBean.getWelcomeTweet();
+		welcomeTweetFromBean.setContent("new_welcome_message");
+
+		em.merge(myBean);
+
+		Tweet persistedWelcomeTweet = em.find(Tweet.class, welcomeTweet.getId());
+
+		assertThat(persistedWelcomeTweet).isNotNull();
+		assertThat(persistedWelcomeTweet.getContent()).isEqualTo("new_welcome_message");
+
+	}
+
 	private DynamicComposite endComptForList()
 	{
 		DynamicComposite endComp = new DynamicComposite();
-		endComp.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
-		endComp.addComponent(1, "friends", ComponentEquality.EQUAL);
-		endComp.addComponent(2, 5, ComponentEquality.GREATER_THAN_EQUAL);
+		endComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
+		endComp.addComponent(1, "friends", EQUAL);
+		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
 		return endComp;
 	}
 
 	private DynamicComposite startCompForList()
 	{
 		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "friends", ComponentEquality.EQUAL);
-		startComp.addComponent(2, 0, ComponentEquality.EQUAL);
+		startComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
+		startComp.addComponent(1, "friends", EQUAL);
+		startComp.addComponent(2, 0, EQUAL);
 		return startComp;
 	}
 
 	private DynamicComposite endCompForMap()
 	{
 		DynamicComposite endComp = new DynamicComposite();
-		endComp.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
-		endComp.addComponent(1, "preferences", ComponentEquality.EQUAL);
-		endComp.addComponent(2, 5, ComponentEquality.GREATER_THAN_EQUAL);
+		endComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
+		endComp.addComponent(1, "preferences", EQUAL);
+		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
 		return endComp;
 	}
 
 	private DynamicComposite startCompForMap()
 	{
 		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "preferences", ComponentEquality.EQUAL);
-		startComp.addComponent(2, 0, ComponentEquality.EQUAL);
+		startComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
+		startComp.addComponent(1, "preferences", EQUAL);
+		startComp.addComponent(2, 0, EQUAL);
 		return startComp;
 	}
 

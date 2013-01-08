@@ -1,7 +1,6 @@
 package fr.doan.achilles.entity;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -16,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -32,8 +30,9 @@ import com.google.common.collect.Maps;
 
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.WideMapMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.exception.ValidationException;
 
@@ -55,15 +54,6 @@ public class PropertyHelperTest
 	@Mock
 	private EntityHelper entityHelper;
 
-	@Mock
-	private List<Class<?>> componentClasses;
-
-	@Mock
-	private List<Method> componentGetters;
-
-	@Mock
-	private List<Method> componentSetters;
-
 	@Test
 	public void should_parse_multi_key() throws Exception
 	{
@@ -81,20 +71,12 @@ public class PropertyHelperTest
 		when(entityHelper.findSetter(CorrectMultiKey.class, nameField)).thenReturn(nameSetter);
 		when(entityHelper.findSetter(CorrectMultiKey.class, rankField)).thenReturn(rankSetter);
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				CorrectMultiKey.class);
+		MultiKeyProperties props = helper.parseMultiKey(CorrectMultiKey.class);
 
-		InOrder orderGetters = inOrder(componentGetters);
-		orderGetters.verify(componentGetters).add(nameGetter);
-		orderGetters.verify(componentGetters).add(rankGetter);
+		assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter);
+		assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter);
+		assertThat(props.getComponentClasses()).containsExactly(String.class, int.class);
 
-		InOrder orderSetters = inOrder(componentSetters);
-		orderSetters.verify(componentSetters).add(nameSetter);
-		orderSetters.verify(componentSetters).add(rankSetter);
-
-		InOrder orderClasses = inOrder(componentClasses);
-		orderClasses.verify(componentClasses).add(String.class);
-		orderClasses.verify(componentClasses).add(int.class);
 	}
 
 	@Test
@@ -105,8 +87,7 @@ public class PropertyHelperTest
 				.expectMessage("The class 'java.util.List' is not a valid key type for the MultiKey class '"
 						+ MultiKeyIncorrectType.class.getCanonicalName() + "'");
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				MultiKeyIncorrectType.class);
+		helper.parseMultiKey(MultiKeyIncorrectType.class);
 	}
 
 	@Test
@@ -116,45 +97,38 @@ public class PropertyHelperTest
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				MultiKeyWithNegativeOrder.class);
+		helper.parseMultiKey(MultiKeyWithNegativeOrder.class);
 	}
 
 	@Test
 	public void should_exception_when_multi_key_has_no_annotation() throws Exception
 	{
-		when(componentClasses.isEmpty()).thenReturn(true);
 		expectedEx.expect(ValidationException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				MultiKeyWithNoAnnotation.class);
+		helper.parseMultiKey(MultiKeyWithNoAnnotation.class);
 	}
 
 	@Test
 	public void should_exception_when_multi_key_has_duplicate_order() throws Exception
 	{
-		when(componentClasses.isEmpty()).thenReturn(false);
 		expectedEx.expect(BeanMappingException.class);
 
 		expectedEx.expectMessage("The order '1' is duplicated in MultiKey '"
 				+ MultiKeyWithDuplicateOrder.class.getCanonicalName() + "'");
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				MultiKeyWithDuplicateOrder.class);
+		helper.parseMultiKey(MultiKeyWithDuplicateOrder.class);
 	}
 
 	@Test
 	public void should_exception_when_multi_key_not_instantiable() throws Exception
 	{
-		when(componentClasses.isEmpty()).thenReturn(false);
 		expectedEx.expect(ValidationException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
-		helper.parseMultiKey(componentClasses, componentGetters, componentSetters,
-				MultiKeyNotInstantiable.class);
+		helper.parseMultiKey(MultiKeyNotInstantiable.class);
 	}
 
 	@SuppressWarnings(
@@ -260,14 +234,15 @@ public class PropertyHelperTest
 	public void should_determine_composite_type_alias_for_widerow() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, String> propertyMeta = new WideMapMeta<Integer, String>();
+		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
+		propertyMeta.setType(PropertyType.WIDE_MAP);
 		propertyMeta.setKeyClass(Integer.class);
 		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
 		propertyMap.put("map", propertyMeta);
 		entityMeta.setPropertyMetas(propertyMap);
 
-		String compatatorTypeAlias = helper
-				.determineCompatatorTypeAliasForWideRow(entityMeta, true);
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForCompositeCF(
+				propertyMeta, true);
 
 		assertThat(compatatorTypeAlias).isEqualTo("(BytesType)");
 	}
@@ -276,14 +251,15 @@ public class PropertyHelperTest
 	public void should_determine_composite_type_alias_for_multikey_widerow() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		PropertyMeta<TweetMultiKey, String> propertyMeta = new WideMapMeta<TweetMultiKey, String>();
+		PropertyMeta<TweetMultiKey, String> propertyMeta = new PropertyMeta<TweetMultiKey, String>();
+		propertyMeta.setType(PropertyType.WIDE_MAP);
 		propertyMeta.setKeyClass(TweetMultiKey.class);
 		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
 		propertyMap.put("values", propertyMeta);
 		entityMeta.setPropertyMetas(propertyMap);
 
-		String compatatorTypeAlias = helper
-				.determineCompatatorTypeAliasForWideRow(entityMeta, true);
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForCompositeCF(
+				propertyMeta, true);
 
 		assertThat(compatatorTypeAlias).isEqualTo("(UUIDType,UTF8Type,BytesType)");
 	}
@@ -292,14 +268,15 @@ public class PropertyHelperTest
 	public void should_determine_composite_type_alias_for_widerow_check() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, String> propertyMeta = new WideMapMeta<Integer, String>();
+		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
+		propertyMeta.setType(PropertyType.WIDE_MAP);
 		propertyMeta.setKeyClass(Integer.class);
 		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
 		propertyMap.put("map", propertyMeta);
 		entityMeta.setPropertyMetas(propertyMap);
 
-		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
-				false);
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForCompositeCF(
+				propertyMeta, false);
 
 		assertThat(compatatorTypeAlias).isEqualTo(
 				"CompositeType(org.apache.cassandra.db.marshal.BytesType)");
@@ -309,14 +286,15 @@ public class PropertyHelperTest
 	public void should_determine_composite_type_alias_for_multikey_widerow_check() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		PropertyMeta<TweetMultiKey, String> propertyMeta = new WideMapMeta<TweetMultiKey, String>();
+		PropertyMeta<TweetMultiKey, String> propertyMeta = new PropertyMeta<TweetMultiKey, String>();
+		propertyMeta.setType(PropertyType.WIDE_MAP);
 		propertyMeta.setKeyClass(TweetMultiKey.class);
 		Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
 		propertyMap.put("values", propertyMeta);
 		entityMeta.setPropertyMetas(propertyMap);
 
-		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
-				false);
+		String compatatorTypeAlias = helper.determineCompatatorTypeAliasForCompositeCF(
+				propertyMeta, false);
 
 		assertThat(compatatorTypeAlias)
 				.isEqualTo(

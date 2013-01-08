@@ -9,29 +9,29 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericWideRowDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.WideRowWrapper;
+import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 
 /**
- * WideRowWrapperBuilderTest
+ * JoinExternalWideMapWrapperBuilderTest
  * 
  * @author DuyHai DOAN
  * 
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class WideRowWrapperBuilderTest
+public class JoinExternalWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericWideRowDao<Integer, String> dao;
+	private GenericWideRowDao<Integer, Long> dao;
 
 	@Mock
-	private PropertyMeta<Integer, String> wideMapMeta;
+	private PropertyMeta<Integer, String> joinExternalWideMapMeta;
 
 	@Test
 	public void should_build() throws Exception
 	{
-		WideRowWrapper<Integer, Integer, String> wrapper = WideRowWrapperBuilder.builder(1, dao,
-				wideMapMeta).build();
+		JoinExternalWideMapWrapper<Integer, Long, Integer, String> wrapper = JoinExternalWideMapWrapperBuilder
+				.builder(1, dao, joinExternalWideMapMeta).build();
 
 		assertThat(wrapper).isNotNull();
 	}

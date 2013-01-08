@@ -34,7 +34,7 @@ public class DynamicCompositeKeyFactory
 			int hashOrPosition)
 	{
 		DynamicComposite composite = new DynamicComposite();
-		composite.setComponent(0, propertyMeta.propertyType().flag(), BYTE_SRZ, BYTE_SRZ
+		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ, BYTE_SRZ
 				.getComparatorType().getTypeName());
 		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ, STRING_SRZ
 				.getComparatorType().getTypeName());
@@ -51,7 +51,7 @@ public class DynamicCompositeKeyFactory
 	public <K, V, T> DynamicComposite createForInsert(PropertyMeta<K, V> propertyMeta, T key)
 	{
 		DynamicComposite composite = new DynamicComposite();
-		PropertyType type = propertyMeta.propertyType();
+		PropertyType type = propertyMeta.type();
 		String propertyName = propertyMeta.getPropertyName();
 		Serializer keySerializer = propertyMeta.getKeySerializer();
 
@@ -103,7 +103,7 @@ public class DynamicCompositeKeyFactory
 			ComponentEquality equality)
 	{
 		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, propertyMeta.propertyType().flag(), ComponentEquality.EQUAL);
+		composite.addComponent(0, propertyMeta.type().flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyMeta.getPropertyName(), equality);
 
 		return composite;
@@ -118,7 +118,7 @@ public class DynamicCompositeKeyFactory
 			ComponentEquality equality)
 	{
 		DynamicComposite composite = new DynamicComposite();
-		PropertyType type = propertyMeta.propertyType();
+		PropertyType type = propertyMeta.type();
 		String propertyName = propertyMeta.getPropertyName();
 
 		if (propertyMeta.isSingleKey())

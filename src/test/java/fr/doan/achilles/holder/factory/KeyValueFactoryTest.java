@@ -168,6 +168,44 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
+	public void should_create_join_entity_from_composite_hcolumn() throws Exception
+	{
+		Integer joinId = 114523;
+		HColumn<Composite, Integer> hColumn = new HColumnImpl<Composite, Integer>(COMPOSITE_SRZ,
+				INT_SRZ);
+		Composite comp = new Composite();
+		comp.setComponent(0, 10, INT_SRZ);
+		hColumn.setName(comp);
+		hColumn.setValue(joinId);
+		hColumn.setTtl(12);
+
+		EntityMeta<Integer> joinEntityMeta = new EntityMeta<Integer>();
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinEntityMeta);
+
+		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
+		when(joinPropertyMeta.isSingleKey()).thenReturn(true);
+		when(joinPropertyMeta.isJoinColumn()).thenReturn(true);
+		when(joinPropertyMeta.getValueClass()).thenReturn(UserBean.class);
+		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+
+		UserBean userBean = new UserBean();
+		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+
+		KeyValue<Integer, UserBean> keyValue = factory.createForWideRowOrExternalWideMapMeta(
+				joinPropertyMeta, hColumn);
+
+		assertThat(keyValue.getKey()).isEqualTo(10);
+		assertThat(keyValue.getValue()).isSameAs(userBean);
+		assertThat(keyValue.getTtl()).isEqualTo(12);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
 	public void should_create_from_composite_column_list() throws Exception
 	{
 		HColumn<Composite, String> hColumn1 = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
@@ -197,9 +235,10 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 		when(wideMapMeta.getValue("test3")).thenReturn("test3");
 
-		List<KeyValue<Integer, String>> builtList = factory.createListForWideRow(//
-				wideMapMeta, //
-				Arrays.asList(hColumn1, hColumn2, hColumn3));
+		List<KeyValue<Integer, String>> builtList = factory
+				.createListForWideRowOrExternalWideMapMeta(//
+						wideMapMeta, //
+						(List) Arrays.asList(hColumn1, hColumn2, hColumn3));
 
 		assertThat(builtList).hasSize(3);
 
@@ -264,7 +303,11 @@ public class KeyValueFactoryTest
 		assertThat(list.get(1).getTtl()).isEqualTo(11);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_create_multikey_from_composite_hcolumn_list() throws Exception
 	{
@@ -295,8 +338,9 @@ public class KeyValueFactoryTest
 		when(multiKeyWideMeta.getValue("val2")).thenReturn("val2");
 		when(multiKeyWideMeta.getValue("val3")).thenReturn("val3");
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForWideRow(
-				multiKeyWideMeta, Arrays.asList(hCol1, hCol2, hCol3));
+		List<KeyValue<TweetMultiKey, String>> multiKeys = factory
+				.createListForWideRowOrExternalWideMapMeta(multiKeyWideMeta,
+						(List) Arrays.asList(hCol1, hCol2, hCol3));
 
 		assertThat(multiKeys).hasSize(3);
 

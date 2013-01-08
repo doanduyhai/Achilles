@@ -16,7 +16,8 @@ public class ColumnFamilyBuilder
 
 	private PropertyHelper helper = new PropertyHelper();
 
-	public <ID> ColumnFamilyDefinition buildForEntity(EntityMeta<ID> entityMeta, String keyspaceName)
+	public <ID> ColumnFamilyDefinition buildDynamicCompositeCF(EntityMeta<ID> entityMeta,
+			String keyspaceName)
 	{
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
@@ -24,24 +25,20 @@ public class ColumnFamilyBuilder
 
 		cfDef.setKeyValidationClass(entityMeta.getIdSerializer().getComparatorType().getTypeName());
 		cfDef.setComparatorTypeAlias(DYNAMIC_TYPE_ALIASES);
-		cfDef.setComment("Column family for entity '" + entityMeta.getCanonicalClassName() + "'");
+		cfDef.setComment("Column family for entity '" + entityMeta.getClassName() + "'");
 
 		return cfDef;
 	}
 
-	public <ID> ColumnFamilyDefinition buildForWideRow(EntityMeta<ID> entityMeta,
-			String keyspaceName)
+	public <ID> ColumnFamilyDefinition buildCompositeCF(String keyspaceName,
+			PropertyMeta<?, ?> propertyMeta, Class<ID> keyClass, String columnFamilyName)
 	{
-
-		PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator().next();
-		String columnFamilyName = entityMeta.getColumnFamilyName();
-		Class<ID> keyClass = entityMeta.getIdMeta().getValueClass();
-		Class<?> valueClass = wideMapMeta.getValueClass();
+		Class<?> valueClass = propertyMeta.getValueClass();
 
 		Serializer<?> keySerializer = SerializerTypeInferer.getSerializer(keyClass);
 		ComparatorType comparatorType = ComparatorType.COMPOSITETYPE;
-		String comparatorTypesAlias = helper.determineCompatatorTypeAliasForWideRow(entityMeta,
-				true);
+		String comparatorTypesAlias = helper.determineCompatatorTypeAliasForCompositeCF(
+				propertyMeta, true);
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, comparatorType);
@@ -56,5 +53,4 @@ public class ColumnFamilyBuilder
 
 		return cfDef;
 	}
-
 }

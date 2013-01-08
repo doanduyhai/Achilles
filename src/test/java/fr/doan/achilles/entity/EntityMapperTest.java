@@ -36,10 +36,7 @@ import com.google.common.collect.Sets;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ListMeta;
-import fr.doan.achilles.entity.metadata.MapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.SetMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
 import fr.doan.achilles.holder.KeyValueHolder;
 
@@ -184,7 +181,8 @@ public class EntityMapperTest
 	{
 
 		Map<String, List> listProperties = new HashMap<String, List>();
-		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
+		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"friends");
 		mapper.addToList(listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(1);
@@ -198,7 +196,8 @@ public class EntityMapperTest
 
 		Map<String, List> listProperties = new HashMap<String, List>();
 		listProperties.put("test", Arrays.asList("test1", "test2"));
-		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
+		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"friends");
 		mapper.addToList(listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(2);
@@ -214,7 +213,8 @@ public class EntityMapperTest
 	{
 
 		Map<String, Set> setProperties = new HashMap<String, Set>();
-		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
+		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"followers");
 		mapper.addToSet(setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(1);
@@ -231,7 +231,8 @@ public class EntityMapperTest
 		set.addAll(Arrays.asList("test1", "test2"));
 		setProperties.put("test", set);
 
-		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
+		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"followers");
 		mapper.addToSet(setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(2);
@@ -247,7 +248,7 @@ public class EntityMapperTest
 	{
 
 		Map<String, Map> mapProperties = new HashMap<String, Map>();
-		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
 		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(1);
@@ -266,7 +267,7 @@ public class EntityMapperTest
 		map.put(3, "75014");
 		mapProperties.put("test", map);
 
-		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
 		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(2);
@@ -286,9 +287,11 @@ public class EntityMapperTest
 
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 		PropertyMeta<?, ?> simpleMeta = entityMeta.getPropertyMetas().get("name");
-		ListMeta<?> listMeta = (ListMeta<?>) entityMeta.getPropertyMetas().get("friends");
-		SetMeta<?> setMeta = (SetMeta<?>) entityMeta.getPropertyMetas().get("followers");
-		MapMeta<?, ?> mapMeta = (MapMeta<?, ?>) entityMeta.getPropertyMetas().get("preferences");
+		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"friends");
+		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
+				"followers");
+		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
 
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 

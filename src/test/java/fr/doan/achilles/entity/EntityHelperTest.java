@@ -32,7 +32,6 @@ import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.ChildBean;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.MultiKeyWideMapMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.exception.InvalidBeanException;
@@ -53,7 +52,7 @@ public class EntityHelperTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private MultiKeyWideMapMeta<TweetMultiKey, String> wideMapMeta;
+	private PropertyMeta<TweetMultiKey, String> wideMapMeta;
 
 	private final EntityHelper helper = new EntityHelper();
 

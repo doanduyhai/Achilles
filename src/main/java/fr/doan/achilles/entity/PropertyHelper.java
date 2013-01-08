@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
-import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.exception.BeanMappingException;
@@ -88,9 +88,13 @@ public class PropertyHelper
 
 	}
 
-	public void parseMultiKey(List<Class<?>> componentClasses, List<Method> componentGetters,
-			List<Method> componentSetters, Class<?> keyClass)
+	@SuppressWarnings("rawtypes")
+	public MultiKeyProperties parseMultiKey(Class<?> keyClass)
 	{
+		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
+		List<Method> componentGetters = new ArrayList<Method>();
+		List<Method> componentSetters = new ArrayList<Method>();
+
 		int keySum = 0;
 		int keyCount = 0;
 		Map<Integer, Field> components = new HashMap<Integer, Field>();
@@ -146,6 +150,20 @@ public class PropertyHelper
 				"No field with @Key annotation found in the class '" + keyClass.getCanonicalName()
 						+ "'");
 		Validator.validateInstantiable(keyClass);
+
+		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		multiKeyProperties.setComponentClasses(componentClasses);
+		List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
+		for (Class<?> componentClass : componentClasses)
+		{
+			componentSerializers.add((Serializer) SerializerTypeInferer
+					.getSerializer(componentClass));
+		}
+		multiKeyProperties.setComponentSerializers(componentSerializers);
+		multiKeyProperties.setComponentGetters(componentGetters);
+		multiKeyProperties.setComponentSetters(componentSetters);
+
+		return multiKeyProperties;
 	}
 
 	public Class<?> inferValueClass(Type genericType)
@@ -204,23 +222,19 @@ public class PropertyHelper
 		return lazy;
 	}
 
-	public <ID> String determineCompatatorTypeAliasForWideRow(EntityMeta<ID> entityMeta,
+	public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta<?, ?> propertyMeta,
 			boolean forCreation)
 	{
-		PropertyMeta<?, ?> wideMapMeta = entityMeta.getPropertyMetas().values().iterator().next();
-		Class<?> nameClass = wideMapMeta.getKeyClass();
+		Class<?> nameClass = propertyMeta.getKeyClass();
 		List<String> comparatorTypes = new ArrayList<String>();
 		String comparatorTypesAlias;
 
 		if (MultiKey.class.isAssignableFrom(nameClass))
 		{
-			List<Class<?>> componentClasses = new ArrayList<Class<?>>();
-			List<Method> componentGetters = new ArrayList<Method>();
-			List<Method> componentSetters = new ArrayList<Method>();
 
-			this.parseMultiKey(componentClasses, componentGetters, componentSetters, nameClass);
+			MultiKeyProperties multiKeyProperties = this.parseMultiKey(nameClass);
 
-			for (Class<?> clazz : componentClasses)
+			for (Class<?> clazz : multiKeyProperties.getComponentClasses())
 			{
 				Serializer<?> srz = SerializerTypeInferer.getSerializer(clazz);
 				if (forCreation)

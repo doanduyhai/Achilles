@@ -45,15 +45,16 @@ public class EntityMerger
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
+			Object realObject = interceptor.getTarget();
 			for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
 				ID key = interceptor.getKey();
-				if (propertyMeta.propertyType().isMultiValue())
+				if (propertyMeta.type().isMultiValue())
 				{
 					this.persister.removeProperty(key, dao, propertyMeta);
 				}
-				this.persister.persistProperty(entity, key, dao, propertyMeta);
+				this.persister.persistProperty(realObject, key, dao, propertyMeta);
 			}
 			dirtyMap.clear();
 
@@ -61,7 +62,7 @@ public class EntityMerger
 			{
 
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				if (propertyMeta.propertyType() == JOIN_SIMPLE)
+				if (propertyMeta.type() == JOIN_SIMPLE)
 				{
 
 					JoinProperties joinProperties = propertyMeta.getJoinProperties();
