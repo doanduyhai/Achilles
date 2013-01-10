@@ -25,7 +25,7 @@ import parser.entity.CorrectMultiKey;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 
 /**
  * CompositeHelperTest
@@ -114,7 +114,7 @@ public class CompositeHelperTest
 	public void should_exception_when_asc_start_greater_than_end() throws Exception
 	{
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("For range query, start value should be lesser or equal to end");
 
 		helper.checkBounds(wideMapMeta, 15, 12, false);
@@ -124,7 +124,7 @@ public class CompositeHelperTest
 	public void should_exception_when_desc_start_lesser_than_end() throws Exception
 	{
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("For reverse range query, start value should be greater or equal to end value");
 
@@ -185,7 +185,7 @@ public class CompositeHelperTest
 				startComponentValues);
 		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
 
@@ -230,7 +230,7 @@ public class CompositeHelperTest
 				startComponentValues);
 		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
 

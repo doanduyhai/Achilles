@@ -52,9 +52,8 @@ public class EntityMetaBuilder<ID>
 	public EntityMeta build()
 	{
 
-		Validator.validateNotNull(keyspace, "keyspace");
-		Validator.validateNotNull(idMeta, "idMeta");
-		Validator.validateNotBlank(className, "canonicalClassName");
+		Validator.validateNotNull(keyspace, "keyspace should not be null");
+		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
 			columnFamilyName = ColumnFamilyHelper
@@ -64,8 +63,8 @@ public class EntityMetaBuilder<ID>
 		{
 			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(className);
 		}
-		Validator.validateNotNull(serialVersionUID, "serialVersionUID");
-		Validator.validateNotEmpty(propertyMetas, "propertyMetas");
+		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
+		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
 		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN,
 				"columnFamilyName");
 

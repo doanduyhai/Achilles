@@ -208,19 +208,21 @@ public class EntityPersister
 		mutator.execute();
 	}
 
-	private <ID> void batchPersistMapProperty(Object entity, ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+	@SuppressWarnings("unchecked")
+	protected <ID, K, V> void batchPersistMapProperty(Object entity, ID key,
+			GenericDynamicCompositeDao<ID> dao, PropertyMeta<K, V> propertyMeta, Mutator<ID> mutator)
 	{
 
-		Map<?, ?> map = (Map<?, ?>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		Map<K, V> map = (Map<K, V>) helper.getValueFromField(entity, propertyMeta.getGetter());
 		if (map != null)
 		{
-			for (Entry<?, ?> entry : map.entrySet())
+			for (Entry<K, V> entry : map.entrySet())
 			{
 				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, entry
 						.getKey().hashCode());
 
-				KeyValueHolder value = new KeyValueHolder(entry.getKey(), entry.getValue());
+				KeyValueHolder<K, V> value = new KeyValueHolder<K, V>(entry.getKey(),
+						entry.getValue());
 				dao.insertColumn(key, name, value, mutator);
 			}
 		}

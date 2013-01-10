@@ -19,7 +19,7 @@ public class EntityValidator
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
-		Validator.validateNotNull(entity, "entity");
+		Validator.validateNotNull(entity, "Entity should not be null");
 
 		Class baseClass = helper.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(baseClass);

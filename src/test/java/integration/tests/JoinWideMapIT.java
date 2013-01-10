@@ -29,7 +29,7 @@ import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.serializer.SerializerUtils;
 
@@ -197,7 +197,7 @@ public class JoinWideMapIT
 		Tweet unkonwTweet = TweetTestBuilder.tweet().randomId().content("unkonwTweet")
 				.creator(user).buid();
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("The entity '"
 						+ Tweet.class.getCanonicalName()

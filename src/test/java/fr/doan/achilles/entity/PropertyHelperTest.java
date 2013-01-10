@@ -34,7 +34,7 @@ import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 
 /**
  * PropertyHelperTest
@@ -82,7 +82,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_incorrect_type() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("The class 'java.util.List' is not a valid key type for the MultiKey class '"
 						+ MultiKeyIncorrectType.class.getCanonicalName() + "'");
@@ -93,7 +93,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_wrong_key_order() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
@@ -103,7 +103,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_has_no_annotation() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
@@ -124,7 +124,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_not_instantiable() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 

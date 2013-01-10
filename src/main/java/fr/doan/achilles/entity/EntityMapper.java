@@ -14,11 +14,14 @@ import java.util.Set;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import fr.doan.achilles.columnFamily.ColumnFamilyBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.exception.BeanMappingException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.holder.KeyValueHolder;
 
 /**
@@ -27,25 +30,25 @@ import fr.doan.achilles.holder.KeyValueHolder;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 public class EntityMapper
 {
 
+	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyBuilder.class);
+
 	private EntityHelper helper = new EntityHelper();
 
-	public <T, ID> void mapColumnsToBean(ID key, List<Pair<DynamicComposite, Object>> columns,
-			EntityMeta<ID> entityMeta, T entity)
+	@SuppressWarnings("unchecked")
+	public <T, ID> void setEagerPropertiesToEntity(ID key,
+			List<Pair<DynamicComposite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
-		Map<String, List> listProperties = new HashMap<String, List>();
-		Map<String, Set> setProperties = new HashMap<String, Set>();
-		Map<String, Map> mapProperties = new HashMap<String, Map>();
+		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
 
-		mapIdToBean(key, entityMeta.getIdMeta(), entity);
+		Map<String, List<?>> listProperties = new HashMap<String, List<?>>();
+		Map<String, Set<?>> setProperties = new HashMap<String, Set<?>>();
+		Map<String, Map<?, ?>> mapProperties = new HashMap<String, Map<?, ?>>();
+
+		setIdToEntity(key, entityMeta.getIdMeta(), entity);
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
@@ -56,7 +59,7 @@ public class EntityMapper
 
 			if (Arrays.equals(type, SIMPLE.flag()))
 			{
-				mapSimplePropertyToBean(pair.right, propertyMetas.get(propertyName), entity);
+				setSimplePropertyToEntity(pair.right, propertyMetas.get(propertyName), entity);
 			}
 
 			else if (Arrays.equals(type, PropertyType.LIST.flag()))
@@ -76,68 +79,71 @@ public class EntityMapper
 			else if (Arrays.equals(type, PropertyType.MAP.flag()))
 			{
 				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMetas.get(propertyName);
-				addToMap(mapProperties, mapMeta, (KeyValueHolder) pair.right);
+				addToMap(mapProperties, mapMeta, (KeyValueHolder<?, ?>) pair.right);
 			}
 		}
 
-		for (Entry<String, List> entry : listProperties.entrySet())
+		for (Entry<String, List<?>> entry : listProperties.entrySet())
 		{
-			mapListPropertyToBean(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setListPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
-		for (Entry<String, Set> entry : setProperties.entrySet())
+		for (Entry<String, Set<?>> entry : setProperties.entrySet())
 		{
-			mapSetPropertyToBean(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setSetPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
-		for (Entry<String, Map> entry : mapProperties.entrySet())
+		for (Entry<String, Map<?, ?>> entry : mapProperties.entrySet())
 		{
-			mapMapPropertyToBean(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setMapPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
 	}
 
-	protected void addToList(Map<String, List> listProperties, PropertyMeta<Void, ?> listMeta,
-			Object value)
+	@SuppressWarnings("unchecked")
+	protected <V> void addToList(Map<String, List<?>> listProperties,
+			PropertyMeta<Void, ?> listMeta, V value)
 	{
 		String propertyName = listMeta.getPropertyName();
-		List list = null;
+		List<V> list = null;
 		if (!listProperties.containsKey(propertyName))
 		{
-			list = listMeta.newListInstance();
+			list = (List<V>) listMeta.newListInstance();
 			listProperties.put(propertyName, list);
 		}
 		else
 		{
-			list = listProperties.get(propertyName);
+			list = (List<V>) listProperties.get(propertyName);
 		}
 		list.add(value);
 	}
 
-	protected void addToSet(Map<String, Set> setProperties, PropertyMeta<Void, ?> setMeta,
-			Object value)
+	@SuppressWarnings("unchecked")
+	protected <V> void addToSet(Map<String, Set<?>> setProperties, PropertyMeta<Void, ?> setMeta,
+			V value)
 	{
 		String propertyName = setMeta.getPropertyName();
 
-		Set set = null;
+		Set<V> set = null;
 		if (!setProperties.containsKey(propertyName))
 		{
-			set = setMeta.newSetInstance();
+			set = (Set<V>) setMeta.newSetInstance();
 			setProperties.put(propertyName, set);
 		}
 		else
 		{
-			set = setProperties.get(propertyName);
+			set = (Set<V>) setProperties.get(propertyName);
 		}
 		set.add(value);
 	}
 
-	protected <K, V> void addToMap(Map<String, Map> mapProperties, PropertyMeta<K, V> mapMeta,
-			KeyValueHolder keyValueHolder)
+	@SuppressWarnings("unchecked")
+	protected <K, V> void addToMap(Map<String, Map<?, ?>> mapProperties,
+			PropertyMeta<K, V> mapMeta, KeyValueHolder<?, ?> keyValueHolder)
 	{
 		String propertyName = mapMeta.getPropertyName();
 
-		Map map = null;
+		Map<K, V> map = null;
 		if (!mapProperties.containsKey(propertyName))
 		{
 			map = mapMeta.newMapInstance();
@@ -145,71 +151,74 @@ public class EntityMapper
 		}
 		else
 		{
-			map = mapProperties.get(propertyName);
+			map = (Map<K, V>) mapProperties.get(propertyName);
 		}
-		map.put(keyValueHolder.getKey(), mapMeta.getValue(keyValueHolder.getValue()));
+		map.put((K) keyValueHolder.getKey(), mapMeta.getValue(keyValueHolder.getValue()));
 	}
 
-	public <T, ID> void mapIdToBean(ID key, PropertyMeta<?, ?> keyMeta, T entity)
+	public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> keyMeta, T entity)
 	{
-
+		log.trace("Set primary key to entity {} ", entity);
 		try
 		{
 			helper.setValueToField(entity, keyMeta.getSetter(), key);
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + key + "' to entity " + entity, e);
+			throw new AchillesException("Cannot set value '" + key + "' to entity " + entity, e);
 		}
 	}
 
-	public <T, ID> void mapSimplePropertyToBean(Object value, PropertyMeta<?, ?> propertyMeta,
+	public <T, ID> void setSimplePropertyToEntity(Object value, PropertyMeta<?, ?> propertyMeta,
 			T entity)
 	{
+		log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(), entity);
 		try
 		{
 			helper.setValueToField(entity, propertyMeta.getSetter(), propertyMeta.getValue(value));
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + value + "' to entity " + entity,
-					e);
+			throw new AchillesException("Cannot set value '" + value + "' to entity " + entity, e);
 		}
 	}
 
-	public <T, ID> void mapListPropertyToBean(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
+	public <T, ID> void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
 	{
+		log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
 		try
 		{
 			helper.setValueToField(entity, listMeta.getSetter(), list);
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + list + "' to entity " + entity, e);
+			throw new AchillesException("Cannot set value '" + list + "' to entity " + entity, e);
 		}
 	}
 
-	public <T, ID> void mapSetPropertyToBean(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
+	public <T, ID> void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
 	{
+		log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
 		try
 		{
 			helper.setValueToField(entity, setMeta.getSetter(), set);
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + set + "' to entity " + entity, e);
+			throw new AchillesException("Cannot set value '" + set + "' to entity " + entity, e);
 		}
 	}
 
-	public <T, ID> void mapMapPropertyToBean(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
+	public <T, ID> void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
 	{
+		log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
 		try
 		{
 			helper.setValueToField(entity, mapMeta.getSetter(), map);
 		}
 		catch (Exception e)
 		{
-			throw new BeanMappingException("Cannot set value '" + map + "' to entity " + entity, e);
+			throw new AchillesException("Cannot set value '" + map + "' to entity " + entity, e);
 		}
 	}
 }

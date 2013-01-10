@@ -40,7 +40,6 @@ import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.exception.IncorrectTypeException;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -97,7 +96,8 @@ public class PropertyParser
 	private <V> PropertyMeta<Void, V> parseSimpleProperty(Class<?> beanClass, Field field,
 			String propertyName)
 	{
-		Validator.validateSerializable(field.getType(), "property '" + field.getName() + "'");
+		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
+				+ "' should be Serializable");
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 
 		PropertyMeta<Void, V> propertyMeta = null;
@@ -154,7 +154,8 @@ public class PropertyParser
 
 		valueClass = propertyHelper.inferValueClass(genericType);
 
-		Validator.validateSerializable(valueClass, "list value type of '" + field.getName() + "'");
+		Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
+				+ "' should be Serializable");
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
@@ -176,7 +177,8 @@ public class PropertyParser
 		Type genericType = field.getGenericType();
 
 		valueClass = propertyHelper.inferValueClass(genericType);
-		Validator.validateSerializable(valueClass, "set value type of '" + field.getName() + "'");
+		Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
+				+ "' should be Serializable");
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
@@ -218,8 +220,10 @@ public class PropertyParser
 			keyType = Object.class;
 			valueClass = Object.class;
 		}
-		Validator.validateSerializable(valueClass, "map value type of '" + field.getName() + "'");
-		Validator.validateSerializable(keyType, "map key type of '" + field.getName() + "'");
+		Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
+				+ "' should be Serializable");
+		Validator.validateSerializable(keyType, "Map key type of '" + field.getName()
+				+ "' should be Serializable");
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
@@ -297,19 +301,20 @@ public class PropertyParser
 			}
 			else
 			{
-				throw new IncorrectTypeException(
+				throw new BeanMappingException(
 						"The WideMap type should be parameterized with <K,V> for the entity "
 								+ beanClass.getCanonicalName());
 			}
 		}
 		else
 		{
-			throw new IncorrectTypeException(
+			throw new BeanMappingException(
 					"The WideMap type should be parameterized for the entity "
 							+ beanClass.getCanonicalName());
 		}
 
-		Validator.validateSerializable(valueClass, "value type of " + field.getName());
+		Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
+				+ "' should be Serializable");
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 
 		if (filter.hasAnnotation(field, JoinColumn.class))

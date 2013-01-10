@@ -22,7 +22,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.WideMap;
-import fr.doan.achilles.exception.IncorrectTypeException;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -149,7 +149,7 @@ public class EntityParser
 	{
 		if (idMeta == null)
 		{
-			throw new IncorrectTypeException("The entity '" + entityClass.getCanonicalName()
+			throw new BeanMappingException("The entity '" + entityClass.getCanonicalName()
 					+ "' should have at least one field with javax.persistence.Id annotation");
 		}
 	}
@@ -159,7 +159,7 @@ public class EntityParser
 	{
 		if (propertyMetas.isEmpty())
 		{
-			throw new IncorrectTypeException(
+			throw new BeanMappingException(
 					"The entity '"
 							+ entityClass.getCanonicalName()
 							+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");

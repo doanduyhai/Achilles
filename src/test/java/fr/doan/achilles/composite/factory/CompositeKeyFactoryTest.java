@@ -34,7 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.helper.CompositeHelper;
 
 /**
@@ -90,10 +90,10 @@ public class CompositeKeyFactoryTest
 	@Test
 	public void should_create_for_insert() throws Exception
 	{
-		Composite comp = factory.createBaseComposite(wideMapMeta, "a");
+		Composite comp = factory.createBaseComposite(wideMapMeta, 12);
 
 		assertThat(comp.getComponents()).hasSize(1);
-		assertThat((String) comp.getComponents().get(0).getValue()).isEqualTo("a");
+		assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(12);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -133,7 +133,7 @@ public class CompositeKeyFactoryTest
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("There should be 3 values for the key of WideMap 'property'");
 
 		factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
@@ -154,7 +154,7 @@ public class CompositeKeyFactoryTest
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("The values for the for the key of WideMap 'property' should not be null");
 

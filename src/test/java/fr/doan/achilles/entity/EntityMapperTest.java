@@ -46,11 +46,6 @@ import fr.doan.achilles.holder.KeyValueHolder;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMapperTest
 {
@@ -79,18 +74,19 @@ public class EntityMapperTest
 	ArgumentCaptor<String> simpleCaptor;
 
 	@Captor
-	ArgumentCaptor<List> listCaptor;
+	ArgumentCaptor<List<String>> listCaptor;
 
 	@Captor
-	ArgumentCaptor<Set> setCaptor;
+	ArgumentCaptor<Set<String>> setCaptor;
 
 	@Captor
-	ArgumentCaptor<Map> mapCaptor;
+	ArgumentCaptor<Map<Integer, String>> mapCaptor;
 
 	private EntityParser parser = new EntityParser();
 
 	private EntityMeta<Long> entityMeta;
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp()
 	{
@@ -108,7 +104,7 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity),
 				eq(entityMeta.getIdMeta().getSetter()), idCaptor.capture());
 
-		mapper.mapIdToBean(1L, entityMeta.getIdMeta(), entity);
+		mapper.setIdToEntity(1L, entityMeta.getIdMeta(), entity);
 
 		assertThat(idCaptor.getValue()).isEqualTo(1L);
 	}
@@ -122,38 +118,42 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
 				simpleCaptor.capture());
 
-		mapper.mapSimplePropertyToBean("name", namePropertyMeta, entity);
+		mapper.setSimplePropertyToEntity("name", namePropertyMeta, entity);
 
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_map_list_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta<?, ?> listPropertyMeta = entityMeta.getPropertyMetas().get("friends");
+		PropertyMeta<Void, String> listPropertyMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("friends");
 
 		doNothing().when(helper).setValueToField(eq(entity), eq(listPropertyMeta.getSetter()),
 				listCaptor.capture());
 
-		mapper.mapListPropertyToBean(Arrays.asList("foo", "bar"), listPropertyMeta, entity);
+		mapper.setListPropertyToEntity(Arrays.asList("foo", "bar"), listPropertyMeta, entity);
 
 		assertThat(listCaptor.getValue()).hasSize(2);
 		assertThat(listCaptor.getValue()).containsExactly("foo", "bar");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_map_set_property() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta<?, ?> setPropertyMeta = entityMeta.getPropertyMetas().get("followers");
+		PropertyMeta<Void, String> setPropertyMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("followers");
 
 		doNothing().when(helper).setValueToField(eq(entity), eq(setPropertyMeta.getSetter()),
 				setCaptor.capture());
 
-		mapper.mapSetPropertyToBean(Sets.newHashSet("George", "Paul"), setPropertyMeta, entity);
+		mapper.setSetPropertyToEntity(Sets.newHashSet("George", "Paul"), setPropertyMeta, entity);
 
 		assertThat(setCaptor.getValue()).hasSize(2);
 		assertThat(setCaptor.getValue()).contains("George", "Paul");
@@ -174,7 +174,7 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity), eq(mapPropertyMeta.getSetter()),
 				mapCaptor.capture());
 
-		mapper.mapMapPropertyToBean(preferences, mapPropertyMeta, entity);
+		mapper.setMapPropertyToEntity(preferences, mapPropertyMeta, entity);
 
 		assertThat(mapCaptor.getValue()).hasSize(3);
 		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
@@ -182,29 +182,39 @@ public class EntityMapperTest
 		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_empty_list() throws Exception
 	{
 
-		Map<String, List> listProperties = new HashMap<String, List>();
-		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"friends");
-		mapper.addToList(listProperties, listMeta, "foo");
+		Map<String, List<String>> listProperties = new HashMap<String, List<String>>();
+		PropertyMeta<Void, String> listMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("friends");
+		mapper.addToList((Map) listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(1);
 		assertThat(listProperties).containsKey("friends");
 		assertThat(listProperties.get("friends")).containsExactly("foo");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_not_empty_list() throws Exception
 	{
 
-		Map<String, List> listProperties = new HashMap<String, List>();
+		Map<String, List<String>> listProperties = new HashMap<String, List<String>>();
 		listProperties.put("test", Arrays.asList("test1", "test2"));
-		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"friends");
-		mapper.addToList(listProperties, listMeta, "foo");
+		PropertyMeta<Void, String> listMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("friends");
+		mapper.addToList((Map) listProperties, listMeta, "foo");
 
 		assertThat(listProperties).hasSize(2);
 		assertThat(listProperties).containsKey("friends");
@@ -214,32 +224,42 @@ public class EntityMapperTest
 		assertThat(listProperties.get("test")).containsExactly("test1", "test2");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_empty_set() throws Exception
 	{
 
-		Map<String, Set> setProperties = new HashMap<String, Set>();
-		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"followers");
-		mapper.addToSet(setProperties, setMeta, "George");
+		Map<String, Set<String>> setProperties = new HashMap<String, Set<String>>();
+		PropertyMeta<Void, String> setMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("followers");
+		mapper.addToSet((Map) setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(1);
 		assertThat(setProperties).containsKey("followers");
 		assertThat(setProperties.get("followers")).containsExactly("George");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_not_empty_set() throws Exception
 	{
 
-		Map<String, Set> setProperties = new HashMap<String, Set>();
-		HashSet<Object> set = Sets.newHashSet();
+		Map<String, Set<String>> setProperties = new HashMap<String, Set<String>>();
+		HashSet<String> set = Sets.newHashSet();
 		set.addAll(Arrays.asList("test1", "test2"));
 		setProperties.put("test", set);
 
-		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"followers");
-		mapper.addToSet(setProperties, setMeta, "George");
+		PropertyMeta<Void, String> setMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("followers");
+		mapper.addToSet((Map) setProperties, setMeta, "George");
 
 		assertThat(setProperties).hasSize(2);
 		assertThat(setProperties).containsKey("followers");
@@ -249,32 +269,43 @@ public class EntityMapperTest
 		assertThat(setProperties.get("test")).containsExactly("test1", "test2");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_empty_map() throws Exception
 	{
 
-		Map<String, Map> mapProperties = new HashMap<String, Map>();
-		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
-		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
+		Map<String, Map<Integer, String>> mapProperties = new HashMap<String, Map<Integer, String>>();
+		PropertyMeta<Integer, String> mapMeta = (PropertyMeta<Integer, String>) entityMeta
+				.getPropertyMetas().get("preferences");
+		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(1);
 		assertThat(mapProperties).containsKey("preferences");
 		assertThat(mapProperties.get("preferences").get(1)).isEqualTo("FR");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_add_to_not_empty_map() throws Exception
 	{
 
-		Map<String, Map> mapProperties = new HashMap<String, Map>();
+		Map<String, Map<Integer, String>> mapProperties = new HashMap<String, Map<Integer, String>>();
 
-		HashMap map = Maps.newHashMap();
+		HashMap<Integer, String> map = Maps.newHashMap();
 		map.put(2, "Paris");
 		map.put(3, "75014");
 		mapProperties.put("test", map);
 
 		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
-		mapper.addToMap(mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
+		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
 
 		assertThat(mapProperties).hasSize(2);
 		assertThat(mapProperties).containsKey("preferences");
@@ -285,19 +316,22 @@ public class EntityMapperTest
 		assertThat(mapProperties.get("test").get(3)).isEqualTo("75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_map_columns_to_bean() throws Exception
 	{
 
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		PropertyMeta<?, ?> simpleMeta = entityMeta.getPropertyMetas().get("name");
-		PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"friends");
-		PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) entityMeta.getPropertyMetas().get(
-				"followers");
-		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
+		PropertyMeta<Void, Long> idMeta = entityMeta.getIdMeta();
+		PropertyMeta<Void, String> simpleMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("name");
+		PropertyMeta<Void, String> listMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("friends");
+		PropertyMeta<Void, String> setMeta = (PropertyMeta<Void, String>) entityMeta
+				.getPropertyMetas().get("followers");
+		PropertyMeta<Integer, String> mapMeta = (PropertyMeta<Integer, String>) entityMeta
+				.getPropertyMetas().get("preferences");
 
 		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
 
@@ -312,11 +346,11 @@ public class EntityMapperTest
 				"Paul"));
 
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder(1, "FR")));
+				new KeyValueHolder<Integer, String>(1, "FR")));
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder(2, "Paris")));
+				new KeyValueHolder<Integer, String>(2, "Paris")));
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder(3, "75014")));
+				new KeyValueHolder<Integer, String>(3, "75014")));
 
 		doNothing().when(helper).setValueToField(eq(entity), eq(idMeta.getSetter()),
 				idCaptor.capture());
@@ -329,7 +363,7 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity), eq(mapMeta.getSetter()),
 				mapCaptor.capture());
 
-		mapper.mapColumnsToBean(2L, columns, entityMeta, entity);
+		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 
 		assertThat(idCaptor.getValue()).isEqualTo(2L);
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");

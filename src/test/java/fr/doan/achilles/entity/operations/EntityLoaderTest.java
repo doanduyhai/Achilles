@@ -54,7 +54,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
@@ -142,7 +142,7 @@ public class EntityLoaderTest
 
 		loader.load(CompleteBean.class, 1L, entityMeta);
 
-		verify(mapper).mapColumnsToBean(eq(1L), eq(columns), eq(entityMeta),
+		verify(mapper).setEagerPropertiesToEntity(eq(1L), eq(columns), eq(entityMeta),
 				any(CompleteBean.class));
 
 		assertThat(idCaptor.getValue()).isEqualTo(1L);
@@ -540,7 +540,7 @@ public class EntityLoaderTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ValidationException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_join_entity_not_found() throws Exception
 	{
 		Long joinId = 45L;

@@ -2,6 +2,7 @@ package fr.doan.achilles.entity.metadata.builder;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static fr.doan.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -117,6 +118,7 @@ public class EntityMetaBuilderTest
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
+		wideMapMeta.setValueSerializer(STRING_SRZ);
 		wideMapMeta.setType(PropertyType.WIDE_MAP);
 		propertyMetas.put("name", wideMapMeta);
 

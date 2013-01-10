@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.type.MultiKey;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 
 /**
  * Validator
@@ -21,19 +21,19 @@ import fr.doan.achilles.exception.ValidationException;
  */
 public class Validator
 {
-	public static void validateNotBlank(String arg, String label)
+	public static void validateNotBlank(String arg, String message)
 	{
 		if (StringUtils.isBlank(arg))
 		{
-			throw new ValidationException("The property '" + label + "' should not be blank");
+			throw new AchillesException(message);
 		}
 	}
 
-	public static void validateNotNull(Object arg, String msg)
+	public static void validateNotNull(Object arg, String message)
 	{
 		if (arg == null)
 		{
-			throw new ValidationException(msg);
+			throw new AchillesException(message);
 		}
 	}
 
@@ -41,17 +41,7 @@ public class Validator
 	{
 		if (arg == null || arg.isEmpty())
 		{
-			throw new ValidationException(message);
-		}
-	}
-
-	public static void validateSize(Collection<?> arg, int size, String label)
-	{
-		validateNotEmpty(arg, label);
-		if (arg.size() != size)
-		{
-			throw new ValidationException("The collection property '" + label
-					+ "' should have exactly '" + size + "' elements");
+			throw new AchillesException(message);
 		}
 	}
 
@@ -59,26 +49,24 @@ public class Validator
 	{
 		if (arg == null || arg.isEmpty())
 		{
-			throw new ValidationException("The property '" + label
-					+ "' should not be null or empty");
+			throw new AchillesException("The property '" + label + "' should not be null or empty");
 		}
 	}
 
-	public static void validateSize(Map<?, ?> arg, int size, String label)
+	public static void validateSize(Map<?, ?> arg, int size, String message)
 	{
-		validateNotEmpty(arg, label);
+		validateNotEmpty(arg, "The map should not be empty");
 		if (arg.size() != size)
 		{
-			throw new ValidationException("The map property '" + label + "' should have exactly '"
-					+ size + "' elements");
+			throw new AchillesException(message);
 		}
 	}
 
-	public static void validateSerializable(Class<?> clazz, String label)
+	public static void validateSerializable(Class<?> clazz, String message)
 	{
 		if (!Serializable.class.isAssignableFrom(clazz))
 		{
-			throw new ValidationException("The " + label + " should be Serializable");
+			throw new AchillesException(message);
 		}
 	}
 
@@ -87,7 +75,7 @@ public class Validator
 	{
 		if (!allowedTypes.contains(type) && !MultiKey.class.isAssignableFrom(type))
 		{
-			throw new ValidationException(message);
+			throw new AchillesException(message);
 		}
 	}
 
@@ -104,25 +92,25 @@ public class Validator
 					return;
 				}
 			}
-			throw new ValidationException("The class '" + clazz.getCanonicalName()
+			throw new AchillesException("The class '" + clazz.getCanonicalName()
 					+ "' should have a public default constructor");
 		}
 	}
 
 	public static void validateRegExp(String arg, String regexp, String label)
 	{
-		validateNotBlank(arg, label);
+		validateNotBlank(arg, "The text value '" + label + "' should not be blank");
 		if (!Pattern.matches(regexp, arg))
 		{
-			throw new ValidationException("The property '" + label + "' should match the pattern '"
+			throw new AchillesException("The property '" + label + "' should match the pattern '"
 					+ regexp + "'");
 		}
 	}
 
 	public static void validateInstantiable(Class<?> arg)
 	{
+		validateNotNull(arg, "The class should not be null");
 		String canonicalName = arg.getCanonicalName();
-		validateNotNull(arg, canonicalName);
 		validateNoargsConstructor(arg);
 		try
 		{
@@ -130,14 +118,14 @@ public class Validator
 		}
 		catch (InstantiationException e)
 		{
-			throw new ValidationException(
+			throw new AchillesException(
 					"Cannot instantiate the class '"
 							+ canonicalName
 							+ "'. Please ensure the class is not an abstract class, an interface, an array class, a primitive type, or void and have a nullary (default) constructor and is declared public");
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new ValidationException("Cannot instantiate the class '" + canonicalName
+			throw new AchillesException("Cannot instantiate the class '" + canonicalName
 					+ "'. Please ensure the class has a public nullary (default) constructor");
 		}
 		catch (SecurityException e)
@@ -148,7 +136,7 @@ public class Validator
 	{
 		if (!condition)
 		{
-			throw new ValidationException(message);
+			throw new AchillesException(message);
 		}
 	}
 
@@ -156,7 +144,7 @@ public class Validator
 	{
 		if (condition)
 		{
-			throw new ValidationException(message);
+			throw new AchillesException(message);
 		}
 	}
 }

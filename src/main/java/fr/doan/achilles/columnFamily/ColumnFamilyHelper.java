@@ -11,6 +11,8 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -26,6 +28,8 @@ import fr.doan.achilles.exception.InvalidColumnFamilyException;
  */
 public class ColumnFamilyHelper
 {
+	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
+
 	private Cluster cluster;
 	private Keyspace keyspace;
 	private ColumnFamilyBuilder columnFamilyBuilder = new ColumnFamilyBuilder();
@@ -39,6 +43,8 @@ public class ColumnFamilyHelper
 
 	public ColumnFamilyDefinition discoverColumnFamily(String columnFamilyName)
 	{
+		log.debug("Start discovery of column family {}", columnFamilyName);
+
 		KeyspaceDefinition keyspaceDef = this.cluster.describeKeyspace(this.keyspace
 				.getKeyspaceName());
 		if (keyspaceDef != null && keyspaceDef.getCfDefs() != null)
@@ -47,6 +53,7 @@ public class ColumnFamilyHelper
 			{
 				if (StringUtils.equals(cfDef.getName(), columnFamilyName))
 				{
+					log.debug("Existing column family {} found", columnFamilyName);
 					return cfDef;
 				}
 			}
@@ -61,6 +68,8 @@ public class ColumnFamilyHelper
 
 	public void createColumnFamily(EntityMeta<?> entityMeta)
 	{
+		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
+
 		ColumnFamilyDefinition cfDef;
 		if (entityMeta.isWideRow())
 		{
@@ -117,6 +126,9 @@ public class ColumnFamilyHelper
 		{
 			if (forceColumnFamilyCreation)
 			{
+				log.debug("Force creation of column family for propertyMeta {}",
+						propertyMeta.getPropertyName());
+
 				cfDef = this.columnFamilyBuilder.buildCompositeCF(this.keyspace.getKeyspaceName(),
 						propertyMeta, keyClass, externalColumnFamilyName);
 				this.cluster.addColumnFamily(cfDef, true);
@@ -143,6 +155,9 @@ public class ColumnFamilyHelper
 		{
 			if (forceColumnFamilyCreation)
 			{
+				log.debug("Force creation of column family for entityMeta {}",
+						entityMeta.getClassName());
+
 				this.createColumnFamily(entityMeta);
 			}
 			else
@@ -160,6 +175,7 @@ public class ColumnFamilyHelper
 
 	public static String normalizerAndValidateColumnFamilyName(String cfName)
 	{
+		log.trace("Normalizing column family '{}' name agains Cassandra restrictions", cfName);
 
 		Matcher nameMatcher = CF_PATTERN.matcher(cfName);
 

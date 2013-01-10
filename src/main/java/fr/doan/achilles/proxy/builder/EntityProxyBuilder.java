@@ -21,8 +21,8 @@ public class EntityProxyBuilder
 	})
 	public <T> T build(T entity, EntityMeta<?> entityMeta)
 	{
-		Validator.validateNotNull(entity, "entity");
-		Validator.validateNotNull(entityMeta, "entityMeta");
+		Validator.validateNotNull(entity, "entity for proxy builder should not be null");
+		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be");
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());

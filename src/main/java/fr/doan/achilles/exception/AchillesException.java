@@ -6,19 +6,19 @@ package fr.doan.achilles.exception;
  * @author DuyHai DOAN
  * 
  */
-public class ValidationException extends RuntimeException
+public class AchillesException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
 
-	public ValidationException() {
+	public AchillesException() {
 		super();
 	}
 
-	public ValidationException(String message) {
+	public AchillesException(String message) {
 		super(message);
 	}
 
-	public ValidationException(String message, Throwable throwable) {
+	public AchillesException(String message, Throwable throwable) {
 		super(message, throwable);
 	}
 }

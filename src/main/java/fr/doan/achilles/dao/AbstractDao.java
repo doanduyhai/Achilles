@@ -46,7 +46,7 @@ public abstract class AbstractDao<K, N, V>
 	protected AbstractDao() {}
 
 	protected AbstractDao(Keyspace keyspace) {
-		Validator.validateNotNull(keyspace, "keyspace");
+		Validator.validateNotNull(keyspace, "keyspace should not be null");
 		this.keyspace = keyspace;
 	}
 

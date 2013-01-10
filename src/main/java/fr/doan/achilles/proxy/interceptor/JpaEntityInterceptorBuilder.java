@@ -33,13 +33,13 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 	}
 
 	public JpaEntityInterceptorBuilder(EntityMeta<ID> entityMeta) {
-		Validator.validateNotNull(entityMeta, "entityMeta");
+		Validator.validateNotNull(entityMeta, "EntityMeta for interceptor should not be null");
 		this.entityMeta = entityMeta;
 	}
 
 	public JpaEntityInterceptorBuilder<ID> target(Object target)
 	{
-		Validator.validateNotNull(target, "Target object");
+		Validator.validateNotNull(target, "Target object for interceptor should not be null");
 		this.target = target;
 		return this;
 	}
@@ -55,9 +55,11 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 	{
 		JpaEntityInterceptor<ID> interceptor = new JpaEntityInterceptor<ID>();
 
-		Validator.validateNotNull(this.target, "Target object");
-		Validator.validateNotNull(entityMeta.getGetterMetas(), "Getters metadata");
-		Validator.validateNotNull(entityMeta.getSetterMetas(), "Setters metadata");
+		Validator.validateNotNull(this.target, "Target object for interceptor should not be null");
+		Validator.validateNotNull(entityMeta.getGetterMetas(),
+				"Getters metadata for interceptor should not be null");
+		Validator.validateNotNull(entityMeta.getSetterMetas(),
+				"Setters metadata for interceptor should not be null");
 		if (entityMeta.isWideRow())
 		{
 			interceptor.setWideRow(true);

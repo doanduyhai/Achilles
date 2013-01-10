@@ -38,8 +38,8 @@ public class EntityMerger
 	@SuppressWarnings("unchecked")
 	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
 	{
-		Validator.validateNotNull(entity, "proxy object");
-		Validator.validateNotNull(entityMeta, "entityMeta");
+		Validator.validateNotNull(entity, "Proxy object should not be null");
+		Validator.validateNotNull(entityMeta, "entityMeta should not be null");
 
 		T proxy;
 		if (helper.isProxy(entity))

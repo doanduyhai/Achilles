@@ -16,6 +16,8 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.dao.GenericCompositeDao;
@@ -35,6 +37,8 @@ import fr.doan.achilles.exception.BeanMappingException;
  */
 public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory
 {
+
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactoryImpl.class);
 
 	private List<String> entityPackages;
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
@@ -68,9 +72,13 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace,
 			List<String> entityPackages, boolean forceCFCreation)
 	{
-		validateNotNull(cluster, "cluster");
-		validateNotNull(keyspace, "keyspace");
-		validateNotEmpty(entityPackages, "entityPackages");
+		log.info(
+				"Initializing Achilles Thrift-based EntityManagerFactory for cluster '{}' and keyspace '{}' ",
+				cluster.getName(), keyspace.getKeyspaceName());
+
+		validateNotNull(cluster, "Cluster should not be null");
+		validateNotNull(keyspace, "Keyspace should not be null");
+		validateNotEmpty(entityPackages, "EntityPackages should not be empty");
 		this.cluster = cluster;
 		this.keyspace = keyspace;
 		this.entityPackages = entityPackages;
@@ -81,6 +89,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 	protected void bootstrap()
 	{
+		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
+
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 
 		try
@@ -108,6 +118,9 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	protected void discoverEntities(Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
 			throws ClassNotFoundException, IOException
 	{
+		log.info("Start discovery of entities searching in packages '{}'",
+				StringUtils.join(entityPackages, ","));
+
 		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
 		if (!classes.isEmpty())
 		{
@@ -153,7 +166,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		else
 		{
 
-			throw new IllegalArgumentException(
+			throw new BeanMappingException(
 					"No entity with javax.persistence.Table annotation found in the packages "
 							+ StringUtils.join(entityPackages, ","));
 		}
@@ -174,13 +187,13 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	@Override
 	public void close()
 	{
-
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
 	@Override
 	public boolean isOpen()
 	{
-		return true;
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
 }

@@ -15,7 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 
 /**
  * EntityValidatorTest
@@ -49,7 +49,7 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
 
@@ -64,12 +64,12 @@ public class EntityValidatorTest
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_no_meta_found() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(null);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
@@ -80,7 +80,7 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(null);
 

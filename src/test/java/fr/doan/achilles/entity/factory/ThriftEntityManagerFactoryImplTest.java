@@ -1,5 +1,6 @@
 package fr.doan.achilles.entity.factory;
 
+import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -105,7 +106,7 @@ public class ThriftEntityManagerFactoryImplTest
 
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = BeanMappingException.class)
 	public void should_exception_when_no_entity_found() throws Exception
 	{
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(new ArrayList<Class<?>>());
@@ -146,6 +147,7 @@ public class ThriftEntityManagerFactoryImplTest
 	{
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 		joinPropertyMetaToBeFilled.put(longPropertyMeta, Long.class);
+		when(longPropertyMeta.getValueSerializer()).thenReturn(LONG_SRZ);
 
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(Long.class);
@@ -166,6 +168,7 @@ public class ThriftEntityManagerFactoryImplTest
 
 		when(entityMetaMap.containsKey(Long.class)).thenReturn(true);
 		when(entityMetaMap.get(Long.class)).thenReturn(entityMeta1);
+		when(entityMeta1.getIdSerializer()).thenReturn(LONG_SRZ);
 
 		factory.discoverEntities(joinPropertyMetaToBeFilled);
 
@@ -219,13 +222,13 @@ public class ThriftEntityManagerFactoryImplTest
 		assertThat(em).isNotNull();
 	}
 
-	@Test
+	@Test(expected = UnsupportedOperationException.class)
 	public void should_return_true_when_open_called() throws Exception
 	{
-		assertThat(factory.isOpen()).isTrue();
+		factory.isOpen();
 	}
 
-	@Test
+	@Test(expected = UnsupportedOperationException.class)
 	public void should_do_nothing_when_close_called() throws Exception
 	{
 		factory.close();

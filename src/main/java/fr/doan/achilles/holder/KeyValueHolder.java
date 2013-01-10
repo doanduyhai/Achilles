@@ -8,26 +8,26 @@ import java.io.Serializable;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueHolder implements Serializable
+public class KeyValueHolder<K, V> implements Serializable
 {
 
 	public static final long serialVersionUID = 1L;
 
-	private final Object key;
-	private final Object value;
+	private final K key;
+	private final V value;
 
-	public KeyValueHolder(Object key, Object value) {
+	public KeyValueHolder(K key, V value) {
 		super();
 		this.key = key;
 		this.value = value;
 	}
 
-	public Object getKey()
+	public K getKey()
 	{
 		return key;
 	}
 
-	public Object getValue()
+	public V getValue()
 	{
 		return value;
 	}

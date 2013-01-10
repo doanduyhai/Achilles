@@ -20,6 +20,8 @@ import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
@@ -37,6 +39,7 @@ import fr.doan.achilles.validation.Validator;
  */
 public class PropertyHelper
 {
+	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
 	private final EntityHelper entityHelper = new EntityHelper();
@@ -88,9 +91,10 @@ public class PropertyHelper
 
 	}
 
-	@SuppressWarnings("rawtypes")
 	public MultiKeyProperties parseMultiKey(Class<?> keyClass)
 	{
+		log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
+
 		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
 		List<Method> componentGetters = new ArrayList<Method>();
 		List<Method> componentSetters = new ArrayList<Method>();
@@ -156,7 +160,7 @@ public class PropertyHelper
 		List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
 		for (Class<?> componentClass : componentClasses)
 		{
-			componentSerializers.add((Serializer) SerializerTypeInferer
+			componentSerializers.add((Serializer<?>) SerializerTypeInferer
 					.getSerializer(componentClass));
 		}
 		multiKeyProperties.setComponentSerializers(componentSerializers);
@@ -225,6 +229,10 @@ public class PropertyHelper
 	public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta<?, ?> propertyMeta,
 			boolean forCreation)
 	{
+		log.debug(
+				"Determine the Comparator type alias for composite-base column family using propertyMeta of {} ",
+				propertyMeta.getPropertyName());
+
 		Class<?> nameClass = propertyMeta.getKeyClass();
 		List<String> comparatorTypes = new ArrayList<String>();
 		String comparatorTypesAlias;

@@ -40,7 +40,7 @@ import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.helper.CompositeHelper;
 
 /**
@@ -103,10 +103,14 @@ public class DynamicCompositeKeyFactoryTest
 		assertThat(comp.getComponent(2).getValue()).isEqualTo(0);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_for_insert_with_value() throws Exception
 	{
 
+		PropertyMeta<String, String> propertyMeta = mock(PropertyMeta.class);
+		when(propertyMeta.isSingleKey()).thenReturn(true);
+		when(propertyMeta.getKeySerializer()).thenReturn(STRING_SRZ);
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 
@@ -235,7 +239,7 @@ public class DynamicCompositeKeyFactoryTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ValidationException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_serializers_size_different_values_size() throws Exception
 	{
 		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
@@ -249,7 +253,7 @@ public class DynamicCompositeKeyFactoryTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = ValidationException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_values_size_contains_null() throws Exception
 	{
 		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,

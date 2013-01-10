@@ -11,6 +11,10 @@ import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -26,6 +30,7 @@ import fr.doan.achilles.validation.Validator;
  */
 public class DynamicCompositeKeyFactory
 {
+	private static final Logger log = LoggerFactory.getLogger(DynamicCompositeKeyFactory.class);
 
 	private CompositeHelper helper = new CompositeHelper();
 	private EntityHelper entityHelper = new EntityHelper();
@@ -33,6 +38,9 @@ public class DynamicCompositeKeyFactory
 	public <K, V> DynamicComposite createForBatchInsert(PropertyMeta<K, V> propertyMeta,
 			int hashOrPosition)
 	{
+		log.trace("Creating base dynamic composite for propertyMeta {} for batch insert",
+				propertyMeta.getPropertyName());
+
 		DynamicComposite composite = new DynamicComposite();
 		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ, BYTE_SRZ
 				.getComparatorType().getTypeName());
@@ -43,17 +51,17 @@ public class DynamicCompositeKeyFactory
 		return composite;
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
+	@SuppressWarnings("unchecked")
 	public <K, V, T> DynamicComposite createForInsert(PropertyMeta<K, V> propertyMeta, T key)
 	{
+
+		log.trace("Creating dynamic composite for propertyMeta {} for insert",
+				propertyMeta.getPropertyName());
+
 		DynamicComposite composite = new DynamicComposite();
 		PropertyType type = propertyMeta.type();
 		String propertyName = propertyMeta.getPropertyName();
-		Serializer keySerializer = propertyMeta.getKeySerializer();
+		Serializer<T> keySerializer = (Serializer<T>) propertyMeta.getKeySerializer();
 
 		if (propertyMeta.isSingleKey())
 		{
@@ -91,7 +99,7 @@ public class DynamicCompositeKeyFactory
 
 			for (int i = 0; i < srzCount; i++)
 			{
-				Serializer srz = componentSerializers.get(i);
+				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
 				composite.setComponent(i + 2, keyValues.get(i), srz, srz.getComparatorType()
 						.getTypeName());
 			}
@@ -102,6 +110,9 @@ public class DynamicCompositeKeyFactory
 	public <K, V> DynamicComposite createBaseForQuery(PropertyMeta<K, V> propertyMeta,
 			ComponentEquality equality)
 	{
+		log.trace("Creating base dynamic composite for propertyMeta {} query",
+				propertyMeta.getPropertyName());
+
 		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, propertyMeta.type().flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyMeta.getPropertyName(), equality);
@@ -109,14 +120,13 @@ public class DynamicCompositeKeyFactory
 		return composite;
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	public <K, V, T> DynamicComposite createForQuery(PropertyMeta<K, V> propertyMeta, T value,
 			ComponentEquality equality)
 	{
+		log.trace("Creating dynamic composite for propertyMeta {} query",
+				propertyMeta.getPropertyName());
+
 		DynamicComposite composite = new DynamicComposite();
 		PropertyType type = propertyMeta.type();
 		String propertyName = propertyMeta.getPropertyName();
@@ -158,7 +168,7 @@ public class DynamicCompositeKeyFactory
 
 			for (int i = 0; i <= lastNotNullIndex; i++)
 			{
-				Serializer srz = componentSerializers.get(i);
+				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
 				Object keyValue = keyValues.get(i);
 				if (i < lastNotNullIndex)
 				{

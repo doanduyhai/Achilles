@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
@@ -173,7 +173,7 @@ public class JoinColumnIT
 		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
 				.buid();
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("The entity '"
 						+ User.class.getCanonicalName()

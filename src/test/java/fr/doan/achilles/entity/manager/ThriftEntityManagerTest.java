@@ -94,7 +94,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_persist() throws Exception
 	{
-		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		em.persist(entity);
 
@@ -104,7 +104,7 @@ public class ThriftEntityManagerTest
 	@Test(expected = IllegalStateException.class)
 	public void should_exception_trying_to_persist_a_managed_entity() throws Exception
 	{
-		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		when(helper.isProxy(entity)).thenReturn(true);
 		em.persist(entity);
@@ -113,7 +113,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_merge() throws Exception
 	{
-		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		when(merger.mergeEntity(entity, entityMeta)).thenReturn(entity);
 
@@ -125,7 +125,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_remove() throws Exception
 	{
-		when(helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		em.remove(entity);
 		verify(persister).remove(entity, entityMeta);

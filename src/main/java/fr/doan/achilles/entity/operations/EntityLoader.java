@@ -36,9 +36,11 @@ public class EntityLoader
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{
-		Validator.validateNotNull(entityClass, "entity class");
-		Validator.validateNotNull(key, "entity key");
-		Validator.validateNotNull(entityMeta, "entity meta");
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotNull(key, "Entity '" + entityClass.getCanonicalName()
+				+ "' key should not be null");
+		Validator.validateNotNull(entityMeta, "Entity meta for '" + entityClass.getCanonicalName()
+				+ "' should not be null");
 
 		T entity = null;
 		try
@@ -56,7 +58,7 @@ public class EntityLoader
 				if (columns.size() > 0)
 				{
 					entity = entityClass.newInstance();
-					mapper.mapColumnsToBean(key, columns, entityMeta, entity);
+					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
 					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
 
 				}
@@ -112,6 +114,7 @@ public class EntityLoader
 		return set;
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<K, V> mapPropertyMeta)
 	{
@@ -125,7 +128,7 @@ public class EntityLoader
 		Class<K> keyClass = mapPropertyMeta.getKeyClass();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
-			KeyValueHolder holder = (KeyValueHolder) pair.right;
+			KeyValueHolder<K, V> holder = (KeyValueHolder<K, V>) pair.right;
 
 			map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.getValue(holder.getValue()));
 		}

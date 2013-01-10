@@ -7,6 +7,10 @@ import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -21,17 +25,16 @@ import fr.doan.achilles.validation.Validator;
  */
 public class CompositeKeyFactory
 {
+	private static final Logger log = LoggerFactory.getLogger(CompositeKeyFactory.class);
 
 	private CompositeHelper helper = new CompositeHelper();
 	private EntityHelper entityHelper = new EntityHelper();
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)
 	{
+		log.trace("Creating base composite for propertyMeta {}", propertyMeta.getPropertyName());
+
 		Composite composite = new Composite();
 		String propertyName = propertyMeta.getPropertyName();
 
@@ -40,9 +43,9 @@ public class CompositeKeyFactory
 			Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '"
 					+ propertyName + "' should not be null");
 
-			Serializer<?> keySerializer = propertyMeta.getKeySerializer();
-			composite.setComponent(0, keyValue, (Serializer) keySerializer, keySerializer
-					.getComparatorType().getTypeName());
+			Serializer<T> keySerializer = (Serializer<T>) propertyMeta.getKeySerializer();
+			composite.setComponent(0, keyValue, keySerializer, keySerializer.getComparatorType()
+					.getTypeName());
 		}
 		else
 		{
@@ -64,7 +67,7 @@ public class CompositeKeyFactory
 
 			for (int i = 0; i < srzCount; i++)
 			{
-				Serializer srz = componentSerializers.get(i);
+				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
 				composite.setComponent(i, keyValues.get(i), srz, srz.getComparatorType()
 						.getTypeName());
 			}
@@ -72,14 +75,12 @@ public class CompositeKeyFactory
 		return composite;
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
+	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createForQuery(PropertyMeta<K, V> propertyMeta, T keyValue,
 			ComponentEquality equality)
 	{
+		log.trace("Creating query composite for propertyMeta {}", propertyMeta.getPropertyName());
+
 		Composite composite = new Composite();
 		String propertyName = propertyMeta.getPropertyName();
 
@@ -111,7 +112,7 @@ public class CompositeKeyFactory
 
 			for (int i = 0; i <= lastNotNullIndex; i++)
 			{
-				Serializer srz = componentSerializers.get(i);
+				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
 				Object value = keyValues.get(i);
 				if (i < lastNotNullIndex)
 				{

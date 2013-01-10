@@ -51,8 +51,8 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.exception.IncorrectTypeException;
-import fr.doan.achilles.exception.ValidationException;
+import fr.doan.achilles.exception.AchillesException;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
@@ -257,7 +257,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
-		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
 				+ "' should have at least one field with javax.persistence.Id annotation");
 		parser.parseEntity(keyspace, BeanWithNoId.class, joinPropertyMetaToBeFilled);
@@ -266,15 +266,15 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
-		expectedEx.expectMessage("The property 'id' should be Serializable");
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("Value of 'id' should be Serializable");
 		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, joinPropertyMetaToBeFilled);
 	}
 
 	@Test
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
-		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx
 				.expectMessage("The entity '"
 						+ BeanWithNoColumn.class.getCanonicalName()
@@ -285,7 +285,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_entity_has_duplicated_column_name() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
 
@@ -295,7 +295,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_entity_has_duplicated_join_column_name() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedJoinColumnName.class.getCanonicalName() + "'");
 
@@ -326,7 +326,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The WideRow entity '"
 				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
@@ -338,7 +338,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The WideRow entity '"
 				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have a @Column of type WideMap");

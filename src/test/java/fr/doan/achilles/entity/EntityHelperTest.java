@@ -33,8 +33,7 @@ import parser.entity.ChildBean;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.exception.IncorrectTypeException;
-import fr.doan.achilles.exception.InvalidBeanException;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
@@ -109,7 +108,7 @@ public class EntityHelperTest
 			String name;
 		}
 
-		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not exist");
 
 		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
@@ -129,7 +128,7 @@ public class EntityHelperTest
 			}
 		}
 
-		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist");
 
 		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
@@ -149,7 +148,7 @@ public class EntityHelperTest
 			}
 
 		}
-		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not return correct type");
 
 		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
@@ -174,7 +173,7 @@ public class EntityHelperTest
 			}
 
 		}
-		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx
 				.expectMessage("The setter for field 'name' does not return correct type or does not have the correct parameter");
 
@@ -199,7 +198,7 @@ public class EntityHelperTest
 
 		}
 
-		expectedEx.expect(InvalidBeanException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist or is incorrect");
 
 		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
@@ -337,7 +336,7 @@ public class EntityHelperTest
 			private static final long fieldName = 1542L;
 		}
 
-		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx
 				.expectMessage("The 'serialVersionUID' property should be declared for entity 'null'");
 
@@ -364,7 +363,7 @@ public class EntityHelperTest
 			throws Exception
 	{
 
-		expectedEx.expect(IncorrectTypeException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The entity '"
 				+ BeanWithNoTableAnnotation.class.getCanonicalName()
 				+ "' should have @Table annotation");
@@ -393,6 +392,7 @@ public class EntityHelperTest
 		assertThat(helper.isProxy(bean)).isFalse();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_derive_base_class() throws Exception
 	{
@@ -407,7 +407,8 @@ public class EntityHelperTest
 
 		CompleteBean proxy = (CompleteBean) enhancer.create();
 
-		assertThat(helper.deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
+		assertThat((Class<CompleteBean>) helper.deriveBaseClass(proxy)).isEqualTo(
+				CompleteBean.class);
 	}
 
 	@Test

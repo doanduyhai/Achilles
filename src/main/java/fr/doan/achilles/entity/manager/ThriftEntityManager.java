@@ -9,6 +9,9 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
@@ -25,13 +28,9 @@ import fr.doan.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 public class ThriftEntityManager implements EntityManager
 {
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
@@ -51,6 +50,8 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void persist(Object entity)
 	{
+		log.debug("Persisting entity '{}'", entity);
+
 		entityValidator.validateEntity(entity, entityMetaMap);
 		if (helper.isProxy(entity))
 		{
@@ -67,7 +68,7 @@ public class ThriftEntityManager implements EntityManager
 	public <T> T merge(T entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		Class baseClass = helper.deriveBaseClass(entity);
+		Class<?> baseClass = helper.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
 		return this.merger.mergeEntity(entity, entityMeta);
 	}
@@ -81,17 +82,21 @@ public class ThriftEntityManager implements EntityManager
 		this.persister.remove(entity, entityMeta);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
-		Validator.validateNotNull(entityClass, "entity class");
-		Validator.validateNotNull(primaryKey, "entity primaryKey");
-		Validator.validateSerializable(primaryKey.getClass(), "entity primaryKey");
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
+		Validator
+				.validateSerializable(primaryKey.getClass(),
+						"Entity '" + entityClass.getCanonicalName()
+								+ "' primaryKey should be Serializable");
 
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(entityClass);
+		EntityMeta<Serializable> entityMeta = (EntityMeta<Serializable>) this.entityMetaMap
+				.get(entityClass);
 
-		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey,
-				(EntityMeta) entityMeta);
+		T entity = (T) this.loader.load(entityClass, (Serializable) primaryKey, entityMeta);
 
 		if (entity != null)
 		{
@@ -110,14 +115,13 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void flush()
 	{
-		// Do nothing here
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
 	@Override
 	public void setFlushMode(FlushModeType flushMode)
 	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 
 	}
 
@@ -131,7 +135,7 @@ public class ThriftEntityManager implements EntityManager
 	public void lock(Object entity, LockModeType lockMode)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
@@ -151,22 +155,22 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void clear()
 	{
-		//
-
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
 	public boolean contains(Object entity)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
 	public Query createQuery(String qlString)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
@@ -180,27 +184,29 @@ public class ThriftEntityManager implements EntityManager
 	public Query createNativeQuery(String sqlString)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping)
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
 	public void joinTransaction()
 	{
-		// Do nothing
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
 
 	}
 
@@ -213,20 +219,22 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void close()
 	{
-		// Do nothing
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
 
 	}
 
 	@Override
 	public boolean isOpen()
 	{
-		return false;
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
 	}
 
 	@Override
 	public EntityTransaction getTransaction()
 	{
 		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
+				"This operation is not supported for this Cassandra");
 	}
 }

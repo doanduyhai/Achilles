@@ -45,8 +45,8 @@ import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.exception.ValidationException;
 import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
@@ -535,7 +535,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The class '" + Void.class.getCanonicalName()
 				+ "' is not allowed as WideMap key");
 
@@ -650,7 +650,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
@@ -676,7 +676,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
@@ -701,7 +701,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
@@ -874,8 +874,8 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
-		expectedEx.expectMessage("The property 'parser' should be Serializable");
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("Value of 'parser' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parser"), "parser");
 	}
@@ -899,8 +899,8 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
-		expectedEx.expectMessage("The list value type of 'parsers' should be Serializable");
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
@@ -924,8 +924,8 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
-		expectedEx.expectMessage("The set value type of 'parsers' should be Serializable");
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
@@ -949,8 +949,8 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(ValidationException.class);
-		expectedEx.expectMessage("The map value type of 'parsers' should be Serializable");
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
 	}
