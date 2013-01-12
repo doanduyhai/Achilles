@@ -19,11 +19,23 @@
  
 >	git clone https://github.com/doanduyhai/Achilles.git
 
- For now, Achilles depends on the following libraries:
+ For now, **Achilles** depends on the following libraries:
  
  1. Cassandra 1.1.6 (will be upgraded soon to 1.2)
- 2. Hector-core 1.0-5 (Achilles is built upon Hector API) 
+ 2. Hector-core 1.0-5 (**Achilles** is built upon Hector API) 
 
+### Documentation #
+
+>	1. [Available JPA annotations and their semantics in **Achilles**](/documentation/annotations.markdown)
+>	2. [Supported operations for EntityManager](/documentation/annotations.markdown)
+>	3. [Collections and Map with **Achilles**](/documentation/annotations.markdown)
+>	4. [Dirty check](/documentation/annotations.markdown)
+>	5. [Internal wide row](/documentation/annotations.markdown)
+>	6. [External wide row](/documentation/annotations.markdown)
+>	7. [Multi components for wide row](/documentation/annotations.markdown)
+>	8. [Join columns](/documentation/annotations.markdown)
+
+ 
 ### 5 minutes tutorial #
 
 ##### Bootstrap #
@@ -34,24 +46,24 @@
 	
 	Keyspace keyspace = ...
 	
-	EntityManagerFactory entityManagerFactory = new ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
+	EntityManagerFactory entityManagerFactory = new ThriftEntityManagerFactoryImpl(
 			cluster, keyspace, "my.package1,my.package2", true);
 
 
  You need to provide a `me.prettyprint.hector.api.Cluster` and 	`me.prettyprint.hector.api.Keyspace` 
- for the initialization of the EntityManagerFactory. 
+ for the initialization of the **EntityManagerFactory**. 
  
  The third argument is a list of packages (coma separated) for entities scanning.
  
- The *last boolean flag* tells Achilles whether to force the column families creation if they do not 
- exist or not. This flag should be set to **true** most of the time because Achilles creates its own 
+ The *last boolean flag* tells **Achilles** whether to force the column families creation if they do not 
+ exist or not. This flag should be set to **true** most of the time because **Achilles** creates its own 
  column family structure for persistence and it is very unlikely that your existing column families 
- are compatible with Achilles structure (but it can be in some cases, check [Mapping with existing 
+ are compatible with **Achilles** structure (but it can be in some cases, check [Mapping with existing 
  Column Families][])
 
  For Spring users:
 
-	<bean id="entityManagerFactory" class="fr.achilles.entity.factory.ThriftEntityManagerFactoryImpl">
+	<bean id="entityManagerFactory" class="fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl">
 		<constructor-arg index="0" value="cluster"/>
 		<constructor-arg index="1" value="keyspace"/>
 		<constructor-arg index="2" value=""my.package1,my.package2""/>
@@ -62,10 +74,10 @@
 
  Let's create an **User** bean in JPA style
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import org.achilles.annotations.Lazy;
+	import javax.persistence.Column;
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import org.achilles.annotations.Lazy;
  
 	@Table(name="users_column_family")
 	public class User implements Serializable
@@ -98,7 +110,8 @@ import org.achilles.annotations.Lazy;
 		// Getters and setters ...
 	}	
  
-##### Usage #	
+##### Usage #####	
+
 
  First we create an **User** and persist it:
  
