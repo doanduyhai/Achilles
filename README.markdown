@@ -26,14 +26,14 @@
 
 ### Documentation #
 
->	1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/documentation/annotations.markdown)
->	2. [Supported operations for EntityManager](/doanduyhai/achilles//documentation/annotations.markdown)
->	3. [Collections and Map with **Achilles**](/doanduyhai/achilles//documentation/annotations.markdown)
->	4. [Dirty check](/doanduyhai/achilles//documentation/annotations.markdown)
->	5. [Internal wide row](/doanduyhai/achilles//documentation/annotations.markdown)
->	6. [External wide row](/doanduyhai/achilles//documentation/annotations.markdown)
->	7. [Multi components for wide row](/doanduyhai/achilles//documentation/annotations.markdown)
->	8. [Join columns](/doanduyhai/achilles//documentation/annotations.markdown)
+>	1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	2. [Supported operations for EntityManager](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	3. [Collections and Map with **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	4. [Dirty check](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	5. [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	6. [External wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	7. [Multi components for wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+>	8. [Join columns](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
 
  
 ### 5 minutes tutorial #
