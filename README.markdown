@@ -28,13 +28,13 @@
  
 >	mvn clean install 
 
- Then add the following dependency in your pom.xml:
+ Then add the following dependency in your **pom.xml**:
  
->	<dependency>	
->		<groupId>fr.doan</groupId>
->		<artifactId>achilles</artifactId>
->		<version>1.0-beta</version>
->	</dependency>  
+	<dependency>	
+		<groupId>fr.doan</groupId>
+		<artifactId>achilles</artifactId>
+		<version>1.0-beta</version>
+	</dependency>  
 
 ### Documentation #
 
@@ -121,8 +121,9 @@
 		
 		// Getters and setters ...
 	}	
- 
-##### Usage #####	
+
+	
+##### Usage #
 
 
  First we create an **User** and persist it:
