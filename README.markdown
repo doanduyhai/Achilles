@@ -38,14 +38,14 @@
 
 ### Documentation #
 
->	1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	2. [Supported operations for EntityManager](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	3. [Collections and Map with **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	4. [Dirty check](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	5. [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	6. [External wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	7. [Multi components for wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
->	8. [Join columns](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	2. [Supported operations for EntityManager](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	3. [Collections and Map with **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	4. [Dirty check](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	5. [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	6. [External wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	7. [Multi components for wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+	8. [Join columns](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
 
  
 ### 5 minutes tutorial #
@@ -136,13 +136,26 @@
 	user.setLastname("DOAN");
 	user.setAge(30);
 
+	// Favorite Tags
 	Set<String> tags = new HashSet<String>();
 	tags.add("computing");
 	tags.add("java");
 	tags.add("cassandra");
 
 	user.setFavoriteTags(tags);
-
+	
+	// Addresses
+	user.setAddresses(Arrays.asList("1 rue de la paix Paris","15 rue Vaugirard Paris"));
+	
+	// Preferences
+	Map<Integer,String> preferences = new HashMap<Integer,String>();
+	preferences.put(1,"FR");
+	preferences.put(2,"French");
+	preferences.put(3,"Paris");
+	
+	user.setPreferences(preferences);
+	
+	// Save user
 	em.persist(user);
 
  Then we find it by id:
@@ -153,7 +166,11 @@
 	foundUser.getFavoriteTags().add("achilles"); 
 	
 	// Save it
-	em.merge(foundUser);
+	foundUser = em.merge(foundUser);
+	
+	assertEquals(foundUser.getFavoriteTags().get(3),"achilles");
+	
+	
 	
 	
 
