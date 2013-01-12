@@ -250,6 +250,11 @@ public class EntityPersisterTest
 		verify(dao).insertColumn(id, composite, "Paul", mutator);
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_batch_map_property() throws Exception
 	{
@@ -277,9 +282,9 @@ public class EntityPersisterTest
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValueHolder holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValueHolder holder3 = keyValueHolderCaptor.getAllValues().get(2);
+		KeyValueHolder<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValueHolder<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValueHolder<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
 		assertThat(holder1.getKey()).isEqualTo(1);
 		assertThat(holder1.getValue()).isEqualTo("FR");
@@ -291,6 +296,11 @@ public class EntityPersisterTest
 		assertThat(holder3.getValue()).isEqualTo("75014");
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_persist_map_property() throws Exception
 	{
@@ -319,9 +329,9 @@ public class EntityPersisterTest
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValueHolder holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValueHolder holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValueHolder holder3 = keyValueHolderCaptor.getAllValues().get(2);
+		KeyValueHolder<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValueHolder<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValueHolder<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
 		assertThat(holder1.getKey()).isEqualTo(1);
 		assertThat(holder1.getValue()).isEqualTo("FR");

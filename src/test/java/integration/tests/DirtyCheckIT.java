@@ -295,6 +295,7 @@ public class DirtyCheckIT
 		assertThat(columns.get(0).right).isEqualTo("qux");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_put_element() throws Exception
 	{
@@ -309,9 +310,11 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValueHolder) columns.get(3).right).getValue()).isEqualTo("test");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(3).right).getValue()).isEqualTo(
+				"test");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_remove_key() throws Exception
 	{
@@ -326,10 +329,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_put_all() throws Exception
 	{
@@ -347,10 +353,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValueHolder) columns.get(2).right).getValue()).isEqualTo("75015");
-		assertThat(((KeyValueHolder) columns.get(3).right).getValue()).isEqualTo("test");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(2).right).getValue()).isEqualTo(
+				"75015");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(3).right).getValue()).isEqualTo(
+				"test");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_remove() throws Exception
 	{
@@ -365,10 +374,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_remove_all() throws Exception
 	{
@@ -383,9 +395,11 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_retain_all() throws Exception
 	{
@@ -400,10 +414,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("FR");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"FR");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_iterator_remove() throws Exception
 	{
@@ -421,10 +438,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_remove() throws Exception
 	{
@@ -439,10 +459,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_remove_all() throws Exception
 	{
@@ -458,9 +481,11 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_retain_all() throws Exception
 	{
@@ -475,10 +500,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("FR");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"FR");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"Paris");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_iterator_remove() throws Exception
 	{
@@ -496,10 +524,13 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_entrySet_remove_entry() throws Exception
 	{
@@ -519,8 +550,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("Paris");
-		assertThat(((KeyValueHolder) columns.get(1).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"Paris");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
+				"75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -546,7 +579,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder) columns.get(0).right).getValue()).isEqualTo("75014");
+		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
+				"75014");
 	}
 
 	@Test

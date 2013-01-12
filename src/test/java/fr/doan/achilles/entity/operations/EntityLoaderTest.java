@@ -269,9 +269,12 @@ public class EntityLoaderTest
 		DynamicComposite end = new DynamicComposite();
 
 		List<Pair<DynamicComposite, Object>> preferences = new ArrayList<Pair<DynamicComposite, Object>>();
-		preferences.add(new Pair<DynamicComposite, Object>(start, new KeyValueHolder(1, "FR")));
-		preferences.add(new Pair<DynamicComposite, Object>(middle, new KeyValueHolder(2, "Paris")));
-		preferences.add(new Pair<DynamicComposite, Object>(end, new KeyValueHolder(3, "75014")));
+		preferences.add(new Pair<DynamicComposite, Object>(start,
+				new KeyValueHolder<Integer, String>(1, "FR")));
+		preferences.add(new Pair<DynamicComposite, Object>(middle,
+				new KeyValueHolder<Integer, String>(2, "Paris")));
+		preferences.add(new Pair<DynamicComposite, Object>(end,
+				new KeyValueHolder<Integer, String>(3, "75014")));
 
 		when(keyFactory.createBaseForQuery(mapMeta, EQUAL)).thenReturn(start);
 		when(keyFactory.createBaseForQuery(mapMeta, GREATER_THAN_EQUAL)).thenReturn(end);

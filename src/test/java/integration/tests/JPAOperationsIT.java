@@ -58,6 +58,7 @@ public class JPAOperationsIT
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_persist() throws Exception
 	{
@@ -102,17 +103,17 @@ public class JPAOperationsIT
 		assertThat(Paul.right).isIn("George", "Paul");
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValueHolder country = (KeyValueHolder) FR.right;
+		KeyValueHolder<Integer, String> country = (KeyValueHolder<Integer, String>) FR.right;
 		assertThat(country.getKey()).isEqualTo(1);
 		assertThat(country.getValue()).isEqualTo("FR");
 
 		assertThat(Paris.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValueHolder city = (KeyValueHolder) Paris.right;
+		KeyValueHolder<Integer, String> city = (KeyValueHolder<Integer, String>) Paris.right;
 		assertThat(city.getKey()).isEqualTo(2);
 		assertThat(city.getValue()).isEqualTo("Paris");
 
 		assertThat(_75014.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValueHolder zipCode = (KeyValueHolder) _75014.right;
+		KeyValueHolder<Integer, String> zipCode = (KeyValueHolder<Integer, String>) _75014.right;
 		assertThat(zipCode.getKey()).isEqualTo(3);
 		assertThat(zipCode.getValue()).isEqualTo("75014");
 
@@ -248,6 +249,7 @@ public class JPAOperationsIT
 		assertThat(friends).containsExactly("bob", "alice");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_merge_modifications() throws Exception
 	{
@@ -332,7 +334,7 @@ public class JPAOperationsIT
 		Pair<DynamicComposite, Object> FR = columns.get(0);
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValueHolder mapValue = (KeyValueHolder) FR.right;
+		KeyValueHolder<Integer, String> mapValue = (KeyValueHolder<Integer, String>) FR.right;
 		assertThat(mapValue.getValue()).isEqualTo("FR");
 	}
 
