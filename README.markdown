@@ -24,6 +24,18 @@
  1. Cassandra 1.1.6 (will be upgraded soon to 1.2)
  2. Hector-core 1.0-5 (**Achilles** is built upon Hector API) 
 
+ Install **Achilles** jar into your local Maven repository:
+ 
+>	mvn clean install 
+
+ Then add the following dependency in your pom.xml:
+ 
+>	<dependency>	
+>		<groupId>fr.doan</groupId>
+>		<artifactId>achilles</artifactId>
+>		<version>1.0-beta</version>
+>	</dependency>  
+
 ### Documentation #
 
 >	1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
