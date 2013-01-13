@@ -54,6 +54,7 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
 	
 	timeline.insert(currentTime,tweet);
  
+
  Upon call to `timeline.insert(currentTime,tweet)`, **Achilles** will insert into the *timeline\_column\_family* a new column
  with row key = 10L, column name = *currentTime* and column value = *tweet* converted to byte[].
  
@@ -61,7 +62,7 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
  
  The advantage of external wide rows is to separate entity data from wide row data. 
 
- A useful pattern is to have an entity with a few properties (name, age ...) and a lot of external wide row to manage data related
+ An useful pattern is to have an entity with a few properties (name, age ...) and a lot of external wide row to manage data related
  to this user:
 
  	@Table(name="users_column_family")
@@ -99,8 +100,9 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
  - *timeline* to store tweets from user and his friends
  - *friends* to store user' friends by id
  - *followers* to store user' followers by id
- 
- With this design, sending a new Tweet and spreading it to all followers is a piece of cake:
+
+<br/>
+With this design, sending a new Tweet and spreading it to all followers is a piece of cake:
  
 	UUID currentTime = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 	
