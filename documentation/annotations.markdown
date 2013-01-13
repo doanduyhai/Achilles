@@ -135,7 +135,6 @@
 
 ## Specific Achilles Annotations	
 
----------------------------------------	
 ##### @WideRow
 
  The *@WideRow* custom annotation should be put on an entity, along with the JPA *@Table* annotation. It instructs
@@ -159,11 +158,21 @@
  In the above example, **Achilles** will create the *good_old_column_family* with:
  
  1. Key validation class of type **java.lang.Long**, the class of *@Id* field
- 2. Comparator of type 'Composite(Integer)' which represents the key type of *wideMap* field
+ 2. Comparator of type *'Composite(Integer)'* which represents the key type of *wideMap* field
  3. Validation class of type **java.lang.String**, the value type of *wideMap* field
+
  
  An entity is a valid Wide Row for **Achilles** if:
 
  - It has an annotated *@Id* field
  - It has one and only one *@Column* of type **WideMap** 
-  
+
+---------------------------------------	 
+##### @Lazy
+
+ Put on a *@Column* field, this annotation makes it lazy. When the entity is loaded by **Achilles**, only eager 
+ fields are loaded. Lazy fields will be loaded at runtime when the getter is invoked.
+
+ By design, all **WideMap** fields are lazy.
+ 
+ A *lazy* Collection or Map field will be loaded entirely when the getter is invoked.
