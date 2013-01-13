@@ -660,6 +660,18 @@ public class DirtyCheckIT
 
 	}
 
+	@Test
+	public void should_save_without_value() throws Exception
+	{
+		CompleteBean myBean = CompleteBeanTestBuilder.builder().randomId().buid();
+
+		em.persist(myBean);
+
+		CompleteBean found = em.find(CompleteBean.class, myBean.getId());
+
+		assertThat(found).isNotNull();
+	}
+
 	private DynamicComposite endComptForList()
 	{
 		DynamicComposite endComp = new DynamicComposite();

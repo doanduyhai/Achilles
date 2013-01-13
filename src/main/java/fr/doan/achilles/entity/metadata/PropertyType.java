@@ -9,8 +9,8 @@ package fr.doan.achilles.entity.metadata;
 public enum PropertyType
 {
 
-	META(0, false), //
-	START_EAGER(10, false), //
+	START_EAGER(0, false), //
+	META(10, false), //
 	SIMPLE(20, false), //
 	LIST(30, true), //
 	SET(40, true), //
