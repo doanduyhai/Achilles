@@ -64,6 +64,9 @@ public class WideRowIT
 	public void should_insert_values() throws Exception
 	{
 
+		bean = em.find(WideRowBean.class, id);
+		map = bean.getMap();
+
 		insert3Values();
 
 		Composite startComp = new Composite();
