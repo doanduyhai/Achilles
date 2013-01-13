@@ -77,9 +77,19 @@ public class ThriftEntityManager implements EntityManager
 	public void remove(Object entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
+		if (helper.isProxy(entity))
+		{
+			Class<?> baseClass = helper.deriveBaseClass(entity);
+			EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+			this.persister.remove(entity, entityMeta);
 
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
-		this.persister.remove(entity, entityMeta);
+		}
+		else
+		{
+			throw new IllegalStateException(
+					"Then entity is not in 'managed' state. Please use the merge() or find() method to load it first");
+		}
+
 	}
 
 	@SuppressWarnings("unchecked")

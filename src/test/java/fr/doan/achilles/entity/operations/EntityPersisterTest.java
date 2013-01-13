@@ -45,10 +45,12 @@ import parser.entity.WideRowBean;
 import com.google.common.collect.Sets;
 
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
+import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
@@ -567,6 +569,7 @@ public class EntityPersisterTest
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setEntityDao(dao);
+		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 
 		CompleteBean bean = CompleteBeanTestBuilder.builder().buid();
 
@@ -577,12 +580,37 @@ public class EntityPersisterTest
 		verify(dao).removeRow(idValue);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_remove_entity_and_external_wide_map_row() throws Exception
+	{
+		Long idValue = 7856L;
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(dao);
+		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
+		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>();
+		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+
+		externalWideMapProperties.setExternalWideMapDao(externalWideMapDao);
+		propertyMeta.setExternalWideMapProperties(externalWideMapProperties);
+		propertyMetas.put("externalWideMap", propertyMeta);
+
+		entityMeta.setPropertyMetas(propertyMetas);
+
+		persister.removeById(idValue, entityMeta);
+
+		verify(dao).removeRow(idValue);
+		verify(externalWideMapDao).removeRow(idValue);
+	}
+
 	@Test
 	public void should_remove_entity_by_id() throws Exception
 	{
 		Long idValue = 7856L;
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		entityMeta.setEntityDao(dao);
+		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 
 		persister.removeById(idValue, entityMeta);
 

@@ -126,9 +126,21 @@ public class ThriftEntityManagerTest
 	public void should_remove() throws Exception
 	{
 		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.isProxy(entity)).thenReturn(true);
+		when(helper.deriveBaseClass(entity)).thenReturn((Class) CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
+
 		em.remove(entity);
 		verify(persister).remove(entity, entityMeta);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_when_removing_unmanaged_entity() throws Exception
+	{
+		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(helper.isProxy(entity)).thenReturn(false);
+
+		em.remove(entity);
 	}
 
 	@Test

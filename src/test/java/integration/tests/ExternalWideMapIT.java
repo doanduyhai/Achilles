@@ -336,6 +336,26 @@ public class ExternalWideMapIT
 		assertThat(foundStrings).containsExactly("value1", "value5");
 	}
 
+	@Test
+	public void should_remove_all_values_when_entity_is_removed() throws Exception
+	{
+		insert5Values();
+
+		em.remove(bean);
+
+		Composite startComp = new Composite();
+		startComp.addComponent(0, 1, ComponentEquality.EQUAL);
+
+		Composite endComp = new Composite();
+		endComp.addComponent(0, 10, ComponentEquality.GREATER_THAN_EQUAL);
+
+		List<Pair<Composite, String>> columns = externalWideMapDao.findColumnsRange(bean.getId(),
+				startComp, endComp, false, 20);
+
+		assertThat(columns).hasSize(0);
+
+	}
+
 	private void insert3Values()
 	{
 		externalWideMap.insert(1, "value1");

@@ -22,6 +22,7 @@ import fr.doan.achilles.dao.AbstractDao;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
+import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.holder.KeyValueHolder;
@@ -271,6 +272,7 @@ public class EntityPersister
 		removeById(key, entityMeta);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <ID> void removeById(ID id, EntityMeta<ID> entityMeta)
 	{
 		Validate.notNull(id, "key value for entity '" + entityMeta.getClassName() + "'");
@@ -285,6 +287,15 @@ public class EntityPersister
 			dao = entityMeta.getEntityDao();
 		}
 		dao.removeRow(id);
+		for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
+		{
+			ExternalWideMapProperties<ID> externalWideMapProperties = (ExternalWideMapProperties<ID>) entry
+					.getValue().getExternalWideMapProperties();
+			if (externalWideMapProperties != null)
+			{
+				externalWideMapProperties.getExternalWideMapDao().removeRow(id);
+			}
+		}
 	}
 
 	public <ID, V> void removeProperty(ID key, GenericDynamicCompositeDao<ID> dao,

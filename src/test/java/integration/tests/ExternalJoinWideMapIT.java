@@ -23,8 +23,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
@@ -210,6 +210,25 @@ public class ExternalJoinWideMapIT
 		assertThat(foundReTweet1.getContent()).isEqualTo(reTweet2.getContent());
 		assertThat(foundReTweet2.getId()).isEqualTo(reTweet3.getId());
 		assertThat(foundReTweet2.getContent()).isEqualTo(reTweet3.getContent());
+
+	}
+
+	@Test
+	public void should_remove_all_values_when_entity_is_removed() throws Exception
+	{
+		user = em.merge(user);
+
+		user.getRetweets().insert(1, reTweet1);
+		user.getRetweets().insert(2, reTweet2);
+		user.getRetweets().insert(3, reTweet3);
+		user.getRetweets().insert(4, reTweet4);
+
+		em.remove(user);
+
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
+				10);
+
+		assertThat(savedReTweetsUUIDs).hasSize(0);
 
 	}
 

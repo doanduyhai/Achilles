@@ -874,7 +874,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Value of 'parser' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parser"), "parser");
@@ -899,7 +899,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
@@ -924,7 +924,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
@@ -949,7 +949,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
 
 		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");

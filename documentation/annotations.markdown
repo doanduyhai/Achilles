@@ -127,6 +127,8 @@
  **Achilles** will take care of loading the join entity at runtime in the background. For more details, check
  [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)
  
+ **By definition, all join columns are lazy**
+ 
  Example:
 
 	@ManyToMany(cascade = CascadeType.ALL)
@@ -165,7 +167,7 @@
  An entity is a valid Wide Row for **Achilles** if:
 
  - It has an annotated *@Id* field
- - It has one and only one *@Column* of type **WideMap** 
+ - It has **one and only one** *@Column* of type **WideMap** 
 
 ---------------------------------------	 
 ##### @Lazy
@@ -176,3 +178,6 @@
  By design, all **WideMap** fields are lazy.
  
  A *lazy* Collection or Map field will be loaded entirely when the getter is invoked.
+ 
+ It does not make sense to put a *@Lazy* annotation on a *@JoinColumn* since the latter is lazy by definition. However
+ doing so will not raise error, it will be silently ignored by **Achilles**

@@ -266,6 +266,8 @@ public class JPAOperationsIT
 
 		CompleteBean merged = em.merge(found);
 
+		assertThat(merged).isSameAs(found);
+
 		assertThat(merged.getFriends()).hasSize(3);
 		assertThat(merged.getFriends()).containsExactly("bob", "alice", "eve");
 		assertThat(merged.getPreferences()).hasSize(2);
@@ -345,7 +347,7 @@ public class JPAOperationsIT
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		em.persist(bean);
+		bean = em.merge(bean);
 
 		em.remove(bean);
 
@@ -358,6 +360,16 @@ public class JPAOperationsIT
 
 		assertThat(columns).hasSize(0);
 
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_when_removing_transient_entity() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+		em.remove(bean);
 	}
 
 	@Test
