@@ -9,7 +9,7 @@
  * collections and map support (they can be defined lazy or eager) 
  * support for Cassandra wide rows inside entities
  * support for multi components column name with wide row
- * join columns (restricted to @ManyToOne and @ManyToMany, check documentation for more details)
+ * join columns (restricted to *@ManyToOne* and *@ManyToMany*, check documentation for more details)
  * native wide row mapping with dedicated annotation
 
 # Installation #
