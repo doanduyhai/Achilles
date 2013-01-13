@@ -39,7 +39,7 @@
 
 # Documentation #
 
-1. [JPA and custom annotations for bean mapping][1]
+1. [JPA and custom annotations for bean mapping][annotations]
 2. [Supported operations for EntityManager] [2]
 3. [Collections and Map][3]
 4. [Dirty check][4]
@@ -263,7 +263,7 @@
 	extension of **Achilles** to support Cassandra wide row and slice ranges.	
 	
 	
-[1]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
+[annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [2]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [3](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
 [4](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
