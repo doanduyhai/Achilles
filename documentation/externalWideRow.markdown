@@ -33,7 +33,7 @@
 	**Cassandra** type. All **Tweet** objects will be serialized to bytes using Java object serialization
 <br/>
 
-Similar to [Internal wide row][internalWideRow], external wide row values cannot exist independently from the enclosing
+Like [Internal wide row][internalWideRow], external wide row values cannot exist independently from the enclosing
  entity. You cannot insert values directly into the *timeline\_column\_family* without going through the **User** entity.
  
  Example:
@@ -59,9 +59,75 @@ Similar to [Internal wide row][internalWideRow], external wide row values cannot
  
  When the entity **User** is removed, the whole row with row key = 10L will be removed from *timeline\_column\_family*.
  
-  
+ The advantage of external wide rows is to separate entity data from wide row data. 
 
+ A useful pattern is to have an entity with a few properties (name, age ...) and a lot of external wide row to manage data related
+ to this user:
+
+ 	@Table(name="users_column_family")
+	public class User implements Serializable
+	{
+
+		private static final long serialVersionUID = 1L;
+
+		@Id
+		private Long id;
+
+		@Column
+		private String firstname;
+
+		...
+			
+		@Column(table="userline_column_family")
+		private WideMap<UUID, Tweet> tweets; 	
+
+		@Column(table="timeline_column_family")
+		private WideMap<UUID, Tweet> timeline; 			
+		
+		@Column(table="friends_column_family")
+		private WideMap<String, Long> friends; 			
+
+		@Column(table="followers_column_family")
+		private WideMap<String, Long> followers;		
+
+	}
+	
+ Above, we have a typical modeling example for an User in Tweeter. The entity **User** defines some property for the user ( *firstname*,
+ *age*...). Then there is a list of external wide rows:
  
+ - *tweets* to store user' tweets
+ - *timeline* to store tweets from user and his friends
+ - *friends* to store user' friends by id
+ - *followers* to store user' followers by id
+ 
+ With this design, sending a new Tweet and spreading it to all followers is a piece of cake:
+ 
+	UUID currentTime = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+	
+	Tweet tweet = new Tweet();
+	tweet.setContent("Achilles is awesome");
+	tweet.setId(currentTime);
+	
+	// Put the tweet in this user tweetline
+	user.getTweets().insert(currentTime,tweet);
+	
+	// Put the tweet in this user timeline
+	user.getTimeline().insert(currentTime,tweet);
+	
+	// Get an iterator on all followers
+	KeyValueIterator<String, Long> followersIterator = user.getFollowers().iterator(null,null,false,100);
+	
+	// Spread the tweet to each follower timeline
+	while(followersIterator.hasNext())
+	{
+		Long followerId = followersIterator.next().getValue();
+		User follower = em.find(User.class,followerId);
+		
+		follower.getTimeline().insert(currentTime,tweet);
+	}
+	
+ That's as easy as it !	
+	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
