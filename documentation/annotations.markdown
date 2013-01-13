@@ -161,7 +161,7 @@
  2. Comparator of type *'Composite(Integer)'* which represents the key type of *wideMap* field
  3. Validation class of type **java.lang.String**, the value type of *wideMap* field
 
- 
+   
  An entity is a valid Wide Row for **Achilles** if:
 
  - It has an annotated *@Id* field
@@ -170,7 +170,7 @@
 ---------------------------------------	 
 ##### @Lazy
 
- Put on a *@Column* field, this annotation makes it lazy. When the entity is loaded by **Achilles**, only eager 
+ When put on a *@Column* field, this annotation makes it lazy. When the entity is loaded by **Achilles**, only eager 
  fields are loaded. Lazy fields will be loaded at runtime when the getter is invoked.
 
  By design, all **WideMap** fields are lazy.
