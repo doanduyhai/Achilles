@@ -158,17 +158,7 @@
 		private WideMap<Integer, String> wideMap;
 	} 
 
- In the above example, **Achilles** will create the *good_old_column_family* with:
- 
- 1. Key validation class of type **java.lang.Long**, the class of *@Id* field
- 2. Comparator of type *'Composite(Integer)'* which represents the key type of *wideMap* field
- 3. Validation class of type **java.lang.String**, the value type of *wideMap* field
-
-   
- An entity is a valid Wide Row for **Achilles** if:
-
- - It has an annotated *@Id* field
- - It has **one and only one** *@Column* of type **WideMap** 
+ For more details, please report to the [Simple wide row entity][simpleWideRow] page.
 
 <br/>
 ---------------------------------------	 

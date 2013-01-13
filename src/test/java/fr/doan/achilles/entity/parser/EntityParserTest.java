@@ -326,7 +326,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The WideRow entity '"
 				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
@@ -338,10 +338,10 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The WideRow entity '"
 				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
-				+ "' should have a @Column of type WideMap");
+				+ "' should have one and only one @Column of type WideMap");
 
 		parser.parseEntity(keyspace, WideRowBeanWithWrongColumnType.class,
 				joinPropertyMetaToBeFilled);

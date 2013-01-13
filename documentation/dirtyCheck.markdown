@@ -240,17 +240,20 @@
  </tr>
 </table>
 
+<br/>
 >	Please note that when a collection or map is marked as dirty, at flush time **Achilles** will remove all existing
-	value and save all the current value to **Cassandra**. **There is no *atomic* dirty check to persist or remove
-	only dirty elements in a collection or map**.
+	value and save all the current value to **Cassandra**. **There is no *atomic* persist or removal operation for
+	dirty elements in a collection or map**.
 
- Indeed it is technically possible to only flush elements of the collection/map marked as dirty but requires so many 
- work that it does not worth it and the gain in bandwith is not significant, especially when we consider that collections
- or maps contains less than 1000 elements ad recommended above.
+<br/>
+	
+ Indeed it is technically possible to only flush elements of the collection/map marked as dirty but requires so many work 
+ that it does not worth it and the gain in bandwith is not significant, especially when we consider that collections or maps 
+ contains less than 1000 elements ad recommended above.
  
  
 
- Example:
+ Example with **ListIterator**:
  
 	// Favorite tags list initially contains {"computing","java","cassandra"}
 	ListIterator<String> iter = user.getFavoriteTags().listIterator();
@@ -260,7 +263,7 @@
 	// entire favorite tags list is marked as dirty
 	iter.set("achilles");
 	
-	// Remove existing favorite tags and persist the new ones
+	// Remove all existing favorite tags and persist the new ones
 	em.merge(user);
 
 	

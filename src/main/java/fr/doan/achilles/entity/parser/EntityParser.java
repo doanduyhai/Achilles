@@ -171,14 +171,21 @@ public class EntityParser
 	{
 		if (wideRow)
 		{
-			Validator.validateSize(propertyMetas, 1,
-					"The WideRow entity '" + entityClass.getCanonicalName()
-							+ "' should not have more than one property annotated with @Column");
+			if (propertyMetas != null && propertyMetas.size() > 1)
+			{
+				throw new BeanMappingException("The WideRow entity '"
+						+ entityClass.getCanonicalName()
+						+ "' should not have more than one property annotated with @Column");
+			}
 
 			PropertyType type = propertyMetas.entrySet().iterator().next().getValue().type();
 
-			Validator.validateTrue(type == PropertyType.WIDE_MAP, "The WideRow entity '"
-					+ entityClass.getCanonicalName() + "' should have a @Column of type WideMap");
+			if (type != PropertyType.WIDE_MAP)
+			{
+				throw new BeanMappingException("The WideRow entity '"
+						+ entityClass.getCanonicalName()
+						+ "' should have one and only one @Column of type WideMap");
+			}
 		}
 	}
 
