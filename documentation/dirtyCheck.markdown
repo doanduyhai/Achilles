@@ -21,21 +21,17 @@
  <col width=80 span=9 style='width:60pt'>
  <tr height=40 style='height:30.0pt'>
   <td height=40 width=80 style='height:30.0pt;width:60pt'></td>
-  <td width=80 style='width:60pt'>Collection</td>
-  <td width=80 style='width:60pt'>List</td>
-  <td width=80 style='width:60pt'>Set</td>
-  <td width=80 style='width:60pt'>Map</td>
-  <td class=xl66 width=80 style='width:60pt'>Collection.<br>
-    iterator</td>
-  <td class=xl66 width=80 style='width:60pt'>List.<br>
-    iterator</td>
-  <td class=xl66 width=80 style='width:60pt'>List.<br>
-    listIterator</td>
-  <td class=xl66 width=80 style='width:60pt'>Set.<br>
-    iterator</td>
+  <td width=80 style='width:60pt'><strong>Collection</strong></td>
+  <td width=80 style='width:60pt'><strong>List</strong></td>
+  <td width=80 style='width:60pt'><strong>Set</strong></td>
+  <td width=80 style='width:60pt'><strong>Map</strong></td>
+  <td class=xl66 width=80 style='width:60pt'><strong>Collection.<br>iterator</strong></td>
+  <td class=xl66 width=80 style='width:60pt'><strong>List.<br>iterator</strong></td>
+  <td class=xl66 width=80 style='width:60pt'><strong>List.<br>listIterator</strong></td>
+  <td class=xl66 width=80 style='width:60pt'><strong>Set.<br>iterator</strong></td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>add()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>add()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -46,7 +42,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>addAll()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>addAll()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -57,7 +53,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>clear()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>clear()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -68,7 +64,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>remove()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>remove()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -79,7 +75,7 @@
   <td class=xl65>YES</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>removeAll()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>removeAll()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -90,7 +86,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>retainAll()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>retainAll()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -101,7 +97,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>add(pos,value)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>add(pos,value)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
@@ -112,7 +108,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>addAll(pos,col)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>addAll(pos,col)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
@@ -123,7 +119,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>set(pos,val)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>set(pos,val)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
@@ -134,7 +130,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>put(key,val)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>put(key,val)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
@@ -145,7 +141,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>putAll(map)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>putAll(map)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
@@ -156,7 +152,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>set(value)</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>set(value)</strong></td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
   <td class=xl65>N/A</td>
