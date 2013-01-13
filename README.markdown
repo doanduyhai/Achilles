@@ -39,15 +39,15 @@
 
 # Documentation #
 
-1. [JPA and custom annotations for bean mapping] [annotations]
-2. [Supported operations for EntityManager] [emOperations]
-3. [Collections and Map][collectionsAndMaps]
-4. [Dirty check][dirtyCheck]
-5. [Simple wide row entity][simpleWideRow]
-6. [Internal wide row][internalWideRow]
-7. [External wide row][externalWideRow]
-8. [Multi components for wide row][multiComponentKey]
-9. [Join columns][joinColumns]
+1. [JPA and custom annotations for bean mapping][1]
+2. [Supported operations for EntityManager] [2]
+3. [Collections and Map][3]
+4. [Dirty check][4]
+5. [Simple wide row entity][5]
+6. [Internal wide row][6]
+7. [External wide row][7]
+8. [Multi components for wide row][8]
+9. [Join columns][9]
 
  
 # 5 minutes tutorial #
@@ -263,15 +263,15 @@
 	extension of **Achilles** to support Cassandra wide row and slice ranges.	
 	
 	
-[annotations](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
-[emOperations](/doanduyhai/achilles/tree/master/documentation/emOperations.markdown)
-[collectionsAndMaps](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
-[dirtyCheck](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
-[simpleWideRow](/doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown)
-[internalWideRow](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
-[externalWideRow](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
-[multiComponentKey](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
-[joinColumns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown) 
+[1]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
+[2]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
+[3](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
+[4](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
+[5](/doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown)
+[6](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
+[7](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
+[8](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
+[9](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown) 
 
 	
 	
