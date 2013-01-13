@@ -135,6 +135,7 @@
 	@JoinColumn(table="timeline_column_family")
 	private WideMap<UUID,Tweet> timeline;
 
+<br/>
 ## Specific Achilles Annotations	
 
 ##### @WideRow
