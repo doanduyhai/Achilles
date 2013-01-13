@@ -43,10 +43,14 @@
  
  The **WideMap** API allow you to insert, retrieve and remove value, by range or not. Contrary to **Cassandra** Slice Range
  API, you can define **inclusive** or **exclusive bounds** for range queries and range deletions.
+
+ The **KeyValue** type is just a value object to holder the key/value pair.
+
+ The **KeyValueIterator** is a custom Iterator that returns a **KeyValue** instance upon call to *next()*
  
  Behind the scene, **Achilles** relies on (Dynamic) Composite slice range queries to do the job.
  
- To examplify this, let's create a simple wide row entity:
+ To make it clearer, let's create a sample wide row entity:
  
 	@WideRow
 	@Table("good_old_column_family")
@@ -74,13 +78,11 @@
  to persist the bean it because there is no eager field to be saved**.
  
 	
-	...
-	
 	WideRowEntity entity = new WideRowEntity();
 	entity.setId(1L);
 	
 	
-	em.persist(entity);  // Useless, nothing will be persisted so fart
+	em.persist(entity);  // Useless, nothing will be persisted so far
 	
 	
  To get the **WideMap** proxy, you must first obtain an entity from the EntityManager (by *find()* or *merge()*).
@@ -98,11 +100,43 @@
 <br/>	
 
 > 	**Please note that calling `entityManager.find(WideRowBean.class,primaryKey)` will always return an object whatever the primaryKey passed
-	as argument.**
+	as argument. The entity and WideMap proxy only acts as wrapper to access to the underlying Cassandra column family structure**
  
  
 <br/>
+
+ Once you get a *managed* wide row entity, you can use the **WideMap** field to insert, find or remove values to the column family. 
  
+	// Get the WideMap proxy
+	WideMap wideMap = entity.getWideMap(); 
+
+	wideMap.put(1,"value1");
+	wideMap.put(2,"value2");
+	wideMap.put(3,"value3");
+	wideMap.put(4,"value4");
+	
+<br/>
+
+>	**All operations on a WideMap proxy are flushed immediatly to Cassandra. There is no need to call `em.merge(entity)`**
+
+
+ Now let's find some values by range:
+	
+	// Get the WideMap proxy
+	WideMap wideMap = entity.getWideMap(); 
+	
+	// Find all values 
+	// starting at 2 inclusive 
+	// finishing at 4 exclusive
+	// in ascending order
+	// limit result by 10 items
+	List<KeyValue<Integer,String>> foundValues = wideMap.findRange(2, true, 4, false, false, 10);
+	
+	// The result should contains only "value2" & "value3" since finishing bound was defined excluded from the result
+	assertEquals(foudValues.size(),2);
+	assertEquals(foundValues.get(0).getValue(),"value2");
+	assertEquals(foundValues.get(1).getValue(),"value3");
+	
  An entity is a valid Wide Row for **Achilles** if:
 
  - It has an annotated *@Id* field
