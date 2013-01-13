@@ -80,7 +80,7 @@
  * N columns used for *favoriteTags*
  * O columns used for *preferences*
  
- <br/>
+<br/>
 
 So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for the *tweets* internal wide row.
 
