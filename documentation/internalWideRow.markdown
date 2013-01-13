@@ -1,6 +1,6 @@
 ## Internal Wide Row
 
- An internal wide row is simply a wide row structure stored along with other entity field values:
+ An internal wide row is simply a wide row structure stored along with other entity values:
  
 	@Table(name="users_column_family")
 	public class User implements Serializable
@@ -41,9 +41,9 @@
 
  For more details about **wide rows**, check [Simple wide row entity][simpleWideRow].
 
- Internally, **Achilles** saves all users data (*firstname*, *lastname*, *age*, *addresses*, *favoriteTags*, *preferences* and all *tweets*
- values) in a **same physical row** in **Cassandra** storage engine. It has some benefits to doing so, you can benefit a lot from 
- **Cassandra** [row caching][rowCaching].
+ Internally, **Achilles** saves all users data ( _firstname_, *lastname*, *age*, *addresses*, *favoriteTags*, *preferences* and all
+ *tweets* values) in a **same physical row** in **Cassandra** storage engine. It has some benefits to doing so, you can benefit a lot
+ from **Cassandra** [row caching][rowCaching].
  
  Even though internal wide rows are very similar to there simple counterparts, there is still a subtle but important difference. Since 
  internal wide rows data are persisted in the same physical row as other field values, the entity must exist if you want to access them.
@@ -79,6 +79,7 @@
  * M columns used for *addresses*
  * N columns used for *favoriteTags*
  * O columns used for *preferences*
+<br/>
  
  So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for the *tweets* internal wide row.
 
@@ -92,7 +93,8 @@
  * create hotspots in the cluster
  * may not fit entirely in memory, limiting or worse, cancelling the benefit of **row caching** when the row size is very big to be
  of the same order of magnitude than the row cache size
- 
+
+<br/> 
  Long story short, it is a good idea to have wide rows but just do not make them too wide.
  
  If you want to overcome these limits or simply consider it's a bad practice to mix wide row values with entity values, just use
