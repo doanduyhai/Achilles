@@ -6,7 +6,7 @@
  
  Below is a list of all JPA annotations supported by **Achilles**. 
 
-====  
+---------------------------------------  
 ##### @Table
 
  Indicates that an entity is candidate for persistence. When then *name* attribute is filled, it indicates the name
@@ -26,7 +26,7 @@
 	Failing to meet this requirement will trigger a **BeanMappingException**.
 
 
-====	
+---------------------------------------	
 ##### @Id
 
  Marks a field as the primary key for the entity. The primary key can be of any type, even a plain POJO. However it must 
@@ -36,7 +36,7 @@
  engine.
 
 
-====
+---------------------------------------
 ##### @Column
 
  Marks a field to be mapped by **Achilles**. When the *name* attribute of *@Column* is given, the field
@@ -56,7 +56,7 @@
 	private WideMap<UUID,Tweet> tweets;
 	
 
-====	
+---------------------------------------	
 ##### @ManyToOne, @ManyToMany
 
  These annotations should be used only along with *@JoinColumn*.
@@ -117,7 +117,7 @@
  *CascadeType.ALL* in **Achilles** is just a shortcut for `{CascadeType.PERSIST,CascadeType.MERGE}`
  
 
-====	
+---------------------------------------	
 ##### @JoinColumn	
 
  Marks a field to be mapped by **Achilles**. When the *name* attribute of *@JoinColumn* is given, the field
