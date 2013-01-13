@@ -45,7 +45,7 @@
  If the entity is *transient*, the methods will raise an **IllegalStateException**.
 
  If the entity has external **WideMap** fields, all the related rows from external column family will be removed.
- Check [External wide row](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown) for more details
+ Check [External wide row][externalWideRow] for more details
 
 <br/> 
 ---------------------------------------  

@@ -183,12 +183,12 @@
  It does not make sense to put a *@Lazy* annotation on a *@JoinColumn* since the latter is lazy by definition. However
  doing so will not raise error, it will be silently ignored by **Achilles**
  
-[annotations](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
-[emOperations](/doanduyhai/achilles/tree/master/documentation/emOperations.markdown)
-[collectionsAndMaps](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
-[dirtyCheck](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
-[simpleWideRow](/doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown)
-[internalWideRow](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
-[externalWideRow](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
-[multiComponentKey](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
-[joinColumns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)  
+[annotations]: doanduyhai/achilles/tree/master/documentation/annotations.markdown
+[emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
+[collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
+[dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
+[simpleWideRow]: /doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown
+[internalWideRow]: /doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown
+[externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
+[multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
+[joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
