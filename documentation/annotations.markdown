@@ -5,7 +5,8 @@
  annotated by either annotationsis considered transient by **Achilles**
  
  Below is a list of all JPA annotations supported by **Achilles**. 
----- 
+
+----  
 ##### @Table
 
  Indicates that an entity is candidate for persistence. When then *name* attribute is filled, it indicates the name
@@ -24,6 +25,7 @@
 >	Please note that all entities must implement the `java.io.Serializable`	interface and provide a **serialVersionUID**.
 	Failing to meet this requirement will trigger a **BeanMappingException**.
 
+
 ----	
 ##### @Id
 
@@ -33,7 +35,8 @@
  Under the hood, the primary key will be serialized to bytes array and  used as row key (partition key) by the **Cassandra**
  engine.
 
- ----
+
+----
 ##### @Column
 
  Marks a field to be mapped by **Achilles**. When the *name* attribute of *@Column* is given, the field
@@ -52,6 +55,7 @@
 	@Column(table="my_tweets_column_family")
 	private WideMap<UUID,Tweet> tweets;
 	
+
 ----	
 ##### @ManyToOne, @ManyToMany
 
@@ -112,6 +116,7 @@
  *CascadeType.RESFRESH* is implicit for join columns.
  *CascadeType.ALL* in **Achilles** is just a shortcut for `{CascadeType.PERSIST,CascadeType.MERGE}`
  
+
 ----	
 ##### @JoinColumn	
 
