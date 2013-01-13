@@ -266,7 +266,7 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Value of 'id' should be Serializable");
 		parser.parseEntity(keyspace, BeanWithNotSerializableId.class, joinPropertyMetaToBeFilled);
 	}

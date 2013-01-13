@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.doan.achilles.entity.type.MultiKey;
 import fr.doan.achilles.exception.AchillesException;
+import fr.doan.achilles.exception.BeanMappingException;
 
 /**
  * Validator
@@ -66,7 +67,7 @@ public class Validator
 	{
 		if (!Serializable.class.isAssignableFrom(clazz))
 		{
-			throw new AchillesException(message);
+			throw new BeanMappingException(message);
 		}
 	}
 
