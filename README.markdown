@@ -4,13 +4,13 @@
 
  Achilles is an open source Entity Manager for Apache Cassandra. Among all the features:
  
- * dirty check
- * lazy loading
- * collections and map support (they can be defined lazy or eager) 
- * support for Cassandra wide rows inside entities
- * support for multi components column name with wide row
- * join columns (restricted to *@ManyToOne* and *@ManyToMany*, check documentation for more details)
- * native wide row mapping with dedicated annotation
+ - dirty check
+ - lazy loading
+ - collections and map support (they can be defined lazy or eager) 
+ - support for Cassandra wide rows inside entities
+ - support for multi components column name with wide row
+ - join columns (restricted to _@ManyToOne_ and _@ManyToMany_, check documentation for more details)
+ - native wide row mapping with dedicated annotation
 
 # Installation #
 
@@ -38,14 +38,15 @@
 
 # Documentation #
 
-1. [Available JPA annotations and their semantics in **Achilles**](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+1. [JPA and custom annotations for bean mapping](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
 2. [Supported operations for EntityManager](/doanduyhai/achilles/tree/master/documentation/emOperations.markdown)
 3. [Collections and Map with **Achilles**](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
 4. [Dirty check](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
-5. [Internal wide row](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
-6. [External wide row](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
-7. [Multi components for wide row](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
-8. [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)
+5. [Simple wide row entity](/doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown)
+6. [Internal wide row](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
+7. [External wide row](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
+8. [Multi components for wide row](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
+9. [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)
 
  
 # 5 minutes tutorial #
@@ -254,7 +255,7 @@
 
 
 
- And that's it. To have more details on the advanced features, please check the Documentation links above.	
+ And that's it. To have more details on the advanced features, please check the [Documentation](#documentation) links above.	
 	
 >	**Important note**: All operations done with **WideMap** properties are **flushed immediatly to Cassandra**.
 	There is no need to call `em.merge(foundUser)`. **WideMap** interface and API is not part of JPA but a proprietary
