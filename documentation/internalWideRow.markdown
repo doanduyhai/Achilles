@@ -82,16 +82,16 @@
  
  <br/>
 
- So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for the *tweets* internal wide row.
+So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for the *tweets* internal wide row.
 
- Of course if we define other internal wide rows for the same entity, the available remaining space for each of them will be lesser
- than `2.10^9 - (N+M+0+3)`.
+Of course if we define other internal wide rows for the same entity, the available remaining space for each of them will be lesser
+than `2.10^9 - (N+M+0+3)`.
  
- The second limitation is the danger to have a row which is **too wide**. Yes, it seems paradoxical to write it but some guys at Ebay 
- have played with wide rows and recommended not to have too wide rows. (link [here][eBayBlog]). The main reasons for performance 
- issues is that too large rows 
+The second limitation is the danger to have a row which is **too wide**. Yes, it seems paradoxical to write it but some guys at Ebay 
+have played with wide rows and recommended not to have too wide rows. (link [here][eBayBlog]). The main reasons for performance 
+issues is that too large rows 
 
- 
+
  - create hotspots in the cluster
  - may not fit entirely in memory, limiting or worse, cancelling the benefit of **row caching** when the row size is very big to be
  of the same order of magnitude than the row cache size
