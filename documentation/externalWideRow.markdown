@@ -32,7 +32,9 @@
  3. Validation class of type **java.lang.Object** since the value type of *timeline* field is not a standard
 	**Cassandra** type. All **Tweet** objects will be serialized to bytes using Java object serialization
 
- Similar to [Internal wide row][internalWideRow], external wide row values cannot exist independently from the enclosing
+<br/>
+
+Similar to [Internal wide row][internalWideRow], external wide row values cannot exist independently from the enclosing
  entity. You cannot insert values directly into the *timeline\_column\_family* without going through the **User** entity.
  
  Example:
