@@ -7,12 +7,12 @@
  dirty. At flush time , when calling merge(), all dirty fields are persisted in **Cassandra**. This is done by using
  batch insert with **Hector** mutator. All the changes will be sent at once to **Cassandra**. 
  
- However, since there is a default limit of 15Mb in a single message payload (*thrift_transport_size_in_mb* property
+ However, since there is a default limit of *15Mb* in a single message payload (*thrift\_transport\_size\_in\_mb* property
  in **cassandra.yaml**), we strongly recommend not to have too many elements in dirty collections/maps or too big POJO 
  as field.
  
- **Achilles** extends collections and maps dirty check support to the iterator, entrySet, entryIterator, keySet, 
- listIterator and valueCollections returned by them.
+ **Achilles** extends collections and maps dirty check support to the *iterator, entrySet, entryIterator, keySet, 
+ listIterator* and *valueCollections* returned by them.
  
  Below is a matrix of types and operations supported by dirty check:
  
@@ -163,6 +163,114 @@
   <td class=xl65>N/A</td>
  </tr>
 </table>
+
+<br/>
+
+<table border=0 cellpadding=0 cellspacing=0 width=1079 style='border-collapse:
+ collapse;table-layout:fixed;width:808pt'>
+ <col width=136 style='mso-width-source:userset;mso-width-alt:4973;width:102pt'>
+ <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+ <col width=99 style='mso-width-source:userset;mso-width-alt:3620;width:74pt'>
+ <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+ <col width=80 style='width:60pt'>
+ <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+ <col width=119 style='mso-width-source:userset;mso-width-alt:4352;width:89pt'>
+ <tr height=60 style='height:45.0pt'>
+  <td height=60 width=136 style='height:45.0pt;width:102pt'></td>
+  <td class=xl66 width=215 style='width:161pt'>Map.<br>
+    entrySet</td>
+  <td class=xl66 width=99 style='width:74pt'>Map.<br>
+    entrySet.<br>
+    iterator</td>
+  <td class=xl66 width=215 style='width:161pt'>Map.<br>
+    keySet</td>
+  <td class=xl66 width=80 style='width:60pt'>Map.<br>
+    keySet.<br>
+    iterator</td>
+  <td class=xl66 width=215 style='width:161pt'>Map.<br>
+    valuesCollection</td>
+  <td class=xl66 width=119 style='width:89pt'>Map.<br>
+    valuesCollection.<br>
+    iterator</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>add()</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>addAll()</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65>N/A</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>clear()</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>remove()</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>YES</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>removeAll()</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 class=xl65 style='height:15.0pt'>retainAll()</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+  <td class=xl65>YES</td>
+  <td class=xl65>N/A</td>
+ </tr>
+ <tr height=140 style='height:105.0pt;mso-xlrowspan:7'>
+  <td height=140 colspan=7 style='height:105.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=20 style='height:15.0pt'>
+  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
+ </tr>
+</table>
+
+
 
  
  
