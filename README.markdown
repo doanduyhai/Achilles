@@ -172,7 +172,8 @@
 	
 	assertEquals(foundUser.getFavoriteTags().get(3),"achilles");
 
-	
+
+
 ### Wide Row #	
 
 
@@ -184,7 +185,7 @@
  **Tweet** here is a simple POJO.
 
  The declaration for the field *tweets* is only a place holder. **WideMap** is an interface exposing some useful operations for wide row.
- These operations mimic Cassandra slice range query. Check [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown) for more details.
+ These operations mimic Cassandra *slice range* API. Check [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown) for more details.
  
  To initialize the *tweets* field, you must get an **User** entity from the EntityManager (call to *find()* or *merge()*):
  
@@ -216,6 +217,7 @@
 	
  Later, you can retrieved the saved tweets with *findRange()* methods:
  
+	// Should return tweet2 & tweet3
 	List<KeyValue<UUID,Tweet>> foundRange = myTweets.findRange(
 			uuid2,  // Start key
 			true,	// Inclusive start key
@@ -225,18 +227,35 @@
 			10		// Limit by 10 results	
 	);
 	
+	assertEquals(foundRange.size(),2);	
+	
+	// Assuming that you implemented equals() & hashCode() in Tweet
+	assertEquals(foundRange.get(0).getValue(),tweet2); 
+	assertEquals(foundRange.get(1).getValue(),tweet3);
+	
  The **KeyValue** type is just a holder structure to store the keys and values.		
  It is also possible to remove tweets by range using *removeRange()* methods:
 
+	// Remove tweet2, tweet3 & tweet4
 	myTweets.removeRange(
 		uuid2,	// Start key
 		true,	// Inclusive start key
 		uuid4,	// End key
 		true	// Inclusive end key
-	);	
+	);
+
+	// Return 10 first tweets in ascending order
+	List<KeyValue<UUID,Tweet>> remainingTweets = myTweets.findRange(null,null,false,10);	
 	
-	
-	
+	// Check that tweet2, tweet3 & tweet4 have been removed indeed
+	assertEquals(remainingTweets.size(),2);	
+	assertEquals(foundRange.get(0).getValue(),tweet1); 
+	assertEquals(foundRange.get(1).getValue(),tweet5);
+
+
+>	**Important note**: All operations done with **WideMap** properties are **flushed immediatly to Cassandra**.
+	There is no need to call `em.merge(foundUser)`. **WideMap** interface and API is not part of JPA but a proprietary
+	extension of **Achilles** to support Cassandra wide row and slice ranges.	
 	
 	
  
