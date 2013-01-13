@@ -4,8 +4,8 @@
  for fields. If you want a field to be mapped, you must annotate it with *@Column* or *@JoinColumn*. All fields that are not
  annotated by either annotationsis considered transient by **Achilles**
  
- Below is a list of all JPA annotations supported by **Achilles**. 
-
+ Below is a list of all JPA annotations supported by **Achilles**.    
+ 
 ---------------------------------------  
 ##### @Table
 
@@ -24,8 +24,8 @@
 
 >	Please note that all entities must implement the `java.io.Serializable`	interface and provide a **serialVersionUID**.
 	Failing to meet this requirement will trigger a **BeanMappingException**.
-
-
+   
+   
 ---------------------------------------	
 ##### @Id
 
@@ -34,7 +34,7 @@
 
  Under the hood, the primary key will be serialized to bytes array and  used as row key (partition key) by the **Cassandra**
  engine.
-
+   
 
 ---------------------------------------
 ##### @Column
@@ -54,8 +54,8 @@
 
 	@Column(table="my_tweets_column_family")
 	private WideMap<UUID,Tweet> tweets;
-	
-
+   
+   
 ---------------------------------------	
 ##### @ManyToOne, @ManyToMany
 
@@ -115,8 +115,8 @@
  *CascadeType.REMOVE* is not supported by **Achilles** as per design (check [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown) for more details)
  *CascadeType.RESFRESH* is implicit for join columns.
  *CascadeType.ALL* in **Achilles** is just a shortcut for `{CascadeType.PERSIST,CascadeType.MERGE}`
- 
-
+   
+   
 ---------------------------------------	
 ##### @JoinColumn	
 
