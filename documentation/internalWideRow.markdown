@@ -1,6 +1,6 @@
 ## Internal Wide Row
 
- An internal wide row is simply a **WideMap** field defined in an entity:
+ An internal wide row is simply a wide row structure stored along with other entity field values:
  
 	@Table(name="users_column_family")
 	public class User implements Serializable
@@ -39,17 +39,14 @@
  In the above example, the *tweets* field is a **WideMap** proxy to allow inserting, finding and removing tweets POJO inside 
  the **User** like a wide row.
 
- For more details about **Wide Row**, check [Simple wide row entity][simpleWideRow].
+ For more details about **wide rows**, check [Simple wide row entity][simpleWideRow].
 
- Internally, **Achilles** saves all users data (*firstname, lastname, age, addresses, favoriteTags, preferences* and all *tweets*
- values) in a same physical row in **Cassandra** storage engine. 
+ Internally, **Achilles** saves all users data (*firstname*, *lastname*, *age*, *addresses*, *favoriteTags*, *preferences* and all *tweets*
+ values) in a **same physical row** in **Cassandra** storage engine. It has some benefits to doing so, you can benefit a lot from 
+ **Cassandra** [row caching][rowCaching].
  
- It has some benefits to store **WideMap** values in the same row as *normal* value, you can benefit a lot from **Cassandra** [row
- caching][rowCaching].
- 
- Even though internal wide rows are very similar to there simple counterparts, there is still a subtle but important difference. Unlike
- simple wide rows, internal wide rows data are persisted in the same physical row as other field values so the entity must exist if you 
- want to access them.
+ Even though internal wide rows are very similar to there simple counterparts, there is still a subtle but important difference. Since 
+ internal wide rows data are persisted in the same physical row as other field values, the entity must exist if you want to access them.
  
  
  Simple example:
