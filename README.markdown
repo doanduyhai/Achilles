@@ -23,7 +23,8 @@
  
  1. Cassandra 1.1.6 (will be upgraded soon to 1.2)
  2. Hector-core 1.0-5 (<strong>Achilles</strong> is built upon Hector API) 
-
+   
+  
  Install **Achilles** jar into your local Maven repository:
  
 >	mvn clean install 
