@@ -22,7 +22,7 @@
  For now, **Achilles** depends on the following libraries:
  
  1. Cassandra 1.1.6 (will be upgraded soon to 1.2)
- 2. Hector-core 1.0-5 (**Achilles** is built upon Hector API) 
+ 2. Hector-core 1.0-5 (<strong>Achilles</strong> is built upon Hector API) 
 
  Install **Achilles** jar into your local Maven repository:
  
@@ -122,6 +122,8 @@
 		// Getters and setters ...
 	}	
 
+ All fields are eagerly fetched except the *favoriteTags* list annotated by **@Lazy**. 
+ The list will be loaded **entirely**	when calling *getFavoriteTags()*.
 	
 ### Usage #
 
@@ -169,8 +171,76 @@
 	foundUser = em.merge(foundUser);
 	
 	assertEquals(foundUser.getFavoriteTags().get(3),"achilles");
+
+	
+### Wide Row #	
+
+
+ To use Cassandra wide rows inside entities, add the following property to the **User** entity:
+ 
+	@Column
+	private WideMap<UUID, Tweet> tweets;
+
+ **Tweet** here is a simple POJO.
+
+ The declaration for the field *tweets* is only a place holder. **WideMap** is an interface exposing some useful operations for wide row.
+ These operations mimic Cassandra slice range query. Check [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown) for more details.
+ 
+ To initialize the *tweets* field, you must get an **User** entity from the EntityManager (call to *find()* or *merge()*):
+ 
+	User foundUser = em.find(User.class,1L);
+	
+ Then calling *getTweets()* on *foundUser* will return a proxy object on which you can invoke all methods:
+ 
+	UUID uuid1 = ...
+	UUID uuid2 = ...
+	UUID uuid3 = ...
+	UUID uuid4 = ...
+	
+	Tweet tweet1 = new Tweet(), tweet2 = new Tweet(), 
+	      tweet3 = new Tweet(), tweet4 = new Tweet();
+	
+	// Get the proxy on "tweets" to perform slice range operations
+	WideMap<Integer,Tweet> myTweets = foundUser.getTweets();
+	
+	// Insert tweets
+	myTweets.insert(uuid1,tweet1);
+	myTweets.insert(uuid2,tweet2);
+	myTweets.insert(uuid3,tweet3);
+	
+	// Insert with TTL
+	myTweets.insert(uuid4,tweet4,150);
+	
+	...
+	...
+	
+ Later, you can retrieved the saved tweets with *findRange()* methods:
+ 
+	List<KeyValue<UUID,Tweet>> foundRange = myTweets.findRange(
+			uuid2,  // Start key
+			true,	// Inclusive start key
+			uuid4,	// End key
+			false,	// Exclusive end key
+			false,	// Reverse order = false
+			10		// Limit by 10 results	
+	);
+	
+ The **KeyValue** type is just a holder structure to store the keys and values.		
+ It is also possible to remove tweets by range using *removeRange()* methods:
+
+	myTweets.removeRange(
+		uuid2,	// Start key
+		true,	// Inclusive start key
+		uuid4,	// End key
+		true	// Inclusive end key
+	);	
 	
 	
+	
+	
+	
+ 
+
 	
 	
 
