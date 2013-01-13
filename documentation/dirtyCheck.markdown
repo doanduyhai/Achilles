@@ -166,40 +166,40 @@
 
 <br/>
 
-<table border=0 cellpadding=0 cellspacing=0 width=1079 style='border-collapse:
- collapse;table-layout:fixed;width:808pt'>
- <col width=136 style='mso-width-source:userset;mso-width-alt:4973;width:102pt'>
- <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+<table border=0 cellpadding=0 cellspacing=0 width=776 style='border-collapse:
+ collapse;table-layout:fixed;width:582pt'>
+ <col width=82 style='mso-width-source:userset;mso-width-alt:2998;width:62pt'>
+ <col width=132 style='mso-width-source:userset;mso-width-alt:4827;width:99pt'>
  <col width=99 style='mso-width-source:userset;mso-width-alt:3620;width:74pt'>
- <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+ <col width=132 style='mso-width-source:userset;mso-width-alt:4827;width:99pt'>
  <col width=80 style='width:60pt'>
- <col width=215 style='mso-width-source:userset;mso-width-alt:7862;width:161pt'>
+ <col width=132 style='mso-width-source:userset;mso-width-alt:4827;width:99pt'>
  <col width=119 style='mso-width-source:userset;mso-width-alt:4352;width:89pt'>
  <tr height=60 style='height:45.0pt'>
-  <td height=60 width=136 style='height:45.0pt;width:102pt'></td>
-  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>entrySet</strong></td>
+  <td height=60 width=82 style='height:45.0pt;width:62pt'></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Map.<br>entrySet</strong></td>
   <td class=xl66 width=99 style='width:74pt'><strong>Map.<br>entrySet.<br>iterator</strong></td>
-  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>keySet</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Map.<br>keySet</strong></td>
   <td class=xl66 width=80 style='width:60pt'><strong>Map.<br>keySet.<br>iterator</strong></td>
-  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>valuesCollection</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Map.<br>valuesCollection</strong></td>
   <td class=xl66 width=119 style='width:89pt'><strong>Map.<br>valuesCollection.<br>iterator</strong></td>
  </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'><strong>add()</strong></td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br>Exception</strong></td>
+ <tr height=40 style='height:30.0pt'>
+  <td height=40 class=xl65 style='height:30.0pt'><strong>add()</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
  </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'><strong>addAll()</strong></td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
+ <tr height=40 style='height:30.0pt'>
+  <td height=40 class=xl65 style='height:30.0pt'><strong>addAll()</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
+  <td class=xl66 width=132 style='width:99pt'><strong>Unsupported<br>OperationException</strong></td>
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
