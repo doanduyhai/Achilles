@@ -5,7 +5,6 @@
  annotated by either annotationsis considered transient by **Achilles**
  
  Below is a list of all JPA annotations supported by **Achilles**.    
-<br/> 
 <br/>
 ---------------------------------------  
 ##### @Table
@@ -26,7 +25,6 @@
 >	Please note that all entities must implement the `java.io.Serializable`	interface and provide a **serialVersionUID**.
 	Failing to meet this requirement will trigger a **BeanMappingException**.
    
-<br/> 
 <br/>   
 ---------------------------------------	
 ##### @Id
@@ -37,7 +35,6 @@
  Under the hood, the primary key will be serialized to bytes array and  used as row key (partition key) by the **Cassandra**
  engine.
    
-<br/> 
 <br/>
 ---------------------------------------
 ##### @Column
@@ -57,8 +54,7 @@
 
 	@Column(table="my_tweets_column_family")
 	private WideMap<UUID,Tweet> tweets;
-   
-<br/> 
+    
 <br/>  
 ---------------------------------------	
 ##### @ManyToOne, @ManyToMany
@@ -120,7 +116,6 @@
  *CascadeType.RESFRESH* is implicit for join columns.
  *CascadeType.ALL* in **Achilles** is just a shortcut for `{CascadeType.PERSIST,CascadeType.MERGE}`
    
-<br/> 
 <br/>
 ---------------------------------------	
 ##### @JoinColumn	
@@ -174,7 +169,6 @@
  - It has an annotated *@Id* field
  - It has **one and only one** *@Column* of type **WideMap** 
 
-<br/> 
 <br/>
 ---------------------------------------	 
 ##### @Lazy
