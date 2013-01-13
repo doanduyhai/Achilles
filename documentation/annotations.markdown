@@ -5,7 +5,8 @@
  annotated by either annotationsis considered transient by **Achilles**
  
  Below is a list of all JPA annotations supported by **Achilles**.    
- 
+<br/> 
+<br/>
 ---------------------------------------  
 ##### @Table
 
@@ -25,7 +26,8 @@
 >	Please note that all entities must implement the `java.io.Serializable`	interface and provide a **serialVersionUID**.
 	Failing to meet this requirement will trigger a **BeanMappingException**.
    
-   
+<br/> 
+<br/>   
 ---------------------------------------	
 ##### @Id
 
@@ -35,7 +37,8 @@
  Under the hood, the primary key will be serialized to bytes array and  used as row key (partition key) by the **Cassandra**
  engine.
    
-
+<br/> 
+<br/>
 ---------------------------------------
 ##### @Column
 
@@ -48,14 +51,15 @@
 	private Long age; 
 
  When put on a **WideMap** field, the *table* attribute of *@Column* annotation indicates the external column family to
- be used for the wide map. For more details, check [External wide row](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown) 
+ be used for the wide map. For more details, check [External wide row][externalWideRow]
 
  Example:
 
 	@Column(table="my_tweets_column_family")
 	private WideMap<UUID,Tweet> tweets;
    
-   
+<br/> 
+<br/>  
 ---------------------------------------	
 ##### @ManyToOne, @ManyToMany
 
@@ -112,11 +116,12 @@
  * MERGE
  * REFRESH 
 
- *CascadeType.REMOVE* is not supported by **Achilles** as per design (check [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown) for more details)
+ *CascadeType.REMOVE* is not supported by **Achilles** as per design (check [Join columns][joinColumns] for more details)
  *CascadeType.RESFRESH* is implicit for join columns.
  *CascadeType.ALL* in **Achilles** is just a shortcut for `{CascadeType.PERSIST,CascadeType.MERGE}`
    
-   
+<br/> 
+<br/>
 ---------------------------------------	
 ##### @JoinColumn	
 
@@ -125,7 +130,7 @@
  
  For a join column, only the primary key of the join entity is persisted by the **Cassandra** storage engine. 
  **Achilles** will take care of loading the join entity at runtime in the background. For more details, check
- [Join columns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)
+ [Join columns][joinColumns]
  
  **By definition, all join columns are lazy**
  
@@ -169,6 +174,8 @@
  - It has an annotated *@Id* field
  - It has **one and only one** *@Column* of type **WideMap** 
 
+<br/> 
+<br/>
 ---------------------------------------	 
 ##### @Lazy
 
@@ -181,3 +188,13 @@
  
  It does not make sense to put a *@Lazy* annotation on a *@JoinColumn* since the latter is lazy by definition. However
  doing so will not raise error, it will be silently ignored by **Achilles**
+ 
+[annotations](/doanduyhai/achilles/tree/master/documentation/annotations.markdown)
+[emOperations](/doanduyhai/achilles/tree/master/documentation/emOperations.markdown)
+[collectionsAndMaps](/doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown)
+[dirtyCheck](/doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown)
+[simpleWideRow](/doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown)
+[internalWideRow](/doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown)
+[externalWideRow](/doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown)
+[multiComponentKey](/doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown)
+[joinColumns](/doanduyhai/achilles/tree/master/documentation/joinColumns.markdown)  
