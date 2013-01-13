@@ -177,42 +177,33 @@
  <col width=119 style='mso-width-source:userset;mso-width-alt:4352;width:89pt'>
  <tr height=60 style='height:45.0pt'>
   <td height=60 width=136 style='height:45.0pt;width:102pt'></td>
-  <td class=xl66 width=215 style='width:161pt'>Map.<br>
-    entrySet</td>
-  <td class=xl66 width=99 style='width:74pt'>Map.<br>
-    entrySet.<br>
-    iterator</td>
-  <td class=xl66 width=215 style='width:161pt'>Map.<br>
-    keySet</td>
-  <td class=xl66 width=80 style='width:60pt'>Map.<br>
-    keySet.<br>
-    iterator</td>
-  <td class=xl66 width=215 style='width:161pt'>Map.<br>
-    valuesCollection</td>
-  <td class=xl66 width=119 style='width:89pt'>Map.<br>
-    valuesCollection.<br>
-    iterator</td>
+  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>entrySet</strong></td>
+  <td class=xl66 width=99 style='width:74pt'><strong>Map.<br>entrySet.<br>iterator</strong></td>
+  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>keySet</strong></td>
+  <td class=xl66 width=80 style='width:60pt'><strong>Map.<br>keySet.<br>iterator</strong></td>
+  <td class=xl66 width=215 style='width:161pt'><strong>Map.<br>valuesCollection</strong></td>
+  <td class=xl66 width=119 style='width:89pt'><strong>Map.<br>valuesCollection.<br>iterator</strong></td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>add()</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>add()</strong></td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br>Exception</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>addAll()</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>addAll()</strong></td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
   <td class=xl65>N/A</td>
-  <td class=xl65>UnsupportedOperationException</td>
+  <td class=xl65><strong>Unsupported<br/>Operation<br/>Exception</strong></td>
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>clear()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>clear()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
@@ -221,7 +212,7 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>remove()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>remove()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
   <td class=xl65>YES</td>
@@ -230,7 +221,7 @@
   <td class=xl65>YES</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>removeAll()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>removeAll()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
@@ -239,34 +230,13 @@
   <td class=xl65>N/A</td>
  </tr>
  <tr height=20 style='height:15.0pt'>
-  <td height=20 class=xl65 style='height:15.0pt'>retainAll()</td>
+  <td height=20 class=xl65 style='height:15.0pt'><strong>retainAll()</strong></td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
   <td class=xl65>YES</td>
   <td class=xl65>N/A</td>
- </tr>
- <tr height=140 style='height:105.0pt;mso-xlrowspan:7'>
-  <td height=140 colspan=7 style='height:105.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
- </tr>
- <tr height=20 style='height:15.0pt'>
-  <td height=20 colspan=7 style='height:15.0pt;mso-ignore:colspan'></td>
  </tr>
 </table>
 
