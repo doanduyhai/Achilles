@@ -100,8 +100,8 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
  - *timeline* to store tweets from user and his friends
  - *friends* to store user' friends by id
  - *followers* to store user' followers by id
-
 <br/>
+
 With this design, sending a new Tweet and spreading it to all followers is a piece of cake:
  
 	UUID currentTime = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
