@@ -126,6 +126,7 @@
 <br/>
 
 >	**All operations on a WideMap proxy are flushed immediatly to Cassandra. There is no need to call `em.merge(entity)`**
+
 <br/>
 
  Now let's find some values by range:
@@ -164,9 +165,10 @@
 
 <br/>
 >	Under the hood, **Achilles** is using **Hector** mutator to batch deletions to avoid sending many requests.
+
 <br/>
 
- Last but not least, if you want to access a very large serie of value, it is recommended to rely on iterator() instead of findRange()
+ Last but not least, if you want to access a very large serie of value, it is recommended to rely on *iterator()* instead of *findRange()*
  to avoid loading everything at once in memory.
  
  
@@ -182,4 +184,4 @@
 
  In the above example, **Achilles** will load the found values by batch of 100 values. Once the last value of the batch is consumed
  upon call to *next()*, **Achilles** will load another batch of 100 elements and so on until the last value found. Internally
- **Achilles** relies on ColumnSliceIterator of **Hector** to do the job.
+ **Achilles** relies on *ColumnSliceIterator* of **Hector** to do the job.
