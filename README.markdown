@@ -39,8 +39,8 @@
 
 # Documentation #
 
-1. [JPA and custom annotations for bean mapping][annotations]
-2. [Supported operations for EntityManager][emOperations]
+1. [JPA and custom annotations for bean mapping] [annotations]
+2. [Supported operations for EntityManager] [emOperations]
 3. [Collections and Map][collectionsAndMaps]
 4. [Dirty check][dirtyCheck]
 5. [Simple wide row entity][simpleWideRow]
