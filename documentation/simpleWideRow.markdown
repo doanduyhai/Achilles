@@ -5,6 +5,14 @@
  The idea is to have an entity with a primary key that maps to **Cassandra** row key (partition key) and a **WideMap**
  structure that micmics **Cassandra** columns name/value.
 
+  An entity is a valid Wide Row for **Achilles** if:
+
+ - It has an annotated *@Id* field
+ - It has **one and only one** *@Column* of type **WideMap** 
+
+<br/>    
+ If any of these criteria is not match, **Achilles** will raise a **BeanMappingException** at runtime.
+ 
  Below is the operations exposed by the **WideMap** interface:
  
  
@@ -100,7 +108,7 @@
 <br/>	
 
 > 	**Please note that calling `entityManager.find(WideRowBean.class,primaryKey)` will always return an object whatever the primaryKey passed
-	as argument. The entity and WideMap proxy only acts as wrapper to access to the underlying Cassandra column family structure**
+	as argument. The entity only acts as wrapper to have access to the underlying Cassandra column family structure**
  
  
 <br/>
@@ -118,7 +126,7 @@
 <br/>
 
 >	**All operations on a WideMap proxy are flushed immediatly to Cassandra. There is no need to call `em.merge(entity)`**
-
+<br/>
 
  Now let's find some values by range:
 	
@@ -127,20 +135,51 @@
 	
 	// Find all values 
 	// starting at 2 inclusive 
-	// finishing at 4 exclusive
+	// ending at 4 exclusive
 	// in ascending order
 	// limit result by 10 items
 	List<KeyValue<Integer,String>> foundValues = wideMap.findRange(2, true, 4, false, false, 10);
 	
-	// The result should contains only "value2" & "value3" since finishing bound was defined excluded from the result
 	assertEquals(foudValues.size(),2);
 	assertEquals(foundValues.get(0).getValue(),"value2");
 	assertEquals(foundValues.get(1).getValue(),"value3");
+
+ The result should contains only "value2" & "value3" since **ending bound 4** was excluded from the result.
+ 
+ Delete operations are also easy:
+ 
+	// Get the WideMap proxy
+	WideMap wideMap = entity.getWideMap(); 
 	
- An entity is a valid Wide Row for **Achilles** if:
+	
+	// Remove all values
+	// starting at 1 exclusive
+	// ending at 5 exclusive
+	wideMap.removeRange(1, false, 5, false);
+	
 
- - It has an annotated *@Id* field
- - It has **one and only one** *@Column* of type **WideMap** 
+ The result is "value2", "value3" & "value4" being removed from the column family since bounds are exclusive. Please note that for
+ deletion, it is not possible to define an ordering because you don't care whether values are removed in ascending or descending
+ order.
 
-    
- If any of these criteria is not match, **Achilles** will raise a **BeanMappingException** at runtime.
+<br/>
+>	Under the hood, **Achilles** is using **Hector** mutator to batch deletions to avoid sending many requests.
+<br/>
+
+ Last but not least, if you want to access a very large serie of value, it is recommended to rely on iterator() instead of findRange()
+ to avoid loading everything at once in memory.
+ 
+ 
+	// Get the WideMap proxy
+	WideMap wideMap = entity.getWideMap(); 
+
+	// Find values
+	// starting at 99999999 inclusive (by default)
+	// ending at 100 inclusive (by default)
+	// by batch of 100 elements
+	KeyValueIterator<Integer,String> wideIterator = wideMap.iterator(99999999, 100, true, 100);
+		
+
+ In the above example, **Achilles** will load the found values by batch of 100 values. Once the last value of the batch is consumed
+ upon call to *next()*, **Achilles** will load another batch of 100 elements and so on until the last value found. Internally
+ **Achilles** relies on ColumnSliceIterator of **Hector** to do the job.
