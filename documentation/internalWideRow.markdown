@@ -103,12 +103,6 @@ So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for t
 
  
  
- 
- 
- 
- 
- 
- 
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown

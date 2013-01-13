@@ -118,10 +118,10 @@
 	// Get the WideMap proxy
 	WideMap wideMap = entity.getWideMap(); 
 
-	wideMap.put(1,"value1");
-	wideMap.put(2,"value2");
-	wideMap.put(3,"value3");
-	wideMap.put(4,"value4");
+	wideMap.insert(1,"value1");
+	wideMap.insert(2,"value2");
+	wideMap.insert(3,"value3");
+	wideMap.insert(4,"value4");
 	
 <br/>
 
