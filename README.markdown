@@ -263,7 +263,7 @@
 	extension of **Achilles** to support Cassandra wide row and slice ranges.	
 	
 	
-[annotations]: doanduyhai/achilles/tree/master/documentation/annotations.markdown
+[annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
 [dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
