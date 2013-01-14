@@ -111,8 +111,10 @@ We set *friendEnd* login to **"johm"**, **"m"** being the letter immediately aft
  - "johnxxxx" will match
  - "johm" will not match because *friendEnd* bound is exclusive
 <br/>
+
+#### Multi Key component validation rules
  
-Generaly, a multikey object can be used with **WideMap** field as any normal types supported by **Cassandra** for insert,
+ Generally, a multikey object can be used with **WideMap** field as any normal types supported by **Cassandra** for insert,
 search and deletion operations provided that:
  
  - for insert operations, all the component (fields annotated with *@Key*) must be filled (not null)
@@ -138,21 +140,44 @@ Let's define a fake multi key class to illustrate this:
 	
  As you can see the component declaration lexical order does not matter, only the *order* attribute is taken into account.
  
- The following multikey are valid:
+ The following multikeys are valid:
  
  - null
  - {id=1L,null,null}
- - {id=1L,name="test,null}
- - {id=1L,name="test,time='xxxx'}
+ - {id=1L,name="test",null}
+ - {id=1L,name="test",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}
 <br/>
  
 The following are not valid:
 
- - {null,name="test,null}
- - {null,name="test,time='xxxx'}
- - {id=1L,null,time='xxxx'}
+ - {null,name="test",null}
+ - {null,name="test",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}
+ - {id=1L,null,time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}
  
  
+#### Multi Key ordering rules 
+
+ When doing slice queries with starting and ending bounds in **Cassandra**, you must ensure that the starting bound is less
+ than ending bound, with respect to the natural ordering of the type.
+
+ For simple types like Integer or String, the natural ordering is obvious. For multi components keys, the ordering is obtained
+ by comparing component by component with regard to their order in the key:
+
+ - first component of starting bound with the one of the ending bound
+ - second component of starting bound with the one of the ending bound
+ - etc..
+<br/>
+
+For example:
+
+ 1. {id=10L,name="test",null} > {id=1L,name="test",null} because 10L > 1L
+ 2. {id=10L,null,null} > {id=1L,name="test",null} still because 10L > 1L. The *name* components do not matter as long as the *id* components
+    are	not equal
+ 3. {id=10L,name="test",null} = {id=10L,name="test",null} 
+ 4. {id=10L,name="test",null} > {id=10L,name="xxx",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}  because _"test"_ > _"xxx"_
+
+
+
  
  	
 	
