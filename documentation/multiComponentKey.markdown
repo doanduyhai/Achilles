@@ -4,7 +4,7 @@
  feature is missing: composite column key.
  
  Indeed it is possible to index your columns in **Cassandra** with **Composite** keys. Composite key are column key with several 
- component of different type (Integer,String,Long ...)
+ components of different type (Integer,String,Long ...)
  
  **Achilles** implements this feature by providing a marker interface **MultiKey** as well as a custom annotation *@Key*.
  
@@ -50,7 +50,7 @@ Example:
 	}
 
  Above we create an UserIndex POJO with *login* as first component and *id* as last component. The couple (login,id) will identify 
- uniquely an user. Indeed the *id* itself is sufficient but we'll see that shortly why having the *login* as first component is 
+ uniquely an user. In fact the *id* itself is sufficient but we'll see that shortly why having the *login* as first component is 
  better.
 
 
@@ -59,8 +59,9 @@ Example:
  1. Key validation class of type **java.lang.Long**, the class of *@Id* field
  2. Comparator of type *'Composite(UTF8Type,LongType)'* which represents the key type for *friends* and *followers* fields
  3. Validation class of type **java.lang.String**  which represents the value type for *friends* and *followers* fields
+<br/>
  
- Indeed, the value of *friends* and *followers* external wide rows can be set to empty string since the composite column key contains
+Indeed, the value of *friends* and *followers* external wide rows can be set to empty string since the composite column key contains
  all the necessary information to find an user.
  
  To insert values into these multi key external wide row, you must build an **UserIndex** instance for each value:
