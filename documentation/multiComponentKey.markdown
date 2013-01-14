@@ -61,10 +61,10 @@ Example:
  3. Validation class of type **java.lang.String**  which represents the value type for *friends* and *followers* fields
 <br/>
  
-Indeed, the value of *friends* and *followers* external wide rows can be set to empty string since the composite column key contains
+Indeed, the value of *friends* and *followers* external wide rows can be set to empty string since the **UserIndex** key contains
  all the necessary information to find an user.
  
- To insert values into these multi key external wide row, you must build an **UserIndex** instance for each value:
+ To insert values into these wide rows, you must build an **UserIndex** instance for each value:
  
 	User user = em.find(User.class,10L);
 	
@@ -94,9 +94,9 @@ Indeed, the value of *friends* and *followers* external wide rows can be set to 
 	
 	List<KeyValue<UserIndex,String>> foundFriends = user.getFriends().findRange(friendStart,true,friendEnd,false,false,100);
 	
- Above, we are doing a slice range query with composite value. The *friendStart* and *friendEnd* key define the bounds for the
- search. Please note that the second component of **UserIndex**, the *id*, is let NULL. It does not matter as long as the first
- component is filled.
+ Above, we are doing a slice range query with composite value. The *friendStart* and *friendEnd* keys define the bounds for the
+ search. Please note that the second component of **UserIndex**, the *id*, is let to **null**. It does not matter as long as the first
+ component *login* is filled.
  
  The above query will return all friends:
  
