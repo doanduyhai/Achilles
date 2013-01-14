@@ -57,7 +57,7 @@ Example:
  Internally,  **Achilles** will create 2 column families *friends\_column\_family* & *friends\_column\_family* with:
  
  1. Key validation class of type **java.lang.Long**, the class of *@Id* field
- 2. Comparator of type *'Composite(UTF8Type,LongType)'* which represents the key type for *friends* and *followers* fields
+ 2. Comparator of type *'Composite(UTF8Type,LongType)'* which represents the **UserIndex** key type for *friends* and *followers* fields
  3. Validation class of type **java.lang.String**  which represents the value type for *friends* and *followers* fields
 <br/>
  
