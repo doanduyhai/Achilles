@@ -141,9 +141,9 @@
 	// limit result by 10 items
 	List<KeyValue<Integer,String>> foundValues = wideMap.findRange(2, true, 4, false, false, 10);
 	
-	assertEquals(foudValues.size(),2);
-	assertEquals(foundValues.get(0).getValue(),"value2");
-	assertEquals(foundValues.get(1).getValue(),"value3");
+	assertEquals(2,foudValues.size());
+	assertEquals("value2",foundValues.get(0).getValue());
+	assertEquals("value3",foundValues.get(1).getValue());
 
  The result should contains only "value2" & "value3" since **ending bound 4** was excluded from the result.
  

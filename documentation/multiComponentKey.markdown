@@ -175,10 +175,12 @@ For example:
  2. **{id=10L,null,null} > {id=1L,name="test",null}** still because 10L > 1L. The *name* components do not matter as long as the *id* components
     are	not equal
  3. **{id=10L,name="test",null} = {id=10L,name="test",null}** 
- 4. **{id=10L,name="test",null} > {id=10L,name="xxx",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}**  because _"test"_ > _"xxx"_
+ 4. **{id=10L,name="test",null} > {id=10L,name="xxx",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}**  because **"test"** > **"xxx"**
 <br/>
 
->	**Multi keys used for slice range queries need not have exactly the same number of not-null components, as long as their are valid with respect to the ordering rules**
+<br/>
+
+>	**Multi keys used for slice range queries need not have exactly the same number of not-null components, as long as they are valid with respect to the ordering rules**
 
 
  

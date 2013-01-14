@@ -180,7 +180,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	// Save it
 	foundUser = em.merge(foundUser);
 	
-	assertEquals(foundUser.getFavoriteTags().get(3),"achilles");
+	assertEquals("achilles",foundUser.getFavoriteTags().get(3));
 
 
 
