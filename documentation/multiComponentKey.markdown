@@ -10,7 +10,7 @@
  
  To make a POJO becomes a multi component column key, all you need is:
  
- - make it implement the **MultiKey**
+ - make it implement the **MultiKey** interface
  - annotate some of its fields with *@key*, not forgetting to specify the *order* attribute
 <br/>
 
@@ -92,7 +92,8 @@ Indeed, the value of *friends* and *followers* external wide rows can be set to 
 	friendEnd.setLogin("johm");
 	
 	
-	List<KeyValue<UserIndex,String>> foundFriends = user.getFriends().findRange(friendStart,true,friendEnd,false,false,100);
+	List<KeyValue<UserIndex,String>> foundFriends = 
+		user.getFriends().findRange(friendStart,true,friendEnd,false,false,100);
 	
  Above, we are doing a slice range query with composite value. The *friendStart* and *friendEnd* keys define the bounds for the
  search. Please note that the second component of **UserIndex**, the *id*, is let to **null**. It does not matter as long as the first
@@ -106,10 +107,10 @@ Indeed, the value of *friends* and *followers* external wide rows can be set to 
 
 We set *friendEnd* login to **"johm"**, **"m"** being the letter immediately after **"n"** and we exclude this from the search. So:
  
- - "john" will match of course (because the *friendStart* bound is inclusive)
- - "johnny" will match
- - "johnxxxx" will match
- - "johm" will not match because *friendEnd* bound is exclusive
+ - **"john"** will match of course (because the *friendStart* bound is inclusive)
+ - **"johnny"** will match
+ - **"johnxxxx"** will match
+ - **"johm"** will not match because *friendEnd* bound is exclusive
 <br/>
 
 #### Multi Key component validation rules
@@ -170,12 +171,14 @@ The following are not valid:
 
 For example:
 
- 1. {id=10L,name="test",null} > {id=1L,name="test",null} because 10L > 1L
- 2. {id=10L,null,null} > {id=1L,name="test",null} still because 10L > 1L. The *name* components do not matter as long as the *id* components
+ 1. **{id=10L,name="test",null} > {id=1L,name="test",null}** because 10L > 1L
+ 2. **{id=10L,null,null} > {id=1L,name="test",null}** still because 10L > 1L. The *name* components do not matter as long as the *id* components
     are	not equal
- 3. {id=10L,name="test",null} = {id=10L,name="test",null} 
- 4. {id=10L,name="test",null} > {id=10L,name="xxx",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}  because _"test"_ > _"xxx"_
+ 3. **{id=10L,name="test",null} = {id=10L,name="test",null}** 
+ 4. **{id=10L,name="test",null} > {id=10L,name="xxx",time='e39707f0-5a6c-11e2-ab85-685d43d1d7d3'}**  because _"test"_ > _"xxx"_
+<br/>
 
+>	**Multi keys used for slice range queries need not have exactly the same number of not-null components, as long as their are valid with respect to the ordering rules**
 
 
  
