@@ -28,7 +28,7 @@
  storage of *timeline* tweets. Internally, **Achilles** will create the *timeline\_column\_family* with:
  
  1. Key validation class of type **java.lang.Long**, the class of *@Id* field
- 2. Comparator of type *'Composite(UUID)'* which represents the key type of *timeline* field
+ 2. Comparator of type *'Composite(UUIDType)'* which represents the key type of *timeline* field
  3. Validation class of type **java.lang.Object** since the value type of *timeline* field is not a standard
 	**Cassandra** type. All **Tweet** objects will be serialized to bytes using Java object serialization
 <br/>

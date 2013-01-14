@@ -76,7 +76,7 @@
  In the above example, **Achilles** will create the *good\_old\_column\_family* with:
  
  1. Key validation class of type **java.lang.Long**, the class of *@Id* field
- 2. Comparator of type *'Composite(Integer)'* which represents the key type of *wideMap* field
+ 2. Comparator of type *'Composite(IntegerType)'* which represents the key type of *wideMap* field
  3. Validation class of type **java.lang.String**, the value type of *wideMap* field
 
 <br/>

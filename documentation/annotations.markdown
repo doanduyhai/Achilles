@@ -173,6 +173,24 @@
  
  It does not make sense to put a *@Lazy* annotation on a *@JoinColumn* since the latter is lazy by definition. However
  doing so will not raise error, it will be silently ignored by **Achilles**
+
+<br/>
+---------------------------------------	 
+##### @Key
+
+ This annotation is used to define multi component column keys. It should be used in a class which extends the **MultiKey**
+ interface.
+ 
+ The annotation exposes one mandatory *order* attribute to indicates the order of the current component in the key.
+
+<br/> 
+>	Unlike Java indexes, the ordering for @Key start at 1. It is a design choice since it is more natural for human being to start
+ counting at 1
+
+<br/>
+
+ For more detail on this annotation and its usage, please refer to  Multi components for wide row][multiComponentKey]
+ 
  
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
