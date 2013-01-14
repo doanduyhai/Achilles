@@ -83,7 +83,7 @@ Indeed, the value of *friends* and *followers* external wide rows can be set to 
 	user.getFollowers().insert("bar","");
 	
 
- Now if we want to search for friends whose login start with "john" :
+ Now if we want to search for friends whose login start with **"john"** :
 
 	UserIndex friendStart = new UserIndex();
 	friendStart.setLogin("john");
@@ -100,11 +100,11 @@ Indeed, the value of *friends* and *followers* external wide rows can be set to 
  
  The above query will return all friends:
  
- - whose login start with "john"
+ - whose login starts with **"john"**
  - whose id can be of any value
 <br/>
 
-We set *friendEnd* login to "johm", "m" being the letter immediately after "n" and we exclude this from the search. So:
+We set *friendEnd* login to **"johm"**, **"m"** being the letter immediately after **"n"** and we exclude this from the search. So:
  
  - "john" will match of course (because the *friendStart* bound is inclusive)
  - "johnny" will match
@@ -118,8 +118,8 @@ search and deletion operations provided that:
  - for insert operations, all the component (fields annotated with *@Key*) must be filled (not null)
  - for find and delete operations, the multikey should meet the following requirements
  
-	1. be null or	
-	2. has some null component but without "hole" 
+	>	1. be null or	
+	> 	2. has some null component but without "hole" 
 <br/>
 
 Let's define a fake multi key class to illustrate this:
