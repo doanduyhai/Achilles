@@ -4,13 +4,14 @@
 
  Achilles is an open source Entity Manager for Apache Cassandra. Among all the features:
  
- - dirty check
- - lazy loading
- - collections and map support (they can be defined lazy or eager) 
- - support for Cassandra wide rows inside entities
- - support for multi components column name with wide row
- - join columns (restricted to _@ManyToOne_ and _@ManyToMany_, check documentation for more details)
+ - dirty check for simple and collection/map type properties
+ - lazy loading 
+ - collections and map support
  - native wide row mapping with dedicated annotation
+ - support for Cassandra wide rows mapping inside entities
+ - support for multi components column name with wide row
+ - join columns
+
 
 # Installation #
 
