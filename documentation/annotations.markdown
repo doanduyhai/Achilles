@@ -57,7 +57,7 @@
     
 <br/>  
 ---------------------------------------	
-##### @ManyToOne, @ManyToMany
+##### @OneToOne, @ManyToOne, @OneToMany, @ManyToMany
 
  These annotations should be used only along with *@JoinColumn*.
  
@@ -83,7 +83,7 @@
 	}	
 
 	
- *@ManyToMany* should only be used wide **WideMap** join columns. Suppported JPA cascade type are:
+ *@OneToMany* and *@ManyToMany* should only be used wide **WideMap** join columns. 
 
  Example: 
  
@@ -105,7 +105,7 @@
 		...
 	}	
 
- Suppported JPA cascade for *@ManyToOne* and *@ManyToMany* annotations are:
+ Suppported JPA cascade styles are:
  
  * ALL
  * PERSIST

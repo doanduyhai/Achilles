@@ -107,12 +107,11 @@ public class PropertyParser
 
 			JoinProperties joinProperties = new JoinProperties();
 
-			if (filter.hasAnnotation(field, OneToOne.class)
-					|| filter.hasAnnotation(field, OneToMany.class)
+			if (filter.hasAnnotation(field, OneToMany.class)
 					|| filter.hasAnnotation(field, ManyToMany.class))
 			{
 				throw new BeanMappingException(
-						"Incorrect annotation. Only @ManyToOne is allowed for the join property '"
+						"Incorrect annotation. Only @OneToOne or @ManyToOne is allowed for the join property '"
 								+ field.getName() + "'");
 			}
 
@@ -120,6 +119,11 @@ public class PropertyParser
 			{
 				ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
 				joinProperties.addCascadeType(Arrays.asList(manyToOne.cascade()));
+			}
+			else if (filter.hasAnnotation(field, OneToOne.class))
+			{
+				OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+				joinProperties.addCascadeType(Arrays.asList(oneToOne.cascade()));
 			}
 			else
 			{
@@ -324,11 +328,10 @@ public class PropertyParser
 			joinProperties = new JoinProperties();
 
 			if (filter.hasAnnotation(field, OneToOne.class)
-					|| filter.hasAnnotation(field, OneToMany.class)
 					|| filter.hasAnnotation(field, ManyToOne.class))
 			{
 				throw new BeanMappingException(
-						"Incorrect annotation. Only @ManyToMany is allowed for the join property '"
+						"Incorrect annotation. Only @OneToMany or @ManyToMany is allowed for the join property '"
 								+ field.getName() + "'");
 			}
 
@@ -337,6 +340,12 @@ public class PropertyParser
 				ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
 				joinProperties.addCascadeType(Arrays.asList(manyToMany.cascade()));
 			}
+			else if (filter.hasAnnotation(field, OneToMany.class))
+			{
+				OneToMany oneToMany = field.getAnnotation(OneToMany.class);
+				joinProperties.addCascadeType(Arrays.asList(oneToMany.cascade()));
+			}
+
 			else
 			{
 				throw new BeanMappingException(

@@ -185,7 +185,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 
-### Wide Row
+### Wide Map
 
 
  To use **Cassandra** wide rows inside entities, add the following property to the **User** entity:

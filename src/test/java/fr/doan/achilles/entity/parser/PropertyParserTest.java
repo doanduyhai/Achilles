@@ -179,7 +179,7 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			@OneToOne(cascade =
+			@OneToMany(cascade =
 			{
 					PERSIST,
 					MERGE
@@ -201,7 +201,7 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx
-				.expectMessage("Incorrect annotation. Only @ManyToOne is allowed for the join property 'user'");
+				.expectMessage("Incorrect annotation. Only @OneToOne or @ManyToOne is allowed for the join property 'user'");
 
 		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
 				Test.class.getDeclaredField("user"), "user");
@@ -799,7 +799,7 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			@OneToMany(cascade =
+			@OneToOne(cascade =
 			{
 					PERSIST,
 					MERGE
@@ -820,7 +820,7 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx
-				.expectMessage("Incorrect annotation. Only @ManyToMany is allowed for the join property 'users'");
+				.expectMessage("Incorrect annotation. Only @OneToMany or @ManyToMany is allowed for the join property 'users'");
 
 		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
 				Test.class.getDeclaredField("users"), "users");
