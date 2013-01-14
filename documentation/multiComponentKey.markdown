@@ -119,7 +119,7 @@ search and deletion operations provided that:
  - for find and delete operations, the multikey should meet the following requirements
  
 	>	1. be null or	
-	> 	2. has some null components but without "hole" (**null**) between components
+	> 	2. has some null components but without "hole" ( **null**) between components
 <br/>
 
 Let's define a fake multi key class to illustrate this:
