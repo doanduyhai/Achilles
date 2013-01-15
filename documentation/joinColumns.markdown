@@ -119,14 +119,17 @@ attribute on *@OneToMany* and *@OneToOne* annotations is ignored by **Achilles**
     load the whole entity when the **WideMap** element is accessed (invocation of *findRange()*, *get()* or *iterator()* ).
 	CascadeType.ALL has been set on this field because we want  **Achilles** to persist effectively the **Tweet** when adding
 	it to the user tweetline.
-<br/>   
+<br/>
+   
  2. an external join wide row *timeline* which keeps track of all tweets in the user timeline. The wide row is external 
     because the amount of tweets can be huge for a timeline. There is no need to cascade persist on this field  since the 
 	tweet in an user timeline has been persisted already when the author saved it in its own *tweetline* (see point 1. above)
-<br/>   
+<br/>
+   
  3. an internal join wide row called *friends* which indexes all the friends of current user by their id. CascadeType.REFRESH
     is set but not mandatory because join entity will be loaded from **Cassandra** anyway when accessed.
-<br/>   
+<br/>
+   
  4. similarly, an internal join wide row for all user' *followers*
 <br/>
  
@@ -143,7 +146,8 @@ In this example we use join columns for *friends* and *followers* fields because
 	
     Else **Achilles** will check in **Cassandra** whether the entity already exists with the given primary key. If not an
 	exception is raised.
-<br/>   
+<br/>
+   
  2. On `entityManager.merge()` invocation:
 
 	If the CascadeType.MERGE or CascadeType.ALL has been activated
@@ -153,12 +157,15 @@ In this example we use join columns for *friends* and *followers* fields because
 		
 	>	Else just invoke `entityManager.merge()` on the join entity. All the dirty check mechanism will be applied as
 		usual
-<br/>   
+<br/> 
+  
  3. On `entityManager.refresh()` invocation: nothing happens, the join entity will be reloaded automatically on the next 
     invocation of getter method. Indeed the CascadeType.REFRESH is not really useful 
 <br/>   
+
  4. On `entityManager.remove()` action: nothing happens because CascadeType.REMOVE is not supported.
 <br/>   
+
  5. On getter invocation, if **Achilles** cannot find any joined entity with the primary key, a **null** value is returned  
  
 ##### Cascadint with WideMap join entity 
@@ -170,7 +177,8 @@ In this example we use join columns for *friends* and *followers* fields because
 	
     Else **Achilles** will check in **Cassandra** whether the entity already exists with the given primary key. If not an
 	exception is raised.
-<br/>   
+<br/>
+   
  2. On *wideMap.findRange()*, *wideMap.get()* or *iwideMap.terator()*  methods invocation:
 
 	**Achilles** is just loading the joined entity using its primary key. If the entity does not exists, **Achilles** 
