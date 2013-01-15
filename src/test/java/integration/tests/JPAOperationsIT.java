@@ -6,6 +6,7 @@ import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
 import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static fr.doan.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
 import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
@@ -78,18 +79,23 @@ public class JPAOperationsIT
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
-		assertThat(columns).hasSize(7);
+		assertThat(columns).hasSize(8);
 
-		Pair<DynamicComposite, Object> age = columns.get(0);
+		Pair<DynamicComposite, Object> serialVersionUID = columns.get(0);
 
-		Pair<DynamicComposite, Object> name = columns.get(1);
+		Pair<DynamicComposite, Object> age = columns.get(1);
 
-		Pair<DynamicComposite, Object> George = columns.get(2);
-		Pair<DynamicComposite, Object> Paul = columns.get(3);
+		Pair<DynamicComposite, Object> name = columns.get(2);
 
-		Pair<DynamicComposite, Object> FR = columns.get(4);
-		Pair<DynamicComposite, Object> Paris = columns.get(5);
-		Pair<DynamicComposite, Object> _75014 = columns.get(6);
+		Pair<DynamicComposite, Object> George = columns.get(3);
+		Pair<DynamicComposite, Object> Paul = columns.get(4);
+
+		Pair<DynamicComposite, Object> FR = columns.get(5);
+		Pair<DynamicComposite, Object> Paris = columns.get(6);
+		Pair<DynamicComposite, Object> _75014 = columns.get(7);
+
+		assertThat(serialVersionUID.left.get(1, STRING_SRZ)).isEqualTo(SERIAL_VERSION_UID.name());
+		assertThat(serialVersionUID.right).isEqualTo(151L);
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
 		assertThat(age.right).isEqualTo(35L);
@@ -139,28 +145,15 @@ public class JPAOperationsIT
 	}
 
 	@Test
-	public void should_persist_with_null_fields() throws Exception
+	public void should_persist_empty_bean() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
 		em.persist(bean);
 
-		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
-		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
+		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
-		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
-				ComponentEquality.GREATER_THAN_EQUAL);
-
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
-				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
-
-		assertThat(columns).hasSize(1);
-
-		Pair<DynamicComposite, Object> name = columns.get(0);
-
-		assertThat(name.left.get(1, STRING_SRZ)).isEqualTo("name");
-		assertThat(name.right).isEqualTo("DuyHai");
+		assertThat(found).isNotNull();
 	}
 
 	@Test

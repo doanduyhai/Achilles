@@ -28,7 +28,7 @@ import fr.doan.achilles.entity.type.WideMap;
 public class CompleteBean implements Serializable
 {
 
-	public static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 151L;
 
 	@Id
 	private Long id;
