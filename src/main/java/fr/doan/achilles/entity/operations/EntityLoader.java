@@ -170,11 +170,15 @@ public class EntityLoader
 			EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 		V joinEntity = this.load(entityClass, joinId, joinEntityMeta);
+		if (joinEntity != null)
+		{
+			return this.interceptorBuilder.build(joinEntity, joinEntityMeta);
+		}
+		else
+		{
+			return null;
+		}
 
-		Validator.validateNotNull(joinEntity, "The join entity '" + entityClass.getCanonicalName()
-				+ "' with id '" + joinId + "' cannot be found");
-
-		return this.interceptorBuilder.build(joinEntity, joinEntityMeta);
 	}
 
 	@SuppressWarnings(

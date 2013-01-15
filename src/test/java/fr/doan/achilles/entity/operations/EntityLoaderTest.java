@@ -54,7 +54,6 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 
@@ -543,8 +542,8 @@ public class EntityLoaderTest
 	}
 
 	@SuppressWarnings("unchecked")
-	@Test(expected = AchillesException.class)
-	public void should_exception_when_join_entity_not_found() throws Exception
+	@Test
+	public void should_return_null_when_join_entity_not_found() throws Exception
 	{
 		Long joinId = 45L;
 
@@ -556,7 +555,9 @@ public class EntityLoaderTest
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
 		when(columns.size()).thenReturn(0);
 
-		loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
+		UserBean loadedBean = loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
+
+		assertThat(loadedBean).isNull();
 
 	}
 }

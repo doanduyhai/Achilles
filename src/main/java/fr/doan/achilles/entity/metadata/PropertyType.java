@@ -10,7 +10,7 @@ public enum PropertyType
 {
 
 	START_EAGER(0, false), //
-	META(10, false), //
+	SERIAL_VERSION_UID(10, false), //
 	SIMPLE(20, false), //
 	LIST(30, true), //
 	SET(40, true), //

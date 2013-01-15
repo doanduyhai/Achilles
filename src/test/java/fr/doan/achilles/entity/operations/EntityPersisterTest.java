@@ -14,6 +14,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -53,7 +54,10 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
  * EntityPersisterTest
@@ -138,6 +142,43 @@ public class EntityPersisterTest
 
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(helper.getKey(entity, idMeta)).thenReturn(id);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_batch_persist_serialVersionUID() throws Exception
+	{
+		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
+
+		ArgumentCaptor<DynamicComposite> compositeCaptor = ArgumentCaptor
+				.forClass(DynamicComposite.class);
+
+		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(151L);
+		doNothing().when(dao)
+				.insertColumn(eq(id), compositeCaptor.capture(), eq(151L), eq(mutator));
+		persister.persist(entity, entityMeta);
+
+		verify(helper).findSerialVersionUID(entity.getClass());
+		DynamicComposite captured = compositeCaptor.getValue();
+
+		assertThat(captured.getComponent(0).getValue(SerializerUtils.BYTE_SRZ)).isEqualTo(
+				PropertyType.SERIAL_VERSION_UID.flag());
+		assertThat(captured.getComponent(1).getValue(SerializerUtils.STRING_SRZ)).isEqualTo(
+				PropertyType.SERIAL_VERSION_UID.name());
+		assertThat(captured.getComponent(2).getValue(SerializerUtils.INT_SRZ)).isEqualTo(0);
+	}
+
+	@Test(expected = BeanMappingException.class)
+	public void should_exception_when_serialVersionUID_not_found_while_persisting_entity()
+			throws Exception
+	{
+		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
+
+		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(null);
+
+		persister.persist(entity, entityMeta);
 	}
 
 	@Test

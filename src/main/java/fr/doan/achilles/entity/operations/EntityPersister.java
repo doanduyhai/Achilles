@@ -1,5 +1,8 @@
 package fr.doan.achilles.entity.operations;
 
+import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
+import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
@@ -25,6 +28,8 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.entity.metadata.PropertyType;
+import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.holder.KeyValueHolder;
 import fr.doan.achilles.validation.Validator;
 
@@ -53,6 +58,7 @@ public class EntityPersister
 
 			Mutator<ID> mutator = dao.buildMutator();
 
+			this.batchPersistVersionSerialUID(entity.getClass(), key, dao, mutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -83,6 +89,28 @@ public class EntityPersister
 			mutator.execute();
 		}
 
+	}
+
+	private <T, ID> void batchPersistVersionSerialUID(Class<T> entityClass, ID key,
+			GenericDynamicCompositeDao<ID> dao, Mutator<ID> mutator)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		composite.setComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), BYTE_SRZ, BYTE_SRZ
+				.getComparatorType().getTypeName());
+		composite.setComponent(1, PropertyType.SERIAL_VERSION_UID.name(), STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
+		composite.setComponent(2, 0, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
+		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
+		if (serialVersionUID != null)
+		{
+			dao.insertColumn(key, composite, serialVersionUID, mutator);
+		}
+		else
+		{
+			throw new BeanMappingException(
+					"Cannot find 'serialVersionUID' field for entity class '"
+							+ entityClass.getCanonicalName() + "'");
+		}
 	}
 
 	private <ID> void batchPersistSimpleProperty(Object entity, ID key,
