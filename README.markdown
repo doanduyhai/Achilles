@@ -49,6 +49,7 @@
 7. [External wide row][externalWideRow]
 8. [Multi components for wide row][multiComponentKey]
 9. [Join columns][joinColumns]
+10. [Manual Column Family creation][manualCFCreation]
 
 # License #
 Copyright 2012 DuyHai DOAN
@@ -281,3 +282,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
 [joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
+[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown
