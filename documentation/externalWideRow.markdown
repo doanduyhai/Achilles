@@ -1,5 +1,7 @@
 ## External Wide Row
 
+ Before reading further, please make sure you read carefully the chapter on [Simple wide row entity][simpleWideRow]
+
  Unlike [Internal wide row][internalWideRow], external wide rows have their values saved in a dedicated column family.
  
  	@Table(name="users_column_family")

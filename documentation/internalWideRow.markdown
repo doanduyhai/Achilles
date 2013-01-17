@@ -1,5 +1,7 @@
 ## Internal Wide Row
 
+ Before reading further, please make sure you read carefully the chapter on [Simple wide row entity][simpleWideRow]
+
  An internal wide row is simply a wide row structure stored along with other entity values:
  
 	@Table(name="users_column_family")

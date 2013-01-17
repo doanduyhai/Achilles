@@ -49,14 +49,14 @@
 7. [External wide row][externalWideRow]
 8. [Multi components for wide row][multiComponentKey]
 9. [Join columns][joinColumns]
-10. [Manual Column Family creation][manualCFCreation]
+
 
 # License #
 Copyright 2012 DuyHai DOAN
 
-Licensed under the Creative Commons Attribution-ShareAlike , Version 2.0 ; you may not use this application except in compliance with the License. You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
 
-http://creativecommons.org/licenses/by-sa/2.0/
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  
@@ -122,7 +122,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 		private Integer age;
 		
 		@Column
-		private Set<String> addresses;
+    		private Biography bio;
 		
 		@Lazy
 		@Column
@@ -132,7 +132,18 @@ Unless required by applicable law or agreed to in writing, software distributed 
 		private Map<Integer,String> preferences;
 		
 		// Getters and setters ...
-	}	
+	}
+
+	public class Biography implements Serializable
+	{
+		private static final long serialVersionUID = 1L;
+
+		private String birthPlace;
+		
+		private List<String> diplomas;
+
+		private String description; 
+	}
 
  All fields are eagerly fetched except the *favoriteTags* list annotated by **@Lazy**. 
  The list will be loaded **entirely**	when calling *getFavoriteTags()*.
@@ -149,6 +160,14 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	user.setFirstname("DuyHai");
 	user.setLastname("DOAN");
 	user.setAge(30);
+	
+	// Biography
+	Biography bio = new Biography();
+	bio.setBirthPlace("VietNam");
+	bio.setDiplomas(Arrays.asList("Master of Science","Diplome d'ingenieur"));
+	bio.setDescription("Yet another framework developer");	
+
+	user.setBio(bio);
 
 	// Favorite Tags
 	Set<String> tags = new HashSet<String>();
@@ -157,9 +176,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	tags.add("cassandra");
 
 	user.setFavoriteTags(tags);
-	
-	// Addresses
-	user.setAddresses(Arrays.asList("1 rue de la paix Paris","15 rue Vaugirard Paris"));
 	
 	// Preferences
 	Map<Integer,String> preferences = new HashMap<Integer,String>();
@@ -197,7 +213,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
  **Tweet** here is a simple POJO.
 
  The declaration for the field *tweets* is only a place holder. **WideMap** is an interface exposing some useful operations for wide row.
- These operations mimic Cassandra *slice range* API. Check [Internal wide row](/doanduyhai/achilles/tree/master/documentation/annotations.markdown) for more details.
+ These operations mimic Cassandra *slice range* API. Check [Simple wide row entity][simpleWideRow] for more details.
  
  To initialize the *tweets* field, you must get an **User** entity from the EntityManager (call *find()* or *merge()*):
  
@@ -270,7 +286,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 	
 >	**Important note**: All operations done with **WideMap** properties are **flushed immediatly to Cassandra**.
 	There is no need to call `em.merge(foundUser)`. **WideMap** interface and API is not part of JPA but a proprietary
-	extension of **Achilles** to support Cassandra wide row and slice ranges.	
+	extension of **Achilles** to support Cassandra wide row and slice queries.	
 	
 	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
