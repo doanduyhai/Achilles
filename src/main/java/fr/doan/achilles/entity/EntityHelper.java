@@ -218,25 +218,15 @@ public class EntityHelper
 		log.debug("Infer column family name for entity {}", entity.getCanonicalName());
 
 		Table table = entity.getAnnotation(javax.persistence.Table.class);
-		String columnFamily;
 		if (table != null)
 		{
 			if (StringUtils.isNotBlank(table.name()))
 			{
-				columnFamily = table.name();
+				return table.name();
 
 			}
-			else
-			{
-				columnFamily = canonicalName;
-			}
 		}
-		else
-		{
-			throw new BeanMappingException("The entity '" + entity.getCanonicalName()
-					+ "' should have @Table annotation");
-		}
-		return columnFamily;
+		return canonicalName;
 	}
 
 	public List<Field> getInheritedPrivateFields(Class<?> type)

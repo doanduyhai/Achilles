@@ -29,7 +29,7 @@ public class EntityExplorer
 		for (String packageName : packageNames)
 		{
 			candidates.addAll(this.listCandidateClassesFromPackage(packageName,
-					javax.persistence.Table.class));
+					javax.persistence.Entity.class));
 		}
 		return candidates;
 	}

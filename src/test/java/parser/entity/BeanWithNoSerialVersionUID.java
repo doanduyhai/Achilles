@@ -2,7 +2,7 @@ package parser.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Table;
+import javax.persistence.Entity;
 
 /**
  * BeanWithNoSerialVersionUID
@@ -11,7 +11,7 @@ import javax.persistence.Table;
  * 
  */
 @SuppressWarnings("serial")
-@Table
+@Entity
 public class BeanWithNoSerialVersionUID implements Serializable
 {
 

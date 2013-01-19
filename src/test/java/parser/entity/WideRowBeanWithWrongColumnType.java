@@ -3,8 +3,8 @@ package parser.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.WideRow;
 
@@ -14,7 +14,7 @@ import fr.doan.achilles.annotations.WideRow;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 @WideRow
 public class WideRowBeanWithWrongColumnType implements Serializable
 {

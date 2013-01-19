@@ -3,8 +3,8 @@ package integration.tests.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideRow;
 
@@ -15,7 +15,7 @@ import fr.doan.achilles.entity.type.WideRow;
  * 
  */
 @fr.doan.achilles.annotations.WideRow
-@Table
+@Entity
 public class MultiKeyWideRowBean implements Serializable
 {
 	private static final long serialVersionUID = 1L;

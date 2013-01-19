@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.WideRow;
@@ -25,7 +25,7 @@ import fr.doan.achilles.entity.type.WideRow;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class Bean implements Serializable
 {
 	public static final long serialVersionUID = 1L;

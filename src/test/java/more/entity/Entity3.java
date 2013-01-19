@@ -1,6 +1,6 @@
 package more.entity;
 
-import javax.persistence.Table;
+import javax.persistence.Entity;
 
 /**
  * Entity3
@@ -8,7 +8,7 @@ import javax.persistence.Table;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class Entity3
 {
 

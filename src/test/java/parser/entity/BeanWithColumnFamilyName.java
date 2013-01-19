@@ -3,6 +3,7 @@ package parser.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -12,6 +13,7 @@ import javax.persistence.Table;
  * @author DuyHai DOAN
  * 
  */
+@Entity
 @Table(name = "myOwnCF")
 public class BeanWithColumnFamilyName implements Serializable
 {

@@ -3,9 +3,9 @@ package parser.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Table;
 
 /**
  * BeanWithDuplicatedJoinColumnName
@@ -13,7 +13,7 @@ import javax.persistence.Table;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class BeanWithDuplicatedJoinColumnName implements Serializable
 {
 	public static final long serialVersionUID = 1L;

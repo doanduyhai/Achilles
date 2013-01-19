@@ -3,8 +3,8 @@ package parser.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import mapping.entity.TweetMultiKey;
 import fr.doan.achilles.entity.type.WideRow;
@@ -15,7 +15,7 @@ import fr.doan.achilles.entity.type.WideRow;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 @fr.doan.achilles.annotations.WideRow
 public class MultiKeyWideRowBean implements Serializable
 {

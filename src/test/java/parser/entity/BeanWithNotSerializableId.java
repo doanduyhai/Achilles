@@ -2,8 +2,8 @@ package parser.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 /**
  * BeanWithNotSerializableId
@@ -11,7 +11,7 @@ import javax.persistence.Table;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class BeanWithNotSerializableId implements Serializable
 {
 	class NotSerializableId

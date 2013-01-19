@@ -38,7 +38,7 @@ public class EntityExplorerTest
 	public void should_find_classes_from_single_package() throws Exception
 	{
 		List<Class<?>> entities = explorer.listCandidateClassesFromPackage("sample.entity",
-				javax.persistence.Table.class);
+				javax.persistence.Entity.class);
 
 		assertThat(entities).hasSize(2);
 		assertThat(entities).contains(Entity1.class, Entity2.class);
@@ -57,7 +57,7 @@ public class EntityExplorerTest
 	public void should_not_find_classes_when_no_annotation_found() throws Exception
 	{
 		List<Class<?>> entities = explorer.listCandidateClassesFromPackage("fr.doan.achilles.dao",
-				javax.persistence.Table.class);
+				javax.persistence.Entity.class);
 
 		assertThat(entities).isEmpty();
 	}

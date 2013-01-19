@@ -3,8 +3,8 @@ package parser.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideRow;
 
@@ -14,7 +14,7 @@ import fr.doan.achilles.entity.type.WideRow;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class BeanWithExternalWideMap implements Serializable
 {
 	public static final long serialVersionUID = 1L;

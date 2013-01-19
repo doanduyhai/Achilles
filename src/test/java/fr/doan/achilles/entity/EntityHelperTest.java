@@ -28,7 +28,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.BeanWithColumnFamilyName;
-import parser.entity.BeanWithNoTableAnnotation;
 import parser.entity.ChildBean;
 import fr.doan.achilles.entity.manager.CompleteBeanTestBuilder;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -356,20 +355,6 @@ public class EntityHelperTest
 	{
 		String cfName = helper.inferColumnFamilyName(CompleteBean.class, "canonicalName");
 		assertThat(cfName).isEqualTo("canonicalName");
-	}
-
-	@Test
-	public void should_exception_when_infering_column_family_for_bean_with_no_annotation()
-			throws Exception
-	{
-
-		expectedEx.expect(BeanMappingException.class);
-		expectedEx.expectMessage("The entity '"
-				+ BeanWithNoTableAnnotation.class.getCanonicalName()
-				+ "' should have @Table annotation");
-
-		helper.inferColumnFamilyName(BeanWithNoTableAnnotation.class, "canonicalName");
-
 	}
 
 	@Test

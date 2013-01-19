@@ -4,10 +4,10 @@ import java.io.Serializable;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.Table;
 
 import fr.doan.achilles.entity.type.WideRow;
 
@@ -17,7 +17,7 @@ import fr.doan.achilles.entity.type.WideRow;
  * @author DuyHai DOAN
  * 
  */
-@Table
+@Entity
 public class User implements Serializable
 {
 
