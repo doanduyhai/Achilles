@@ -38,7 +38,7 @@ import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.type.MultiKey;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.validation.Validator;
 
@@ -80,7 +80,7 @@ public class PropertyParser
 			propertyMeta = parseMapProperty(beanClass, field, propertyName);
 		}
 
-		else if (WideMap.class.isAssignableFrom(fieldType))
+		else if (WideRow.class.isAssignableFrom(fieldType))
 		{
 			propertyMeta = parseWideMapProperty(beanClass, field, propertyName);
 		}

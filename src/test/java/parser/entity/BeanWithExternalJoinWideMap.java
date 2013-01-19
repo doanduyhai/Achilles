@@ -8,7 +8,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 
 /**
  * BeanWithExternalJoinWideMap
@@ -29,7 +29,7 @@ public class BeanWithExternalJoinWideMap implements Serializable
 
 	@ManyToMany
 	@JoinColumn(table = "external_users")
-	private WideMap<Integer, UserBean> users;
+	private WideRow<Integer, UserBean> users;
 
 	public Long getId()
 	{
@@ -51,12 +51,12 @@ public class BeanWithExternalJoinWideMap implements Serializable
 		this.name = name;
 	}
 
-	public WideMap<Integer, UserBean> getUsers()
+	public WideRow<Integer, UserBean> getUsers()
 	{
 		return users;
 	}
 
-	public void setUsers(WideMap<Integer, UserBean> users)
+	public void setUsers(WideRow<Integer, UserBean> users)
 	{
 		this.users = users;
 	}

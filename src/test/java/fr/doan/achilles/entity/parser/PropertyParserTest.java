@@ -44,7 +44,7 @@ import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.serializer.SerializerUtils;
@@ -449,14 +449,14 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			private WideMap<UUID, String> tweets;
+			private WideRow<UUID, String> tweets;
 
-			public WideMap<UUID, String> getTweets()
+			public WideRow<UUID, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<UUID, String> tweets)
+			public void setTweets(WideRow<UUID, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -482,14 +482,14 @@ public class PropertyParserTest
 		class Test
 		{
 			@Column(table = "tablename")
-			private WideMap<UUID, String> tweets;
+			private WideRow<UUID, String> tweets;
 
-			public WideMap<UUID, String> getTweets()
+			public WideRow<UUID, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<UUID, String> tweets)
+			public void setTweets(WideRow<UUID, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -522,14 +522,14 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			private WideMap<Void, String> tweets;
+			private WideRow<Void, String> tweets;
 
-			public WideMap<Void, String> getTweets()
+			public WideRow<Void, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<Void, String> tweets)
+			public void setTweets(WideRow<Void, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -548,14 +548,14 @@ public class PropertyParserTest
 
 		class Test
 		{
-			private WideMap<CorrectMultiKey, String> tweets;
+			private WideRow<CorrectMultiKey, String> tweets;
 
-			public WideMap<CorrectMultiKey, String> getTweets()
+			public WideRow<CorrectMultiKey, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<CorrectMultiKey, String> tweets)
+			public void setTweets(WideRow<CorrectMultiKey, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -595,14 +595,14 @@ public class PropertyParserTest
 
 		class Test
 		{
-			private WideMap<CorrectMultiKeyUnorderedKeys, String> tweets;
+			private WideRow<CorrectMultiKeyUnorderedKeys, String> tweets;
 
-			public WideMap<CorrectMultiKeyUnorderedKeys, String> getTweets()
+			public WideRow<CorrectMultiKeyUnorderedKeys, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<CorrectMultiKeyUnorderedKeys, String> tweets)
+			public void setTweets(WideRow<CorrectMultiKeyUnorderedKeys, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -637,14 +637,14 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			private WideMap<MultiKeyWithNegativeOrder, String> tweets;
+			private WideRow<MultiKeyWithNegativeOrder, String> tweets;
 
-			public WideMap<MultiKeyWithNegativeOrder, String> getTweets()
+			public WideRow<MultiKeyWithNegativeOrder, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<MultiKeyWithNegativeOrder, String> tweets)
+			public void setTweets(WideRow<MultiKeyWithNegativeOrder, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -663,14 +663,14 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			private WideMap<MultiKeyWithNoAnnotation, String> tweets;
+			private WideRow<MultiKeyWithNoAnnotation, String> tweets;
 
-			public WideMap<MultiKeyWithNoAnnotation, String> getTweets()
+			public WideRow<MultiKeyWithNoAnnotation, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<MultiKeyWithNoAnnotation, String> tweets)
+			public void setTweets(WideRow<MultiKeyWithNoAnnotation, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -688,14 +688,14 @@ public class PropertyParserTest
 	{
 		class Test
 		{
-			private WideMap<MultiKeyNotInstantiable, String> tweets;
+			private WideRow<MultiKeyNotInstantiable, String> tweets;
 
-			public WideMap<MultiKeyNotInstantiable, String> getTweets()
+			public WideRow<MultiKeyNotInstantiable, String> getTweets()
 			{
 				return tweets;
 			}
 
-			public void setTweets(WideMap<MultiKeyNotInstantiable, String> tweets)
+			public void setTweets(WideRow<MultiKeyNotInstantiable, String> tweets)
 			{
 				this.tweets = tweets;
 			}
@@ -719,14 +719,14 @@ public class PropertyParserTest
 					MERGE
 			})
 			@JoinColumn
-			private WideMap<UUID, UserBean> users;
+			private WideRow<UUID, UserBean> users;
 
-			public WideMap<UUID, UserBean> getUsers()
+			public WideRow<UUID, UserBean> getUsers()
 			{
 				return users;
 			}
 
-			public void setUsers(WideMap<UUID, UserBean> users)
+			public void setUsers(WideRow<UUID, UserBean> users)
 			{
 				this.users = users;
 			}
@@ -764,9 +764,9 @@ public class PropertyParserTest
 		{
 			@ManyToMany
 			@JoinColumn(table = "tablename")
-			private WideMap<Integer, UserBean> users;
+			private WideRow<Integer, UserBean> users;
 
-			public WideMap<Integer, UserBean> getUsers()
+			public WideRow<Integer, UserBean> getUsers()
 			{
 				return users;
 			}
@@ -805,14 +805,14 @@ public class PropertyParserTest
 					MERGE
 			})
 			@JoinColumn
-			private WideMap<UUID, UserBean> users;
+			private WideRow<UUID, UserBean> users;
 
-			public WideMap<UUID, UserBean> getUsers()
+			public WideRow<UUID, UserBean> getUsers()
 			{
 				return users;
 			}
 
-			public void setUsers(WideMap<UUID, UserBean> users)
+			public void setUsers(WideRow<UUID, UserBean> users)
 			{
 				this.users = users;
 			}
@@ -834,14 +834,14 @@ public class PropertyParserTest
 		class Test
 		{
 			@JoinColumn
-			private WideMap<UUID, UserBean> users;
+			private WideRow<UUID, UserBean> users;
 
-			public WideMap<UUID, UserBean> getUsers()
+			public WideRow<UUID, UserBean> getUsers()
 			{
 				return users;
 			}
 
-			public void setUsers(WideMap<UUID, UserBean> users)
+			public void setUsers(WideRow<UUID, UserBean> users)
 			{
 				this.users = users;
 			}

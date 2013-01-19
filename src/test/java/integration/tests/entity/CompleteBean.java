@@ -16,7 +16,7 @@ import javax.persistence.Table;
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.MultiKey;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 
 /**
  * CompleteBean
@@ -54,20 +54,20 @@ public class CompleteBean implements Serializable
 	private Map<Integer, String> preferences;
 
 	@Column
-	private WideMap<UUID, String> tweets;
+	private WideRow<UUID, String> tweets;
 
 	@Column
-	private WideMap<UserTweetKey, String> userTweets;
+	private WideRow<UserTweetKey, String> userTweets;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn
 	private Tweet welcomeTweet;
 
 	@Column(table = "ExternalWideMap")
-	private WideMap<Integer, String> externalWideMap;
+	private WideRow<Integer, String> externalWideMap;
 
 	@Column(table = "MultiKeyExternalWideMap")
-	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
+	private WideRow<UserTweetKey, String> multiKeyExternalWideMap;
 
 	public Long getId()
 	{
@@ -139,22 +139,22 @@ public class CompleteBean implements Serializable
 		this.age = age;
 	}
 
-	public WideMap<UUID, String> getTweets()
+	public WideRow<UUID, String> getTweets()
 	{
 		return tweets;
 	}
 
-	public void setTweets(WideMap<UUID, String> tweets)
+	public void setTweets(WideRow<UUID, String> tweets)
 	{
 		this.tweets = tweets;
 	}
 
-	public WideMap<UserTweetKey, String> getUserTweets()
+	public WideRow<UserTweetKey, String> getUserTweets()
 	{
 		return userTweets;
 	}
 
-	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
+	public void setUserTweets(WideRow<UserTweetKey, String> userTweets)
 	{
 		this.userTweets = userTweets;
 	}
@@ -169,12 +169,12 @@ public class CompleteBean implements Serializable
 		this.welcomeTweet = welcomeTweet;
 	}
 
-	public WideMap<Integer, String> getExternalWideMap()
+	public WideRow<Integer, String> getExternalWideMap()
 	{
 		return externalWideMap;
 	}
 
-	public WideMap<UserTweetKey, String> getMultiKeyExternalWideMap()
+	public WideRow<UserTweetKey, String> getMultiKeyExternalWideMap()
 	{
 		return multiKeyExternalWideMap;
 	}

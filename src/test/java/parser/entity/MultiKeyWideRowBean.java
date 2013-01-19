@@ -7,8 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import mapping.entity.TweetMultiKey;
-import fr.doan.achilles.annotations.WideRow;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 
 /**
  * MultiKeyWideRowBean
@@ -17,7 +16,7 @@ import fr.doan.achilles.entity.type.WideMap;
  * 
  */
 @Table
-@WideRow
+@fr.doan.achilles.annotations.WideRow
 public class MultiKeyWideRowBean implements Serializable
 {
 
@@ -27,7 +26,7 @@ public class MultiKeyWideRowBean implements Serializable
 	private Long id;
 
 	@Column
-	private WideMap<TweetMultiKey, String> values;
+	private WideRow<TweetMultiKey, String> values;
 
 	public Long getId()
 	{
@@ -39,12 +38,12 @@ public class MultiKeyWideRowBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<TweetMultiKey, String> getValues()
+	public WideRow<TweetMultiKey, String> getValues()
 	{
 		return values;
 	}
 
-	public void setValues(WideMap<TweetMultiKey, String> values)
+	public void setValues(WideRow<TweetMultiKey, String> values)
 	{
 		this.values = values;
 	}

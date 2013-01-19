@@ -17,7 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import fr.doan.achilles.annotations.Lazy;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 
 /**
  * Bean
@@ -59,7 +59,7 @@ public class Bean implements Serializable
 			MERGE
 	})
 	@JoinColumn(name = "linked_users")
-	private WideMap<String, UserBean> users;
+	private WideRow<String, UserBean> users;
 
 	public Long getId()
 	{
@@ -131,7 +131,7 @@ public class Bean implements Serializable
 		this.creator = creator;
 	}
 
-	public WideMap<String, UserBean> getUsers()
+	public WideRow<String, UserBean> getUsers()
 	{
 		return users;
 	}

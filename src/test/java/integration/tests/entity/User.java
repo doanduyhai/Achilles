@@ -9,7 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 
 /**
  * User
@@ -34,15 +34,15 @@ public class User implements Serializable
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinColumn
-	private WideMap<Integer, Tweet> tweets;
+	private WideRow<Integer, Tweet> tweets;
 
 	@ManyToMany(cascade = CascadeType.MERGE)
 	@JoinColumn
-	private WideMap<Long, Tweet> timeline;
+	private WideRow<Long, Tweet> timeline;
 
 	@ManyToMany(cascade = CascadeType.PERSIST)
 	@JoinColumn(table = "retweets_cf")
-	private WideMap<Integer, Tweet> retweets;
+	private WideRow<Integer, Tweet> retweets;
 
 	public Long getId()
 	{
@@ -74,17 +74,17 @@ public class User implements Serializable
 		this.lastname = lastname;
 	}
 
-	public WideMap<Integer, Tweet> getTweets()
+	public WideRow<Integer, Tweet> getTweets()
 	{
 		return tweets;
 	}
 
-	public WideMap<Long, Tweet> getTimeline()
+	public WideRow<Long, Tweet> getTimeline()
 	{
 		return timeline;
 	}
 
-	public WideMap<Integer, Tweet> getRetweets()
+	public WideRow<Integer, Tweet> getRetweets()
 	{
 		return retweets;
 	}

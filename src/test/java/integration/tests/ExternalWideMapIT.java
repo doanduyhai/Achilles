@@ -25,7 +25,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
@@ -49,7 +49,7 @@ public class ExternalWideMapIT
 
 	private CompleteBean bean;
 
-	private WideMap<Integer, String> externalWideMap;
+	private WideRow<Integer, String> externalWideMap;
 
 	@Before
 	public void setUp()

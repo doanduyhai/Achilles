@@ -12,7 +12,7 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -24,7 +24,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K, V>
+public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideRow<K, V>
 {
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;

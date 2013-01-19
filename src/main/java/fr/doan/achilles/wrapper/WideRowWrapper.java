@@ -9,7 +9,7 @@ import fr.doan.achilles.composite.factory.CompositeKeyFactory;
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -21,7 +21,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideRowWrapper<ID, K, V> implements WideMap<K, V>
+public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 {
 	protected ID id;
 	protected GenericCompositeDao<ID, V> dao;

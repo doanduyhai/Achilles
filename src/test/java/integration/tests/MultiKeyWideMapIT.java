@@ -27,7 +27,7 @@ import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideMap;
+import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
@@ -49,7 +49,7 @@ public class MultiKeyWideMapIT
 
 	private CompleteBean bean;
 
-	private WideMap<UserTweetKey, String> userTweets;
+	private WideRow<UserTweetKey, String> userTweets;
 
 	private UUID uuid1 = TimeUUIDUtils.getTimeUUID(1);
 	private UUID uuid2 = TimeUUIDUtils.getTimeUUID(2);
