@@ -41,7 +41,7 @@ import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.EntityParser;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 
 /**
  * EntityMapperTest
@@ -287,7 +287,7 @@ public class EntityMapperTest
 		Map<String, Map<Integer, String>> mapProperties = new HashMap<String, Map<Integer, String>>();
 		PropertyMeta<Integer, String> mapMeta = (PropertyMeta<Integer, String>) entityMeta
 				.getPropertyMetas().get("preferences");
-		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
+		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValue(1, "FR"));
 
 		assertThat(mapProperties).hasSize(1);
 		assertThat(mapProperties).containsKey("preferences");
@@ -311,7 +311,7 @@ public class EntityMapperTest
 		mapProperties.put("test", map);
 
 		PropertyMeta<?, ?> mapMeta = entityMeta.getPropertyMetas().get("preferences");
-		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValueHolder(1, "FR"));
+		mapper.addToMap((Map) mapProperties, mapMeta, new KeyValue(1, "FR"));
 
 		assertThat(mapProperties).hasSize(2);
 		assertThat(mapProperties).containsKey("preferences");
@@ -350,11 +350,11 @@ public class EntityMapperTest
 				"Paul"));
 
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder<Integer, String>(1, "FR")));
+				new KeyValue<Integer, String>(1, "FR")));
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder<Integer, String>(2, "Paris")));
+				new KeyValue<Integer, String>(2, "Paris")));
 		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValueHolder<Integer, String>(3, "75014")));
+				new KeyValue<Integer, String>(3, "75014")));
 
 		doNothing().when(helper).setValueToField(eq(entity), eq(idMeta.getSetter()),
 				idCaptor.capture());

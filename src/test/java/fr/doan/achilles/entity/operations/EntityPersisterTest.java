@@ -56,7 +56,7 @@ import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
@@ -260,8 +260,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode())).thenReturn(
-				composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode()))
+				.thenReturn(composite);
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
@@ -282,8 +282,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode())).thenReturn(
-				composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode()))
+				.thenReturn(composite);
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
@@ -318,16 +318,15 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
-				.forClass(KeyValueHolder.class);
+		ArgumentCaptor<KeyValue> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValue.class);
 
 		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValueHolder<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValueHolder<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValueHolder<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
+		KeyValue<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValue<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValue<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
 		assertThat(holder1.getKey()).isEqualTo(1);
 		assertThat(holder1.getValue()).isEqualTo("FR");
@@ -365,16 +364,15 @@ public class EntityPersisterTest
 
 		persister.persistMapProperty(entity, id, dao, propertyMeta);
 
-		ArgumentCaptor<KeyValueHolder> keyValueHolderCaptor = ArgumentCaptor
-				.forClass(KeyValueHolder.class);
+		ArgumentCaptor<KeyValue> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValue.class);
 
 		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
 				eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValueHolder<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValueHolder<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValueHolder<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
+		KeyValue<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
+		KeyValue<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
+		KeyValue<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
 
 		assertThat(holder1.getKey()).isEqualTo(1);
 		assertThat(holder1.getValue()).isEqualTo("FR");

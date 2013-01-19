@@ -33,7 +33,7 @@ import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 
 /**
  * DirtyCheckIT
@@ -310,8 +310,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(3).right).getValue()).isEqualTo(
-				"test");
+		assertThat(((KeyValue<Integer, String>) columns.get(3).right).getValue()).isEqualTo("test");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -329,10 +328,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -353,10 +352,9 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(2).right).getValue()).isEqualTo(
-				"75015");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(3).right).getValue()).isEqualTo(
-				"test");
+		assertThat(((KeyValue<Integer, String>) columns.get(2).right).getValue())
+				.isEqualTo("75015");
+		assertThat(((KeyValue<Integer, String>) columns.get(3).right).getValue()).isEqualTo("test");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -374,10 +372,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -395,8 +393,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -414,10 +412,9 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"FR");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue()).isEqualTo("FR");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -438,10 +435,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -459,10 +456,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -481,8 +478,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -500,10 +497,9 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"FR");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue()).isEqualTo("FR");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("Paris");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -524,10 +520,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -550,10 +546,10 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"Paris");
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(1).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("Paris");
+		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -579,8 +575,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValueHolder<Integer, String>) columns.get(0).right).getValue()).isEqualTo(
-				"75014");
+		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
+				.isEqualTo("75014");
 	}
 
 	@Test

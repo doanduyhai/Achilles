@@ -1,5 +1,6 @@
 package fr.doan.achilles.holder;
 
+import java.io.Serializable;
 
 /**
  * KeyValue
@@ -7,8 +8,10 @@ package fr.doan.achilles.holder;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValue<K, V>
+public class KeyValue<K, V> implements Serializable
 {
+	public static final long serialVersionUID = 1L;
+
 	private final K key;
 	private final V value;
 	private final int ttl;

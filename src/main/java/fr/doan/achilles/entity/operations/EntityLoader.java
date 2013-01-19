@@ -17,7 +17,7 @@ import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.EntityMapper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.proxy.builder.EntityProxyBuilder;
 import fr.doan.achilles.validation.Validator;
 
@@ -127,7 +127,7 @@ public class EntityLoader
 		Class<K> keyClass = mapPropertyMeta.getKeyClass();
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
-			KeyValueHolder<K, V> holder = (KeyValueHolder<K, V>) pair.right;
+			KeyValue<K, V> holder = (KeyValue<K, V>) pair.right;
 
 			map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.getValue(holder.getValue()));
 		}

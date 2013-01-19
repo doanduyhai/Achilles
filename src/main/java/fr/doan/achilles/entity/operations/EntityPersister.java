@@ -30,7 +30,7 @@ import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.BeanMappingException;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.validation.Validator;
 
 /**
@@ -193,7 +193,8 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta, count);
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
+						count);
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -247,11 +248,10 @@ public class EntityPersister
 		{
 			for (Entry<K, V> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta, entry
-						.getKey().hashCode());
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
+						entry.getKey().hashCode());
 
-				KeyValueHolder<K, V> value = new KeyValueHolder<K, V>(entry.getKey(),
-						entry.getValue());
+				KeyValue<K, V> value = new KeyValue<K, V>(entry.getKey(), entry.getValue());
 				dao.insertColumn(key, name, value, mutator);
 			}
 		}

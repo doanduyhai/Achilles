@@ -20,7 +20,7 @@ import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.exception.AchillesException;
-import fr.doan.achilles.holder.KeyValueHolder;
+import fr.doan.achilles.holder.KeyValue;
 
 /**
  * EntityMapper
@@ -87,7 +87,7 @@ public class EntityMapper
 			else if (propertyMeta.type() == PropertyType.MAP)
 			{
 				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMeta;
-				addToMap(mapProperties, mapMeta, (KeyValueHolder<?, ?>) pair.right);
+				addToMap(mapProperties, mapMeta, (KeyValue<?, ?>) pair.right);
 			}
 		}
 
@@ -147,7 +147,7 @@ public class EntityMapper
 
 	@SuppressWarnings("unchecked")
 	protected <K, V> void addToMap(Map<String, Map<?, ?>> mapProperties,
-			PropertyMeta<K, V> mapMeta, KeyValueHolder<?, ?> keyValueHolder)
+			PropertyMeta<K, V> mapMeta, KeyValue<?, ?> keyValue)
 	{
 		String propertyName = mapMeta.getPropertyName();
 
@@ -161,7 +161,7 @@ public class EntityMapper
 		{
 			map = (Map<K, V>) mapProperties.get(propertyName);
 		}
-		map.put((K) keyValueHolder.getKey(), mapMeta.getValue(keyValueHolder.getValue()));
+		map.put((K) keyValue.getKey(), mapMeta.getValue(keyValue.getValue()));
 	}
 
 	public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> keyMeta, T entity)
