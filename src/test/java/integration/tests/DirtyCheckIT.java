@@ -593,7 +593,6 @@ public class DirtyCheckIT
 		DynamicComposite compo = new DynamicComposite();
 		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "name", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedName = dao.getValue(bean.getId(), compo);
 
@@ -610,7 +609,6 @@ public class DirtyCheckIT
 		DynamicComposite compo = new DynamicComposite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
@@ -629,7 +627,6 @@ public class DirtyCheckIT
 		DynamicComposite compo = new DynamicComposite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 

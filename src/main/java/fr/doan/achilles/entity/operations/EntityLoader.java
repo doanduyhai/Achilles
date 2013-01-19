@@ -77,7 +77,6 @@ public class EntityLoader
 			PropertyMeta<?, V> propertyMeta)
 	{
 		DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		composite.addComponent(2, 0, EQUAL);
 		Object value = dao.getValue(key, composite);
 
 		return propertyMeta.getValue(value);
@@ -191,7 +190,6 @@ public class EntityLoader
 	{
 		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinProperties().getEntityMeta();
 		DynamicComposite composite = keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL);
-		composite.addComponent(2, 0, EQUAL);
 
 		Object joinId = dao.getValue(key, composite);
 

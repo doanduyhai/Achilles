@@ -189,7 +189,7 @@ public class EntityPersisterTest
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 
@@ -204,7 +204,7 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 
@@ -222,8 +222,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
 
 		persister.persist(entity, entityMeta);
 
@@ -241,8 +241,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
 
 		persister.persistListProperty(entity, id, dao, propertyMeta);
 
@@ -260,9 +260,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, "George".hashCode())).thenReturn(
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode())).thenReturn(
 				composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, "Paul".hashCode()))
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
 		persister.persist(entity, entityMeta);
@@ -282,9 +282,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, "George".hashCode())).thenReturn(
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode())).thenReturn(
 				composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, "Paul".hashCode()))
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
 		persister.persistSetProperty(entity, id, dao, propertyMeta);
@@ -312,9 +312,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 2)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 3)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(composite);
 
 		persister.persist(entity, entityMeta);
 
@@ -359,9 +359,9 @@ public class EntityPersisterTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 1)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 2)).thenReturn(composite);
-		when(keyFactory.createForBatchInsert(propertyMeta, 3)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(composite);
 
 		persister.persistMapProperty(entity, id, dao, propertyMeta);
 
@@ -407,7 +407,7 @@ public class EntityPersisterTest
 				.thenReturn(joinId);
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
 		persister.persist(entity, entityMeta);
@@ -440,7 +440,7 @@ public class EntityPersisterTest
 				userBean);
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
 		persister.persist(entity, entityMeta);
@@ -469,7 +469,7 @@ public class EntityPersisterTest
 				.thenReturn(joinId);
 
 		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsert(propertyMeta, 0)).thenReturn(composite);
+		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
 		persister.persistProperty(entity, id, dao, propertyMeta);

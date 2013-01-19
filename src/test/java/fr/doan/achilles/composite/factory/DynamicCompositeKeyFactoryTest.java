@@ -96,7 +96,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 
-		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
+		DynamicComposite comp = keyFactory.createForBatchInsertMultiValue(propertyMeta, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("name");
@@ -129,7 +129,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 		when(propertyMeta.type()).thenReturn(LIST);
 
-		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 0);
+		DynamicComposite comp = keyFactory.createForBatchInsertMultiValue(propertyMeta, 0);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(LIST.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("friends");
@@ -142,7 +142,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 		when(propertyMeta.type()).thenReturn(SET);
 
-		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, 12345);
+		DynamicComposite comp = keyFactory.createForBatchInsertMultiValue(propertyMeta, 12345);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(SET.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("followers");
@@ -155,7 +155,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 		when(propertyMeta.type()).thenReturn(MAP);
 
-		DynamicComposite comp = keyFactory.createForBatchInsert(propertyMeta, -123933);
+		DynamicComposite comp = keyFactory.createForBatchInsertMultiValue(propertyMeta, -123933);
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(MAP.flag());
 		assertThat(comp.getComponent(1).getValue()).isEqualTo("preferences");

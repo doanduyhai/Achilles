@@ -47,7 +47,6 @@ import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
  */
 public class JPAOperationsIT
 {
-
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
@@ -186,6 +185,23 @@ public class JPAOperationsIT
 		assertThat(found).isInstanceOf(Factory.class);
 	}
 
+	@Test(expected = RuntimeException.class)
+	public void should_exception_when_serialVersionUID_changes() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
+
+		em.persist(bean);
+
+		DynamicComposite composite = new DynamicComposite();
+		composite.addComponent(0, SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
+
+		dao.setValue(bean.getId(), composite, 123L);
+
+		em.find(CompleteBean.class, bean.getId());
+
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_find_lazy_simple() throws Exception
@@ -270,13 +286,11 @@ public class JPAOperationsIT
 		startCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
 				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
 		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
 				ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
@@ -424,14 +438,15 @@ public class JPAOperationsIT
 
 		nameMeta.setPropertyName("name");
 
-		DynamicComposite nameComposite = keyFactory.createForBatchInsert(nameMeta, 0);
+		DynamicComposite nameComposite = keyFactory.createForBatchInsertMultiValue(nameMeta, 0);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
 		listLazyMeta.setType(LAZY_LIST);
 		listLazyMeta.setPropertyName("friends");
 
-		DynamicComposite friend3Composite = keyFactory.createForBatchInsert(listLazyMeta, 2);
+		DynamicComposite friend3Composite = keyFactory.createForBatchInsertMultiValue(listLazyMeta,
+				2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 
 		em.refresh(bean);

@@ -17,14 +17,14 @@ public enum PropertyType
 	MAP(50, true), //
 	END_EAGER(60, false), //
 	LAZY_SIMPLE(70, false), //
-	LAZY_LIST(80, true), //
-	LAZY_SET(90, true), //
-	LAZY_MAP(100, true), //
-	WIDE_MAP(110, true), //
-	EXTERNAL_WIDE_MAP(120, true), //
-	JOIN_SIMPLE(130, false), //
-	JOIN_WIDE_MAP(140, true), //
-	EXTERNAL_JOIN_WIDE_MAP(150, true);
+	LAZY_LIST(70, true), //
+	LAZY_SET(70, true), //
+	LAZY_MAP(70, true), //
+	WIDE_MAP(70, true), //
+	EXTERNAL_WIDE_MAP(70, true), //
+	JOIN_SIMPLE(70, false), //
+	JOIN_WIDE_MAP(70, true), //
+	EXTERNAL_JOIN_WIDE_MAP(70, true);
 
 	private int flag;
 	private boolean multiValue;

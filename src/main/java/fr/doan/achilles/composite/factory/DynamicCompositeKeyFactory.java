@@ -35,7 +35,20 @@ public class DynamicCompositeKeyFactory
 	private CompositeHelper helper = new CompositeHelper();
 	private EntityHelper entityHelper = new EntityHelper();
 
-	public <K, V> DynamicComposite createForBatchInsert(PropertyMeta<K, V> propertyMeta,
+	public <K, V> DynamicComposite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
+	{
+		log.trace("Creating base dynamic composite for propertyMeta {} for batch insert",
+				propertyMeta.getPropertyName());
+
+		DynamicComposite composite = new DynamicComposite();
+		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ, BYTE_SRZ
+				.getComparatorType().getTypeName());
+		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
+		return composite;
+	}
+
+	public <K, V> DynamicComposite createForBatchInsertMultiValue(PropertyMeta<K, V> propertyMeta,
 			int hashOrPosition)
 	{
 		log.trace("Creating base dynamic composite for propertyMeta {} for batch insert",

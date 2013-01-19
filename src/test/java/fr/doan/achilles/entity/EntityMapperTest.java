@@ -2,6 +2,7 @@ package fr.doan.achilles.entity;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
+import static fr.doan.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
 import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -22,7 +23,9 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -49,6 +52,9 @@ import fr.doan.achilles.holder.KeyValueHolder;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMapperTest
 {
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	@InjectMocks
 	private EntityMapper mapper;
 
@@ -326,8 +332,6 @@ public class EntityMapperTest
 		PropertyMeta<Void, Long> idMeta = entityMeta.getIdMeta();
 		PropertyMeta<Void, String> simpleMeta = (PropertyMeta<Void, String>) entityMeta
 				.getPropertyMetas().get("name");
-		PropertyMeta<Void, String> listMeta = (PropertyMeta<Void, String>) entityMeta
-				.getPropertyMetas().get("friends");
 		PropertyMeta<Void, String> setMeta = (PropertyMeta<Void, String>) entityMeta
 				.getPropertyMetas().get("followers");
 		PropertyMeta<Integer, String> mapMeta = (PropertyMeta<Integer, String>) entityMeta
@@ -356,8 +360,6 @@ public class EntityMapperTest
 				idCaptor.capture());
 		doNothing().when(helper).setValueToField(eq(entity), eq(simpleMeta.getSetter()),
 				simpleCaptor.capture());
-		doNothing().when(helper).setValueToField(eq(entity), eq(listMeta.getSetter()),
-				listCaptor.capture());
 		doNothing().when(helper).setValueToField(eq(entity), eq(setMeta.getSetter()),
 				setCaptor.capture());
 		doNothing().when(helper).setValueToField(eq(entity), eq(mapMeta.getSetter()),
@@ -368,9 +370,6 @@ public class EntityMapperTest
 		assertThat(idCaptor.getValue()).isEqualTo(2L);
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 
-		assertThat(listCaptor.getValue()).hasSize(2);
-		assertThat(listCaptor.getValue()).containsExactly("foo", "bar");
-
 		assertThat(setCaptor.getValue()).hasSize(2);
 		assertThat(setCaptor.getValue()).contains("George", "Paul");
 
@@ -378,6 +377,23 @@ public class EntityMapperTest
 		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
 		assertThat(mapCaptor.getValue().get(2)).isEqualTo("Paris");
 		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
+	}
+
+	@Test
+	public void should_exception_when_serialVersionUID_changes() throws Exception
+	{
+		CompleteBean entity = new CompleteBean();
+		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+
+		columns.add(new Pair<DynamicComposite, Object>(
+				buildSimplePropertyComposite(SERIAL_VERSION_UID.name()), 123L));
+
+		expectedException.expect(IllegalStateException.class);
+		expectedException
+				.expectMessage("Saved serialVersionUID does not match current serialVersionUID for entity '"
+						+ CompleteBean.class.getCanonicalName() + "'");
+
+		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 	}
 
 	private DynamicComposite buildSimplePropertyComposite(String propertyName)

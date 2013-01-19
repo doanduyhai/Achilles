@@ -116,7 +116,7 @@ public class EntityPersister
 	private <ID> void batchPersistSimpleProperty(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
-		DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, 0);
+		DynamicComposite name = keyFactory.createForBatchInsertSingleValue(propertyMeta);
 		Object value = helper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
 		{
@@ -135,7 +135,7 @@ public class EntityPersister
 		{
 			Object joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties);
 
-			DynamicComposite joinName = keyFactory.createForBatchInsert(propertyMeta, 0);
+			DynamicComposite joinName = keyFactory.createForBatchInsertSingleValue(propertyMeta);
 			dao.insertColumn(key, joinName, joinId, mutator);
 		}
 	}
@@ -193,7 +193,7 @@ public class EntityPersister
 		{
 			for (Object value : list)
 			{
-				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, count);
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta, count);
 				if (value != null)
 				{
 					dao.insertColumn(key, name, value, mutator);
@@ -219,7 +219,7 @@ public class EntityPersister
 		{
 			for (Object value : set)
 			{
-				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta,
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
 						value.hashCode());
 				if (value != null)
 				{
@@ -247,7 +247,7 @@ public class EntityPersister
 		{
 			for (Entry<K, V> entry : map.entrySet())
 			{
-				DynamicComposite name = keyFactory.createForBatchInsert(propertyMeta, entry
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta, entry
 						.getKey().hashCode());
 
 				KeyValueHolder<K, V> value = new KeyValueHolder<K, V>(entry.getKey(),

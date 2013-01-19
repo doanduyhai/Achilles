@@ -1,10 +1,7 @@
 package fr.doan.achilles.entity;
 
-import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
-import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +11,7 @@ import java.util.Set;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,31 +52,41 @@ public class EntityMapper
 
 		for (Pair<DynamicComposite, Object> pair : columns)
 		{
-			byte[] type = pair.left.get(0, BYTE_SRZ);
 			String propertyName = pair.left.get(1, STRING_SRZ);
 
-			if (Arrays.equals(type, SIMPLE.flag()))
+			if (StringUtils.equals(propertyName, PropertyType.SERIAL_VERSION_UID.name()))
 			{
-				setSimplePropertyToEntity(pair.right, propertyMetas.get(propertyName), entity);
+				if (!Long.class.cast(pair.right).equals(entityMeta.getSerialVersionUID()))
+				{
+					throw new IllegalStateException(
+							"Saved serialVersionUID does not match current serialVersionUID for entity '"
+									+ entityMeta.getClassName() + "'");
+				}
+				continue;
 			}
 
-			else if (Arrays.equals(type, PropertyType.LIST.flag()))
+			PropertyMeta<?, ?> propertyMeta = propertyMetas.get(propertyName);
+
+			if (propertyMeta.type() == PropertyType.SIMPLE)
 			{
-				PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) propertyMetas
-						.get(propertyName);
+				setSimplePropertyToEntity(pair.right, propertyMeta, entity);
+			}
+
+			else if (propertyMeta.type() == PropertyType.LIST)
+			{
+				PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) propertyMeta;
 				addToList(listProperties, listMeta, listMeta.getValue(pair.right));
 			}
 
-			else if (Arrays.equals(type, PropertyType.SET.flag()))
+			else if (propertyMeta.type() == PropertyType.SET)
 			{
-				PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) propertyMetas
-						.get(propertyName);
+				PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) propertyMeta;
 				addToSet(setProperties, setMeta, setMeta.getValue(pair.right));
 			}
 
-			else if (Arrays.equals(type, PropertyType.MAP.flag()))
+			else if (propertyMeta.type() == PropertyType.MAP)
 			{
-				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMetas.get(propertyName);
+				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMeta;
 				addToMap(mapProperties, mapMeta, (KeyValueHolder<?, ?>) pair.right);
 			}
 		}
