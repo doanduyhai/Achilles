@@ -14,7 +14,7 @@ import fr.doan.achilles.entity.operations.EntityPersister;
 {
 	"unchecked"
 })
-public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
+public class JoinWideRowWrapper<ID, K, V> extends WideRowWrapper<ID, K, V>
 {
 
 	private EntityPersister persister = new EntityPersister();

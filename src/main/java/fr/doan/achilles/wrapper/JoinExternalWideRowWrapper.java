@@ -2,7 +2,6 @@ package fr.doan.achilles.wrapper;
 
 import java.util.List;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
@@ -16,6 +15,7 @@ import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.JoinColumnSliceIterator;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
@@ -24,7 +24,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideRow<K, V>
+public class JoinExternalWideRowWrapper<ID, JOIN_ID, K, V> implements WideRow<K, V>
 {
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;
@@ -97,8 +97,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideRow<K,
 		List<HColumn<Composite, JOIN_ID>> hColumns = externalWideMapDao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return keyValueFactory.createListForWideRowOrExternalWideMapMeta(externalWideMapMeta,
-				(List) hColumns);
+		return keyValueFactory.createListForComposite(externalWideMapMeta, (List) hColumns);
 	}
 
 	@Override
@@ -121,10 +120,11 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideRow<K,
 		Composite[] composites = compositeKeyFactory.createForQuery(externalWideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
-		ColumnSliceIterator<ID, Composite, JOIN_ID> columnSliceIterator = externalWideMapDao
-				.getColumnsIterator(id, composites[0], composites[1], reverse, count);
+		JoinColumnSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator = externalWideMapDao
+				.getJoinColumnsIterator(externalWideMapMeta, id, composites[0], composites[1],
+						reverse, count);
 
-		return iteratorFactory.createKeyValueIteratorForWideRow(columnSliceIterator,
+		return iteratorFactory.createKeyValueJoinIteratorForComposite(joinColumnSliceIterator,
 				externalWideMapMeta);
 	}
 

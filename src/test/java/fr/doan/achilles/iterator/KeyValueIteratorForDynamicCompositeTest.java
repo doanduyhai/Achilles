@@ -33,7 +33,7 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValueIteratorForEntityTest
+public class KeyValueIteratorForDynamicCompositeTest
 {
 
 	@Mock
@@ -49,7 +49,7 @@ public class KeyValueIteratorForEntityTest
 	private KeyValueFactory factory = new KeyValueFactory();
 
 	@InjectMocks
-	private KeyValueIteratorForEntity<TweetMultiKey, String> iterator;
+	private KeyValueIteratorForDynamicComposite<TweetMultiKey, String> iterator;
 
 	@Mock
 	private MultiKeyProperties multiKeyProperties;
@@ -77,7 +77,7 @@ public class KeyValueIteratorForEntityTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForWideMap(multiKeyWideMapMeta, column)).thenReturn(keyValue);
+		when(factory.createForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();
 

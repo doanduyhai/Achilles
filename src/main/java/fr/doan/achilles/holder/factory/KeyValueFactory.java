@@ -1,16 +1,18 @@
 package fr.doan.achilles.holder.factory;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.entity.EntityHelper;
-import fr.doan.achilles.entity.metadata.MultiKeyProperties;
+
+import org.apache.cassandra.utils.Pair;
+
+import fr.doan.achilles.entity.PropertyHelper;
+import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.holder.KeyValue;
@@ -24,7 +26,7 @@ import fr.doan.achilles.holder.KeyValue;
 public class KeyValueFactory
 {
 	private EntityLoader loader = new EntityLoader();
-	private EntityHelper helper = new EntityHelper();
+	private PropertyHelper helper = new PropertyHelper();
 
 	public <K, V> KeyValue<K, V> create(K key, V value, int ttl)
 	{
@@ -36,158 +38,161 @@ public class KeyValueFactory
 		return new KeyValue<K, V>(key, value);
 	}
 
-	public <K, V> KeyValue<K, V> createForWideMap(PropertyMeta<K, V> propertyMeta,
+	// Dynamic Composite
+
+	public <K, V> KeyValue<K, V> createForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<DynamicComposite, Object> hColumn)
+	{
+		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
+		V value = propertyMeta.getValue(hColumn.getValue());
+		int ttl = hColumn.getTtl();
+
+		return create(key, value, ttl);
+	}
+
+	public <K, V> List<KeyValue<K, V>> createListForDynamicComposite(
+			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
+	{
+		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
+
+		if (hColumns != null && hColumns.size() > 0)
+		{
+			if (propertyMeta.isJoinColumn())
+			{
+				loadJoinEntitiesFromDynamicComposite(propertyMeta, hColumns, result);
+			}
+			else
+			{
+
+				for (HColumn<DynamicComposite, Object> hColumn : hColumns)
+				{
+					result.add(createForDynamicComposite(propertyMeta, hColumn));
+				}
+			}
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <V, K> void loadJoinEntitiesFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, Object>> hColumns, List<KeyValue<K, V>> result)
+	{
+		Map<Object, Pair<K, Integer>> joinIdMap = new HashMap<Object, Pair<K, Integer>>();
+		List<Object> joinIds = new ArrayList<Object>();
+		for (HColumn<DynamicComposite, Object> hColumn : hColumns)
+		{
+			K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
+			joinIdMap.put(hColumn.getValue(), new Pair<K, Integer>(key, hColumn.getTtl()));
+			joinIds.add(hColumn.getValue());
+		}
+
+		EntityMeta<Object> joinEntityMeta = propertyMeta.getJoinProperties().getEntityMeta();
+
+		Map<Object, V> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+				joinIds, joinEntityMeta);
+
+		for (Object joinId : joinIds)
+		{
+			Pair<K, Integer> pair = joinIdMap.get(joinId);
+			K key = pair.left;
+			Integer ttl = pair.right;
+			result.add(new KeyValue<K, V>(key, loadedEntities.get(joinId), ttl));
+
+		}
+	}
+
+	private <K, V> K buildKeyFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
 			HColumn<DynamicComposite, Object> hColumn)
 	{
 		K key;
-		V value;
-		int ttl;
-
 		if (propertyMeta.isSingleKey())
 		{
 			key = (K) hColumn.getName().get(2, propertyMeta.getKeySerializer());
-			value = extractValueFromDynamicCompositeHColumn(propertyMeta, hColumn);
-			ttl = hColumn.getTtl();
 		}
 		else
 		{
-			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			Class<K> multiKeyClass = propertyMeta.getKeyClass();
-			List<Method> componentSetters = multiKeyProperties.getComponentSetters();
-			List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
-			try
-			{
-				key = multiKeyClass.newInstance();
-				List<Component<?>> components = hColumn.getName().getComponents();
-
-				for (int i = 2; i < components.size(); i++)
-				{
-					Component<?> comp = components.get(i);
-					Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
-					helper.setValueToField(key, componentSetters.get(i - 2), compValue);
-				}
-
-				value = extractValueFromDynamicCompositeHColumn(propertyMeta, hColumn);
-				ttl = hColumn.getTtl();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage(), e);
-			}
+			key = helper.buildMultiKeyForDynamicComposite(propertyMeta, hColumn.getName()
+					.getComponents());
 		}
-
-		return create(key, value, ttl);
+		return key;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <K, V> V extractValueFromDynamicCompositeHColumn(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
-	{
-		V value = null;
-		Object hColumnValue = hColumn.getValue();
-		if (propertyMeta.isJoinColumn())
-		{
+	// Composite
 
-			value = (V) loader.loadJoinEntity(propertyMeta.getValueClass(), hColumnValue,
-					propertyMeta.getJoinProperties().getEntityMeta());
-		}
-		else
-		{
-			value = propertyMeta.getValue(hColumnValue);
-		}
-		return value;
-	}
-
-	public <K, V> List<KeyValue<K, V>> createListForWideMap(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<DynamicComposite, Object>> hColumns)
-	{
-		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
-		if (hColumns != null && hColumns.size() > 0)
-		{
-			for (HColumn<DynamicComposite, Object> hColumn : hColumns)
-			{
-				result.add(createForWideMap(propertyMeta, hColumn));
-			}
-		}
-		return result;
-	}
-
-	public <K, V> KeyValue<K, V> createForWideRowOrExternalWideMapMeta(PropertyMeta<K, V> propertyMeta,
+	public <K, V> KeyValue<K, V> createForComposite(PropertyMeta<K, V> propertyMeta,
 			HColumn<Composite, ?> hColumn)
 	{
-		K key;
-		V value;
-		int ttl;
-
-		if (propertyMeta.isSingleKey())
-		{
-			key = (K) hColumn.getName().get(0, propertyMeta.getKeySerializer());
-			value = extractValueFromCompositeHColumn(propertyMeta, hColumn);
-			ttl = hColumn.getTtl();
-		}
-		else
-		{
-			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			Class<K> multiKeyClass = propertyMeta.getKeyClass();
-			List<Method> componentSetters = multiKeyProperties.getComponentSetters();
-			List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
-			try
-			{
-				key = multiKeyClass.newInstance();
-				List<Component<?>> components = hColumn.getName().getComponents();
-
-				for (int i = 0; i < components.size(); i++)
-				{
-					Component<?> comp = components.get(i);
-					Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
-					helper.setValueToField(key, componentSetters.get(i), compValue);
-				}
-
-				value = extractValueFromCompositeHColumn(propertyMeta, hColumn);
-				ttl = hColumn.getTtl();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
-
+		K key = buildKeyFromComposite(propertyMeta, hColumn);
+		V value = propertyMeta.getValue(hColumn.getValue());
+		int ttl = hColumn.getTtl();
 		return create(key, value, ttl);
 	}
 
-	@SuppressWarnings("unchecked")
-	private <K, V, W> V extractValueFromCompositeHColumn(PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, W> hColumn)
-	{
-		V value = null;
-		W hColumnValue = hColumn.getValue();
-		if (propertyMeta.isJoinColumn())
-		{
-
-			value = (V) loader.loadJoinEntity(propertyMeta.getValueClass(), hColumnValue,
-					propertyMeta.getJoinProperties().getEntityMeta());
-		}
-		else
-		{
-			value = propertyMeta.getValue(hColumnValue);
-		}
-		return value;
-	}
-
-	public <K, V> List<KeyValue<K, V>> createListForWideRowOrExternalWideMapMeta(PropertyMeta<K, V> propertyMeta,
+	public <K, V> List<KeyValue<K, V>> createListForComposite(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, ?>> hColumns)
 	{
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
+
 		if (hColumns != null && hColumns.size() > 0)
 		{
-			for (HColumn<Composite, ?> hColumn : hColumns)
+			if (propertyMeta.isJoinColumn())
 			{
-				result.add(createForWideRowOrExternalWideMapMeta(propertyMeta, hColumn));
+				loadJoinEntitiesFromComposite(propertyMeta, hColumns, result);
+			}
+			else
+			{
+
+				for (HColumn<Composite, ?> hColumn : hColumns)
+				{
+					result.add(createForComposite(propertyMeta, hColumn));
+				}
 			}
 		}
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	private <V, K> void loadJoinEntitiesFromComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<Composite, ?>> hColumns, List<KeyValue<K, V>> result)
+	{
+		Map<Object, Pair<K, Integer>> joinIdMap = new HashMap<Object, Pair<K, Integer>>();
+		List<Object> joinIds = new ArrayList<Object>();
+		for (HColumn<Composite, ?> hColumn : hColumns)
+		{
+			joinIdMap.put(
+					hColumn.getValue(),
+					new Pair<K, Integer>(buildKeyFromComposite(propertyMeta, hColumn), hColumn
+							.getTtl()));
+			joinIds.add(hColumn.getValue());
+		}
+
+		EntityMeta<Object> joinEntityMeta = propertyMeta.getJoinProperties().getEntityMeta();
+
+		Map<Object, V> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+				joinIds, joinEntityMeta);
+
+		for (Object joinId : joinIds)
+		{
+			Pair<K, Integer> pair = joinIdMap.get(joinId);
+			K key = pair.left;
+			Integer ttl = pair.right;
+			result.add(new KeyValue<K, V>(key, loadedEntities.get(joinId), ttl));
+		}
+	}
+
+	private <K, V> K buildKeyFromComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<Composite, ?> hColumn)
+	{
+		K key;
+		if (propertyMeta.isSingleKey())
+		{
+			key = (K) hColumn.getName().get(0, propertyMeta.getKeySerializer());
+
+		}
+		else
+		{
+			key = helper.buildMultiKeyForComposite(propertyMeta, hColumn.getName().getComponents());
+		}
+		return key;
+	}
 }

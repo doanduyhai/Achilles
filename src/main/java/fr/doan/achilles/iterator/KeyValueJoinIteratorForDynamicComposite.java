@@ -2,7 +2,6 @@ package fr.doan.achilles.iterator;
 
 import java.util.NoSuchElementException;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -16,35 +15,37 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorForEntity<K, V> implements KeyValueIterator<K, V>
+public class KeyValueJoinIteratorForDynamicComposite<K, V> implements KeyValueIterator<K, V>
 {
-	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator;
+	private JoinColumnSliceIterator<?, DynamicComposite, Object, K, V> joinColumnSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;
 	private KeyValueFactory factory = new KeyValueFactory();
 
-	public KeyValueIteratorForEntity(
-			ColumnSliceIterator<?, DynamicComposite, Object> columnSliceIterator,
+	public KeyValueJoinIteratorForDynamicComposite(
+			JoinColumnSliceIterator<?, DynamicComposite, Object, K, V> columnSliceIterator,
 			PropertyMeta<K, V> wideMapMeta)
 	{
-		this.columnSliceIterator = columnSliceIterator;
+		this.joinColumnSliceIterator = columnSliceIterator;
 		this.wideMapMeta = wideMapMeta;
 	}
 
 	@Override
 	public boolean hasNext()
 	{
-		return this.columnSliceIterator.hasNext();
+		return this.joinColumnSliceIterator.hasNext();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public KeyValue<K, V> next()
 	{
 		KeyValue<K, V> keyValue = null;
-		if (this.columnSliceIterator.hasNext())
+		if (this.joinColumnSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.columnSliceIterator.next();
+			HColumn<DynamicComposite, Object> column = (HColumn<DynamicComposite, Object>) this.joinColumnSliceIterator
+					.next();
 
-			keyValue = factory.createForWideMap(wideMapMeta, column);
+			keyValue = factory.createForDynamicComposite(wideMapMeta, column);
 		}
 		else
 		{

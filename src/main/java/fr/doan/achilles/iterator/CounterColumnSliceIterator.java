@@ -1,4 +1,4 @@
-package fr.doan.achilles.dao;
+package fr.doan.achilles.iterator;
 
 import java.util.Iterator;
 import java.util.List;

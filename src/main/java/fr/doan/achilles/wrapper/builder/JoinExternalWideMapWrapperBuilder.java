@@ -2,7 +2,7 @@ package fr.doan.achilles.wrapper.builder;
 
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
+import fr.doan.achilles.wrapper.JoinExternalWideRowWrapper;
 
 /**
  * JoinExternalWideMapWrapperBuilder
@@ -31,9 +31,9 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 				joinExternalWideMapMeta);
 	}
 
-	public JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> build()
+	public JoinExternalWideRowWrapper<ID, JOIN_ID, K, V> build()
 	{
-		JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> wrapper = new JoinExternalWideMapWrapper<ID, JOIN_ID, K, V>();
+		JoinExternalWideRowWrapper<ID, JOIN_ID, K, V> wrapper = new JoinExternalWideRowWrapper<ID, JOIN_ID, K, V>();
 
 		wrapper.setId(id);
 		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);

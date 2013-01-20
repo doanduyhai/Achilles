@@ -5,12 +5,18 @@ import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
 import static fr.doan.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.Row;
+import me.prettyprint.hector.api.beans.Rows;
 
 import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
@@ -54,6 +60,30 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 
 		return this.findColumnsRange(key, startCompositeForEagerFetch, endCompositeForEagerFetch,
 				false, Integer.MAX_VALUE);
+	}
+
+	public Map<K, List<Pair<DynamicComposite, Object>>> eagerFetchEntities(List<K> keys)
+	{
+		log.trace("Eager fetching properties for multiple entities in column family {} ",
+				columnFamily);
+
+		Map<K, List<Pair<DynamicComposite, Object>>> map = new HashMap<K, List<Pair<DynamicComposite, Object>>>();
+
+		Rows<K, DynamicComposite, Object> rows = this.multiGetSliceRange(keys,
+				startCompositeForEagerFetch, endCompositeForEagerFetch, false, Integer.MAX_VALUE);
+
+		for (Row<K, DynamicComposite, Object> row : rows)
+		{
+			List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+			for (HColumn<DynamicComposite, Object> column : row.getColumnSlice().getColumns())
+			{
+				columns.add(new Pair<DynamicComposite, Object>(column.getName(), column.getValue()));
+			}
+
+			map.put(row.getKey(), columns);
+		}
+
+		return map;
 	}
 
 	private void initComposites()

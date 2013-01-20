@@ -147,7 +147,15 @@ public class PropertyMeta<K, V>
 
 	public V getValue(Object object)
 	{
-		return this.valueClass.cast(object);
+		try
+		{
+			return this.valueClass.cast(object);
+
+		}
+		catch (ClassCastException e)
+		{
+			return null;
+		}
 	}
 
 	public JoinProperties getJoinProperties()

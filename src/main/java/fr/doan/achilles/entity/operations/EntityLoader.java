@@ -3,8 +3,10 @@ package fr.doan.achilles.entity.operations;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -71,6 +73,45 @@ public class EntityLoader
 					+ entityClass.getCanonicalName() + "' with key '" + key + "'", e);
 		}
 		return entity;
+	}
+
+	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
+			EntityMeta<ID> entityMeta)
+	{
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotEmpty(keys, "List of join primary keys '" + keys
+				+ "' should not be empty");
+		Validator.validateNotNull(entityMeta, "Entity meta for '" + entityClass.getCanonicalName()
+				+ "' should not be null");
+
+		Map<ID, T> entitiesByKey = new HashMap<ID, T>();
+		Map<ID, List<Pair<DynamicComposite, Object>>> rows = entityMeta.getEntityDao()
+				.eagerFetchEntities(keys);
+
+		for (Entry<ID, List<Pair<DynamicComposite, Object>>> entry : rows.entrySet())
+		{
+			T entity;
+			try
+			{
+				entity = entityClass.newInstance();
+
+				ID key = entry.getKey();
+				List<Pair<DynamicComposite, Object>> columns = entry.getValue();
+				if (columns.size() > 0)
+				{
+					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
+					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
+
+					entitiesByKey.put(key, entity);
+				}
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException("Error when instantiating class '"
+						+ entityClass.getCanonicalName() + "' ", e);
+			}
+		}
+		return entitiesByKey;
 	}
 
 	protected <ID, V> V loadSimpleProperty(ID key, GenericDynamicCompositeDao<ID> dao,

@@ -2,7 +2,7 @@ package fr.doan.achilles.wrapper.builder;
 
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.WideMapWrapper;
+import fr.doan.achilles.wrapper.WideRowWrapper;
 
 /**
  * WideMapWrapperBuilder
@@ -30,14 +30,14 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}
 
-	public WideMapWrapper<ID, K, V> build()
+	public WideRowWrapper<ID, K, V> build()
 	{
-		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
+		WideRowWrapper<ID, K, V> wrapper = new WideRowWrapper<ID, K, V>();
 		build(wrapper);
 		return wrapper;
 	}
 
-	protected void build(WideMapWrapper<ID, K, V> wrapper)
+	protected void build(WideRowWrapper<ID, K, V> wrapper)
 	{
 		wrapper.setId(id);
 		wrapper.setDao(dao);

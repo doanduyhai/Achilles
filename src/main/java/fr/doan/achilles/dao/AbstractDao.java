@@ -15,6 +15,7 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
+import me.prettyprint.hector.api.beans.Rows;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.CounterQuery;
@@ -23,6 +24,9 @@ import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.apache.cassandra.utils.Pair;
 
+import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.iterator.CounterColumnSliceIterator;
+import fr.doan.achilles.iterator.JoinColumnSliceIterator;
 import fr.doan.achilles.serializer.SerializerUtils;
 import fr.doan.achilles.validation.Validator;
 
@@ -41,7 +45,7 @@ public abstract class AbstractDao<K, N, V>
 	protected Serializer<V> valueSerializer;
 	protected String columnFamily;
 
-	protected int DEFAULT_LENGTH = 50;
+	public static int DEFAULT_LENGTH = 50;
 
 	protected AbstractDao() {}
 
@@ -249,6 +253,29 @@ public abstract class AbstractDao<K, N, V>
 		return new ColumnSliceIterator<K, N, V>(query, startName, endName, reverse, length);
 	}
 
+	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, boolean reverse, int length)
+	{
+		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, length);
+	}
+
+	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reverse)
+	{
+		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, DEFAULT_LENGTH);
+	}
+
+	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reversed,
+			int count)
+	{
+		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
+				valueSerializer).setColumnFamily(columnFamily).setKey(key);
+
+		return new JoinColumnSliceIterator<K, N, V, KEY, VALUE>(propertyMeta, query, startName,
+				endName, reversed, count);
+	}
+
 	public CounterColumnSliceIterator<K, N> getCounterColumnsIterator(K key, N startName,
 			boolean reverse, int length)
 	{
@@ -277,6 +304,15 @@ public abstract class AbstractDao<K, N, V>
 
 		return counterQuery.setRange(startName, (N) null, reverse, size).execute().get()
 				.getColumns();
+	}
+
+	public Rows<K, N, V> multiGetSliceRange(List<K> keys, N startName, N endName, boolean reverse,
+			int size)
+	{
+		return HFactory
+				.createMultigetSliceQuery(keyspace, keySerializer, columnNameSerializer,
+						valueSerializer).setColumnFamily(columnFamily).setKeys(keys)
+				.setRange(startName, endName, reverse, size).execute().get();
 	}
 
 	public void removeRow(K key)

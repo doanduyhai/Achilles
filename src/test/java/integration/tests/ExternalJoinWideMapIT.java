@@ -131,12 +131,15 @@ public class ExternalJoinWideMapIT
 
 		user.getRetweets().insert(1, reTweet1);
 		user.getRetweets().insert(2, reTweet2);
+		user.getRetweets().insert(3, reTweet3);
+		user.getRetweets().insert(4, reTweet4);
 
 		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
 				10);
 
-		assertThat(savedReTweetsUUIDs).hasSize(2);
-		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId());
+		assertThat(savedReTweetsUUIDs).hasSize(4);
+		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId(),
+				reTweet3.getId(), reTweet4.getId());
 
 		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets().findRange(2, 1, true, 5);
 
@@ -200,16 +203,16 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(1, false, 3, true,
-				false, 10);
+		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(3, true, 1, false,
+				true, 10);
 
 		Tweet foundReTweet1 = iterator.next().getValue();
 		Tweet foundReTweet2 = iterator.next().getValue();
 
-		assertThat(foundReTweet1.getId()).isEqualTo(reTweet2.getId());
-		assertThat(foundReTweet1.getContent()).isEqualTo(reTweet2.getContent());
-		assertThat(foundReTweet2.getId()).isEqualTo(reTweet3.getId());
-		assertThat(foundReTweet2.getContent()).isEqualTo(reTweet3.getContent());
+		assertThat(foundReTweet1.getId()).isEqualTo(reTweet3.getId());
+		assertThat(foundReTweet1.getContent()).isEqualTo(reTweet3.getContent());
+		assertThat(foundReTweet2.getId()).isEqualTo(reTweet2.getId());
+		assertThat(foundReTweet2.getContent()).isEqualTo(reTweet2.getContent());
 
 	}
 

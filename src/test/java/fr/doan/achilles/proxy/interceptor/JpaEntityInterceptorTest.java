@@ -40,13 +40,13 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.serializer.SerializerUtils;
-import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
-import fr.doan.achilles.wrapper.JoinWideMapWrapper;
+import fr.doan.achilles.wrapper.JoinExternalWideRowWrapper;
+import fr.doan.achilles.wrapper.JoinWideRowWrapper;
 import fr.doan.achilles.wrapper.ListWrapper;
 import fr.doan.achilles.wrapper.MapWrapper;
 import fr.doan.achilles.wrapper.SetWrapper;
-import fr.doan.achilles.wrapper.WideMapWrapper;
 import fr.doan.achilles.wrapper.WideRowWrapper;
+import fr.doan.achilles.wrapper.ExternalWideRowWrapper;
 
 /**
  * JpaEntityInterceptorTest
@@ -283,7 +283,7 @@ public class JpaEntityInterceptorTest
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(WideMapWrapper.class);
+		assertThat(name).isInstanceOf(WideRowWrapper.class);
 	}
 
 	@Test
@@ -300,7 +300,7 @@ public class JpaEntityInterceptorTest
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(WideRowWrapper.class);
+		assertThat(name).isInstanceOf(ExternalWideRowWrapper.class);
 	}
 
 	@Test
@@ -317,7 +317,7 @@ public class JpaEntityInterceptorTest
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(JoinWideMapWrapper.class);
+		assertThat(name).isInstanceOf(JoinWideRowWrapper.class);
 	}
 
 	@Test
@@ -338,7 +338,7 @@ public class JpaEntityInterceptorTest
 		Object externalWideMap = this.interceptor.intercept(bean, externalWideMapGetter,
 				(Object[]) null, proxy);
 
-		assertThat(externalWideMap).isInstanceOf(WideRowWrapper.class);
+		assertThat(externalWideMap).isInstanceOf(ExternalWideRowWrapper.class);
 		Object dao = ReflectionTestUtils.getField(externalWideMap, "dao");
 
 		assertThat(dao).isNotNull();
@@ -364,7 +364,7 @@ public class JpaEntityInterceptorTest
 
 		Object name = this.interceptor.intercept(bean, joinUsersGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(JoinExternalWideMapWrapper.class);
+		assertThat(name).isInstanceOf(JoinExternalWideRowWrapper.class);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

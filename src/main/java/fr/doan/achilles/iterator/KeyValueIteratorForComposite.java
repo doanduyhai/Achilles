@@ -16,15 +16,15 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
+public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V>
 {
 	protected ColumnSliceIterator<?, Composite, ?> columnSliceIterator;
 	private KeyValueFactory factory = new KeyValueFactory();
 	private PropertyMeta<K, V> wideMapMeta;
 
-	protected KeyValueIteratorForWideRow() {}
+	protected KeyValueIteratorForComposite() {}
 
-	public KeyValueIteratorForWideRow(ColumnSliceIterator<?, Composite, ?> columnSliceIterator,
+	public KeyValueIteratorForComposite(ColumnSliceIterator<?, Composite, ?> columnSliceIterator,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.columnSliceIterator = columnSliceIterator;
@@ -44,7 +44,7 @@ public class KeyValueIteratorForWideRow<K, V> implements KeyValueIterator<K, V>
 		if (this.columnSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.columnSliceIterator.next();
-			keyValue = factory.createForWideRowOrExternalWideMapMeta(wideMapMeta, column);
+			keyValue = factory.createForComposite(wideMapMeta, column);
 		}
 		else
 		{

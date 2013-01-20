@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -282,4 +283,64 @@ public class PropertyHelper
 
 		return comparatorTypesAlias;
 	}
+
+	public <K, V> K buildMultiKeyForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			List<Component<?>> components)
+	{
+		K key;
+
+		MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+		Class<K> multiKeyClass = propertyMeta.getKeyClass();
+		List<Method> componentSetters = multiKeyProperties.getComponentSetters();
+		List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
+		try
+		{
+			key = multiKeyClass.newInstance();
+
+			for (int i = 2; i < components.size(); i++)
+			{
+				Component<?> comp = components.get(i);
+				Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
+				entityHelper.setValueToField(key, componentSetters.get(i - 2), compValue);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage(), e);
+		}
+
+		return key;
+	}
+
+	public <K, V> K buildMultiKeyForComposite(PropertyMeta<K, V> propertyMeta,
+			List<Component<?>> components)
+	{
+		K key;
+
+		MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
+		Class<K> multiKeyClass = propertyMeta.getKeyClass();
+		List<Method> componentSetters = multiKeyProperties.getComponentSetters();
+		List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
+		try
+		{
+			key = multiKeyClass.newInstance();
+
+			for (int i = 0; i < components.size(); i++)
+			{
+				Component<?> comp = components.get(i);
+				Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+				entityHelper.setValueToField(key, componentSetters.get(i), compValue);
+			}
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage(), e);
+		}
+
+		return key;
+	}
+
 }

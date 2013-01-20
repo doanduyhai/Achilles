@@ -33,6 +33,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.google.common.collect.ImmutableMap;
+
+import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.JoinProperties;
 import fr.doan.achilles.entity.metadata.MultiKeyProperties;
@@ -69,6 +72,9 @@ public class KeyValueFactoryTest
 
 	@Mock
 	private EntityLoader loader;
+
+	@Mock
+	private PropertyHelper helper;
 
 	@Before
 	public void setUp()
@@ -116,7 +122,8 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getValue("test")).thenReturn("test");
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 
-		KeyValue<Integer, String> keyValue = factory.createForWideMap(wideMapMeta, hColumn);
+		KeyValue<Integer, String> keyValue = factory
+				.createForDynamicComposite(wideMapMeta, hColumn);
 
 		assertThat(keyValue.getKey()).isEqualTo(1);
 		assertThat(keyValue.getValue()).isEqualTo("test");
@@ -153,10 +160,14 @@ public class KeyValueFactoryTest
 		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
 		UserBean userBean = new UserBean();
-		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId), joinEntityMeta))
+				.thenReturn(ImmutableMap.of(joinId, userBean));
 
-		KeyValue<Integer, UserBean> keyValue = factory.createForWideMap(joinPropertyMeta, hColumn);
+		List<KeyValue<Integer, UserBean>> keyValues = factory.createListForDynamicComposite(
+				joinPropertyMeta, Arrays.asList(hColumn));
 
+		assertThat(keyValues).hasSize(1);
+		KeyValue<Integer, UserBean> keyValue = keyValues.get(0);
 		assertThat(keyValue.getKey()).isEqualTo(1);
 		assertThat(keyValue.getValue()).isSameAs(userBean);
 		assertThat(keyValue.getTtl()).isEqualTo(12);
@@ -190,10 +201,14 @@ public class KeyValueFactoryTest
 		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
 		UserBean userBean = new UserBean();
-		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId), joinEntityMeta))
+				.thenReturn(ImmutableMap.of(joinId, userBean));
 
-		KeyValue<Integer, UserBean> keyValue = factory.createForWideRowOrExternalWideMapMeta(
-				joinPropertyMeta, hColumn);
+		List<KeyValue<Integer, UserBean>> keyValues = factory.createListForComposite(
+				joinPropertyMeta, (List) Arrays.asList(hColumn));
+
+		assertThat(keyValues).hasSize(1);
+		KeyValue<Integer, UserBean> keyValue = keyValues.get(0);
 
 		assertThat(keyValue.getKey()).isEqualTo(10);
 		assertThat(keyValue.getValue()).isSameAs(userBean);
@@ -235,10 +250,9 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 		when(wideMapMeta.getValue("test3")).thenReturn("test3");
 
-		List<KeyValue<Integer, String>> builtList = factory
-				.createListForWideRowOrExternalWideMapMeta(//
-						wideMapMeta, //
-						(List) Arrays.asList(hColumn1, hColumn2, hColumn3));
+		List<KeyValue<Integer, String>> builtList = factory.createListForComposite(//
+				wideMapMeta, //
+				(List) Arrays.asList(hColumn1, hColumn2, hColumn3));
 
 		assertThat(builtList).hasSize(3);
 
@@ -289,7 +303,7 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 
-		List<KeyValue<Integer, String>> list = factory.createListForWideMap(wideMapMeta,
+		List<KeyValue<Integer, String>> list = factory.createListForDynamicComposite(wideMapMeta,
 				Arrays.asList(hColumn1, hColumn2));
 
 		assertThat(list).hasSize(2);
@@ -328,36 +342,32 @@ public class KeyValueFactoryTest
 				"val3");
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
+		when(multiKeyWideMeta.isSingleKey()).thenReturn(false);
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
 		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
-		when(multiKeyWideMeta.getValue("val1")).thenReturn("val1");
-		when(multiKeyWideMeta.getValue("val2")).thenReturn("val2");
-		when(multiKeyWideMeta.getValue("val3")).thenReturn("val3");
+		TweetMultiKey tweetKey1 = new TweetMultiKey();
+		TweetMultiKey tweetKey2 = new TweetMultiKey();
+		TweetMultiKey tweetKey3 = new TweetMultiKey();
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = factory
-				.createListForWideRowOrExternalWideMapMeta(multiKeyWideMeta,
-						(List) Arrays.asList(hCol1, hCol2, hCol3));
+		when(helper.buildMultiKeyForComposite(multiKeyWideMeta, hCol1.getName().getComponents()))
+				.thenReturn(tweetKey1);
+		when(helper.buildMultiKeyForComposite(multiKeyWideMeta, hCol2.getName().getComponents()))
+				.thenReturn(tweetKey2);
+		when(helper.buildMultiKeyForComposite(multiKeyWideMeta, hCol3.getName().getComponents()))
+				.thenReturn(tweetKey3);
+
+		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForComposite(
+				multiKeyWideMeta, (List) Arrays.asList(hCol1, hCol2, hCol3));
 
 		assertThat(multiKeys).hasSize(3);
 
-		assertThat(multiKeys.get(0).getKey().getAuthor()).isEqualTo("author1");
-		assertThat(multiKeys.get(0).getKey().getId()).isEqualTo(uuid1);
-		assertThat(multiKeys.get(0).getKey().getRetweetCount()).isEqualTo(11);
-		assertThat(multiKeys.get(0).getValue()).isEqualTo("val1");
-
-		assertThat(multiKeys.get(1).getKey().getAuthor()).isEqualTo("author2");
-		assertThat(multiKeys.get(1).getKey().getId()).isEqualTo(uuid2);
-		assertThat(multiKeys.get(1).getKey().getRetweetCount()).isEqualTo(12);
-		assertThat(multiKeys.get(1).getValue()).isEqualTo("val2");
-
-		assertThat(multiKeys.get(2).getKey().getAuthor()).isEqualTo("author3");
-		assertThat(multiKeys.get(2).getKey().getId()).isEqualTo(uuid3);
-		assertThat(multiKeys.get(2).getKey().getRetweetCount()).isEqualTo(13);
-		assertThat(multiKeys.get(2).getValue()).isEqualTo("val3");
+		assertThat(multiKeys.get(0).getKey()).isSameAs(tweetKey1);
+		assertThat(multiKeys.get(1).getKey()).isSameAs(tweetKey2);
+		assertThat(multiKeys.get(2).getKey()).isSameAs(tweetKey3);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -387,29 +397,28 @@ public class KeyValueFactoryTest
 		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
-		when(multiKeyWideMeta.getValue("val1")).thenReturn("val1");
-		when(multiKeyWideMeta.getValue("val2")).thenReturn("val2");
-		when(multiKeyWideMeta.getValue("val3")).thenReturn("val3");
+		TweetMultiKey tweetKey1 = new TweetMultiKey();
+		TweetMultiKey tweetKey2 = new TweetMultiKey();
+		TweetMultiKey tweetKey3 = new TweetMultiKey();
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForWideMap(
+		when(
+				helper.buildMultiKeyForDynamicComposite(multiKeyWideMeta, hCol1.getName()
+						.getComponents())).thenReturn(tweetKey1);
+		when(
+				helper.buildMultiKeyForDynamicComposite(multiKeyWideMeta, hCol2.getName()
+						.getComponents())).thenReturn(tweetKey2);
+		when(
+				helper.buildMultiKeyForDynamicComposite(multiKeyWideMeta, hCol3.getName()
+						.getComponents())).thenReturn(tweetKey3);
+
+		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForDynamicComposite(
 				multiKeyWideMeta, Arrays.asList(hCol1, hCol2, hCol3));
 
 		assertThat(multiKeys).hasSize(3);
 
-		assertThat(multiKeys.get(0).getKey().getAuthor()).isEqualTo("author1");
-		assertThat(multiKeys.get(0).getKey().getId()).isEqualTo(uuid1);
-		assertThat(multiKeys.get(0).getKey().getRetweetCount()).isEqualTo(11);
-		assertThat(multiKeys.get(0).getValue()).isEqualTo("val1");
-
-		assertThat(multiKeys.get(1).getKey().getAuthor()).isEqualTo("author2");
-		assertThat(multiKeys.get(1).getKey().getId()).isEqualTo(uuid2);
-		assertThat(multiKeys.get(1).getKey().getRetweetCount()).isEqualTo(12);
-		assertThat(multiKeys.get(1).getValue()).isEqualTo("val2");
-
-		assertThat(multiKeys.get(2).getKey().getAuthor()).isEqualTo("author3");
-		assertThat(multiKeys.get(2).getKey().getId()).isEqualTo(uuid3);
-		assertThat(multiKeys.get(2).getKey().getRetweetCount()).isEqualTo(13);
-		assertThat(multiKeys.get(2).getValue()).isEqualTo("val3");
+		assertThat(multiKeys.get(0).getKey()).isSameAs(tweetKey1);
+		assertThat(multiKeys.get(1).getKey()).isSameAs(tweetKey2);
+		assertThat(multiKeys.get(2).getKey()).isSameAs(tweetKey3);
 	}
 
 	private HColumn<Composite, String> buildHColumn(Composite comp, String value)

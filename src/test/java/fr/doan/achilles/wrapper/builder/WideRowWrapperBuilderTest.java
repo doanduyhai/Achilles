@@ -9,7 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.WideRowWrapper;
+import fr.doan.achilles.wrapper.ExternalWideRowWrapper;
 
 /**
  * WideRowWrapperBuilderTest
@@ -30,7 +30,7 @@ public class WideRowWrapperBuilderTest
 	@Test
 	public void should_build() throws Exception
 	{
-		WideRowWrapper<Integer, Integer, String> wrapper = WideRowWrapperBuilder.builder(1, dao,
+		ExternalWideRowWrapper<Integer, Integer, String> wrapper = WideRowWrapperBuilder.builder(1, dao,
 				wideMapMeta).build();
 
 		assertThat(wrapper).isNotNull();

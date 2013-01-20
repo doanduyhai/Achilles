@@ -17,7 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.iterator.KeyValueIteratorForWideRow;
+import fr.doan.achilles.iterator.KeyValueIteratorForComposite;
 
 /**
  * IteratorFactoryTest
@@ -51,10 +51,10 @@ public class IteratorFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
 
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForWideRow(
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForComposite(
 				columnSliceComposite, wideMapMeta);
 
-		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorForWideRow.class);
+		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorForComposite.class);
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThat(iterator.hasNext()).isTrue();
@@ -63,7 +63,7 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_dynamic_composite_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForEntity(
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForDynamicComposite(
 				columnSliceDynamicComposite, wideMapMeta);
 
 		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);

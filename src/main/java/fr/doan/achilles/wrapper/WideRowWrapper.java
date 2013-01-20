@@ -3,39 +3,39 @@ package fr.doan.achilles.wrapper;
 import java.util.List;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator;
-import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import fr.doan.achilles.composite.factory.CompositeKeyFactory;
-import fr.doan.achilles.dao.GenericCompositeDao;
+import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
+import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.entity.type.WideRow;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.JoinColumnSliceIterator;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
- * WideRowWrapper
+ * WideMapWrapper
  * 
  * @author DuyHai DOAN
  * 
  */
 public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 {
-	protected ID id;
-	protected GenericCompositeDao<ID, V> dao;
-	protected PropertyMeta<K, V> wideMapMeta;
 
+	protected ID id;
+	protected GenericDynamicCompositeDao<ID> dao;
+	protected PropertyMeta<K, V> wideMapMeta;
 	protected CompositeHelper helper = new CompositeHelper();
 	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
 	protected IteratorFactory iteratorFactory = new IteratorFactory();
-	protected CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
-	protected Composite buildComposite(K key)
+	protected DynamicComposite buildComposite(K key)
 	{
-		Composite comp = compositeKeyFactory.createBaseComposite(wideMapMeta, key);
-		return comp;
+		return keyFactory.createForInsert(wideMapMeta, key);
 	}
 
 	@Override
@@ -46,15 +46,15 @@ public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 	}
 
 	@Override
-	public void insert(K key, V value)
+	public void insert(K key, V value, int ttl)
 	{
-		dao.setValue(id, buildComposite(key), value);
+		dao.setValue(id, buildComposite(key), (Object) value, ttl);
 	}
 
 	@Override
-	public void insert(K key, V value, int ttl)
+	public void insert(K key, V value)
 	{
-		dao.setValue(id, buildComposite(key), value, ttl);
+		dao.setValue(id, buildComposite(key), (Object) value);
 	}
 
 	@Override
@@ -67,29 +67,23 @@ public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
 			int count)
 	{
-
 		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Override
 	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
+
 		helper.checkBounds(wideMapMeta, start, end, reverse);
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
-				inclusiveStart, end, inclusiveEnd, reverse);
+		DynamicComposite[] queryComps = keyFactory.createForQuery( //
+				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
-				composites[1], reverse, count);
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
 
-		return keyValueFactory.createListForWideRowOrExternalWideMapMeta(wideMapMeta,
-				(List) hColumns);
+		return keyValueFactory.createListForDynamicComposite(wideMapMeta, hColumns);
 	}
 
 	@Override
@@ -110,14 +104,29 @@ public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
-				inclusiveStart, end, inclusiveEnd, reverse);
+		DynamicComposite[] queryComps = keyFactory.createForQuery( //
+				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		ColumnSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
-				composites[0], composites[1], reverse, count);
+		if (wideMapMeta.isJoinColumn())
+		{
 
-		return iteratorFactory.createKeyValueIteratorForWideRow(columnSliceIterator, wideMapMeta);
+			JoinColumnSliceIterator<ID, DynamicComposite, Object, K, V> joinColumnSliceIterator = dao
+					.getJoinColumnsIterator(wideMapMeta, id, queryComps[0], queryComps[1], reverse,
+							count);
 
+			return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
+					joinColumnSliceIterator, wideMapMeta);
+
+		}
+		else
+		{
+
+			ColumnSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
+					.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
+
+			return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator,
+					wideMapMeta);
+		}
 	}
 
 	@Override
@@ -141,10 +150,13 @@ public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 	@Override
 	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
+
 		helper.checkBounds(wideMapMeta, start, end, false);
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
-				inclusiveStart, end, inclusiveEnd, false);
-		dao.removeColumnRange(id, composites[0], composites[1]);
+
+		DynamicComposite[] queryComps = keyFactory.createForQuery(//
+				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, false);
+
+		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
 	}
 
 	public void setId(ID id)
@@ -152,7 +164,7 @@ public class WideRowWrapper<ID, K, V> implements WideRow<K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericCompositeDao<ID, V> dao)
+	public void setDao(GenericDynamicCompositeDao<ID> dao)
 	{
 		this.dao = dao;
 	}

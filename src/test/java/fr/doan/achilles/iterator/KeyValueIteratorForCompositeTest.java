@@ -37,11 +37,11 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValueIteratorForWideRowTest
+public class KeyValueIteratorForCompositeTest
 {
 
 	@InjectMocks
-	private KeyValueIteratorForWideRow<CorrectMultiKey, String> iterator;
+	private KeyValueIteratorForComposite<CorrectMultiKey, String> iterator;
 
 	@Mock
 	private ColumnSliceIterator<CorrectMultiKey, Composite, String> columnSliceIterator;
@@ -96,7 +96,7 @@ public class KeyValueIteratorForWideRowTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForWideRowOrExternalWideMapMeta(multiKeyWideMapMeta, hColumn))
+		when(factory.createForComposite(multiKeyWideMapMeta, hColumn))
 				.thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();

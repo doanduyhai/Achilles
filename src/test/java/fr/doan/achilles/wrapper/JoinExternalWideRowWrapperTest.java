@@ -46,13 +46,13 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class JoinExternalWideMapWrapperTest
+public class JoinExternalWideRowWrapperTest
 {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@InjectMocks
-	private JoinExternalWideMapWrapper<Long, Long, Integer, UserBean> wrapper;
+	private JoinExternalWideRowWrapper<Long, Long, Integer, UserBean> wrapper;
 
 	@Mock
 	private GenericCompositeDao<Long, Long> dao;
@@ -193,7 +193,7 @@ public class JoinExternalWideMapWrapperTest
 				(List) hColumns);
 		List<KeyValue<Integer, UserBean>> values = mock(List.class);
 		when(
-				keyValueFactory.createListForWideRowOrExternalWideMapMeta(externalJoinWideMapMeta,
+				keyValueFactory.createListForComposite(externalJoinWideMapMeta,
 						hColumns)).thenReturn(values);
 
 		List<KeyValue<Integer, UserBean>> expected = wrapper.findRange(start, inclusiveStart, end,
@@ -223,7 +223,7 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.getColumnsIterator(id, startComp, endComp, reverse, count)).thenReturn(iterator);
 
 		KeyValueIterator<Integer, UserBean> keyValueIterator = mock(KeyValueIterator.class);
-		when(iteratorFactory.createKeyValueIteratorForWideRow(iterator, externalJoinWideMapMeta))
+		when(iteratorFactory.createKeyValueIteratorForComposite(iterator, externalJoinWideMapMeta))
 				.thenReturn(keyValueIterator);
 
 		KeyValueIterator<Integer, UserBean> expected = wrapper.iterator(start, inclusiveStart, end,
