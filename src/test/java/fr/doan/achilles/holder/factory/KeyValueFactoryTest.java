@@ -1,5 +1,7 @@
 package fr.doan.achilles.holder.factory;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
@@ -155,7 +157,7 @@ public class KeyValueFactoryTest
 
 		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(joinPropertyMeta.isSingleKey()).thenReturn(true);
-		when(joinPropertyMeta.isJoinColumn()).thenReturn(true);
+		when(joinPropertyMeta.type()).thenReturn(JOIN_SIMPLE);
 		when(joinPropertyMeta.getValueClass()).thenReturn(UserBean.class);
 		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
@@ -196,7 +198,7 @@ public class KeyValueFactoryTest
 
 		when(joinPropertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(joinPropertyMeta.isSingleKey()).thenReturn(true);
-		when(joinPropertyMeta.isJoinColumn()).thenReturn(true);
+		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
 		when(joinPropertyMeta.getValueClass()).thenReturn(UserBean.class);
 		when(joinPropertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
@@ -249,6 +251,7 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getValue("test1")).thenReturn("test1");
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 		when(wideMapMeta.getValue("test3")).thenReturn("test3");
+		when(wideMapMeta.type()).thenReturn(PropertyType.WIDE_MAP);
 
 		List<KeyValue<Integer, String>> builtList = factory.createListForComposite(//
 				wideMapMeta, //
@@ -302,6 +305,7 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.getValue("test2")).thenReturn("test2");
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 
 		List<KeyValue<Integer, String>> list = factory.createListForDynamicComposite(wideMapMeta,
 				Arrays.asList(hColumn1, hColumn2));
@@ -343,6 +347,8 @@ public class KeyValueFactoryTest
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyWideMeta.isSingleKey()).thenReturn(false);
+
+		when(multiKeyWideMeta.type()).thenReturn(PropertyType.WIDE_MAP);
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
@@ -391,6 +397,7 @@ public class KeyValueFactoryTest
 				buildDynamicComposite("author3", uuid3, 13), "val3");
 
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
+		when(multiKeyWideMeta.type()).thenReturn(WIDE_MAP);
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(
 				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));

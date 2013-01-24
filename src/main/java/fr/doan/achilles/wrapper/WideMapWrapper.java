@@ -107,7 +107,7 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		if (wideMapMeta.isJoinColumn())
+		if (wideMapMeta.type().isJoinColumn())
 		{
 
 			AchillesJoinSliceIterator<ID, DynamicComposite, Object, K, V> joinColumnSliceIterator = dao

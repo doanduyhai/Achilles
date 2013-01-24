@@ -57,7 +57,7 @@ public class KeyValueFactory
 
 		if (hColumns != null && hColumns.size() > 0)
 		{
-			if (propertyMeta.isJoinColumn())
+			if (propertyMeta.type().isJoinColumn())
 			{
 				loadJoinEntitiesFromDynamicComposite(propertyMeta, hColumns, result);
 			}
@@ -135,7 +135,7 @@ public class KeyValueFactory
 
 		if (hColumns != null && hColumns.size() > 0)
 		{
-			if (propertyMeta.isJoinColumn())
+			if (propertyMeta.type().isJoinColumn())
 			{
 				loadJoinEntitiesFromComposite(propertyMeta, hColumns, result);
 			}

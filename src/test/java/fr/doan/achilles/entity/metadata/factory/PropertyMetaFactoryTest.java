@@ -62,9 +62,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -82,9 +82,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -102,9 +102,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				OBJECT_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -122,9 +122,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -142,9 +142,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -162,9 +162,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -182,9 +182,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -208,9 +208,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -233,9 +233,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isFalse();
+		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -259,9 +259,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@Test
@@ -285,9 +285,9 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -336,8 +336,8 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
 
-		assertThat(built.isLazy()).isTrue();
+		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isFalse();
-		assertThat(built.isJoinColumn()).isFalse();
+		assertThat(built.type().isJoinColumn()).isFalse();
 	}
 }

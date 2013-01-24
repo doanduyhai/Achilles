@@ -155,8 +155,8 @@ public class PropertyParserTest
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SIMPLE);
 		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isLazy()).isTrue();
-		assertThat(meta.isJoinColumn()).isTrue();
+		assertThat(meta.type().isLazy()).isTrue();
+		assertThat(meta.type().isJoinColumn()).isTrue();
 
 		assertThat(meta.getPropertyName()).isEqualTo("user");
 		assertThat(meta.getValueClass()).isEqualTo(UserBean.class);
@@ -289,7 +289,7 @@ public class PropertyParserTest
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
 				Test.class.getDeclaredField("friends"), "friends");
 
-		assertThat(meta.isLazy()).isTrue();
+		assertThat(meta.type().isLazy()).isTrue();
 	}
 
 	@Test
@@ -314,7 +314,7 @@ public class PropertyParserTest
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
 				Test.class.getDeclaredField("friends"), "friends");
 
-		assertThat(meta.isLazy()).isFalse();
+		assertThat(meta.type().isLazy()).isFalse();
 	}
 
 	@Test
@@ -339,7 +339,7 @@ public class PropertyParserTest
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
 				Test.class.getDeclaredField("friends"), "friends");
 
-		assertThat(meta.isLazy()).isFalse();
+		assertThat(meta.type().isLazy()).isFalse();
 	}
 
 	@Test
@@ -738,8 +738,8 @@ public class PropertyParserTest
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 		assertThat(meta.isSingleKey()).isTrue();
-		assertThat(meta.isLazy()).isTrue();
-		assertThat(meta.isJoinColumn()).isTrue();
+		assertThat(meta.type().isLazy()).isTrue();
+		assertThat(meta.type().isJoinColumn()).isTrue();
 
 		assertThat(meta.getPropertyName()).isEqualTo("users");
 		assertThat(meta.getValueClass()).isEqualTo(UserBean.class);

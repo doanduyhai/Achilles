@@ -87,7 +87,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	{
 		Object result;
 		PropertyMeta propertyMeta = this.getterMetas.get(method);
-		if (propertyMeta.isLazy() //
+		if (propertyMeta.type().isLazy() //
 				&& !this.lazyLoaded.contains(method))
 		{
 			this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);

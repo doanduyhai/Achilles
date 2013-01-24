@@ -146,7 +146,7 @@ public class EntityParserTest
 		assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
 		assertThat(friends.newListInstance()).isNotNull();
 		assertThat(friends.newListInstance()).isEmpty();
-		assertThat(friends.isLazy()).isTrue();
+		assertThat(friends.type().isLazy()).isTrue();
 		assertThat((Class<ArrayList>) friends.newListInstance().getClass()).isEqualTo(
 				ArrayList.class);
 

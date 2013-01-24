@@ -55,38 +55,22 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMeta<K, V> build()
 	{
 		PropertyMeta<K, V> meta = null;
-		boolean lazy = false;
-		boolean joinColumn = false;
 		boolean singleKey = multiKeyProperties == null ? true : false;
 		switch (type)
 		{
 			case SIMPLE:
 			case LIST:
 			case SET:
-				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
-				break;
 			case LAZY_SIMPLE:
 			case LAZY_LIST:
 			case LAZY_SET:
+			case JOIN_SIMPLE:
 				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
-				lazy = true;
 				break;
 			case MAP:
-				meta = new PropertyMeta<K, V>();
-				break;
 			case LAZY_MAP:
 			case WIDE_MAP:
-				meta = new PropertyMeta<K, V>();
-				lazy = true;
-				break;
-			case JOIN_SIMPLE:
-				lazy = true;
-				joinColumn = true;
-				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
-				break;
 			case JOIN_WIDE_MAP:
-				lazy = true;
-				joinColumn = true;
 				meta = new PropertyMeta<K, V>();
 				break;
 
@@ -110,9 +94,7 @@ public class PropertyMetaFactory<K, V>
 		meta.setJoinProperties(joinProperties);
 		meta.setMultiKeyProperties(multiKeyProperties);
 
-		meta.setLazy(lazy);
 		meta.setSingleKey(singleKey);
-		meta.setJoinColumn(joinColumn);
 
 		return meta;
 	}

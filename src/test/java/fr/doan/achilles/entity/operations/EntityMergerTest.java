@@ -182,8 +182,6 @@ public class EntityMergerTest
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
 		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
 		joinPropertyMeta.setSingleKey(true);
-		joinPropertyMeta.setLazy(true);
-		joinPropertyMeta.setJoinColumn(true);
 
 		joinPropertyMeta.setJoinProperties(joinProperties);
 		joinPropertyMeta.setGetter(userGetter);

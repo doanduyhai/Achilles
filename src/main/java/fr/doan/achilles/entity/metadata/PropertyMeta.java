@@ -32,8 +32,6 @@ public class PropertyMeta<K, V>
 	private ExternalWideMapProperties<?> externalWideMapProperties;
 
 	private boolean singleKey;
-	private boolean lazy;
-	private boolean joinColumn;
 
 	public PropertyType type()
 	{
@@ -186,25 +184,5 @@ public class PropertyMeta<K, V>
 	public void setSingleKey(boolean singleKey)
 	{
 		this.singleKey = singleKey;
-	}
-
-	public boolean isLazy()
-	{
-		return lazy;
-	}
-
-	public void setLazy(boolean lazy)
-	{
-		this.lazy = lazy;
-	}
-
-	public boolean isJoinColumn()
-	{
-		return joinColumn;
-	}
-
-	public void setJoinColumn(boolean joinColumn)
-	{
-		this.joinColumn = joinColumn;
 	}
 }

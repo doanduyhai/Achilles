@@ -40,13 +40,13 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.serializer.SerializerUtils;
+import fr.doan.achilles.wrapper.ExternalWideMapWrapper;
 import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 import fr.doan.achilles.wrapper.JoinWideMapWrapper;
 import fr.doan.achilles.wrapper.ListWrapper;
 import fr.doan.achilles.wrapper.MapWrapper;
 import fr.doan.achilles.wrapper.SetWrapper;
 import fr.doan.achilles.wrapper.WideMapWrapper;
-import fr.doan.achilles.wrapper.ExternalWideMapWrapper;
 
 /**
  * JpaEntityInterceptorTest
@@ -170,8 +170,7 @@ public class JpaEntityInterceptorTest
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(true);
-		when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
 		when(lazyLoaded.contains(nameGetter)).thenReturn(false);
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
@@ -188,8 +187,7 @@ public class JpaEntityInterceptorTest
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(true);
-		when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
 
 		when(lazyLoaded.contains(nameGetter)).thenReturn(true);
 
@@ -229,7 +227,6 @@ public class JpaEntityInterceptorTest
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
 		when(proxy.invoke(entity, null)).thenReturn(Arrays.asList("a"));
@@ -244,7 +241,6 @@ public class JpaEntityInterceptorTest
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(PropertyType.SET);
 
 		when(proxy.invoke(entity, null)).thenReturn(new HashSet<String>());
@@ -259,7 +255,6 @@ public class JpaEntityInterceptorTest
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
 		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(LAZY_MAP);
 
 		when(proxy.invoke(entity, null)).thenReturn(new HashMap<Integer, String>());
@@ -277,7 +272,6 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
 		ReflectionTestUtils.setField(interceptor, "wideRow", false);
 
@@ -294,7 +288,6 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
 		ReflectionTestUtils.setField(interceptor, "wideRow", true);
 
@@ -311,7 +304,6 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
 		ReflectionTestUtils.setField(interceptor, "wideRow", false);
 
@@ -331,7 +323,6 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(true);
 		when(propertyMeta.type()).thenReturn(EXTERNAL_WIDE_MAP);
 		when(propertyMeta.getExternalWideMapProperties()).thenReturn(externalWideMapProperties);
 
@@ -358,7 +349,6 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(joinUsersGetter)).thenReturn(true);
 		when(getterMetas.get(joinUsersGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(false);
 		when(propertyMeta.type()).thenReturn(EXTERNAL_JOIN_WIDE_MAP);
 		when(propertyMeta.getExternalWideMapProperties()).thenReturn(externalWideMapProperties);
 
@@ -372,7 +362,6 @@ public class JpaEntityInterceptorTest
 	{
 		when(setterMetas.containsKey(nameSetter)).thenReturn(true);
 		when(setterMetas.get(nameSetter)).thenReturn(propertyMeta);
-		when(propertyMeta.isLazy()).thenReturn(true);
 		when(propertyMeta.type()).thenReturn(PropertyType.WIDE_MAP);
 
 		this.interceptor.intercept(entity, nameSetter, (Object[]) null, proxy);

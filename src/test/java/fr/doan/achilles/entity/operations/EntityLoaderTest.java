@@ -420,8 +420,6 @@ public class EntityLoaderTest
 		PropertyMeta<Integer, UserBean> joinPropertyMeta = new PropertyMeta<Integer, UserBean>();
 		joinPropertyMeta.setType(PropertyType.JOIN_WIDE_MAP);
 		joinPropertyMeta.setSingleKey(true);
-		joinPropertyMeta.setLazy(true);
-		joinPropertyMeta.setJoinColumn(true);
 
 		joinPropertyMeta.setValueClass(UserBean.class);
 		joinPropertyMeta.setJoinProperties(joinProperties);
@@ -464,8 +462,6 @@ public class EntityLoaderTest
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
 		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
 		joinPropertyMeta.setSingleKey(true);
-		joinPropertyMeta.setLazy(true);
-		joinPropertyMeta.setJoinColumn(true);
 
 		joinPropertyMeta.setValueClass(UserBean.class);
 		joinPropertyMeta.setJoinProperties(joinProperties);
@@ -519,8 +515,6 @@ public class EntityLoaderTest
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
 		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
 		joinPropertyMeta.setSingleKey(true);
-		joinPropertyMeta.setLazy(true);
-		joinPropertyMeta.setJoinColumn(true);
 
 		joinPropertyMeta.setValueClass(UserBean.class);
 		joinPropertyMeta.setJoinProperties(joinProperties);
