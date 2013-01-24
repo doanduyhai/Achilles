@@ -12,6 +12,8 @@ import java.util.Map;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator.ColumnSliceFinish;
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.SliceQuery;
@@ -22,12 +24,15 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 
 /**
- * JoinColumnSliceIterator
+ * AchillesJoinSliceIterator
  * 
  * @author DuyHai DOAN
  * 
+ *         Modification of original version from Hector ColumnSliceIterator
+ * 
  */
-public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HColumn<N, VALUE>>
+public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, VALUE> implements
+		Iterator<HColumn<N, VALUE>>
 {
 
 	private SliceQuery<K, N, V> query;
@@ -40,39 +45,13 @@ public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HC
 	private PropertyMeta<KEY, VALUE> propertyMeta;
 	private EntityLoader loader = new EntityLoader();
 
-	/**
-	 * Constructor
-	 * 
-	 * @param query
-	 *            Base SliceQuery to execute
-	 * @param start
-	 *            Starting point of the range
-	 * @param finish
-	 *            Finish point of the range.
-	 * @param reversed
-	 *            Whether or not the columns should be reversed
-	 */
-	public JoinColumnSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
+	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
 	{
 		this(propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	/**
-	 * Constructor
-	 * 
-	 * @param query
-	 *            Base SliceQuery to execute
-	 * @param start
-	 *            Starting point of the range
-	 * @param finish
-	 *            Finish point of the range.
-	 * @param reversed
-	 *            Whether or not the columns should be reversed
-	 * @param count
-	 *            the amount of columns to retrieve per batch
-	 */
-	public JoinColumnSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
+	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed, int count)
 	{
 		this(propertyMeta, query, start, new ColumnSliceFinish<N>()
@@ -86,39 +65,13 @@ public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HC
 		}, reversed, count);
 	}
 
-	/**
-	 * Constructor
-	 * 
-	 * @param query
-	 *            Base SliceQuery to execute
-	 * @param start
-	 *            Starting point of the range
-	 * @param finish
-	 *            Finish point of the range. Allows for a dynamically determined point
-	 * @param reversed
-	 *            Whether or not the columns should be reversed
-	 */
-	public JoinColumnSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
+	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed)
 	{
 		this(propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	/**
-	 * Constructor
-	 * 
-	 * @param query
-	 *            Base SliceQuery to execute
-	 * @param start
-	 *            Starting point of the range
-	 * @param finish
-	 *            Finish point of the range. Allows for a dynamically determined point
-	 * @param reversed
-	 *            Whether or not the columns should be reversed
-	 * @param count
-	 *            the amount of columns to retrieve per batch
-	 */
-	public JoinColumnSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
+	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed,
 			int count)
 	{
@@ -141,15 +94,20 @@ public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HC
 		}
 		else if (!iterator.hasNext() && columns == count)
 		{ // only need to do another query if maximum columns were retrieved
+
+			// Exclude start from the query because is has been already fetched
+			if (reversed)
+			{
+				start.setEquality(ComponentEquality.LESS_THAN_EQUAL);
+			}
+			else
+			{
+				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
+			}
+
 			query.setRange(start, finish.function(), reversed, count);
 			loadEntities();
 			columns = 0;
-
-			// First element is start which was the last element on the previous query result - skip it
-			if (iterator.hasNext())
-			{
-				next();
-			}
 		}
 
 		return iterator.hasNext();
@@ -159,7 +117,6 @@ public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HC
 	private void loadEntities()
 	{
 		Iterator<HColumn<N, V>> iter = query.execute().get().getColumns().iterator();
-		int i = 0;
 		List<V> joinIds = new ArrayList<V>();
 		Map<V, Pair<N, Integer>> hColumMap = new HashMap<V, Pair<N, Integer>>();
 		Serializer<?> nameSerializer;
@@ -172,13 +129,12 @@ public class JoinColumnSliceIterator<K, N, V, KEY, VALUE> implements Iterator<HC
 			nameSerializer = DYNA_COMP_SRZ;
 		}
 
-		while (iter.hasNext() && i < count)
+		while (iter.hasNext())
 		{
 			HColumn<N, V> hColumn = iter.next();
 			joinIds.add(hColumn.getValue());
 			hColumMap.put(hColumn.getValue(),
 					new Pair<N, Integer>(hColumn.getName(), hColumn.getTtl()));
-			i++;
 		}
 		Map<V, VALUE> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, propertyMeta.getJoinProperties().getEntityMeta());

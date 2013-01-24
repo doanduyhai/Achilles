@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import mapping.entity.TweetMultiKey;
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -37,7 +36,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 {
 
 	@Mock
-	private ColumnSliceIterator<?, DynamicComposite, String> columnSliceIterator;
+	private AchillesSliceIterator<?, DynamicComposite, String> achillesSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -72,8 +71,8 @@ public class KeyValueIteratorForDynamicCompositeTest
 		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
 		KeyValue<TweetMultiKey, String> keyValue = mock(KeyValue.class);
 
-		when(columnSliceIterator.hasNext()).thenReturn(true);
-		when(columnSliceIterator.next()).thenReturn((HColumn) column);
+		when(achillesSliceIterator.hasNext()).thenReturn(true);
+		when(achillesSliceIterator.next()).thenReturn((HColumn) column);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
@@ -87,7 +86,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Test(expected = NoSuchElementException.class)
 	public void should_exception_when_no_more_element() throws Exception
 	{
-		when(columnSliceIterator.hasNext()).thenReturn(false);
+		when(achillesSliceIterator.hasNext()).thenReturn(false);
 		iterator.next();
 	}
 

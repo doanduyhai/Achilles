@@ -2,17 +2,17 @@ package fr.doan.achilles.wrapper;
 
 import java.util.List;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.composite.factory.CompositeKeyFactory;
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
@@ -21,7 +21,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ExternalWideRowWrapper<ID, K, V> implements WideRow<K, V>
+public class ExternalWideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
 	protected ID id;
 	protected GenericCompositeDao<ID, V> dao;
@@ -112,7 +112,7 @@ public class ExternalWideRowWrapper<ID, K, V> implements WideRow<K, V>
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
-		ColumnSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
+		AchillesSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
 				composites[0], composites[1], reverse, count);
 
 		return iteratorFactory.createKeyValueIteratorForComposite(columnSliceIterator, wideMapMeta);

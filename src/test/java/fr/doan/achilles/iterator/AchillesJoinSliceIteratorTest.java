@@ -43,7 +43,7 @@ import fr.doan.achilles.entity.operations.EntityLoader;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class JoinColumnSliceIteratorTest
+public class AchillesJoinSliceIteratorTest
 {
 	@Mock
 	private PropertyMeta<Integer, UserBean> propertyMeta;
@@ -72,7 +72,7 @@ public class JoinColumnSliceIteratorTest
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-	JoinColumnSliceIterator<Long, DynamicComposite, Long, Integer, UserBean> iterator;
+	AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean> iterator;
 
 	@SuppressWarnings(
 	{
@@ -133,7 +133,7 @@ public class JoinColumnSliceIteratorTest
 		when(
 				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2, joinId3),
 						joinEntityMeta)).thenReturn(entitiesMap);
-		iterator = new JoinColumnSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
 				propertyMeta, query, start, end, false, 10);
 
 		ReflectionTestUtils.setField(iterator, "loader", loader);
@@ -183,8 +183,8 @@ public class JoinColumnSliceIteratorTest
 		HColumn<DynamicComposite, Long> hCol3 = HFactory.createColumn(name3, joinId3, ttl,
 				DYNA_COMP_SRZ, LONG_SRZ);
 
-		when(columnsIterator.hasNext()).thenReturn(true, true, false, true, true, false);
-		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol2, hCol3);
+		when(columnsIterator.hasNext()).thenReturn(true, true, false, true, false);
+		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		Map<Long, UserBean> entitiesMap = new HashMap<Long, UserBean>();
 		entitiesMap.put(joinId1, user1);
@@ -194,11 +194,10 @@ public class JoinColumnSliceIteratorTest
 		when(
 				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
 						joinEntityMeta)).thenReturn(entitiesMap);
-		when(
-				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId2, joinId3),
-						joinEntityMeta)).thenReturn(entitiesMap);
+		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta))
+				.thenReturn(entitiesMap);
 
-		iterator = new JoinColumnSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
 				propertyMeta, query, start, end, false, count);
 
 		ReflectionTestUtils.setField(iterator, "loader", loader);

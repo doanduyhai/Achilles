@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * WideRowBeanWithObject
@@ -24,7 +24,7 @@ public class WideRowBeanWithObject implements Serializable
 	private Long id;
 
 	@Column
-	private WideRow<Long, Holder> map;
+	private WideMap<Long, Holder> map;
 
 	public Long getId()
 	{
@@ -36,12 +36,12 @@ public class WideRowBeanWithObject implements Serializable
 		this.id = id;
 	}
 
-	public WideRow<Long, Holder> getMap()
+	public WideMap<Long, Holder> getMap()
 	{
 		return map;
 	}
 
-	public void setMap(WideRow<Long, Holder> map)
+	public void setMap(WideMap<Long, Holder> map)
 	{
 		this.map = map;
 	}

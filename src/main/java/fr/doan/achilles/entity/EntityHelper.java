@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.parser.PropertyFilter;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.AchillesException;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
@@ -118,7 +118,7 @@ public class EntityHelper
 		Method[] accessors = new Method[2];
 
 		accessors[0] = findGetter(beanClass, field);
-		if (field.getType() != WideRow.class)
+		if (field.getType() != WideMap.class)
 		{
 			accessors[1] = findSetter(beanClass, field);
 		}

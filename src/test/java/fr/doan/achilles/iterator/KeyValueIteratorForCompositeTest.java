@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.cassandra.model.HColumnImpl;
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -44,7 +43,7 @@ public class KeyValueIteratorForCompositeTest
 	private KeyValueIteratorForComposite<CorrectMultiKey, String> iterator;
 
 	@Mock
-	private ColumnSliceIterator<CorrectMultiKey, Composite, String> columnSliceIterator;
+	private AchillesSliceIterator<CorrectMultiKey, Composite, String> achillesSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -69,7 +68,7 @@ public class KeyValueIteratorForCompositeTest
 	@Test
 	public void should_has_next() throws Exception
 	{
-		when(columnSliceIterator.hasNext()).thenReturn(true, true, false);
+		when(achillesSliceIterator.hasNext()).thenReturn(true, true, false);
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isTrue();
@@ -91,13 +90,12 @@ public class KeyValueIteratorForCompositeTest
 		hColumn.setValue("test");
 		hColumn.setTtl(1);
 
-		when(columnSliceIterator.hasNext()).thenReturn(true, false);
-		when(columnSliceIterator.next()).thenReturn(hColumn);
+		when(achillesSliceIterator.hasNext()).thenReturn(true, false);
+		when(achillesSliceIterator.next()).thenReturn(hColumn);
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForComposite(multiKeyWideMapMeta, hColumn))
-				.thenReturn(keyValue);
+		when(factory.createForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 
@@ -107,7 +105,7 @@ public class KeyValueIteratorForCompositeTest
 	@Test(expected = NoSuchElementException.class)
 	public void should_exception_when_no_more_element() throws Exception
 	{
-		when(columnSliceIterator.hasNext()).thenReturn(false);
+		when(achillesSliceIterator.hasNext()).thenReturn(false);
 		iterator.next();
 	}
 

@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -28,6 +27,7 @@ import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForDynamicComposite;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
@@ -38,11 +38,11 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class WideRowWrapperTest
+public class WideMapWrapperTest
 {
 
 	@InjectMocks
-	private WideRowWrapper<Long, Integer, String> wrapper;
+	private WideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
 	private GenericDynamicCompositeDao<Long> dao;
@@ -63,7 +63,7 @@ public class WideRowWrapperTest
 	private CompositeHelper helper;
 
 	@Mock
-	private ColumnSliceIterator<Long, DynamicComposite, Object> columnSliceIterator;
+	private AchillesSliceIterator<Long, DynamicComposite, Object> achillesSliceIterator;
 
 	@SuppressWarnings(
 	{
@@ -217,12 +217,13 @@ public class WideRowWrapperTest
 						end
 				});
 
-		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
+		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(achillesSliceIterator);
 
 		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
 
-		when(iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator, wideMapMeta))
-				.thenReturn(iterator);
+		when(
+				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
+						wideMapMeta)).thenReturn(iterator);
 
 		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, false, 10);
 
@@ -244,12 +245,13 @@ public class WideRowWrapperTest
 						end
 				});
 
-		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(columnSliceIterator);
+		when(dao.getColumnsIterator(1L, start, end, false, 10)).thenReturn(achillesSliceIterator);
 
 		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
 
-		when(iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator, wideMapMeta))
-				.thenReturn(iterator);
+		when(
+				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
+						wideMapMeta)).thenReturn(iterator);
 
 		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, false, false, 10);
 

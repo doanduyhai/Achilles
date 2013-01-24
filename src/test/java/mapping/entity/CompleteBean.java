@@ -16,7 +16,7 @@ import javax.persistence.ManyToOne;
 import fr.doan.achilles.annotations.Key;
 import fr.doan.achilles.annotations.Lazy;
 import fr.doan.achilles.entity.type.MultiKey;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * CompleteBean
@@ -52,13 +52,13 @@ public class CompleteBean implements Serializable
 	private Map<Integer, String> preferences;
 
 	@Column
-	private WideRow<UUID, String> tweets;
+	private WideMap<UUID, String> tweets;
 
 	@Column
-	private WideRow<UserTweetKey, String> userTweets;
+	private WideMap<UserTweetKey, String> userTweets;
 
 	@Column(table = "geo_positions")
-	private WideRow<UUID, String> geoPositions;
+	private WideMap<UUID, String> geoPositions;
 
 	@ManyToOne
 	@JoinColumn
@@ -66,7 +66,7 @@ public class CompleteBean implements Serializable
 
 	@ManyToMany
 	@JoinColumn(table = "join_users")
-	private WideRow<Long, UserBean> joinUsers;
+	private WideMap<Long, UserBean> joinUsers;
 
 	public Long getId()
 	{
@@ -138,22 +138,22 @@ public class CompleteBean implements Serializable
 		this.age = age;
 	}
 
-	public WideRow<UUID, String> getTweets()
+	public WideMap<UUID, String> getTweets()
 	{
 		return tweets;
 	}
 
-	public void setTweets(WideRow<UUID, String> tweets)
+	public void setTweets(WideMap<UUID, String> tweets)
 	{
 		this.tweets = tweets;
 	}
 
-	public WideRow<UserTweetKey, String> getUserTweets()
+	public WideMap<UserTweetKey, String> getUserTweets()
 	{
 		return userTweets;
 	}
 
-	public void setUserTweets(WideRow<UserTweetKey, String> userTweets)
+	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
 	{
 		this.userTweets = userTweets;
 	}
@@ -168,17 +168,17 @@ public class CompleteBean implements Serializable
 		this.user = user;
 	}
 
-	public WideRow<UUID, String> getGeoPositions()
+	public WideMap<UUID, String> getGeoPositions()
 	{
 		return geoPositions;
 	}
 
-	public void setGeoPositions(WideRow<UUID, String> geoPositions)
+	public void setGeoPositions(WideMap<UUID, String> geoPositions)
 	{
 		this.geoPositions = geoPositions;
 	}
 
-	public WideRow<Long, UserBean> getJoinUsers()
+	public WideMap<Long, UserBean> getJoinUsers()
 	{
 		return joinUsers;
 	}

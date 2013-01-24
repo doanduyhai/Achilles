@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -28,6 +27,7 @@ import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForComposite;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
@@ -39,10 +39,10 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExternalWideRowWrapperTest
+public class ExternalWideMapWrapperTest
 {
 	@InjectMocks
-	private ExternalWideRowWrapper<Long, Integer, String> wrapper;
+	private ExternalWideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
 	private GenericCompositeDao<Long, String> dao;
@@ -132,9 +132,8 @@ public class ExternalWideRowWrapperTest
 				});
 
 		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
-		when(
-				keyValueFactory.createListForComposite(wideMapMeta,
-						(List) hColumns)).thenReturn(keyValues).thenReturn(keyValues);
+		when(keyValueFactory.createListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
+				keyValues).thenReturn(keyValues);
 
 		List<KeyValue<Integer, String>> expected = wrapper.findRange(12, 15, false, 10);
 		assertThat(expected).isSameAs(keyValues);
@@ -145,7 +144,7 @@ public class ExternalWideRowWrapperTest
 	public void should_get_iterator() throws Exception
 	{
 		KeyValueIteratorForComposite<Integer, String> keyValues = mock(KeyValueIteratorForComposite.class);
-		ColumnSliceIterator<Long, Composite, String> iterator = mock(ColumnSliceIterator.class);
+		AchillesSliceIterator<Long, Composite, String> iterator = mock(AchillesSliceIterator.class);
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 

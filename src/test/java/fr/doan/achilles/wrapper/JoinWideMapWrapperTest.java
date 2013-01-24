@@ -38,14 +38,14 @@ import fr.doan.achilles.helper.CompositeHelper;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class JoinWideRowWrapperTest
+public class JoinWideMapWrapperTest
 {
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@InjectMocks
-	private JoinWideRowWrapper<Long, Integer, UserBean> wrapper;
+	private JoinWideMapWrapper<Long, Integer, UserBean> wrapper;
 
 	@Mock
 	private GenericDynamicCompositeDao<Long> dao;

@@ -24,7 +24,7 @@ import org.junit.Test;
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.holder.KeyValue;
 
 /**
@@ -47,7 +47,7 @@ public class WideRowIT
 
 	private WideRowBean bean;
 
-	private WideRow<Integer, String> map;
+	private WideMap<Integer, String> map;
 
 	private Long id = 452L;
 

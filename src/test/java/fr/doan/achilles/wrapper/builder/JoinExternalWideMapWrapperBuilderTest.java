@@ -9,7 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.dao.GenericCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.wrapper.JoinExternalWideRowWrapper;
+import fr.doan.achilles.wrapper.JoinExternalWideMapWrapper;
 
 /**
  * JoinExternalWideMapWrapperBuilderTest
@@ -30,7 +30,7 @@ public class JoinExternalWideMapWrapperBuilderTest
 	@Test
 	public void should_build() throws Exception
 	{
-		JoinExternalWideRowWrapper<Integer, Long, Integer, String> wrapper = JoinExternalWideMapWrapperBuilder
+		JoinExternalWideMapWrapper<Integer, Long, Integer, String> wrapper = JoinExternalWideMapWrapperBuilder
 				.builder(1, dao, joinExternalWideMapMeta).build();
 
 		assertThat(wrapper).isNotNull();

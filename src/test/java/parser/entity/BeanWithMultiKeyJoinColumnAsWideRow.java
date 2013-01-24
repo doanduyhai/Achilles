@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * BeanWithMultiKeyJoinColumnAsWideRow
@@ -19,7 +19,7 @@ public class BeanWithMultiKeyJoinColumnAsWideRow
 	private Long id;
 
 	@JoinColumn(table = "my_wide_row_cf")
-	private WideRow<CorrectMultiKey, String> wideRow;
+	private WideMap<CorrectMultiKey, String> wideMap;
 
 	public Long getId()
 	{
@@ -31,14 +31,14 @@ public class BeanWithMultiKeyJoinColumnAsWideRow
 		this.id = id;
 	}
 
-	public WideRow<CorrectMultiKey, String> getWideRow()
+	public WideMap<CorrectMultiKey, String> getWideRow()
 	{
-		return wideRow;
+		return wideMap;
 	}
 
-	public void setWideRow(WideRow<CorrectMultiKey, String> wideRow)
+	public void setWideRow(WideMap<CorrectMultiKey, String> wideRow)
 	{
-		this.wideRow = wideRow;
+		this.wideMap = wideRow;
 	}
 
 }

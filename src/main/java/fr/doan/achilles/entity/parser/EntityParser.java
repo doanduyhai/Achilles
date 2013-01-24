@@ -20,7 +20,7 @@ import fr.doan.achilles.entity.EntityHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.exception.BeanMappingException;
 import fr.doan.achilles.validation.Validator;
 
@@ -55,7 +55,7 @@ public class EntityParser
 
 		for (Field field : inheritedFields)
 		{
-			boolean isWideMap = WideRow.class.isAssignableFrom(field.getType());
+			boolean isWideMap = WideMap.class.isAssignableFrom(field.getType());
 			if (filter.hasAnnotation(field, Id.class))
 			{
 				idMeta = parser.parse(entityClass, field, field.getName());

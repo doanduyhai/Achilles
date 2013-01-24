@@ -8,10 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.prettyprint.cassandra.model.thrift.ThriftCounterColumnQuery;
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.cassandra.service.KeyIterator;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.AbstractComposite;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
@@ -25,8 +25,9 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.CounterColumnSliceIterator;
-import fr.doan.achilles.iterator.JoinColumnSliceIterator;
+import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.serializer.SerializerUtils;
 import fr.doan.achilles.validation.Validator;
 
@@ -36,7 +37,7 @@ import fr.doan.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractDao<K, N, V>
+public abstract class AbstractDao<K, N extends AbstractComposite, V>
 {
 
 	protected Keyspace keyspace;
@@ -232,47 +233,47 @@ public abstract class AbstractDao<K, N, V>
 				.setRange(startName, endName, reverse, count).execute().get().getColumns();
 	}
 
-	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse,
+	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse,
 			int length)
 	{
 		return getColumnsIterator(key, startName, null, reverse, length);
 	}
 
-	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
+	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
 			boolean reverse)
 	{
 		return getColumnsIterator(key, startName, null, reverse, DEFAULT_LENGTH);
 	}
 
-	public ColumnSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
+	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
 			boolean reverse, int length)
 	{
 		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 				valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new ColumnSliceIterator<K, N, V>(query, startName, endName, reverse, length);
+		return new AchillesSliceIterator<K, N, V>(query, startName, endName, reverse, length);
 	}
 
-	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
 			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, boolean reverse, int length)
 	{
 		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, length);
 	}
 
-	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
 			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reverse)
 	{
 		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, DEFAULT_LENGTH);
 	}
 
-	public <KEY, VALUE> JoinColumnSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
 			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reversed,
 			int count)
 	{
 		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 				valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new JoinColumnSliceIterator<K, N, V, KEY, VALUE>(propertyMeta, query, startName,
+		return new AchillesJoinSliceIterator<K, N, V, KEY, VALUE>(propertyMeta, query, startName,
 				endName, reversed, count);
 	}
 
@@ -285,14 +286,14 @@ public abstract class AbstractDao<K, N, V>
 		return new CounterColumnSliceIterator<K, N>(query, startName, (N) null, reverse, length);
 	}
 
-	public <KEY, NAME, VALUE> ColumnSliceIterator<KEY, NAME, VALUE> getSpecificColumnsIterator(
+	public <KEY, NAME extends AbstractComposite, VALUE> AchillesSliceIterator<KEY, NAME, VALUE> getSpecificColumnsIterator(
 			Serializer<KEY> keySz, Serializer<NAME> nameSz, Serializer<VALUE> valueSz, String CF,
 			KEY key, NAME startName, boolean reverse, int length)
 	{
 		SliceQuery<KEY, NAME, VALUE> query = createSliceQuery(keyspace, keySz, nameSz, valueSz)
 				.setColumnFamily(CF).setKey(key);
 
-		return new ColumnSliceIterator<KEY, NAME, VALUE>(query, startName, (NAME) null, reverse,
+		return new AchillesSliceIterator<KEY, NAME, VALUE>(query, startName, (NAME) null, reverse,
 				length);
 	}
 

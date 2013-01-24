@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * BeanWithExternalWideMap
@@ -26,7 +26,7 @@ public class BeanWithExternalWideMap implements Serializable
 	private String name;
 
 	@Column(table = "external_users")
-	private WideRow<Integer, UserBean> users;
+	private WideMap<Integer, UserBean> users;
 
 	public Long getId()
 	{
@@ -48,12 +48,12 @@ public class BeanWithExternalWideMap implements Serializable
 		this.name = name;
 	}
 
-	public WideRow<Integer, UserBean> getUsers()
+	public WideMap<Integer, UserBean> getUsers()
 	{
 		return users;
 	}
 
-	public void setUsers(WideRow<Integer, UserBean> users)
+	public void setUsers(WideMap<Integer, UserBean> users)
 	{
 		this.users = users;
 	}

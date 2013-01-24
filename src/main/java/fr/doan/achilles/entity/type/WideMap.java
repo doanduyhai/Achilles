@@ -10,7 +10,7 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public interface WideRow<K, V>
+public interface WideMap<K, V>
 {
 	public V get(K key);
 

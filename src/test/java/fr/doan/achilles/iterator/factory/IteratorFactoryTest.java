@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import me.prettyprint.cassandra.service.ColumnSliceIterator;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
@@ -17,6 +16,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
+import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForComposite;
 
 /**
@@ -31,10 +31,10 @@ public class IteratorFactoryTest
 	private IteratorFactory factory = new IteratorFactory();
 
 	@Mock
-	private ColumnSliceIterator<?, Composite, String> columnSliceComposite;
+	private AchillesSliceIterator<?, Composite, String> columnSliceComposite;
 
 	@Mock
-	private ColumnSliceIterator<?, DynamicComposite, Object> columnSliceDynamicComposite;
+	private AchillesSliceIterator<?, DynamicComposite, Object> columnSliceDynamicComposite;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -63,8 +63,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_dynamic_composite_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForDynamicComposite(
-				columnSliceDynamicComposite, wideMapMeta);
+		KeyValueIterator<Integer, String> iterator = factory
+				.createKeyValueIteratorForDynamicComposite(columnSliceDynamicComposite, wideMapMeta);
 
 		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);
 

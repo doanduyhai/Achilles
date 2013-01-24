@@ -11,11 +11,11 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideRow;
+import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
-import fr.doan.achilles.iterator.JoinColumnSliceIterator;
+import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
 
 /**
@@ -24,7 +24,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinExternalWideRowWrapper<ID, JOIN_ID, K, V> implements WideRow<K, V>
+public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K, V>
 {
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;
@@ -120,11 +120,11 @@ public class JoinExternalWideRowWrapper<ID, JOIN_ID, K, V> implements WideRow<K,
 		Composite[] composites = compositeKeyFactory.createForQuery(externalWideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
-		JoinColumnSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator = externalWideMapDao
+		AchillesJoinSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator = externalWideMapDao
 				.getJoinColumnsIterator(externalWideMapMeta, id, composites[0], composites[1],
 						reverse, count);
 
-		return iteratorFactory.createKeyValueJoinIteratorForComposite(joinColumnSliceIterator,
+		return iteratorFactory.createKeyValueIteratorForComposite(joinColumnSliceIterator,
 				externalWideMapMeta);
 	}
 
