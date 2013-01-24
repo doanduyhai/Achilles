@@ -1,6 +1,7 @@
 package fr.doan.achilles.entity.operations;
 
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 
@@ -56,7 +57,7 @@ public class EntityMerger
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
 				ID key = interceptor.getKey();
-				if (propertyMeta.type().isMultiValue())
+				if (propertyMeta.type() != SIMPLE || propertyMeta.type() != JOIN_SIMPLE)
 				{
 					this.persister.removeProperty(key, dao, propertyMeta);
 				}
