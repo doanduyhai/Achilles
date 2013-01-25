@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 
 import javax.persistence.CascadeType;
 
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.EntityHelper;
@@ -53,16 +54,25 @@ public class EntityMerger
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
 			Object realObject = interceptor.getTarget();
-			for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
+
+			if (dirtyMap.size() > 0)
 			{
-				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				ID key = interceptor.getKey();
-				if (propertyMeta.type() != SIMPLE || propertyMeta.type() != JOIN_SIMPLE)
+				Mutator<ID> mutator = dao.buildMutator();
+
+				for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 				{
-					this.persister.removeProperty(key, dao, propertyMeta);
+					PropertyMeta<?, ?> propertyMeta = entry.getValue();
+					ID key = interceptor.getKey();
+					if (propertyMeta.type() != SIMPLE || propertyMeta.type() != JOIN_SIMPLE)
+					{
+						this.persister.removePropertyBatch(key, dao, propertyMeta, mutator);
+					}
+					this.persister.persistProperty(realObject, key, dao, propertyMeta, mutator);
 				}
-				this.persister.persistProperty(realObject, key, dao, propertyMeta);
+
+				mutator.execute();
 			}
+
 			dirtyMap.clear();
 
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())

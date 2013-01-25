@@ -2,6 +2,7 @@ package fr.doan.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.MERGE;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -12,11 +13,14 @@ import java.util.Map;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.Factory;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -71,6 +75,12 @@ public class EntityMergerTest
 	@Mock
 	private Bean entity;
 
+	@Captor
+	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
+
+	@Mock
+	private Mutator<Long> mutator;
+
 	@Test
 	public void should_persist_if_not_proxy() throws Exception
 	{
@@ -92,12 +102,14 @@ public class EntityMergerTest
 		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
+		when(dao.buildMutator()).thenReturn(mutator);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 		dirty.put(ageSetter, propertyMeta);
 
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(dirtyMap.size()).thenReturn(1);
 		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
 		when(interceptor.getKey()).thenReturn(1L);
 		when(interceptor.getTarget()).thenReturn(entity);
@@ -107,10 +119,15 @@ public class EntityMergerTest
 
 		assertThat(mergedEntity).isSameAs(entity);
 
-		verify(persister).persistProperty(entity, 1L, dao, propertyMeta);
+		verify(persister).persistProperty(eq(entity), eq(1L), eq(dao), eq(propertyMeta),
+				mutatorCaptor.capture());
+		assertThat(mutatorCaptor.getValue()).isSameAs(mutator);
+
+		verify(mutator).execute();
 		verify(dirtyMap).clear();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_merge_proxy_with_multi_value_dirty() throws Exception
 	{
@@ -118,6 +135,7 @@ public class EntityMergerTest
 		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
+		when(dao.buildMutator()).thenReturn(mutator);
 
 		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
@@ -125,6 +143,7 @@ public class EntityMergerTest
 
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
+		when(dirtyMap.size()).thenReturn(1);
 		when(interceptor.getKey()).thenReturn(1L);
 		when(interceptor.getTarget()).thenReturn(entity);
 		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SET);
@@ -133,8 +152,14 @@ public class EntityMergerTest
 
 		assertThat(mergedEntity).isSameAs(entity);
 
-		verify(persister).removeProperty(1L, dao, propertyMeta);
-		verify(persister).persistProperty(entity, 1L, dao, propertyMeta);
+		verify(persister).removePropertyBatch(eq(1L), eq(dao), eq(propertyMeta),
+				mutatorCaptor.capture());
+		verify(persister).persistProperty(eq(entity), eq(1L), eq(dao), eq(propertyMeta),
+				mutatorCaptor.capture());
+
+		assertThat(mutatorCaptor.getAllValues()).containsExactly(mutator, mutator);
+		verify(mutator).execute();
+
 		verify(dirtyMap).clear();
 	}
 
@@ -145,6 +170,7 @@ public class EntityMergerTest
 		when(helper.isProxy(entity)).thenReturn(true);
 		when(factory.getCallback(0)).thenReturn(interceptor);
 		when(entityMeta.getEntityDao()).thenReturn(dao);
+		when(dao.buildMutator()).thenReturn(mutator);
 
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 
@@ -156,6 +182,7 @@ public class EntityMergerTest
 		assertThat(mergedEntity).isSameAs(entity);
 
 		verifyZeroInteractions(persister);
+		verifyZeroInteractions(mutator);
 		verify(dirtyMap).clear();
 	}
 

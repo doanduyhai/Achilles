@@ -62,29 +62,7 @@ public class EntityPersister
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				switch (propertyMeta.type())
-				{
-					case SIMPLE:
-					case LAZY_SIMPLE:
-						this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, mutator);
-						break;
-					case LIST:
-					case LAZY_LIST:
-						this.batchPersistListProperty(entity, key, dao, propertyMeta, mutator);
-						break;
-					case SET:
-					case LAZY_SET:
-						this.batchPersistSetProperty(entity, key, dao, propertyMeta, mutator);
-						break;
-					case MAP:
-					case LAZY_MAP:
-						this.batchPersistMapProperty(entity, key, dao, propertyMeta, mutator);
-						break;
-					case JOIN_SIMPLE:
-						this.batchPersistJoinEntity(entity, key, dao, propertyMeta, mutator);
-					default:
-						break;
-				}
+				this.persistProperty(entity, key, dao, propertyMeta, mutator);
 			}
 			mutator.execute();
 		}
@@ -103,7 +81,7 @@ public class EntityPersister
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
 		if (serialVersionUID != null)
 		{
-			dao.insertColumn(key, composite, serialVersionUID, mutator);
+			dao.insertColumnBatch(key, composite, serialVersionUID, mutator);
 		}
 		else
 		{
@@ -113,14 +91,14 @@ public class EntityPersister
 		}
 	}
 
-	private <ID> void batchPersistSimpleProperty(Object entity, ID key,
+	protected <ID> void batchPersistSimpleProperty(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		DynamicComposite name = keyFactory.createForBatchInsertSingleValue(propertyMeta);
 		Object value = helper.getValueFromField(entity, propertyMeta.getGetter());
 		if (value != null)
 		{
-			dao.insertColumn(key, name, value, mutator);
+			dao.insertColumnBatch(key, name, value, mutator);
 		}
 	}
 
@@ -136,7 +114,7 @@ public class EntityPersister
 			Object joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties);
 
 			DynamicComposite joinName = keyFactory.createForBatchInsertSingleValue(propertyMeta);
-			dao.insertColumn(key, joinName, joinId, mutator);
+			dao.insertColumnBatch(key, joinName, joinId, mutator);
 		}
 	}
 
@@ -171,18 +149,6 @@ public class EntityPersister
 
 	}
 
-	public <ID> void persistSimpleProperty(Object entity, ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta)
-	{
-		this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, null);
-	}
-
-	public <ID> void persistJoinEntity(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		this.batchPersistJoinEntity(entity, key, dao, propertyMeta, null);
-	}
-
 	private <ID> void batchPersistListProperty(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
@@ -197,22 +163,14 @@ public class EntityPersister
 						count);
 				if (value != null)
 				{
-					dao.insertColumn(key, name, value, mutator);
+					dao.insertColumnBatch(key, name, value, mutator);
 				}
 				count++;
 			}
 		}
 	}
 
-	public <ID> void persistListProperty(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		Mutator<ID> mutator = dao.buildMutator();
-		this.batchPersistListProperty(entity, key, dao, propertyMeta, mutator);
-		mutator.execute();
-	}
-
-	private <ID> void batchPersistSetProperty(Object entity, ID key,
+	protected <ID> void batchPersistSetProperty(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		Set<?> set = (Set<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
@@ -224,18 +182,10 @@ public class EntityPersister
 						value.hashCode());
 				if (value != null)
 				{
-					dao.insertColumn(key, name, value, mutator);
+					dao.insertColumnBatch(key, name, value, mutator);
 				}
 			}
 		}
-	}
-
-	public <ID> void persistSetProperty(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		Mutator<ID> mutator = dao.buildMutator();
-		this.batchPersistSetProperty(entity, key, dao, propertyMeta, mutator);
-		mutator.execute();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -252,43 +202,35 @@ public class EntityPersister
 						entry.getKey().hashCode());
 
 				KeyValue<K, V> value = new KeyValue<K, V>(entry.getKey(), entry.getValue());
-				dao.insertColumn(key, name, value, mutator);
+				dao.insertColumnBatch(key, name, value, mutator);
 			}
 		}
 	}
 
-	public <ID> void persistMapProperty(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		Mutator<ID> mutator = dao.buildMutator();
-		this.batchPersistMapProperty(entity, key, dao, propertyMeta, mutator);
-		mutator.execute();
-	}
-
 	public <ID, V> void persistProperty(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, V> propertyMeta)
+			PropertyMeta<?, V> propertyMeta, Mutator<ID> mutator)
 	{
 
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				this.persistSimpleProperty(entity, key, dao, propertyMeta);
+				this.batchPersistSimpleProperty(entity, key, dao, propertyMeta, mutator);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				this.persistListProperty(entity, key, dao, propertyMeta);
+				this.batchPersistListProperty(entity, key, dao, propertyMeta, mutator);
 				break;
 			case SET:
 			case LAZY_SET:
-				this.persistSetProperty(entity, key, dao, propertyMeta);
+				this.batchPersistSetProperty(entity, key, dao, propertyMeta, mutator);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				this.persistMapProperty(entity, key, dao, propertyMeta);
+				this.batchPersistMapProperty(entity, key, dao, propertyMeta, mutator);
 				break;
 			case JOIN_SIMPLE:
-				this.persistJoinEntity(entity, key, dao, propertyMeta);
+				this.batchPersistJoinEntity(entity, key, dao, propertyMeta, mutator);
 			default:
 				break;
 		}
@@ -334,5 +276,15 @@ public class EntityPersister
 				ComponentEquality.EQUAL);
 		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		dao.removeColumnRange(key, start, end);
+	}
+
+	public <ID, V> void removePropertyBatch(ID key, GenericDynamicCompositeDao<ID> dao,
+			PropertyMeta<?, V> propertyMeta, Mutator<ID> mutator)
+	{
+		Validate.notNull(key, "key value");
+		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta,
+				ComponentEquality.EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		dao.removeColumnRangeBatch(key, start, end, mutator);
 	}
 }

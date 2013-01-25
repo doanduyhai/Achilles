@@ -25,9 +25,9 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import org.apache.cassandra.utils.Pair;
 
 import fr.doan.achilles.entity.metadata.PropertyMeta;
+import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.CounterColumnSliceIterator;
-import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.serializer.SerializerUtils;
 import fr.doan.achilles.validation.Validator;
 
@@ -58,48 +58,29 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void insertName(K key, N name)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.insert(key, columnFamily,
-				HFactory.createColumn(name, null, columnNameSerializer, SerializerUtils.OBJECT_SRZ));
+		this.insertNameBatch(key, name, mutator);
 		mutator.execute();
 	}
 
 	public void insertNameBatch(K key, N name, Mutator<K> mutator)
 	{
-		mutator.insert(key, columnFamily,
+		mutator.addInsertion(key, columnFamily,
 				HFactory.createColumn(name, null, columnNameSerializer, SerializerUtils.OBJECT_SRZ));
 	}
 
-	public void insertColumn(K key, N name, V value, int ttl, Mutator<K> mutator)
+	public void insertColumnBatch(K key, N name, V value, int ttl, Mutator<K> mutator)
 	{
-		Mutator<K> mut = mutator;
-		if (mutator == null)
-		{
-			mut = HFactory.createMutator(keyspace, keySerializer);
-		}
-		mut.insert(
+		mutator.addInsertion(
 				key,
 				columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
 						ttl));
-		if (mutator == null)
-		{
-			mut.execute();
-		}
 	}
 
-	public void insertColumn(K key, N name, V value, Mutator<K> mutator)
+	public void insertColumnBatch(K key, N name, V value, Mutator<K> mutator)
 	{
-		Mutator<K> mut = mutator;
-		if (mutator == null)
-		{
-			mut = HFactory.createMutator(keyspace, keySerializer);
-		}
-		mut.insert(key, columnFamily,
+		mutator.addInsertion(key, columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
-		if (mutator == null)
-		{
-			mut.execute();
-		}
 	}
 
 	public V getValue(K key, N name)
@@ -117,20 +98,31 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void setValue(K key, N name, V value)
 	{
-		HFactory.createMutator(keyspace, keySerializer)
-				.addInsertion(key, columnFamily,
-						HFactory.createColumn(name, value, columnNameSerializer, valueSerializer))
-				.execute();
+		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
+		this.setValueBatch(key, name, value, mutator);
+		mutator.execute();
+	}
+
+	public void setValueBatch(K key, N name, V value, Mutator<K> mutator)
+	{
+		mutator.addInsertion(key, columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
 	}
 
 	public void setValue(K key, N name, V value, int ttl)
 	{
-		HFactory.createMutator(keyspace, keySerializer)
-				.addInsertion(
-						key,
-						columnFamily,
-						HFactory.createColumn(name, value, columnNameSerializer, valueSerializer)
-								.setTtl(ttl)).execute();
+		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
+		this.setValueBatch(key, name, value, ttl, mutator);
+		mutator.execute();
+	}
+
+	public void setValueBatch(K key, N name, V value, int ttl, Mutator<K> mutator)
+	{
+		mutator.addInsertion(
+				key,
+				columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
+						ttl));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,8 +146,13 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void removeColumn(K key, N name)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.delete(key, columnFamily, name, columnNameSerializer);
+		this.removeColumnBatch(key, name, mutator);
 		mutator.execute();
+	}
+
+	public void removeColumnBatch(K key, N name, Mutator<K> mutator)
+	{
+		mutator.addDeletion(key, columnFamily, name, columnNameSerializer);
 	}
 
 	public void removeColumnRange(K key, N start, N end)
@@ -167,9 +164,21 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 		for (HColumn<N, V> column : columns)
 		{
-			mutator.delete(key, columnFamily, column.getName(), columnNameSerializer);
+			mutator.addDeletion(key, columnFamily, column.getName(), columnNameSerializer);
 		}
 		mutator.execute();
+	}
+
+	public void removeColumnRangeBatch(K key, N start, N end, Mutator<K> mutator)
+	{
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
+				.setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
+
+		for (HColumn<N, V> column : columns)
+		{
+			mutator.addDeletion(key, columnFamily, column.getName(), columnNameSerializer);
+		}
 	}
 
 	public List<V> findValuesRange(K key, N startName, boolean reverse, int count)
@@ -319,8 +328,13 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void removeRow(K key)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.addDeletion(key, columnFamily);
+		this.removeRowBatch(key, mutator);
 		mutator.execute();
+	}
+
+	public void removeRowBatch(K key, Mutator<K> mutator)
+	{
+		mutator.addDeletion(key, columnFamily);
 	}
 
 	public void incrementCounter(K key, N name, Long value)
@@ -340,11 +354,13 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void truncate()
 	{
+		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		Iterator<K> iterator = new KeyIterator<K>(keyspace, columnFamily, keySerializer).iterator();
 		while (iterator.hasNext())
 		{
-			this.removeRow(iterator.next());
+			this.removeRowBatch(iterator.next(), mutator);
 		}
+		mutator.execute();
 	}
 
 	public long getCounterValue(K key, N name)

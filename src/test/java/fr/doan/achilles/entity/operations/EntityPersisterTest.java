@@ -3,9 +3,6 @@ package fr.doan.achilles.entity.operations;
 import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SET;
-import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static fr.doan.achilles.entity.metadata.PropertyType.LIST;
 import static fr.doan.achilles.entity.metadata.PropertyType.MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.SET;
 import static fr.doan.achilles.entity.metadata.PropertyType.SIMPLE;
@@ -13,10 +10,10 @@ import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -37,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -105,6 +103,9 @@ public class EntityPersisterTest
 	@Mock
 	private Mutator<Long> mutator;
 
+	@Captor
+	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
+
 	private Method anyMethod;
 
 	private CompleteBean entity;
@@ -142,6 +143,7 @@ public class EntityPersisterTest
 
 		when(dao.buildMutator()).thenReturn(mutator);
 		when(helper.getKey(entity, idMeta)).thenReturn(id);
+		when(helper.findSerialVersionUID(CompleteBean.class)).thenReturn(1L);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -155,8 +157,8 @@ public class EntityPersisterTest
 				.forClass(DynamicComposite.class);
 
 		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(151L);
-		doNothing().when(dao)
-				.insertColumn(eq(id), compositeCaptor.capture(), eq(151L), eq(mutator));
+		doNothing().when(dao).insertColumnBatch(eq(id), compositeCaptor.capture(), eq(151L),
+				eq(mutator));
 		persister.persist(entity, entityMeta);
 
 		verify(helper).findSerialVersionUID(entity.getClass());
@@ -191,26 +193,14 @@ public class EntityPersisterTest
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
+
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(id, composite, "testValue", mutator);
-	}
-
-	@Test
-	public void should_persist_simple_property() throws Exception
-	{
-		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.type()).thenReturn(SIMPLE);
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
-		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
-
-		persister.persistSimpleProperty(entity, 1L, dao, propertyMeta);
-
-		verify(dao).insertColumn(1L, composite, "testValue", null);
+		verify(dao).insertColumnBatch(eq(id), any(DynamicComposite.class), eq(1L), eq(mutator));
+		verify(dao).insertColumnBatch(id, composite, "testValue", mutator);
+		verify(mutator).execute();
 	}
 
 	@Test
@@ -227,27 +217,8 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(id, composite, "foo", mutator);
-		verify(dao).insertColumn(id, composite, "bar", mutator);
-	}
-
-	@Test
-	public void should_persist_list_property() throws Exception
-	{
-		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.type()).thenReturn(LAZY_LIST);
-		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
-		when(propertyMeta.getPropertyName()).thenReturn("friends");
-
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(composite);
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
-
-		persister.persistListProperty(entity, id, dao, propertyMeta);
-
-		verify(dao).insertColumn(id, composite, "foo", mutator);
-		verify(dao).insertColumn(id, composite, "bar", mutator);
+		verify(dao).insertColumnBatch(id, composite, "foo", mutator);
+		verify(dao).insertColumnBatch(id, composite, "bar", mutator);
 	}
 
 	@Test
@@ -267,30 +238,8 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(id, composite, "George", mutator);
-		verify(dao).insertColumn(id, composite, "Paul", mutator);
-	}
-
-	@Test
-	public void should_persist_set_property() throws Exception
-	{
-		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		when(propertyMeta.type()).thenReturn(SET);
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
-				Sets.newHashSet("George", "Paul"));
-		when(propertyMeta.getPropertyName()).thenReturn("followers");
-
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "George".hashCode()))
-				.thenReturn(composite);
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
-				.thenReturn(composite);
-
-		persister.persistSetProperty(entity, id, dao, propertyMeta);
-
-		verify(dao).insertColumn(id, composite, "George", mutator);
-		verify(dao).insertColumn(id, composite, "Paul", mutator);
+		verify(dao).insertColumnBatch(id, composite, "George", mutator);
+		verify(dao).insertColumnBatch(id, composite, "Paul", mutator);
 	}
 
 	@SuppressWarnings(
@@ -320,54 +269,8 @@ public class EntityPersisterTest
 
 		ArgumentCaptor<KeyValue> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValue.class);
 
-		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
-				eq(mutator));
-
-		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValue<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValue<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValue<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
-
-		assertThat(holder1.getKey()).isEqualTo(1);
-		assertThat(holder1.getValue()).isEqualTo("FR");
-
-		assertThat(holder2.getKey()).isEqualTo(2);
-		assertThat(holder2.getValue()).isEqualTo("Paris");
-
-		assertThat(holder3.getKey()).isEqualTo(3);
-		assertThat(holder3.getValue()).isEqualTo("75014");
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_persist_map_property() throws Exception
-	{
-		when(dao.buildMutator()).thenReturn(mutator);
-		when(propertyMeta.type()).thenReturn(LAZY_MAP);
-		when(propertyMeta.getGetter()).thenReturn(anyMethod);
-		Map<Integer, String> map = new HashMap<Integer, String>();
-		map.put(1, "FR");
-		map.put(2, "Paris");
-		map.put(3, "75014");
-
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(map);
-		when(propertyMeta.getPropertyName()).thenReturn("preferences");
-
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(composite);
-		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(composite);
-
-		persister.persistMapProperty(entity, id, dao, propertyMeta);
-
-		ArgumentCaptor<KeyValue> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValue.class);
-
-		verify(dao, times(3)).insertColumn(eq(id), eq(composite), keyValueHolderCaptor.capture(),
-				eq(mutator));
+		verify(dao, times(3)).insertColumnBatch(eq(id), eq(composite),
+				keyValueHolderCaptor.capture(), eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
 		KeyValue<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
@@ -410,7 +313,7 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(id, composite, joinId, mutator);
+		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
 	}
 
 	@SuppressWarnings(
@@ -443,7 +346,7 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumn(id, composite, joinId, mutator);
+		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
 	}
 
 	@SuppressWarnings(
@@ -470,103 +373,10 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
-		persister.persistProperty(entity, id, dao, propertyMeta);
+		persister.persistProperty(entity, id, dao, propertyMeta, mutator);
 
-		verify(dao).insertColumn(id, composite, joinId, null);
-	}
-
-	@Test
-	public void should_persist_simple_property_into_object() throws Exception
-	{
-		when(propertyMeta.type()).thenReturn(SIMPLE);
-		EntityPersister spy = spy(persister);
-		spy.persistProperty(entity, 1L, dao, propertyMeta);
-		verify(spy).persistSimpleProperty(entity, 1L, dao, propertyMeta);
-
-	}
-
-	@Test
-	public void should_persist_simple_lazy_property_into_object() throws Exception
-	{
-		when(propertyMeta.type()).thenReturn(LAZY_SIMPLE);
-		EntityPersister spy = spy(persister);
-		spy.persistProperty(entity, 1L, dao, propertyMeta);
-
-		verify(spy).persistSimpleProperty(entity, 1L, dao, propertyMeta);
-	}
-
-	@Test
-	public void should_persist_list_property_into_object() throws Exception
-	{
-		when(listMeta.type()).thenReturn(LIST);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, listMeta);
-
-		verify(spy).persistListProperty(entity, 1L, dao, listMeta);
-
-	}
-
-	@Test
-	public void should_persist_list_lazy_property_into_object() throws Exception
-	{
-		when(listMeta.type()).thenReturn(LAZY_LIST);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, listMeta);
-
-		verify(spy).persistListProperty(entity, 1L, dao, listMeta);
-	}
-
-	@Test
-	public void should_persist_set_property_into_object() throws Exception
-	{
-		when(setMeta.type()).thenReturn(SET);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, setMeta);
-
-		verify(spy).persistSetProperty(entity, 1L, dao, setMeta);
-	}
-
-	@Test
-	public void should_persist_set_lazy_property_into_object() throws Exception
-	{
-		when(setMeta.type()).thenReturn(LAZY_SET);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, setMeta);
-
-		verify(spy).persistSetProperty(entity, 1L, dao, setMeta);
-	}
-
-	@Test
-	public void should_persist_map_property_into_object() throws Exception
-	{
-		when(mapMeta.type()).thenReturn(MAP);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, mapMeta);
-
-		verify(spy).persistMapProperty(entity, 1L, dao, mapMeta);
-
-	}
-
-	@Test
-	public void should_persist_map_lazy_property_into_object() throws Exception
-	{
-		when(mapMeta.type()).thenReturn(LAZY_MAP);
-		EntityPersister spy = spy(persister);
-
-		when(dao.buildMutator()).thenReturn(mutator);
-		spy.persistProperty(entity, 1L, dao, mapMeta);
-
-		verify(spy).persistMapProperty(entity, 1L, dao, mapMeta);
+		verify(dao).insertColumnBatch(eq(joinId), any(DynamicComposite.class), eq(0L), eq(mutator));
+		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
 	}
 
 	@Test
