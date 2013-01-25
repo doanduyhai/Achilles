@@ -11,7 +11,6 @@ import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.operations.EntityLoader;
 import fr.doan.achilles.entity.operations.EntityPersister;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -24,7 +23,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K, V>
+public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<K, V>
 {
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;
@@ -67,19 +66,6 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K,
 		externalWideMapDao.setValue(id, buildComposite(key), joinId);
 	}
 
-	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count)
-	{
-		return findRange(start, end, true, reverse, count);
-	}
-
-	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
-			int count)
-	{
-		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
-	}
-
 	@SuppressWarnings(
 	{
 			"rawtypes",
@@ -98,19 +84,6 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K,
 				queryComps[0], queryComps[1], reverse, count);
 
 		return keyValueFactory.createListForComposite(externalWideMapMeta, (List) hColumns);
-	}
-
-	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
-	{
-		return iterator(start, end, true, reverse, count);
-	}
-
-	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count)
-	{
-		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
@@ -133,18 +106,6 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> implements WideMap<K,
 	{
 		externalWideMapDao.removeColumn(id, buildComposite(key));
 
-	}
-
-	@Override
-	public void removeRange(K start, K end)
-	{
-		removeRange(start, end, true);
-	}
-
-	@Override
-	public void removeRange(K start, K end, boolean inclusiveBounds)
-	{
-		removeRange(start, inclusiveBounds, end, inclusiveBounds);
 	}
 
 	@Override

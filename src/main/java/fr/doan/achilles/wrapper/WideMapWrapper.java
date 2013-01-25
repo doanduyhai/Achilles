@@ -8,7 +8,6 @@ import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.entity.type.WideMap;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
@@ -22,7 +21,7 @@ import fr.doan.achilles.iterator.factory.IteratorFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
+public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 {
 
 	protected ID id;
@@ -58,19 +57,6 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count)
-	{
-		return findRange(start, end, true, reverse, count);
-	}
-
-	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
-			int count)
-	{
-		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
-	}
-
-	@Override
 	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
@@ -84,19 +70,6 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 				queryComps[0], queryComps[1], reverse, count);
 
 		return keyValueFactory.createListForDynamicComposite(wideMapMeta, hColumns);
-	}
-
-	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
-	{
-		return iterator(start, end, true, reverse, count);
-	}
-
-	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count)
-	{
-		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
 	}
 
 	@Override
@@ -133,18 +106,6 @@ public class WideMapWrapper<ID, K, V> implements WideMap<K, V>
 	public void remove(K key)
 	{
 		dao.removeColumn(id, buildComposite(key));
-	}
-
-	@Override
-	public void removeRange(K start, K end)
-	{
-		removeRange(start, end, true);
-	}
-
-	@Override
-	public void removeRange(K start, K end, boolean inclusiveBounds)
-	{
-		removeRange(start, inclusiveBounds, end, inclusiveBounds);
 	}
 
 	@Override
