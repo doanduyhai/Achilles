@@ -8,8 +8,8 @@ import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import integration.tests.entity.MultiKeyColumnFamilyBean;
 import integration.tests.entity.ColumnFamilyMultiKey;
+import integration.tests.entity.MultiKeyColumnFamilyBean;
 
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +39,8 @@ public class MultiKeyWideRowIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericCompositeDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
-			STRING_SRZ, normalizerAndValidateColumnFamilyName(MultiKeyColumnFamilyBean.class.getName()));
+			STRING_SRZ,
+			normalizerAndValidateColumnFamilyName(MultiKeyColumnFamilyBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
@@ -102,10 +103,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange( //
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find( //
 				new ColumnFamilyMultiKey(11L, "11"), //
 				new ColumnFamilyMultiKey(15L, "15"), //
-				false, 10);
+				10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -121,10 +122,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange( //
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find( //
 				new ColumnFamilyMultiKey(12L, "12"), //
 				new ColumnFamilyMultiKey(15L, "15"), //
-				false, 3);
+				3);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value2");
@@ -138,10 +139,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange( //
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findBoundsExclusive( //
 				new ColumnFamilyMultiKey(12L, "12"), //
 				new ColumnFamilyMultiKey(15L, "15"), //
-				false, false, 10);
+				10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value3");
@@ -154,7 +155,7 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange( //
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find( //
 				new ColumnFamilyMultiKey(14L, "14"), false, //
 				new ColumnFamilyMultiKey(12L, "12"), true, //
 				true, 10);
@@ -169,8 +170,8 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null,
-				new ColumnFamilyMultiKey(12L, "12"), false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null,
+				new ColumnFamilyMultiKey(12L, "12"), 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -182,7 +183,7 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -197,7 +198,7 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iterator(null, null, false, 10);
+		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value1");
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -212,10 +213,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iterator( //
+		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iteratorBoundsExclusive( //
 				new ColumnFamilyMultiKey(12L, "12"), //
 				new ColumnFamilyMultiKey(14L, "14"), //
-				false, false, 10);
+				10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value3");
 		assertThat(iter.hasNext()).isFalse();
@@ -244,7 +245,7 @@ public class MultiKeyWideRowIT
 
 		map.remove(new ColumnFamilyMultiKey(11L, "11"));
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value2");
@@ -256,9 +257,9 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(new ColumnFamilyMultiKey(12L, "12"), new ColumnFamilyMultiKey(14L, "14"));
+		map.remove(new ColumnFamilyMultiKey(12L, "12"), new ColumnFamilyMultiKey(14L, "14"));
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -270,9 +271,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(new ColumnFamilyMultiKey(12L, "12"), new ColumnFamilyMultiKey(15L, "15"), false);
+		map.removeBoundsExclusive(new ColumnFamilyMultiKey(12L, "12"), new ColumnFamilyMultiKey(
+				15L, "15"));
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -285,9 +287,10 @@ public class MultiKeyWideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(new ColumnFamilyMultiKey(12L, "12"), true, new ColumnFamilyMultiKey(15L, "15"), false);
+		map.remove(new ColumnFamilyMultiKey(12L, "12"), true, new ColumnFamilyMultiKey(15L, "15"),
+				false);
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");

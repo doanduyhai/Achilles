@@ -129,7 +129,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(1, 5, false, 10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(1, 5, 10);
 
 		assertThat(foundValues).hasSize(5);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
@@ -145,7 +145,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(2, 5, false, 3);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(2, 5, 3);
 
 		assertThat(foundValues).hasSize(3);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value2");
@@ -159,8 +159,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(2, 5, false, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.findBoundsExclusive(2, 5, 10);
 
 		assertThat(foundValues).hasSize(2);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value3");
@@ -173,7 +172,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange( //
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find( //
 				4, false, //
 				2, true, //
 				true, 10);
@@ -188,7 +187,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, 2, false, 10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, 2, 10);
 
 		assertThat(foundValues).hasSize(2);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
@@ -200,8 +199,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, null, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
 		assertThat(foundValues).hasSize(5);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
@@ -216,7 +214,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(null, null, false, 10);
+		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value1");
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -231,7 +229,8 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(2, 4, false, false, 10);
+		Iterator<KeyValue<Integer, String>> iter = externalWideMap
+				.iteratorBoundsExclusive(2, 4, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value3");
 		assertThat(iter.hasNext()).isFalse();
@@ -257,8 +256,7 @@ public class ExternalWideMapIT
 
 		externalWideMap.remove(1);
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, null, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
 		assertThat(foundValues).hasSize(2);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value2");
@@ -277,10 +275,9 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		externalWideMap.removeRange(2, 4);
+		externalWideMap.remove(2, 4);
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, null, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
 		assertThat(foundValues).hasSize(2);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
@@ -298,10 +295,9 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		externalWideMap.removeRange(2, 5, false);
+		externalWideMap.removeBoundsExclusive(2, 5);
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, null, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
 		assertThat(foundValues).hasSize(3);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
@@ -320,10 +316,9 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		externalWideMap.removeRange(2, true, 5, false);
+		externalWideMap.remove(2, true, 5, false);
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findRange(null, null, false,
-				10);
+		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
 		assertThat(foundValues).hasSize(2);
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");

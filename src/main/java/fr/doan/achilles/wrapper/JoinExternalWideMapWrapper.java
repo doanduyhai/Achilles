@@ -52,17 +52,19 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 				externalWideMapMeta.getJoinProperties().getEntityMeta());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		JOIN_ID joinId = persistOrEnsureJoinEntityExists(value);
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		externalWideMapDao.setValue(id, buildComposite(key), joinId, ttl);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
-		JOIN_ID joinId = persistOrEnsureJoinEntityExists(value);
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		externalWideMapDao.setValue(id, buildComposite(key), joinId);
 	}
 
@@ -72,8 +74,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 			"unchecked"
 	})
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
 	{
 		helper.checkBounds(externalWideMapMeta, start, end, reverse);
 
@@ -109,7 +111,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	}
 
 	@Override
-	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 		helper.checkBounds(externalWideMapMeta, start, end, false);
 
@@ -120,9 +122,22 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 
 	}
 
-	private JOIN_ID persistOrEnsureJoinEntityExists(V value)
+	@Override
+	public void removeFirst()
 	{
-		JOIN_ID joinId = null;
+		externalWideMapDao.removeColumnRange(id, null, null, false, 1);
+
+	}
+
+	@Override
+	public void removeLast()
+	{
+		externalWideMapDao.removeColumnRange(id, null, null, true, 1);
+	}
+
+	private Object persistOrEnsureJoinEntityExists(V value)
+	{
+		Object joinId = null;
 		JoinProperties joinProperties = externalWideMapMeta.getJoinProperties();
 
 		if (value != null)

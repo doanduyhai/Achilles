@@ -62,8 +62,8 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 			"rawtypes"
 	})
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
 	{
 		helper.checkBounds(wideMapMeta, start, end, reverse);
 
@@ -98,12 +98,25 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	}
 
 	@Override
-	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 		helper.checkBounds(wideMapMeta, start, end, false);
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, false);
 		dao.removeColumnRange(id, composites[0], composites[1]);
+	}
+
+	@Override
+	public void removeFirst()
+	{
+		dao.removeColumnRange(id, null, null, false, 1);
+
+	}
+
+	@Override
+	public void removeLast()
+	{
+		dao.removeColumnRange(id, null, null, true, 1);
 	}
 
 	public void setId(ID id)
@@ -120,4 +133,5 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	{
 		this.wideMapMeta = wideMapMeta;
 	}
+
 }

@@ -102,7 +102,7 @@ public class WideRowWithObjectIT
 	{
 		insert5Values();
 
-		List<KeyValue<Long, Holder>> foundTweets = map.findRange(11L, 15L, false, 10);
+		List<KeyValue<Long, Holder>> foundTweets = map.find(11L, 15L, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue().getName()).isEqualTo("value1");
@@ -118,7 +118,7 @@ public class WideRowWithObjectIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Long, Holder>> iter = map.iterator(null, null, false, 10);
+		Iterator<KeyValue<Long, Holder>> iter = map.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue().getName()).isEqualTo("value1");
 		assertThat(iter.next().getValue().getName()).isEqualTo("value2");
@@ -135,7 +135,7 @@ public class WideRowWithObjectIT
 
 		map.remove(11L);
 
-		List<KeyValue<Long, Holder>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<Long, Holder>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue().getName()).isEqualTo("value2");
@@ -147,9 +147,9 @@ public class WideRowWithObjectIT
 	{
 		insert5Values();
 
-		map.removeRange(12L, 14L);
+		map.remove(12L, 14L);
 
-		List<KeyValue<Long, Holder>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<Long, Holder>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue().getName()).isEqualTo("value1");

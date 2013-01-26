@@ -133,7 +133,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(11, 15, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(11, 15, 10);
 
 		assertThat(foundMaps).hasSize(5);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value1");
@@ -149,7 +149,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(12, 15, false, 3);
+		List<KeyValue<Integer, String>> foundMaps = map.find(12, 15, 3);
 
 		assertThat(foundMaps).hasSize(3);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value2");
@@ -163,7 +163,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(12, 15, false, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.findBoundsExclusive(12, 15, 10);
 
 		assertThat(foundMaps).hasSize(2);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value3");
@@ -176,7 +176,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange( //
+		List<KeyValue<Integer, String>> foundMaps = map.find( //
 				14, false, //
 				12, true, //
 				true, 10);
@@ -191,7 +191,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(null, 12, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(null, 12, 10);
 
 		assertThat(foundMaps).hasSize(2);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value1");
@@ -203,7 +203,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(null, null, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(null, null, 10);
 
 		assertThat(foundMaps).hasSize(5);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value1");
@@ -218,7 +218,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = map.iterator(null, null, false, 10);
+		Iterator<KeyValue<Integer, String>> iter = map.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value1");
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -233,7 +233,7 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = map.iterator(12, 14, false, false, 10);
+		Iterator<KeyValue<Integer, String>> iter = map.iteratorBoundsExclusive(12, 14, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value3");
 		assertThat(iter.hasNext()).isFalse();
@@ -258,7 +258,7 @@ public class WideRowIT
 
 		map.remove(11);
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(null, null, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(null, null, 10);
 
 		assertThat(foundMaps).hasSize(2);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value2");
@@ -270,9 +270,9 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(12, 14);
+		map.remove(12, 14);
 
-		List<KeyValue<Integer, String>> foundTweets = map.findRange(null, null, false, 10);
+		List<KeyValue<Integer, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -284,9 +284,9 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(12, 15, false);
+		map.removeBoundsExclusive(12, 15);
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(null, null, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(null, null, 10);
 
 		assertThat(foundMaps).hasSize(3);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value1");
@@ -299,9 +299,9 @@ public class WideRowIT
 	{
 		insert5Values();
 
-		map.removeRange(12, true, 15, false);
+		map.remove(12, true, 15, false);
 
-		List<KeyValue<Integer, String>> foundMaps = map.findRange(null, null, false, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(null, null, 10);
 
 		assertThat(foundMaps).hasSize(2);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value1");

@@ -16,40 +16,91 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 {
 
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, K end, int count)
 	{
-		return findRange(start, end, true, reverse, count);
+		return find(start, true, end, true, false, count);
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, K end, boolean inclusiveBounds, boolean reverse,
-			int count)
+	public List<KeyValue<K, V>> findBoundsExclusive(K start, K end, int count)
 	{
-		return findRange(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+		return find(start, false, end, false, false, count);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean reverse, int count)
+	public List<KeyValue<K, V>> findReverse(K start, K end, int count)
 	{
-		return iterator(start, end, true, reverse, count);
+		return find(start, true, end, true, true, count);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, K end, boolean inclusiveBounds,
-			boolean reverse, int count)
+	public List<KeyValue<K, V>> findReverseBoundsExclusive(K start, K end, int count)
 	{
-		return iterator(start, inclusiveBounds, end, inclusiveBounds, reverse, count);
+		return find(start, false, end, false, true, count);
 	}
 
 	@Override
-	public void removeRange(K start, K end)
+	public KeyValue<K, V> findFirst()
 	{
-		removeRange(start, end, true);
+		List<KeyValue<K, V>> result = this.find(null, null, 1);
+
+		KeyValue<K, V> keyValue = null;
+		if (result.size() > 0)
+		{
+			keyValue = result.get(0);
+		}
+
+		return keyValue;
 	}
 
 	@Override
-	public void removeRange(K start, K end, boolean inclusiveBounds)
+	public KeyValue<K, V> findLast()
 	{
-		removeRange(start, inclusiveBounds, end, inclusiveBounds);
+		List<KeyValue<K, V>> result = this.findReverse(null, null, 1);
+
+		KeyValue<K, V> keyValue = null;
+		if (result.size() > 0)
+		{
+			keyValue = result.get(0);
+		}
+
+		return keyValue;
 	}
+
+	@Override
+	public KeyValueIterator<K, V> iterator(K start, K end, int count)
+	{
+		return iterator(start, true, end, true, false, count);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iteratorBoundsExclusive(K start, K end, int count)
+	{
+		return iterator(start, false, end, false, false, count);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iteratorReverse(K start, K end, int count)
+	{
+		return iterator(start, true, end, true, true, count);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iteratorReverseBoundsExclusive(K start, K end, int count)
+	{
+		return iterator(start, false, end, false, true, count);
+	}
+
+	@Override
+	public void remove(K start, K end)
+	{
+		remove(start, true, end, true);
+	}
+
+	@Override
+	public void removeBoundsExclusive(K start, K end)
+	{
+		remove(start, false, end, false);
+	}
+
 }

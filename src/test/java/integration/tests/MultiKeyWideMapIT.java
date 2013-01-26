@@ -135,7 +135,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(foo, uuid3), true, //
 				true, 10);
@@ -159,7 +159,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
 				new UserTweetKey(bar, null), true, //
 				new UserTweetKey(foo, uuid3), true, //
 				false, 10);
@@ -185,7 +185,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
 				new UserTweetKey(bar, uuid1), true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -211,7 +211,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
 				null, true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -240,7 +240,7 @@ public class MultiKeyWideMapIT
 		KeyValueIterator<UserTweetKey, String> iter = userTweets.iterator( //
 				new UserTweetKey(foo, uuid3), //
 				new UserTweetKey(qux, uuid5), //
-				false, 5);
+				5);
 
 		assertThat(iter.hasNext());
 		KeyValue<UserTweetKey, String> keyValue1 = iter.next();
@@ -324,7 +324,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.removeRange( //
+		userTweets.remove( //
 				new UserTweetKey(bar, uuid2), true, //
 				new UserTweetKey(qux, uuid4), false);
 

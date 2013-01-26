@@ -141,7 +141,7 @@ public class ExternalJoinWideMapIT
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId(),
 				reTweet3.getId(), reTweet4.getId());
 
-		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets().findRange(2, 1, true, 5);
+		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets().findReverse(2, 1, 5);
 
 		assertThat(foundReTweets).hasSize(2);
 
@@ -165,7 +165,7 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		user.getRetweets().removeRange(2, true, 4, false);
+		user.getRetweets().remove(2, true, 4, false);
 
 		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
 				10);
@@ -173,8 +173,7 @@ public class ExternalJoinWideMapIT
 		assertThat(savedReTweetsUUIDs).hasSize(2);
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet4.getId());
 
-		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets()
-				.findRange(1, 4, false, 10);
+		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets().find(1, 4, 10);
 
 		assertThat(foundReTweets).hasSize(2);
 

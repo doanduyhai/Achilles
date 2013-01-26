@@ -135,7 +135,7 @@ public class ExternalWideMapWrapperTest
 		when(keyValueFactory.createListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
 				keyValues).thenReturn(keyValues);
 
-		List<KeyValue<Integer, String>> expected = wrapper.findRange(12, 15, false, 10);
+		List<KeyValue<Integer, String>> expected = wrapper.find(12, 15, 10);
 		assertThat(expected).isSameAs(keyValues);
 	}
 
@@ -187,8 +187,24 @@ public class ExternalWideMapWrapperTest
 						endComp
 				});
 
-		wrapper.removeRange(12, false, 15, true);
+		wrapper.remove(12, false, 15, true);
 
 		verify(dao).removeColumnRange(id, startComp, endComp);
+	}
+
+	@Test
+	public void should_remove_first() throws Exception
+	{
+		wrapper.removeFirst();
+
+		verify(dao).removeColumnRange(id, null, null, false, 1);
+	}
+
+	@Test
+	public void should_remove_last() throws Exception
+	{
+		wrapper.removeLast();
+
+		verify(dao).removeColumnRange(id, null, null, true, 1);
 	}
 }

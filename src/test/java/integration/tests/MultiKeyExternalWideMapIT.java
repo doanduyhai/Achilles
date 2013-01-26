@@ -136,7 +136,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
 				new UserTweetKey(qux, uuid5), false, //
 				new UserTweetKey(foo, uuid3), true, //
 				true, 10);
@@ -160,7 +160,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
 				new UserTweetKey(bar, null), true, //
 				new UserTweetKey(foo, uuid3), true, //
 				false, 10);
@@ -186,7 +186,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
 				new UserTweetKey(bar, uuid1), true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -212,7 +212,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.findRange( //
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
 				null, true, //
 				new UserTweetKey(foo, null), true, //
 				false, 10);
@@ -241,7 +241,7 @@ public class MultiKeyExternalWideMapIT
 		KeyValueIterator<UserTweetKey, String> iter = multiKeyExternalWideMap.iterator( //
 				new UserTweetKey(foo, uuid3), //
 				new UserTweetKey(qux, uuid5), //
-				false, 5);
+				5);
 
 		assertThat(iter.hasNext());
 		KeyValue<UserTweetKey, String> keyValue1 = iter.next();
@@ -325,7 +325,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		multiKeyExternalWideMap.removeRange( //
+		multiKeyExternalWideMap.remove( //
 				new UserTweetKey(bar, uuid2), true, //
 				new UserTweetKey(qux, uuid4), false);
 

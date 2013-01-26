@@ -136,7 +136,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid1, uuid5, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(uuid1, uuid5, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -152,7 +152,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid2, uuid5, false, 3);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(uuid2, uuid5, 3);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet2");
@@ -166,7 +166,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(uuid2, uuid5, false, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.findBoundsExclusive(uuid2, uuid5, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet3");
@@ -179,7 +179,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange( //
+		List<KeyValue<UUID, String>> foundTweets = tweets.find( //
 				uuid4, false, //
 				uuid2, true, //
 				true, 10);
@@ -194,7 +194,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, uuid2, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, uuid2, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -206,7 +206,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -221,7 +221,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		Iterator<KeyValue<UUID, String>> iter = tweets.iterator(null, null, false, 10);
+		Iterator<KeyValue<UUID, String>> iter = tweets.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("tweet1");
 		assertThat(iter.next().getValue()).isEqualTo("tweet2");
@@ -236,7 +236,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		Iterator<KeyValue<UUID, String>> iter = tweets.iterator(uuid2, uuid4, false, false, 10);
+		Iterator<KeyValue<UUID, String>> iter = tweets.iteratorBoundsExclusive(uuid2, uuid4, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("tweet3");
 		assertThat(iter.hasNext()).isFalse();
@@ -262,7 +262,7 @@ public class WideMapIT
 
 		tweets.remove(uuid1);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet2");
@@ -274,9 +274,9 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeRange(uuid2, uuid4);
+		tweets.remove(uuid2, uuid4);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -288,9 +288,9 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeRange(uuid2, uuid5, false);
+		tweets.removeBoundsExclusive(uuid2, uuid5);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");
@@ -303,9 +303,9 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		tweets.removeRange(uuid2, true, uuid5, false);
+		tweets.remove(uuid2, true, uuid5, false);
 
-		List<KeyValue<UUID, String>> foundTweets = tweets.findRange(null, null, false, 10);
+		List<KeyValue<UUID, String>> foundTweets = tweets.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("tweet1");

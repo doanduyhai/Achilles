@@ -57,8 +57,8 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public List<KeyValue<K, V>> findRange(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
 	{
 
 		helper.checkBounds(wideMapMeta, start, end, reverse);
@@ -109,7 +109,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public void removeRange(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
 		helper.checkBounds(wideMapMeta, start, end, false);
@@ -118,6 +118,19 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, false);
 
 		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
+	}
+
+	@Override
+	public void removeFirst()
+	{
+		dao.removeColumnRange(id, null, null, false, 1);
+
+	}
+
+	@Override
+	public void removeLast()
+	{
+		dao.removeColumnRange(id, null, null, true, 1);
 	}
 
 	public void setId(ID id)
@@ -134,4 +147,5 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	{
 		this.wideMapMeta = wideMapMeta;
 	}
+
 }

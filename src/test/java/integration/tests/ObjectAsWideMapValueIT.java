@@ -88,7 +88,7 @@ public class ObjectAsWideMapValueIT
 	{
 		insert5Holders();
 
-		Iterator<KeyValue<Integer, Holder>> iter = holders.iterator(null, null, false, 10);
+		Iterator<KeyValue<Integer, Holder>> iter = holders.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue().getName()).isEqualTo("value1");
 		assertThat(iter.next().getValue().getName()).isEqualTo("value2");

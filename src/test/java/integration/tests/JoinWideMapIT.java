@@ -122,7 +122,7 @@ public class JoinWideMapIT
 		user.getTweets().insert(1, ownTweet1);
 		user.getTweets().insert(2, ownTweet2);
 
-		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().findRange(2, 1, true, 5);
+		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().findReverse(2, 1, 5);
 
 		assertThat(foundOwnTweets).hasSize(2);
 
@@ -146,9 +146,9 @@ public class JoinWideMapIT
 		user.getTweets().insert(3, ownTweet3);
 		user.getTweets().insert(4, ownTweet4);
 
-		user.getTweets().removeRange(2, true, 4, false);
+		user.getTweets().remove(2, true, 4, false);
 
-		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().findRange(1, 4, false, 10);
+		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().find(1, 4, 10);
 
 		assertThat(foundOwnTweets).hasSize(2);
 

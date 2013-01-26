@@ -199,7 +199,7 @@ public class JoinExternalWideMapWrapperTest
 		when(keyValueFactory.createListForComposite(externalJoinWideMapMeta, hColumns)).thenReturn(
 				values);
 
-		List<KeyValue<Integer, UserBean>> expected = wrapper.findRange(start, inclusiveStart, end,
+		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);
 
 		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
@@ -267,11 +267,27 @@ public class JoinExternalWideMapWrapperTest
 				endComp
 		});
 
-		wrapper.removeRange(start, inclusiveStart, end, inclusiveEnd);
+		wrapper.remove(start, inclusiveStart, end, inclusiveEnd);
 
 		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, false);
 		verify(dao).removeColumnRange(id, startComp, endComp);
 
+	}
+
+	@Test
+	public void should_remove_first() throws Exception
+	{
+		wrapper.removeFirst();
+
+		verify(dao).removeColumnRange(id, null, null, false, 1);
+	}
+
+	@Test
+	public void should_remove_last() throws Exception
+	{
+		wrapper.removeLast();
+
+		verify(dao).removeColumnRange(id, null, null, true, 1);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception

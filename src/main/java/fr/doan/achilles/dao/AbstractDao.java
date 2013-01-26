@@ -157,10 +157,15 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void removeColumnRange(K key, N start, N end)
 	{
+		this.removeColumnRange(key, start, end, false, Integer.MAX_VALUE);
+	}
+
+	public void removeColumnRange(K key, N start, N end, boolean reverse, int count)
+	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
+				.setRange(start, end, reverse, count).execute().get().getColumns();
 
 		for (HColumn<N, V> column : columns)
 		{
@@ -171,9 +176,15 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void removeColumnRangeBatch(K key, N start, N end, Mutator<K> mutator)
 	{
+		this.removeColumnRangeBatch(key, start, end, false, Integer.MAX_VALUE, mutator);
+	}
+
+	public void removeColumnRangeBatch(K key, N start, N end, boolean reverse, int count,
+			Mutator<K> mutator)
+	{
 		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(start, end, false, Integer.MAX_VALUE).execute().get().getColumns();
+				.setRange(start, end, reverse, count).execute().get().getColumns();
 
 		for (HColumn<N, V> column : columns)
 		{
