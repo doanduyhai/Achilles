@@ -39,7 +39,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import parser.entity.WideRowBean;
+import parser.entity.ColumnFamilyBean;
 
 import com.google.common.collect.Sets;
 
@@ -402,7 +402,7 @@ public class EntityPersisterTest
 	{
 		EntityMeta<Long> entityMeta = mock(EntityMeta.class);
 		when(entityMeta.isWideRow()).thenReturn(true);
-		persister.persist(new WideRowBean(), entityMeta);
+		persister.persist(new ColumnFamilyBean(), entityMeta);
 
 		verifyZeroInteractions(helper);
 

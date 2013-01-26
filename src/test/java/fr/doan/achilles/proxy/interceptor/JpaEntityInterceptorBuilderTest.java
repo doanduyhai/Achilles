@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mapping.entity.CompleteBean;
-import mapping.entity.WideRowBean;
+import mapping.entity.ColumnFamilyBean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,15 +104,15 @@ public class JpaEntityInterceptorBuilderTest
 	@Test
 	public void should_build_widerow() throws Exception
 	{
-		WideRowBean entity = new WideRowBean();
+		ColumnFamilyBean entity = new ColumnFamilyBean();
 		entity.setId(1545L);
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
 		when(entityMeta.getWideRowDao()).thenReturn((GenericCompositeDao) wideRowDao);
 
-		Method idGetter = WideRowBean.class.getDeclaredMethod("getId");
-		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);
+		Method idGetter = ColumnFamilyBean.class.getDeclaredMethod("getId");
+		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);
 
 		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
 		idMeta.setType(PropertyType.SIMPLE);

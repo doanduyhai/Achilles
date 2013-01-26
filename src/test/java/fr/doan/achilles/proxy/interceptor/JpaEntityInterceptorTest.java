@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import mapping.entity.CompleteBean;
-import mapping.entity.WideRowBean;
+import mapping.entity.ColumnFamilyBean;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.junit.Before;
@@ -267,8 +267,8 @@ public class JpaEntityInterceptorTest
 	@Test
 	public void should_create_widemap_wrapper() throws Throwable
 	{
-		WideRowBean bean = new WideRowBean();
-		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
+		ColumnFamilyBean bean = new ColumnFamilyBean();
+		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
@@ -283,8 +283,8 @@ public class JpaEntityInterceptorTest
 	@Test
 	public void should_create_widerow_wrapper() throws Throwable
 	{
-		WideRowBean bean = new WideRowBean();
-		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
+		ColumnFamilyBean bean = new ColumnFamilyBean();
+		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
@@ -299,8 +299,8 @@ public class JpaEntityInterceptorTest
 	@Test
 	public void should_create_join_widemap_wrapper() throws Throwable
 	{
-		WideRowBean bean = new WideRowBean();
-		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
+		ColumnFamilyBean bean = new ColumnFamilyBean();
+		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);

@@ -45,7 +45,7 @@ public class EntityParser
 		Validator.validateInstantiable(entityClass);
 		String columnFamily = helper.inferColumnFamilyName(entityClass, entityClass.getName());
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
-		boolean wideRow = entityClass.getAnnotation(fr.doan.achilles.annotations.WideRow.class) != null ? true
+		boolean wideRow = entityClass.getAnnotation(fr.doan.achilles.annotations.ColumnFamily.class) != null ? true
 				: false;
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();

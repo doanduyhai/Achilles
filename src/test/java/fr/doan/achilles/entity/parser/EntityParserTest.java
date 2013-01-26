@@ -43,8 +43,8 @@ import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
 import parser.entity.UserBean;
-import parser.entity.WideRowBean;
-import parser.entity.WideRowBeanWithTwoColumns;
+import parser.entity.ColumnFamilyBean;
+import parser.entity.ColumnFamilyBeanWithTwoColumns;
 import parser.entity.WideRowBeanWithWrongColumnType;
 import fr.doan.achilles.columnFamily.ColumnFamilyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
@@ -311,7 +311,7 @@ public class EntityParserTest
 	@Test
 	public void should_parse_wide_row() throws Exception
 	{
-		EntityMeta<?> meta = parser.parseEntity(keyspace, WideRowBean.class,
+		EntityMeta<?> meta = parser.parseEntity(keyspace, ColumnFamilyBean.class,
 				joinPropertyMetaToBeFilled);
 
 		assertThat(meta.isWideRow()).isTrue();
@@ -328,10 +328,10 @@ public class EntityParserTest
 	{
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The WideRow entity '"
-				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
+				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
-		parser.parseEntity(keyspace, WideRowBeanWithTwoColumns.class, joinPropertyMetaToBeFilled);
+		parser.parseEntity(keyspace, ColumnFamilyBeanWithTwoColumns.class, joinPropertyMetaToBeFilled);
 
 	}
 

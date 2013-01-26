@@ -29,7 +29,7 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import mapping.entity.WideRowBean;
+import mapping.entity.ColumnFamilyBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -152,7 +152,7 @@ public class EntityLoaderTest
 	public void should_load_widerow() throws Exception
 	{
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
-		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);
+		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);
 
 		when(entityMeta.isWideRow()).thenReturn(true);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
@@ -160,7 +160,7 @@ public class EntityLoaderTest
 		doNothing().when(helper).setValueToField(any(CompleteBean.class), eq(idSetter),
 				idCaptor.capture());
 
-		loader.load(WideRowBean.class, 452L, entityMeta);
+		loader.load(ColumnFamilyBean.class, 452L, entityMeta);
 
 		assertThat(idCaptor.getValue()).isEqualTo(452L);
 	}

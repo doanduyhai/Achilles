@@ -1,4 +1,4 @@
-package parser.entity;
+package integration.tests.entity;
 
 import java.io.Serializable;
 
@@ -6,27 +6,26 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import mapping.entity.TweetMultiKey;
+import fr.doan.achilles.annotations.ColumnFamily;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
- * MultiKeyWideRowBean
+ * WideRowBean
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
-@fr.doan.achilles.annotations.WideRow
-public class MultiKeyWideRowBean implements Serializable
+@ColumnFamily
+public class ColumnFamilyBean implements Serializable
 {
-
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;
 
 	@Column
-	private WideMap<TweetMultiKey, String> values;
+	private WideMap<Integer, String> map;
 
 	public Long getId()
 	{
@@ -38,13 +37,13 @@ public class MultiKeyWideRowBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<TweetMultiKey, String> getValues()
+	public WideMap<Integer, String> getMap()
 	{
-		return values;
+		return map;
 	}
 
-	public void setValues(WideMap<TweetMultiKey, String> values)
+	public void setMap(WideMap<Integer, String> map)
 	{
-		this.values = values;
+		this.map = map;
 	}
 }

@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import fr.doan.achilles.annotations.WideRow;
+import fr.doan.achilles.annotations.ColumnFamily;
 
 /**
  * WideRowBeanWithWrongColumnType
@@ -15,7 +15,7 @@ import fr.doan.achilles.annotations.WideRow;
  * 
  */
 @Entity
-@WideRow
+@ColumnFamily
 public class WideRowBeanWithWrongColumnType implements Serializable
 {
 

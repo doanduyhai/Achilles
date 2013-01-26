@@ -7,7 +7,7 @@ import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
 import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import integration.tests.entity.WideRowBean;
+import integration.tests.entity.ColumnFamilyBean;
 
 import java.util.Iterator;
 import java.util.List;
@@ -38,14 +38,14 @@ public class WideRowIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericCompositeDao<Long, String> dao = getWideRowDao(LONG_SRZ, STRING_SRZ,
-			normalizerAndValidateColumnFamilyName(WideRowBean.class.getName()));
+			normalizerAndValidateColumnFamilyName(ColumnFamilyBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
 
-	private WideRowBean bean;
+	private ColumnFamilyBean bean;
 
 	private WideMap<Integer, String> map;
 
@@ -54,7 +54,7 @@ public class WideRowIT
 	@Before
 	public void setUp()
 	{
-		bean = new WideRowBean();
+		bean = new ColumnFamilyBean();
 		bean.setId(id);
 		bean = em.merge(bean);
 		map = bean.getMap();
@@ -64,7 +64,7 @@ public class WideRowIT
 	public void should_insert_values() throws Exception
 	{
 
-		bean = em.find(WideRowBean.class, id);
+		bean = em.find(ColumnFamilyBean.class, id);
 		map = bean.getMap();
 
 		insert3Values();

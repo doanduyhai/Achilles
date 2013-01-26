@@ -9,7 +9,7 @@ import fr.doan.achilles.entity.type.MultiKey;
  * @author DuyHai DOAN
  * 
  */
-public class WideRowMultiKey implements MultiKey
+public class ColumnFamilyMultiKey implements MultiKey
 {
 	@Key(order = 1)
 	private Long index;
@@ -17,9 +17,9 @@ public class WideRowMultiKey implements MultiKey
 	@Key(order = 2)
 	private String name;
 
-	public WideRowMultiKey() {}
+	public ColumnFamilyMultiKey() {}
 
-	public WideRowMultiKey(Long index, String name) {
+	public ColumnFamilyMultiKey(Long index, String name) {
 		this.index = index;
 		this.name = name;
 	}

@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import fr.doan.achilles.annotations.ColumnFamily;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
@@ -15,8 +16,8 @@ import fr.doan.achilles.entity.type.WideMap;
  * 
  */
 @Entity
-@fr.doan.achilles.annotations.WideRow
-public class WideRowBean implements Serializable
+@ColumnFamily
+public class ColumnFamilyBean implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;

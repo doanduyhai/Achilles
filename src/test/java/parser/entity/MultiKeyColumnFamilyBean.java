@@ -1,4 +1,4 @@
-package mapping.entity;
+package parser.entity;
 
 import java.io.Serializable;
 
@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import mapping.entity.TweetMultiKey;
+import fr.doan.achilles.annotations.ColumnFamily;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
@@ -14,17 +16,18 @@ import fr.doan.achilles.entity.type.WideMap;
  * @author DuyHai DOAN
  * 
  */
-@fr.doan.achilles.annotations.WideRow
 @Entity
-public class MultiKeyWideRowBean implements Serializable
+@ColumnFamily
+public class MultiKeyColumnFamilyBean implements Serializable
 {
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;
 
 	@Column
-	private WideMap<WideRowMultiKey, String> map;
+	private WideMap<TweetMultiKey, String> values;
 
 	public Long getId()
 	{
@@ -36,9 +39,13 @@ public class MultiKeyWideRowBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<WideRowMultiKey, String> getMap()
+	public WideMap<TweetMultiKey, String> getValues()
 	{
-		return map;
+		return values;
 	}
 
+	public void setValues(WideMap<TweetMultiKey, String> values)
+	{
+		this.values = values;
+	}
 }

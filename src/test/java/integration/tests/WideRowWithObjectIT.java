@@ -6,8 +6,8 @@ import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
 import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import integration.tests.entity.WideRowBeanWithObject;
-import integration.tests.entity.WideRowBeanWithObject.Holder;
+import integration.tests.entity.ColumnFamilyBeanWithObject;
+import integration.tests.entity.ColumnFamilyBeanWithObject.Holder;
 
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +44,7 @@ public class WideRowWithObjectIT
 	})
 	private GenericCompositeDao<Long, Holder> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
 			(Serializer) OBJECT_SRZ,
-			normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()));
+			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithObject.class.getName()));
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -52,7 +52,7 @@ public class WideRowWithObjectIT
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
 
-	private WideRowBeanWithObject bean;
+	private ColumnFamilyBeanWithObject bean;
 
 	private WideMap<Long, Holder> map;
 
@@ -61,7 +61,7 @@ public class WideRowWithObjectIT
 	@Before
 	public void setUp()
 	{
-		bean = new WideRowBeanWithObject();
+		bean = new ColumnFamilyBeanWithObject();
 		bean.setId(id);
 		bean = em.merge(bean);
 		map = bean.getMap();

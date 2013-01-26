@@ -1,4 +1,4 @@
-package mapping.entity;
+package integration.tests.entity;
 
 import java.io.Serializable;
 
@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import fr.doan.achilles.annotations.ColumnFamily;
 import fr.doan.achilles.entity.type.WideMap;
 
 /**
@@ -14,9 +15,9 @@ import fr.doan.achilles.entity.type.WideMap;
  * @author DuyHai DOAN
  * 
  */
-@fr.doan.achilles.annotations.WideRow
 @Entity
-public class WideRowBeanWithObject implements Serializable
+@ColumnFamily
+public class ColumnFamilyBeanWithObject implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
