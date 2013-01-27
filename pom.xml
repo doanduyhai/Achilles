@@ -136,7 +136,7 @@
  		 </dependency>
   </dependencies>
 <build>
-  	<finalName>achille</finalName>
+  	<finalName>achilles</finalName>
     <plugins>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
