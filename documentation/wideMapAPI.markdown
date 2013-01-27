@@ -67,7 +67,7 @@
 
 	public void removeLast(int count);	
 
- The **WideMap** API allows you to insert, retrieve and remove value, by range or not. Contrary to **Cassandra** Slice Range
+ The **WideMap** API allows you to insert, retrieve and remove value, by range or not. Unlike **Cassandra** Slice Range
  API, you can define **inclusive** or **exclusive bounds** for range queries and range deletions. The API also offers
  some convenient methods like `findFirst()` or `findLast()` to save you the hassle of defining a slice range query with count
  =1.
