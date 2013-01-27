@@ -136,7 +136,7 @@
 
 ##### Performance considerations
 	
- For massive insertions, to reduce the number of calls to **Cassandra**, you can use the Batch Mode, check [Performance][abc]
+ For massive insertions, to reduce the number of calls to **Cassandra**, you can use the Batch Mode, check [Performance][perf]
  for more details.
  
  On remove range operations, **Achilles** first fetch data in memory with a slice query before removing them in a batch. This
@@ -145,4 +145,4 @@
  Consequently, giving a too wide range for deletion will deplete quickly your memory. For wide range deletion, use iterator 
  and batch mode to flush deletions by batch.
  
-[abc]: /doanduyhai/achilles/tree/master/documentation/performance.markdown  	
+[perf]:  /doanduyhai/achilles/tree/master/documentation/performance.markdown
