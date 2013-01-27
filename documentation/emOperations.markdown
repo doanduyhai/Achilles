@@ -45,7 +45,7 @@
  If the entity is *transient*, the methods will raise an **IllegalStateException**.
 
  If the entity has external **WideMap** fields, all the related rows from external column family will be removed.
- Check [External wide row][externalWideRow] for more details
+ Check [External WideMap][externalWideMap] for more details
 
 <br/> 
 ---------------------------------------  
@@ -155,12 +155,15 @@
  Not supported, will throw an **UnsupportedOperationException**.
  
 
+[quickTuto]: /doanduyhai/achilles/tree/master/documentation/quickTuto.markdown	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
 [dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
-[simpleWideRow]: /doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown
-[internalWideRow]: /doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown
-[externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
+[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
+[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
+[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
+[cfDirectMapping]: /doanduyhai/achilles/tree/master/documentation/cfDirectMapping.markdown
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
 [joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
+[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown

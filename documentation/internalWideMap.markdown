@@ -1,13 +1,12 @@
-## Internal Wide Row
+## Internal WideMap
 
- Before reading further, please make sure you read carefully the chapter on [Simple wide row entity][simpleWideRow]
+ Before reading further, please make sure you read carefully the chapter on [WideMap API][wideMapAPI]
 
- An internal wide row is simply a wide row structure stored along with other entity values:
- 
+ An internal **WideMap** is simply a wide row structure stored along with other entity values:
+
+	@Entity
 	@Table(name="users_column_family")
-	public class User implements Serializable
 	{
-
 		private static final long serialVersionUID = 1L;
 
 		@Id
@@ -41,14 +40,10 @@
  In the above example, the *tweets* field is a **WideMap** proxy to allow inserting, finding and removing tweets POJO inside 
  the **User** like a wide row.
 
- For more details about **wide rows**, check [Simple wide row entity][simpleWideRow].
 
  Internally, **Achilles** saves all users data ( _firstname_, *lastname*, *age*, *addresses*, *favoriteTags*, *preferences* and all
  *tweets* values) in a **same physical row** in **Cassandra** storage engine. It has some benefits to doing so, you can benefit a lot
- from **Cassandra** [row caching][rowCaching].
- 
- Even though internal wide rows are very similar to there simple counterparts, there is still a subtle but important difference. Since 
- internal wide rows data are persisted in the same physical row as other field values, the entity must exist if you want to access them.
+ from **Cassandra** [row caching][rowCaching]. Consequently, the entity must exist if you want to access internal an **WideMap**.
  
  
  Simple example:
@@ -101,18 +96,22 @@ So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for t
  Long story short, it is a good idea to have wide rows but just do not make them too wide.
  
  If you want to overcome these limits or simply consider it's a bad practice to mix wide row values with entity values, just use
- [External wide row][externalWideRow]
+ [External WideMap][externalWideMap]
 
  
  
+[quickTuto]: /doanduyhai/achilles/tree/master/documentation/quickTuto.markdown	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
 [dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
-[simpleWideRow]: /doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown
-[internalWideRow]: /doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown
-[externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
+[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
+[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
+[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
+[cfDirectMapping]: /doanduyhai/achilles/tree/master/documentation/cfDirectMapping.markdown
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
 [joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
+[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown
+[perf]: /doanduyhai/achilles/tree/master/documentation/perf.markdown  	
 [rowCaching]: http://www.datastax.com/dev/blog/maximizing-cache-benefit-with-cassandra
 [eBayBlog]: http://www.ebaytechblog.com/2012/08/14/cassandra-data-modeling-best-practices-part-2/

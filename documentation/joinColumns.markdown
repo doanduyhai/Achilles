@@ -52,7 +52,6 @@ attribute on *@OneToMany* and *@OneToOne* annotations is ignored by **Achilles**
 	@Table
 	public class Tweet implements Serializable
 	{
-
 		private static final long serialVersionUID = 1L;
 
 		@Id
@@ -70,7 +69,6 @@ attribute on *@OneToMany* and *@OneToOne* annotations is ignored by **Achilles**
 	@Table
 	public class User implements Serializable
 	{
-
 		private static final long serialVersionUID = 1L;
 
 		@Id
@@ -116,7 +114,7 @@ attribute on *@OneToMany* and *@OneToOne* annotations is ignored by **Achilles**
  The **User** entity has 
  
  1. an internal join wide *tweets*. The internal wide row only keeps the  primary key of each **Tweet**. **Achilles** will 
-    load the whole entity when the **WideMap** element is accessed (invocation of *findRange()*, *get()* or *iterator()* ).
+    load the whole entity when the **WideMap** element is accessed (invocation of *find()*, *get()* or *iterator()* ).
 	CascadeType.ALL has been set on this field because we want  **Achilles** to persist effectively the **Tweet** when adding
 	it to the user tweetline.
 <br/>
@@ -179,7 +177,7 @@ In this example we use join columns for *friends* and *followers* fields because
 	exception is raised.
 <br/>
    
- 2. On *wideMap.findRange()*, *wideMap.get()* or *iwideMap.terator()*  methods invocation:
+ 2. On *wideMap.find()*, *wideMap.get()* or *iwideMap.terator()*  methods invocation:
 
 	**Achilles** is just loading the joined entity using its primary key. If the entity does not exists, **Achilles** 
 	return **null**

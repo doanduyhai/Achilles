@@ -27,6 +27,7 @@ Example:
 		// Getters and setters
 	}
 	
+	@Entity
 	@Table(name="users_column_family")
 	public class User implements Serializable
 	{

@@ -7,14 +7,14 @@
  Below is a list of all JPA annotations supported by **Achilles**.    
 <br/>
 ---------------------------------------  
-##### @Table
+##### @Entity
 
- Indicates that an entity is candidate for persistence. When then *name* attribute is filled, it indicates the name
- of the column family used by by the **Cassandra** engine to store this entity.
+ Indicates that an entity is candidate for persistence. By default **Achilles** creates a column family whose name is the **class name**
+ of the entity. If you want to specify a specific column family name, add the *@Table* annotation with the *name* attribute (see below).
  
  Example:
  
-	@Table(name = "users_column_family")
+	@Entity
 	public class User implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
@@ -24,7 +24,26 @@
 
 >	Please note that all entities must implement the `java.io.Serializable`	interface and provide a **serialVersionUID**.
 	Failing to meet this requirement will trigger a **BeanMappingException**.
-   
+
+<br/>   
+---------------------------------------	
+##### @Table
+When then *name* attribute is filled, it indicates the name of the column family used by by the **Cassandra** engine to store this entity.
+ 
+
+ Example:
+ 
+	@Entity
+	@Table(name = "users_column_family")
+	public class User implements Serializable
+	{
+		private static final long serialVersionUID = 1L;
+		...
+		...
+	}
+
+>	** Please note that Cassandra limits the column family name to 48 characters max.**
+	
 <br/>   
 ---------------------------------------	
 ##### @Id
@@ -138,16 +157,16 @@
 <br/>
 ## Specific Achilles Annotations	
 
-##### @WideRow
+##### @ColumnFamily
 
- The *@WideRow* custom annotation should be put on an entity, along with the JPA *@Table* annotation. It instructs
- **Achilles** to consider the current entity as a wide row structure.
+ The *@ColumnFamily* custom annotation should be put on an entity, along with the JPA *@Entity* annotation. 
  
  Example is better than words:
  
-	@WideRow
+    @Entity
+	@ColumnFamily
 	@Table("good_old_column_family")
-	public class WideRowEntity implements Serializable
+	public class ColumnFamilyEntity implements Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -158,7 +177,7 @@
 		private WideMap<Integer, String> wideMap;
 	} 
 
- For more details, please report to the [Simple wide row entity][simpleWideRow] page.
+ For more details, please report to the [Direct Column Family Mapping][cfDirectMapping] page.
 
 <br/>
 ---------------------------------------	 
@@ -192,12 +211,15 @@
  For more detail on this annotation and its usage, please refer to  Multi components for wide row][multiComponentKey]
  
  
+[quickTuto]: /doanduyhai/achilles/tree/master/documentation/quickTuto.markdown	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
 [dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
-[simpleWideRow]: /doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown
-[internalWideRow]: /doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown
-[externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
+[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
+[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
+[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
+[cfDirectMapping]: /doanduyhai/achilles/tree/master/documentation/cfDirectMapping.markdown
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
 [joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
+[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown

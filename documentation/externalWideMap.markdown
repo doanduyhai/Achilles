@@ -1,9 +1,10 @@
-## External Wide Row
+## External WideMap
 
- Before reading further, please make sure you read carefully the chapter on [Simple wide row entity][simpleWideRow]
+ Before reading further, please make sure you read carefully the chapter on [WideMap API][wideMapAPI]
 
- Unlike [Internal wide row][internalWideRow], external wide rows have their values saved in a dedicated column family.
+ Unlike [Internal WideMap][internalWideMap], external wide maps have their values saved in a dedicated column family.
  
+	@Entity
  	@Table(name="users_column_family")
 	public class User implements Serializable
 	{
@@ -35,7 +36,7 @@
 	**Cassandra** type. All **Tweet** objects will be serialized to bytes using Java object serialization
 <br/>
 
-Like [Internal wide row][internalWideRow], external wide row values cannot exist independently from the enclosing
+Like [Internal WideMap][internalWideMap], external wide map values cannot exist independently from the enclosing
  entity. You cannot insert values directly into the *timeline\_column\_family* without going through the **User** entity.
  
  Example:
@@ -62,15 +63,14 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
  
  When the entity **User** is removed, the whole row with row key = 10L will be removed from *timeline\_column\_family*.
  
- The advantage of external wide rows is to separate entity data from wide row data. 
+ The advantage of external wide map is to separate entity data from wide map data. 
 
- An useful pattern is to have an entity with a few properties (name, age ...) and a lot of external wide row to manage data related
- to this user:
+ An useful pattern is to have an entity with a few properties (name, age ...) and a lot of external wide maps to manage data related
+ to the user:
 
  	@Table(name="users_column_family")
 	public class User implements Serializable
 	{
-
 		private static final long serialVersionUID = 1L;
 
 		@Id
@@ -95,7 +95,7 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
 
 	}
 	
- Above, we have a typical modeling example for an User in Tweeter. The entity **User** defines some property for the user ( *firstname*,
+ Above, we have a typical modeling example for an **User** in Tweeter. The entity **User** defines some property for the user ( *firstname*,
  *age*...). Then there is a list of external wide rows:
  
  - *tweets* to store user' tweets
@@ -119,7 +119,7 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
 	user.getTimeline().insert(currentTime,tweet);
 	
 	// Get an iterator on all followers
-	KeyValueIterator<String, Long> followersIterator = user.getFollowers().iterator(null,null,false,100);
+	KeyValueIterator<String, Long> followersIterator = user.getFollowers().iterator(null,null,100);
 	
 	// Spread the tweet to each follower timeline
 	while(followersIterator.hasNext())
@@ -132,12 +132,16 @@ Like [Internal wide row][internalWideRow], external wide row values cannot exist
 	
  That's as easy as it !	
 	
+[quickTuto]: /doanduyhai/achilles/tree/master/documentation/quickTuto.markdown	
 [annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
 [emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
 [collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
 [dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
-[simpleWideRow]: /doanduyhai/achilles/tree/master/documentation/simpleWideRow.markdown
-[internalWideRow]: /doanduyhai/achilles/tree/master/documentation/internalWideRow.markdown
-[externalWideRow]: /doanduyhai/achilles/tree/master/documentation/externalWideRow.markdown
+[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
+[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
+[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
+[cfDirectMapping]: /doanduyhai/achilles/tree/master/documentation/cfDirectMapping.markdown
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
-[joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown 
+[joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
+[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown
+[perf]: /doanduyhai/achilles/tree/master/documentation/perf.markdown  	
