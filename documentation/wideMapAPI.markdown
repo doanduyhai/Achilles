@@ -128,7 +128,7 @@
  Unlike normal fields, **WideMap** fields are not subjects to dirty check by **Achilless**. Similarly, those fields are
  lazy by nature since they act only as a proxy to the slice queries.
  
->	Any operation done with a **WideMap** involves in a direct access to **Cassandra**. A call on `insert()` will persist
+>	Any operation done with a **WideMap** translates to a direct access to **Cassandra**. A call on `insert()` will persist
 	effectively and immediatly the value into **Cassandra**, there is no need to call `em.merge(foundUser)`.Similarly all 
 	the `find()` methods fetch the data directly from **Cassandra**, there is nothing such as first level caching done by 
 	the **EntityManager**
@@ -136,7 +136,7 @@
 
 ##### Performance considerations
 	
- For massive insertions, to reduce the number of calls to **Cassandra**, you can use the Batch Mode, check [Performance][perf]
+ For massive insertions, to reduce the number of calls to **Cassandra**, you can use the Batch Mode, check [Performance][performance]
  for more details.
  
  On remove range operations, **Achilles** first fetch data in memory with a slice query before removing them in a batch. This
@@ -145,5 +145,4 @@
  Consequently, giving a too wide range for deletion will deplete quickly your memory. For wide range deletion, use iterator 
  and batch mode to flush deletions by batch.
  
-	
-[perf]: /doanduyhai/achilles/tree/master/documentation/perf.markdown  	
+[performance]: /doanduyhai/achilles/tree/master/documentation/performance.markdown  	

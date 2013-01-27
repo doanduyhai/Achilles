@@ -75,4 +75,3 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
 [joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
 [manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown
-[perf]: /doanduyhai/achilles/tree/master/documentation/perf.markdown  	
