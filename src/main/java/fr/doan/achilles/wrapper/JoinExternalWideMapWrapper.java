@@ -123,16 +123,16 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	}
 
 	@Override
-	public void removeFirst()
+	public void removeFirst(int count)
 	{
-		externalWideMapDao.removeColumnRange(id, null, null, false, 1);
+		externalWideMapDao.removeColumnRange(id, null, null, false, count);
 
 	}
 
 	@Override
-	public void removeLast()
+	public void removeLast(int count)
 	{
-		externalWideMapDao.removeColumnRange(id, null, null, true, 1);
+		externalWideMapDao.removeColumnRange(id, null, null, true, count);
 	}
 
 	private Object persistOrEnsureJoinEntityExists(V value)

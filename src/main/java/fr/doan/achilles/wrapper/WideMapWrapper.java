@@ -4,6 +4,10 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -31,6 +35,14 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
 	protected IteratorFactory iteratorFactory = new IteratorFactory();
 	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+
+	protected Function<Object, V> objectToValue = new Function<Object, V>()
+	{
+		public V apply(Object rawObject)
+		{
+			return wideMapMeta.getValue(rawObject);
+		}
+	};
 
 	protected DynamicComposite buildComposite(K key)
 	{
@@ -70,6 +82,20 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 				queryComps[0], queryComps[1], reverse, count);
 
 		return keyValueFactory.createListForDynamicComposite(wideMapMeta, hColumns);
+	}
+
+	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+
+		helper.checkBounds(wideMapMeta, start, end, reverse);
+
+		DynamicComposite[] queryComps = keyFactory.createForQuery( //
+				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+
+		return Lists.transform(
+				dao.findValuesRange(id, queryComps[0], queryComps[1], reverse, count),
+				objectToValue);
 	}
 
 	@Override
@@ -121,16 +147,16 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public void removeFirst()
+	public void removeFirst(int count)
 	{
-		dao.removeColumnRange(id, null, null, false, 1);
+		dao.removeColumnRange(id, null, null, false, count);
 
 	}
 
 	@Override
-	public void removeLast()
+	public void removeLast(int count)
 	{
-		dao.removeColumnRange(id, null, null, true, 1);
+		dao.removeColumnRange(id, null, null, true, count);
 	}
 
 	public void setId(ID id)

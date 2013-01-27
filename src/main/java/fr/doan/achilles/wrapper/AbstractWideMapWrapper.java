@@ -54,6 +54,12 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	}
 
 	@Override
+	public List<KeyValue<K, V>> findFirst(int count)
+	{
+		return this.find(null, null, count);
+	}
+
+	@Override
 	public KeyValue<K, V> findLast()
 	{
 		List<KeyValue<K, V>> result = this.findReverse(null, null, 1);
@@ -65,6 +71,12 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 		}
 
 		return keyValue;
+	}
+
+	@Override
+	public List<KeyValue<K, V>> findLast(int count)
+	{
+		return this.findReverse(null, null, count);
 	}
 
 	@Override
@@ -101,6 +113,18 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	public void removeBoundsExclusive(K start, K end)
 	{
 		remove(start, false, end, false);
+	}
+
+	@Override
+	public void removeFirst()
+	{
+		removeFirst(1);
+	}
+
+	@Override
+	public void removeLast()
+	{
+		removeLast(1);
 	}
 
 }

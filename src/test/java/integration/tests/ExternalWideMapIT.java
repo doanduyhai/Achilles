@@ -262,8 +262,8 @@ public class ExternalWideMapIT
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value2");
 		assertThat(foundValues.get(1).getValue()).isEqualTo("value3");
 
-		List<String> foundStrings = externalWideMapDao
-				.findValuesRange(bean.getId(), null, false, 5);
+		List<String> foundStrings = externalWideMapDao.findValuesRange(bean.getId(), null, null,
+				false, 5);
 
 		assertThat(foundStrings).hasSize(2);
 		assertThat(foundStrings).containsExactly("value2", "value3");
@@ -283,8 +283,8 @@ public class ExternalWideMapIT
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
 		assertThat(foundValues.get(1).getValue()).isEqualTo("value5");
 
-		List<String> foundStrings = externalWideMapDao
-				.findValuesRange(bean.getId(), null, false, 5);
+		List<String> foundStrings = externalWideMapDao.findValuesRange(bean.getId(), null, null,
+				false, 5);
 
 		assertThat(foundStrings).hasSize(2);
 		assertThat(foundStrings).containsExactly("value1", "value5");
@@ -304,8 +304,8 @@ public class ExternalWideMapIT
 		assertThat(foundValues.get(1).getValue()).isEqualTo("value2");
 		assertThat(foundValues.get(2).getValue()).isEqualTo("value5");
 
-		List<String> foundStrings = externalWideMapDao
-				.findValuesRange(bean.getId(), null, false, 5);
+		List<String> foundStrings = externalWideMapDao.findValuesRange(bean.getId(), null, null,
+				false, 5);
 
 		assertThat(foundStrings).hasSize(3);
 		assertThat(foundStrings).containsExactly("value1", "value2", "value5");
@@ -324,8 +324,8 @@ public class ExternalWideMapIT
 		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
 		assertThat(foundValues.get(1).getValue()).isEqualTo("value5");
 
-		List<String> foundStrings = externalWideMapDao
-				.findValuesRange(bean.getId(), null, false, 5);
+		List<String> foundStrings = externalWideMapDao.findValuesRange(bean.getId(), null, null,
+				false, 5);
 
 		assertThat(foundStrings).hasSize(2);
 		assertThat(foundStrings).containsExactly("value1", "value5");

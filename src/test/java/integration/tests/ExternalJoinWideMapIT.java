@@ -86,8 +86,8 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(1, reTweet1);
 		user.getRetweets().insert(2, reTweet2);
 
-		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
-				10);
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
+				false, 10);
 
 		assertThat(savedReTweetsUUIDs).hasSize(2);
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId());
@@ -110,8 +110,8 @@ public class ExternalJoinWideMapIT
 				.creator(user).buid();
 		user.getRetweets().insert(RandomUtils.nextInt(), transientReTweet);
 
-		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
-				10);
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
+				false, 10);
 
 		assertThat(savedReTweetsUUIDs).hasSize(1);
 		assertThat(savedReTweetsUUIDs).containsExactly(transientReTweet.getId());
@@ -134,8 +134,8 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
-				10);
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
+				false, 10);
 
 		assertThat(savedReTweetsUUIDs).hasSize(4);
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId(),
@@ -167,8 +167,8 @@ public class ExternalJoinWideMapIT
 
 		user.getRetweets().remove(2, true, 4, false);
 
-		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
-				10);
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
+				false, 10);
 
 		assertThat(savedReTweetsUUIDs).hasSize(2);
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet4.getId());
@@ -227,8 +227,8 @@ public class ExternalJoinWideMapIT
 
 		em.remove(user);
 
-		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, false,
-				10);
+		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
+				false, 10);
 
 		assertThat(savedReTweetsUUIDs).hasSize(0);
 

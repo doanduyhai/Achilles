@@ -107,16 +107,16 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	}
 
 	@Override
-	public void removeFirst()
+	public void removeFirst(int count)
 	{
-		dao.removeColumnRange(id, null, null, false, 1);
+		dao.removeColumnRange(id, null, null, false, count);
 
 	}
 
 	@Override
-	public void removeLast()
+	public void removeLast(int count)
 	{
-		dao.removeColumnRange(id, null, null, true, 1);
+		dao.removeColumnRange(id, null, null, true, count);
 	}
 
 	public void setId(ID id)

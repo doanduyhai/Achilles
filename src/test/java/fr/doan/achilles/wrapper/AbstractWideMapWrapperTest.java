@@ -146,6 +146,34 @@ public class AbstractWideMapWrapperTest
 
 				return new ArrayList<KeyValue<Long, String>>();
 			}
+
+			@Override
+			public void removeFirst(int count)
+			{
+				VariableCapture capture = new VariableCapture();
+				capture.start = null;
+				capture.end = null;
+				capture.inclusiveStart = true;
+				capture.inclusiveEnd = true;
+				capture.count = count;
+				capture.reverse = false;
+
+				variableCapture.set(capture);
+			}
+
+			@Override
+			public void removeLast(int count)
+			{
+				VariableCapture capture = new VariableCapture();
+				capture.start = null;
+				capture.end = null;
+				capture.inclusiveStart = true;
+				capture.inclusiveEnd = true;
+				capture.count = count;
+				capture.reverse = true;
+
+				variableCapture.set(capture);
+			}
 		};
 	}
 
@@ -211,6 +239,21 @@ public class AbstractWideMapWrapperTest
 	}
 
 	@Test
+	public void should_find_first_n() throws Exception
+	{
+		wrapper.findFirst(5);
+
+		VariableCapture capture = variableCapture.get();
+
+		assertThat(capture.start).isEqualTo(null);
+		assertThat(capture.end).isEqualTo(null);
+		assertThat(capture.inclusiveStart).isEqualTo(true);
+		assertThat(capture.inclusiveEnd).isEqualTo(true);
+		assertThat(capture.reverse).isEqualTo(false);
+		assertThat(capture.count).isEqualTo(5);
+	}
+
+	@Test
 	public void should_find_last() throws Exception
 	{
 		wrapper.findLast();
@@ -223,6 +266,21 @@ public class AbstractWideMapWrapperTest
 		assertThat(capture.inclusiveEnd).isEqualTo(true);
 		assertThat(capture.reverse).isEqualTo(true);
 		assertThat(capture.count).isEqualTo(1);
+	}
+
+	@Test
+	public void should_find_last_n() throws Exception
+	{
+		wrapper.findLast(9);
+
+		VariableCapture capture = variableCapture.get();
+
+		assertThat(capture.start).isEqualTo(null);
+		assertThat(capture.end).isEqualTo(null);
+		assertThat(capture.inclusiveStart).isEqualTo(true);
+		assertThat(capture.inclusiveEnd).isEqualTo(true);
+		assertThat(capture.reverse).isEqualTo(true);
+		assertThat(capture.count).isEqualTo(9);
 	}
 
 	@Test
@@ -313,6 +371,32 @@ public class AbstractWideMapWrapperTest
 		assertThat(capture.inclusiveEnd).isEqualTo(false);
 		assertThat(capture.reverse).isEqualTo(false);
 		assertThat(capture.count).isEqualTo(0);
+	}
+
+	@Test
+	public void should_remove_first_n() throws Exception
+	{
+		wrapper.removeFirst(50);
+
+		VariableCapture capture = variableCapture.get();
+
+		assertThat(capture.start).isEqualTo(null);
+		assertThat(capture.end).isEqualTo(null);
+		assertThat(capture.reverse).isEqualTo(false);
+		assertThat(capture.count).isEqualTo(50);
+	}
+
+	@Test
+	public void should_remove_last_n() throws Exception
+	{
+		wrapper.removeLast(51);
+
+		VariableCapture capture = variableCapture.get();
+
+		assertThat(capture.start).isEqualTo(null);
+		assertThat(capture.end).isEqualTo(null);
+		assertThat(capture.reverse).isEqualTo(true);
+		assertThat(capture.count).isEqualTo(51);
 	}
 
 	class VariableCapture

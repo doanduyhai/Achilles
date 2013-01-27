@@ -24,6 +24,9 @@ import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.apache.cassandra.utils.Pair;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.iterator.AchillesSliceIterator;
@@ -47,6 +50,30 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	protected String columnFamily;
 
 	public static int DEFAULT_LENGTH = 50;
+
+	protected Function<HColumn<N, V>, V> hColumnToValue = new Function<HColumn<N, V>, V>()
+	{
+		public V apply(HColumn<N, V> hColumn)
+		{
+			return hColumn.getValue();
+		}
+	};
+
+	protected Function<HColumn<N, V>, Pair<N, V>> hColumnToPair = new Function<HColumn<N, V>, Pair<N, V>>()
+	{
+		public Pair<N, V> apply(HColumn<N, V> hColumn)
+		{
+			return new Pair<N, V>(hColumn.getName(), hColumn.getValue());
+		}
+	};
+
+	protected Function<HColumn<N, V>, N> hColumnToName = new Function<HColumn<N, V>, N>()
+	{
+		public N apply(HColumn<N, V> hColumn)
+		{
+			return hColumn.getName();
+		}
+	};
 
 	protected AbstractDao() {}
 
@@ -192,19 +219,14 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		}
 	}
 
-	public List<V> findValuesRange(K key, N startName, boolean reverse, int count)
+	public List<V> findValuesRange(K key, N start, N end, boolean reverse, int count)
 	{
-		List<V> values = new ArrayList<V>();
 
 		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(startName, null, reverse, count).execute().get().getColumns();
+				.setRange(start, end, reverse, count).execute().get().getColumns();
 
-		for (HColumn<N, V> column : columns)
-		{
-			values.add(column.getValue());
-		}
-		return values;
+		return Lists.transform(columns, hColumnToValue);
 	}
 
 	public List<N> findNamesRange(K key, N startName, boolean reverse, int count)
@@ -213,15 +235,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
 				.setRange(startName, null, reverse, count).execute().get().getColumns();
 
-		List<N> names = new ArrayList<N>();
-		for (HColumn<N, V> column : columns)
-		{
-			if (column.getValue() != null)
-			{
-				names.add(column.getName());
-			}
-		}
-		return names;
+		return Lists.transform(columns, hColumnToName);
 	}
 
 	public List<Pair<N, V>> findColumnsRange(K key, N startName, boolean reverse, int count)
@@ -232,17 +246,11 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public List<Pair<N, V>> findColumnsRange(K key, N startName, N endName, boolean reverse,
 			int count)
 	{
-		List<HColumn<N, V>> results = createSliceQuery(keyspace, keySerializer,
+		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
 				.setRange(startName, endName, reverse, count).execute().get().getColumns();
 
-		List<Pair<N, V>> columns = new ArrayList<Pair<N, V>>();
-		for (HColumn<N, V> column : results)
-		{
-			columns.add(new Pair<N, V>(column.getName(), column.getValue()));
-		}
-
-		return columns;
+		return Lists.transform(columns, hColumnToPair);
 	}
 
 	public List<HColumn<N, V>> findRawColumnsRange(K key, N startName, N endName, boolean reverse,

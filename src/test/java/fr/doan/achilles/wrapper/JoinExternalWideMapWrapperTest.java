@@ -277,17 +277,17 @@ public class JoinExternalWideMapWrapperTest
 	@Test
 	public void should_remove_first() throws Exception
 	{
-		wrapper.removeFirst();
+		wrapper.removeFirst(15);
 
-		verify(dao).removeColumnRange(id, null, null, false, 1);
+		verify(dao).removeColumnRange(id, null, null, false, 15);
 	}
 
 	@Test
 	public void should_remove_last() throws Exception
 	{
-		wrapper.removeLast();
+		wrapper.removeLast(9);
 
-		verify(dao).removeColumnRange(id, null, null, true, 1);
+		verify(dao).removeColumnRange(id, null, null, true, 9);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception

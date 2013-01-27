@@ -195,16 +195,16 @@ public class ExternalWideMapWrapperTest
 	@Test
 	public void should_remove_first() throws Exception
 	{
-		wrapper.removeFirst();
+		wrapper.removeFirst(3);
 
-		verify(dao).removeColumnRange(id, null, null, false, 1);
+		verify(dao).removeColumnRange(id, null, null, false, 3);
 	}
 
 	@Test
 	public void should_remove_last() throws Exception
 	{
-		wrapper.removeLast();
+		wrapper.removeLast(7);
 
-		verify(dao).removeColumnRange(id, null, null, true, 1);
+		verify(dao).removeColumnRange(id, null, null, true, 7);
 	}
 }
