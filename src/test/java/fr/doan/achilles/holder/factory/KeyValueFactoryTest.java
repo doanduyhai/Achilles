@@ -125,7 +125,7 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 
 		KeyValue<Integer, String> keyValue = factory
-				.createForDynamicComposite(wideMapMeta, hColumn);
+				.createKeyValueForDynamicComposite(wideMapMeta, hColumn);
 
 		assertThat(keyValue.getKey()).isEqualTo(1);
 		assertThat(keyValue.getValue()).isEqualTo("test");
@@ -165,7 +165,7 @@ public class KeyValueFactoryTest
 		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId), joinEntityMeta))
 				.thenReturn(ImmutableMap.of(joinId, userBean));
 
-		List<KeyValue<Integer, UserBean>> keyValues = factory.createListForDynamicComposite(
+		List<KeyValue<Integer, UserBean>> keyValues = factory.createKeyValueListForDynamicComposite(
 				joinPropertyMeta, Arrays.asList(hColumn));
 
 		assertThat(keyValues).hasSize(1);
@@ -307,7 +307,7 @@ public class KeyValueFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 
-		List<KeyValue<Integer, String>> list = factory.createListForDynamicComposite(wideMapMeta,
+		List<KeyValue<Integer, String>> list = factory.createKeyValueListForDynamicComposite(wideMapMeta,
 				Arrays.asList(hColumn1, hColumn2));
 
 		assertThat(list).hasSize(2);
@@ -418,7 +418,7 @@ public class KeyValueFactoryTest
 				helper.buildMultiKeyForDynamicComposite(multiKeyWideMeta, hCol3.getName()
 						.getComponents())).thenReturn(tweetKey3);
 
-		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createListForDynamicComposite(
+		List<KeyValue<TweetMultiKey, String>> multiKeys = factory.createKeyValueListForDynamicComposite(
 				multiKeyWideMeta, Arrays.asList(hCol1, hCol2, hCol3));
 
 		assertThat(multiKeys).hasSize(3);

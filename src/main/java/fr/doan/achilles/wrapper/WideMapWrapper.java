@@ -81,7 +81,15 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return keyValueFactory.createListForDynamicComposite(wideMapMeta, hColumns);
+		if (wideMapMeta.type().isJoinColumn())
+		{
+			return keyValueFactory.createJoinKeyValueListForDynamicComposite(wideMapMeta, hColumns);
+		}
+		else
+		{
+
+			return keyValueFactory.createKeyValueListForDynamicComposite(wideMapMeta, hColumns);
+		}
 	}
 
 	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,

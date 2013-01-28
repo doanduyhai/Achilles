@@ -11,6 +11,8 @@ import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
 
+import com.google.common.collect.Lists;
+
 import fr.doan.achilles.entity.PropertyHelper;
 import fr.doan.achilles.entity.metadata.EntityMeta;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -27,6 +29,7 @@ public class KeyValueFactory
 {
 	private EntityLoader loader = new EntityLoader();
 	private PropertyHelper helper = new PropertyHelper();
+	private DynamicCompositeTransformer builder = new DynamicCompositeTransformer();
 
 	public <K, V> KeyValue<K, V> create(K key, V value, int ttl)
 	{
@@ -39,67 +42,85 @@ public class KeyValueFactory
 	}
 
 	// Dynamic Composite
-
-	public <K, V> KeyValue<K, V> createForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+	public <K, V> List<V> createValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, Object>> hColumns)
 	{
-		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
-		V value = propertyMeta.getValue(hColumn.getValue());
-		int ttl = hColumn.getTtl();
-
-		return create(key, value, ttl);
+		return Lists.transform(hColumns, builder.buildValueTransformer(propertyMeta));
 	}
 
-	public <K, V> List<KeyValue<K, V>> createListForDynamicComposite(
+	public <K, V> List<K> createKeyListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, Object>> hColumns)
+	{
+		return Lists.transform(hColumns, builder.buildKeyTransformer(propertyMeta));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <K, V> List<V> createJoinValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, Object>> hColumns)
+	{
+		List<?> joinIds = Lists.transform(hColumns, builder.buildValueTransformer(propertyMeta));
+		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
+				propertyMeta.getJoinProperties().getEntityMeta());
+		List<V> result = new ArrayList<V>();
+		for (Object joinId : joinIds)
+		{
+			result.add(joinEntities.get(joinId));
+		}
+
+		return result;
+	}
+
+	public <K, V> List<KeyValue<K, V>> createKeyValueListForDynamicComposite(
 			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
 	{
+		return Lists.transform(hColumns, builder.buildKeyValueTransformer(propertyMeta));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForDynamicComposite(
+			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
+	{
+		List<K> keys = Lists.transform(hColumns, builder.buildKeyTransformer(propertyMeta));
+		List<Object> joinIds = Lists.transform(
+				hColumns,
+				builder.buildValueTransformer(propertyMeta.getJoinProperties().getEntityMeta()
+						.getIdMeta()));
+		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+				joinIds, propertyMeta.getJoinProperties().getEntityMeta());
+		List<Integer> ttls = Lists.transform(hColumns, builder.buildTtlTransformer(propertyMeta));
+
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 
-		if (hColumns != null && hColumns.size() > 0)
+		for (int i = 0; i < keys.size(); i++)
 		{
-			if (propertyMeta.type().isJoinColumn())
-			{
-				loadJoinEntitiesFromDynamicComposite(propertyMeta, hColumns, result);
-			}
-			else
-			{
-
-				for (HColumn<DynamicComposite, Object> hColumn : hColumns)
-				{
-					result.add(createForDynamicComposite(propertyMeta, hColumn));
-				}
-			}
+			result.add(new KeyValue<K, V>(keys.get(i), joinEntities.get(joinIds.get(i)), ttls
+					.get(i)));
 		}
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <V, K> void loadJoinEntitiesFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<DynamicComposite, Object>> hColumns, List<KeyValue<K, V>> result)
-	{
-		Map<Object, Pair<K, Integer>> joinIdMap = new HashMap<Object, Pair<K, Integer>>();
-		List<Object> joinIds = new ArrayList<Object>();
-		for (HColumn<DynamicComposite, Object> hColumn : hColumns)
-		{
-			K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
-			joinIdMap.put(hColumn.getValue(), new Pair<K, Integer>(key, hColumn.getTtl()));
-			joinIds.add(hColumn.getValue());
-		}
-
-		EntityMeta<Object> joinEntityMeta = propertyMeta.getJoinProperties().getEntityMeta();
-
-		Map<Object, V> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, joinEntityMeta);
-
-		for (Object joinId : joinIds)
-		{
-			Pair<K, Integer> pair = joinIdMap.get(joinId);
-			K key = pair.left;
-			Integer ttl = pair.right;
-			result.add(new KeyValue<K, V>(key, loadedEntities.get(joinId), ttl));
-
-		}
-	}
+	// public <K, V> List<KeyValue<K, V>> createKeyValueListForDynamicComposite(
+	// PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
+	// {
+	// List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
+	//
+	// if (hColumns != null && hColumns.size() > 0)
+	// {
+	// if (propertyMeta.type().isJoinColumn())
+	// {
+	// loadJoinEntitiesFromDynamicComposite(propertyMeta, hColumns, result);
+	// }
+	// else
+	// {
+	//
+	// for (HColumn<DynamicComposite, Object> hColumn : hColumns)
+	// {
+	// result.add(createKeyValueForDynamicComposite(propertyMeta, hColumn));
+	// }
+	// }
+	// }
+	// return result;
+	// }
 
 	private <K, V> K buildKeyFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
 			HColumn<DynamicComposite, Object> hColumn)
@@ -115,6 +136,29 @@ public class KeyValueFactory
 					.getComponents());
 		}
 		return key;
+	}
+
+	// Dynamic Composite
+	public <K, V> KeyValue<K, V> createKeyValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<DynamicComposite, Object> hColumn)
+	{
+		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
+		V value = propertyMeta.getValue(hColumn.getValue());
+		int ttl = hColumn.getTtl();
+
+		return create(key, value, ttl);
+	}
+
+	public <K, V> K createKeyForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<DynamicComposite, Object> hColumn)
+	{
+		return buildKeyFromDynamicComposite(propertyMeta, hColumn);
+	}
+
+	public <K, V> V createValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<DynamicComposite, Object> hColumn)
+	{
+		return propertyMeta.getValue(hColumn.getValue());
 	}
 
 	// Composite

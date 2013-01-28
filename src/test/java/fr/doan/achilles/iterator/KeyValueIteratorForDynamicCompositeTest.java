@@ -76,7 +76,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(keyValue);
+		when(factory.createKeyValueForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();
 
