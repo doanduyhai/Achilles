@@ -45,7 +45,7 @@ public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			keyValue = factory.createForComposite(wideMapMeta, column);
+			keyValue = factory.createKeyValueForComposite(wideMapMeta, column);
 		}
 		else
 		{

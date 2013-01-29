@@ -85,7 +85,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		List<HColumn<Composite, JOIN_ID>> hColumns = externalWideMapDao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		return keyValueFactory.createListForComposite(externalWideMapMeta, (List) hColumns);
+		return keyValueFactory.createJoinKeyValueListForComposite(externalWideMapMeta,
+				(List) hColumns);
 	}
 
 	@Override

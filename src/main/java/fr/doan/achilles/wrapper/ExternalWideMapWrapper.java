@@ -73,7 +73,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createListForComposite(wideMapMeta, (List) hColumns);
+		return keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns);
 	}
 
 	@Override
