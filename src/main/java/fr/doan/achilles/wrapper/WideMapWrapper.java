@@ -4,10 +4,6 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
 import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
 import fr.doan.achilles.dao.GenericDynamicCompositeDao;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
@@ -35,14 +31,6 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
 	protected IteratorFactory iteratorFactory = new IteratorFactory();
 	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
-
-	protected Function<Object, V> objectToValue = new Function<Object, V>()
-	{
-		public V apply(Object rawObject)
-		{
-			return wideMapMeta.getValue(rawObject);
-		}
-	};
 
 	protected DynamicComposite buildComposite(K key)
 	{
@@ -92,6 +80,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		}
 	}
 
+	@Override
 	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
@@ -101,9 +90,32 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		return Lists.transform(
-				dao.findValuesRange(id, queryComps[0], queryComps[1], reverse, count),
-				objectToValue);
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
+		if (wideMapMeta.type().isJoinColumn())
+		{
+			return keyValueFactory.createJoinValueListForDynamicComposite(wideMapMeta, hColumns);
+		}
+		else
+		{
+
+			return keyValueFactory.createValueListForDynamicComposite(wideMapMeta, hColumns);
+		}
+	}
+
+	@Override
+	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+
+		helper.checkBounds(wideMapMeta, start, end, reverse);
+
+		DynamicComposite[] queryComps = keyFactory.createForQuery( //
+				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+
+		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
+		return keyValueFactory.createKeyListForDynamicComposite(wideMapMeta, hColumns);
 	}
 
 	@Override

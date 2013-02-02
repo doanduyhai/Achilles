@@ -129,15 +129,35 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(1, 5, 10);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(1, 5, 10);
 
-		assertThat(foundValues).hasSize(5);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value2");
-		assertThat(foundValues.get(2).getValue()).isEqualTo("value3");
-		assertThat(foundValues.get(3).getValue()).isEqualTo("value4");
-		assertThat(foundValues.get(4).getValue()).isEqualTo("value5");
+		assertThat(foundKeyValues).hasSize(5);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(1);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value1");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
+		assertThat(foundKeyValues.get(2).getKey()).isEqualTo(3);
+		assertThat(foundKeyValues.get(2).getValue()).isEqualTo("value3");
+		assertThat(foundKeyValues.get(3).getKey()).isEqualTo(4);
+		assertThat(foundKeyValues.get(3).getValue()).isEqualTo("value4");
+		assertThat(foundKeyValues.get(4).getKey()).isEqualTo(5);
+		assertThat(foundKeyValues.get(4).getValue()).isEqualTo("value5");
 
+		List<String> foundValues = externalWideMap.findValues(1, 5, 10);
+
+		assertThat(foundValues.get(0)).isEqualTo("value1");
+		assertThat(foundValues.get(1)).isEqualTo("value2");
+		assertThat(foundValues.get(2)).isEqualTo("value3");
+		assertThat(foundValues.get(3)).isEqualTo("value4");
+		assertThat(foundValues.get(4)).isEqualTo("value5");
+
+		List<Integer> foundKeys = externalWideMap.findKeys(1, 5, 10);
+
+		assertThat(foundKeys.get(0)).isEqualTo(1);
+		assertThat(foundKeys.get(1)).isEqualTo(2);
+		assertThat(foundKeys.get(2)).isEqualTo(3);
+		assertThat(foundKeys.get(3)).isEqualTo(4);
+		assertThat(foundKeys.get(4)).isEqualTo(5);
 	}
 
 	@Test
@@ -145,13 +165,27 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(2, 5, 3);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(2, 5, 3);
 
-		assertThat(foundValues).hasSize(3);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value2");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value3");
-		assertThat(foundValues.get(2).getValue()).isEqualTo("value4");
+		assertThat(foundKeyValues).hasSize(3);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(2);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value2");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(3);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value3");
+		assertThat(foundKeyValues.get(2).getKey()).isEqualTo(4);
+		assertThat(foundKeyValues.get(2).getValue()).isEqualTo("value4");
 
+		List<String> foundValues = externalWideMap.findValues(2, 5, 3);
+
+		assertThat(foundValues.get(0)).isEqualTo("value2");
+		assertThat(foundValues.get(1)).isEqualTo("value3");
+		assertThat(foundValues.get(2)).isEqualTo("value4");
+
+		List<Integer> foundKeys = externalWideMap.findKeys(2, 5, 3);
+
+		assertThat(foundKeys.get(0)).isEqualTo(2);
+		assertThat(foundKeys.get(1)).isEqualTo(3);
+		assertThat(foundKeys.get(2)).isEqualTo(4);
 	}
 
 	@Test
@@ -159,11 +193,24 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.findBoundsExclusive(2, 5, 10);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.findBoundsExclusive(2, 5,
+				10);
 
-		assertThat(foundValues).hasSize(2);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value3");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value4");
+		assertThat(foundKeyValues).hasSize(2);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(3);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value3");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(4);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value4");
+
+		List<String> foundValues = externalWideMap.findValuesBoundsExclusive(2, 5, 10);
+
+		assertThat(foundValues.get(0)).isEqualTo("value3");
+		assertThat(foundValues.get(1)).isEqualTo("value4");
+
+		List<Integer> foundKeys = externalWideMap.findKeysBoundsExclusive(2, 5, 10);
+
+		assertThat(foundKeys.get(0)).isEqualTo(3);
+		assertThat(foundKeys.get(1)).isEqualTo(4);
 	}
 
 	@Test
@@ -172,14 +219,32 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.find( //
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find( //
 				4, false, //
 				2, true, //
 				true, 10);
 
-		assertThat(foundValues).hasSize(2);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value3");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value2");
+		assertThat(foundKeyValues).hasSize(2);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(3);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value3");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
+
+		List<String> foundValues = externalWideMap.findValues( //
+				4, false, //
+				2, true, //
+				true, 10);
+
+		assertThat(foundValues.get(0)).isEqualTo("value3");
+		assertThat(foundValues.get(1)).isEqualTo("value2");
+
+		List<Integer> foundKeys = externalWideMap.findKeys( //
+				4, false, //
+				2, true, //
+				true, 10);
+
+		assertThat(foundKeys.get(0)).isEqualTo(3);
+		assertThat(foundKeys.get(1)).isEqualTo(2);
 	}
 
 	@Test
@@ -187,11 +252,23 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, 2, 10);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(null, 2, 10);
 
-		assertThat(foundValues).hasSize(2);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value2");
+		assertThat(foundKeyValues).hasSize(2);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(1);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value1");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
+
+		List<String> foundValues = externalWideMap.findValues(null, 2, 10);
+
+		assertThat(foundValues.get(0)).isEqualTo("value1");
+		assertThat(foundValues.get(1)).isEqualTo("value2");
+
+		List<Integer> foundKeys = externalWideMap.findKeys(null, 2, 10);
+
+		assertThat(foundKeys.get(0)).isEqualTo(1);
+		assertThat(foundKeys.get(1)).isEqualTo(2);
 	}
 
 	@Test
@@ -199,14 +276,35 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(null, null, 10);
 
-		assertThat(foundValues).hasSize(5);
-		assertThat(foundValues.get(0).getValue()).isEqualTo("value1");
-		assertThat(foundValues.get(1).getValue()).isEqualTo("value2");
-		assertThat(foundValues.get(2).getValue()).isEqualTo("value3");
-		assertThat(foundValues.get(3).getValue()).isEqualTo("value4");
-		assertThat(foundValues.get(4).getValue()).isEqualTo("value5");
+		assertThat(foundKeyValues).hasSize(5);
+		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(1);
+		assertThat(foundKeyValues.get(0).getValue()).isEqualTo("value1");
+		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
+		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
+		assertThat(foundKeyValues.get(2).getKey()).isEqualTo(3);
+		assertThat(foundKeyValues.get(2).getValue()).isEqualTo("value3");
+		assertThat(foundKeyValues.get(3).getKey()).isEqualTo(4);
+		assertThat(foundKeyValues.get(3).getValue()).isEqualTo("value4");
+		assertThat(foundKeyValues.get(4).getKey()).isEqualTo(5);
+		assertThat(foundKeyValues.get(4).getValue()).isEqualTo("value5");
+
+		List<String> foundValues = externalWideMap.findValues(null, null, 10);
+
+		assertThat(foundValues.get(0)).isEqualTo("value1");
+		assertThat(foundValues.get(1)).isEqualTo("value2");
+		assertThat(foundValues.get(2)).isEqualTo("value3");
+		assertThat(foundValues.get(3)).isEqualTo("value4");
+		assertThat(foundValues.get(4)).isEqualTo("value5");
+
+		List<Integer> foundKeys = externalWideMap.findKeys(null, null, 10);
+
+		assertThat(foundKeys.get(0)).isEqualTo(1);
+		assertThat(foundKeys.get(1)).isEqualTo(2);
+		assertThat(foundKeys.get(2)).isEqualTo(3);
+		assertThat(foundKeys.get(3)).isEqualTo(4);
+		assertThat(foundKeys.get(4)).isEqualTo(5);
 	}
 
 	@Test

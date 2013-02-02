@@ -8,7 +8,7 @@ import me.prettyprint.hector.api.beans.HColumn;
 import fr.doan.achilles.entity.metadata.PropertyMeta;
 import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.holder.factory.DynamicCompositeTransformer;
+import fr.doan.achilles.holder.factory.KeyValueFactory;
 
 /**
  * KeyValueIteratorForEntity
@@ -20,7 +20,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 {
 	private Iterator<HColumn<DynamicComposite, Object>> achillesSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;
-	private DynamicCompositeTransformer transformer = new DynamicCompositeTransformer();
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	public KeyValueIteratorForDynamicComposite(
 			Iterator<HColumn<DynamicComposite, Object>> columnSliceIterator,
@@ -44,7 +44,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		{
 			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
 
-			keyValue = transformer.buildKeyValueFromDynamicComposite(wideMapMeta, column);
+			keyValue = factory.createKeyValueForDynamicComposite(wideMapMeta, column);
 		}
 		else
 		{

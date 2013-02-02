@@ -141,17 +141,32 @@ public class ExternalJoinWideMapIT
 		assertThat(savedReTweetsUUIDs).containsExactly(reTweet1.getId(), reTweet2.getId(),
 				reTweet3.getId(), reTweet4.getId());
 
-		List<KeyValue<Integer, Tweet>> foundReTweets = user.getRetweets().findReverse(2, 1, 5);
+		List<KeyValue<Integer, Tweet>> foundReTweetsKeyValues = user.getRetweets().findReverse(2,
+				1, 5);
 
-		assertThat(foundReTweets).hasSize(2);
+		assertThat(foundReTweetsKeyValues).hasSize(2);
 
-		Tweet foundReTweet1 = foundReTweets.get(0).getValue();
-		Tweet foundReTweet2 = foundReTweets.get(1).getValue();
+		Tweet foundReTweet1 = foundReTweetsKeyValues.get(0).getValue();
+		Tweet foundReTweet2 = foundReTweetsKeyValues.get(1).getValue();
 
+		assertThat(foundReTweetsKeyValues.get(0).getKey()).isEqualTo(2);
 		assertThat(foundReTweet1.getId()).isEqualTo(reTweet2.getId());
 		assertThat(foundReTweet1.getContent()).isEqualTo(reTweet2.getContent());
+		assertThat(foundReTweetsKeyValues.get(1).getKey()).isEqualTo(1);
 		assertThat(foundReTweet2.getId()).isEqualTo(reTweet1.getId());
 		assertThat(foundReTweet2.getContent()).isEqualTo(reTweet1.getContent());
+
+		List<Tweet> foundReTweetsValues = user.getRetweets().findValuesReverse(2, 1, 5);
+
+		assertThat(foundReTweetsValues.get(0).getId()).isEqualTo(reTweet2.getId());
+		assertThat(foundReTweetsValues.get(0).getContent()).isEqualTo(reTweet2.getContent());
+		assertThat(foundReTweetsValues.get(1).getId()).isEqualTo(reTweet1.getId());
+		assertThat(foundReTweetsValues.get(1).getContent()).isEqualTo(reTweet1.getContent());
+
+		List<Integer> foundReTweetsKeys = user.getRetweets().findKeysReverse(2, 1, 5);
+
+		assertThat(foundReTweetsKeys.get(0)).isEqualTo(2);
+		assertThat(foundReTweetsKeys.get(1)).isEqualTo(1);
 	}
 
 	@Test

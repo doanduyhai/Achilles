@@ -46,8 +46,7 @@ public class DynamicCompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, Object>, Object> buildRawValueTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public Function<HColumn<DynamicComposite, Object>, Object> buildRawValueTransformer()
 	{
 
 		return new Function<HColumn<DynamicComposite, Object>, Object>()
@@ -59,8 +58,7 @@ public class DynamicCompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, Object>, Integer> buildTtlTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public Function<HColumn<DynamicComposite, Object>, Integer> buildTtlTransformer()
 	{
 
 		return new Function<HColumn<DynamicComposite, Object>, Integer>()

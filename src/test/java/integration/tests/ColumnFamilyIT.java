@@ -33,7 +33,7 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public class WideRowIT
+public class ColumnFamilyIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";

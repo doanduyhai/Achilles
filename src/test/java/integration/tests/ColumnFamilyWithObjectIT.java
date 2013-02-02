@@ -34,7 +34,7 @@ import fr.doan.achilles.holder.KeyValue;
  * @author DuyHai DOAN
  * 
  */
-public class WideRowWithObjectIT
+public class ColumnFamilyWithObjectIT
 {
 
 	@SuppressWarnings(

@@ -179,7 +179,7 @@ public class JoinExternalWideMapWrapperTest
 			"rawtypes"
 	})
 	@Test
-	public void should_find_range() throws Exception
+	public void should_find_keyvalue_range() throws Exception
 	{
 		int start = 7, end = 5, count = 10;
 		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
@@ -196,11 +196,77 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
 				(List) hColumns);
 		List<KeyValue<Integer, UserBean>> values = mock(List.class);
-		when(keyValueFactory.createListForComposite(externalJoinWideMapMeta, hColumns)).thenReturn(
-				values);
+		when(keyValueFactory.createJoinKeyValueListForComposite(externalJoinWideMapMeta, hColumns))
+				.thenReturn(values);
 
 		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);
+
+		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		assertThat(expected).isSameAs(values);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_values_range() throws Exception
+	{
+		int start = 7, end = 5, count = 10;
+		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
+						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+		{
+				startComp,
+				endComp
+		});
+		List<HColumn<Composite, ?>> hColumns = mock(List.class);
+		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
+				(List) hColumns);
+		List<UserBean> values = mock(List.class);
+		when(keyValueFactory.createJoinValueListForComposite(externalJoinWideMapMeta, hColumns))
+				.thenReturn(values);
+
+		List<UserBean> expected = wrapper.findValues(start, inclusiveStart, end, inclusiveEnd,
+				reverse, count);
+
+		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		assertThat(expected).isSameAs(values);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_keys_range() throws Exception
+	{
+		int start = 7, end = 5, count = 10;
+		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
+						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+		{
+				startComp,
+				endComp
+		});
+		List<HColumn<Composite, ?>> hColumns = mock(List.class);
+		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
+				(List) hColumns);
+		List<Integer> values = mock(List.class);
+		when(keyValueFactory.createKeyListForComposite(externalJoinWideMapMeta, hColumns))
+				.thenReturn(values);
+
+		List<Integer> expected = wrapper.findKeys(start, inclusiveStart, end, inclusiveEnd,
+				reverse, count);
 
 		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);

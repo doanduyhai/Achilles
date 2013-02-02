@@ -1,5 +1,6 @@
 package fr.doan.achilles.wrapper;
 
+import static fr.doan.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static fr.doan.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static fr.doan.achilles.serializer.SerializerUtils.INT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -7,8 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -27,6 +30,7 @@ import fr.doan.achilles.entity.type.KeyValueIterator;
 import fr.doan.achilles.helper.CompositeHelper;
 import fr.doan.achilles.holder.KeyValue;
 import fr.doan.achilles.holder.factory.KeyValueFactory;
+import fr.doan.achilles.iterator.AchillesJoinSliceIterator;
 import fr.doan.achilles.iterator.AchillesSliceIterator;
 import fr.doan.achilles.iterator.KeyValueIteratorForDynamicComposite;
 import fr.doan.achilles.iterator.factory.IteratorFactory;
@@ -51,6 +55,9 @@ public class WideMapWrapperTest
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
+	private PropertyMeta<Integer, UserBean> joinWideMapMeta;
+
+	@Mock
 	private DynamicCompositeKeyFactory keyFactory;
 
 	@Mock
@@ -66,6 +73,9 @@ public class WideMapWrapperTest
 
 	@Mock
 	private AchillesSliceIterator<Long, DynamicComposite, Object> achillesSliceIterator;
+
+	@Mock
+	private AchillesJoinSliceIterator<Long, DynamicComposite, Object, Integer, String> achillesJoinSliceIterator;
 
 	@SuppressWarnings(
 	{
@@ -120,45 +130,52 @@ public class WideMapWrapperTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_find_values_asc() throws Exception
+	public void should_find_keyvalue_asc_inclusive_start_exclusive_end() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
-
 		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
-		List<KeyValue<Integer, String>> result = wrapper.find(1, 2, 10);
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 
-		assertThat(result).isNotNull();
-		assertThat(result).isEmpty();
+		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
+		when(keyValueFactory.createKeyValueListForDynamicComposite(wideMapMeta, hColumns))
+				.thenReturn(result);
+		List<KeyValue<Integer, String>> expected = wrapper.find(1, true, 2, false, false, 10);
+
+		assertThat(expected).isSameAs(result);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_find_values_asc_bounds_exclusive() throws Exception
+	public void should_find_join_keyvalue_asc_inclusive_start_exclusive_end() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(wideMapMeta, 1, false, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
-		List<KeyValue<Integer, String>> result = wrapper.findBoundsExclusive(1, 2, 10);
+		when(wideMapMeta.type()).thenReturn(JOIN_WIDE_MAP);
 
-		assertThat(result).isNotNull();
-		assertThat(result).isEmpty();
+		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
+		when(keyValueFactory.createJoinKeyValueListForDynamicComposite(wideMapMeta, hColumns))
+				.thenReturn(result);
+		List<KeyValue<Integer, String>> expected = wrapper.find(1, true, 2, false, false, 10);
+
+		assertThat(expected).isSameAs(result);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -175,28 +192,88 @@ public class WideMapWrapperTest
 						start,
 						end
 				});
+
 		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 
-		List<KeyValue<Integer, String>> result = wrapper.find(1, true, 2, false, false, 10);
+		List<String> result = new ArrayList<String>();
+		when(keyValueFactory.createValueListForDynamicComposite(wideMapMeta, hColumns)).thenReturn(
+				result);
 
-		assertThat(result).isNotNull();
-		assertThat(result).isEmpty();
+		List<String> expected = wrapper.findValues(1, true, 2, false, false, 10);
+
+		assertThat(expected).isSameAs(result);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_return_iterator_default() throws Exception
+	public void should_find_join_values_asc_inclusive_start_exclusive_end() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, true, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 
+		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(wideMapMeta.type()).thenReturn(JOIN_WIDE_MAP);
+
+		List<String> result = new ArrayList<String>();
+		when(keyValueFactory.createJoinValueListForDynamicComposite(wideMapMeta, hColumns))
+				.thenReturn(result);
+
+		List<String> expected = wrapper.findValues(1, true, 2, false, false, 10);
+
+		assertThat(expected).isSameAs(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_find_keys_asc_inclusive_start_exclusive_end() throws Exception
+	{
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+
+		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
+
+		List<Integer> result = new ArrayList<Integer>();
+		when(keyValueFactory.createKeyListForDynamicComposite(wideMapMeta, hColumns)).thenReturn(
+				result);
+
+		List<Integer> expected = wrapper.findKeys(1, true, 2, false, false, 10);
+
+		assertThat(expected).isSameAs(result);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_return_iterator_inclusive_start_exclusive_end() throws Exception
+	{
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
+				new DynamicComposite[]
+				{
+						start,
+						end
+				});
+
+		when(wideMapMeta.type()).thenReturn(WIDE_MAP);
 		when(dao.getColumnsIterator(id, start, end, false, 10)).thenReturn(achillesSliceIterator);
 
 		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
@@ -205,7 +282,7 @@ public class WideMapWrapperTest
 				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
 						wideMapMeta)).thenReturn(iterator);
 
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, 10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, true, 2, false, false, 10);
 
 		assertThat(expected).isSameAs(iterator);
 
@@ -213,27 +290,29 @@ public class WideMapWrapperTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_return_iterator_exclusive_bounds() throws Exception
+	public void should_return_join_iterator_inclusive_start_exclusive_end() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery(wideMapMeta, 1, false, 3, false, false)).thenReturn(
+		when(keyFactory.createForQuery(wideMapMeta, 1, true, 3, false, false)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 
-		when(dao.getColumnsIterator(id, start, end, false, 10)).thenReturn(achillesSliceIterator);
+		when(wideMapMeta.type()).thenReturn(JOIN_WIDE_MAP);
+		when(dao.getJoinColumnsIterator(wideMapMeta, id, start, end, false, 10)).thenReturn(
+				achillesJoinSliceIterator);
 
 		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
 
 		when(
-				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
-						wideMapMeta)).thenReturn(iterator);
+				iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
+						achillesJoinSliceIterator, wideMapMeta)).thenReturn(iterator);
 
-		KeyValueIterator<Integer, String> expected = wrapper.iteratorBoundsExclusive(1, 3, 10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, true, 3, false, false, 10);
 
 		assertThat(expected).isSameAs(iterator);
 

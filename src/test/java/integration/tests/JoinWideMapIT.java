@@ -122,17 +122,32 @@ public class JoinWideMapIT
 		user.getTweets().insert(1, ownTweet1);
 		user.getTweets().insert(2, ownTweet2);
 
-		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().findReverse(2, 1, 5);
+		List<KeyValue<Integer, Tweet>> foundOwnTweetsKeyValues = user.getTweets().findReverse(2, 1,
+				5);
 
-		assertThat(foundOwnTweets).hasSize(2);
+		assertThat(foundOwnTweetsKeyValues).hasSize(2);
 
-		Tweet foundOwnTweet1 = foundOwnTweets.get(0).getValue();
-		Tweet foundOwnTweet2 = foundOwnTweets.get(1).getValue();
+		Tweet foundOwnTweet1 = foundOwnTweetsKeyValues.get(0).getValue();
+		Tweet foundOwnTweet2 = foundOwnTweetsKeyValues.get(1).getValue();
 
+		assertThat(foundOwnTweetsKeyValues.get(0).getKey()).isEqualTo(2);
 		assertThat(foundOwnTweet1.getId()).isEqualTo(ownTweet2.getId());
 		assertThat(foundOwnTweet1.getContent()).isEqualTo(ownTweet2.getContent());
+		assertThat(foundOwnTweetsKeyValues.get(1).getKey()).isEqualTo(1);
 		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet1.getId());
 		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet1.getContent());
+
+		List<Tweet> foundOwnTweetsValues = user.getTweets().findValuesReverse(2, 1, 5);
+
+		assertThat(foundOwnTweetsValues.get(0).getId()).isEqualTo(ownTweet2.getId());
+		assertThat(foundOwnTweetsValues.get(0).getContent()).isEqualTo(ownTweet2.getContent());
+		assertThat(foundOwnTweetsValues.get(1).getId()).isEqualTo(ownTweet1.getId());
+		assertThat(foundOwnTweetsValues.get(1).getContent()).isEqualTo(ownTweet1.getContent());
+
+		List<Integer> foundOwnTweetsKeys = user.getTweets().findKeysReverse(2, 1, 5);
+
+		assertThat(foundOwnTweetsKeys.get(0)).isEqualTo(2);
+		assertThat(foundOwnTweetsKeys.get(1)).isEqualTo(1);
 	}
 
 	@Test

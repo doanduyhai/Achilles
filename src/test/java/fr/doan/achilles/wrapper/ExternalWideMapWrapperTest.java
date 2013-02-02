@@ -117,7 +117,7 @@ public class ExternalWideMapWrapperTest
 			"rawtypes"
 	})
 	@Test
-	public void should_find_range() throws Exception
+	public void should_find_keyvalues_range() throws Exception
 	{
 		List<HColumn<Composite, String>> hColumns = mock(List.class);
 		List<KeyValue<Integer, String>> keyValues = mock(List.class);
@@ -132,10 +132,66 @@ public class ExternalWideMapWrapperTest
 				});
 
 		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
-		when(keyValueFactory.createListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
-				keyValues).thenReturn(keyValues);
+		when(keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns))
+				.thenReturn(keyValues).thenReturn(keyValues);
 
 		List<KeyValue<Integer, String>> expected = wrapper.find(12, 15, 10);
+		assertThat(expected).isSameAs(keyValues);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_values_range() throws Exception
+	{
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		List<String> keyValues = mock(List.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
+
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+
+		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(keyValueFactory.createValueListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
+				keyValues).thenReturn(keyValues);
+
+		List<String> expected = wrapper.findValues(12, 15, 10);
+		assertThat(expected).isSameAs(keyValues);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_keys_range() throws Exception
+	{
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		List<Integer> keyValues = mock(List.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
+
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+
+		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(keyValueFactory.createKeyListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
+				keyValues).thenReturn(keyValues);
+
+		List<Integer> expected = wrapper.findKeys(12, 15, 10);
 		assertThat(expected).isSameAs(keyValues);
 	}
 

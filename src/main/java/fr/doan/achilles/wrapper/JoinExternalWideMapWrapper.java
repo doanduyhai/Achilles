@@ -89,6 +89,47 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 				(List) hColumns);
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Override
+	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+		helper.checkBounds(externalWideMapMeta, start, end, reverse);
+
+		Composite[] queryComps = compositeKeyFactory.createForQuery( //
+				externalWideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+
+		List<HColumn<Composite, JOIN_ID>> hColumns = externalWideMapDao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
+
+		return keyValueFactory
+				.createJoinValueListForComposite(externalWideMapMeta, (List) hColumns);
+	}
+
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Override
+	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+		helper.checkBounds(externalWideMapMeta, start, end, reverse);
+
+		Composite[] queryComps = compositeKeyFactory.createForQuery( //
+				externalWideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+
+		List<HColumn<Composite, JOIN_ID>> hColumns = externalWideMapDao.findRawColumnsRange(id,
+				queryComps[0], queryComps[1], reverse, count);
+
+		return keyValueFactory.createKeyListForComposite(externalWideMapMeta, (List) hColumns);
+	}
+
 	@Override
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)

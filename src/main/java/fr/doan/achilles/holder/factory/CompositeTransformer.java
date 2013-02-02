@@ -46,8 +46,7 @@ public class CompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<Composite, ?>, ?> buildRawValueTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public Function<HColumn<Composite, ?>, ?> buildRawValueTransformer()
 	{
 
 		return new Function<HColumn<Composite, ?>, Object>()
@@ -59,8 +58,7 @@ public class CompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<Composite, ?>, Integer> buildTtlTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public Function<HColumn<Composite, ?>, Integer> buildTtlTransformer()
 	{
 
 		return new Function<HColumn<Composite, ?>, Integer>()

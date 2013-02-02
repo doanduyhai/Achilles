@@ -174,6 +174,40 @@ public class AbstractWideMapWrapperTest
 
 				variableCapture.set(capture);
 			}
+
+			@Override
+			public List<String> findValues(Long start, boolean inclusiveStart, Long end,
+					boolean inclusiveEnd, boolean reverse, int count)
+			{
+				VariableCapture capture = new VariableCapture();
+				capture.start = null;
+				capture.end = null;
+				capture.inclusiveStart = true;
+				capture.inclusiveEnd = true;
+				capture.count = count;
+				capture.reverse = true;
+
+				variableCapture.set(capture);
+
+				return null;
+			}
+
+			@Override
+			public List<Long> findKeys(Long start, boolean inclusiveStart, Long end,
+					boolean inclusiveEnd, boolean reverse, int count)
+			{
+				VariableCapture capture = new VariableCapture();
+				capture.start = null;
+				capture.end = null;
+				capture.inclusiveStart = true;
+				capture.inclusiveEnd = true;
+				capture.count = count;
+				capture.reverse = true;
+
+				variableCapture.set(capture);
+
+				return null;
+			}
 		};
 	}
 

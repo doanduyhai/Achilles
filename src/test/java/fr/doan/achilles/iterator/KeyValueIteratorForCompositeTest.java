@@ -95,7 +95,7 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
+		when(factory.createKeyValueForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 

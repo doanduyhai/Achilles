@@ -35,6 +35,9 @@ import fr.doan.achilles.holder.factory.KeyValueFactory;
 public class KeyValueIteratorForDynamicCompositeTest
 {
 
+	@InjectMocks
+	private KeyValueIteratorForDynamicComposite<TweetMultiKey, String> iterator;
+
 	@Mock
 	private AchillesSliceIterator<?, DynamicComposite, String> achillesSliceIterator;
 
@@ -46,9 +49,6 @@ public class KeyValueIteratorForDynamicCompositeTest
 
 	@Mock
 	private KeyValueFactory factory = new KeyValueFactory();
-
-	@InjectMocks
-	private KeyValueIteratorForDynamicComposite<TweetMultiKey, String> iterator;
 
 	@Mock
 	private MultiKeyProperties multiKeyProperties;
@@ -76,7 +76,8 @@ public class KeyValueIteratorForDynamicCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createKeyValueForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(keyValue);
+		when(factory.createKeyValueForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(
+				keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();
 
@@ -88,6 +89,12 @@ public class KeyValueIteratorForDynamicCompositeTest
 	{
 		when(achillesSliceIterator.hasNext()).thenReturn(false);
 		iterator.next();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void should_exception_when_remove_called() throws Exception
+	{
+		iterator.remove();
 	}
 
 }

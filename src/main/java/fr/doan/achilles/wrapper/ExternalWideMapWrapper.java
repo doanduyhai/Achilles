@@ -76,6 +76,44 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		return keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns);
 	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+		helper.checkBounds(wideMapMeta, start, end, reverse);
+
+		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+				inclusiveStart, end, inclusiveEnd, reverse);
+
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], reverse, count);
+
+		return keyValueFactory.createValueListForComposite(wideMapMeta, (List) hColumns);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count)
+	{
+		helper.checkBounds(wideMapMeta, start, end, reverse);
+
+		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+				inclusiveStart, end, inclusiveEnd, reverse);
+
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], reverse, count);
+
+		return keyValueFactory.createKeyListForComposite(wideMapMeta, (List) hColumns);
+	}
+
 	@Override
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count)
