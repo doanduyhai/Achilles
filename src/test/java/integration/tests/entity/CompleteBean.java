@@ -1,5 +1,10 @@
 package integration.tests.entity;
 
+import info.archinnov.achilles.annotations.Key;
+import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.entity.type.WideMap;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -13,10 +18,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import fr.doan.achilles.annotations.Key;
-import fr.doan.achilles.annotations.Lazy;
-import fr.doan.achilles.entity.type.MultiKey;
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * CompleteBean

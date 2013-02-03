@@ -1,16 +1,24 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
-import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.entity.metadata.PropertyType.END_EAGER;
-import static fr.doan.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static fr.doan.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
-import static fr.doan.achilles.entity.metadata.PropertyType.START_EAGER;
-import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static fr.doan.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
+import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
+import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
@@ -30,14 +38,6 @@ import org.apache.cassandra.utils.Pair;
 import org.junit.After;
 import org.junit.Test;
 
-import fr.doan.achilles.composite.factory.DynamicCompositeKeyFactory;
-import fr.doan.achilles.dao.GenericDynamicCompositeDao;
-import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**
  * JPAOperationsIT

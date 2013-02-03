@@ -1,5 +1,7 @@
 package integration.tests.entity;
 
+import info.archinnov.achilles.entity.type.WideMap;
+
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
@@ -9,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * User

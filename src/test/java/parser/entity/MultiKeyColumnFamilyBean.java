@@ -1,5 +1,8 @@
 package parser.entity;
 
+import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.entity.type.WideMap;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
@@ -7,8 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import mapping.entity.TweetMultiKey;
-import fr.doan.achilles.annotations.ColumnFamily;
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * MultiKeyWideRowBean

@@ -1,5 +1,7 @@
 package parser.entity;
 
+import info.archinnov.achilles.entity.type.WideMap;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
@@ -8,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * BeanWithExternalJoinWideMap

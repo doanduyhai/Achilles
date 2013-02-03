@@ -1,13 +1,20 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getEntityDao;
-import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.common.CassandraDaoTest.getWideRowDao;
-import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static fr.doan.achilles.serializer.SerializerUtils.UUID_SRZ;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
+import static info.archinnov.achilles.common.CassandraDaoTest.getWideRowDao;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
@@ -23,13 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import fr.doan.achilles.dao.GenericCompositeDao;
-import fr.doan.achilles.dao.GenericDynamicCompositeDao;
-import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.entity.type.KeyValueIterator;
-import fr.doan.achilles.holder.KeyValue;
-import fr.doan.achilles.serializer.SerializerUtils;
 
 /**
  * ExternalJoinWideMapIT

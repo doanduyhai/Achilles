@@ -1,7 +1,7 @@
 package integration.tests.entity;
 
-import fr.doan.achilles.annotations.Key;
-import fr.doan.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.annotations.Key;
+import info.archinnov.achilles.entity.type.MultiKey;
 
 /**
  * WideRowMultiKey

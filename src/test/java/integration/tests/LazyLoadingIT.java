@@ -1,8 +1,11 @@
 package integration.tests;
 
-import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
+import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import net.sf.cglib.proxy.Factory;
@@ -10,9 +13,6 @@ import net.sf.cglib.proxy.Factory;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.proxy.interceptor.AchillesInterceptor;
 
 /**
  * LazyLoadingIT

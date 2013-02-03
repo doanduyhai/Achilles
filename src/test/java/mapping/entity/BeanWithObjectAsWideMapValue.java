@@ -1,12 +1,13 @@
 package mapping.entity;
 
+import info.archinnov.achilles.entity.type.WideMap;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * BeanWithObjectAsWideMapValue

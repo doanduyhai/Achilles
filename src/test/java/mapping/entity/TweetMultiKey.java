@@ -1,9 +1,10 @@
 package mapping.entity;
 
+import info.archinnov.achilles.annotations.Key;
+import info.archinnov.achilles.entity.type.MultiKey;
+
 import java.util.UUID;
 
-import fr.doan.achilles.annotations.Key;
-import fr.doan.achilles.entity.type.MultiKey;
 
 /**
  * TweetMultiKey

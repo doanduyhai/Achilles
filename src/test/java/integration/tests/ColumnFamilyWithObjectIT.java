@@ -1,11 +1,17 @@
 package integration.tests;
 
-import static fr.doan.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static fr.doan.achilles.common.CassandraDaoTest.getCluster;
-import static fr.doan.achilles.common.CassandraDaoTest.getKeyspace;
-import static fr.doan.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static fr.doan.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
+import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.holder.KeyValue;
 import integration.tests.entity.ColumnFamilyBeanWithObject;
 import integration.tests.entity.ColumnFamilyBeanWithObject.Holder;
 
@@ -21,12 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.doan.achilles.common.CassandraDaoTest;
-import fr.doan.achilles.dao.GenericCompositeDao;
-import fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
-import fr.doan.achilles.entity.manager.ThriftEntityManager;
-import fr.doan.achilles.entity.type.WideMap;
-import fr.doan.achilles.holder.KeyValue;
 
 /**
  * WideRowWithObjectIT

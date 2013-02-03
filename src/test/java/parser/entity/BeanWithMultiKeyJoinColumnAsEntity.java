@@ -1,10 +1,11 @@
 package parser.entity;
 
+import info.archinnov.achilles.entity.type.WideMap;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
-import fr.doan.achilles.entity.type.WideMap;
 
 /**
  * BeanWithMultiKeyJoinColumnAsEntity

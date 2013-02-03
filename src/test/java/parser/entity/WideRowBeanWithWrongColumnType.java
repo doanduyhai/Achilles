@@ -1,12 +1,13 @@
 package parser.entity;
 
+import info.archinnov.achilles.annotations.ColumnFamily;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import fr.doan.achilles.annotations.ColumnFamily;
 
 /**
  * WideRowBeanWithWrongColumnType

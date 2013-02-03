@@ -1,6 +1,6 @@
 package parser.entity;
 
-import fr.doan.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.entity.type.MultiKey;
 
 /**
  * MultiKeyWithNoAnnotation

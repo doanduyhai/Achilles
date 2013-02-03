@@ -1,0 +1,113 @@
+package info.archinnov.achilles.entity.type;
+
+import info.archinnov.achilles.holder.KeyValue;
+
+import java.util.List;
+
+
+/**
+ * WideMap
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public interface WideMap<K, V>
+{
+	// Insertion
+	public void insert(K key, V value, int ttl);
+
+	public void insert(K key, V value);
+
+	// Get by key
+	public V get(K key);
+
+	// Find KeyValue
+	public List<KeyValue<K, V>> find(K start, K end, int count);
+
+	public List<KeyValue<K, V>> findBoundsExclusive(K start, K end, int count);
+
+	public List<KeyValue<K, V>> findReverse(K start, K end, int count);
+
+	public List<KeyValue<K, V>> findReverseBoundsExclusive(K start, K end, int count);
+
+	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count);
+
+	public KeyValue<K, V> findFirst();
+
+	public List<KeyValue<K, V>> findFirst(int count);
+
+	public KeyValue<K, V> findLast();
+
+	public List<KeyValue<K, V>> findLast(int count);
+
+	// Find Value
+
+	public List<V> findValues(K start, K end, int count);
+
+	public List<V> findValuesBoundsExclusive(K start, K end, int count);
+
+	public List<V> findValuesReverse(K start, K end, int count);
+
+	public List<V> findValuesReverseBoundsExclusive(K start, K end, int count);
+
+	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count);
+
+	public V findValuesFirst();
+
+	public List<V> findValuesFirst(int count);
+
+	public V findValuesLast();
+
+	public List<V> findValuesLast(int count);
+
+	// Find Key
+
+	public List<K> findKeys(K start, K end, int count);
+
+	public List<K> findKeysBoundsExclusive(K start, K end, int count);
+
+	public List<K> findKeysReverse(K start, K end, int count);
+
+	public List<K> findKeysReverseBoundsExclusive(K start, K end, int count);
+
+	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count);
+
+	public K findKeysFirst();
+
+	public List<K> findKeysFirst(int count);
+
+	public K findKeysLast();
+
+	public List<K> findKeysLast(int count);
+
+	// Iterator
+	public KeyValueIterator<K, V> iterator(K start, K end, int count);
+
+	public KeyValueIterator<K, V> iteratorBoundsExclusive(K start, K end, int count);
+
+	public KeyValueIterator<K, V> iteratorReverse(K start, K end, int count);
+
+	public KeyValueIterator<K, V> iteratorReverseBoundsExclusive(K start, K end, int count);
+
+	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
+			boolean inclusiveEnd, boolean reverse, int count);
+
+	public void remove(K key);
+
+	public void remove(K start, K end);
+
+	public void removeBoundsExclusive(K start, K end);
+
+	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd);
+
+	public void removeFirst();
+
+	public void removeFirst(int count);
+
+	public void removeLast();
+
+	public void removeLast(int count);
+}

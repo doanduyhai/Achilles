@@ -1,5 +1,15 @@
 package testBuilders;
 
+import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
+import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.MultiKey;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -11,15 +21,6 @@ import javax.persistence.CascadeType;
 import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
-import fr.doan.achilles.dao.GenericCompositeDao;
-import fr.doan.achilles.entity.EntityHelper;
-import fr.doan.achilles.entity.metadata.EntityMeta;
-import fr.doan.achilles.entity.metadata.ExternalWideMapProperties;
-import fr.doan.achilles.entity.metadata.JoinProperties;
-import fr.doan.achilles.entity.metadata.MultiKeyProperties;
-import fr.doan.achilles.entity.metadata.PropertyMeta;
-import fr.doan.achilles.entity.metadata.PropertyType;
-import fr.doan.achilles.entity.type.MultiKey;
 
 /**
  * PropertyMetaBuilder
