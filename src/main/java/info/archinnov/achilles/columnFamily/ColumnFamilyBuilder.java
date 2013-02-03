@@ -56,7 +56,7 @@ public class ColumnFamilyBuilder
 		builder.append("\t\tand comment = 'Column family for entity ").append(entityName)
 				.append("'\n\n");
 
-		log.info(builder.toString());
+		log.debug(builder.toString());
 
 		return cfDef;
 	}
@@ -97,8 +97,10 @@ public class ColumnFamilyBuilder
 		builder.append(comparatorTypesAlias).append("'\n");
 		builder.append("\t\tand default_validation_class = ").append(defaultValidationType)
 				.append("\n");
+		builder.append("\t\tand comment = 'Column family for property ").append(propertyName);
+		builder.append(" of entity ").append(entityName).append("'\n\n");
 
-		log.info(builder.toString());
+		log.debug(builder.toString());
 
 		return cfDef;
 	}

@@ -16,7 +16,7 @@
 			with key_validation_class = LongType
 			and comparator = 'CompositeType(UTF8Type,UUIDType)'
 			and default_validation_class = UTF8Type		
-			
+			and comment = 'Column family for property multiKeyExternalWideMap of entity integration.tests.entity.CompleteBean'
 
 
 	Create Composite-based column family for property 'map' of entity 'integration.tests.entity.MultiKeyColumnFamilyBean' : 
@@ -24,7 +24,7 @@
 			with key_validation_class = LongType
 			and comparator = 'CompositeType(LongType,UTF8Type)'
 			and default_validation_class = UTF8Type		
-			
+			and comment = 'Column family for property map of entity integration.tests.entity.MultiKeyColumnFamilyBean'
 			
 
  As shown above, all column families supporting an entity has a DynamicComposite comparator type with a list of aliases to indicates

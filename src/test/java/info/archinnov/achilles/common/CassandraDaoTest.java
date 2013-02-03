@@ -7,19 +7,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.factory.HFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.cassandraunit.DataLoader;
 import org.cassandraunit.dataset.json.ClassPathJsonDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * CassandraDaoTest
@@ -35,6 +36,7 @@ public abstract class CassandraDaoTest
 	private static final String CASSANDRA_TEST_CLUSTER_NAME = "Achilles Test Cassandra Cluster";
 	private static final String CASSANDRA_KEYSPACE_NAME = "achilles";
 	public static final String CASSANDRA_TEST_HOST = "localhost";
+	public static final String CASSANDRA_HOST = "cassandraHost";
 	public static int CASSANDRA_TEST_PORT = 9160;
 
 	private static Cluster cluster;
@@ -45,34 +47,46 @@ public abstract class CassandraDaoTest
 
 	static
 	{
-		try
+		String cassandraHost = System.getProperty(CASSANDRA_HOST);
+		if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":"))
 		{
-			final File temporaryCassandraYaml = prepareEmbeddedCassandraConfig();
+			CassandraHostConfigurator hostConfigurator = new CassandraHostConfigurator(
+					cassandraHost);
+			cluster = HFactory.getOrCreateCluster("achilles", hostConfigurator);
+			keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
+		}
+		else
+		{
 
-			EmbeddedCassandraServerHelper.startEmbeddedCassandra(temporaryCassandraYaml,
-					EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR);
-			Runtime.getRuntime().addShutdownHook(new Thread()
+			try
 			{
-				@Override
-				public void run()
+				final File temporaryCassandraYaml = prepareEmbeddedCassandraConfig();
+
+				EmbeddedCassandraServerHelper.startEmbeddedCassandra(temporaryCassandraYaml,
+						EmbeddedCassandraServerHelper.DEFAULT_TMP_DIR);
+				Runtime.getRuntime().addShutdownHook(new Thread()
 				{
-					FileUtils.deleteQuietly(temporaryCassandraYaml);
-					log.info("Shutting down cassandra");
-				}
-			});
+					@Override
+					public void run()
+					{
+						FileUtils.deleteQuietly(temporaryCassandraYaml);
+						log.info("Shutting down cassandra");
+					}
+				});
 
-		}
-		catch (Exception e1)
-		{
-			throw new IllegalStateException("Cannot start cassandra embedded", e1);
-		}
-		DataLoader dataLoader = new DataLoader(CASSANDRA_TEST_CLUSTER_NAME, CASSANDRA_TEST_HOST
-				+ ":" + CASSANDRA_TEST_PORT);
-		dataLoader.load(new ClassPathJsonDataSet(CASSANDRA_TEST_COLUMN_FAMILIES_CONFIG));
+			}
+			catch (Exception e1)
+			{
+				throw new IllegalStateException("Cannot start cassandra embedded", e1);
+			}
+			DataLoader dataLoader = new DataLoader(CASSANDRA_TEST_CLUSTER_NAME, CASSANDRA_TEST_HOST
+					+ ":" + CASSANDRA_TEST_PORT);
+			dataLoader.load(new ClassPathJsonDataSet(CASSANDRA_TEST_COLUMN_FAMILIES_CONFIG));
 
-		cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
-				+ CASSANDRA_TEST_PORT);
-		keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
+			cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
+					+ CASSANDRA_TEST_PORT);
+			keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
+		}
 	}
 
 	private static File prepareEmbeddedCassandraConfig() throws IOException
