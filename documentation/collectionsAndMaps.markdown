@@ -37,8 +37,8 @@
  If you need to store more than 1000 items, consider using **internal** or **external wide maps**. Check [Internal WideMap][internalWideMap]
  and [External WideMap][externalWideMap] for more details
 
-[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
-[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
+[internalWideMap]: /documentation/internalWideMap.markdown
+[externalWideMap]: /documentation/externalWideMap.markdown
  
  
  

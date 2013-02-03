@@ -100,17 +100,17 @@ So at most, the physical row can records up to `2.10^9 - (N+M+0+3)` values for t
 
  
  
-[quickTuto]: /doanduyhai/achilles/tree/master/documentation/quickTuto.markdown	
-[annotations]: /doanduyhai/achilles/tree/master/documentation/annotations.markdown
-[emOperations]: /doanduyhai/achilles/tree/master/documentation/emOperations.markdown
-[collectionsAndMaps]: /doanduyhai/achilles/tree/master/documentation/collectionsAndMaps.markdown
-[dirtyCheck]: /doanduyhai/achilles/tree/master/documentation/dirtyCheck.markdown
-[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
-[internalWideMap]: /doanduyhai/achilles/tree/master/documentation/internalWideMap.markdown
-[externalWideMap]: /doanduyhai/achilles/tree/master/documentation/externalWideMap.markdown
-[cfDirectMapping]: /doanduyhai/achilles/tree/master/documentation/cfDirectMapping.markdown
-[multiComponentKey]: /doanduyhai/achilles/tree/master/documentation/multiComponentKey.markdown
-[joinColumns]: /doanduyhai/achilles/tree/master/documentation/joinColumns.markdown
-[manualCFCreation]:  /doanduyhai/achilles/tree/master/documentation/manualCFCreation.markdown
+[quickTuto]: /documentation/quickTuto.markdown
+[annotations]: /documentation/annotations.markdown
+[emOperations]: /documentation/emOperations.markdown
+[collectionsAndMaps]: /documentation/collectionsAndMaps.markdown
+[dirtyCheck]: /documentation/dirtyCheck.markdown
+[wideMapAPI]: /documentation/wideMapAPI.markdown
+[internalWideMap]: /documentation/internalWideMap.markdown
+[externalWideMap]: /documentation/externalWideMap.markdown
+[cfDirectMapping]: /documentation/cfDirectMapping.markdown
+[multiComponentKey]: /documentation/multiComponentKey.markdown
+[joinColumns]: /documentation/joinColumns.markdown
+[manualCFCreation]:  /documentation/manualCFCreation.markdown
 [rowCaching]: http://www.datastax.com/dev/blog/maximizing-cache-benefit-with-cassandra
 [eBayBlog]: http://www.ebaytechblog.com/2012/08/14/cassandra-data-modeling-best-practices-part-2/

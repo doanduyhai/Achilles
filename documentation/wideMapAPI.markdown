@@ -17,6 +17,7 @@
 	// Find operations
 	public V get(K key);
 
+	// Find KeyValue
 	public List<KeyValue<K, V>> find(K start, K end, int count);
 
 	public List<KeyValue<K, V>> findBoundsExclusive(K start, K end, int count);
@@ -31,11 +32,50 @@
 	public KeyValue<K, V> findFirst();
 
 	public List<KeyValue<K, V>> findFirst(int count);
-		
+
 	public KeyValue<K, V> findLast();
 
 	public List<KeyValue<K, V>> findLast(int count);
 
+	// Find Value
+	public List<V> findValues(K start, K end, int count);
+
+	public List<V> findValuesBoundsExclusive(K start, K end, int count);
+
+	public List<V> findValuesReverse(K start, K end, int count);
+
+	public List<V> findValuesReverseBoundsExclusive(K start, K end, int count);
+
+	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count);
+
+	public V findValuesFirst();
+
+	public List<V> findValuesFirst(int count);
+
+	public V findValuesLast();
+
+	public List<V> findValuesLast(int count);
+
+	// Find Key
+	public List<K> findKeys(K start, K end, int count);
+
+	public List<K> findKeysBoundsExclusive(K start, K end, int count);
+
+	public List<K> findKeysReverse(K start, K end, int count);
+
+	public List<K> findKeysReverseBoundsExclusive(K start, K end, int count);
+
+	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
+			boolean reverse, int count);
+
+	public K findKeysFirst();
+
+	public List<K> findKeysFirst(int count);
+
+	public K findKeysLast();
+
+	public List<K> findKeysLast(int count);
 	
 	// Iterator
 	public KeyValueIterator<K, V> iterator(K start, K end, int count);
@@ -71,6 +111,9 @@
  API, you can define **inclusive** or **exclusive bounds** for range queries and range deletions. The API also offers
  some convenient methods like `findFirst()` or `findLast()` to save you the hassle of defining a slice range query with count
  =1.
+ 
+ The API also provides `findValuesXXX()` and `findKeysXXX()` methods to get only values or keys. The performance is identical
+ to the `find()` methods since ***Achilles*** still fetch all the data in the background but only return keys or values.
 
  The **KeyValue** type returned by some methods is just a POJO to hold the key/value pair.
 
@@ -145,4 +188,4 @@
  Consequently, giving a too wide range for deletion will deplete quickly your memory. For wide range deletion, use iterator 
  and batch mode to flush deletions by batch.
  
-[perf]:  /doanduyhai/achilles/tree/master/documentation/performance.markdown
+[perf]:  /documentation/performance.markdown

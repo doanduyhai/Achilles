@@ -223,5 +223,5 @@
 
  And that's it. To have more details on the advanced features, please check the [Documentation].	
 
-[Documentation]: /doanduyhai/achilles/tree/master/documentation/README.markdown		
-[wideMapAPI]: /doanduyhai/achilles/tree/master/documentation/wideMapAPI.markdown
+[Documentation]: /documentation/README.markdown
+[wideMapAPI]: /documentation/wideMapAPI.markdown
