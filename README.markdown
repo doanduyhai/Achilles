@@ -23,7 +23,7 @@
  For now, **Achilles** depends on the following libraries:
  
  1. Cassandra 1.2
- 2. Hector-core 1.1-2 (**Achilles** is built upon Hector API)
+ 2. Hector-core 1.1-2 (__Achilles__ is built upon Hector API)
  3. CGLIB nodep 2.2.2 for proxy building
  3. Persistence-api 1.0.2 
    
