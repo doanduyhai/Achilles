@@ -4,7 +4,7 @@
  
  To deactivate the embedded server and run the tests with a stand-alone Cassandra server, add the following VM argument:
  
-> -DcassandraHost=<host>:<port>
+> -DcassandraHost=&lt;host&gt;:&lt;port&gt;
 
 [cassandraUnit]: https://github.com/jsevellec/cassandra-unit
  
