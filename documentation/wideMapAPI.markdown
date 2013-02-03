@@ -113,7 +113,7 @@
  =1.
  
  The API also provides `findValuesXXX()` and `findKeysXXX()` methods to get only values or keys. The performance is identical
- to the `find()` methods since ***Achilles*** still fetch all the data in the background but only return keys or values.
+ to the `find()` methods since **Achilles** still fetch all the data in the background but only return keys or values.
 
  The **KeyValue** type returned by some methods is just a POJO to hold the key/value pair.
 
