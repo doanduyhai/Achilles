@@ -22,8 +22,10 @@
 
  For now, **Achilles** depends on the following libraries:
  
- 1. Cassandra 1.1.6 (will be upgraded soon to 1.2)
- 2. Hector-core 1.0-5 (<strong>Achilles</strong> is built upon Hector API) 
+ 1. Cassandra 1.2
+ 2. Hector-core 1.1-2 (**Achilles** is built upon Hector API)
+ 3. CGLIB nodep 2.2.2 for proxy building
+ 3. Persistence-api 1.0.2 
    
   
  Install **Achilles** jar into your local Maven repository:
@@ -33,7 +35,7 @@
  Then add the following dependency in your **pom.xml**:
  
 	<dependency>	
-		<groupId>fr.doan</groupId>
+		<groupId>info.archinnov</groupId>
 		<artifactId>achilles</artifactId>
 		<version>1.0-beta</version>
 	</dependency>  
@@ -51,6 +53,7 @@
 9. [Direct Column Family Mapping][cfDirectMapping]
 10. [Multi components for wide row][multiComponentKey]
 11. [Join columns][joinColumns]
+12. [Manual Column Family Creation][manualCFCreation]
 
 
 # License #

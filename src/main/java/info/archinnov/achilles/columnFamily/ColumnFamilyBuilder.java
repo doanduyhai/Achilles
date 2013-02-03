@@ -12,7 +12,6 @@ import me.prettyprint.hector.api.factory.HFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * ColumnFamilyBuilder
  * 
@@ -32,21 +31,39 @@ public class ColumnFamilyBuilder
 			String keyspaceName)
 	{
 
+		String entityName = entityMeta.getClassName();
+		String columnFamilyName = entityMeta.getColumnFamilyName();
+
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
-				entityMeta.getColumnFamilyName(), ComparatorType.DYNAMICCOMPOSITETYPE);
+				columnFamilyName, ComparatorType.DYNAMICCOMPOSITETYPE);
 
-		cfDef.setKeyValidationClass(entityMeta.getIdSerializer().getComparatorType().getTypeName());
+		String keyValidationType = entityMeta.getIdSerializer().getComparatorType().getTypeName();
+
+		cfDef.setKeyValidationClass(keyValidationType);
 		cfDef.setComparatorTypeAlias(DYNAMIC_TYPE_ALIASES);
-		cfDef.setComment("Column family for entity '" + entityMeta.getClassName() + "'");
+		cfDef.setComment("Column family for entity '" + entityName + "'");
 
-		log.debug("Create Dynamic Composite-based column family for entityMeta {}",
-				entityMeta.getClassName());
+		StringBuilder builder = new StringBuilder("\n\n");
+		builder.append("Create Dynamic Composite-based column family for entity ");
+		builder.append("'").append(entityName).append("' : \n");
+		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
+		builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
+		builder.append("\t\tand comparator = '").append(
+				ComparatorType.DYNAMICCOMPOSITETYPE.getTypeName());
+		builder.append(DYNAMIC_TYPE_ALIASES).append("'\n");
+		builder.append("\t\tand default_validation_class = ")
+				.append(ComparatorType.BYTESTYPE.getTypeName()).append("\n");
+		builder.append("\t\tand comment = 'Column family for entity ").append(entityName)
+				.append("'\n\n");
+
+		log.info(builder.toString());
 
 		return cfDef;
 	}
 
 	public <ID> ColumnFamilyDefinition buildCompositeCF(String keyspaceName,
-			PropertyMeta<?, ?> propertyMeta, Class<ID> keyClass, String columnFamilyName)
+			PropertyMeta<?, ?> propertyMeta, Class<ID> keyClass, String columnFamilyName,
+			String entityName)
 	{
 		Class<?> valueClass = propertyMeta.getValueClass();
 
@@ -58,16 +75,30 @@ public class ColumnFamilyBuilder
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, comparatorType);
 
-		cfDef.setKeyValidationClass(keySerializer.getComparatorType().getTypeName());
+		String keyValidationType = keySerializer.getComparatorType().getTypeName();
+		cfDef.setKeyValidationClass(keyValidationType);
 		cfDef.setComparatorTypeAlias(comparatorTypesAlias);
 
 		Serializer<?> valueSerializer = SerializerTypeInferer.getSerializer(valueClass);
 
-		cfDef.setDefaultValidationClass(valueSerializer.getComparatorType().getTypeName());
+		String defaultValidationType = valueSerializer.getComparatorType().getTypeName();
+		cfDef.setDefaultValidationClass(defaultValidationType);
 		cfDef.setComment("Column family for entity '" + columnFamilyName + "'");
 
-		log.debug("Create Composite-based column family for propertyMeta {}",
-				propertyMeta.getPropertyName());
+		String propertyName = propertyMeta.getPropertyName();
+
+		StringBuilder builder = new StringBuilder("\n\n");
+		builder.append("Create Composite-based column family for property ");
+		builder.append("'").append(propertyName).append("' of entity '");
+		builder.append(entityName).append("' : \n");
+		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
+		builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
+		builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
+		builder.append(comparatorTypesAlias).append("'\n");
+		builder.append("\t\tand default_validation_class = ").append(defaultValidationType)
+				.append("\n");
+
+		log.info(builder.toString());
 
 		return cfDef;
 	}

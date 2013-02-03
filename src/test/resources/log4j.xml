@@ -11,9 +11,11 @@
 		</layout>
 	</appender>
 	
-
-
-
+	
+	<logger name="info.archinnov.columnFamily.ColumnFamilyBuilder">
+		<level value="DEBUG" />
+		<appender-ref ref="ConsoleAppender" />
+	</logger>
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->
 	<!-- ********************************************************* -->

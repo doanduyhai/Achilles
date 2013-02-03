@@ -37,21 +37,6 @@
 
   <dependencies>
 
-	 <dependency>
-            <groupId>me.prettyprint</groupId>
-            <artifactId>hector-core</artifactId>
-            <version>1.0-5</version>
-			<exclusions>
-                <exclusion>
-                    <artifactId>servlet-api</artifactId>
-                    <groupId>javax.servlet</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>org.apache.cassandra</artifactId>
-                    <groupId>cassandra-thrift</groupId>
-                </exclusion>                
-            </exclusions>            
-        </dependency>
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
@@ -60,13 +45,59 @@
         <dependency>
         	<groupId>org.apache.cassandra</groupId>
         	<artifactId>cassandra-all</artifactId>
-        	<version>1.1.6</version>
+        	<version>1.2.0</version>
+        	<exclusions>
+        		<exclusion>
+        			<artifactId>guava</artifactId>
+        			<groupId>com.google.guava</groupId>
+        		</exclusion>
+        		<exclusion>
+        			<artifactId>slf4j-api</artifactId>
+        			<groupId>org.slf4j</groupId>
+        		</exclusion>
+        	</exclusions>
         </dependency>
         <dependency>
         	<groupId>org.apache.cassandra</groupId>
         	<artifactId>cassandra-thrift</artifactId>
+        	<version>1.2.0</version>
+        </dependency>          
+ 		 <dependency>
+ 		 	<groupId>org.hectorclient</groupId>
+ 		 	<artifactId>hector-core</artifactId>
+ 		 	<version>1.1-2</version>
+ 		 	<exclusions>
+ 		 		<exclusion>
+ 		 			<artifactId>cassandra-thrift</artifactId>
+ 		 			<groupId>org.apache.cassandra</groupId>
+ 		 		</exclusion>
+        		<exclusion>
+        			<artifactId>slf4j-api</artifactId>
+        			<groupId>org.slf4j</groupId>
+        		</exclusion>
+<!--         		<exclusion> -->
+<!--         			<artifactId>guava</artifactId> -->
+<!--         			<groupId>com.google.guava</groupId> -->
+<!--         		</exclusion> -->
+ 		 	</exclusions>	
+ 		 </dependency>
+ 		 <dependency>
+ 		 	<groupId>commons-io</groupId>
+ 		 	<artifactId>commons-io</artifactId>
+ 		 	<version>2.4</version>
+ 		 </dependency>
+ 		 <dependency>
+ 		 	<groupId>cglib</groupId>
+ 		 	<artifactId>cglib-nodep</artifactId>
+ 		 	<version>2.2.2</version>
+ 		 </dependency>
+<!-- TEST 		  		  		                -->
+        <dependency>
+        	<groupId>org.apache.cassandra</groupId>
+        	<artifactId>cassandra-all</artifactId>
         	<version>1.1.6</version>
-        </dependency>                
+        	<scope>test</scope>
+        </dependency>
         <dependency>
         	<groupId>org.easytesting</groupId>
         	<artifactId>fest-assert-core</artifactId>
@@ -93,6 +124,10 @@
             		<artifactId>hector-core</artifactId>
             		<groupId>org.hectorclient</groupId>
             	</exclusion>
+            	<exclusion>
+            		<artifactId>hector-core</artifactId>
+            		<groupId>org.hectorclient</groupId>
+            	</exclusion>
             </exclusions>
         </dependency>
  		 <dependency>
@@ -108,19 +143,10 @@
  		 	<scope>test</scope>
  		 </dependency>
  		 <dependency>
- 		 	<groupId>commons-io</groupId>
- 		 	<artifactId>commons-io</artifactId>
- 		 	<version>2.4</version>
- 		 </dependency>
- 		 <dependency>
  		 	<groupId>org.easytesting</groupId>
  		 	<artifactId>fest-util</artifactId>
  		 	<version>1.2.3</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>cglib</groupId>
- 		 	<artifactId>cglib-nodep</artifactId>
- 		 	<version>2.2.2</version>
+ 		 	<scope>test</scope>
  		 </dependency>
  		 <dependency>
  		 	<groupId>org.springframework</groupId>

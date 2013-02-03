@@ -7,10 +7,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
-import info.archinnov.achilles.columnFamily.ColumnFamilyValidator;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -37,7 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * ColumnFamilyHelperTest
@@ -145,9 +140,10 @@ public class ColumnFamilyHelperTest
 		idMeta.setValueClass(Long.class);
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+		meta.setClassName("entity");
 		when(
 				columnFamilyBuilder.buildCompositeCF("keyspace", simplePropertyMeta, Long.class,
-						"testCF")).thenReturn(cfDef);
+						"testCF", "entity")).thenReturn(cfDef);
 
 		helper.createColumnFamily(meta);
 
@@ -248,11 +244,10 @@ public class ColumnFamilyHelperTest
 		externalCFDef.setName("externalCF");
 		when(
 				columnFamilyBuilder.buildCompositeCF("keyspace", externalWideMapMeta, Long.class,
-						"externalCF")).thenReturn(externalCFDef);
+						"externalCF", meta.getClassName())).thenReturn(externalCFDef);
 
 		helper.validateOrCreateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyBuilder).buildCompositeCF("keyspace", externalWideMapMeta, Long.class,
-				"externalCF");
+
 		verify(columnFamilyValidator).validateCFWithEntityMeta(cfDef, meta);
 		verify(cluster).addColumnFamily(externalCFDef, true);
 	}

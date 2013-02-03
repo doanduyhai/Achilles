@@ -11,7 +11,7 @@
 9. [Direct Column Family Mapping][cfDirectMapping]
 10. [Multi components for wide row][multiComponentKey]
 11. [Join columns][joinColumns]
-
+12. [Manual Column Family Creation][manualCFCreation]
 
 [quickTuto]: /documentation/quickTuto.markdown
 [annotations]: /documentation/annotations.markdown

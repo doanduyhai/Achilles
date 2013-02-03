@@ -20,8 +20,7 @@
  The *last boolean flag* tells **Achilles** whether to force the column families creation if they do not 
  exist or not. This flag should be set to **true** most of the time because **Achilles** creates its own 
  column family structure for persistence and it is very unlikely that your existing column families 
- are compatible with **Achilles** structure (but it can be in some cases, check [Mapping with existing 
- Column Families][])
+ are compatible with **Achilles** structure (but it can be in some cases, check [Manual Column Family Creation][manualCFCreation])
 
  For Spring users:
 
@@ -225,3 +224,4 @@
 
 [Documentation]: /documentation/README.markdown
 [wideMapAPI]: /documentation/wideMapAPI.markdown
+[manualCFCreation]:  /documentation/manualCFCreation.markdown

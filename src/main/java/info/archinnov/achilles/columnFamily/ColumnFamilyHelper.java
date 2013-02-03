@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * ColumnFamilyHelper
  * 
@@ -79,7 +78,7 @@ public class ColumnFamilyHelper
 					.next();
 			cfDef = this.columnFamilyBuilder.buildCompositeCF(this.keyspace.getKeyspaceName(),
 					propertyMeta, entityMeta.getIdMeta().getValueClass(),
-					entityMeta.getColumnFamilyName());
+					entityMeta.getColumnFamilyName(), entityMeta.getClassName());
 		}
 		else
 		{
@@ -110,7 +109,7 @@ public class ColumnFamilyHelper
 							.getExternalWideMapDao();
 					this.validateOrCreateCFForExternalWideMap(propertyMeta, entityMeta.getIdMeta()
 							.getValueClass(), forceColumnFamilyCreation, externalWideMapDao
-							.getColumnFamily());
+							.getColumnFamily(), entityMeta.getClassName());
 				}
 			}
 
@@ -119,7 +118,8 @@ public class ColumnFamilyHelper
 	}
 
 	private <ID> void validateOrCreateCFForExternalWideMap(PropertyMeta<?, ?> propertyMeta,
-			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName)
+			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
+			String entityName)
 	{
 
 		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(externalColumnFamilyName);
@@ -131,7 +131,7 @@ public class ColumnFamilyHelper
 						propertyMeta.getPropertyName());
 
 				cfDef = this.columnFamilyBuilder.buildCompositeCF(this.keyspace.getKeyspaceName(),
-						propertyMeta, keyClass, externalColumnFamilyName);
+						propertyMeta, keyClass, externalColumnFamilyName, entityName);
 				this.cluster.addColumnFamily(cfDef, true);
 			}
 			else

@@ -5,8 +5,6 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -25,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * ColumnFamilyBuilderTest
@@ -92,7 +89,7 @@ public class ColumnFamilyBuilderTest
 				"typeAlias");
 
 		ColumnFamilyDefinition cfDef = builder.buildCompositeCF("keyspace", wideMapMeta,
-				Long.class, "cf");
+				Long.class, "cf", "entity");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
