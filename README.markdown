@@ -15,11 +15,23 @@
 
 # Installation #
 
- For the moment the framework is not available yet as a maven repo (it will be soon) so just clone or fork the 
- project:
+ To use Achilles, just add the following dependency in your **pom.xml**:
  
->	git clone https://github.com/doanduyhai/Achilles.git
-
+	<dependency>	
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles</artifactId>
+		<version>1.0-beta</version>
+	</dependency>  
+ 
+ The framework has been release on **Sonatype OSS** repository so make sure you have the following
+ entry in your **pom.xml**:
+ 
+ 	<repository>
+		<id>Sonatype</id>
+		<name>oss.sonatype.org</name>
+		<url>http://oss.sonatype.org</url>
+	</repository>
+ 
  For now, **Achilles** depends on the following libraries:
  
  1. Cassandra 1.2
@@ -28,17 +40,7 @@
  3. Persistence-api 1.0.2 
    
   
- Install **Achilles** jar into your local Maven repository:
  
->	mvn clean install 
-
- Then add the following dependency in your **pom.xml**:
- 
-	<dependency>	
-		<groupId>info.archinnov</groupId>
-		<artifactId>achilles</artifactId>
-		<version>1.0-beta</version>
-	</dependency>  
 
 # Documentation #
 
