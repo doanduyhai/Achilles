@@ -15,7 +15,7 @@
 
 # Installation #
 
- To use Achilles, just add the following dependency in your **pom.xml**:
+ To use **Achilles**, just add the following dependency in your **pom.xml**:
  
 	<dependency>	
 		<groupId>info.archinnov</groupId>
@@ -23,7 +23,7 @@
 		<version>1.0-beta</version>
 	</dependency>  
  
- The framework has been release on **Sonatype OSS** repository so make sure you have the following
+ The framework has been released on **Sonatype OSS** repository so make sure you have the following
  entry in your **pom.xml**:
  
  	<repository>
