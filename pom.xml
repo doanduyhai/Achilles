@@ -261,8 +261,8 @@
   </build>  
 	<scm>
 		<url>https://github.com/doanduyhai/achilles</url>
-		<connection>scm:git:git@github.com:doanduyhai/achilles</connection>
-		<developerConnection>scm:git:git@github.com:doanduyhai/achilles</developerConnection>
+		<connection>scm:git:git@github.com:doanduyhai/Achilles</connection>
+		<developerConnection>scm:git:git@github.com:doanduyhai/Achilles</developerConnection>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
