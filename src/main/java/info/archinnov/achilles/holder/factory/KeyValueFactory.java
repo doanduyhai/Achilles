@@ -14,7 +14,6 @@ import me.prettyprint.hector.api.beans.HColumn;
 
 import com.google.common.collect.Lists;
 
-
 /**
  * KeyValueFactory
  * 
@@ -45,6 +44,11 @@ public class KeyValueFactory
 			HColumn<DynamicComposite, Object> hColumn)
 	{
 		return propertyMeta.getValue(hColumn.getValue());
+	}
+
+	public Integer createTtlForDynamicComposite(HColumn<DynamicComposite, Object> hColumn)
+	{
+		return hColumn.getTtl();
 	}
 
 	public <K, V> List<V> createValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
@@ -126,6 +130,11 @@ public class KeyValueFactory
 			HColumn<Composite, ?> hColumn)
 	{
 		return propertyMeta.getValue(hColumn.getValue());
+	}
+
+	public Integer createTtlForComposite(HColumn<Composite, ?> hColumn)
+	{
+		return hColumn.getTtl();
 	}
 
 	public <K, V> List<V> createValueListForComposite(PropertyMeta<K, V> propertyMeta,

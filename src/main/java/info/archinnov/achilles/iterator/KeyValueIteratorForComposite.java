@@ -56,6 +56,54 @@ public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V
 	}
 
 	@Override
+	public K nextKey()
+	{
+		K key = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			key = factory.createKeyForComposite(wideMapMeta, column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return key;
+	}
+
+	@Override
+	public V nextValue()
+	{
+		V value = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			value = factory.createValueForComposite(wideMapMeta, column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return value;
+	}
+
+	@Override
+	public Integer nextTtl()
+	{
+		Integer ttl = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			ttl = factory.createTtlForComposite(column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return ttl;
+	}
+
+	@Override
 	public void remove()
 	{
 		throw new UnsupportedOperationException(

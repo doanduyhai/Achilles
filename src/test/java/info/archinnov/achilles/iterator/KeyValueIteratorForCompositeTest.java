@@ -1,24 +1,17 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.holder.factory.KeyValueFactory;
-import info.archinnov.achilles.iterator.AchillesSliceIterator;
-import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -81,17 +74,10 @@ public class KeyValueIteratorForCompositeTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_give_next_element() throws Exception
+	public void should_give_next_keyvalue() throws Exception
 	{
 		KeyValue<CorrectMultiKey, String> keyValue = mock(KeyValue.class);
-		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
-				STRING_SRZ);
-		Composite comp = new Composite();
-		comp.setComponent(0, 12, INT_SRZ);
-		comp.setComponent(1, "name", STRING_SRZ);
-		hColumn.setName(comp);
-		hColumn.setValue("test");
-		hColumn.setTtl(1);
+		HColumn<Composite, String> hColumn = mock(HColumn.class);
 
 		when(achillesSliceIterator.hasNext()).thenReturn(true, false);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
@@ -103,6 +89,63 @@ public class KeyValueIteratorForCompositeTest
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 
 		assertThat(result).isSameAs(keyValue);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_give_next_key() throws Exception
+	{
+		CorrectMultiKey key = mock(CorrectMultiKey.class);
+		HColumn<Composite, String> hColumn = mock(HColumn.class);
+
+		when(achillesSliceIterator.hasNext()).thenReturn(true, false);
+		when(achillesSliceIterator.next()).thenReturn(hColumn);
+		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
+
+		when(factory.createKeyForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(key);
+
+		CorrectMultiKey result = iterator.nextKey();
+
+		assertThat(result).isSameAs(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_give_next_value() throws Exception
+	{
+		String value = "value";
+		HColumn<Composite, String> hColumn = mock(HColumn.class);
+
+		when(achillesSliceIterator.hasNext()).thenReturn(true, false);
+		when(achillesSliceIterator.next()).thenReturn(hColumn);
+		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
+
+		when(factory.createValueForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(value);
+
+		String result = iterator.nextValue();
+
+		assertThat(result).isSameAs(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_give_next_ttl() throws Exception
+	{
+		Integer ttl = 123;
+		HColumn<Composite, String> hColumn = mock(HColumn.class);
+
+		when(achillesSliceIterator.hasNext()).thenReturn(true, false);
+		when(achillesSliceIterator.next()).thenReturn(hColumn);
+		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
+
+		when(factory.createTtlForComposite(hColumn)).thenReturn(ttl);
+
+		Integer result = iterator.nextTtl();
+
+		assertThat(result).isSameAs(ttl);
 	}
 
 	@Test(expected = NoSuchElementException.class)

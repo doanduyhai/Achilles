@@ -55,6 +55,54 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 	}
 
 	@Override
+	public K nextKey()
+	{
+		K key = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			key = factory.createKeyForDynamicComposite(wideMapMeta, column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return key;
+	}
+
+	@Override
+	public V nextValue()
+	{
+		V value = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			value = factory.createValueForDynamicComposite(wideMapMeta, column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return value;
+	}
+
+	@Override
+	public Integer nextTtl()
+	{
+		Integer ttl = null;
+		if (this.achillesSliceIterator.hasNext())
+		{
+			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			ttl = factory.createTtlForDynamicComposite(column);
+		}
+		else
+		{
+			throw new NoSuchElementException();
+		}
+		return ttl;
+	}
+
+	@Override
 	public void remove()
 	{
 		throw new UnsupportedOperationException(

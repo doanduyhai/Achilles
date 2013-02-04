@@ -122,6 +122,10 @@
  elements in memory and return then upon call to *next()*. When the last element in memory is returned, the iterator will
  fetch another batch of *count* elements from **Cassandra** and so on until the last element.
  
+ The **KeyValueIterator** also offers the `nextValue()`, `nextKey()` or `nextTtl()` methods to retrieve respectively the value,
+ key or ttl value of each element. This is only a shorthand because in the background **Achilles** does load the whole
+ column in memory.
+ 
  Behind the scene, **Achilles** relies on (Dynamic) Composite slice range queries to do the job.
  
 ##### Usage 

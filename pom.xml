@@ -1,7 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>  
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>info.archinnov</groupId>
   <artifactId>achilles</artifactId>
   <version>1.0-beta</version>
@@ -33,10 +37,16 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <cassandra.version>1.1.6</cassandra.version>
+    <hector.version>1.1-2</hector.version>
+    <cglib.version>2.2.2</cglib.version>
+            <!-- Maven plugins -->
+     <maven.compiler.version>2.4</maven.compiler.version>
+     <maven.enforcer.version>1.0.1</maven.enforcer.version>
+     <maven.surefire.version>2.12</maven.surefire.version>
   </properties>
 
   <dependencies>
-
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
@@ -45,7 +55,7 @@
         <dependency>
         	<groupId>org.apache.cassandra</groupId>
         	<artifactId>cassandra-all</artifactId>
-        	<version>1.2.0</version>
+        	<version>${cassandra.version}</version>
         	<exclusions>
         		<exclusion>
         			<artifactId>guava</artifactId>
@@ -60,12 +70,12 @@
         <dependency>
         	<groupId>org.apache.cassandra</groupId>
         	<artifactId>cassandra-thrift</artifactId>
-        	<version>1.2.0</version>
+        	<version>${cassandra.version}</version>
         </dependency>          
  		 <dependency>
  		 	<groupId>org.hectorclient</groupId>
  		 	<artifactId>hector-core</artifactId>
- 		 	<version>1.1-2</version>
+ 		 	<version>${hector.version}</version>
  		 	<exclusions>
  		 		<exclusion>
  		 			<artifactId>cassandra-thrift</artifactId>
@@ -75,10 +85,6 @@
         			<artifactId>slf4j-api</artifactId>
         			<groupId>org.slf4j</groupId>
         		</exclusion>
-<!--         		<exclusion> -->
-<!--         			<artifactId>guava</artifactId> -->
-<!--         			<groupId>com.google.guava</groupId> -->
-<!--         		</exclusion> -->
  		 	</exclusions>	
  		 </dependency>
  		 <dependency>
@@ -89,15 +95,16 @@
  		 <dependency>
  		 	<groupId>cglib</groupId>
  		 	<artifactId>cglib-nodep</artifactId>
- 		 	<version>2.2.2</version>
+ 		 	<version>${cglib.version}</version>
  		 </dependency>
-<!-- TEST 		  		  		                -->
-        <dependency>
-        	<groupId>org.apache.cassandra</groupId>
-        	<artifactId>cassandra-all</artifactId>
-        	<version>1.1.6</version>
-        	<scope>test</scope>
-        </dependency>
+
+		<!-- TEST  -->
+<!--         <dependency> -->
+<!--         	<groupId>org.apache.cassandra</groupId> -->
+<!--         	<artifactId>cassandra-all</artifactId> -->
+<!--         	<version>1.1.6</version> -->
+<!--         	<scope>test</scope> -->
+<!--         </dependency> -->
         <dependency>
         	<groupId>org.easytesting</groupId>
         	<artifactId>fest-assert-core</artifactId>
@@ -167,19 +174,42 @@
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-compiler-plugin</artifactId>
-              <version>2.3.2</version>
+              <version>${maven.compiler.version}</version>
               <configuration>
                   <source>1.6</source>
                   <target>1.6</target>
               </configuration>
           </plugin>
+  			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven.enforcer.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[3.0.4,)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>[1.6.0,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>          
 			<plugin>
             	<groupId>org.apache.maven.plugins</groupId>
             	<artifactId>maven-surefire-plugin</artifactId>
-            	<version>2.12</version>
+            	<version>${maven.surefire.version}</version>
 				<configuration>			
 					<includes>
-						<include>**/fr/doan/**/*.java</include>
+						<include>**/info/archinnov/**/*.java</include>
 						<include>**/integration/tests/*.java</include>
 					</includes>	 
 				</configuration>
@@ -217,4 +247,13 @@
       	</plugin>	    
     </plugins> 
   </build>  
+	<scm>
+		<url>https://github.com/doanduyhai/achilles</url>
+		<connection>scm:git:git@github.com:doanduyhai/achilles</connection>
+		<developerConnection>scm:git:git@github.com:doanduyhai/achilles</developerConnection>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/doanduyhai/achilles/issues</url>
+	</issueManagement>
 </project>
