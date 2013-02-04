@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>info.archinnov</groupId>
   <artifactId>achilles</artifactId>
-  <version>1.0-beta</version>
+  <version>1.0-beta-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>A fully featured EntityManager for Cassandra</description>
   <inceptionYear>2012</inceptionYear>
@@ -262,7 +262,6 @@
 	<scm>
 		<url>https://github.com/doanduyhai/achilles</url>
 		<connection>scm:git:git@github.com:doanduyhai/achilles</connection>
-		<developerConnection>scm:git:git@github.com:doanduyhai/achilles</developerConnection>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
