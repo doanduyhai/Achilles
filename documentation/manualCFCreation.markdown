@@ -7,7 +7,7 @@
 		create column family CompleteBean
 			with key_validation_class = LongType
 			and comparator = 'DynamicCompositeType(a=>AsciiType,b=>BytesType,c=>BooleanType,d=>DateType,e=>DecimalType,z=>DoubleType,f=>FloatType,i=>IntegerType,j=>Int32Type,x=>LexicalUUIDType,l=>LongType,t=>TimeUUIDType,s=>UTF8Type,u=>UUIDType)'
-			and default_validation_class = BytesType
+			and default_validation_class = UTF8Type
 			and comment = 'Column family for entity integration.tests.entity.CompleteBean'
 
 
