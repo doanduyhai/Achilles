@@ -10,7 +10,7 @@ import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.SetWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.WideRowWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -118,7 +118,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 			case WIDE_MAP:
 				if (wideRow)
 				{
-					result = buildWideRowWrapper(propertyMeta);
+					result = buildColumnFamilyWrapper(propertyMeta);
 				}
 				else
 				{
@@ -146,7 +146,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private <K extends Comparable<K>, V> Object buildExternalWideMapWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return WideRowWrapperBuilder.builder(
+		return ExternalWideMapWrapperBuilder.builder(
 				key,
 				(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
 						.getExternalWideMapDao(), propertyMeta).build();
@@ -174,9 +174,9 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K extends Comparable<K>, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta)
+	private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		return WideRowWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) wideRowDao,
+		return ExternalWideMapWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) wideRowDao,
 				propertyMeta).build();
 	}
 

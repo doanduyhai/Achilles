@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-
 import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -22,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * EntityMapper
  * 
@@ -38,7 +36,7 @@ public class EntityMapper
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> void setEagerPropertiesToEntity(ID key,
-			List<Pair<DynamicComposite, Object>> columns, EntityMeta<ID> entityMeta, T entity)
+			List<Pair<DynamicComposite, String>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
 		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
@@ -51,13 +49,13 @@ public class EntityMapper
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
-		for (Pair<DynamicComposite, Object> pair : columns)
+		for (Pair<DynamicComposite, String> pair : columns)
 		{
 			String propertyName = pair.left.get(1, STRING_SRZ);
 
 			if (StringUtils.equals(propertyName, PropertyType.SERIAL_VERSION_UID.name()))
 			{
-				if (!Long.class.cast(pair.right).equals(entityMeta.getSerialVersionUID()))
+				if (Long.parseLong(pair.right) != entityMeta.getSerialVersionUID())
 				{
 					throw new IllegalStateException(
 							"Saved serialVersionUID does not match current serialVersionUID for entity '"
@@ -76,19 +74,20 @@ public class EntityMapper
 			else if (propertyMeta.type() == PropertyType.LIST)
 			{
 				PropertyMeta<Void, ?> listMeta = (PropertyMeta<Void, ?>) propertyMeta;
-				addToList(listProperties, listMeta, listMeta.getValue(pair.right));
+				addToList(listProperties, listMeta, listMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.SET)
 			{
 				PropertyMeta<Void, ?> setMeta = (PropertyMeta<Void, ?>) propertyMeta;
-				addToSet(setProperties, setMeta, setMeta.getValue(pair.right));
+				addToSet(setProperties, setMeta, setMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.MAP)
 			{
 				PropertyMeta<?, ?> mapMeta = (PropertyMeta<?, ?>) propertyMeta;
-				addToMap(mapProperties, mapMeta, (KeyValue<?, ?>) pair.right);
+
+				addToMap(mapProperties, mapMeta, propertyMeta.getKeyValueFromString(pair.right));
 			}
 		}
 
@@ -162,7 +161,7 @@ public class EntityMapper
 		{
 			map = (Map<K, V>) mapProperties.get(propertyName);
 		}
-		map.put((K) keyValue.getKey(), mapMeta.getValue(keyValue.getValue()));
+		map.put((K) keyValue.getKey(), mapMeta.castValue(keyValue.getValue()));
 	}
 
 	public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> keyMeta, T entity)
@@ -178,13 +177,14 @@ public class EntityMapper
 		}
 	}
 
-	public <T, ID> void setSimplePropertyToEntity(Object value, PropertyMeta<?, ?> propertyMeta,
+	public <T, ID> void setSimplePropertyToEntity(String value, PropertyMeta<?, ?> propertyMeta,
 			T entity)
 	{
 		log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(), entity);
 		try
 		{
-			helper.setValueToField(entity, propertyMeta.getSetter(), propertyMeta.getValue(value));
+			helper.setValueToField(entity, propertyMeta.getSetter(),
+					propertyMeta.getValueFromString(value));
 		}
 		catch (Exception e)
 		{

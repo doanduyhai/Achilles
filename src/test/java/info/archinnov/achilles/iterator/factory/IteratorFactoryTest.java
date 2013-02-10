@@ -2,12 +2,10 @@ package info.archinnov.achilles.iterator.factory;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
-import info.archinnov.achilles.iterator.factory.IteratorFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -19,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * IteratorFactoryTest
@@ -36,7 +33,7 @@ public class IteratorFactoryTest
 	private AchillesSliceIterator<?, Composite, String> columnSliceComposite;
 
 	@Mock
-	private AchillesSliceIterator<?, DynamicComposite, Object> columnSliceDynamicComposite;
+	private AchillesSliceIterator<?, DynamicComposite, String> columnSliceDynamicComposite;
 
 	@Mock
 	private List<Method> componentSetters;

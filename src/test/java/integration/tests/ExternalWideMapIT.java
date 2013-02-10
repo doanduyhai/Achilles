@@ -3,7 +3,7 @@ package integration.tests;
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
-import static info.archinnov.achilles.common.CassandraDaoTest.getWideRowDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -39,7 +39,7 @@ public class ExternalWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericCompositeDao<Long, String> externalWideMapDao = getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, String> externalWideMapDao = getCompositeDao(LONG_SRZ,
 			STRING_SRZ, normalizerAndValidateColumnFamilyName("ExternalWideMap"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

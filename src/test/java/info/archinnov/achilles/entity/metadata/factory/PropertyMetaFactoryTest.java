@@ -15,10 +15,8 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -26,6 +24,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,6 +41,10 @@ public class PropertyMetaFactoryTest
 {
 	Method[] accessors = new Method[2];
 
+	private ObjectMapper mapper = new ObjectMapper();
+
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Before
 	public void setUp() throws Exception
 	{
@@ -54,12 +57,12 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SIMPLE)
-				.propertyName("prop").accessors(accessors).build();
+				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -74,12 +77,13 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
-				.type(LAZY_SIMPLE).propertyName("prop").accessors(accessors).build();
+				.type(LAZY_SIMPLE).propertyName("prop").accessors(accessors)
+				.objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(LAZY_SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -93,13 +97,13 @@ public class PropertyMetaFactoryTest
 	public void should_build_simple_with_object_as_value() throws Exception
 	{
 		PropertyMeta<Void, Bean> built = PropertyMetaFactory.factory(Bean.class).type(SIMPLE)
-				.propertyName("prop").accessors(accessors).build();
+				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		Bean bean = new Bean();
-		assertThat(built.getValue((Object) bean)).isInstanceOf(Bean.class);
+		assertThat(built.getValueFromString(writeString(bean))).isInstanceOf(Bean.class);
 		assertThat(built.getValueClass()).isEqualTo(Bean.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				OBJECT_SRZ.getComparatorType());
@@ -114,12 +118,12 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LIST)
-				.propertyName("prop").accessors(accessors).build();
+				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -134,12 +138,13 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
-				.type(LAZY_LIST).propertyName("prop").accessors(accessors).build();
+				.type(LAZY_LIST).propertyName("prop").accessors(accessors)
+				.objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(LAZY_LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -154,12 +159,12 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SET)
-				.propertyName("prop").accessors(accessors).build();
+				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -174,12 +179,12 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LAZY_SET)
-				.propertyName("prop").accessors(accessors).build();
+				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(LAZY_SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -195,7 +200,7 @@ public class PropertyMetaFactoryTest
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
 				.factory(Integer.class, String.class).type(MAP).propertyName("prop")
-				.accessors(accessors).build();
+				.accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -205,7 +210,7 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
 				INT_SRZ.getComparatorType());
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -219,7 +224,8 @@ public class PropertyMetaFactoryTest
 	public void should_build_map_with_object_as_key() throws Exception
 	{
 		PropertyMeta<Bean, String> built = PropertyMetaFactory.factory(Bean.class, String.class)
-				.type(MAP).propertyName("prop").accessors(accessors).build();
+				.type(MAP).propertyName("prop").accessors(accessors).objectMapper(objectMapper)
+				.build();
 
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -230,7 +236,7 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
 				OBJECT_SRZ.getComparatorType());
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -246,7 +252,7 @@ public class PropertyMetaFactoryTest
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
 				.factory(Integer.class, String.class).type(LAZY_MAP).propertyName("prop")
-				.accessors(accessors).build();
+				.accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(LAZY_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -256,7 +262,7 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
 				INT_SRZ.getComparatorType());
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -272,7 +278,7 @@ public class PropertyMetaFactoryTest
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
 				.factory(Integer.class, String.class).type(WIDE_MAP).propertyName("prop")
-				.accessors(accessors).build();
+				.accessors(accessors).objectMapper(objectMapper).build();
 
 		assertThat(built.type()).isEqualTo(WIDE_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -282,7 +288,7 @@ public class PropertyMetaFactoryTest
 		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
 				INT_SRZ.getComparatorType());
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -317,6 +323,7 @@ public class PropertyMetaFactoryTest
 				.type(WIDE_MAP).propertyName("prop") //
 				.accessors(accessors) //
 				.multiKeyProperties(props) //
+				.objectMapper(objectMapper) //
 				.build();
 
 		assertThat(built.type()).isEqualTo(WIDE_MAP);
@@ -333,7 +340,7 @@ public class PropertyMetaFactoryTest
 
 		assertThat(built.getMultiKeyProperties().getComponentSetters()).isSameAs(componentSetters);
 
-		assertThat(built.getValue((Object) "val")).isInstanceOf(String.class);
+		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
 		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
 				STRING_SRZ.getComparatorType());
@@ -341,5 +348,10 @@ public class PropertyMetaFactoryTest
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isFalse();
 		assertThat(built.type().isJoinColumn()).isFalse();
+	}
+
+	private String writeString(Object value) throws Exception
+	{
+		return mapper.writeValueAsString(value);
 	}
 }

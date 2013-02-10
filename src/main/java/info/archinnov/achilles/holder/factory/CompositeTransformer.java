@@ -8,9 +8,8 @@ import me.prettyprint.hector.api.beans.HColumn;
 
 import com.google.common.base.Function;
 
-
 /**
- * TransformerBuilder
+ * CompositeTransformer
  * 
  * @author DuyHai DOAN
  * 
@@ -41,7 +40,7 @@ public class CompositeTransformer
 		{
 			public V apply(HColumn<Composite, ?> hColumn)
 			{
-				return propertyMeta.getValue(hColumn.getValue());
+				return propertyMeta.castValue(hColumn.getValue());
 			}
 		};
 	}
@@ -87,10 +86,27 @@ public class CompositeTransformer
 			HColumn<Composite, ?> hColumn)
 	{
 		K key = buildKeyFromComposite(propertyMeta, hColumn);
-		V value = propertyMeta.getValue(hColumn.getValue());
+		V value = this.buildValueFromComposite(propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
 
 		return new KeyValue<K, V>(key, value, ttl);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <K, V> V buildValueFromComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<Composite, ?> hColumn)
+	{
+		V value;
+		if (propertyMeta.type().isJoinColumn())
+		{
+			value = (V) hColumn.getValue();
+		}
+		else
+		{
+			value = propertyMeta.castValue(hColumn.getValue());
+		}
+
+		return value;
 	}
 
 	public <K, V> K buildKeyFromComposite(PropertyMeta<K, V> propertyMeta,

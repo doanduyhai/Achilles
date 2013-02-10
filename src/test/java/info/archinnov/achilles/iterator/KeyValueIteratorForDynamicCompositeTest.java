@@ -67,7 +67,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Test
 	public void should_give_next_keyvalue() throws Exception
 	{
-		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
+		HColumn<DynamicComposite, String> column = mock(HColumn.class);
 		KeyValue<TweetMultiKey, String> keyValue = mock(KeyValue.class);
 
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
@@ -91,7 +91,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Test
 	public void should_give_next_key() throws Exception
 	{
-		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
+		HColumn<DynamicComposite, String> column = mock(HColumn.class);
 		TweetMultiKey key = mock(TweetMultiKey.class);
 
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
@@ -114,7 +114,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Test
 	public void should_give_next_value() throws Exception
 	{
-		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
+		HColumn<DynamicComposite, String> column = mock(HColumn.class);
 		String value = "value";
 
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
@@ -137,7 +137,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Test
 	public void should_give_next_ttl() throws Exception
 	{
-		HColumn<DynamicComposite, Object> column = mock(HColumn.class);
+		HColumn<DynamicComposite, String> column = mock(HColumn.class);
 		Integer ttl = 5464;
 
 		when(achillesSliceIterator.hasNext()).thenReturn(true);

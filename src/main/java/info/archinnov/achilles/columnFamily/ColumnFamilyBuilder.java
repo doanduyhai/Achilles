@@ -1,5 +1,7 @@
 package info.archinnov.achilles.columnFamily;
 
+import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -80,6 +82,11 @@ public class ColumnFamilyBuilder
 		cfDef.setComparatorTypeAlias(comparatorTypesAlias);
 
 		Serializer<?> valueSerializer = SerializerTypeInferer.getSerializer(valueClass);
+
+		if (valueSerializer == OBJECT_SRZ && !propertyMeta.type().isJoinColumn())
+		{
+			valueSerializer = STRING_SRZ;
+		}
 
 		String defaultValidationType = valueSerializer.getComparatorType().getTypeName();
 		cfDef.setDefaultValidationClass(defaultValidationType);

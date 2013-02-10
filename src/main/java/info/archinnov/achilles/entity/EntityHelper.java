@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * EntityHelper
  * 
@@ -175,7 +174,7 @@ public class EntityHelper
 			try
 			{
 				Object value = idMeta.getGetter().invoke(entity);
-				return idMeta.getValue(value);
+				return idMeta.castValue(value);
 			}
 			catch (Exception e)
 			{

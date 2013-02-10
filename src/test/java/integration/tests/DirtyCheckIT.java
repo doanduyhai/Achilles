@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
@@ -30,10 +30,10 @@ import java.util.Set;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * DirtyCheckIT
@@ -44,15 +44,16 @@ import org.junit.Test;
 public class DirtyCheckIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
-
 	private CompleteBean bean;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -74,11 +75,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(columns.get(2).right).isEqualTo("qux");
+		assertThat(readString(columns.get(2).right)).isEqualTo("qux");
 	}
 
 	@Test
@@ -91,12 +92,12 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(columns.get(1).right).isEqualTo("qux");
-		assertThat(columns.get(2).right).isEqualTo("bar");
+		assertThat(readString(columns.get(1).right)).isEqualTo("qux");
+		assertThat(readString(columns.get(2).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -109,12 +110,12 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(columns.get(2).right).isEqualTo("qux");
-		assertThat(columns.get(3).right).isEqualTo("baz");
+		assertThat(readString(columns.get(2).right)).isEqualTo("qux");
+		assertThat(readString(columns.get(3).right)).isEqualTo("baz");
 	}
 
 	@Test
@@ -127,7 +128,7 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(0);
@@ -143,11 +144,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("bar");
+		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -160,11 +161,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("foo");
+		assertThat(readString(columns.get(0).right)).isEqualTo("foo");
 	}
 
 	@Test
@@ -177,11 +178,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("bar");
+		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -194,11 +195,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("foo");
+		assertThat(readString(columns.get(0).right)).isEqualTo("foo");
 	}
 
 	@Test
@@ -211,11 +212,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("bar");
+		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -228,11 +229,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(columns.get(1).right).isEqualTo("qux");
+		assertThat(readString(columns.get(1).right)).isEqualTo("qux");
 	}
 
 	@Test
@@ -248,11 +249,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("bar");
+		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -268,11 +269,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(columns.get(0).right).isEqualTo("bar");
+		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
 	}
 
 	@Test
@@ -288,11 +289,11 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForList();
 		DynamicComposite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(columns.get(0).right).isEqualTo("qux");
+		assertThat(readString(columns.get(0).right)).isEqualTo("qux");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -306,11 +307,14 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValue<Integer, String>) columns.get(3).right).getValue()).isEqualTo("test");
+
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(3).right,
+						KeyValue.class)).getValue()).isEqualTo("test");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -324,14 +328,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -348,13 +354,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(((KeyValue<Integer, String>) columns.get(2).right).getValue())
-				.isEqualTo("75015");
-		assertThat(((KeyValue<Integer, String>) columns.get(3).right).getValue()).isEqualTo("test");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(2).right,
+						KeyValue.class)).getValue()).isEqualTo("75015");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(3).right,
+						KeyValue.class)).getValue()).isEqualTo("test");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -368,14 +377,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -389,12 +400,13 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -408,13 +420,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue()).isEqualTo("FR");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("FR");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -431,14 +446,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -452,14 +469,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -474,12 +493,13 @@ public class DirtyCheckIT
 
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -493,13 +513,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue()).isEqualTo("FR");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("FR");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -516,14 +539,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -542,14 +567,16 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("Paris");
-		assertThat(((KeyValue<Integer, String>) columns.get(1).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("Paris");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(1).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -571,12 +598,13 @@ public class DirtyCheckIT
 		DynamicComposite startComp = startCompForMap();
 		DynamicComposite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(((KeyValue<Integer, String>) columns.get(0).right).getValue())
-				.isEqualTo("75014");
+		assertThat(
+				((KeyValue<Integer, String>) objectMapper.readValue(columns.get(0).right,
+						KeyValue.class)).getValue()).isEqualTo("75014");
 	}
 
 	@Test
@@ -590,7 +618,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "name", EQUAL);
 
-		Object reloadedName = dao.getValue(bean.getId(), compo);
+		Object reloadedName = readString(dao.getValue(bean.getId(), compo));
 
 		assertThat(reloadedName).isEqualTo("another_name");
 	}
@@ -606,7 +634,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
 
-		Object reloadedLabel = dao.getValue(bean.getId(), compo);
+		Object reloadedLabel = readString(dao.getValue(bean.getId(), compo));
 
 		assertThat(reloadedLabel).isEqualTo("label");
 	}
@@ -624,7 +652,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
 
-		Object reloadedLabel = dao.getValue(bean.getId(), compo);
+		Object reloadedLabel = readString(dao.getValue(bean.getId(), compo));
 
 		assertThat(reloadedLabel).isEqualTo("label");
 	}
@@ -687,6 +715,11 @@ public class DirtyCheckIT
 		startComp.addComponent(1, "preferences", EQUAL);
 		startComp.addComponent(2, 0, EQUAL);
 		return startComp;
+	}
+
+	private String readString(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, String.class);
 	}
 
 	@After

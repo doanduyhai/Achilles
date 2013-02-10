@@ -3,7 +3,6 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 
@@ -22,7 +21,6 @@ import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.apache.cassandra.utils.Pair;
-
 
 /**
  * AchillesJoinSliceIterator
@@ -121,7 +119,7 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 		List<V> joinIds = new ArrayList<V>();
 		Map<V, Pair<N, Integer>> hColumMap = new HashMap<V, Pair<N, Integer>>();
 		Serializer<?> nameSerializer;
-		if (propertyMeta.getExternalWideMapProperties() != null)
+		if (propertyMeta.type().isExternal())
 		{
 			nameSerializer = COMPOSITE_SRZ;
 		}
@@ -133,9 +131,23 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 		while (iter.hasNext())
 		{
 			HColumn<N, V> hColumn = iter.next();
-			joinIds.add(hColumn.getValue());
-			hColumMap.put(hColumn.getValue(),
-					new Pair<N, Integer>(hColumn.getName(), hColumn.getTtl()));
+
+			PropertyMeta<Void, ?> joinIdMeta = propertyMeta.getJoinProperties().getEntityMeta()
+					.getIdMeta();
+
+			V joinId;
+			if (propertyMeta.type().isExternal())
+			{
+
+				joinId = (V) joinIdMeta.castValue(hColumn.getValue());
+			}
+			else
+			{
+				joinId = (V) joinIdMeta.getValueFromString(hColumn.getValue());
+
+			}
+			joinIds.add(joinId);
+			hColumMap.put(joinId, new Pair<N, Integer>(hColumn.getName(), hColumn.getTtl()));
 		}
 		Map<V, VALUE> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, propertyMeta.getJoinProperties().getEntityMeta());

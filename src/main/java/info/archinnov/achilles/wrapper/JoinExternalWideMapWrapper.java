@@ -2,6 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -44,13 +45,18 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		return comp;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Override
 	public V get(K key)
 	{
 		JOIN_ID joinId = externalWideMapDao.getValue(id, buildComposite(key));
-		return (V) loader.loadJoinEntity(externalWideMapMeta.getValueClass(), joinId,
-				externalWideMapMeta.getJoinProperties().getEntityMeta());
+		EntityMeta entityMeta = externalWideMapMeta.getJoinProperties().getEntityMeta();
+		return (V) loader.loadJoinEntity(externalWideMapMeta.getValueClass(), entityMeta
+				.getIdMeta().castValue(joinId), entityMeta);
 	}
 
 	@SuppressWarnings("unchecked")

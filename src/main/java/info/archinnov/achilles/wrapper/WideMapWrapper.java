@@ -42,19 +42,20 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	public V get(K key)
 	{
 		Object value = dao.getValue(id, buildComposite(key));
-		return wideMapMeta.getValue(value);
+		return wideMapMeta.getValueFromString(value);
 	}
 
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		dao.setValue(id, buildComposite(key), (Object) value, ttl);
+
+		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value), ttl);
 	}
 
 	@Override
 	public void insert(K key, V value)
 	{
-		dao.setValue(id, buildComposite(key), (Object) value);
+		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value));
 	}
 
 	@Override
@@ -67,7 +68,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+		List<HColumn<DynamicComposite, String>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
 		if (wideMapMeta.type().isJoinColumn())
@@ -91,7 +92,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+		List<HColumn<DynamicComposite, String>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 		if (wideMapMeta.type().isJoinColumn())
 		{
@@ -114,7 +115,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<DynamicComposite, Object>> hColumns = dao.findRawColumnsRange(id,
+		List<HColumn<DynamicComposite, String>> hColumns = dao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 		return keyValueFactory.createKeyListForDynamicComposite(wideMapMeta, hColumns);
 	}
@@ -130,7 +131,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		if (wideMapMeta.type().isJoinColumn())
 		{
 
-			AchillesJoinSliceIterator<ID, DynamicComposite, Object, K, V> joinColumnSliceIterator = dao
+			AchillesJoinSliceIterator<ID, DynamicComposite, String, K, V> joinColumnSliceIterator = dao
 					.getJoinColumnsIterator(wideMapMeta, id, queryComps[0], queryComps[1], reverse,
 							count);
 
@@ -141,7 +142,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		else
 		{
 
-			AchillesSliceIterator<ID, DynamicComposite, Object> columnSliceIterator = dao
+			AchillesSliceIterator<ID, DynamicComposite, String> columnSliceIterator = dao
 					.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
 			return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator,

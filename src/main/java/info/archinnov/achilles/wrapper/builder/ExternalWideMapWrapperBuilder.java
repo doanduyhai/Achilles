@@ -10,13 +10,13 @@ import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
  * @author DuyHai DOAN
  * 
  */
-public class WideRowWrapperBuilder<ID, K, V>
+public class ExternalWideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
 	private GenericCompositeDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
 
-	public WideRowWrapperBuilder(ID id, GenericCompositeDao<ID, V> dao,
+	public ExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.id = id;
@@ -24,10 +24,10 @@ public class WideRowWrapperBuilder<ID, K, V>
 		this.wideMapMeta = wideMapMeta;
 	}
 
-	public static <ID, K, V> WideRowWrapperBuilder<ID, K, V> builder(ID id,
+	public static <ID, K, V> ExternalWideMapWrapperBuilder<ID, K, V> builder(ID id,
 			GenericCompositeDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
 	{
-		return new WideRowWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
+		return new ExternalWideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}
 
 	public ExternalWideMapWrapper<ID, K, V> build()

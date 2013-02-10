@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -23,7 +23,7 @@ import javax.persistence.JoinColumn;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
-
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * EntityParser
@@ -36,6 +36,13 @@ public class EntityParser
 	private PropertyParser parser = new PropertyParser();
 	private PropertyFilter filter = new PropertyFilter();
 	private EntityHelper helper = new EntityHelper();
+	private ObjectMapperFactory objectMapperFactory;
+
+	public EntityParser(ObjectMapperFactory objectMapperFactory) {
+		Validator.validateNotNull(objectMapperFactory,
+				"A non null ObjectMapperFactory is required for creating an EntityParser");
+		this.objectMapperFactory = objectMapperFactory;
+	}
 
 	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass,
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
@@ -43,10 +50,15 @@ public class EntityParser
 		Map<Field, String> externalWideMaps = new HashMap<Field, String>();
 		Map<Field, String> externalJoinWideMaps = new HashMap<Field, String>();
 
+		ObjectMapper objectMapper = objectMapperFactory.getMapper(entityClass);
+		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '"
+				+ entityClass.getCanonicalName() + "'");
+
 		Validator.validateInstantiable(entityClass);
 		String columnFamily = helper.inferColumnFamilyName(entityClass, entityClass.getName());
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
-		boolean wideRow = entityClass.getAnnotation(info.archinnov.achilles.annotations.ColumnFamily.class) != null ? true
+		boolean wideRow = entityClass
+				.getAnnotation(info.archinnov.achilles.annotations.ColumnFamily.class) != null ? true
 				: false;
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
@@ -59,7 +71,7 @@ public class EntityParser
 			boolean isWideMap = WideMap.class.isAssignableFrom(field.getType());
 			if (filter.hasAnnotation(field, Id.class))
 			{
-				idMeta = parser.parse(entityClass, field, field.getName());
+				idMeta = parser.parse(entityClass, field, field.getName(), objectMapper);
 				continue;
 			}
 
@@ -80,7 +92,8 @@ public class EntityParser
 				}
 				else
 				{
-					propertyMetas.put(propertyName, parser.parse(entityClass, field, propertyName));
+					propertyMetas.put(propertyName,
+							parser.parse(entityClass, field, propertyName, objectMapper));
 				}
 			}
 			else if (filter.hasAnnotation(field, JoinColumn.class))
@@ -101,7 +114,7 @@ public class EntityParser
 				else
 				{
 					PropertyMeta<?, ?> joinPropertyMeta = parser.parse(entityClass, field,
-							propertyName);
+							propertyName, objectMapper);
 					propertyMetas.put(propertyName, joinPropertyMeta);
 					joinPropertyMetaToBeFilled.put(joinPropertyMeta,
 							joinPropertyMeta.getValueClass());
@@ -112,7 +125,7 @@ public class EntityParser
 
 		validateIdMeta(entityClass, idMeta);
 		validatePropertyMetas(entityClass, propertyMetas);
-		validateWideRow(entityClass, wideRow, propertyMetas);
+		validateColumnFamily(entityClass, wideRow, propertyMetas);
 
 		// Deferred external wide map fields parsing
 		for (Entry<Field, String> entry : externalWideMaps.entrySet())
@@ -121,7 +134,7 @@ public class EntityParser
 			propertyMetas.put(
 					propertyName,
 					parser.parseExternalWideMapProperty(keyspace, idMeta, entityClass,
-							entry.getKey(), propertyName));
+							entry.getKey(), propertyName, objectMapper));
 		}
 
 		// Deferred external join wide map fields parsing
@@ -130,7 +143,7 @@ public class EntityParser
 			String propertyName = entry.getValue();
 			PropertyMeta<Object, Object> externalJoinWideMapMeta = parser
 					.parseExternalJoinWideMapProperty(keyspace, idMeta, entityClass,
-							entry.getKey(), propertyName);
+							entry.getKey(), propertyName, objectMapper);
 			propertyMetas.put(propertyName, externalJoinWideMapMeta);
 
 			joinPropertyMetaToBeFilled.put(externalJoinWideMapMeta,
@@ -167,7 +180,7 @@ public class EntityParser
 		}
 	}
 
-	private void validateWideRow(Class<?> entityClass, boolean wideRow,
+	private void validateColumnFamily(Class<?> entityClass, boolean wideRow,
 			Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		if (wideRow)
@@ -183,7 +196,7 @@ public class EntityParser
 
 			if (type != PropertyType.WIDE_MAP)
 			{
-				throw new BeanMappingException("The WideRow entity '"
+				throw new BeanMappingException("The ColumnFamily entity '"
 						+ entityClass.getCanonicalName()
 						+ "' should have one and only one @Column of type WideMap");
 			}

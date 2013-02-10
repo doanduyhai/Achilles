@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
@@ -35,9 +35,9 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Test;
-
 
 /**
  * JPAOperationsIT
@@ -48,7 +48,7 @@ import org.junit.Test;
 public class JPAOperationsIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -58,7 +58,8 @@ public class JPAOperationsIT
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
-	@SuppressWarnings("unchecked")
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Test
 	public void should_persist() throws Exception
 	{
@@ -75,71 +76,72 @@ public class JPAOperationsIT
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
 				ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(8);
 
-		Pair<DynamicComposite, Object> serialVersionUID = columns.get(0);
+		Pair<DynamicComposite, String> serialVersionUID = columns.get(0);
 
-		Pair<DynamicComposite, Object> age = columns.get(1);
+		Pair<DynamicComposite, String> age = columns.get(1);
 
-		Pair<DynamicComposite, Object> name = columns.get(2);
+		Pair<DynamicComposite, String> name = columns.get(2);
 
-		Pair<DynamicComposite, Object> George = columns.get(3);
-		Pair<DynamicComposite, Object> Paul = columns.get(4);
+		Pair<DynamicComposite, String> George = columns.get(3);
+		Pair<DynamicComposite, String> Paul = columns.get(4);
 
-		Pair<DynamicComposite, Object> FR = columns.get(5);
-		Pair<DynamicComposite, Object> Paris = columns.get(6);
-		Pair<DynamicComposite, Object> _75014 = columns.get(7);
+		Pair<DynamicComposite, String> FR = columns.get(5);
+		Pair<DynamicComposite, String> Paris = columns.get(6);
+		Pair<DynamicComposite, String> _75014 = columns.get(7);
 
 		assertThat(serialVersionUID.left.get(1, STRING_SRZ)).isEqualTo(SERIAL_VERSION_UID.name());
-		assertThat(serialVersionUID.right).isEqualTo(151L);
+		assertThat(Long.parseLong(serialVersionUID.right)).isEqualTo(151L);
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
-		assertThat(age.right).isEqualTo(35L);
+		assertThat(readLong(age.right)).isEqualTo(35L);
 
 		assertThat(name.left.get(1, STRING_SRZ)).isEqualTo("name");
-		assertThat(name.right).isEqualTo("DuyHai");
+		assertThat(readString(name.right)).isEqualTo("DuyHai");
 
 		assertThat(George.left.get(1, STRING_SRZ)).isEqualTo("followers");
-		assertThat(George.right).isIn("George", "Paul");
+		assertThat(readString(George.right)).isIn("George", "Paul");
 		assertThat(Paul.left.get(1, STRING_SRZ)).isEqualTo("followers");
-		assertThat(Paul.right).isIn("George", "Paul");
+		assertThat(readString(Paul.right)).isIn("George", "Paul");
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValue<Integer, String> country = (KeyValue<Integer, String>) FR.right;
+		KeyValue<Integer, String> country = readKeyValue(FR.right);
 		assertThat(country.getKey()).isEqualTo(1);
 		assertThat(country.getValue()).isEqualTo("FR");
 
 		assertThat(Paris.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValue<Integer, String> city = (KeyValue<Integer, String>) Paris.right;
+		KeyValue<Integer, String> city = readKeyValue(Paris.right);
 		assertThat(city.getKey()).isEqualTo(2);
 		assertThat(city.getValue()).isEqualTo("Paris");
 
 		assertThat(_75014.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValue<Integer, String> zipCode = (KeyValue<Integer, String>) _75014.right;
+		KeyValue<Integer, String> zipCode = readKeyValue(_75014.right);
 		assertThat(zipCode.getKey()).isEqualTo(3);
 		assertThat(zipCode.getValue()).isEqualTo("75014");
 
 		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(),
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.GREATER_THAN_EQUAL);
 
 		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
 				endCompositeForEagerFetch, false, 20);
 		assertThat(columns).hasSize(2);
 
-		Pair<DynamicComposite, Object> foo = columns.get(0);
-		Pair<DynamicComposite, Object> bar = columns.get(1);
+		Pair<DynamicComposite, String> foo = columns.get(0);
+		Pair<DynamicComposite, String> bar = columns.get(1);
 
 		assertThat(foo.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(foo.right).isEqualTo("foo");
+		assertThat(readString(foo.right)).isEqualTo("foo");
 		assertThat(bar.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(bar.right).isEqualTo("bar");
+		assertThat(readString(bar.right)).isEqualTo("bar");
 
 	}
 
@@ -196,7 +198,7 @@ public class JPAOperationsIT
 		composite.addComponent(0, SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
 
-		dao.setValue(bean.getId(), composite, 123L);
+		dao.setValue(bean.getId(), composite, "123");
 
 		em.find(CompleteBean.class, bean.getId());
 
@@ -258,7 +260,6 @@ public class JPAOperationsIT
 		assertThat(friends).containsExactly("bob", "alice");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_merge_modifications() throws Exception
 	{
@@ -292,15 +293,15 @@ public class JPAOperationsIT
 				ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(1);
 
-		Pair<DynamicComposite, Object> age = columns.get(0);
+		Pair<DynamicComposite, String> age = columns.get(0);
 
 		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
-		assertThat(age.right).isEqualTo(100L);
+		assertThat(readLong(age.right)).isEqualTo(100L);
 
 		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
@@ -319,10 +320,10 @@ public class JPAOperationsIT
 
 		assertThat(columns).hasSize(3);
 
-		Pair<DynamicComposite, Object> eve = columns.get(2);
+		Pair<DynamicComposite, String> eve = columns.get(2);
 
 		assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(eve.right).isEqualTo("eve");
+		assertThat(readString(eve.right)).isEqualTo("eve");
 
 		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
@@ -340,10 +341,10 @@ public class JPAOperationsIT
 
 		assertThat(columns).hasSize(2);
 
-		Pair<DynamicComposite, Object> FR = columns.get(0);
+		Pair<DynamicComposite, String> FR = columns.get(0);
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
-		KeyValue<Integer, String> mapValue = (KeyValue<Integer, String>) FR.right;
+		KeyValue<Integer, String> mapValue = readKeyValue(FR.right);
 		assertThat(mapValue.getValue()).isEqualTo("FR");
 	}
 
@@ -362,7 +363,7 @@ public class JPAOperationsIT
 
 		assertThat(foundBean).isNull();
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(), null,
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(), null,
 				null, false, 20);
 
 		assertThat(columns).hasSize(0);
@@ -438,8 +439,9 @@ public class JPAOperationsIT
 
 		nameMeta.setPropertyName("name");
 
-		DynamicComposite nameComposite = keyFactory.createForBatchInsertMultiValue(nameMeta, 0);
-		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
+		DynamicComposite nameComposite = keyFactory.createForBatchInsertSingleValue(nameMeta);
+		dao.setValue(bean.getId(), nameComposite,
+				objectMapper.writeValueAsString("DuyHai_modified"));
 
 		PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
 		listLazyMeta.setType(LAZY_LIST);
@@ -447,7 +449,7 @@ public class JPAOperationsIT
 
 		DynamicComposite friend3Composite = keyFactory.createForBatchInsertMultiValue(listLazyMeta,
 				2);
-		dao.setValue(bean.getId(), friend3Composite, "qux");
+		dao.setValue(bean.getId(), friend3Composite, objectMapper.writeValueAsString("qux"));
 
 		em.refresh(bean);
 
@@ -520,6 +522,22 @@ public class JPAOperationsIT
 	public void should_exception_when_get_transaction() throws Exception
 	{
 		em.getTransaction();
+	}
+
+	private String readString(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, String.class);
+	}
+
+	private Long readLong(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, Long.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	private KeyValue<Integer, String> readKeyValue(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, KeyValue.class);
 	}
 
 	@After

@@ -29,30 +29,30 @@ public class KeyValueFactory
 
 	// Dynamic Composite
 	public <K, V> KeyValue<K, V> createKeyValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+			HColumn<DynamicComposite, String> hColumn)
 	{
 		return dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(propertyMeta, hColumn);
 	}
 
 	public <K, V> K createKeyForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+			HColumn<DynamicComposite, String> hColumn)
 	{
 		return dynamicCompositeTransformer.buildKeyFromDynamicComposite(propertyMeta, hColumn);
 	}
 
 	public <K, V> V createValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+			HColumn<DynamicComposite, String> hColumn)
 	{
-		return propertyMeta.getValue(hColumn.getValue());
+		return dynamicCompositeTransformer.buildValueFromDynamicComposite(propertyMeta, hColumn);
 	}
 
-	public Integer createTtlForDynamicComposite(HColumn<DynamicComposite, Object> hColumn)
+	public Integer createTtlForDynamicComposite(HColumn<DynamicComposite, String> hColumn)
 	{
 		return hColumn.getTtl();
 	}
 
 	public <K, V> List<V> createValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<DynamicComposite, Object>> hColumns)
+			List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildValueTransformer(propertyMeta));
@@ -60,10 +60,10 @@ public class KeyValueFactory
 
 	@SuppressWarnings("unchecked")
 	public <K, V> List<V> createJoinValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<DynamicComposite, Object>> hColumns)
+			List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		List<?> joinIds = Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildRawValueTransformer());
+				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
 		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
 				propertyMeta.getJoinProperties().getEntityMeta());
 		List<V> result = new ArrayList<V>();
@@ -76,14 +76,14 @@ public class KeyValueFactory
 	}
 
 	public <K, V> List<K> createKeyListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<DynamicComposite, Object>> hColumns)
+			List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
 	public <K, V> List<KeyValue<K, V>> createKeyValueListForDynamicComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
+			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildKeyValueTransformer(propertyMeta));
@@ -91,12 +91,13 @@ public class KeyValueFactory
 
 	@SuppressWarnings("unchecked")
 	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForDynamicComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, Object>> hColumns)
+			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		List<K> keys = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
 		List<Object> joinIds = Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildRawValueTransformer());
+				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
+
 		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, propertyMeta.getJoinProperties().getEntityMeta());
 		List<Integer> ttls = Lists.transform(hColumns,
@@ -129,7 +130,7 @@ public class KeyValueFactory
 	public <K, V> V createValueForComposite(PropertyMeta<K, V> propertyMeta,
 			HColumn<Composite, ?> hColumn)
 	{
-		return propertyMeta.getValue(hColumn.getValue());
+		return compositeTransformer.buildValueFromComposite(propertyMeta, hColumn);
 	}
 
 	public Integer createTtlForComposite(HColumn<Composite, ?> hColumn)

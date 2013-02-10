@@ -27,7 +27,7 @@ public class IteratorFactory
 	}
 
 	public <K, V> KeyValueIterator<K, V> createKeyValueIteratorForDynamicComposite(
-			Iterator<HColumn<DynamicComposite, Object>> columnSliceIterator,
+			Iterator<HColumn<DynamicComposite, String>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		return new KeyValueIteratorForDynamicComposite<K, V>(columnSliceIterator, propertyMeta);

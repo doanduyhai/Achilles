@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposite, Object>
+public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposite, String>
 {
 	private static final Logger log = LoggerFactory.getLogger(GenericDynamicCompositeDao.class);
 
@@ -46,7 +46,7 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 		keySerializer = keySrz;
 		columnFamily = cf;
 		columnNameSerializer = DYNA_COMP_SRZ;
-		valueSerializer = OBJECT_SRZ;
+		valueSerializer = STRING_SRZ;
 
 		log.debug(
 				"Initializing GenericDynamicCompositeDao for key serializer '{}', dynamic composite comparator and value serializer 'BytesType'",
@@ -54,7 +54,7 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 
 	}
 
-	public List<Pair<DynamicComposite, Object>> eagerFetchEntity(K key)
+	public List<Pair<DynamicComposite, String>> eagerFetchEntity(K key)
 	{
 		log.trace("Eager fetching properties for column family {} ", columnFamily);
 
@@ -62,22 +62,22 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 				false, Integer.MAX_VALUE);
 	}
 
-	public Map<K, List<Pair<DynamicComposite, Object>>> eagerFetchEntities(List<K> keys)
+	public Map<K, List<Pair<DynamicComposite, String>>> eagerFetchEntities(List<K> keys)
 	{
 		log.trace("Eager fetching properties for multiple entities in column family {} ",
 				columnFamily);
 
-		Map<K, List<Pair<DynamicComposite, Object>>> map = new HashMap<K, List<Pair<DynamicComposite, Object>>>();
+		Map<K, List<Pair<DynamicComposite, String>>> map = new HashMap<K, List<Pair<DynamicComposite, String>>>();
 
-		Rows<K, DynamicComposite, Object> rows = this.multiGetSliceRange(keys,
+		Rows<K, DynamicComposite, String> rows = this.multiGetSliceRange(keys,
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, Integer.MAX_VALUE);
 
-		for (Row<K, DynamicComposite, Object> row : rows)
+		for (Row<K, DynamicComposite, String> row : rows)
 		{
-			List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
-			for (HColumn<DynamicComposite, Object> column : row.getColumnSlice().getColumns())
+			List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
+			for (HColumn<DynamicComposite, String> column : row.getColumnSlice().getColumns())
 			{
-				columns.add(new Pair<DynamicComposite, Object>(column.getName(), column.getValue()));
+				columns.add(new Pair<DynamicComposite, String>(column.getName(), column.getValue()));
 			}
 
 			map.put(row.getKey(), columns);

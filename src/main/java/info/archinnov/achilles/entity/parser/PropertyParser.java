@@ -11,7 +11,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
-
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
@@ -43,6 +43,8 @@ import javax.persistence.OneToOne;
 
 import me.prettyprint.hector.api.Keyspace;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 /**
  * PropertyParser
  * 
@@ -54,13 +56,12 @@ public class PropertyParser
 
 	private PropertyFilter filter = new PropertyFilter();
 
-	public PropertyParser() {}
-
 	private PropertyHelper propertyHelper = new PropertyHelper();
 	private EntityHelper entityHelper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
-	public <K, V> PropertyMeta<K, V> parse(Class<?> beanClass, Field field, String propertyName)
+	public <K, V> PropertyMeta<K, V> parse(Class<?> beanClass, Field field, String propertyName,
+			ObjectMapper objectMapper)
 	{
 		Class<?> fieldType = field.getType();
 
@@ -68,37 +69,41 @@ public class PropertyParser
 
 		if (List.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = (PropertyMeta<K, V>) parseListProperty(beanClass, field, propertyName);
+			propertyMeta = (PropertyMeta<K, V>) parseListProperty(beanClass, field, propertyName,
+					objectMapper);
 		}
 
 		else if (Set.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = (PropertyMeta<K, V>) parseSetProperty(beanClass, field, propertyName);
+			propertyMeta = (PropertyMeta<K, V>) parseSetProperty(beanClass, field, propertyName,
+					objectMapper);
 		}
 
 		else if (Map.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = parseMapProperty(beanClass, field, propertyName);
+			propertyMeta = parseMapProperty(beanClass, field, propertyName, objectMapper);
 		}
 
 		else if (WideMap.class.isAssignableFrom(fieldType))
 		{
-			propertyMeta = parseWideMapProperty(beanClass, field, propertyName);
+			propertyMeta = parseWideMapProperty(beanClass, field, propertyName, objectMapper);
 		}
 
 		else
 		{
-			propertyMeta = (PropertyMeta<K, V>) parseSimpleProperty(beanClass, field, propertyName);
+			propertyMeta = (PropertyMeta<K, V>) parseSimpleProperty(beanClass, field, propertyName,
+					objectMapper);
 		}
 		return propertyMeta;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <V> PropertyMeta<Void, V> parseSimpleProperty(Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
 		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
 				+ "' should be Serializable");
+
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 
 		PropertyMeta<Void, V> propertyMeta = null;
@@ -134,6 +139,7 @@ public class PropertyParser
 			}
 
 			propertyMeta = factory((Class<V>) field.getType()) //
+					.objectMapper(objectMapper) //
 					.type(type) //
 					.propertyName(propertyName).accessors(accessors) //
 					.joinProperties(joinProperties).build();
@@ -142,7 +148,9 @@ public class PropertyParser
 		{
 
 			PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
-			propertyMeta = factory((Class<V>) field.getType()).type(type)
+			propertyMeta = factory((Class<V>) field.getType()) //
+					.objectMapper(objectMapper) //
+					.type(type) //
 					.propertyName(propertyName).accessors(accessors).build();
 		}
 
@@ -151,7 +159,7 @@ public class PropertyParser
 
 	@SuppressWarnings("unchecked")
 	private <V> PropertyMeta<Void, V> parseListProperty(Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
 
 		Class<?> valueClass;
@@ -164,7 +172,10 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-		return factory((Class<V>) valueClass).type(type).propertyName(propertyName)
+		return factory((Class<V>) valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
 				.accessors(accessors).build();
 
 	}
@@ -175,7 +186,7 @@ public class PropertyParser
 			"rawtypes"
 	})
 	private <V> PropertyMeta<Void, V> parseSetProperty(Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
 
 		Class valueClass;
@@ -187,7 +198,10 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-		return factory((Class<V>) valueClass).type(type).propertyName(propertyName)
+		return factory((Class<V>) valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
 				.accessors(accessors).build();
 	}
 
@@ -197,7 +211,7 @@ public class PropertyParser
 			"rawtypes"
 	})
 	private <K, V> PropertyMeta<K, V> parseMapProperty(Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
 
 		Class valueClass;
@@ -232,20 +246,33 @@ public class PropertyParser
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-		return factory(keyType, valueClass).type(type).propertyName(propertyName)
+		return factory(keyType, valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
 				.accessors(accessors).build();
 
 	}
 
 	public <K, V, ID> PropertyMeta<K, V> parseExternalWideMapProperty(Keyspace keyspace,
-			PropertyMeta<Void, ID> idMeta, Class<?> beanClass, Field field, String propertyName)
+			PropertyMeta<Void, ID> idMeta, Class<?> beanClass, Field field, String propertyName,
+			ObjectMapper objectMapper)
 	{
 		String externalColumnFamilyName = field.getAnnotation(Column.class).table();
-		PropertyMeta<K, V> propertyMeta = this.parseWideMapProperty(beanClass, field, propertyName);
+		PropertyMeta<K, V> propertyMeta = this.parseWideMapProperty(beanClass, field, propertyName,
+				objectMapper);
 		propertyMeta.setType(EXTERNAL_WIDE_MAP);
-		GenericCompositeDao<ID, V> dao = new GenericCompositeDao<ID, V>(keyspace,
-				idMeta.getValueSerializer(), propertyMeta.getValueSerializer(),
-				externalColumnFamilyName);
+		GenericCompositeDao<ID, ?> dao;
+		if (propertyHelper.isSupportedType(propertyMeta.getValueClass()))
+		{
+			dao = new GenericCompositeDao<ID, V>(keyspace, idMeta.getValueSerializer(),
+					propertyMeta.getValueSerializer(), externalColumnFamilyName);
+		}
+		else
+		{
+			dao = new GenericCompositeDao<ID, String>(keyspace, idMeta.getValueSerializer(),
+					STRING_SRZ, externalColumnFamilyName);
+		}
 
 		propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
 				externalColumnFamilyName, dao, idMeta.getValueSerializer()));
@@ -255,9 +282,10 @@ public class PropertyParser
 
 	public <ID, JOIN_ID, K, V> PropertyMeta<K, V> parseExternalJoinWideMapProperty(
 			Keyspace keyspace, PropertyMeta<Void, ID> idMeta, Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
-		PropertyMeta<K, V> propertyMeta = this.parseWideMapProperty(beanClass, field, propertyName);
+		PropertyMeta<K, V> propertyMeta = this.parseWideMapProperty(beanClass, field, propertyName,
+				objectMapper);
 
 		propertyMeta.setType(EXTERNAL_JOIN_WIDE_MAP);
 		String externalColumnFamilyName = field.getAnnotation(JoinColumn.class).table();
@@ -269,7 +297,7 @@ public class PropertyParser
 
 	@SuppressWarnings("unchecked")
 	private <K, V> PropertyMeta<K, V> parseWideMapProperty(Class<?> beanClass, Field field,
-			String propertyName)
+			String propertyName, ObjectMapper objectMapper)
 	{
 
 		PropertyType type = PropertyType.WIDE_MAP;
@@ -357,6 +385,7 @@ public class PropertyParser
 		}
 
 		return factory(keyClass, valueClass) //
+				.objectMapper(objectMapper) //
 				.type(type) //
 				.propertyName(propertyName) //
 				.accessors(accessors) //

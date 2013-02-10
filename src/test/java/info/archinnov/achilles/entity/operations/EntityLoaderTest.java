@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
@@ -19,7 +20,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
@@ -29,7 +29,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 
@@ -40,14 +40,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mapping.entity.ColumnFamilyBean;
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import mapping.entity.ColumnFamilyBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import testBuilders.CompositeTestBuilder;
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityLoaderTest
@@ -108,6 +111,8 @@ public class EntityLoaderTest
 	@Mock
 	private EntityHelper helper;
 
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Captor
 	ArgumentCaptor<UserBean> userBeanCaptor;
 
@@ -128,8 +133,8 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_entity() throws Exception
 	{
-		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
-		columns.add(new Pair<DynamicComposite, Object>(new DynamicComposite(), ""));
+		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
+		columns.add(new Pair<DynamicComposite, String>(new DynamicComposite(), ""));
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
@@ -170,7 +175,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_not_load_entity_because_not_found() throws Exception
 	{
-		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.eagerFetchEntity(1L)).thenReturn(columns);
@@ -192,7 +197,7 @@ public class EntityLoaderTest
 	public void should_load_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.getValue("name")).thenReturn("name");
+		when(propertyMeta.getValueFromString("name")).thenReturn("name");
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, 0, ComponentEquality.EQUAL);
@@ -214,17 +219,17 @@ public class EntityLoaderTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<DynamicComposite, Object>> friends = new ArrayList<Pair<DynamicComposite, Object>>();
-		friends.add(new Pair<DynamicComposite, Object>(start, "foo"));
-		friends.add(new Pair<DynamicComposite, Object>(end, "bar"));
+		List<Pair<DynamicComposite, String>> friends = new ArrayList<Pair<DynamicComposite, String>>();
+		friends.add(new Pair<DynamicComposite, String>(start, "foo"));
+		friends.add(new Pair<DynamicComposite, String>(end, "bar"));
 
 		when(keyFactory.createBaseForQuery(listMeta, EQUAL)).thenReturn(start);
 		when(keyFactory.createBaseForQuery(listMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(friends);
 
 		when(listMeta.newListInstance()).thenReturn(new ArrayList<String>());
-		when(listMeta.getValue("foo")).thenReturn("foo");
-		when(listMeta.getValue("bar")).thenReturn("bar");
+		when(listMeta.getValueFromString("foo")).thenReturn("foo");
+		when(listMeta.getValueFromString("bar")).thenReturn("bar");
 
 		List<String> value = loader.loadListProperty(1L, dao, listMeta);
 
@@ -241,17 +246,17 @@ public class EntityLoaderTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<DynamicComposite, Object>> followers = new ArrayList<Pair<DynamicComposite, Object>>();
-		followers.add(new Pair<DynamicComposite, Object>(start, "George"));
-		followers.add(new Pair<DynamicComposite, Object>(end, "Paul"));
+		List<Pair<DynamicComposite, String>> followers = new ArrayList<Pair<DynamicComposite, String>>();
+		followers.add(new Pair<DynamicComposite, String>(start, "George"));
+		followers.add(new Pair<DynamicComposite, String>(end, "Paul"));
 
 		when(keyFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
 		when(keyFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 		when(dao.findColumnsRange(1L, start, end, false, Integer.MAX_VALUE)).thenReturn(followers);
 
 		when(setMeta.newSetInstance()).thenReturn(new HashSet<String>());
-		when(setMeta.getValue("George")).thenReturn("George");
-		when(setMeta.getValue("Paul")).thenReturn("Paul");
+		when(setMeta.getValueFromString("George")).thenReturn("George");
+		when(setMeta.getValueFromString("Paul")).thenReturn("Paul");
 
 		Set<String> value = loader.loadSetProperty(1L, dao, setMeta);
 
@@ -269,13 +274,19 @@ public class EntityLoaderTest
 		DynamicComposite middle = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		List<Pair<DynamicComposite, Object>> preferences = new ArrayList<Pair<DynamicComposite, Object>>();
-		preferences.add(new Pair<DynamicComposite, Object>(start, new KeyValue<Integer, String>(1,
-				"FR")));
-		preferences.add(new Pair<DynamicComposite, Object>(middle, new KeyValue<Integer, String>(2,
-				"Paris")));
-		preferences.add(new Pair<DynamicComposite, Object>(end, new KeyValue<Integer, String>(3,
-				"75014")));
+		List<Pair<DynamicComposite, String>> preferences = new ArrayList<Pair<DynamicComposite, String>>();
+
+		KeyValue<Integer, String> keyValue1 = new KeyValue<Integer, String>(1, "FR");
+		KeyValue<Integer, String> keyValue2 = new KeyValue<Integer, String>(2, "Paris");
+		KeyValue<Integer, String> keyValue3 = new KeyValue<Integer, String>(3, "75014");
+
+		String stringKeyValue1 = writeToString(keyValue1);
+		String stringKeyValue2 = writeToString(keyValue2);
+		String stringKeyValue3 = writeToString(keyValue3);
+
+		preferences.add(new Pair<DynamicComposite, String>(start, stringKeyValue1));
+		preferences.add(new Pair<DynamicComposite, String>(middle, stringKeyValue2));
+		preferences.add(new Pair<DynamicComposite, String>(end, stringKeyValue3));
 
 		when(keyFactory.createBaseForQuery(mapMeta, EQUAL)).thenReturn(start);
 		when(keyFactory.createBaseForQuery(mapMeta, GREATER_THAN_EQUAL)).thenReturn(end);
@@ -284,9 +295,13 @@ public class EntityLoaderTest
 
 		when(mapMeta.getKeyClass()).thenReturn(Integer.class);
 
-		when(mapMeta.getValue("FR")).thenReturn("FR");
-		when(mapMeta.getValue("Paris")).thenReturn("Paris");
-		when(mapMeta.getValue("75014")).thenReturn("75014");
+		when(mapMeta.getKeyValueFromString(stringKeyValue1)).thenReturn(keyValue1);
+		when(mapMeta.getKeyValueFromString(stringKeyValue2)).thenReturn(keyValue2);
+		when(mapMeta.getKeyValueFromString(stringKeyValue3)).thenReturn(keyValue3);
+
+		when(mapMeta.getValueFromString(keyValue1.getValue())).thenReturn("FR");
+		when(mapMeta.getValueFromString(keyValue2.getValue())).thenReturn("Paris");
+		when(mapMeta.getValueFromString(keyValue3.getValue())).thenReturn("75014");
 
 		Map<Integer, String> value = loader.loadMapProperty(1L, dao, mapMeta);
 
@@ -428,7 +443,7 @@ public class EntityLoaderTest
 
 		UserBean userBean = new UserBean();
 
-		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		List<Pair<DynamicComposite, String>> columns = mock(List.class);
 		when(columns.size()).thenReturn(1);
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
 		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
@@ -448,50 +463,52 @@ public class EntityLoaderTest
 	{
 		Long joinId = 45L, id = 545L;
 
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setEntityDao(dao);
-		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
-		Method userSetter = CompleteBean.class.getDeclaredMethod("setUser", UserBean.class);
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.of(UserBean.class, Void.class, Long.class) //
+				.type(SIMPLE) //
+				.field("userId") //
+				.build();
 
-		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
-		idMeta.setType(SIMPLE);
-		idMeta.setSetter(idSetter);
+		EntityMeta<Long> entityMeta = EntityMetaTestBuilder.entityMeta().build(
+				mock(ExecutingKeyspace.class), dao, CompleteBean.class, null);
 		entityMeta.setIdMeta(idMeta);
 
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(entityMeta);
 
-		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
-		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
-		joinPropertyMeta.setSingleKey(true);
-
-		joinPropertyMeta.setValueClass(UserBean.class);
-		joinPropertyMeta.setJoinProperties(joinProperties);
-		joinPropertyMeta.setSetter(userSetter);
+		PropertyMeta<Void, UserBean> joinPropertyMeta = PropertyMetaTestBuilder //
+				.of(CompleteBean.class, Void.class, UserBean.class) //
+				.field("user") //
+				.type(JOIN_SIMPLE) //
+				.joinMeta(entityMeta) //
+				.build();
 
 		UserBean userBean = new UserBean();
 		userBean.setUserId(joinId);
 
-		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		List<Pair<DynamicComposite, String>> columns = mock(List.class);
 		when(columns.size()).thenReturn(1);
 
-		DynamicComposite comp = new DynamicComposite();
-		comp.addComponent(0, 0, ComponentEquality.EQUAL);
-		comp.addComponent(1, 0, ComponentEquality.EQUAL);
+		DynamicComposite comp = CompositeTestBuilder.builder().values(0, 0).buildDynamic();
 
 		when(keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL)).thenReturn(comp);
-		when(dao.getValue(id, comp)).thenReturn(joinId);
+		when(dao.getValue(id, comp)).thenReturn(joinId.toString());
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
-		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
+		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idMeta.getSetter()),
 				idCaptor.capture());
 		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
 				userBean);
-		doNothing().when(helper)
-				.setValueToField(eq(bean), eq(userSetter), userBeanCaptor.capture());
+
+		doNothing().when(helper).setValueToField(eq(bean), eq(joinPropertyMeta.getSetter()),
+				userBeanCaptor.capture());
 
 		loader.loadPropertyIntoObject(bean, id, dao, joinPropertyMeta);
 
-		assertThat(userBeanCaptor.getValue()).isSameAs(userBean);
+		List<UserBean> userBeans = userBeanCaptor.getAllValues();
+
+		verify(mapper).setEagerPropertiesToEntity(joinId, columns, entityMeta, userBeans.get(0));
+		verify(helper).setValueToField(userBeans.get(0), idMeta.getSetter(), joinId);
+		assertThat(userBeans.get(0)).isInstanceOf(UserBean.class);
 		assertThat(idCaptor.getValue()).isEqualTo(joinId);
 	}
 
@@ -522,7 +539,7 @@ public class EntityLoaderTest
 		joinPropertyMeta.setJoinProperties(joinProperties);
 		joinPropertyMeta.setSetter(userSetter);
 
-		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		List<Pair<DynamicComposite, String>> columns = mock(List.class);
 		when(columns.size()).thenReturn(1);
 
 		DynamicComposite comp = new DynamicComposite();
@@ -546,7 +563,7 @@ public class EntityLoaderTest
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		entityMeta.setEntityDao(dao);
 
-		List<Pair<DynamicComposite, Object>> columns = mock(List.class);
+		List<Pair<DynamicComposite, String>> columns = mock(List.class);
 
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
 		when(columns.size()).thenReturn(0);
@@ -555,5 +572,10 @@ public class EntityLoaderTest
 
 		assertThat(loadedBean).isNull();
 
+	}
+
+	private String writeToString(Object object) throws Exception
+	{
+		return objectMapper.writeValueAsString(object);
 	}
 }

@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
@@ -26,9 +26,9 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * MultiKeyWideMapIT
@@ -39,7 +39,7 @@ import org.junit.Test;
 public class MultiKeyWideMapIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -60,6 +60,8 @@ public class MultiKeyWideMapIT
 	private String foo = "foo";
 	private String bar = "bar";
 	private String qux = "qux";
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -85,15 +87,15 @@ public class MultiKeyWideMapIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, qux, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(5);
-		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
-		assertThat(columns.get(1).right).isEqualTo("tweet2-bar");
-		assertThat(columns.get(2).right).isEqualTo("tweet3-foo");
-		assertThat(columns.get(3).right).isEqualTo("tweet4-qux");
-		assertThat(columns.get(4).right).isEqualTo("tweet5-qux");
+		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1-bar");
+		assertThat(readString(columns.get(1).right)).isEqualTo("tweet2-bar");
+		assertThat(readString(columns.get(2).right)).isEqualTo("tweet3-foo");
+		assertThat(readString(columns.get(3).right)).isEqualTo("tweet4-qux");
+		assertThat(readString(columns.get(4).right)).isEqualTo("tweet5-qux");
 	}
 
 	@Test
@@ -107,7 +109,7 @@ public class MultiKeyWideMapIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, bar, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<HColumn<DynamicComposite, Object>> columns = dao.findRawColumnsRange(bean.getId(),
+		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
 				startComp, endComp, false, 10);
 
 		assertThat(columns).hasSize(1);
@@ -309,7 +311,7 @@ public class MultiKeyWideMapIT
 		endComp.addComponent(2, bar, ComponentEquality.EQUAL);
 		endComp.addComponent(3, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(0);
@@ -336,13 +338,13 @@ public class MultiKeyWideMapIT
 		endComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
 		endComp.addComponent(1, "userTweets", ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
-		assertThat(columns.get(1).right).isEqualTo("tweet4-qux");
-		assertThat(columns.get(2).right).isEqualTo("tweet5-qux");
+		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1-bar");
+		assertThat(readString(columns.get(1).right)).isEqualTo("tweet4-qux");
+		assertThat(readString(columns.get(2).right)).isEqualTo("tweet5-qux");
 	}
 
 	private DynamicComposite buildComposite()
@@ -351,5 +353,10 @@ public class MultiKeyWideMapIT
 		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
 		startComp.addComponent(1, "userTweets", ComponentEquality.EQUAL);
 		return startComp;
+	}
+
+	private String readString(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, String.class);
 	}
 }

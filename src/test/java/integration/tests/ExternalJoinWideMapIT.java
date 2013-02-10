@@ -2,9 +2,9 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
-import static info.archinnov.achilles.common.CassandraDaoTest.getWideRowDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -45,10 +45,10 @@ public class ExternalJoinWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericCompositeDao<Long, UUID> externalJoinWideMapDao = getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, UUID> externalJoinWideMapDao = getCompositeDao(LONG_SRZ,
 			UUID_SRZ, normalizerAndValidateColumnFamilyName("retweets_cf"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(

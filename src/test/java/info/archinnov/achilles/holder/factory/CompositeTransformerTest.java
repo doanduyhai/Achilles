@@ -1,12 +1,11 @@
 package info.archinnov.achilles.holder.factory;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.CompositeTransformer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,11 +23,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
-import testBuilders.HColumTestBuilder;
+import testBuilders.HColumnTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.Lists;
-
 
 /**
  * CompositeTransformerTest
@@ -58,8 +56,8 @@ public class CompositeTransformerTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(45).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(51).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder.noClass(Integer.class,
 				String.class).build();
@@ -76,8 +74,8 @@ public class CompositeTransformerTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values("a", "b").buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values("c", "d").buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		PropertyMeta<TweetMultiKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
 				TweetMultiKey.class, String.class).build();
@@ -101,11 +99,11 @@ public class CompositeTransformerTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder.noClass(Integer.class,
-				String.class).build();
+		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
 
 		List<String> values = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildValueTransformer(propertyMeta));
@@ -119,8 +117,8 @@ public class CompositeTransformerTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		List<Object> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildRawValueTransformer());
@@ -134,8 +132,8 @@ public class CompositeTransformerTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1", 12);
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2", 13);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
 
 		List<Integer> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildTtlTransformer());
@@ -145,15 +143,15 @@ public class CompositeTransformerTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_build_keyvalue_transformer() throws Exception
+	public void should_build_key_value_transformer() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1", 456);
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2", 789);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 456);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder.noClass(Integer.class,
-				String.class).build();
+		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
 
 		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildKeyValueTransformer(propertyMeta));

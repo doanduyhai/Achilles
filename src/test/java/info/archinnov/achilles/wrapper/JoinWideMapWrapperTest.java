@@ -1,11 +1,11 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -15,7 +15,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 
 import java.lang.reflect.Method;
 
@@ -32,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * JoinWideMapWrapperTest
@@ -89,12 +89,14 @@ public class JoinWideMapWrapperTest
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
+		joinEntityMeta.setIdMeta(PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE)
+				.build());
 
 		when(joinWideMapMeta.getValueClass()).thenReturn(UserBean.class);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
-		when(dao.getValue(id, comp)).thenReturn(joinId);
+		when(dao.getValue(id, comp)).thenReturn(joinId.toString());
 		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
 
 		UserBean expected = wrapper.get(key);
@@ -111,17 +113,17 @@ public class JoinWideMapWrapperTest
 
 		int key = 4567;
 		UserBean userBean = new UserBean();
-		long userId = 475L;
+		Long userId = 475L;
 		userBean.setUserId(userId);
 		DynamicComposite comp = new DynamicComposite();
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
-
+		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 		wrapper.insert(key, userBean);
 
-		verify(dao).setValue(id, comp, userId);
+		verify(dao).setValue(id, comp, userId.toString());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -139,17 +141,18 @@ public class JoinWideMapWrapperTest
 
 		int key = 4567;
 		UserBean userBean = new UserBean();
-		long userId = 475L;
+		Long userId = 475L;
 		userBean.setUserId(userId);
 		DynamicComposite comp = new DynamicComposite();
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 
 		wrapper.insert(key, userBean, 150);
 
-		verify(dao).setValue(id, comp, userId, 150);
+		verify(dao).setValue(id, comp, userId.toString(), 150);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception

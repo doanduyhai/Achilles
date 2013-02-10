@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -26,12 +26,12 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 
 /**
  * JoinWideMapIT
@@ -47,10 +47,10 @@ public class JoinWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericDynamicCompositeDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> userDao = getDynamicCompositeDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -66,6 +66,8 @@ public class JoinWideMapIT
 	private User user;
 
 	private Long userId = RandomUtils.nextLong();
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -96,13 +98,13 @@ public class JoinWideMapIT
 		endComp.addComponent(0, JOIN_WIDE_MAP.flag(), ComponentEquality.EQUAL);
 		endComp.addComponent(1, "tweets", ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = userDao.findColumnsRange(user.getId(),
+		List<Pair<DynamicComposite, String>> columns = userDao.findColumnsRange(user.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 
-		assertThat(columns.get(0).right).isEqualTo(ownTweet1.getId());
-		assertThat(columns.get(1).right).isEqualTo(ownTweet2.getId());
+		assertThat(readUUID(columns.get(0).right)).isEqualTo(ownTweet1.getId());
+		assertThat(readUUID(columns.get(1).right)).isEqualTo(ownTweet2.getId());
 
 		Tweet foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
 		Tweet foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
@@ -221,6 +223,11 @@ public class JoinWideMapIT
 						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
 
 		user.getTimeline().insert(RandomUtils.nextLong(), unkonwTweet);
+	}
+
+	private UUID readUUID(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, UUID.class);
 	}
 
 	@After

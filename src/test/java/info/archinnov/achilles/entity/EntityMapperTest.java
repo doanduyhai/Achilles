@@ -8,14 +8,12 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
-
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
-import info.archinnov.achilles.entity.EntityHelper;
-import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +28,7 @@ import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +43,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 
 /**
  * EntityMapperTest
@@ -76,6 +74,8 @@ public class EntityMapperTest
 	@Mock
 	private ColumnFamilyHelper columnFamilyHelper;
 
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Captor
 	ArgumentCaptor<Long> idCaptor;
 
@@ -91,7 +91,7 @@ public class EntityMapperTest
 	@Captor
 	ArgumentCaptor<Map<Integer, String>> mapCaptor;
 
-	private EntityParser parser = new EntityParser();
+	private EntityParser parser;
 
 	private EntityMeta<Long> entityMeta;
 
@@ -99,8 +99,17 @@ public class EntityMapperTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(mapper, "helper", helper);
+		ObjectMapperFactory factory = new ObjectMapperFactory()
+		{
+			@Override
+			public <T> ObjectMapper getMapper(Class<T> type)
+			{
+				return objectMapper;
+			}
+		};
 
+		ReflectionTestUtils.setField(mapper, "helper", helper);
+		parser = new EntityParser(factory);
 		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class,
 				joinPropertyMetaToBeFilled);
 	}
@@ -127,7 +136,7 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
 				simpleCaptor.capture());
 
-		mapper.setSimplePropertyToEntity("name", namePropertyMeta, entity);
+		mapper.setSimplePropertyToEntity("\"name\"", namePropertyMeta, entity);
 
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 	}
@@ -340,24 +349,27 @@ public class EntityMapperTest
 		PropertyMeta<Integer, String> mapMeta = (PropertyMeta<Integer, String>) entityMeta
 				.getPropertyMetas().get("preferences");
 
-		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
 
-		columns.add(new Pair<DynamicComposite, Object>(buildSimplePropertyComposite("name"), "name"));
+		columns.add(new Pair<DynamicComposite, String>(buildSimplePropertyComposite("name"),
+				"\"name\""));
 
-		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "foo"));
-		columns.add(new Pair<DynamicComposite, Object>(buildListPropertyComposite("friends"), "bar"));
+		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"),
+				"\"foo\""));
+		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"),
+				"\"bar\""));
 
-		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"),
-				"George"));
-		columns.add(new Pair<DynamicComposite, Object>(buildSetPropertyComposite("followers"),
-				"Paul"));
+		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
+				"\"George\""));
+		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
+				"\"Paul\""));
 
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValue<Integer, String>(1, "FR")));
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValue<Integer, String>(2, "Paris")));
-		columns.add(new Pair<DynamicComposite, Object>(buildMapPropertyComposite("preferences"),
-				new KeyValue<Integer, String>(3, "75014")));
+		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+				writeToString(new KeyValue<Integer, String>(1, "FR"))));
+		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+				writeToString(new KeyValue<Integer, String>(2, "Paris"))));
+		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+				writeToString(new KeyValue<Integer, String>(3, "75014"))));
 
 		doNothing().when(helper).setValueToField(eq(entity), eq(idMeta.getSetter()),
 				idCaptor.capture());
@@ -386,10 +398,10 @@ public class EntityMapperTest
 	public void should_exception_when_serialVersionUID_changes() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		List<Pair<DynamicComposite, Object>> columns = new ArrayList<Pair<DynamicComposite, Object>>();
+		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
 
-		columns.add(new Pair<DynamicComposite, Object>(
-				buildSimplePropertyComposite(SERIAL_VERSION_UID.name()), 123L));
+		columns.add(new Pair<DynamicComposite, String>(
+				buildSimplePropertyComposite(SERIAL_VERSION_UID.name()), "123"));
 
 		expectedException.expect(IllegalStateException.class);
 		expectedException
@@ -429,5 +441,10 @@ public class EntityMapperTest
 		comp.add(0, MAP.flag());
 		comp.add(1, propertyName);
 		return comp;
+	}
+
+	private String writeToString(Object object) throws Exception
+	{
+		return objectMapper.writeValueAsString(object);
 	}
 }

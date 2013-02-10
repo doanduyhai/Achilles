@@ -14,15 +14,14 @@ import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.util.ArrayList;
@@ -33,6 +32,8 @@ import java.util.Map;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,10 +53,10 @@ import parser.entity.BeanWithNoColumn;
 import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
-import parser.entity.UserBean;
 import parser.entity.ColumnFamilyBean;
 import parser.entity.ColumnFamilyBeanWithTwoColumns;
-import parser.entity.WideRowBeanWithWrongColumnType;
+import parser.entity.UserBean;
+import parser.entity.ColumnFamilyBeanWithWrongColumnType;
 
 /**
  * EntityParserTest
@@ -66,7 +67,7 @@ import parser.entity.WideRowBeanWithWrongColumnType;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest
 {
-	private final EntityParser parser = new EntityParser();
+	private EntityParser parser;
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
@@ -88,6 +89,22 @@ public class EntityParserTest
 
 	@Captor
 	ArgumentCaptor<PropertyMeta<?, ?>> propertyMetaCaptor;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
+
+	@Before
+	public void setUp()
+	{
+		ObjectMapperFactory factory = new ObjectMapperFactory()
+		{
+			@Override
+			public <T> ObjectMapper getMapper(Class<T> type)
+			{
+				return objectMapper;
+			}
+		};
+		parser = new EntityParser(factory);
+	}
 
 	@SuppressWarnings(
 	{
@@ -333,7 +350,8 @@ public class EntityParserTest
 				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
-		parser.parseEntity(keyspace, ColumnFamilyBeanWithTwoColumns.class, joinPropertyMetaToBeFilled);
+		parser.parseEntity(keyspace, ColumnFamilyBeanWithTwoColumns.class,
+				joinPropertyMetaToBeFilled);
 
 	}
 
@@ -341,11 +359,11 @@ public class EntityParserTest
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
 		expectedEx.expect(BeanMappingException.class);
-		expectedEx.expectMessage("The WideRow entity '"
-				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
+		expectedEx.expectMessage("The ColumnFamily entity '"
+				+ ColumnFamilyBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have one and only one @Column of type WideMap");
 
-		parser.parseEntity(keyspace, WideRowBeanWithWrongColumnType.class,
+		parser.parseEntity(keyspace, ColumnFamilyBeanWithWrongColumnType.class,
 				joinPropertyMetaToBeFilled);
 
 	}

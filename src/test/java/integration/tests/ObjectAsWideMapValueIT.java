@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
@@ -22,10 +22,10 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * ObjectAsWideMapValueIT
@@ -37,7 +37,7 @@ public class ObjectAsWideMapValueIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -50,6 +50,8 @@ public class ObjectAsWideMapValueIT
 	private Long id = 498L;
 
 	private WideMap<Integer, Holder> holders;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -74,13 +76,13 @@ public class ObjectAsWideMapValueIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, 13, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(((Holder) columns.get(0).right).getName()).isEqualTo("value1");
-		assertThat(((Holder) columns.get(1).right).getName()).isEqualTo("value2");
-		assertThat(((Holder) columns.get(2).right).getName()).isEqualTo("value3");
+		assertThat((readHolder(columns.get(0).right)).getName()).isEqualTo("value1");
+		assertThat((readHolder(columns.get(1).right)).getName()).isEqualTo("value2");
+		assertThat((readHolder(columns.get(2).right)).getName()).isEqualTo("value3");
 	}
 
 	@Test
@@ -120,6 +122,11 @@ public class ObjectAsWideMapValueIT
 		holders.insert(13, new Holder("value3"));
 		holders.insert(14, new Holder("value4"));
 		holders.insert(15, new Holder("value5"));
+	}
+
+	private Holder readHolder(String string) throws Exception
+	{
+		return this.objectMapper.readValue(string, Holder.class);
 	}
 
 	@After

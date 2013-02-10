@@ -17,7 +17,7 @@ import javax.persistence.Id;
  */
 @Entity
 @ColumnFamily
-public class WideRowBeanWithWrongColumnType implements Serializable
+public class ColumnFamilyBeanWithWrongColumnType implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;

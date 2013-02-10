@@ -1,5 +1,8 @@
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.holder.KeyValue;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +13,10 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * PropertyMeta<K, V>
  * 
@@ -18,6 +25,7 @@ import me.prettyprint.hector.api.Serializer;
  */
 public class PropertyMeta<K, V>
 {
+	private ObjectMapper objectMapper;
 	private PropertyType type;
 	private String propertyName;
 	private Class<K> keyClass;
@@ -32,6 +40,10 @@ public class PropertyMeta<K, V>
 	private ExternalWideMapProperties<?> externalWideMapProperties;
 
 	private boolean singleKey;
+
+	PropertyHelper propertyHelper = new PropertyHelper();
+
+	private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
 	public PropertyType type()
 	{
@@ -143,15 +155,88 @@ public class PropertyMeta<K, V>
 		return keyClass.cast(object);
 	}
 
-	public V getValue(Object object)
+	public V getValueFromString(Object object)
 	{
 		try
 		{
-			return this.valueClass.cast(object);
+			return this.objectMapper.readValue((String) object, this.valueClass);
+		}
+		catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public KeyValue<K, V> getKeyValueFromString(Object object)
+	{
+		try
+		{
+			return (KeyValue<K, V>) this.objectMapper.readValue((String) object, KeyValue.class);
 
 		}
-		catch (ClassCastException e)
+		catch (Exception e)
 		{
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+	}
+
+	public String writeValueToString(Object value)
+	{
+		try
+		{
+			return this.objectMapper.writeValueAsString(value);
+		}
+		catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+	}
+
+	public Object writeValueAsSupportedTypeOrString(V value)
+	{
+		try
+		{
+			if (propertyHelper.isSupportedType(valueClass))
+			{
+				return value;
+			}
+			else
+			{
+				return this.objectMapper.writeValueAsString(value);
+			}
+		}
+		catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
+			return null;
+		}
+	}
+
+	public V castValue(Object object)
+	{
+		try
+		{
+			if (type.isJoinColumn())
+			{
+				return this.valueClass.cast(object);
+			}
+			else if (propertyHelper.isSupportedType(valueClass))
+			{
+				return this.valueClass.cast(object);
+			}
+			else
+			{
+				return objectMapper.readValue((String) object, valueClass);
+			}
+
+		}
+		catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
 			return null;
 		}
 	}
@@ -184,5 +269,10 @@ public class PropertyMeta<K, V>
 	public void setSingleKey(boolean singleKey)
 	{
 		this.singleKey = singleKey;
+	}
+
+	public void setObjectMapper(ObjectMapper objectMapper)
+	{
+		this.objectMapper = objectMapper;
 	}
 }

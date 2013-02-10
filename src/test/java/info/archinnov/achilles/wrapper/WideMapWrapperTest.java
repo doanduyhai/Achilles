@@ -7,7 +7,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -19,7 +18,6 @@ import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForDynamicComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
-import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * WideMapWrapperTest
@@ -74,10 +71,10 @@ public class WideMapWrapperTest
 	private Long id = 1L;
 
 	@Mock
-	private AchillesSliceIterator<Long, DynamicComposite, Object> achillesSliceIterator;
+	private AchillesSliceIterator<Long, DynamicComposite, String> achillesSliceIterator;
 
 	@Mock
-	private AchillesJoinSliceIterator<Long, DynamicComposite, Object, Integer, String> achillesJoinSliceIterator;
+	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, String> achillesJoinSliceIterator;
 
 	@SuppressWarnings(
 	{
@@ -109,24 +106,26 @@ public class WideMapWrapperTest
 	@Test
 	public void should_insert_value() throws Exception
 	{
+		String value = "test";
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
+		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		wrapper.insert(1, value);
 
-		wrapper.insert(1, "test");
-
-		verify(dao).setValue(id, composite, "test");
+		verify(dao).setValue(id, composite, value);
 
 	}
 
 	@Test
 	public void should_insert_value_with_ttl() throws Exception
 	{
+		String value = "test";
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
+		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		wrapper.insert(1, value, 12);
 
-		wrapper.insert(1, "test", 12);
-
-		verify(dao).setValue(id, composite, "test", 12);
+		verify(dao).setValue(id, composite, value, 12);
 
 	}
 
@@ -136,7 +135,7 @@ public class WideMapWrapperTest
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
 		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
@@ -161,7 +160,7 @@ public class WideMapWrapperTest
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
 		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
@@ -186,7 +185,7 @@ public class WideMapWrapperTest
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
 		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
@@ -213,7 +212,7 @@ public class WideMapWrapperTest
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
 		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]
@@ -240,7 +239,7 @@ public class WideMapWrapperTest
 	{
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, Object>> hColumns = mock(List.class);
+		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
 		when(keyFactory.createForQuery(wideMapMeta, 1, true, 2, false, false)).thenReturn(
 				new DynamicComposite[]

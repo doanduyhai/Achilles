@@ -117,13 +117,13 @@ public abstract class CassandraDaoTest
 		return keyspace;
 	}
 
-	public static <K> GenericDynamicCompositeDao<K> getEntityDao(Serializer<K> keySerializer,
+	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(Serializer<K> keySerializer,
 			String columnFamily)
 	{
 		return new GenericDynamicCompositeDao<K>(keyspace, keySerializer, columnFamily);
 	}
 
-	public static <K, V> GenericCompositeDao<K, V> getWideRowDao(Serializer<K> keySerializer,
+	public static <K, V> GenericCompositeDao<K, V> getCompositeDao(Serializer<K> keySerializer,
 			Serializer<V> valueSerializer, String columnFamily)
 	{
 		return new GenericCompositeDao<K, V>(keyspace, keySerializer, valueSerializer, columnFamily);

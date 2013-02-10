@@ -18,7 +18,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
@@ -29,8 +28,6 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
@@ -38,6 +35,7 @@ import info.archinnov.achilles.serializer.SerializerUtils;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
@@ -46,6 +44,7 @@ import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +57,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import parser.entity.ColumnFamilyBean;
 
 import com.google.common.collect.Sets;
-
 
 /**
  * EntityPersisterTest
@@ -108,6 +106,8 @@ public class EntityPersisterTest
 
 	@Captor
 	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Method anyMethod;
 
@@ -160,7 +160,7 @@ public class EntityPersisterTest
 				.forClass(DynamicComposite.class);
 
 		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(151L);
-		doNothing().when(dao).insertColumnBatch(eq(id), compositeCaptor.capture(), eq(151L),
+		doNothing().when(dao).insertColumnBatch(eq(id), compositeCaptor.capture(), eq("151"),
 				eq(mutator));
 		persister.persist(entity, entityMeta);
 
@@ -198,10 +198,11 @@ public class EntityPersisterTest
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 
 		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
+		when(propertyMeta.writeValueToString("testValue")).thenReturn("testValue");
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumnBatch(eq(id), any(DynamicComposite.class), eq(1L), eq(mutator));
+		verify(dao).insertColumnBatch(eq(id), any(DynamicComposite.class), eq("1"), eq(mutator));
 		verify(dao).insertColumnBatch(id, composite, "testValue", mutator);
 		verify(mutator).execute();
 	}
@@ -217,6 +218,9 @@ public class EntityPersisterTest
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(composite);
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(composite);
+
+		when(propertyMeta.writeValueToString("foo")).thenReturn("foo");
+		when(propertyMeta.writeValueToString("bar")).thenReturn("bar");
 
 		persister.persist(entity, entityMeta);
 
@@ -239,17 +243,15 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, "Paul".hashCode()))
 				.thenReturn(composite);
 
+		when(propertyMeta.writeValueToString("George")).thenReturn("George");
+		when(propertyMeta.writeValueToString("Paul")).thenReturn("Paul");
+
 		persister.persist(entity, entityMeta);
 
 		verify(dao).insertColumnBatch(id, composite, "George", mutator);
 		verify(dao).insertColumnBatch(id, composite, "Paul", mutator);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_batch_map_property() throws Exception
 	{
@@ -268,17 +270,25 @@ public class EntityPersisterTest
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(composite);
 		when(keyFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(composite);
 
+		when(propertyMeta.writeValueToString(any(KeyValue.class))) //
+				.thenReturn(writeString(new KeyValue<Integer, String>(1, "FR")), //
+						writeString(new KeyValue<Integer, String>(2, "Paris")), //
+						writeString(new KeyValue<Integer, String>(3, "75014")));
+
 		persister.persist(entity, entityMeta);
 
-		ArgumentCaptor<KeyValue> keyValueHolderCaptor = ArgumentCaptor.forClass(KeyValue.class);
+		ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor.forClass(String.class);
 
 		verify(dao, times(3)).insertColumnBatch(eq(id), eq(composite),
 				keyValueHolderCaptor.capture(), eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-		KeyValue<Integer, String> holder1 = keyValueHolderCaptor.getAllValues().get(0);
-		KeyValue<Integer, String> holder2 = keyValueHolderCaptor.getAllValues().get(1);
-		KeyValue<Integer, String> holder3 = keyValueHolderCaptor.getAllValues().get(2);
+
+		List<String> keyValues = keyValueHolderCaptor.getAllValues();
+
+		KeyValue<Integer, String> holder1 = readKeyValue(keyValues.get(0));
+		KeyValue<Integer, String> holder2 = readKeyValue(keyValues.get(1));
+		KeyValue<Integer, String> holder3 = readKeyValue(keyValues.get(2));
 
 		assertThat(holder1.getKey()).isEqualTo(1);
 		assertThat(holder1.getValue()).isEqualTo("FR");
@@ -316,7 +326,7 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
+		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
 	}
 
 	@SuppressWarnings(
@@ -349,7 +359,7 @@ public class EntityPersisterTest
 
 		persister.persist(entity, entityMeta);
 
-		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
+		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
 	}
 
 	@SuppressWarnings(
@@ -378,8 +388,9 @@ public class EntityPersisterTest
 
 		persister.persistProperty(entity, id, dao, propertyMeta, mutator);
 
-		verify(dao).insertColumnBatch(eq(joinId), any(DynamicComposite.class), eq(0L), eq(mutator));
-		verify(dao).insertColumnBatch(id, composite, joinId, mutator);
+		verify(dao)
+				.insertColumnBatch(eq(joinId), any(DynamicComposite.class), eq("0"), eq(mutator));
+		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
 	}
 
 	@Test
@@ -474,8 +485,8 @@ public class EntityPersisterTest
 		Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
 		joinIdMeta.setType(JOIN_SIMPLE);
-
 		joinIdMeta.setGetter(userIdGetter);
+		joinIdMeta.setObjectMapper(objectMapper);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setIdMeta(joinIdMeta);
@@ -487,5 +498,16 @@ public class EntityPersisterTest
 		joinProperties.addCascadeType(PERSIST);
 
 		return joinProperties;
+	}
+
+	@SuppressWarnings("unchecked")
+	private KeyValue<Integer, String> readKeyValue(String value) throws Exception
+	{
+		return objectMapper.readValue(value, KeyValue.class);
+	}
+
+	private String writeString(Object value) throws Exception
+	{
+		return objectMapper.writeValueAsString(value);
 	}
 }

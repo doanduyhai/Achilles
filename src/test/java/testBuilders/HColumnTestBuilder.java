@@ -2,6 +2,7 @@ package testBuilders;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
@@ -16,7 +17,7 @@ import me.prettyprint.hector.api.factory.HFactory;
  * 
  */
 @SuppressWarnings("unchecked")
-public class HColumTestBuilder
+public class HColumnTestBuilder
 {
 
 	public static <V> HColumn<Composite, V> simple(Composite name, V value)
@@ -31,17 +32,15 @@ public class HColumTestBuilder
 				(Serializer<V>) SerializerTypeInferer.getSerializer(value));
 	}
 
-	public static <V> HColumn<DynamicComposite, Object> dynamic(DynamicComposite name, V value)
+	public static HColumn<DynamicComposite, String> dynamic(DynamicComposite name, String value)
 	{
-		return HFactory.createColumn(name, value, DYNA_COMP_SRZ,
-				(Serializer<Object>) SerializerTypeInferer.getSerializer(value));
+		return HFactory.createColumn(name, value, DYNA_COMP_SRZ, STRING_SRZ);
 	}
 
-	public static <V> HColumn<DynamicComposite, Object> dynamic(DynamicComposite name, V value,
+	public static HColumn<DynamicComposite, String> dynamic(DynamicComposite name, String value,
 			int ttl)
 	{
-		return HFactory.createColumn(name, value, ttl, DYNA_COMP_SRZ,
-				(Serializer<Object>) SerializerTypeInferer.getSerializer(value));
+		return HFactory.createColumn(name, value, ttl, DYNA_COMP_SRZ, STRING_SRZ);
 	}
 
 }

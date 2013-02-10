@@ -1,12 +1,12 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -21,7 +21,6 @@ import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
-import info.archinnov.achilles.wrapper.JoinExternalWideMapWrapper;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * JoinExternalWideMapWrapperTest
@@ -104,6 +104,11 @@ public class JoinExternalWideMapWrapperTest
 		Composite comp = new Composite();
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
+
+		joinEntityMeta.setIdMeta(PropertyMetaTestBuilder //
+				.noClass(Void.class, Long.class) //
+				.type(EXTERNAL_JOIN_WIDE_MAP) //
+				.build());
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 

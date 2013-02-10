@@ -19,12 +19,12 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterator<K, V>
 {
-	private Iterator<HColumn<DynamicComposite, Object>> achillesSliceIterator;
+	private Iterator<HColumn<DynamicComposite, String>> achillesSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;
 	private KeyValueFactory factory = new KeyValueFactory();
 
 	public KeyValueIteratorForDynamicComposite(
-			Iterator<HColumn<DynamicComposite, Object>> columnSliceIterator,
+			Iterator<HColumn<DynamicComposite, String>> columnSliceIterator,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.achillesSliceIterator = columnSliceIterator;
@@ -43,7 +43,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		KeyValue<K, V> keyValue = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
 
 			keyValue = factory.createKeyValueForDynamicComposite(wideMapMeta, column);
 		}
@@ -60,7 +60,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		K key = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
 			key = factory.createKeyForDynamicComposite(wideMapMeta, column);
 		}
 		else
@@ -76,7 +76,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		V value = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
 			value = factory.createValueForDynamicComposite(wideMapMeta, column);
 		}
 		else
@@ -92,7 +92,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		Integer ttl = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<DynamicComposite, Object> column = this.achillesSliceIterator.next();
+			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
 			ttl = factory.createTtlForDynamicComposite(column);
 		}
 		else

@@ -10,6 +10,8 @@ import java.lang.reflect.Method;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 /**
  * PropertyMetaFactory
  * 
@@ -23,6 +25,7 @@ public class PropertyMetaFactory<K, V>
 	private Class<K> keyClass;
 	private Class<V> valueClass;
 	private Method[] accessors;
+	private ObjectMapper objectMapper;
 
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
@@ -45,6 +48,12 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMetaFactory<K, V> propertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
+		return this;
+	}
+
+	public PropertyMetaFactory<K, V> objectMapper(ObjectMapper objectMapper)
+	{
+		this.objectMapper = objectMapper;
 		return this;
 	}
 
@@ -80,6 +89,7 @@ public class PropertyMetaFactory<K, V>
 						+ "' is not supported for PropertyMeta builder");
 		}
 
+		meta.setObjectMapper(objectMapper);
 		meta.setType(type);
 		meta.setPropertyName(propertyName);
 		meta.setKeyClass(keyClass);

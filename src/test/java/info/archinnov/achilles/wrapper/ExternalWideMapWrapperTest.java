@@ -5,7 +5,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -16,7 +15,6 @@ import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
-import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
 
 import java.util.List;
 
@@ -31,7 +29,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * WideRowWrapperTest
@@ -53,7 +50,7 @@ public class ExternalWideMapWrapperTest
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
-	private CompositeHelper helper;
+	private CompositeHelper compositeHelper;
 
 	@Mock
 	private KeyValueFactory keyValueFactory;
@@ -76,9 +73,9 @@ public class ExternalWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(wrapper, "helper", helper);
-		ReflectionTestUtils.setField(wrapper, "keyValueFactory", keyValueFactory);
-		ReflectionTestUtils.setField(wrapper, "iteratorFactory", iteratorFactory);
+		wrapper.compositeHelper = compositeHelper;
+		wrapper.keyValueFactory = keyValueFactory;
+		wrapper.iteratorFactory = iteratorFactory;
 		ReflectionTestUtils.setField(wrapper, "id", id);
 
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
@@ -92,7 +89,7 @@ public class ExternalWideMapWrapperTest
 		Composite comp = new Composite();
 		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 		when(dao.getValue(id, comp)).thenReturn("test");
-		when(wideMapMeta.getValue("test")).thenReturn("test");
+		when(wideMapMeta.castValue("test")).thenReturn("test");
 
 		Object expected = wrapper.get(12);
 
@@ -102,6 +99,7 @@ public class ExternalWideMapWrapperTest
 	@Test
 	public void should_insert_value() throws Exception
 	{
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
 		wrapper.insert(12, "test");
 		verify(dao).setValue(id, comp, "test");
 	}
@@ -109,6 +107,7 @@ public class ExternalWideMapWrapperTest
 	@Test
 	public void should_insert_value_with_ttl() throws Exception
 	{
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
 		wrapper.insert(12, "test", 452);
 		verify(dao).setValue(id, comp, "test", 452);
 	}

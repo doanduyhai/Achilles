@@ -8,7 +8,6 @@ import me.prettyprint.hector.api.beans.HColumn;
 
 import com.google.common.base.Function;
 
-
 /**
  * TransformerBuilder
  * 
@@ -20,63 +19,72 @@ public class DynamicCompositeTransformer
 
 	private PropertyHelper helper = new PropertyHelper();
 
-	public <K, V> Function<HColumn<DynamicComposite, Object>, K> buildKeyTransformer(
+	public <K, V> Function<HColumn<DynamicComposite, String>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Object>, K>()
+		return new Function<HColumn<DynamicComposite, String>, K>()
 		{
-			public K apply(HColumn<DynamicComposite, Object> hColumn)
+			public K apply(HColumn<DynamicComposite, String> hColumn)
 			{
 				return buildKeyFromDynamicComposite(propertyMeta, hColumn);
 			}
 		};
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, Object>, V> buildValueTransformer(
+	public <K, V> Function<HColumn<DynamicComposite, String>, V> buildValueTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Object>, V>()
+		return new Function<HColumn<DynamicComposite, String>, V>()
 		{
-			public V apply(HColumn<DynamicComposite, Object> hColumn)
+			public V apply(HColumn<DynamicComposite, String> hColumn)
 			{
-				return propertyMeta.getValue(hColumn.getValue());
+				return propertyMeta.getValueFromString(hColumn.getValue());
 			}
 		};
 	}
 
-	public Function<HColumn<DynamicComposite, Object>, Object> buildRawValueTransformer()
+	public <K, V> Function<HColumn<DynamicComposite, String>, Object> buildRawValueTransformer(
+			final PropertyMeta<K, V> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Object>, Object>()
+		return new Function<HColumn<DynamicComposite, String>, Object>()
 		{
-			public Object apply(HColumn<DynamicComposite, Object> hColumn)
+			public Object apply(HColumn<DynamicComposite, String> hColumn)
 			{
-				return hColumn.getValue();
+				if (propertyMeta.type().isJoinColumn())
+				{
+					return propertyMeta.getJoinProperties().getEntityMeta().getIdMeta()
+							.getValueFromString(hColumn.getValue());
+				}
+				else
+				{
+					return hColumn.getValue();
+				}
 			}
 		};
 	}
 
-	public Function<HColumn<DynamicComposite, Object>, Integer> buildTtlTransformer()
+	public Function<HColumn<DynamicComposite, String>, Integer> buildTtlTransformer()
 	{
 
-		return new Function<HColumn<DynamicComposite, Object>, Integer>()
+		return new Function<HColumn<DynamicComposite, String>, Integer>()
 		{
-			public Integer apply(HColumn<DynamicComposite, Object> hColumn)
+			public Integer apply(HColumn<DynamicComposite, String> hColumn)
 			{
 				return hColumn.getTtl();
 			}
 		};
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, Object>, KeyValue<K, V>> buildKeyValueTransformer(
+	public <K, V> Function<HColumn<DynamicComposite, String>, KeyValue<K, V>> buildKeyValueTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Object>, KeyValue<K, V>>()
+		return new Function<HColumn<DynamicComposite, String>, KeyValue<K, V>>()
 		{
-			public KeyValue<K, V> apply(HColumn<DynamicComposite, Object> hColumn)
+			public KeyValue<K, V> apply(HColumn<DynamicComposite, String> hColumn)
 			{
 				return buildKeyValueFromDynamicComposite(propertyMeta, hColumn);
 			}
@@ -84,17 +92,34 @@ public class DynamicCompositeTransformer
 	}
 
 	public <K, V> KeyValue<K, V> buildKeyValueFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+			HColumn<DynamicComposite, String> hColumn)
 	{
 		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
-		V value = propertyMeta.getValue(hColumn.getValue());
+		V value = this.buildValueFromDynamicComposite(propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
 
 		return new KeyValue<K, V>(key, value, ttl);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <K, V> V buildValueFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
+			HColumn<DynamicComposite, String> hColumn)
+	{
+		V value;
+		if (propertyMeta.type().isJoinColumn())
+		{
+			value = (V) hColumn.getValue();
+		}
+		else
+		{
+			value = propertyMeta.getValueFromString(hColumn.getValue());
+		}
+
+		return value;
+	}
+
 	public <K, V> K buildKeyFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, Object> hColumn)
+			HColumn<DynamicComposite, String> hColumn)
 	{
 		K key;
 		if (propertyMeta.isSingleKey())

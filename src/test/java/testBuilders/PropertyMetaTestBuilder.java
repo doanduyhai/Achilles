@@ -22,6 +22,8 @@ import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 /**
  * PropertyMetaBuilder
  * 
@@ -51,6 +53,8 @@ public class PropertyMetaTestBuilder<T, K, V>
 
 	private boolean buildAccessors;
 
+	private ObjectMapper objectMapper;
+
 	public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz, Class<K> keyClass,
 			Class<V> valueClass)
 	{
@@ -68,6 +72,11 @@ public class PropertyMetaTestBuilder<T, K, V>
 			Class<V> valueClass)
 	{
 		return new PropertyMetaTestBuilder<Void, K, V>(Void.class, keyClass, valueClass);
+	}
+
+	public static <V> PropertyMetaTestBuilder<Void, Void, V> valueClass(Class<V> valueClass)
+	{
+		return new PropertyMetaTestBuilder<Void, Void, V>(Void.class, Void.class, valueClass);
 	}
 
 	public PropertyMetaTestBuilder(Class<T> clazz, Class<K> keyClass, Class<V> valueClass) {
@@ -135,6 +144,8 @@ public class PropertyMetaTestBuilder<T, K, V>
 
 			propertyMeta.setExternalWideMapProperties(externalWideMapProperties);
 		}
+		objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
+		propertyMeta.setObjectMapper(objectMapper);
 		return propertyMeta;
 	}
 
@@ -237,6 +248,12 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> accesors()
 	{
 		this.buildAccessors = true;
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> mapper(ObjectMapper mapper)
+	{
+		this.objectMapper = mapper;
 		return this;
 	}
 

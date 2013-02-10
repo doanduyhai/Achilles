@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-
 /**
  * BeanWithObjectAsWideMapValue
  * 
@@ -60,6 +59,8 @@ public class BeanWithObjectAsWideMapValue implements Serializable
 		private static final long serialVersionUID = 1L;
 
 		private String name;
+
+		public Holder() {}
 
 		public Holder(String name) {
 			this.name = name;

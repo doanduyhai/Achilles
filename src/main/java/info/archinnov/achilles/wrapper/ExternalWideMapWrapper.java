@@ -16,21 +16,26 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 /**
- * WideRowWrapper
+ * ExternalWideMapWrapper
  * 
  * @author DuyHai DOAN
  * 
  */
+@SuppressWarnings(
+{
+		"unchecked",
+		"rawtypes"
+})
 public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 {
 	protected ID id;
-	protected GenericCompositeDao<ID, V> dao;
+	protected GenericCompositeDao dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 
-	protected CompositeHelper helper = new CompositeHelper();
-	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
-	protected IteratorFactory iteratorFactory = new IteratorFactory();
-	protected CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	CompositeHelper compositeHelper = new CompositeHelper();
+	KeyValueFactory keyValueFactory = new KeyValueFactory();
+	IteratorFactory iteratorFactory = new IteratorFactory();
+	CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 
 	protected Composite buildComposite(K key)
 	{
@@ -42,31 +47,26 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	public V get(K key)
 	{
 		Object value = dao.getValue(id, buildComposite(key));
-		return wideMapMeta.getValue(value);
+		return wideMapMeta.castValue(value);
 	}
 
 	@Override
 	public void insert(K key, V value)
 	{
-		dao.setValue(id, buildComposite(key), value);
+		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueAsSupportedTypeOrString(value));
 	}
 
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		dao.setValue(id, buildComposite(key), value, ttl);
+		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Override
 	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
 
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
@@ -77,15 +77,10 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		return keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
 
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
@@ -96,15 +91,10 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		return keyValueFactory.createValueListForComposite(wideMapMeta, (List) hColumns);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
 
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
@@ -139,7 +129,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	@Override
 	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
-		helper.checkBounds(wideMapMeta, start, end, false);
+		compositeHelper.checkBounds(wideMapMeta, start, end, false);
 		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
 				inclusiveStart, end, inclusiveEnd, false);
 		dao.removeColumnRange(id, composites[0], composites[1]);
@@ -172,5 +162,4 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	{
 		this.wideMapMeta = wideMapMeta;
 	}
-
 }

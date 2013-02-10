@@ -32,7 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * PropertyHelper
  * 
@@ -185,7 +184,7 @@ public class PropertyHelper
 			}
 			else
 			{
-				valueClass = Object.class;
+				valueClass = String.class;
 			}
 		}
 		else
@@ -344,4 +343,8 @@ public class PropertyHelper
 		return key;
 	}
 
+	public <T> boolean isSupportedType(Class<T> valueClass)
+	{
+		return allowedTypes.contains(valueClass);
+	}
 }

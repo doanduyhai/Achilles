@@ -1,18 +1,14 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +21,6 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.SliceQuery;
 
@@ -36,6 +31,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import testBuilders.CompositeTestBuilder;
+import testBuilders.HColumnTestBuilder;
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * JoinColumnSliceIteratorTest
@@ -51,19 +49,19 @@ public class AchillesJoinSliceIteratorTest
 	private PropertyMeta<Integer, UserBean> propertyMeta;
 
 	@Mock
-	private SliceQuery<Long, DynamicComposite, Long> query;
+	private SliceQuery<Long, DynamicComposite, String> query;
 
 	@Mock
-	private QueryResult<ColumnSlice<DynamicComposite, Long>> queryResult;
+	private QueryResult<ColumnSlice<DynamicComposite, String>> queryResult;
 
 	@Mock
-	private ColumnSlice<DynamicComposite, Long> columnSlice;
+	private ColumnSlice<DynamicComposite, String> columnSlice;
 
 	@Mock
-	private List<HColumn<DynamicComposite, Long>> hColumns;
+	private List<HColumn<DynamicComposite, String>> hColumns;
 
 	@Mock
-	private Iterator<HColumn<DynamicComposite, Long>> columnsIterator;
+	private Iterator<HColumn<DynamicComposite, String>> columnsIterator;
 
 	@Mock
 	private EntityLoader loader;
@@ -74,7 +72,7 @@ public class AchillesJoinSliceIteratorTest
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-	AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean> iterator;
+	AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean> iterator;
 
 	@SuppressWarnings(
 	{
@@ -105,27 +103,30 @@ public class AchillesJoinSliceIteratorTest
 	@Test
 	public void should_return_3_entities() throws Exception
 	{
+
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.valueClass(Long.class) //
+				.build();
+
+		joinEntityMeta.setIdMeta(idMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+
 		DynamicComposite start = new DynamicComposite(), //
 		end = new DynamicComposite(), //
-		name1 = new DynamicComposite(), //
-		name2 = new DynamicComposite(), //
-		name3 = new DynamicComposite();
+		name1 = CompositeTestBuilder.builder().values("name1").buildDynamic(), //
+		name2 = CompositeTestBuilder.builder().values("name2").buildDynamic(), //
+		name3 = CompositeTestBuilder.builder().values("name3").buildDynamic();
 
-		name1.addComponent("name1", STRING_SRZ);
-		name2.addComponent("name2", STRING_SRZ);
-		name3.addComponent("name3", STRING_SRZ);
+		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L;
+		Integer ttl = 10;
 
-		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L, ttl = 10L;
-
-		HColumn<DynamicComposite, Long> hCol1 = HFactory.createColumn(name1, joinId1, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
-		HColumn<DynamicComposite, Long> hCol2 = HFactory.createColumn(name2, joinId2, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
-		HColumn<DynamicComposite, Long> hCol3 = HFactory.createColumn(name3, joinId3, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
-
-		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
-		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
+		HColumnTestBuilder.dynamic(name1, joinId1.toString(), ttl);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(name1,
+				joinId1.toString(), ttl);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(name2,
+				joinId2.toString(), ttl);
+		HColumn<DynamicComposite, String> hCol3 = HColumnTestBuilder.dynamic(name3,
+				joinId3.toString(), ttl);
 
 		Map<Long, UserBean> entitiesMap = new HashMap<Long, UserBean>();
 		entitiesMap.put(joinId1, user1);
@@ -135,10 +136,13 @@ public class AchillesJoinSliceIteratorTest
 		when(
 				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2, joinId3),
 						joinEntityMeta)).thenReturn(entitiesMap);
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, 10);
 
 		ReflectionTestUtils.setField(iterator, "loader", loader);
+		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
+
+		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<DynamicComposite, UserBean> h1 = iterator.next();
@@ -165,25 +169,29 @@ public class AchillesJoinSliceIteratorTest
 	@Test
 	public void should_reload_load_when_reaching_end_of_batch() throws Exception
 	{
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.valueClass(Long.class) //
+				.build();
+
+		joinEntityMeta.setIdMeta(idMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+
 		DynamicComposite start = new DynamicComposite(), //
 		end = new DynamicComposite(), //
-		name1 = new DynamicComposite(), //
-		name2 = new DynamicComposite(), //
-		name3 = new DynamicComposite();
+		name1 = CompositeTestBuilder.builder().values("name1").buildDynamic(), //
+		name2 = CompositeTestBuilder.builder().values("name2").buildDynamic(), //
+		name3 = CompositeTestBuilder.builder().values("name3").buildDynamic();
 		int count = 2;
 
-		name1.addComponent("name1", STRING_SRZ);
-		name2.addComponent("name2", STRING_SRZ);
-		name3.addComponent("name3", STRING_SRZ);
+		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L;
+		Integer ttl = 10;
 
-		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L, ttl = 10L;
-
-		HColumn<DynamicComposite, Long> hCol1 = HFactory.createColumn(name1, joinId1, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
-		HColumn<DynamicComposite, Long> hCol2 = HFactory.createColumn(name2, joinId2, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
-		HColumn<DynamicComposite, Long> hCol3 = HFactory.createColumn(name3, joinId3, ttl,
-				DYNA_COMP_SRZ, LONG_SRZ);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(name1,
+				joinId1.toString(), ttl);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(name2,
+				joinId2.toString(), ttl);
+		HColumn<DynamicComposite, String> hCol3 = HColumnTestBuilder.dynamic(name3,
+				joinId3.toString(), ttl);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, false, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
@@ -199,7 +207,7 @@ public class AchillesJoinSliceIteratorTest
 		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta))
 				.thenReturn(entitiesMap);
 
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, Long, Integer, UserBean>(
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, count);
 
 		ReflectionTestUtils.setField(iterator, "loader", loader);

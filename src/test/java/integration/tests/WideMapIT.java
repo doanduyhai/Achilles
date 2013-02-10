@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
@@ -25,10 +25,10 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * WideMapIT
@@ -40,7 +40,7 @@ public class WideMapIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericDynamicCompositeDao<Long> dao = getEntityDao(LONG_SRZ,
+	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -57,6 +57,8 @@ public class WideMapIT
 	private UUID uuid3 = TimeUUIDUtils.getTimeUUID(3);
 	private UUID uuid4 = TimeUUIDUtils.getTimeUUID(4);
 	private UUID uuid5 = TimeUUIDUtils.getTimeUUID(5);
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -78,13 +80,13 @@ public class WideMapIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, uuid3, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(columns.get(0).right).isEqualTo("tweet1");
-		assertThat(columns.get(1).right).isEqualTo("tweet2");
-		assertThat(columns.get(2).right).isEqualTo("tweet3");
+		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1");
+		assertThat(readString(columns.get(1).right)).isEqualTo("tweet2");
+		assertThat(readString(columns.get(2).right)).isEqualTo("tweet3");
 
 	}
 
@@ -98,7 +100,7 @@ public class WideMapIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<HColumn<DynamicComposite, Object>> columns = dao.findRawColumnsRange(bean.getId(),
+		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
 				startComp, endComp, false, 10);
 
 		assertThat(columns).hasSize(1);
@@ -117,7 +119,7 @@ public class WideMapIT
 
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
-		List<HColumn<DynamicComposite, Object>> columns = dao.findRawColumnsRange(bean.getId(),
+		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
 				startComp, endComp, false, 10);
 
 		assertThat(columns).hasSize(0);
@@ -431,6 +433,11 @@ public class WideMapIT
 		tweets.insert(uuid3, "tweet3");
 		tweets.insert(uuid4, "tweet4");
 		tweets.insert(uuid5, "tweet5");
+	}
+
+	private String readString(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, String.class);
 	}
 
 	@After

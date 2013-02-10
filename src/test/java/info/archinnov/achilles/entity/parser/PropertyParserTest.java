@@ -9,14 +9,12 @@ import static javax.persistence.CascadeType.REMOVE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.parser.PropertyParser;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
@@ -41,6 +39,7 @@ import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -70,6 +69,8 @@ public class PropertyParserTest
 
 	private final PropertyParser parser = new PropertyParser();
 
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Test
 	public void should_parse_simple_property_string() throws Exception
 	{
@@ -89,7 +90,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("name"), "name");
+				Test.class.getDeclaredField("name"), "name", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -122,7 +123,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("name"), "firstname");
+				Test.class.getDeclaredField("name"), "firstname", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
 	}
@@ -153,7 +154,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("user"), "user");
+				Test.class.getDeclaredField("user"), "user", objectMapper);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SIMPLE);
 		assertThat(meta.isSingleKey()).isTrue();
@@ -206,7 +207,7 @@ public class PropertyParserTest
 				.expectMessage("Incorrect annotation. Only @OneToOne or @ManyToOne is allowed for the join property 'user'");
 
 		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("user"), "user");
+				Test.class.getDeclaredField("user"), "user", objectMapper);
 	}
 
 	@Test
@@ -238,7 +239,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("CascadeType.REMOVE is not supported for join columns");
 
 		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("user"), "user");
+				Test.class.getDeclaredField("user"), "user", objectMapper);
 	}
 
 	@Test
@@ -266,7 +267,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("Missing @ManyToOne annotation for the join property 'user'");
 
 		PropertyMeta<Void, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("user"), "user");
+				Test.class.getDeclaredField("user"), "user", objectMapper);
 	}
 
 	@Test
@@ -289,7 +290,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("friends"), "friends");
+				Test.class.getDeclaredField("friends"), "friends", objectMapper);
 
 		assertThat(meta.type().isLazy()).isTrue();
 	}
@@ -314,7 +315,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("friends"), "friends");
+				Test.class.getDeclaredField("friends"), "friends", objectMapper);
 
 		assertThat(meta.type().isLazy()).isFalse();
 	}
@@ -339,7 +340,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("friends"), "friends");
+				Test.class.getDeclaredField("friends"), "friends", objectMapper);
 
 		assertThat(meta.type().isLazy()).isFalse();
 	}
@@ -363,7 +364,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("friends"), "friends");
+				Test.class.getDeclaredField("friends"), "friends", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -396,7 +397,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Void, Long> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("followers"), "followers");
+				Test.class.getDeclaredField("followers"), "followers", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat(meta.getValueClass()).isEqualTo(Long.class);
@@ -429,7 +430,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<Integer, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("preferences"), "preferences");
+				Test.class.getDeclaredField("preferences"), "preferences", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -465,7 +466,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<UUID, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("tweets"), "tweets");
+				Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
@@ -502,7 +503,7 @@ public class PropertyParserTest
 		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
 
 		PropertyMeta<UUID, String> meta = parser.parseExternalWideMapProperty(keyspace, idMeta,
-				Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+				Test.class, Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.EXTERNAL_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
@@ -541,7 +542,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("The class '" + Void.class.getCanonicalName()
 				+ "' is not allowed as WideMap key");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 	}
 
 	@Test
@@ -564,7 +565,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<CorrectMultiKey, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("tweets"), "tweets");
+				Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -611,7 +612,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<CorrectMultiKeyUnorderedKeys, String> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("tweets"), "tweets");
+				Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
@@ -656,7 +657,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 
 	}
 
@@ -682,7 +683,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 	}
 
 	@Test
@@ -707,7 +708,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets");
+		parser.parse(Test.class, Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
 	}
 
 	@Test
@@ -736,7 +737,7 @@ public class PropertyParserTest
 		}
 
 		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("users"), "users");
+				Test.class.getDeclaredField("users"), "users", objectMapper);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 		assertThat(meta.isSingleKey()).isTrue();
@@ -779,7 +780,7 @@ public class PropertyParserTest
 		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
 
 		PropertyMeta<Integer, UserBean> meta = parser.parseExternalJoinWideMapProperty(keyspace,
-				idMeta, Test.class, Test.class.getDeclaredField("users"), "users");
+				idMeta, Test.class, Test.class.getDeclaredField("users"), "users", objectMapper);
 
 		assertThat(meta.type()).isEqualTo(EXTERNAL_JOIN_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("users");
@@ -825,7 +826,7 @@ public class PropertyParserTest
 				.expectMessage("Incorrect annotation. Only @OneToMany or @ManyToMany is allowed for the join property 'users'");
 
 		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("users"), "users");
+				Test.class.getDeclaredField("users"), "users", objectMapper);
 
 	}
 
@@ -853,7 +854,7 @@ public class PropertyParserTest
 		expectedEx.expectMessage("Missing @ManyToMany annotation for the join property 'users'");
 
 		PropertyMeta<UUID, UserBean> meta = parser.parse(Test.class,
-				Test.class.getDeclaredField("users"), "users");
+				Test.class.getDeclaredField("users"), "users", objectMapper);
 
 	}
 
@@ -879,7 +880,7 @@ public class PropertyParserTest
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Value of 'parser' should be Serializable");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("parser"), "parser");
+		parser.parse(Test.class, Test.class.getDeclaredField("parser"), "parser", objectMapper);
 	}
 
 	@Test
@@ -904,7 +905,7 @@ public class PropertyParserTest
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
+		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers", objectMapper);
 	}
 
 	@Test
@@ -929,7 +930,7 @@ public class PropertyParserTest
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
+		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers", objectMapper);
 	}
 
 	@Test
@@ -954,7 +955,7 @@ public class PropertyParserTest
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
 
-		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers");
+		parser.parse(Test.class, Test.class.getDeclaredField("parsers"), "parsers", objectMapper);
 	}
 
 }

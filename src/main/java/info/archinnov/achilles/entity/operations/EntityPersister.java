@@ -6,7 +6,6 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
@@ -32,7 +31,6 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.Validate;
-
 
 /**
  * EntityPersister
@@ -82,7 +80,7 @@ public class EntityPersister
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
 		if (serialVersionUID != null)
 		{
-			dao.insertColumnBatch(key, composite, serialVersionUID, mutator);
+			dao.insertColumnBatch(key, composite, serialVersionUID.toString(), mutator);
 		}
 		else
 		{
@@ -96,26 +94,33 @@ public class EntityPersister
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		DynamicComposite name = keyFactory.createForBatchInsertSingleValue(propertyMeta);
-		Object value = helper.getValueFromField(entity, propertyMeta.getGetter());
+		String value = propertyMeta.writeValueToString(helper.getValueFromField(entity,
+				propertyMeta.getGetter()));
 		if (value != null)
 		{
 			dao.insertColumnBatch(key, name, value, mutator);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <ID> void batchPersistJoinEntity(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		Object joinEntity = null;
-		joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
+		PropertyMeta<Void, ?> idMeta = joinProperties.getEntityMeta().getIdMeta();
+		Object joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
 
 		if (joinEntity != null)
 		{
-			Object joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties);
+			String joinId = idMeta.writeValueToString(this.cascadePersistOrEnsureExists(joinEntity,
+					joinProperties));
 
-			DynamicComposite joinName = keyFactory.createForBatchInsertSingleValue(propertyMeta);
-			dao.insertColumnBatch(key, joinName, joinId, mutator);
+			if (joinId != null)
+			{
+				DynamicComposite joinName = keyFactory
+						.createForBatchInsertSingleValue(propertyMeta);
+				dao.insertColumnBatch(key, joinName, joinId, mutator);
+			}
 		}
 	}
 
@@ -162,9 +167,11 @@ public class EntityPersister
 			{
 				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
 						count);
-				if (value != null)
+
+				String stringValue = propertyMeta.writeValueToString(value);
+				if (stringValue != null)
 				{
-					dao.insertColumnBatch(key, name, value, mutator);
+					dao.insertColumnBatch(key, name, stringValue, mutator);
 				}
 				count++;
 			}
@@ -181,9 +188,11 @@ public class EntityPersister
 			{
 				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
 						value.hashCode());
-				if (value != null)
+
+				String stringValue = propertyMeta.writeValueToString(value);
+				if (stringValue != null)
 				{
-					dao.insertColumnBatch(key, name, value, mutator);
+					dao.insertColumnBatch(key, name, stringValue, mutator);
 				}
 			}
 		}
@@ -202,7 +211,8 @@ public class EntityPersister
 				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
 						entry.getKey().hashCode());
 
-				KeyValue<K, V> value = new KeyValue<K, V>(entry.getKey(), entry.getValue());
+				String value = propertyMeta.writeValueToString(new KeyValue<K, V>(entry.getKey(),
+						entry.getValue()));
 				dao.insertColumnBatch(key, name, value, mutator);
 			}
 		}

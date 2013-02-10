@@ -1,8 +1,10 @@
 package info.archinnov.achilles.entity.metadata.builder;
 
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -17,7 +19,6 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
 import org.apache.commons.lang.StringUtils;
-
 
 /**
  * EntityMetaBuilder
@@ -35,6 +36,8 @@ public class EntityMetaBuilder<ID>
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
 	private boolean wideRow = false;
+
+	PropertyHelper propertyHelper = new PropertyHelper();
 
 	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
 	{
@@ -84,10 +87,22 @@ public class EntityMetaBuilder<ID>
 
 		if (wideRow)
 		{
-			Serializer<?> valueSerializer = propertyMetas.entrySet().iterator().next().getValue()
-					.getValueSerializer();
-			meta.setWideRowDao(new GenericCompositeDao(keyspace, idSerializer, valueSerializer,
-					this.columnFamilyName));
+			PropertyMeta<?, ?> wideMapMeta = propertyMetas.entrySet().iterator().next().getValue();
+			Serializer<?> valueSerializer = wideMapMeta.getValueSerializer();
+			GenericCompositeDao<ID, ?> dao;
+
+			if (propertyHelper.isSupportedType(wideMapMeta.getValueClass()))
+			{
+				dao = new GenericCompositeDao(keyspace, idSerializer, valueSerializer,
+						this.columnFamilyName);
+			}
+			else
+			{
+				dao = new GenericCompositeDao(keyspace, idSerializer, STRING_SRZ,
+						this.columnFamilyName);
+			}
+
+			meta.setWideRowDao(dao);
 		}
 		else
 		{

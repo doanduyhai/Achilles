@@ -12,9 +12,11 @@ public class KeyValue<K, V> implements Serializable
 {
 	public static final long serialVersionUID = 1L;
 
-	private final K key;
-	private final V value;
-	private final int ttl;
+	private K key;
+	private V value;
+	private int ttl;
+
+	public KeyValue() {}
 
 	public KeyValue(K key, V value, int ttl) {
 		this.key = key;

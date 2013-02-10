@@ -34,11 +34,11 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideRowIT
+public class MultiKeyColumnFamilyIT
 {
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private GenericCompositeDao<Long, String> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
+	private GenericCompositeDao<Long, String> dao = CassandraDaoTest.getCompositeDao(LONG_SRZ,
 			STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(MultiKeyColumnFamilyBean.class.getName()));
 

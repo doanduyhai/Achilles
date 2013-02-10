@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -24,12 +24,12 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 
 /**
  * JoinColumnIT
@@ -45,7 +45,7 @@ public class JoinColumnIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
@@ -56,6 +56,8 @@ public class JoinColumnIT
 	private Tweet tweet;
 	private User creator;
 	private Long creatorId = RandomUtils.nextLong();
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -80,13 +82,13 @@ public class JoinColumnIT
 		DynamicComposite endComp = new DynamicComposite();
 		endComp.addComponent(0, JOIN_SIMPLE.flag(), ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, Object>> columns = tweetDao.findColumnsRange(tweet.getId(),
+		List<Pair<DynamicComposite, String>> columns = tweetDao.findColumnsRange(tweet.getId(),
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 
-		Pair<DynamicComposite, Object> creator = columns.get(0);
-		assertThat(creator.right).isEqualTo(creatorId);
+		Pair<DynamicComposite, String> creator = columns.get(0);
+		assertThat(readLong(creator.right)).isEqualTo(creatorId);
 
 	}
 
@@ -181,6 +183,11 @@ public class JoinColumnIT
 						+ creator.getId()
 						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
 		em.persist(tweet);
+	}
+
+	private Long readLong(String value) throws Exception
+	{
+		return this.objectMapper.readValue(value, Long.class);
 	}
 
 	@After

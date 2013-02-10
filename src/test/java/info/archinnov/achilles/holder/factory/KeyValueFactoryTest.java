@@ -5,15 +5,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
-
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.CompositeTransformer;
-import info.archinnov.achilles.holder.factory.DynamicCompositeTransformer;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.util.Arrays;
@@ -27,6 +23,7 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +35,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
-import testBuilders.HColumTestBuilder;
+import testBuilders.HColumnTestBuilder;
 
 import com.google.common.base.Function;
-
 
 /**
  * KeyValueFactoryTest
@@ -80,6 +76,8 @@ public class KeyValueFactoryTest
 	@Captor
 	private ArgumentCaptor<List<Long>> joinIdsCaptor;
 
+	private ObjectMapper objectMapper = new ObjectMapper();
+
 	@Before
 	public void setUp()
 	{
@@ -94,7 +92,7 @@ public class KeyValueFactoryTest
 	public void should_create_keyvalue_from_dynamic_composite_hcolumn() throws Exception
 	{
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Object> hColumn = HColumTestBuilder.dynamic(dynComp, "test");
+		HColumn<DynamicComposite, String> hColumn = HColumnTestBuilder.dynamic(dynComp, "test");
 
 		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "test");
 		when(dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(wideMapMeta, hColumn))
@@ -109,7 +107,7 @@ public class KeyValueFactoryTest
 	public void should_create_key_from_dynamic_composite_hcolumn() throws Exception
 	{
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Object> hColumn = HColumTestBuilder.dynamic(dynComp, "test");
+		HColumn<DynamicComposite, String> hColumn = HColumnTestBuilder.dynamic(dynComp, "test");
 
 		Integer key = 123;
 		when(dynamicCompositeTransformer.buildKeyFromDynamicComposite(wideMapMeta, hColumn))
@@ -124,12 +122,13 @@ public class KeyValueFactoryTest
 	{
 		String value = "test";
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Object> hColumn = HColumTestBuilder.dynamic(dynComp, value);
+		HColumn<DynamicComposite, String> hColumn = HColumnTestBuilder.dynamic(dynComp, value);
 
-		when(wideMapMeta.getValue(value)).thenReturn(value);
+		when(dynamicCompositeTransformer.buildValueFromDynamicComposite(wideMapMeta, hColumn))
+				.thenReturn(value);
 		String built = factory.createValueForDynamicComposite(wideMapMeta, hColumn);
 
-		assertThat(built).isSameAs(value);
+		assertThat(built).isEqualTo(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -138,12 +137,12 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Object> hCol1 = HColumTestBuilder.dynamic(dynComp1, "test1");
-		HColumn<DynamicComposite, Object> hCol2 = HColumTestBuilder.dynamic(dynComp2, "test2");
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1, "test1");
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2, "test2");
 
-		Function<HColumn<DynamicComposite, Object>, String> function = new Function<HColumn<DynamicComposite, Object>, String>()
+		Function<HColumn<DynamicComposite, String>, String> function = new Function<HColumn<DynamicComposite, String>, String>()
 		{
-			public String apply(HColumn<DynamicComposite, Object> hCol)
+			public String apply(HColumn<DynamicComposite, String> hCol)
 			{
 				return (String) hCol.getValue();
 			}
@@ -170,18 +169,30 @@ public class KeyValueFactoryTest
 
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Object> hCol1 = HColumTestBuilder.dynamic(dynComp1, joinId1);
-		HColumn<DynamicComposite, Object> hCol2 = HColumTestBuilder.dynamic(dynComp2, joinId2);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1,
+				joinId1.toString());
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2,
+				joinId2.toString());
 
-		Function<HColumn<DynamicComposite, Object>, Object> rawValueFn = new Function<HColumn<DynamicComposite, Object>, Object>()
+		Function<HColumn<DynamicComposite, String>, Object> rawValueFn = new Function<HColumn<DynamicComposite, String>, Object>()
 		{
-			public Object apply(HColumn<DynamicComposite, Object> hCol)
+
+			public Object apply(HColumn<DynamicComposite, String> hCol)
 			{
+				try
+				{
+					return readLong(hCol.getValue());
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 				return hCol.getValue();
 			}
 		};
 
-		when(dynamicCompositeTransformer.buildRawValueTransformer()).thenReturn(rawValueFn);
+		when(dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta)).thenReturn(
+				rawValueFn);
 		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
 		map.put(joinId1, bean1);
 		map.put(joinId2, bean2);
@@ -201,12 +212,12 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 11).buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 12).buildDynamic();
-		HColumn<DynamicComposite, Object> hCol1 = HColumTestBuilder.dynamic(dynComp1, "test1");
-		HColumn<DynamicComposite, Object> hCol2 = HColumTestBuilder.dynamic(dynComp2, "test2");
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1, "test1");
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2, "test2");
 
-		Function<HColumn<DynamicComposite, Object>, Integer> function = new Function<HColumn<DynamicComposite, Object>, Integer>()
+		Function<HColumn<DynamicComposite, String>, Integer> function = new Function<HColumn<DynamicComposite, String>, Integer>()
 		{
-			public Integer apply(HColumn<DynamicComposite, Object> hCol)
+			public Integer apply(HColumn<DynamicComposite, String> hCol)
 			{
 				return (Integer) hCol.getName().getComponent(2).getValue(SerializerUtils.INT_SRZ);
 			}
@@ -226,12 +237,12 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 11).buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 12).buildDynamic();
-		HColumn<DynamicComposite, Object> hCol1 = HColumTestBuilder.dynamic(dynComp1, "test1", 456);
-		HColumn<DynamicComposite, Object> hCol2 = HColumTestBuilder.dynamic(dynComp2, "test2", 789);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1, "test1", 456);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2, "test2", 789);
 
-		Function<HColumn<DynamicComposite, Object>, KeyValue<Integer, String>> function = new Function<HColumn<DynamicComposite, Object>, KeyValue<Integer, String>>()
+		Function<HColumn<DynamicComposite, String>, KeyValue<Integer, String>> function = new Function<HColumn<DynamicComposite, String>, KeyValue<Integer, String>>()
 		{
-			public KeyValue<Integer, String> apply(HColumn<DynamicComposite, Object> hCol)
+			public KeyValue<Integer, String> apply(HColumn<DynamicComposite, String> hCol)
 			{
 				Integer key = (Integer) hCol.getName().getComponent(2)
 						.getValue(SerializerUtils.INT_SRZ);
@@ -260,7 +271,7 @@ public class KeyValueFactoryTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_create_join_keyvalue_list_for_dynamic_composite() throws Exception
+	public void should_create_join_key_value_list_for_dynamic_composite() throws Exception
 	{
 		Integer key1 = 11, key2 = 12, ttl1 = 456, ttl2 = 789;
 		Long joinId1 = 11L, joinId2 = 12L;
@@ -274,36 +285,45 @@ public class KeyValueFactoryTest
 				.buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, key2)
 				.buildDynamic();
-		HColumn<DynamicComposite, Object> hCol1 = HColumTestBuilder
-				.dynamic(dynComp1, joinId1, ttl1);
-		HColumn<DynamicComposite, Object> hCol2 = HColumTestBuilder
-				.dynamic(dynComp2, joinId2, ttl2);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1,
+				joinId1.toString(), ttl1);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2,
+				joinId2.toString(), ttl2);
 
-		Function<HColumn<DynamicComposite, Object>, Integer> keyFunction = new Function<HColumn<DynamicComposite, Object>, Integer>()
+		Function<HColumn<DynamicComposite, String>, Integer> keyFunction = new Function<HColumn<DynamicComposite, String>, Integer>()
 		{
-			public Integer apply(HColumn<DynamicComposite, Object> hCol)
+			public Integer apply(HColumn<DynamicComposite, String> hCol)
 			{
 				return (Integer) hCol.getName().getComponent(2).getValue(INT_SRZ);
 			}
 		};
 
-		Function<HColumn<DynamicComposite, Object>, Object> rawValueFn = new Function<HColumn<DynamicComposite, Object>, Object>()
+		Function<HColumn<DynamicComposite, String>, Object> rawValueFn = new Function<HColumn<DynamicComposite, String>, Object>()
 		{
-			public Object apply(HColumn<DynamicComposite, Object> hCol)
+			public Object apply(HColumn<DynamicComposite, String> hCol)
 			{
+				try
+				{
+					return readLong(hCol.getValue());
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 				return hCol.getValue();
 			}
 		};
-		Function<HColumn<DynamicComposite, Object>, Integer> ttlFn = new Function<HColumn<DynamicComposite, Object>, Integer>()
+		Function<HColumn<DynamicComposite, String>, Integer> ttlFn = new Function<HColumn<DynamicComposite, String>, Integer>()
 		{
-			public Integer apply(HColumn<DynamicComposite, Object> hCol)
+			public Integer apply(HColumn<DynamicComposite, String> hCol)
 			{
 				return hCol.getTtl();
 			}
 		};
 
 		when(dynamicCompositeTransformer.buildKeyTransformer(propertyMeta)).thenReturn(keyFunction);
-		when(dynamicCompositeTransformer.buildRawValueTransformer()).thenReturn(rawValueFn);
+		when(dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta)).thenReturn(
+				rawValueFn);
 		when(dynamicCompositeTransformer.buildTtlTransformer()).thenReturn(ttlFn);
 
 		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
@@ -334,7 +354,7 @@ public class KeyValueFactoryTest
 	public void should_create_keyvalue_from_composite_hcolumn() throws Exception
 	{
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumTestBuilder.simple(comp, "test");
+		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, "test");
 
 		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "test");
 		when(compositeTransformer.buildKeyValueFromComposite(wideMapMeta, hColumn)).thenReturn(
@@ -348,7 +368,7 @@ public class KeyValueFactoryTest
 	public void should_create_key_from_composite_hcolumn() throws Exception
 	{
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumTestBuilder.simple(comp, "test");
+		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, "test");
 
 		Integer key = 123;
 		when(compositeTransformer.buildKeyFromComposite(wideMapMeta, hColumn)).thenReturn(key);
@@ -362,9 +382,9 @@ public class KeyValueFactoryTest
 	{
 		String value = "test";
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumTestBuilder.simple(comp, value);
+		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, value);
 
-		when(wideMapMeta.getValue(value)).thenReturn(value);
+		when(compositeTransformer.buildValueFromComposite(wideMapMeta, hColumn)).thenReturn(value);
 		String built = factory.createValueForComposite(wideMapMeta, hColumn);
 
 		assertThat(built).isSameAs(value);
@@ -380,8 +400,8 @@ public class KeyValueFactoryTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		Function<HColumn<Composite, String>, String> function = new Function<HColumn<Composite, String>, String>()
 		{
@@ -417,8 +437,8 @@ public class KeyValueFactoryTest
 
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, Long> hCol1 = HColumTestBuilder.simple(comp1, joinId1);
-		HColumn<Composite, Long> hCol2 = HColumTestBuilder.simple(comp2, joinId2);
+		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(comp1, joinId1);
+		HColumn<Composite, Long> hCol2 = HColumnTestBuilder.simple(comp2, joinId2);
 
 		Function<HColumn<Composite, Long>, Long> rawValueFn = new Function<HColumn<Composite, Long>, Long>()
 		{
@@ -452,8 +472,8 @@ public class KeyValueFactoryTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2");
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		Function<HColumn<Composite, Integer>, Integer> function = new Function<HColumn<Composite, Integer>, Integer>()
 		{
@@ -481,8 +501,8 @@ public class KeyValueFactoryTest
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumTestBuilder.simple(comp1, "test1", 456);
-		HColumn<Composite, String> hCol2 = HColumTestBuilder.simple(comp2, "test2", 789);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 456);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
 		Function<HColumn<Composite, String>, KeyValue<Integer, String>> function = new Function<HColumn<Composite, String>, KeyValue<Integer, String>>()
 		{
@@ -531,8 +551,8 @@ public class KeyValueFactoryTest
 
 		Composite comp1 = CompositeTestBuilder.builder().values(key1).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(key2).buildSimple();
-		HColumn<Composite, Long> hCol1 = HColumTestBuilder.simple(comp1, joinId1, ttl1);
-		HColumn<Composite, Long> hCol2 = HColumTestBuilder.simple(comp2, joinId2, ttl2);
+		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(comp1, joinId1, ttl1);
+		HColumn<Composite, Long> hCol2 = HColumnTestBuilder.simple(comp2, joinId2, ttl2);
 
 		Function<HColumn<Composite, Integer>, Integer> keyFunction = new Function<HColumn<Composite, Integer>, Integer>()
 		{
@@ -583,5 +603,10 @@ public class KeyValueFactoryTest
 		assertThat(builtList.get(1).getKey()).isEqualTo(key2);
 		assertThat(builtList.get(1).getValue()).isEqualTo(bean2);
 		assertThat(builtList.get(1).getTtl()).isEqualTo(ttl2);
+	}
+
+	private Long readLong(String value) throws Exception
+	{
+		return objectMapper.readValue(value, Long.class);
 	}
 }

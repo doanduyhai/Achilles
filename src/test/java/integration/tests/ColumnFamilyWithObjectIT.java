@@ -4,7 +4,7 @@ import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizer
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericCompositeDao;
@@ -23,13 +23,13 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.cassandra.utils.Pair;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
- * WideRowWithObjectIT
+ * ColumnFamilyWithObjectIT
  * 
  * @author DuyHai DOAN
  * 
@@ -42,8 +42,8 @@ public class ColumnFamilyWithObjectIT
 			"unchecked",
 			"rawtypes"
 	})
-	private GenericCompositeDao<Long, Holder> dao = CassandraDaoTest.getWideRowDao(LONG_SRZ,
-			(Serializer) OBJECT_SRZ,
+	private GenericCompositeDao<Long, String> dao = CassandraDaoTest.getCompositeDao(LONG_SRZ,
+			(Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithObject.class.getName()));
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
@@ -51,6 +51,8 @@ public class ColumnFamilyWithObjectIT
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
 
 	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private ColumnFamilyBeanWithObject bean;
 
@@ -79,13 +81,13 @@ public class ColumnFamilyWithObjectIT
 		Composite endComp = new Composite();
 		endComp.addComponent(0, 13L, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<Composite, Holder>> columns = dao.findColumnsRange(bean.getId(), startComp,
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
 				endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(columns.get(0).right.getName()).isEqualTo("value1");
-		assertThat(columns.get(1).right.getName()).isEqualTo("value2");
-		assertThat(columns.get(2).right.getName()).isEqualTo("value3");
+		assertThat(readHolder(columns.get(0).right).getName()).isEqualTo("value1");
+		assertThat(readHolder(columns.get(1).right).getName()).isEqualTo("value2");
+		assertThat(readHolder(columns.get(2).right).getName()).isEqualTo("value3");
 
 	}
 
@@ -170,6 +172,11 @@ public class ColumnFamilyWithObjectIT
 		map.insert(13L, new Holder("value3"));
 		map.insert(14L, new Holder("value4"));
 		map.insert(15L, new Holder("value5"));
+	}
+
+	public Holder readHolder(String value) throws Exception
+	{
+		return objectMapper.readValue(value, Holder.class);
 	}
 
 	@After
