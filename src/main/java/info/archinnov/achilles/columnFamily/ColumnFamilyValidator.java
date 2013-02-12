@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * ColumnFamilyValidator
  * 
@@ -41,7 +40,7 @@ public class ColumnFamilyValidator
 					+ entityMeta.getIdSerializer().getComparatorType().getClassName() + "'");
 		}
 
-		if (entityMeta.isWideRow())
+		if (entityMeta.isColumnFamilyDirectMapping())
 		{
 			this.validateCFWithPropertyMeta(cfDef, entityMeta.getPropertyMetas().values()
 					.iterator().next(), entityMeta.getColumnFamilyName());

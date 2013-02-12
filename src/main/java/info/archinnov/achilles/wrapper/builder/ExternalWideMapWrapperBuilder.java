@@ -5,7 +5,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
 
 /**
- * WideRowWrapperBuilder
+ * ExternalWideMapWrapperBuilder
  * 
  * @author DuyHai DOAN
  * 

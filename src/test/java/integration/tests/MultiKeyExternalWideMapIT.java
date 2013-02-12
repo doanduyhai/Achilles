@@ -1,9 +1,9 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -29,7 +29,6 @@ import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * MultiKeyExternalWideMapIT
  * 
@@ -40,8 +39,8 @@ public class MultiKeyExternalWideMapIT
 {
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericCompositeDao<Long, String> multiKeyExternalWideMapDao = getCompositeDao(LONG_SRZ,
-			STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
+	private GenericCompositeDao<Long, String> multiKeyExternalWideMapDao = getCompositeDao(
+			LONG_SRZ, STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
 
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
 			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);

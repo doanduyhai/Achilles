@@ -4,7 +4,7 @@ import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.entity.type.MultiKey;
 
 /**
- * WideRowMultiKey
+ * ColumnFamilyMultiKey
  * 
  * @author DuyHai DOAN
  * 

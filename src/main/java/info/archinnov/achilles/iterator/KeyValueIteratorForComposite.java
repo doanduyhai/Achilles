@@ -12,7 +12,7 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 /**
- * KeyValueIteratorForWideRow
+ * KeyValueIteratorForComposite
  * 
  * @author DuyHai DOAN
  * 

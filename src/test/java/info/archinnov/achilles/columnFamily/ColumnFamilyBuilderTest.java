@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.InvalidColumnFamilyException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,6 +99,26 @@ public class ColumnFamilyBuilderTest
 				STRING_SRZ.getComparatorType().getTypeName());
 
 		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo("typeAlias");
+
+	}
+
+	@Test
+	public void should_normalize_canonical_classname() throws Exception
+	{
+		String canonicalName = "org.achilles.entity.ClassName";
+
+		String normalized = ColumnFamilyBuilder
+				.normalizerAndValidateColumnFamilyName(canonicalName);
+
+		assertThat(normalized).isEqualTo("ClassName");
+	}
+
+	@Test(expected = InvalidColumnFamilyException.class)
+	public void should_exception_when_even_class_name_exceeeds_48_characters() throws Exception
+	{
+		String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
+
+		ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName(canonicalName);
 
 	}
 }

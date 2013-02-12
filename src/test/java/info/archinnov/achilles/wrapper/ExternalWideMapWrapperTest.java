@@ -31,7 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * WideRowWrapperTest
+ * ExternalWideMapWrapperTest
  * 
  * @author DuyHai DOAN
  * 

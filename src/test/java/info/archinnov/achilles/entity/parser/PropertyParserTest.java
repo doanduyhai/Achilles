@@ -797,6 +797,37 @@ public class PropertyParserTest
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo("tablename");
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_parse_join_wide_map_for_column_family() throws Exception
+	{
+
+		class Test
+		{
+			@ManyToMany
+			@JoinColumn(table = "tablename")
+			private WideMap<Integer, UserBean> users;
+
+			public WideMap<Integer, UserBean> getUsers()
+			{
+				return users;
+			}
+		}
+
+		Keyspace keyspace = mock(ExecutingKeyspace.class);
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
+		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
+
+		PropertyMeta<Integer, UserBean> meta = parser.parseJoinWideMapPropertyForColumnFamily(
+				keyspace, idMeta, Test.class, Test.class.getDeclaredField("users"), "users",
+				"columnFamily", objectMapper);
+
+		ExternalWideMapProperties<?> externalWideMapProperties = meta
+				.getExternalWideMapProperties();
+		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
+				"columnFamily");
+	}
+
 	@Test
 	public void should_exception_when_join_wide_map_has_incorrect_annotation() throws Exception
 	{

@@ -1,10 +1,10 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
+import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -30,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-
 /**
  * ExternalJoinWideMapIT
  * 
@@ -45,7 +44,8 @@ public class ExternalJoinWideMapIT
 
 	private final String ENTITY_PACKAGE = "integration.tests.entity";
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
+	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(
+			SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
 	private GenericCompositeDao<Long, UUID> externalJoinWideMapDao = getCompositeDao(LONG_SRZ,
@@ -170,7 +170,7 @@ public class ExternalJoinWideMapIT
 	}
 
 	@Test
-	public void should_remove_external_join_tweets() throws Exception
+	public void should_remove_external_join_tweet_ids_but_not_tweet_entities() throws Exception
 	{
 
 		user = em.merge(user);

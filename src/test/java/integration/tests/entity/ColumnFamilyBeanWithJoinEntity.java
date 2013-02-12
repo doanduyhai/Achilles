@@ -1,31 +1,34 @@
-package mapping.entity;
+package integration.tests.entity;
 
 import info.archinnov.achilles.annotations.ColumnFamily;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 
 /**
- * ColumnFamilyBean
+ * ColumnFamilyBeanWithJoinEntity
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
 @ColumnFamily
-public class ColumnFamilyBean implements Serializable
+public class ColumnFamilyBeanWithJoinEntity implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;
 
-	@Column
-	private WideMap<Integer, String> map;
+	@JoinColumn
+	@ManyToMany(cascade = CascadeType.ALL)
+	private WideMap<Integer, User> friends;
 
 	public Long getId()
 	{
@@ -37,13 +40,8 @@ public class ColumnFamilyBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<Integer, String> getMap()
+	public WideMap<Integer, User> getFriends()
 	{
-		return map;
-	}
-
-	public void setMap(WideMap<Integer, String> map)
-	{
-		this.map = map;
+		return friends;
 	}
 }

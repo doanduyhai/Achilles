@@ -1,22 +1,24 @@
 package info.archinnov.achilles.entity.factory;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.util.ArrayList;
@@ -29,13 +31,13 @@ import javax.persistence.EntityManager;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * ThriftEntityManagerFactoryImplTest
@@ -132,6 +134,7 @@ public class ThriftEntityManagerFactoryImplTest
 
 		JoinProperties joinProperties = new JoinProperties();
 		when(longPropertyMeta.getJoinProperties()).thenReturn(joinProperties);
+		when(longPropertyMeta.type()).thenReturn(PropertyType.SIMPLE);
 
 		when(entityMetaMap.containsKey(Long.class)).thenReturn(true);
 		when(entityMetaMap.get(Long.class)).thenReturn(entityMeta1);
@@ -162,6 +165,7 @@ public class ThriftEntityManagerFactoryImplTest
 
 		JoinProperties joinProperties = new JoinProperties();
 		when(longPropertyMeta.getJoinProperties()).thenReturn(joinProperties);
+		when(longPropertyMeta.type()).thenReturn(EXTERNAL_JOIN_WIDE_MAP);
 
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
 				"externalCF", null, SerializerUtils.LONG_SRZ);
@@ -234,5 +238,17 @@ public class ThriftEntityManagerFactoryImplTest
 	public void should_do_nothing_when_close_called() throws Exception
 	{
 		factory.close();
+	}
+
+	@Test
+	public void should_create_object_mapper_factory_from_provided_object_mapper() throws Exception
+	{
+		ObjectMapper mapper = mock(ObjectMapper.class);
+
+		ObjectMapperFactory mapperFactory = ThriftEntityManagerFactoryImpl
+				.factoryFromMapper(mapper);
+
+		assertThat(mapperFactory).isNotNull();
+		assertThat(mapperFactory.getMapper(String.class)).isSameAs(mapper);
 	}
 }

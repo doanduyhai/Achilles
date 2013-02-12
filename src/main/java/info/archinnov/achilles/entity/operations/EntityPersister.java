@@ -48,7 +48,7 @@ public class EntityPersister
 
 	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta)
 	{
-		if (!entityMeta.isWideRow())
+		if (!entityMeta.isColumnFamilyDirectMapping())
 		{
 			ID key = helper.getKey(entity, entityMeta.getIdMeta());
 			Validate.notNull(key, "key value for entity '" + entityMeta.getClassName()
@@ -259,9 +259,9 @@ public class EntityPersister
 		Validate.notNull(id, "key value for entity '" + entityMeta.getClassName() + "'");
 
 		AbstractDao<ID, ?, ?> dao;
-		if (entityMeta.isWideRow())
+		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			dao = entityMeta.getEntityDao();
+			dao = entityMeta.getColumnFamilyDao();
 		}
 		else
 		{

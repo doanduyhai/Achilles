@@ -5,6 +5,11 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.InvalidColumnFamilyException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
@@ -26,6 +31,7 @@ public class ColumnFamilyBuilder
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyBuilder.class);
 
 	private static final String DYNAMIC_TYPE_ALIASES = "(a=>AsciiType,b=>BytesType,c=>BooleanType,d=>DateType,e=>DecimalType,z=>DoubleType,f=>FloatType,i=>IntegerType,j=>Int32Type,x=>LexicalUUIDType,l=>LongType,t=>TimeUUIDType,s=>UTF8Type,u=>UUIDType)";
+	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 
 	private PropertyHelper helper = new PropertyHelper();
 
@@ -110,5 +116,29 @@ public class ColumnFamilyBuilder
 		log.debug(builder.toString());
 
 		return cfDef;
+	}
+
+	public static String normalizerAndValidateColumnFamilyName(String cfName)
+	{
+		log.trace("Normalizing column family '{}' name agains Cassandra restrictions", cfName);
+
+		Matcher nameMatcher = CF_PATTERN.matcher(cfName);
+
+		if (nameMatcher.matches())
+		{
+			return cfName;
+		}
+		else if (cfName.contains("."))
+		{
+			String className = cfName.replaceAll(".+\\.(.+)", "$1");
+			return normalizerAndValidateColumnFamilyName(className);
+		}
+		else
+		{
+			throw new InvalidColumnFamilyException(
+					"The column family name '"
+							+ cfName
+							+ "' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
+		}
 	}
 }

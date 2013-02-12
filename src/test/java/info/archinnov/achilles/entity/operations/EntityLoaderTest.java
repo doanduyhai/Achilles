@@ -156,12 +156,12 @@ public class EntityLoaderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_load_widerow() throws Exception
+	public void should_load_column_family() throws Exception
 	{
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);
 
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 		doNothing().when(helper).setValueToField(any(CompleteBean.class), eq(idSetter),

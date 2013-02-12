@@ -17,6 +17,8 @@ import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
+import testBuilders.PropertyMetaTestBuilder;
+
 /**
  * PropertyMetaTest
  * 
@@ -78,7 +80,7 @@ public class PropertyMetaTest
 		propertyMeta.setValueClass(String.class);
 		propertyMeta.setObjectMapper(objectMapper);
 
-		Object test = "\"test\"";
+		Object test = "test";
 
 		String value = propertyMeta.getValueFromString(test);
 		assertThat(value).isEqualTo("test");
@@ -154,5 +156,53 @@ public class PropertyMetaTest
 
 		String key = propertyMeta.getKey(test);
 		assertThat(key).isEqualTo("test");
+	}
+
+	@Test
+	public void should_cast_value_as_join_type() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.JOIN_WIDE_MAP) //
+				.build();
+
+		Object bean = new UserBean();
+
+		Object cast = propertyMeta.castValue(bean);
+
+		assertThat(cast).isSameAs(bean);
+	}
+
+	@Test
+	public void should_cast_value_as_supported_type() throws Exception
+	{
+		PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UUID.class) //
+				.type(PropertyType.WIDE_MAP) //
+				.build();
+
+		Object uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		Object cast = propertyMeta.castValue(uuid);
+
+		assertThat(cast).isSameAs(uuid);
+	}
+
+	@Test
+	public void should_cast_value_as_string() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.WIDE_MAP) //
+				.build();
+
+		UserBean bean = new UserBean();
+		bean.setName("name");
+		bean.setUserId(12L);
+
+		UserBean cast = propertyMeta.castValue(objectMapper.writeValueAsString(bean));
+
+		assertThat(cast.getName()).isEqualTo(bean.getName());
+		assertThat(cast.getUserId()).isEqualTo(bean.getUserId());
 	}
 }

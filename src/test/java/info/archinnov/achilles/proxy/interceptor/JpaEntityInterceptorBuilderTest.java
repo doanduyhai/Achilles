@@ -2,7 +2,6 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -10,8 +9,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -19,15 +16,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
 import mapping.entity.ColumnFamilyBean;
+import mapping.entity.CompleteBean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * JpaEntityInterceptorBuilderTest
@@ -45,7 +41,7 @@ public class JpaEntityInterceptorBuilderTest
 	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
-	private GenericCompositeDao<Long, String> wideRowDao;
+	private GenericCompositeDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -89,9 +85,9 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(ReflectionTestUtils.getField(interceptor, "wideRowDao")).isNull();
+		assertThat(ReflectionTestUtils.getField(interceptor, "columnFamilyDao")).isNull();
 		assertThat(ReflectionTestUtils.getField(interceptor, "entityDao")).isNotNull();
-		assertThat(interceptor.getWideRow()).isFalse();
+		assertThat(interceptor.getColumnFamily()).isFalse();
 
 		Object entityLoader = ReflectionTestUtils.getField(interceptor, "loader");
 
@@ -105,14 +101,14 @@ public class JpaEntityInterceptorBuilderTest
 			"unchecked"
 	})
 	@Test
-	public void should_build_widerow() throws Exception
+	public void should_build_column_family() throws Exception
 	{
 		ColumnFamilyBean entity = new ColumnFamilyBean();
 		entity.setId(1545L);
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getWideRowDao()).thenReturn((GenericCompositeDao) wideRowDao);
+		when(entityMeta.getColumnFamilyDao()).thenReturn((GenericCompositeDao) columnFamilyDao);
 
 		Method idGetter = ColumnFamilyBean.class.getDeclaredMethod("getId");
 		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);
@@ -124,7 +120,7 @@ public class JpaEntityInterceptorBuilderTest
 		idMeta.setSetter(idSetter);
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 
 		JpaEntityInterceptor<Long> interceptor = JpaEntityInterceptorBuilder.builder(entityMeta)
 				.target(entity).build();
@@ -137,9 +133,9 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(ReflectionTestUtils.getField(interceptor, "wideRowDao")).isNotNull();
+		assertThat(ReflectionTestUtils.getField(interceptor, "columnFamilyDao")).isNotNull();
 		assertThat(ReflectionTestUtils.getField(interceptor, "entityDao")).isNull();
-		assertThat(interceptor.getWideRow()).isTrue();
+		assertThat(interceptor.getColumnFamily()).isTrue();
 
 		Object entityLoader = ReflectionTestUtils.getField(interceptor, "loader");
 

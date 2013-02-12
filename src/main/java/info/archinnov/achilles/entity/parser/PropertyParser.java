@@ -12,6 +12,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
@@ -291,6 +292,20 @@ public class PropertyParser
 		String externalColumnFamilyName = field.getAnnotation(JoinColumn.class).table();
 		propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
 				externalColumnFamilyName, null, idMeta.getValueSerializer()));
+
+		return propertyMeta;
+	}
+
+	public <ID, JOIN_ID, K, V> PropertyMeta<K, V> parseJoinWideMapPropertyForColumnFamily(
+			Keyspace keyspace, PropertyMeta<Void, ID> idMeta, Class<?> beanClass, Field field,
+			String propertyName, String columnFamilyName, ObjectMapper objectMapper)
+	{
+		PropertyMeta<K, V> propertyMeta = this.parseExternalJoinWideMapProperty(keyspace, idMeta,
+				beanClass, field, propertyName, objectMapper);
+
+		propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
+				ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName(columnFamilyName), null,
+				idMeta.getValueSerializer()));
 
 		return propertyMeta;
 	}

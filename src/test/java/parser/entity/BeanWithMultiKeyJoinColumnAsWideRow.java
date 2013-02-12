@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
-
 /**
  * BeanWithMultiKeyJoinColumnAsWideRow
  * 
@@ -32,14 +31,14 @@ public class BeanWithMultiKeyJoinColumnAsWideRow
 		this.id = id;
 	}
 
-	public WideMap<CorrectMultiKey, String> getWideRow()
+	public WideMap<CorrectMultiKey, String> getWideMap()
 	{
 		return wideMap;
 	}
 
-	public void setWideRow(WideMap<CorrectMultiKey, String> wideRow)
+	public void setWideMap(WideMap<CorrectMultiKey, String> wideMap)
 	{
-		this.wideMap = wideRow;
+		this.wideMap = wideMap;
 	}
 
 }

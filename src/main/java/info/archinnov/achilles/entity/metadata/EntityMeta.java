@@ -25,10 +25,10 @@ public class EntityMeta<ID>
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
 	private GenericDynamicCompositeDao<ID> entityDao;
-	private GenericCompositeDao<ID, ?> wideRowDao;
+	private GenericCompositeDao<ID, ?> columnFamilyDao;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
-	private boolean wideRow = false;
+	private boolean columnFamilyDirectMapping = false;
 
 	public String getClassName()
 	{
@@ -120,23 +120,23 @@ public class EntityMeta<ID>
 		this.setterMetas = setterMetas;
 	}
 
-	public boolean isWideRow()
+	public boolean isColumnFamilyDirectMapping()
 	{
-		return wideRow;
+		return columnFamilyDirectMapping;
 	}
 
-	public void setWideRow(boolean wideRow)
+	public void setColumnFamilyDirectMapping(boolean columnFamilyDirectMapping)
 	{
-		this.wideRow = wideRow;
+		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
 	}
 
-	public GenericCompositeDao<ID, ?> getWideRowDao()
+	public GenericCompositeDao<ID, ?> getColumnFamilyDao()
 	{
-		return wideRowDao;
+		return columnFamilyDao;
 	}
 
-	public void setWideRowDao(GenericCompositeDao<ID, ?> wideRowDao)
+	public void setColumnFamilyDao(GenericCompositeDao<ID, ?> columnFamilyDao)
 	{
-		this.wideRowDao = wideRowDao;
+		this.columnFamilyDao = columnFamilyDao;
 	}
 }

@@ -9,9 +9,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-
 /**
- * MultiKeyWideRowBean
+ * MultiKeyColumnFamilyBean
  * 
  * @author DuyHai DOAN
  * 
@@ -26,7 +25,7 @@ public class MultiKeyColumnFamilyBean implements Serializable
 	private Long id;
 
 	@Column
-	private WideMap<WideRowMultiKey, String> map;
+	private WideMap<ColumnFamilyMultiKey, String> map;
 
 	public Long getId()
 	{
@@ -38,7 +37,7 @@ public class MultiKeyColumnFamilyBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<WideRowMultiKey, String> getMap()
+	public WideMap<ColumnFamilyMultiKey, String> getMap()
 	{
 		return map;
 	}

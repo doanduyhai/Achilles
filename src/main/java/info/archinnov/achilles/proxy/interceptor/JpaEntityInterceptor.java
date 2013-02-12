@@ -4,19 +4,20 @@ import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.SetWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -31,7 +32,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 
 	private Object target;
 	private GenericDynamicCompositeDao<ID> entityDao;
-	private GenericCompositeDao<ID, ?> wideRowDao;
+	private GenericCompositeDao<ID, ?> columnFamilyDao;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -39,7 +40,8 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Set<Method> lazyLoaded;
-	private Boolean wideRow;
+	Boolean columnFamily;
+	private Mutator<ID> mutator;
 
 	private EntityLoader loader = new EntityLoader();
 
@@ -116,7 +118,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case WIDE_MAP:
-				if (wideRow)
+				if (columnFamily)
 				{
 					result = buildColumnFamilyWrapper(propertyMeta);
 				}
@@ -174,9 +176,10 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(PropertyMeta<K, V> propertyMeta)
+	private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(
+			PropertyMeta<K, V> propertyMeta)
 	{
-		return ExternalWideMapWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) wideRowDao,
+		return ExternalWideMapWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao,
 				propertyMeta).build();
 	}
 
@@ -227,9 +230,9 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.entityDao = dao;
 	}
 
-	public <V> void setWideRowDao(GenericCompositeDao<ID, V> wideRowDao)
+	public <V> void setColumnFamilyDao(GenericCompositeDao<ID, V> columnFamilyDao)
 	{
-		this.wideRowDao = wideRowDao;
+		this.columnFamilyDao = columnFamilyDao;
 	}
 
 	void setKey(ID key)
@@ -272,13 +275,24 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.loader = loader;
 	}
 
-	public void setWideRow(Boolean wideRow)
+	public void setColumnFamily(Boolean columnFamily)
 	{
-		this.wideRow = wideRow;
+		this.columnFamily = columnFamily;
 	}
 
-	public Boolean getWideRow()
+	public Boolean getColumnFamily()
 	{
-		return wideRow;
+		return columnFamily;
 	}
+
+	public Mutator<ID> getMutator()
+	{
+		return mutator;
+	}
+
+	public void setMutator(Mutator<ID> mutator)
+	{
+		this.mutator = mutator;
+	}
+
 }

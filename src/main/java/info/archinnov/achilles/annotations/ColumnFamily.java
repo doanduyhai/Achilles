@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * WideRow
+ * ColumnFamily
  * 
  * @author DuyHai DOAN
  * 
@@ -19,8 +19,8 @@ public @interface ColumnFamily
 {
 	/**
 	 * <p>
-	 * Define a WideRow mapping. A WideRow entity has an id (row key) annotated by @Id and a WideMap property annotated with @Column. The WideMap represents the Column Name/Column Value representation
-	 * in Thrift
+	 * Define a ColumnFamily direct mapping. A ColumnFamily entity has an id (row key) annotated by @Id and a WideMap property annotated with @Column. The WideMap represents the Column Name/Column
+	 * Value representation in Thrift
 	 * </p>
 	 */
 }

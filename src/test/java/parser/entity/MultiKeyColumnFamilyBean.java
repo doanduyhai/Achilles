@@ -12,7 +12,7 @@ import javax.persistence.Id;
 import mapping.entity.TweetMultiKey;
 
 /**
- * MultiKeyWideRowBean
+ * MultiKeyColumnFamilyBean
  * 
  * @author DuyHai DOAN
  * 

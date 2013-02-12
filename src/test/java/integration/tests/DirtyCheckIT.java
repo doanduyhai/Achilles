@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
@@ -79,7 +79,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(readString(columns.get(2).right)).isEqualTo("qux");
+		assertThat(columns.get(2).right).isEqualTo("qux");
 	}
 
 	@Test
@@ -96,8 +96,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(readString(columns.get(1).right)).isEqualTo("qux");
-		assertThat(readString(columns.get(2).right)).isEqualTo("bar");
+		assertThat(columns.get(1).right).isEqualTo("qux");
+		assertThat(columns.get(2).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -114,8 +114,8 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(readString(columns.get(2).right)).isEqualTo("qux");
-		assertThat(readString(columns.get(3).right)).isEqualTo("baz");
+		assertThat(columns.get(2).right).isEqualTo("qux");
+		assertThat(columns.get(3).right).isEqualTo("baz");
 	}
 
 	@Test
@@ -148,7 +148,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
+		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -165,7 +165,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("foo");
+		assertThat(columns.get(0).right).isEqualTo("foo");
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
+		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -199,7 +199,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("foo");
+		assertThat(columns.get(0).right).isEqualTo("foo");
 	}
 
 	@Test
@@ -216,7 +216,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
+		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -233,7 +233,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(readString(columns.get(1).right)).isEqualTo("qux");
+		assertThat(columns.get(1).right).isEqualTo("qux");
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
+		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -273,7 +273,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(readString(columns.get(0).right)).isEqualTo("bar");
+		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
@@ -293,7 +293,7 @@ public class DirtyCheckIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(readString(columns.get(0).right)).isEqualTo("qux");
+		assertThat(columns.get(0).right).isEqualTo("qux");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -618,7 +618,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "name", EQUAL);
 
-		Object reloadedName = readString(dao.getValue(bean.getId(), compo));
+		Object reloadedName = dao.getValue(bean.getId(), compo);
 
 		assertThat(reloadedName).isEqualTo("another_name");
 	}
@@ -634,7 +634,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
 
-		Object reloadedLabel = readString(dao.getValue(bean.getId(), compo));
+		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
 		assertThat(reloadedLabel).isEqualTo("label");
 	}
@@ -652,7 +652,7 @@ public class DirtyCheckIT
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
 
-		Object reloadedLabel = readString(dao.getValue(bean.getId(), compo));
+		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
 		assertThat(reloadedLabel).isEqualTo("label");
 	}
@@ -715,11 +715,6 @@ public class DirtyCheckIT
 		startComp.addComponent(1, "preferences", EQUAL);
 		startComp.addComponent(2, 0, EQUAL);
 		return startComp;
-	}
-
-	private String readString(String value) throws Exception
-	{
-		return this.objectMapper.readValue(value, String.class);
 	}
 
 	@After

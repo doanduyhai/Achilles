@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
@@ -25,7 +25,6 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +57,6 @@ public class WideMapIT
 	private UUID uuid4 = TimeUUIDUtils.getTimeUUID(4);
 	private UUID uuid5 = TimeUUIDUtils.getTimeUUID(5);
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-
 	@Before
 	public void setUp()
 	{
@@ -84,9 +81,9 @@ public class WideMapIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1");
-		assertThat(readString(columns.get(1).right)).isEqualTo("tweet2");
-		assertThat(readString(columns.get(2).right)).isEqualTo("tweet3");
+		assertThat(columns.get(0).right).isEqualTo("tweet1");
+		assertThat(columns.get(1).right).isEqualTo("tweet2");
+		assertThat(columns.get(2).right).isEqualTo("tweet3");
 
 	}
 
@@ -433,11 +430,6 @@ public class WideMapIT
 		tweets.insert(uuid3, "tweet3");
 		tweets.insert(uuid4, "tweet4");
 		tweets.insert(uuid5, "tweet5");
-	}
-
-	private String readString(String value) throws Exception
-	{
-		return this.objectMapper.readValue(value, String.class);
 	}
 
 	@After

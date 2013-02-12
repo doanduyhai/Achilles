@@ -11,7 +11,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -20,8 +19,6 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
 import info.archinnov.achilles.wrapper.JoinExternalWideMapWrapper;
@@ -39,8 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import mapping.entity.CompleteBean;
 import mapping.entity.ColumnFamilyBean;
+import mapping.entity.CompleteBean;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.junit.Before;
@@ -49,7 +46,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * JpaEntityInterceptorTest
@@ -137,7 +133,7 @@ public class JpaEntityInterceptorTest
 		ReflectionTestUtils.setField(interceptor, "key", key);
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
-		ReflectionTestUtils.setField(interceptor, "wideRow", false);
+		ReflectionTestUtils.setField(interceptor, "columnFamily", false);
 	}
 
 	@Test
@@ -276,7 +272,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		ReflectionTestUtils.setField(interceptor, "wideRow", false);
+		interceptor.columnFamily = false;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -284,7 +280,7 @@ public class JpaEntityInterceptorTest
 	}
 
 	@Test
-	public void should_create_widerow_wrapper() throws Throwable
+	public void should_create_column_family_wrapper() throws Throwable
 	{
 		ColumnFamilyBean bean = new ColumnFamilyBean();
 		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
@@ -292,7 +288,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		ReflectionTestUtils.setField(interceptor, "wideRow", true);
+		interceptor.columnFamily = true;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -308,7 +304,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-		ReflectionTestUtils.setField(interceptor, "wideRow", false);
+		interceptor.columnFamily = false;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 

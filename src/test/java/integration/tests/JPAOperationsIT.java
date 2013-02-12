@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
@@ -101,12 +101,12 @@ public class JPAOperationsIT
 		assertThat(readLong(age.right)).isEqualTo(35L);
 
 		assertThat(name.left.get(1, STRING_SRZ)).isEqualTo("name");
-		assertThat(readString(name.right)).isEqualTo("DuyHai");
+		assertThat(name.right).isEqualTo("DuyHai");
 
 		assertThat(George.left.get(1, STRING_SRZ)).isEqualTo("followers");
-		assertThat(readString(George.right)).isIn("George", "Paul");
+		assertThat(George.right).isIn("George", "Paul");
 		assertThat(Paul.left.get(1, STRING_SRZ)).isEqualTo("followers");
-		assertThat(readString(Paul.right)).isIn("George", "Paul");
+		assertThat(Paul.right).isIn("George", "Paul");
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
 		KeyValue<Integer, String> country = readKeyValue(FR.right);
@@ -139,9 +139,9 @@ public class JPAOperationsIT
 		Pair<DynamicComposite, String> bar = columns.get(1);
 
 		assertThat(foo.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(readString(foo.right)).isEqualTo("foo");
+		assertThat(foo.right).isEqualTo("foo");
 		assertThat(bar.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(readString(bar.right)).isEqualTo("bar");
+		assertThat(bar.right).isEqualTo("bar");
 
 	}
 
@@ -323,7 +323,7 @@ public class JPAOperationsIT
 		Pair<DynamicComposite, String> eve = columns.get(2);
 
 		assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
-		assertThat(readString(eve.right)).isEqualTo("eve");
+		assertThat(eve.right).isEqualTo("eve");
 
 		startCompositeForEagerFetch = new DynamicComposite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
@@ -440,8 +440,7 @@ public class JPAOperationsIT
 		nameMeta.setPropertyName("name");
 
 		DynamicComposite nameComposite = keyFactory.createForBatchInsertSingleValue(nameMeta);
-		dao.setValue(bean.getId(), nameComposite,
-				objectMapper.writeValueAsString("DuyHai_modified"));
+		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
 		listLazyMeta.setType(LAZY_LIST);
@@ -449,7 +448,7 @@ public class JPAOperationsIT
 
 		DynamicComposite friend3Composite = keyFactory.createForBatchInsertMultiValue(listLazyMeta,
 				2);
-		dao.setValue(bean.getId(), friend3Composite, objectMapper.writeValueAsString("qux"));
+		dao.setValue(bean.getId(), friend3Composite, "qux");
 
 		em.refresh(bean);
 
@@ -522,11 +521,6 @@ public class JPAOperationsIT
 	public void should_exception_when_get_transaction() throws Exception
 	{
 		em.getTransaction();
-	}
-
-	private String readString(String value) throws Exception
-	{
-		return this.objectMapper.readValue(value, String.class);
 	}
 
 	private Long readLong(String value) throws Exception

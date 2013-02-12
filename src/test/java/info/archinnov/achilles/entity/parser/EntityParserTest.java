@@ -14,9 +14,11 @@ import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
@@ -28,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import javax.persistence.CascadeType;
 
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -54,9 +58,10 @@ import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithNotSerializableId;
 import parser.entity.ChildBean;
 import parser.entity.ColumnFamilyBean;
+import parser.entity.ColumnFamilyBeanWithJoinEntity;
 import parser.entity.ColumnFamilyBeanWithTwoColumns;
-import parser.entity.UserBean;
 import parser.entity.ColumnFamilyBeanWithWrongColumnType;
+import parser.entity.UserBean;
 
 /**
  * EntityParserTest
@@ -328,12 +333,12 @@ public class EntityParserTest
 			"unchecked"
 	})
 	@Test
-	public void should_parse_wide_row() throws Exception
+	public void should_parse_column_family() throws Exception
 	{
 		EntityMeta<?> meta = parser.parseEntity(keyspace, ColumnFamilyBean.class,
 				joinPropertyMetaToBeFilled);
 
-		assertThat(meta.isWideRow()).isTrue();
+		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
 
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
@@ -342,11 +347,54 @@ public class EntityParserTest
 		assertThat(meta.getPropertyMetas().get("values").type()).isEqualTo(WIDE_MAP);
 	}
 
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Test
+	public void should_parse_column_family_with_join() throws Exception
+	{
+		EntityMeta<?> meta = parser.parseEntity(keyspace, ColumnFamilyBeanWithJoinEntity.class,
+				joinPropertyMetaToBeFilled);
+
+		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
+		assertThat(meta.getColumnFamilyDao()).isNotNull();
+		assertThat(meta.getEntityDao()).isNull();
+
+		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
+		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
+
+		Map<String, PropertyMeta<?, ?>> propertyMetas = meta.getPropertyMetas();
+		assertThat(propertyMetas).hasSize(1);
+		PropertyMeta<?, ?> friendMeta = propertyMetas.get("friends");
+
+		assertThat(friendMeta.type()).isEqualTo(EXTERNAL_JOIN_WIDE_MAP);
+
+		JoinProperties joinProperties = friendMeta.getJoinProperties();
+		assertThat(joinProperties).isNotNull();
+		assertThat(joinProperties.getCascadeTypes()).containsExactly(CascadeType.ALL);
+
+		EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
+		assertThat(joinEntityMeta).isNull();
+
+		ExternalWideMapProperties<?> externalWideMapProperties = friendMeta
+				.getExternalWideMapProperties();
+
+		assertThat(externalWideMapProperties).isNotNull();
+		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
+				ColumnFamilyBuilder
+						.normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithJoinEntity.class
+								.getName()));
+		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
+
+	}
+
 	@Test
 	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
 	{
 		expectedEx.expect(BeanMappingException.class);
-		expectedEx.expectMessage("The WideRow entity '"
+		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
@@ -361,7 +409,7 @@ public class EntityParserTest
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithWrongColumnType.class.getCanonicalName()
-				+ "' should have one and only one @Column of type WideMap");
+				+ "' should have one and only one @Column/@JoinColumn of type WideMap");
 
 		parser.parseEntity(keyspace, ColumnFamilyBeanWithWrongColumnType.class,
 				joinPropertyMetaToBeFilled);

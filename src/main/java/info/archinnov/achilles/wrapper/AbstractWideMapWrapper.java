@@ -3,18 +3,20 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.List;
 
-
 /**
- * AbstractWideMap
+ * AbstractWideMapWrapper
  * 
  * @author DuyHai DOAN
  * 
  */
 public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 {
+
+	private AchillesInterceptor interceptor;
 
 	@Override
 	public List<KeyValue<K, V>> find(K start, K end, int count)
@@ -256,4 +258,13 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 		removeLast(1);
 	}
 
+	public AchillesInterceptor getInterceptor()
+	{
+		return interceptor;
+	}
+
+	public void setInterceptor(AchillesInterceptor interceptor)
+	{
+		this.interceptor = interceptor;
+	}
 }

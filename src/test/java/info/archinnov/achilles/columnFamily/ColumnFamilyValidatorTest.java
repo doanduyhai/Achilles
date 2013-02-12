@@ -3,8 +3,6 @@ package info.archinnov.achilles.columnFamily;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.columnFamily.ColumnFamilyValidator;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -26,7 +24,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.ImmutableMap;
-
 
 /**
  * ColumnFamilyValidatorTest
@@ -77,11 +74,11 @@ public class ColumnFamilyValidatorTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_validate_widerow() throws Exception
+	public void should_validate_column_family_direct_mapping() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
 				propertyMeta);
@@ -125,11 +122,12 @@ public class ColumnFamilyValidatorTest
 
 	@SuppressWarnings("unchecked")
 	@Test(expected = InvalidColumnFamilyException.class)
-	public void should_exception_when_composite_type_alias_for_widerow_not_match() throws Exception
+	public void should_exception_when_composite_type_alias_when_cf_direct_mapping_not_match()
+			throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
 				propertyMeta);
 		when(entityMeta.getPropertyMetas()).thenReturn((Map) propertyMetaMap);

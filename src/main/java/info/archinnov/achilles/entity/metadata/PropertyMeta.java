@@ -1,5 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.holder.KeyValue;
 
@@ -159,7 +161,14 @@ public class PropertyMeta<K, V>
 	{
 		try
 		{
-			return this.objectMapper.readValue((String) object, this.valueClass);
+			if (valueClass == String.class)
+			{
+				return valueClass.cast(object);
+			}
+			else
+			{
+				return this.objectMapper.readValue((String) object, this.valueClass);
+			}
 		}
 		catch (Exception e)
 		{
@@ -187,7 +196,14 @@ public class PropertyMeta<K, V>
 	{
 		try
 		{
-			return this.objectMapper.writeValueAsString(value);
+			if (valueClass == String.class && type != MAP && type != LAZY_MAP)
+			{
+				return (String) value;
+			}
+			else
+			{
+				return this.objectMapper.writeValueAsString(value);
+			}
 		}
 		catch (Exception e)
 		{

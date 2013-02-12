@@ -136,7 +136,7 @@ public class EntityMapperTest
 		doNothing().when(helper).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
 				simpleCaptor.capture());
 
-		mapper.setSimplePropertyToEntity("\"name\"", namePropertyMeta, entity);
+		mapper.setSimplePropertyToEntity("name", namePropertyMeta, entity);
 
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 	}
@@ -351,18 +351,15 @@ public class EntityMapperTest
 
 		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
 
-		columns.add(new Pair<DynamicComposite, String>(buildSimplePropertyComposite("name"),
-				"\"name\""));
+		columns.add(new Pair<DynamicComposite, String>(buildSimplePropertyComposite("name"), "name"));
 
-		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"),
-				"\"foo\""));
-		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"),
-				"\"bar\""));
+		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"), "foo"));
+		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"), "bar"));
 
 		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
-				"\"George\""));
+				"George"));
 		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
-				"\"Paul\""));
+				"Paul"));
 
 		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
 				writeToString(new KeyValue<Integer, String>(1, "FR"))));

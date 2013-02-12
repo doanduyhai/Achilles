@@ -186,18 +186,17 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 					EntityMeta<?> joinEntityMeta = entityMetaMap.get(clazz);
 					propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 
-					ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
-							.getExternalWideMapProperties();
-
-					if (externalWideMapProperties != null)
+					if (propertyMeta.type().isExternal())
 					{
+						ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
+								.getExternalWideMapProperties();
+
 						externalWideMapProperties.setExternalWideMapDao( //
 								new GenericCompositeDao(keyspace, //
 										externalWideMapProperties.getIdSerializer(), //
 										joinEntityMeta.getIdSerializer(), //
 										externalWideMapProperties.getExternalColumnFamilyName()));
 					}
-
 				}
 				else
 				{
@@ -239,7 +238,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
-	private static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper)
+	protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper)
 	{
 		return new ObjectMapperFactory()
 		{

@@ -136,7 +136,7 @@ public class EntityPersisterTest
 		idMeta.setType(SIMPLE);
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
-		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
 		when(entityMeta.getClassName()).thenReturn(CompleteBean.class.getCanonicalName());
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 
@@ -412,10 +412,10 @@ public class EntityPersisterTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_persist_widerow() throws Exception
+	public void should_persist_column_family() throws Exception
 	{
 		EntityMeta<Long> entityMeta = mock(EntityMeta.class);
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 		persister.persist(new ColumnFamilyBean(), entityMeta);
 
 		verifyZeroInteractions(helper);

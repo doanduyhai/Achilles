@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
@@ -26,7 +26,6 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,8 +60,6 @@ public class MultiKeyWideMapIT
 	private String bar = "bar";
 	private String qux = "qux";
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-
 	@Before
 	public void setUp()
 	{
@@ -91,11 +88,11 @@ public class MultiKeyWideMapIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(5);
-		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1-bar");
-		assertThat(readString(columns.get(1).right)).isEqualTo("tweet2-bar");
-		assertThat(readString(columns.get(2).right)).isEqualTo("tweet3-foo");
-		assertThat(readString(columns.get(3).right)).isEqualTo("tweet4-qux");
-		assertThat(readString(columns.get(4).right)).isEqualTo("tweet5-qux");
+		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
+		assertThat(columns.get(1).right).isEqualTo("tweet2-bar");
+		assertThat(columns.get(2).right).isEqualTo("tweet3-foo");
+		assertThat(columns.get(3).right).isEqualTo("tweet4-qux");
+		assertThat(columns.get(4).right).isEqualTo("tweet5-qux");
 	}
 
 	@Test
@@ -342,9 +339,9 @@ public class MultiKeyWideMapIT
 				startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
-		assertThat(readString(columns.get(0).right)).isEqualTo("tweet1-bar");
-		assertThat(readString(columns.get(1).right)).isEqualTo("tweet4-qux");
-		assertThat(readString(columns.get(2).right)).isEqualTo("tweet5-qux");
+		assertThat(columns.get(0).right).isEqualTo("tweet1-bar");
+		assertThat(columns.get(1).right).isEqualTo("tweet4-qux");
+		assertThat(columns.get(2).right).isEqualTo("tweet5-qux");
 	}
 
 	private DynamicComposite buildComposite()
@@ -353,10 +350,5 @@ public class MultiKeyWideMapIT
 		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
 		startComp.addComponent(1, "userTweets", ComponentEquality.EQUAL);
 		return startComp;
-	}
-
-	private String readString(String value) throws Exception
-	{
-		return this.objectMapper.readValue(value, String.class);
 	}
 }

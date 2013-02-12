@@ -5,7 +5,6 @@ import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -108,7 +107,7 @@ public class EntityMetaBuilderTest
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
-		assertThat(meta.getWideRowDao()).isNull();
+		assertThat(meta.getColumnFamilyDao()).isNull();
 		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericDynamicCompositeDao.class);
 	}
 
@@ -127,10 +126,10 @@ public class EntityMetaBuilderTest
 
 		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
 				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace)
-				.wideRow(true).build();
+				.columnFamilyDirectMapping(true).build();
 
-		assertThat(meta.isWideRow()).isTrue();
+		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
 		assertThat(meta.getEntityDao()).isNull();
-		assertThat(meta.getWideRowDao()).isExactlyInstanceOf(GenericCompositeDao.class);
+		assertThat(meta.getColumnFamilyDao()).isExactlyInstanceOf(GenericCompositeDao.class);
 	}
 }

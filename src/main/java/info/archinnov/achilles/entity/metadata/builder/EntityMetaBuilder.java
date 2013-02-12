@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.metadata.builder;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.PropertyHelper;
@@ -35,7 +35,7 @@ public class EntityMetaBuilder<ID>
 	private Long serialVersionUID;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
-	private boolean wideRow = false;
+	private boolean columnFamilyDirectMapping = false;
 
 	PropertyHelper propertyHelper = new PropertyHelper();
 
@@ -60,12 +60,12 @@ public class EntityMetaBuilder<ID>
 		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ColumnFamilyHelper
+			columnFamilyName = ColumnFamilyBuilder
 					.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(className);
+			columnFamilyName = ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName(className);
 		}
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
@@ -83,9 +83,9 @@ public class EntityMetaBuilder<ID>
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
 		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));
 		meta.setSetterMetas(Collections.unmodifiableMap(this.extractSetterMetas(propertyMetas)));
-		meta.setWideRow(wideRow);
+		meta.setColumnFamilyDirectMapping(columnFamilyDirectMapping);
 
-		if (wideRow)
+		if (columnFamilyDirectMapping)
 		{
 			PropertyMeta<?, ?> wideMapMeta = propertyMetas.entrySet().iterator().next().getValue();
 			Serializer<?> valueSerializer = wideMapMeta.getValueSerializer();
@@ -102,7 +102,7 @@ public class EntityMetaBuilder<ID>
 						this.columnFamilyName);
 			}
 
-			meta.setWideRowDao(dao);
+			meta.setColumnFamilyDao(dao);
 		}
 		else
 		{
@@ -164,9 +164,9 @@ public class EntityMetaBuilder<ID>
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> wideRow(boolean wideRow)
+	public EntityMetaBuilder<ID> columnFamilyDirectMapping(boolean columnFamilyDirectMapping)
 	{
-		this.wideRow = wideRow;
+		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
 		return this;
 	}
 }

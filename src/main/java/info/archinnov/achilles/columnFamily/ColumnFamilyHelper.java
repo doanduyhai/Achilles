@@ -8,7 +8,6 @@ import info.archinnov.achilles.exception.InvalidColumnFamilyException;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.prettyprint.hector.api.Cluster;
@@ -71,7 +70,7 @@ public class ColumnFamilyHelper
 		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
 
 		ColumnFamilyDefinition cfDef;
-		if (entityMeta.isWideRow())
+		if (entityMeta.isColumnFamilyDirectMapping())
 		{
 
 			PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
@@ -171,30 +170,6 @@ public class ColumnFamilyHelper
 		else
 		{
 			this.columnFamilyValidator.validateCFWithEntityMeta(cfDef, entityMeta);
-		}
-	}
-
-	public static String normalizerAndValidateColumnFamilyName(String cfName)
-	{
-		log.trace("Normalizing column family '{}' name agains Cassandra restrictions", cfName);
-
-		Matcher nameMatcher = CF_PATTERN.matcher(cfName);
-
-		if (nameMatcher.matches())
-		{
-			return cfName;
-		}
-		else if (cfName.contains("."))
-		{
-			String className = cfName.replaceAll(".+\\.(.+)", "$1");
-			return normalizerAndValidateColumnFamilyName(className);
-		}
-		else
-		{
-			throw new InvalidColumnFamilyException(
-					"The column family name '"
-							+ cfName
-							+ "' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
 		}
 	}
 }

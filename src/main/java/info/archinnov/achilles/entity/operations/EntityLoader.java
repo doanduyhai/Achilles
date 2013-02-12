@@ -47,7 +47,7 @@ public class EntityLoader
 		try
 		{
 
-			if (entityMeta.isWideRow())
+			if (entityMeta.isColumnFamilyDirectMapping())
 			{
 				entity = entityClass.newInstance();
 				helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
@@ -230,10 +230,11 @@ public class EntityLoader
 		EntityMeta joinEntityMeta = joinPropertyMeta.getJoinProperties().getEntityMeta();
 		DynamicComposite composite = keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL);
 
-		Object joinId = joinEntityMeta.getIdMeta().getValueFromString(dao.getValue(key, composite));
+		Object joinId = dao.getValue(key, composite);
 
 		if (joinId != null)
 		{
+			joinId = joinEntityMeta.getIdMeta().getValueFromString(joinId);
 			return (V) this
 					.loadJoinEntity(joinPropertyMeta.getValueClass(), joinId, joinEntityMeta);
 		}

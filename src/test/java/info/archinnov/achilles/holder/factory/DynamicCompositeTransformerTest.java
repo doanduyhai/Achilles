@@ -101,8 +101,8 @@ public class DynamicCompositeTransformerTest
 	{
 		DynamicComposite comp1 = CompositeTestBuilder.builder().buildDynamic();
 		DynamicComposite comp2 = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "\"test1\"");
-		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(comp2, "\"test2\"");
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "test1");
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(comp2, "test2");
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class) //
@@ -153,10 +153,8 @@ public class DynamicCompositeTransformerTest
 	{
 		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 11).buildDynamic();
 		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 12).buildDynamic();
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder
-				.dynamic(comp1, "\"test1\"", 456);
-		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder
-				.dynamic(comp2, "\"test2\"", 789);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "test1", 456);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(comp2, "test2", 789);
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
 				.noClass(Integer.class, String.class).type(WIDE_MAP).build();

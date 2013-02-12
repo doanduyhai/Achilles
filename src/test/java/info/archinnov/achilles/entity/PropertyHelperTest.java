@@ -7,10 +7,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.entity.EntityHelper;
-import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -51,7 +48,6 @@ import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
 
 import com.google.common.collect.Maps;
-
 
 /**
  * PropertyHelperTest
@@ -254,7 +250,7 @@ public class PropertyHelperTest
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_widerow() throws Exception
+	public void should_determine_composite_type_alias_for_column_family() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
@@ -271,7 +267,7 @@ public class PropertyHelperTest
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_multikey_widerow() throws Exception
+	public void should_determine_composite_type_alias_for_multikey_column_family() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		PropertyMeta<TweetMultiKey, String> propertyMeta = new PropertyMeta<TweetMultiKey, String>();
@@ -288,7 +284,7 @@ public class PropertyHelperTest
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_widerow_check() throws Exception
+	public void should_determine_composite_type_alias_for_column_family_check() throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
@@ -306,7 +302,8 @@ public class PropertyHelperTest
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_multikey_widerow_check() throws Exception
+	public void should_determine_composite_type_alias_for_multikey_column_family_check()
+			throws Exception
 	{
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
 		PropertyMeta<TweetMultiKey, String> propertyMeta = new PropertyMeta<TweetMultiKey, String>();

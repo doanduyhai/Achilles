@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * JpaEntityInterceptorBuilder
  * 
@@ -61,15 +60,15 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 				"Getters metadata for interceptor should not be null");
 		Validator.validateNotNull(entityMeta.getSetterMetas(),
 				"Setters metadata for interceptor should not be null");
-		if (entityMeta.isWideRow())
+		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			interceptor.setWideRow(true);
-			Validator.validateNotNull(entityMeta.getWideRowDao(), "Dao for entity meta");
-			interceptor.setWideRowDao(entityMeta.getWideRowDao());
+			interceptor.setColumnFamily(true);
+			Validator.validateNotNull(entityMeta.getColumnFamilyDao(), "Dao for entity meta");
+			interceptor.setColumnFamilyDao(entityMeta.getColumnFamilyDao());
 		}
 		else
 		{
-			interceptor.setWideRow(false);
+			interceptor.setColumnFamily(false);
 			Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
 			interceptor.setEntityDao(entityMeta.getEntityDao());
 

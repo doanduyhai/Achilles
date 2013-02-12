@@ -6,15 +6,14 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
-
 /**
- * BeanWithJoinColumnAsWideRow
+ * BeanWithJoinColumnAsWideMap
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
-public class BeanWithJoinColumnAsWideRow
+public class BeanWithJoinColumnAsWideMap
 {
 	@Id
 	private Long id;

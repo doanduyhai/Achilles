@@ -26,7 +26,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import parser.entity.CorrectMultiKey;
 
 /**
- * KeyValueIteratorForWideRowTest
+ * KeyValueIteratorForCompositeTest
  * 
  * @author DuyHai DOAN
  * 

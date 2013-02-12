@@ -133,10 +133,10 @@ public class ColumnFamilyHelperTest
 	}
 
 	@Test
-	public void should_create_column_family_for_widerow() throws Exception
+	public void should_create_column_family_for_column_family() throws Exception
 	{
 		prepareData();
-		meta.setWideRow(true);
+		meta.setColumnFamilyDirectMapping(true);
 		idMeta.setValueClass(Long.class);
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
@@ -284,25 +284,6 @@ public class ColumnFamilyHelperTest
 				Arrays.asList((ColumnFamilyDefinition) cfDef));
 
 		helper.validateOrCreateColumnFamilies(entityMetaMap, false);
-	}
-
-	@Test
-	public void should_normalize_canonical_classname() throws Exception
-	{
-		String canonicalName = "org.achilles.entity.ClassName";
-
-		String normalized = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
-
-		assertThat(normalized).isEqualTo("ClassName");
-	}
-
-	@Test(expected = InvalidColumnFamilyException.class)
-	public void should_exception_when_even_class_name_exceeeds_48_characters() throws Exception
-	{
-		String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
-
-		ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
-
 	}
 
 	private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas)
