@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>info.archinnov</groupId>
   <artifactId>achilles</artifactId>
-  <version>1.1-beta-SNAPSHOT</version>
+  <version>1.1-beta</version>
   <packaging>jar</packaging>
   <description>A fully featured EntityManager for Cassandra</description>
   <inceptionYear>2012</inceptionYear>
