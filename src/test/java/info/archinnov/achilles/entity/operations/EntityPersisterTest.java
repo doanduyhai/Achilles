@@ -28,6 +28,7 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
@@ -46,7 +47,9 @@ import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -67,6 +70,9 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityPersisterTest
 {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
 	private EntityPersister persister;
@@ -412,6 +418,43 @@ public class EntityPersisterTest
 		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 
 		verify(joinMutator).execute();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_check_for_join_entity_when_persisting() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.getCascadeTypes().clear();
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+		when(loader.loadVersionSerialUID(joinId, dao)).thenReturn(123L);
+
+		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_exception_when_no_join_entity_found_when_persisting() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.getCascadeTypes().clear();
+		when(loader.loadVersionSerialUID(joinId, dao)).thenReturn(null);
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("The entity '"
+						+ UserBean.class.getCanonicalName()
+						+ "' with id '"
+						+ joinId
+						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST/CascadeType.ALL");
+
+		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 
 	}
 
@@ -513,6 +556,7 @@ public class EntityPersisterTest
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setIdMeta(joinIdMeta);
 		joinEntityMeta.setEntityDao(dao);
+		joinEntityMeta.setClassName(UserBean.class.getCanonicalName());
 		joinEntityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 
 		JoinProperties joinProperties = new JoinProperties();

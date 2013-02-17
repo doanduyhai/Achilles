@@ -194,6 +194,23 @@ public class EntityLoaderTest
 	}
 
 	@Test
+	public void should_load_version_serial_uid() throws Exception
+	{
+		when(dao.getValue(eq(1L), any(DynamicComposite.class))).thenReturn("12345");
+		Long versionSerialUID = loader.loadVersionSerialUID(1L, dao);
+
+		assertThat(versionSerialUID).isEqualTo(12345L);
+	}
+
+	@Test
+	public void should_return_null_when_no_serial_version_uid_found() throws Exception
+	{
+		Long versionSerialUID = loader.loadVersionSerialUID(1L, dao);
+
+		assertThat(versionSerialUID).isNull();
+	}
+
+	@Test
 	public void should_load_simple_property() throws Exception
 	{
 		when(propertyMeta.getPropertyName()).thenReturn("name");

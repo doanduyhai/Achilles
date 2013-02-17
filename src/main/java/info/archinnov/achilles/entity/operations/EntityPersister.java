@@ -158,15 +158,16 @@ public class EntityPersister
 		}
 		else
 		{
-			Object loadedEntity = loader.load(joinEntity.getClass(), joinId, joinEntityMeta);
+			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
+					joinEntityMeta.getEntityDao());
 			Validator
 					.validateNotNull(
-							loadedEntity,
+							joinVersionSerialUID,
 							"The entity '"
 									+ joinProperties.getEntityMeta().getClassName()
 									+ "' with id '"
 									+ joinId
-									+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
+									+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST/CascadeType.ALL");
 		}
 
 		return joinId;

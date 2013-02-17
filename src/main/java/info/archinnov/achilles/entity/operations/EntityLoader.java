@@ -9,6 +9,7 @@ import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.validation.Validator;
@@ -19,7 +20,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * EntityLoader
@@ -110,6 +114,24 @@ public class EntityLoader
 			}
 		}
 		return entitiesByKey;
+	}
+
+	protected <ID, V> Long loadVersionSerialUID(ID key, GenericDynamicCompositeDao<ID> dao)
+	{
+		DynamicComposite composite = new DynamicComposite();
+		composite.addComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, PropertyType.SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
+		composite.addComponent(2, 0, ComponentEquality.EQUAL);
+
+		String serialVersionUIDString = dao.getValue(key, composite);
+		if (StringUtils.isNotBlank(serialVersionUIDString))
+		{
+			return Long.parseLong(serialVersionUIDString);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	protected <ID, V> V loadSimpleProperty(ID key, GenericDynamicCompositeDao<ID> dao,
