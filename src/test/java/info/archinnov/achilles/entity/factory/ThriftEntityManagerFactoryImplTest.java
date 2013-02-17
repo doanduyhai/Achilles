@@ -28,11 +28,14 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import mapping.entity.ColumnFamilyBean;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,6 +56,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 })
 public class ThriftEntityManagerFactoryImplTest
 {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	@InjectMocks
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl();
 
@@ -110,10 +116,15 @@ public class ThriftEntityManagerFactoryImplTest
 
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test
 	public void should_exception_when_no_entity_found() throws Exception
 	{
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(new ArrayList<Class<?>>());
+
+		exception.expect(BeanMappingException.class);
+		exception
+				.expectMessage("No entity with javax.persistence.Entity annotation found in the packages null");
+
 		factory.bootstrap();
 	}
 
@@ -189,7 +200,7 @@ public class ThriftEntityManagerFactoryImplTest
 
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test
 	public void should_throw_exception_when_no_entity_meta_found_for_join_entity() throws Exception
 	{
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
@@ -208,6 +219,35 @@ public class ThriftEntityManagerFactoryImplTest
 		when(longPropertyMeta.getJoinProperties()).thenReturn(joinProperties);
 
 		when(entityMetaMap.containsKey(Long.class)).thenReturn(false);
+
+		exception.expect(BeanMappingException.class);
+		exception.expectMessage("Cannot find mapping for join entity 'java.lang.Long'");
+
+		factory.discoverEntities(joinPropertyMetaToBeFilled);
+	}
+
+	@Test
+	public void should_throw_exception_when_direct_column_family_mapping_used_for_join()
+			throws Exception
+	{
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+		joinPropertyMetaToBeFilled.put(longPropertyMeta, ColumnFamilyBean.class);
+
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		classes.add(Long.class);
+		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
+		when(entityParser.parseEntity(eq(keyspace), eq(Long.class), any(Map.class))).thenReturn(
+				entityMeta1);
+
+		JoinProperties joinProperties = new JoinProperties();
+		when(longPropertyMeta.getJoinProperties()).thenReturn(joinProperties);
+		when(entityMetaMap.containsKey(ColumnFamilyBean.class)).thenReturn(true);
+		when(entityMetaMap.get(ColumnFamilyBean.class)).thenReturn(entityMeta1);
+		when(entityMeta1.isColumnFamilyDirectMapping()).thenReturn(true);
+
+		exception.expect(BeanMappingException.class);
+		exception.expectMessage("The entity '" + ColumnFamilyBean.class.getCanonicalName()
+				+ "' is a direct Column Family mapping and cannot be a join entity");
 
 		factory.discoverEntities(joinPropertyMetaToBeFilled);
 	}

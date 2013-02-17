@@ -99,16 +99,12 @@ public class BatchModeIT
 		List<Pair<DynamicComposite, String>> columns = userDao.findColumnsRange(user.getId(),
 				startComp, endComp, false, 20);
 
-		assertThat(columns).hasSize(0);
-
-		// Join entities are still flushed immediatly
 		Tweet foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
 		Tweet foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
 
-		assertThat(foundOwnTweet1.getId()).isEqualTo(ownTweet1.getId());
-		assertThat(foundOwnTweet1.getContent()).isEqualTo(ownTweet1.getContent());
-		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet2.getId());
-		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet2.getContent());
+		assertThat(columns).hasSize(0);
+		assertThat(foundOwnTweet1).isNull();
+		assertThat(foundOwnTweet2).isNull();
 
 		// End batch
 		em.endBatch(user);
@@ -119,6 +115,15 @@ public class BatchModeIT
 
 		assertThat(readUUID(columns.get(0).right)).isEqualTo(ownTweet1.getId());
 		assertThat(readUUID(columns.get(1).right)).isEqualTo(ownTweet2.getId());
+
+		foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
+		foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
+
+		assertThat(foundOwnTweet1.getId()).isEqualTo(ownTweet1.getId());
+		assertThat(foundOwnTweet1.getContent()).isEqualTo(ownTweet1.getContent());
+		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet2.getId());
+		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet2.getContent());
+
 	}
 
 	private UUID readUUID(String value) throws Exception

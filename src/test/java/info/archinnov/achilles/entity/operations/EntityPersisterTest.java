@@ -104,6 +104,9 @@ public class EntityPersisterTest
 	@Mock
 	private Mutator<Long> mutator;
 
+	@Mock
+	private Mutator<Long> joinMutator;
+
 	@Captor
 	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
 
@@ -379,6 +382,8 @@ public class EntityPersisterTest
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
+		when(dao.buildMutator()).thenReturn(mutator);
+
 		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
@@ -391,6 +396,23 @@ public class EntityPersisterTest
 		verify(dao)
 				.insertColumnBatch(eq(joinId), any(DynamicComposite.class), eq("0"), eq(mutator));
 		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_cascade_persist() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+
+		when(dao.buildMutator()).thenReturn(joinMutator);
+
+		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+				.thenReturn(joinId);
+
+		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
+
+		verify(joinMutator).execute();
+
 	}
 
 	@Test

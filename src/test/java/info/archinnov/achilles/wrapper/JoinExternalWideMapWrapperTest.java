@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -62,6 +63,9 @@ public class JoinExternalWideMapWrapperTest
 	private GenericCompositeDao<Long, Long> dao;
 
 	@Mock
+	private GenericDynamicCompositeDao<Long> joinDao;
+
+	@Mock
 	private PropertyMeta<Integer, UserBean> externalJoinWideMapMeta;
 
 	@Mock
@@ -87,6 +91,9 @@ public class JoinExternalWideMapWrapperTest
 
 	@Mock
 	private Mutator<Long> mutator;
+
+	@Mock
+	private Mutator<Long> joinMutator;
 
 	private Long id = 7425L;
 
@@ -151,6 +158,7 @@ public class JoinExternalWideMapWrapperTest
 				(JoinProperties) joinProperties);
 		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
 				.thenReturn(comp);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean);
@@ -180,7 +188,10 @@ public class JoinExternalWideMapWrapperTest
 				(JoinProperties) joinProperties);
 		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
 				.thenReturn(comp);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(externalJoinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
+				.thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(true);
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
 		wrapper.insert(key, userBean);
@@ -211,6 +222,7 @@ public class JoinExternalWideMapWrapperTest
 				(JoinProperties) joinProperties);
 		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
 				.thenReturn(comp);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean, 150);
@@ -239,7 +251,10 @@ public class JoinExternalWideMapWrapperTest
 				(JoinProperties) joinProperties);
 		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
 				.thenReturn(comp);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(externalJoinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
+				.thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(true);
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
 
@@ -435,6 +450,7 @@ public class JoinExternalWideMapWrapperTest
 	{
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setClassName("canonicalClassName");
+		joinEntityMeta.setEntityDao(joinDao);
 
 		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();

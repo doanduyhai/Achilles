@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -7,14 +8,17 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import integration.tests.entity.User;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.FlushModeType;
@@ -28,6 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -78,6 +84,9 @@ public class ThriftEntityManagerTest
 
 	@Mock
 	private Mutator<Long> mutator;
+
+	@Captor
+	ArgumentCaptor<Map<String, Mutator<?>>> mutatorMapCaptor;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
 
@@ -212,15 +221,37 @@ public class ThriftEntityManagerTest
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		GenericDynamicCompositeDao<Long> entityDao = mock(GenericDynamicCompositeDao.class);
 		when(entityMeta.getEntityDao()).thenReturn(entityDao);
+
+		JoinProperties joinProperties = new JoinProperties();
+		EntityMeta<Integer> joinMeta = new EntityMeta<Integer>();
+		GenericDynamicCompositeDao<Integer> joinDao = mock(GenericDynamicCompositeDao.class);
+		joinMeta.setEntityDao(joinDao);
+		joinProperties.setEntityMeta(joinMeta);
+		Mutator<Integer> joinMutator = mock(Mutator.class);
+
+		PropertyMeta<Long, User> propertyMeta = new PropertyMeta<Long, User>();
+		propertyMeta.setType(JOIN_WIDE_MAP);
+		propertyMeta.setPropertyName("users");
+		propertyMeta.setJoinProperties(joinProperties);
+
+		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
+		propertyMetaMap.put("users", propertyMeta);
+
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		JpaEntityInterceptor<Long> interceptor = mock(JpaEntityInterceptor.class);
 
 		when(bean.getCallback(0)).thenReturn(interceptor);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
 
 		em.startBatch(bean);
 
 		verify(interceptor).setMutator(mutator);
+		verify(interceptor).setMutatorMap(mutatorMapCaptor.capture());
+
+		assertThat(mutatorMapCaptor.getValue().get("users")).isSameAs((Mutator) joinMutator);
+
 	}
 
 	@Test
@@ -246,9 +277,16 @@ public class ThriftEntityManagerTest
 		when(bean.getCallback(0)).thenReturn(interceptor);
 		when(interceptor.getMutator()).thenReturn(mutator);
 
+		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+		Mutator<Integer> joinMutator = mock(Mutator.class);
+		mutatorMap.put("test", joinMutator);
+
+		when(interceptor.getMutatorMap()).thenReturn(mutatorMap);
+
 		em.endBatch(bean);
 
 		verify(mutator).execute();
+		verify(joinMutator).execute();
 	}
 
 	@Test

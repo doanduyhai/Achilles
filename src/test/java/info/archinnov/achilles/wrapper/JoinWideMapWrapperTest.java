@@ -55,6 +55,9 @@ public class JoinWideMapWrapperTest
 	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
+	private GenericDynamicCompositeDao<Long> joinDao;
+
+	@Mock
 	private PropertyMeta<Integer, UserBean> joinWideMapMeta;
 
 	@Mock
@@ -74,6 +77,9 @@ public class JoinWideMapWrapperTest
 
 	@Mock
 	private Mutator<Long> mutator;
+
+	@Mock
+	private Mutator<Long> joinMutator;
 
 	private Long id = 7425L;
 
@@ -127,6 +133,7 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 		when(interceptor.isBatchMode()).thenReturn(false);
@@ -155,7 +162,10 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(joinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
+				.thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 		when(interceptor.isBatchMode()).thenReturn(true);
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
@@ -185,6 +195,7 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 		when(interceptor.isBatchMode()).thenReturn(false);
@@ -212,7 +223,10 @@ public class JoinWideMapWrapperTest
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(joinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
+				.thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
 		when(interceptor.isBatchMode()).thenReturn(true);
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
@@ -225,6 +239,7 @@ public class JoinWideMapWrapperTest
 	{
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setClassName("canonicalClassName");
+		joinEntityMeta.setEntityDao(joinDao);
 
 		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();

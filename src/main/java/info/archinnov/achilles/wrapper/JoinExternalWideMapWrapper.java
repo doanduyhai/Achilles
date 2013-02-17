@@ -209,7 +209,16 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 
 		if (value != null)
 		{
-			joinId = persister.cascadePersistOrEnsureExists(value, joinProperties);
+			if (interceptor.isBatchMode())
+			{
+				Mutator<?> joinMutator = interceptor.getMutatorForProperty(externalWideMapMeta
+						.getPropertyName());
+				joinId = persister.cascadePersistOrEnsureExists(value, joinProperties, joinMutator);
+			}
+			else
+			{
+				joinId = persister.cascadePersistOrEnsureExists(value, joinProperties);
+			}
 		}
 		else
 		{

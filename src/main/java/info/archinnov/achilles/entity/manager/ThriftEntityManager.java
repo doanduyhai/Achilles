@@ -2,6 +2,7 @@ package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -12,6 +13,7 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -269,11 +271,24 @@ public class ThriftEntityManager implements EntityManager
 		{
 			Class<?> baseClass = helper.deriveBaseClass(entity);
 			EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+
+			Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+
+			for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+			{
+				if (propertyMeta.type().isJoinColumn())
+				{
+					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.getJoinProperties()
+							.getEntityMeta().getEntityDao().buildMutator());
+				}
+			}
+
 			mutator = entityMeta.getEntityDao().buildMutator();
 
 			Factory proxy = (Factory) entity;
 			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
 			interceptor.setMutator((Mutator) mutator);
+			interceptor.setMutatorMap(mutatorMap);
 
 			return mutator;
 		}
@@ -290,6 +305,10 @@ public class ThriftEntityManager implements EntityManager
 			Factory proxy = (Factory) entity;
 			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
 			interceptor.getMutator().execute();
+			for (Mutator<?> joinMutator : interceptor.getMutatorMap().values())
+			{
+				joinMutator.execute();
+			}
 		}
 	}
 }

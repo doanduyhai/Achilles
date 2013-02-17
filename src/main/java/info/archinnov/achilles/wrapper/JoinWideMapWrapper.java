@@ -70,7 +70,16 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 
 		if (value != null)
 		{
-			joinId = persister.cascadePersistOrEnsureExists(value, joinProperties);
+			if (interceptor.isBatchMode())
+			{
+				Mutator<?> joinMutator = interceptor.getMutatorForProperty(wideMapMeta
+						.getPropertyName());
+				joinId = persister.cascadePersistOrEnsureExists(value, joinProperties, joinMutator);
+			}
+			else
+			{
+				joinId = persister.cascadePersistOrEnsureExists(value, joinProperties);
+			}
 		}
 		else
 		{

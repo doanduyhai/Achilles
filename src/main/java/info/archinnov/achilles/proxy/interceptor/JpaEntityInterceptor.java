@@ -42,6 +42,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Set<Method> lazyLoaded;
 	Boolean columnFamily;
 	private Mutator<ID> mutator;
+	private Map<String, Mutator<?>> mutatorMap;
 
 	private EntityLoader loader = new EntityLoader();
 
@@ -298,6 +299,29 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	public void setMutator(Mutator<ID> mutator)
 	{
 		this.mutator = mutator;
+	}
+
+	public Map<String, Mutator<?>> getMutatorMap()
+	{
+		return mutatorMap;
+	}
+
+	@Override
+	public Mutator<?> getMutatorForProperty(String property)
+	{
+		if (mutatorMap != null)
+		{
+			return mutatorMap.get(property);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public void setMutatorMap(Map<String, Mutator<?>> mutatorMap)
+	{
+		this.mutatorMap = mutatorMap;
 	}
 
 	@Override

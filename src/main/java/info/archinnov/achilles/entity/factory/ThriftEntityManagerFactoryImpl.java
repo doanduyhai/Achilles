@@ -184,8 +184,14 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 				{
 					PropertyMeta<?, ?> propertyMeta = entry.getKey();
 					EntityMeta<?> joinEntityMeta = entityMetaMap.get(clazz);
-					propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 
+					if (joinEntityMeta.isColumnFamilyDirectMapping())
+					{
+						throw new BeanMappingException("The entity '" + clazz.getCanonicalName()
+								+ "' is a direct Column Family mapping and cannot be a join entity");
+					}
+
+					propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 					if (propertyMeta.type().isExternal())
 					{
 						ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
@@ -209,7 +215,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		{
 
 			throw new BeanMappingException(
-					"No entity with javax.persistence.Table annotation found in the packages "
+					"No entity with javax.persistence.Entity annotation found in the packages "
 							+ StringUtils.join(entityPackages, ","));
 		}
 	}

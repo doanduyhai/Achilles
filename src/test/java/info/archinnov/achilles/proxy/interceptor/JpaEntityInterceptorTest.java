@@ -376,4 +376,32 @@ public class JpaEntityInterceptorTest
 
 		this.interceptor.intercept(entity, nameSetter, (Object[]) null, proxy);
 	}
+
+	@Test
+	public void should_get_mutator_for_property() throws Exception
+	{
+		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+		mutatorMap.put("test", mutator);
+
+		this.interceptor.setMutatorMap(mutatorMap);
+
+		Mutator<?> mut = this.interceptor.getMutatorForProperty("test");
+
+		assertThat(mut).isSameAs((Mutator) mutator);
+
+	}
+
+	@Test
+	public void should_get_null_when_no_mutator_found_for_property() throws Exception
+	{
+		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+		mutatorMap.put("test", mutator);
+
+		this.interceptor.setMutatorMap(mutatorMap);
+
+		Mutator<?> mut = this.interceptor.getMutatorForProperty("another_property");
+
+		assertThat(mut).isNull();
+
+	}
 }

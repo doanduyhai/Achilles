@@ -135,6 +135,17 @@ public class EntityPersister
 	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
 			JoinProperties joinProperties)
 	{
+		Mutator<JOIN_ID> joinMutator = joinProperties.getEntityMeta().getEntityDao().buildMutator();
+		JOIN_ID joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties, joinMutator);
+		joinMutator.execute();
+
+		return joinId;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
+			JoinProperties joinProperties, Mutator<JOIN_ID> joinMutator)
+	{
 		EntityMeta<JOIN_ID> joinEntityMeta = joinProperties.getEntityMeta();
 		JOIN_ID joinId = helper.getKey(joinEntity, joinEntityMeta.getIdMeta());
 		Validate.notNull(joinId, "key value for entity '" + joinEntityMeta.getClassName()
@@ -143,7 +154,7 @@ public class EntityPersister
 		List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
 		if (cascadeTypes.contains(PERSIST) || cascadeTypes.contains(ALL))
 		{
-			this.persist(joinEntity, joinEntityMeta);
+			this.persist(joinEntity, joinEntityMeta, joinMutator);
 		}
 		else
 		{
