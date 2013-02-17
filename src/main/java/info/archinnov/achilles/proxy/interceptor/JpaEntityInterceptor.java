@@ -148,39 +148,44 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private <K extends Comparable<K>, V> Object buildExternalWideMapWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return ExternalWideMapWrapperBuilder.builder(
-				key,
-				(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
-						.getExternalWideMapDao(), propertyMeta).build();
+		return ExternalWideMapWrapperBuilder
+				.builder(
+						key,
+						(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
+								.getExternalWideMapDao(), propertyMeta).interceptor(this).build();
 	}
 
 	@SuppressWarnings("unchecked")
 	private <K extends Comparable<K>, V> Object buildExternalJoinWideMapWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return JoinExternalWideMapWrapperBuilder.builder(
-				key,
-				(GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
-						.getExternalWideMapDao(), propertyMeta).build();
+		return JoinExternalWideMapWrapperBuilder
+				.builder(
+						key,
+						(GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
+								.getExternalWideMapDao(), propertyMeta).interceptor(this).build();
 	}
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta).build();
+		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta).interceptor(this)
+				.build();
 	}
 
 	private <K extends Comparable<K>, V> Object buildJoinWideMapWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta).build();
+		return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta).interceptor(this)
+				.build();
 	}
 
 	@SuppressWarnings("unchecked")
 	private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return ExternalWideMapWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao,
-				propertyMeta).build();
+		return ExternalWideMapWrapperBuilder
+				.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao, propertyMeta)
+				.interceptor(this).build();
 	}
 
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
@@ -295,4 +300,9 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.mutator = mutator;
 	}
 
+	@Override
+	public boolean isBatchMode()
+	{
+		return this.mutator != null;
+	}
 }

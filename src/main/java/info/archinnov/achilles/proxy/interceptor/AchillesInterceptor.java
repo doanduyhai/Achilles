@@ -15,4 +15,6 @@ public interface AchillesInterceptor
 	public Object getKey();
 
 	public Mutator<?> getMutator();
+
+	public boolean isBatchMode();
 }

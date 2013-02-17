@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.Serializable;
@@ -19,9 +20,11 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import me.prettyprint.hector.api.mutation.Mutator;
+import net.sf.cglib.proxy.Factory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * ThriftEntityManager
@@ -247,5 +250,46 @@ public class ThriftEntityManager implements EntityManager
 	{
 		throw new UnsupportedOperationException(
 				"This operation is not supported for this Cassandra");
+	}
+
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	public Mutator<?> startBatch(Object entity)
+	{
+		Mutator<?> mutator;
+		if (!helper.isProxy(entity))
+		{
+			throw new IllegalStateException(
+					"The entity is not in 'managed' state. Please merge it before starting a batch");
+		}
+		else
+		{
+			Class<?> baseClass = helper.deriveBaseClass(entity);
+			EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+			mutator = entityMeta.getEntityDao().buildMutator();
+
+			Factory proxy = (Factory) entity;
+			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
+			interceptor.setMutator((Mutator) mutator);
+
+			return mutator;
+		}
+	}
+
+	public void endBatch(Object entity)
+	{
+		if (!helper.isProxy(entity))
+		{
+			throw new IllegalStateException("The entity is not in 'managed' state.");
+		}
+		else
+		{
+			Factory proxy = (Factory) entity;
+			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
+			interceptor.getMutator().execute();
+		}
 	}
 }

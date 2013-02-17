@@ -16,7 +16,7 @@ import java.util.List;
 public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 {
 
-	private AchillesInterceptor interceptor;
+	protected AchillesInterceptor interceptor;
 
 	@Override
 	public List<KeyValue<K, V>> find(K start, K end, int count)

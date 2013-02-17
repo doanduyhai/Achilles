@@ -15,11 +15,13 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.helper.CompositeHelper;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.lang.reflect.Method;
 
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,6 +68,12 @@ public class JoinWideMapWrapperTest
 
 	@Mock
 	private CompositeHelper helper;
+
+	@Mock
+	private AchillesInterceptor interceptor;
+
+	@Mock
+	private Mutator<Long> mutator;
 
 	private Long id = 7425L;
 
@@ -121,9 +129,39 @@ public class JoinWideMapWrapperTest
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean);
 
 		verify(dao).setValue(id, comp, userId.toString());
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_in_batch_mode_and_entity_when_insertable() throws Exception
+	{
+
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.addCascadeType(PERSIST);
+
+		int key = 4567;
+		UserBean userBean = new UserBean();
+		Long userId = 475L;
+		userBean.setUserId(userId);
+		DynamicComposite comp = new DynamicComposite();
+
+		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
+		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(key, userBean);
+
+		verify(dao).setValueBatch(id, comp, userId.toString(), mutator);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -149,10 +187,38 @@ public class JoinWideMapWrapperTest
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
-
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean, 150);
 
 		verify(dao).setValue(id, comp, userId.toString(), 150);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_in_batch_mode_and_entity_with_ttl() throws Exception
+	{
+		JoinProperties joinProperties = prepareJoinProperties();
+		joinProperties.addCascadeType(ALL);
+
+		int key = 4567;
+		UserBean userBean = new UserBean();
+		Long userId = 475L;
+		userBean.setUserId(userId);
+		DynamicComposite comp = new DynamicComposite();
+
+		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
+		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
+		when(joinWideMapMeta.writeValueToString(userId)).thenReturn(userId.toString());
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(key, userBean, 150);
+
+		verify(dao).setValueBatch(id, comp, userId.toString(), 150, mutator);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception

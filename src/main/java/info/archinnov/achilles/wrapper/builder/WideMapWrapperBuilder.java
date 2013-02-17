@@ -2,6 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 /**
@@ -15,6 +16,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 	private ID id;
 	private GenericDynamicCompositeDao<ID> dao;
 	private PropertyMeta<K, V> wideMapMeta;
+	private AchillesInterceptor interceptor;
 
 	public WideMapWrapperBuilder(ID id, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<K, V> wideMapMeta)
@@ -30,6 +32,12 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}
 
+	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor interceptor)
+	{
+		this.interceptor = interceptor;
+		return this;
+	}
+
 	public WideMapWrapper<ID, K, V> build()
 	{
 		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
@@ -42,6 +50,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 		wrapper.setId(id);
 		wrapper.setDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);
+		wrapper.setInterceptor(interceptor);
 	}
 
 }

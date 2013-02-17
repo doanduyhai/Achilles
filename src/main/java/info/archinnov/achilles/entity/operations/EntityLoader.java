@@ -4,6 +4,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -19,8 +20,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
-
-import org.apache.cassandra.utils.Pair;
 
 /**
  * EntityLoader

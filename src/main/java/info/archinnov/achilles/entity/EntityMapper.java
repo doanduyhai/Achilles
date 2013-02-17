@@ -2,6 +2,7 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -16,7 +17,6 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
-import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

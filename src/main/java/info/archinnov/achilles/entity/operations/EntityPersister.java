@@ -46,7 +46,7 @@ public class EntityPersister
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
-	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta)
+	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta, Mutator<ID> mutator)
 	{
 		if (!entityMeta.isColumnFamilyDirectMapping())
 		{
@@ -55,17 +55,24 @@ public class EntityPersister
 					+ "' should not be null");
 			GenericDynamicCompositeDao<ID> dao = entityMeta.getEntityDao();
 
-			Mutator<ID> mutator = dao.buildMutator();
-
 			this.batchPersistVersionSerialUID(entity.getClass(), key, dao, mutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
 				this.persistProperty(entity, key, dao, propertyMeta, mutator);
 			}
+		}
+	}
+
+	public <ID> void persist(Object entity, EntityMeta<ID> entityMeta)
+	{
+		GenericDynamicCompositeDao<ID> dao = entityMeta.getEntityDao();
+		if (dao != null)
+		{
+			Mutator<ID> mutator = dao.buildMutator();
+			this.persist(entity, entityMeta, mutator);
 			mutator.execute();
 		}
-
 	}
 
 	private <T, ID> void batchPersistVersionSerialUID(Class<T> entityClass, ID key,
@@ -125,7 +132,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	public <JOIN_ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
+	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
 			JoinProperties joinProperties)
 	{
 		EntityMeta<JOIN_ID> joinEntityMeta = joinProperties.getEntityMeta();

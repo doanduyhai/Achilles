@@ -15,6 +15,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * WideMapWrapper
@@ -45,17 +46,34 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		return wideMapMeta.getValueFromString(value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value), ttl);
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(value), ttl,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value), ttl);
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value));
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(value),
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value));
+		}
 	}
 
 	@Override

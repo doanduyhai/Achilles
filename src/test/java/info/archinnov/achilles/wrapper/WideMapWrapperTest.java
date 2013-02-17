@@ -18,6 +18,7 @@ import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForDynamicComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +70,12 @@ public class WideMapWrapperTest
 	@Mock
 	private CompositeHelper helper;
 
+	@Mock
+	private AchillesInterceptor interceptor;
+
+	@Mock
+	private Mutator<Long> mutator;
+
 	private Long id = 1L;
 
 	@Mock
@@ -106,14 +114,35 @@ public class WideMapWrapperTest
 	@Test
 	public void should_insert_value() throws Exception
 	{
+
 		String value = "test";
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
 		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(1, value);
 
 		verify(dao).setValue(id, composite, value);
+	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_with_batch() throws Exception
+	{
+
+		String value = "test";
+		DynamicComposite composite = new DynamicComposite();
+		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
+		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(1, value);
+
+		verify(dao).setValueBatch(id, composite, value, mutator);
 	}
 
 	@Test
@@ -123,9 +152,30 @@ public class WideMapWrapperTest
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
 		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(1, value, 12);
 
 		verify(dao).setValue(id, composite, value, 12);
+
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_with_ttl_and_batch() throws Exception
+	{
+		String value = "test";
+		DynamicComposite composite = new DynamicComposite();
+		when(keyFactory.createForInsert(wideMapMeta, 1)).thenReturn(composite);
+		when(wideMapMeta.writeValueToString(value)).thenReturn(value);
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(1, value, 12);
+
+		verify(dao).setValueBatch(id, composite, value, 12, mutator);
 
 	}
 

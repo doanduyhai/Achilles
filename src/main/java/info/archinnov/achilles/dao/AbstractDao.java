@@ -2,7 +2,6 @@ package info.archinnov.achilles.dao;
 
 import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
 import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
-
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
@@ -29,11 +28,8 @@ import me.prettyprint.hector.api.query.CounterQuery;
 import me.prettyprint.hector.api.query.SliceCounterQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-import org.apache.cassandra.utils.Pair;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-
 
 /**
  * AbstractDao

@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import mapping.entity.ColumnFamilyBean;
 import mapping.entity.CompleteBean;
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.junit.Before;
@@ -96,6 +97,9 @@ public class JpaEntityInterceptorTest
 	@Mock
 	private PropertyMeta<Void, UUID> joinPropertyMeta;
 
+	@Mock
+	private Mutator<Long> mutator;
+
 	private Method idGetter;
 
 	private Method idSetter;
@@ -134,6 +138,8 @@ public class JpaEntityInterceptorTest
 		ReflectionTestUtils.setField(interceptor, "loader", loader);
 		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
 		ReflectionTestUtils.setField(interceptor, "columnFamily", false);
+
+		interceptor.setMutator(mutator);
 	}
 
 	@Test
@@ -277,6 +283,7 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(WideMapWrapper.class);
+		assertThat(((WideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test
@@ -293,6 +300,7 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(ExternalWideMapWrapper.class);
+		assertThat(((ExternalWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test
@@ -309,6 +317,7 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(JoinWideMapWrapper.class);
+		assertThat(((JoinWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test
@@ -333,7 +342,8 @@ public class JpaEntityInterceptorTest
 
 		assertThat(dao).isNotNull();
 		assertThat(dao).isSameAs(externalWideMapDao);
-
+		assertThat(((ExternalWideMapWrapper) externalWideMap).getInterceptor()).isSameAs(
+				interceptor);
 	}
 
 	@Test
@@ -354,6 +364,7 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(bean, joinUsersGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(JoinExternalWideMapWrapper.class);
+		assertThat(((JoinExternalWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

@@ -14,6 +14,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * ExternalWideMapWrapper
@@ -53,13 +54,34 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	@Override
 	public void insert(K key, V value)
 	{
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueAsSupportedTypeOrString(value));
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key),
+					wideMapMeta.writeValueAsSupportedTypeOrString(value),
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key),
+					wideMapMeta.writeValueAsSupportedTypeOrString(value));
+		}
 	}
 
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl);
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key),
+					wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+
+			dao.setValue(id, buildComposite(key),
+					wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl);
+		}
 	}
 
 	@Override

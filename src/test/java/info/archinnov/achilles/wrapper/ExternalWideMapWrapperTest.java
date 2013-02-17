@@ -15,12 +15,14 @@ import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +67,12 @@ public class ExternalWideMapWrapperTest
 
 	private Composite comp = new Composite();
 
+	@Mock
+	private AchillesInterceptor interceptor;
+
+	@Mock
+	private Mutator<Long> mutator;
+
 	@SuppressWarnings(
 	{
 			"rawtypes",
@@ -85,7 +93,6 @@ public class ExternalWideMapWrapperTest
 	@Test
 	public void should_get_value() throws Exception
 	{
-
 		Composite comp = new Composite();
 		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 		when(dao.getValue(id, comp)).thenReturn("test");
@@ -100,16 +107,48 @@ public class ExternalWideMapWrapperTest
 	public void should_insert_value() throws Exception
 	{
 		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(12, "test");
 		verify(dao).setValue(id, comp, "test");
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_with_batch() throws Exception
+	{
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(12, "test");
+		verify(dao).setValueBatch(id, comp, "test", mutator);
 	}
 
 	@Test
 	public void should_insert_value_with_ttl() throws Exception
 	{
 		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(12, "test", 452);
 		verify(dao).setValue(id, comp, "test", 452);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_insert_value_with_ttl_and_batch() throws Exception
+	{
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		when(interceptor.isBatchMode()).thenReturn(true);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		wrapper.insert(12, "test", 452);
+		verify(dao).setValueBatch(id, comp, "test", 452, mutator);
 	}
 
 	@SuppressWarnings(

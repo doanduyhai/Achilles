@@ -4,15 +4,15 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -20,9 +20,13 @@ import java.util.Map;
 import javax.persistence.FlushModeType;
 
 import mapping.entity.CompleteBean;
+import me.prettyprint.hector.api.mutation.Mutator;
+import net.sf.cglib.proxy.Factory;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -45,6 +49,8 @@ import parser.entity.Bean;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftEntityManagerTest
 {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
 	private ThriftEntityManager em;
@@ -69,6 +75,9 @@ public class ThriftEntityManagerTest
 
 	@Mock
 	private EntityMeta entityMeta;
+
+	@Mock
+	private Mutator<Long> mutator;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
 
@@ -193,4 +202,66 @@ public class ThriftEntityManagerTest
 		em.setFlushMode(FlushModeType.COMMIT);
 	}
 
+	@Test
+	public void should_start_batch() throws Exception
+	{
+		Factory bean = mock(Factory.class);
+
+		when(helper.isProxy(bean)).thenReturn(true);
+		when(helper.deriveBaseClass(bean)).thenReturn((Class) CompleteBean.class);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		GenericDynamicCompositeDao<Long> entityDao = mock(GenericDynamicCompositeDao.class);
+		when(entityMeta.getEntityDao()).thenReturn(entityDao);
+		when(entityDao.buildMutator()).thenReturn(mutator);
+
+		JpaEntityInterceptor<Long> interceptor = mock(JpaEntityInterceptor.class);
+
+		when(bean.getCallback(0)).thenReturn(interceptor);
+
+		em.startBatch(bean);
+
+		verify(interceptor).setMutator(mutator);
+	}
+
+	@Test
+	public void should_exception_when_trying_to_batch_transient_entity() throws Exception
+	{
+		Factory bean = mock(Factory.class);
+		when(helper.isProxy(bean)).thenReturn(false);
+
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("The entity is not in 'managed' state. Please merge it before starting a batch");
+
+		em.startBatch(bean);
+	}
+
+	@Test
+	public void should_end_batch() throws Exception
+	{
+		Factory bean = mock(Factory.class);
+		JpaEntityInterceptor<Long> interceptor = mock(JpaEntityInterceptor.class);
+
+		when(helper.isProxy(bean)).thenReturn(true);
+		when(bean.getCallback(0)).thenReturn(interceptor);
+		when(interceptor.getMutator()).thenReturn(mutator);
+
+		em.endBatch(bean);
+
+		verify(mutator).execute();
+	}
+
+	@Test
+	public void should_exception_when_trying_to_end_batch_on_transient_entity() throws Exception
+	{
+		Factory bean = mock(Factory.class);
+
+		when(helper.isProxy(bean)).thenReturn(false);
+
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage("The entity is not in 'managed' state");
+
+		em.endBatch(bean);
+
+	}
 }

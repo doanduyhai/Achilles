@@ -4,6 +4,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * JoinWideMapWrapper
@@ -36,15 +37,30 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 	public void insert(K key, V value, int ttl)
 	{
 		Object joinId = persistOrEnsureJoinEntityExists(value);
-
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl);
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl);
+		}
 	}
 
 	@Override
 	public void insert(K key, V value)
 	{
 		Object joinId = persistOrEnsureJoinEntityExists(value);
-		dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId));
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(joinId),
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId));
+		}
 	}
 
 	private Object persistOrEnsureJoinEntityExists(V value)

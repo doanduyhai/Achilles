@@ -2,6 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.wrapper.JoinExternalWideMapWrapper;
 
 /**
@@ -15,6 +16,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
+	private AchillesInterceptor interceptor;
 
 	public JoinExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, JOIN_ID> dao,
 			PropertyMeta<K, V> joinExternalWideMapMeta)
@@ -31,6 +33,13 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 				joinExternalWideMapMeta);
 	}
 
+	public JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> interceptor(
+			AchillesInterceptor interceptor)
+	{
+		this.interceptor = interceptor;
+		return this;
+	}
+
 	public JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> build()
 	{
 		JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> wrapper = new JoinExternalWideMapWrapper<ID, JOIN_ID, K, V>();
@@ -38,7 +47,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		wrapper.setId(id);
 		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);
 		wrapper.setExternalWideMapDao(dao);
-
+		wrapper.setInterceptor(interceptor);
 		return wrapper;
 	}
 

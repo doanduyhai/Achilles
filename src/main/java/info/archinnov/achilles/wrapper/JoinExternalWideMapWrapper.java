@@ -18,6 +18,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * JoinExternalWideMapWrapper
@@ -64,7 +65,16 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void insert(K key, V value, int ttl)
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-		externalWideMapDao.setValue(id, buildComposite(key), joinId, ttl);
+
+		if (this.interceptor.isBatchMode())
+		{
+			externalWideMapDao.setValueBatch(id, buildComposite(key), joinId, ttl,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			externalWideMapDao.setValue(id, buildComposite(key), joinId, ttl);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -72,7 +82,15 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void insert(K key, V value)
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-		externalWideMapDao.setValue(id, buildComposite(key), joinId);
+		if (this.interceptor.isBatchMode())
+		{
+			externalWideMapDao.setValueBatch(id, buildComposite(key), joinId,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			externalWideMapDao.setValue(id, buildComposite(key), joinId);
+		}
 	}
 
 	@SuppressWarnings(
