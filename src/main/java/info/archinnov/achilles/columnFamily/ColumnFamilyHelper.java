@@ -31,8 +31,8 @@ public class ColumnFamilyHelper
 
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ColumnFamilyBuilder columnFamilyBuilder = new ColumnFamilyBuilder();
-	private ColumnFamilyValidator columnFamilyValidator = new ColumnFamilyValidator();
+	ColumnFamilyBuilder columnFamilyBuilder = new ColumnFamilyBuilder();
+	ColumnFamilyValidator columnFamilyValidator = new ColumnFamilyValidator();
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 
 	public ColumnFamilyHelper(Cluster cluster, Keyspace keyspace) {

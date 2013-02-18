@@ -57,7 +57,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
@@ -125,8 +124,8 @@ public class EntityLoaderTest
 	public void setUp()
 	{
 		bean = CompleteBeanTestBuilder.builder().buid();
-		ReflectionTestUtils.setField(loader, "interceptorBuilder", interceptorBuilder);
-		ReflectionTestUtils.setField(loader, "helper", helper);
+		loader.interceptorBuilder = interceptorBuilder;
+		loader.helper = helper;
 	}
 
 	@SuppressWarnings("unchecked")

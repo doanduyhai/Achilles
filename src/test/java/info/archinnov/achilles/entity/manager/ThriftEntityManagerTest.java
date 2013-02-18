@@ -37,7 +37,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.Bean;
 
@@ -95,12 +94,12 @@ public class ThriftEntityManagerTest
 	@Before
 	public void setUp() throws Exception
 	{
-		ReflectionTestUtils.setField(em, "persister", persister);
-		ReflectionTestUtils.setField(merger, "persister", persister);
-		ReflectionTestUtils.setField(em, "loader", loader);
-		ReflectionTestUtils.setField(em, "merger", merger);
-		ReflectionTestUtils.setField(em, "helper", helper);
-		ReflectionTestUtils.setField(em, "interceptorBuilder", interceptorBuilder);
+		em.persister = persister;
+		merger.setPersister(persister);
+		em.loader = loader;
+		em.merger = merger;
+		em.helper = helper;
+		em.interceptorBuilder = interceptorBuilder;
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 

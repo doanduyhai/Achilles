@@ -4,7 +4,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
-
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -32,11 +31,9 @@ import net.sf.cglib.proxy.Factory;
  */
 public class EntityMerger
 {
-	private EntityPersister persister = new EntityPersister();
-
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
-
-	private EntityHelper helper = new EntityHelper();
+	EntityPersister persister = new EntityPersister();
+	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
@@ -107,5 +104,10 @@ public class EntityMerger
 		}
 
 		return proxy;
+	}
+
+	public void setPersister(EntityPersister persister)
+	{
+		this.persister = persister;
 	}
 }

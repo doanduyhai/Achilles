@@ -19,9 +19,8 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V>
 {
-	// protected AchillesSliceIterator<?, Composite, ?> achillesSliceIterator;
+	KeyValueFactory factory = new KeyValueFactory();
 	protected Iterator<HColumn<Composite, V>> achillesSliceIterator;
-	private KeyValueFactory factory = new KeyValueFactory();
 	private PropertyMeta<K, V> wideMapMeta;
 
 	protected KeyValueIteratorForComposite() {}

@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -86,10 +85,10 @@ public class JoinWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(wrapper, "helper", helper);
-		ReflectionTestUtils.setField(wrapper, "persister", persister);
-		ReflectionTestUtils.setField(wrapper, "loader", loader);
-		ReflectionTestUtils.setField(wrapper, "id", id);
+		wrapper.helper = helper;
+		wrapper.persister = persister;
+		wrapper.loader = loader;
+		wrapper.setId(id);
 	}
 
 	@Test

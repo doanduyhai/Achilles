@@ -3,7 +3,6 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -16,8 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * GenericDynamicCompositeDaoTest
@@ -30,7 +27,7 @@ public class GenericDynamicCompositeDaoTest
 {
 
 	@InjectMocks
-	private final GenericDynamicCompositeDao<Long> dao = new GenericDynamicCompositeDao<Long>();
+	private GenericDynamicCompositeDao<Long> dao = new GenericDynamicCompositeDao<Long>();
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -50,8 +47,7 @@ public class GenericDynamicCompositeDaoTest
 	public void should_build_start_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao,
-				"startCompositeForEagerFetch");
+		DynamicComposite comp = dao.startCompositeForEagerFetch;
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -61,8 +57,7 @@ public class GenericDynamicCompositeDaoTest
 	public void should_build_end_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = (DynamicComposite) ReflectionTestUtils.getField(dao,
-				"endCompositeForEagerFetch");
+		DynamicComposite comp = dao.endCompositeForEagerFetch;
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(

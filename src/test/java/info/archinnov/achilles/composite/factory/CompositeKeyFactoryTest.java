@@ -9,8 +9,6 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -36,8 +34,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
-
 
 /**
  * CompositeKeyFactoryTest
@@ -77,9 +73,6 @@ public class CompositeKeyFactoryTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(factory, "helper", helper);
-		ReflectionTestUtils.setField(factory, "entityHelper", entityHelper);
-
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(wideMapMeta.getPropertyName()).thenReturn("property");
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);

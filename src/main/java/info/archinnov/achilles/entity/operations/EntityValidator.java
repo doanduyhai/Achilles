@@ -6,7 +6,6 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
-
 /**
  * EntityValidator
  * 
@@ -15,7 +14,7 @@ import java.util.Map;
  */
 public class EntityValidator
 {
-	private EntityHelper helper = new EntityHelper();
+	EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)

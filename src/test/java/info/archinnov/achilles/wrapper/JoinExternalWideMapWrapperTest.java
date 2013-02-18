@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -100,14 +99,13 @@ public class JoinExternalWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(wrapper, "id", id);
-		ReflectionTestUtils.setField(wrapper, "persister", persister);
-		ReflectionTestUtils.setField(wrapper, "loader", loader);
-		ReflectionTestUtils.setField(wrapper, "helper", helper);
-		ReflectionTestUtils.setField(wrapper, "compositeKeyFactory", compositeKeyFactory);
-		ReflectionTestUtils.setField(wrapper, "keyValueFactory", keyValueFactory);
-		ReflectionTestUtils.setField(wrapper, "iteratorFactory", iteratorFactory);
-
+		wrapper.setId(id);
+		wrapper.persister = persister;
+		wrapper.loader = loader;
+		wrapper.helper = helper;
+		wrapper.compositeKeyFactory = compositeKeyFactory;
+		wrapper.keyValueFactory = keyValueFactory;
+		wrapper.iteratorFactory = iteratorFactory;
 	}
 
 	@Test

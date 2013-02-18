@@ -32,7 +32,7 @@ public class EntityMapper
 
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyBuilder.class);
 
-	private EntityHelper helper = new EntityHelper();
+	EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> void setEagerPropertiesToEntity(ID key,

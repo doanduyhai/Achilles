@@ -3,6 +3,7 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 
@@ -19,8 +20,6 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.SliceQuery;
-
-import org.apache.cassandra.utils.Pair;
 
 /**
  * AchillesJoinSliceIterator
@@ -42,7 +41,7 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 	private int count = DEFAULT_LENGTH;
 	private int columns = 0;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
-	private EntityLoader loader = new EntityLoader();
+	EntityLoader loader = new EntityLoader();
 
 	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)

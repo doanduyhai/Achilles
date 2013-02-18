@@ -30,9 +30,12 @@ import net.sf.cglib.proxy.MethodProxy;
 public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
+	EntityLoader loader = new EntityLoader();
+	GenericDynamicCompositeDao<ID> entityDao;
+	GenericCompositeDao<ID, ?> columnFamilyDao;
+	Boolean directColumnFamilyMapping;
+
 	private Object target;
-	private GenericDynamicCompositeDao<ID> entityDao;
-	private GenericCompositeDao<ID, ?> columnFamilyDao;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -40,11 +43,8 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Set<Method> lazyLoaded;
-	Boolean columnFamily;
 	private Mutator<ID> mutator;
 	private Map<String, Mutator<?>> mutatorMap;
-
-	private EntityLoader loader = new EntityLoader();
 
 	@Override
 	public Object getTarget()
@@ -119,7 +119,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case WIDE_MAP:
-				if (columnFamily)
+				if (directColumnFamilyMapping)
 				{
 					result = buildColumnFamilyWrapper(propertyMeta);
 				}
@@ -281,14 +281,14 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		this.loader = loader;
 	}
 
-	public void setColumnFamily(Boolean columnFamily)
+	public void setDirectColumnFamilyMapping(Boolean directColumnFamilyMapping)
 	{
-		this.columnFamily = columnFamily;
+		this.directColumnFamilyMapping = directColumnFamilyMapping;
 	}
 
-	public Boolean getColumnFamily()
+	public Boolean getDirectColumnFamilyMapping()
 	{
-		return columnFamily;
+		return directColumnFamilyMapping;
 	}
 
 	public Mutator<ID> getMutator()

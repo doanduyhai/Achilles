@@ -46,7 +46,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 	private EntityParser entityParser;
 	private EntityExplorer entityExplorer = new EntityExplorer();
-	private boolean forceColumnFamilyCreation = false;
+	boolean forceColumnFamilyCreation = false;
 	private Cluster cluster;
 	private Keyspace keyspace;
 	private ColumnFamilyHelper columnFamilyHelper;

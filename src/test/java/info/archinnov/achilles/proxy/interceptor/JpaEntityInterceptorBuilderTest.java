@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * JpaEntityInterceptorBuilderTest
@@ -85,11 +84,11 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(ReflectionTestUtils.getField(interceptor, "columnFamilyDao")).isNull();
-		assertThat(ReflectionTestUtils.getField(interceptor, "entityDao")).isNotNull();
-		assertThat(interceptor.getColumnFamily()).isFalse();
+		assertThat(interceptor.columnFamilyDao).isNull();
+		assertThat(interceptor.entityDao).isNotNull();
+		assertThat(interceptor.getDirectColumnFamilyMapping()).isFalse();
 
-		Object entityLoader = ReflectionTestUtils.getField(interceptor, "loader");
+		Object entityLoader = interceptor.loader;
 
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
@@ -133,11 +132,11 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(ReflectionTestUtils.getField(interceptor, "columnFamilyDao")).isNotNull();
-		assertThat(ReflectionTestUtils.getField(interceptor, "entityDao")).isNull();
-		assertThat(interceptor.getColumnFamily()).isTrue();
+		assertThat(interceptor.columnFamilyDao).isNotNull();
+		assertThat(interceptor.entityDao).isNull();
+		assertThat(interceptor.getDirectColumnFamilyMapping()).isTrue();
 
-		Object entityLoader = ReflectionTestUtils.getField(interceptor, "loader");
+		Object entityLoader = interceptor.loader;
 
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);

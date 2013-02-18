@@ -17,7 +17,7 @@ import com.google.common.base.Function;
 public class DynamicCompositeTransformer
 {
 
-	private PropertyHelper helper = new PropertyHelper();
+	PropertyHelper helper = new PropertyHelper();
 
 	public <K, V> Function<HColumn<DynamicComposite, String>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)

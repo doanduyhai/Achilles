@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import parser.entity.CorrectMultiKey;
 
@@ -56,7 +55,7 @@ public class KeyValueIteratorForCompositeTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(iterator, "factory", factory);
+		iterator.factory = factory;
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}

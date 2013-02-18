@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -47,7 +46,7 @@ public class CompositeTransformerTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(transformer, "helper", helper);
+		transformer.helper = helper;
 	}
 
 	@SuppressWarnings("unchecked")

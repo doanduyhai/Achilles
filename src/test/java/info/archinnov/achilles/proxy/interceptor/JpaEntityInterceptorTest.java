@@ -134,11 +134,10 @@ public class JpaEntityInterceptorTest
 		interceptor = JpaEntityInterceptorBuilder.builder(entityMeta).target(entity)
 				.lazyLoaded(lazyLoaded).build();
 
-		ReflectionTestUtils.setField(interceptor, "key", key);
-		ReflectionTestUtils.setField(interceptor, "loader", loader);
-		ReflectionTestUtils.setField(interceptor, "dirtyMap", dirtyMap);
-		ReflectionTestUtils.setField(interceptor, "columnFamily", false);
-
+		interceptor.setKey(key);
+		interceptor.loader = loader;
+		interceptor.setDirtyMap(dirtyMap);
+		interceptor.setDirectColumnFamilyMapping(false);
 		interceptor.setMutator(mutator);
 	}
 
@@ -278,7 +277,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		interceptor.columnFamily = false;
+		interceptor.directColumnFamilyMapping = false;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -295,7 +294,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		interceptor.columnFamily = true;
+		interceptor.directColumnFamilyMapping = true;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -312,7 +311,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-		interceptor.columnFamily = false;
+		interceptor.directColumnFamilyMapping = false;
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 

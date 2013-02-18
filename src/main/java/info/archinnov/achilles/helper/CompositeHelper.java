@@ -3,7 +3,6 @@ package info.archinnov.achilles.helper;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
-
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -21,7 +20,7 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
  */
 public class CompositeHelper
 {
-	private EntityHelper helper = new EntityHelper();
+	EntityHelper helper = new EntityHelper();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{

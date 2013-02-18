@@ -36,9 +36,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cassandra.version>1.1.6</cassandra.version>
+    <cassandra.version>1.2.0</cassandra.version>
     <hector.version>1.1-2</hector.version>
     <cglib.version>2.2.2</cglib.version>
+    <jackson.version>1.9.3</jackson.version>
             <!-- Maven plugins -->
      <maven.compiler.version>2.4</maven.compiler.version>
      <maven.enforcer.version>1.0.1</maven.enforcer.version>
@@ -63,6 +64,14 @@
         		<exclusion>
         			<artifactId>slf4j-api</artifactId>
         			<groupId>org.slf4j</groupId>
+        		</exclusion>
+        		<exclusion>
+        			<artifactId>jackson-core-asl</artifactId>
+        			<groupId>org.codehaus.jackson</groupId>
+        		</exclusion>
+        		<exclusion>
+        			<artifactId>jackson-mapper-asl</artifactId>
+        			<groupId>org.codehaus.jackson</groupId>
         		</exclusion>
         	</exclusions>
         </dependency>
@@ -98,12 +107,6 @@
  		 </dependency>
 
 		<!-- TEST  -->
-<!--         <dependency> -->
-<!--         	<groupId>org.apache.cassandra</groupId> -->
-<!--         	<artifactId>cassandra-all</artifactId> -->
-<!--         	<version>1.1.6</version> -->
-<!--         	<scope>test</scope> -->
-<!--         </dependency> -->
         <dependency>
         	<groupId>org.easytesting</groupId>
         	<artifactId>fest-assert-core</artifactId>
@@ -119,7 +122,7 @@
  		 <dependency>
             <groupId>org.cassandraunit</groupId>
             <artifactId>cassandra-unit</artifactId>
-            <version>1.1.1.2</version>
+            <version>1.1.2.1</version>
             <scope>test</scope>
             <exclusions>
             	<exclusion>
@@ -165,6 +168,16 @@
  		 	<artifactId>powermock-api-mockito</artifactId>
  		 	<version>1.5</version>
  		 	<scope>test</scope>
+ 		 </dependency>
+ 		 <dependency>
+ 		 	<groupId>org.codehaus.jackson</groupId>
+ 		 	<artifactId>jackson-core-asl</artifactId>
+ 		 	<version>1.9.3</version>
+ 		 </dependency>
+ 		 <dependency>
+ 		 	<groupId>org.codehaus.jackson</groupId>
+ 		 	<artifactId>jackson-mapper-asl</artifactId>
+ 		 	<version>1.9.3</version>
  		 </dependency>
   </dependencies>
 <build>

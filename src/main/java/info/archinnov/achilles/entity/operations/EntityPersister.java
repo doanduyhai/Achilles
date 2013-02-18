@@ -41,8 +41,8 @@ import org.apache.commons.lang.Validate;
 public class EntityPersister
 {
 
-	private EntityHelper helper = new EntityHelper();
-	private EntityLoader loader = new EntityLoader();
+	EntityHelper helper = new EntityHelper();
+	EntityLoader loader = new EntityLoader();
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 

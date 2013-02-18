@@ -32,13 +32,12 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	private GenericCompositeDao<ID, JOIN_ID> externalWideMapDao;
 	private PropertyMeta<K, V> externalWideMapMeta;
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityLoader loader = new EntityLoader();
-	private CompositeHelper helper = new CompositeHelper();
-
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
-	private KeyValueFactory keyValueFactory = new KeyValueFactory();
-	private IteratorFactory iteratorFactory = new IteratorFactory();
+	EntityPersister persister = new EntityPersister();
+	EntityLoader loader = new EntityLoader();
+	CompositeHelper helper = new CompositeHelper();
+	CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	KeyValueFactory keyValueFactory = new KeyValueFactory();
+	IteratorFactory iteratorFactory = new IteratorFactory();
 
 	private Composite buildComposite(K key)
 	{

@@ -33,10 +33,10 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EntityLoader
 {
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
-	private EntityMapper mapper = new EntityMapper();
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
-	private EntityHelper helper = new EntityHelper();
+	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	EntityMapper mapper = new EntityMapper();
+	DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	EntityHelper helper = new EntityHelper();
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{

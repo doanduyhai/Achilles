@@ -19,9 +19,10 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterator<K, V>
 {
+	KeyValueFactory factory = new KeyValueFactory();
+
 	private Iterator<HColumn<DynamicComposite, String>> achillesSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;
-	private KeyValueFactory factory = new KeyValueFactory();
 
 	public KeyValueIteratorForDynamicComposite(
 			Iterator<HColumn<DynamicComposite, String>> columnSliceIterator,

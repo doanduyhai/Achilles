@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -37,7 +36,7 @@ public class ColumnFamilyValidatorTest
 {
 
 	@InjectMocks
-	private ColumnFamilyValidator columnFamilyValidator = new ColumnFamilyValidator();
+	private ColumnFamilyValidator columnFamilyValidator;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -57,7 +56,7 @@ public class ColumnFamilyValidatorTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(columnFamilyValidator, "helper", helper);
+		columnFamilyValidator.helper = helper;
 	}
 
 	@Test
@@ -67,8 +66,7 @@ public class ColumnFamilyValidatorTest
 		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
-		ReflectionTestUtils.setField(columnFamilyValidator, "COMPARATOR_TYPE_AND_ALIAS",
-				ComparatorType.ASCIITYPE.getTypeName());
+		columnFamilyValidator.COMPARATOR_TYPE_AND_ALIAS = ComparatorType.ASCIITYPE.getTypeName();
 		columnFamilyValidator.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 

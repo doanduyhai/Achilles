@@ -39,7 +39,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -107,8 +106,7 @@ public class EntityMapperTest
 				return objectMapper;
 			}
 		};
-
-		ReflectionTestUtils.setField(mapper, "helper", helper);
+		mapper.helper = helper;
 		parser = new EntityParser(factory);
 		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class,
 				joinPropertyMetaToBeFilled);

@@ -62,13 +62,13 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 				"Setters metadata for interceptor should not be null");
 		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			interceptor.setColumnFamily(true);
+			interceptor.setDirectColumnFamilyMapping(true);
 			Validator.validateNotNull(entityMeta.getColumnFamilyDao(), "Dao for entity meta");
 			interceptor.setColumnFamilyDao(entityMeta.getColumnFamilyDao());
 		}
 		else
 		{
-			interceptor.setColumnFamily(false);
+			interceptor.setDirectColumnFamilyMapping(false);
 			Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
 			interceptor.setEntityDao(entityMeta.getEntityDao());
 

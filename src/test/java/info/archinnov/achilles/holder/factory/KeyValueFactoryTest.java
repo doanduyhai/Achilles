@@ -32,7 +32,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -81,10 +80,10 @@ public class KeyValueFactoryTest
 	@Before
 	public void setUp()
 	{
-		ReflectionTestUtils.setField(factory, "loader", loader);
-		ReflectionTestUtils.setField(factory, "compositeTransformer", compositeTransformer);
-		ReflectionTestUtils.setField(factory, "dynamicCompositeTransformer",
-				dynamicCompositeTransformer);
+		factory.loader = loader;
+		factory.compositeTransformer = compositeTransformer;
+		factory.dynamicCompositeTransformer = dynamicCompositeTransformer;
+
 		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 
@@ -237,8 +236,10 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 11).buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 12).buildDynamic();
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(dynComp1, "test1", 456);
-		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(dynComp2, "test2", 789);
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder
+				.dynamic(dynComp1, "test1", 456);
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder
+				.dynamic(dynComp2, "test2", 789);
 
 		Function<HColumn<DynamicComposite, String>, KeyValue<Integer, String>> function = new Function<HColumn<DynamicComposite, String>, KeyValue<Integer, String>>()
 		{

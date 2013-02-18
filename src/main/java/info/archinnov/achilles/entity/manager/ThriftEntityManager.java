@@ -40,14 +40,13 @@ public class ThriftEntityManager implements EntityManager
 
 	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityLoader loader = new EntityLoader();
-	private EntityMerger merger = new EntityMerger();
-	private EntityRefresher entityRefresher = new EntityRefresher();
-	private EntityHelper helper = new EntityHelper();
-	private EntityValidator entityValidator = new EntityValidator();
-
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	EntityPersister persister = new EntityPersister();
+	EntityLoader loader = new EntityLoader();
+	EntityMerger merger = new EntityMerger();
+	EntityRefresher entityRefresher = new EntityRefresher();
+	EntityHelper helper = new EntityHelper();
+	EntityValidator entityValidator = new EntityValidator();
+	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
 	public ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
 		this.entityMetaMap = entityMetaMap;

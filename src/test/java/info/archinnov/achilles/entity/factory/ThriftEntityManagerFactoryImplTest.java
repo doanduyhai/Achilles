@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * ThriftEntityManagerFactoryImplTest
@@ -107,7 +106,7 @@ public class ThriftEntityManagerFactoryImplTest
 		when(entityParser.parseEntity(eq(keyspace), eq(String.class), any(Map.class))).thenReturn(
 				entityMeta2);
 
-		ReflectionTestUtils.setField(factory, "forceColumnFamilyCreation", true);
+		factory.forceColumnFamilyCreation = true;
 		factory.bootstrap();
 
 		verify(entityMetaMap).put(Long.class, entityMeta1);

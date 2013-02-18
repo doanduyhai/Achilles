@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -139,7 +138,7 @@ public class AchillesJoinSliceIteratorTest
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, 10);
 
-		ReflectionTestUtils.setField(iterator, "loader", loader);
+		iterator.loader = loader;
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
@@ -210,7 +209,7 @@ public class AchillesJoinSliceIteratorTest
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, count);
 
-		ReflectionTestUtils.setField(iterator, "loader", loader);
+		iterator.loader = loader;
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<DynamicComposite, UserBean> h1 = iterator.next();

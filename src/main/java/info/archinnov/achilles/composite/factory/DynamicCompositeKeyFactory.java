@@ -4,7 +4,6 @@ import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -22,7 +21,6 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * DynamicCompositeKeyFactory
  * 
@@ -33,8 +31,8 @@ public class DynamicCompositeKeyFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(DynamicCompositeKeyFactory.class);
 
-	private CompositeHelper helper = new CompositeHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	CompositeHelper helper = new CompositeHelper();
+	EntityHelper entityHelper = new EntityHelper();
 
 	public <K, V> DynamicComposite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
 	{

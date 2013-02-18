@@ -19,8 +19,8 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 {
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityLoader loader = new EntityLoader();
+	EntityPersister persister = new EntityPersister();
+	EntityLoader loader = new EntityLoader();
 
 	@SuppressWarnings("rawtypes")
 	@Override

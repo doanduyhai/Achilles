@@ -18,12 +18,11 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * ColumnFamilyBuilderTest
@@ -34,7 +33,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class ColumnFamilyBuilderTest
 {
-	private final ColumnFamilyBuilder builder = new ColumnFamilyBuilder();
+	@InjectMocks
+	private ColumnFamilyBuilder builder;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -44,12 +44,6 @@ public class ColumnFamilyBuilderTest
 
 	@Mock
 	private PropertyHelper helper;
-
-	@Before
-	public void setUp()
-	{
-		ReflectionTestUtils.setField(builder, "helper", helper);
-	}
 
 	@Test
 	@SuppressWarnings(

@@ -1,6 +1,6 @@
 # Cassandra storage config YAML
 
-cluster_name: 'Postweet Test Cassandra Cluster'
+cluster_name: 'Achilles Test Cassandra Cluster'
 
 # You should always specify InitialToken when setting up a production
 # cluster for the first time, and often when adding capacity later.
@@ -171,7 +171,7 @@ column_index_size_in_kb: 64
 in_memory_compaction_limit_in_mb: 16
 
 # Time to wait for a reply from other nodes before failing the command
-rpc_timeout_in_ms: 10000
+# rpc_timeout_in_ms: 10000
 
 # phi value that must be reached for a host to be marked down.
 # most users should never need to adjust this.

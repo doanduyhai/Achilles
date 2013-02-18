@@ -1,7 +1,6 @@
 package info.archinnov.achilles.composite.factory;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -17,7 +16,6 @@ import me.prettyprint.hector.api.beans.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * CompositeKeyFactory
  * 
@@ -28,8 +26,8 @@ public class CompositeKeyFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(CompositeKeyFactory.class);
 
-	private CompositeHelper helper = new CompositeHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	CompositeHelper helper = new CompositeHelper();
+	EntityHelper entityHelper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)

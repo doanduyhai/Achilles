@@ -55,10 +55,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class PropertyParser
 {
 
-	private PropertyFilter filter = new PropertyFilter();
-
-	private PropertyHelper propertyHelper = new PropertyHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	PropertyFilter filter = new PropertyFilter();
+	PropertyHelper propertyHelper = new PropertyHelper();
+	EntityHelper entityHelper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <K, V> PropertyMeta<K, V> parse(Class<?> beanClass, Field field, String propertyName,

@@ -17,7 +17,7 @@ import com.google.common.base.Function;
 public class CompositeTransformer
 {
 
-	private PropertyHelper helper = new PropertyHelper();
+	PropertyHelper helper = new PropertyHelper();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)

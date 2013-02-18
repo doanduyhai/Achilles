@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * ExternalWideMapWrapperTest
@@ -84,7 +83,7 @@ public class ExternalWideMapWrapperTest
 		wrapper.compositeHelper = compositeHelper;
 		wrapper.keyValueFactory = keyValueFactory;
 		wrapper.iteratorFactory = iteratorFactory;
-		ReflectionTestUtils.setField(wrapper, "id", id);
+		wrapper.setId(id);
 
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);

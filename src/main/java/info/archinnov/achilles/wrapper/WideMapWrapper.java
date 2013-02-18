@@ -26,13 +26,14 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 {
 
+	CompositeHelper helper = new CompositeHelper();
+	KeyValueFactory keyValueFactory = new KeyValueFactory();
+	IteratorFactory iteratorFactory = new IteratorFactory();
+	DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+
 	protected ID id;
 	protected GenericDynamicCompositeDao<ID> dao;
 	protected PropertyMeta<K, V> wideMapMeta;
-	protected CompositeHelper helper = new CompositeHelper();
-	protected KeyValueFactory keyValueFactory = new KeyValueFactory();
-	protected IteratorFactory iteratorFactory = new IteratorFactory();
-	protected DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
 	protected DynamicComposite buildComposite(K key)
 	{

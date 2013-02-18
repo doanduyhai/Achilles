@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * ColumnFamilyHelperTest
@@ -45,16 +44,16 @@ public class ColumnFamilyHelperTest
 {
 
 	@InjectMocks
-	ColumnFamilyHelper helper;
+	private ColumnFamilyHelper helper;
 
 	@Mock
-	Cluster cluster;
+	private Cluster cluster;
 
 	@Mock
-	Keyspace keyspace;
+	private Keyspace keyspace;
 
 	@Mock
-	KeyspaceDefinition keyspaceDefinition;
+	private KeyspaceDefinition keyspaceDefinition;
 
 	@Mock
 	private ColumnFamilyBuilder columnFamilyBuilder;
@@ -80,8 +79,8 @@ public class ColumnFamilyHelperTest
 		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
 				.propertyName("id").accessors(accessors).build();
 
-		ReflectionTestUtils.setField(helper, "columnFamilyBuilder", columnFamilyBuilder);
-		ReflectionTestUtils.setField(helper, "columnFamilyValidator", columnFamilyValidator);
+		helper.columnFamilyBuilder = columnFamilyBuilder;
+		helper.columnFamilyValidator = columnFamilyValidator;
 	}
 
 	@Test

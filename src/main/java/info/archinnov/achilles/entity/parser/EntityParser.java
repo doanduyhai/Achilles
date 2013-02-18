@@ -35,9 +35,9 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class EntityParser
 {
-	private PropertyParser parser = new PropertyParser();
-	private PropertyFilter filter = new PropertyFilter();
-	private EntityHelper helper = new EntityHelper();
+	PropertyParser parser = new PropertyParser();
+	PropertyFilter filter = new PropertyFilter();
+	EntityHelper helper = new EntityHelper();
 	private ObjectMapperFactory objectMapperFactory;
 
 	public EntityParser(ObjectMapperFactory objectMapperFactory) {

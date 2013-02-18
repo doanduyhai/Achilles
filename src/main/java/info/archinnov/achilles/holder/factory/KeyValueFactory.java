@@ -22,10 +22,9 @@ import com.google.common.collect.Lists;
  */
 public class KeyValueFactory
 {
-	private EntityLoader loader = new EntityLoader();
-
-	private CompositeTransformer compositeTransformer = new CompositeTransformer();
-	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
+	EntityLoader loader = new EntityLoader();
+	CompositeTransformer compositeTransformer = new CompositeTransformer();
+	DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
 
 	// Dynamic Composite
 	public <K, V> KeyValue<K, V> createKeyValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
