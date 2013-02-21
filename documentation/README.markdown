@@ -12,6 +12,7 @@
 10. [Multi components for wide row][multiComponentKey]
 11. [Join columns][joinColumns]
 12. [Manual Column Family Creation][manualCFCreation]
+13. [JSON Serialization][json]
 
 [quickTuto]: /documentation/quickTuto.markdown
 [annotations]: /documentation/annotations.markdown
@@ -25,4 +26,5 @@
 [multiComponentKey]: /documentation/multiComponentKey.markdown
 [joinColumns]: /documentation/joinColumns.markdown
 [manualCFCreation]:  /documentation/manualCFCreation.markdown
+[json]: /documentation/jsonSerialization.markdown
 	

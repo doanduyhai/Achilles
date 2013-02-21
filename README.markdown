@@ -34,10 +34,11 @@
  
  For now, **Achilles** depends on the following libraries:
  
- 1. Cassandra 1.1.6 (will be upgraded to 1.2 very soon)
+ 1. Cassandra 1.2.0
  2. Hector-core 1.1-2 ( **Achilles** ThriftEntityManager is built upon Hector API)
  3. CGLIB nodep 2.2.2 for proxy building
- 3. Persistence-api 1.0.2 
+ 4. Persistence-api 1.0.2
+ 5. Jackson asl, mapper & xc 1.9.3 
    
   
  
@@ -56,7 +57,7 @@
 10. [Multi components for wide row][multiComponentKey]
 11. [Join columns][joinColumns]
 12. [Manual Column Family Creation][manualCFCreation]
-
+13. [JSON Serialization][json]
 
 # License #
 Copyright 2012 DuyHai DOAN
@@ -80,3 +81,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [multiComponentKey]: /documentation/multiComponentKey.markdown
 [joinColumns]: /documentation/joinColumns.markdown
 [manualCFCreation]:  /documentation/manualCFCreation.markdown
+[json]: /documentation/jsonSerialization.markdown

@@ -208,7 +208,7 @@ When then *name* attribute is filled, it indicates the name of the column family
 
 <br/>
 
- For more detail on this annotation and its usage, please refer to  Multi components for wide row][multiComponentKey]
+ For more detail on this annotation and its usage, please refer to  [Multi components for wide row][multiComponentKey]
  
  
 [quickTuto]: /documentation/quickTuto.markdown
