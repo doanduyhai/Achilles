@@ -6,8 +6,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.holder.KeyValue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +32,7 @@ public class EntityMapper
 
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyBuilder.class);
 
-	EntityHelper helper = new EntityHelper();
+	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> void setEagerPropertiesToEntity(ID key,

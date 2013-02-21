@@ -10,14 +10,14 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForDynamicComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.ArrayList;

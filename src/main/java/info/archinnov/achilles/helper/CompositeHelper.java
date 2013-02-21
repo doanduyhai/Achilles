@@ -20,7 +20,7 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
  */
 public class CompositeHelper
 {
-	EntityHelper helper = new EntityHelper();
+	private EntityHelper helper = new EntityHelper();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{

@@ -3,10 +3,9 @@ package info.archinnov.achilles.entity.factory;
 import static info.archinnov.achilles.validation.Validator.validateNotEmpty;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
@@ -19,7 +18,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 
@@ -134,11 +132,9 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	{
 		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
 
-		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-
 		try
 		{
-			this.discoverEntities(joinPropertyMetaToBeFilled);
+			this.discoverEntities();
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -153,16 +149,11 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 				this.forceColumnFamilyCreation);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
-	protected void discoverEntities(Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
-			throws ClassNotFoundException, IOException
+	protected void discoverEntities() throws ClassNotFoundException, IOException
 	{
 		log.info("Start discovery of entities searching in packages '{}'",
 				StringUtils.join(entityPackages, ","));
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 
 		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
 		if (!classes.isEmpty())
@@ -171,51 +162,24 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 			for (Class<?> clazz : classes)
 			{
 
-				EntityMeta<?> entityMeta = entityParser.parseEntity(this.keyspace, clazz,
-						joinPropertyMetaToBeFilled);
-				entityMetaMap.put(clazz, entityMeta);
+				Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair = entityParser
+						.parseEntity(this.keyspace, clazz);
+				entityMetaMap.put(clazz, pair.left);
+				joinPropertyMetaToBeFilled.putAll(pair.right);
 			}
 
-			// Retrieve EntityMeta objects for join columns after entities parsing
-			for (Entry<PropertyMeta<?, ?>, Class<?>> entry : joinPropertyMetaToBeFilled.entrySet())
+			if (!joinPropertyMetaToBeFilled.isEmpty())
 			{
-				Class<?> clazz = entry.getValue();
-				if (entityMetaMap.containsKey(clazz))
-				{
-					PropertyMeta<?, ?> propertyMeta = entry.getKey();
-					EntityMeta<?> joinEntityMeta = entityMetaMap.get(clazz);
-
-					if (joinEntityMeta.isColumnFamilyDirectMapping())
-					{
-						throw new BeanMappingException("The entity '" + clazz.getCanonicalName()
-								+ "' is a direct Column Family mapping and cannot be a join entity");
-					}
-
-					propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
-					if (propertyMeta.type().isExternal())
-					{
-						ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
-								.getExternalWideMapProperties();
-
-						externalWideMapProperties.setExternalWideMapDao( //
-								new GenericCompositeDao(keyspace, //
-										externalWideMapProperties.getIdSerializer(), //
-										joinEntityMeta.getIdSerializer(), //
-										externalWideMapProperties.getExternalColumnFamilyName()));
-					}
-				}
-				else
-				{
-					throw new BeanMappingException("Cannot find mapping for join entity '"
-							+ clazz.getCanonicalName() + "'");
-				}
+				entityParser
+						.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 			}
+
 		}
 		else
 		{
 
 			throw new BeanMappingException(
-					"No entity with javax.persistence.Entity annotation found in the packages "
+					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
 							+ StringUtils.join(entityPackages, ","));
 		}
 	}

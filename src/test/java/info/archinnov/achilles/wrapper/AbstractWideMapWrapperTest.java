@@ -3,8 +3,8 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
-import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.wrapper.AbstractWideMapWrapper;
 
 import java.util.ArrayList;

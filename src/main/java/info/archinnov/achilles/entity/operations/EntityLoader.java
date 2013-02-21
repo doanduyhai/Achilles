@@ -10,11 +10,13 @@ import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,10 +35,10 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EntityLoader
 {
-	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
-	EntityMapper mapper = new EntityMapper();
-	DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
-	EntityHelper helper = new EntityHelper();
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	private EntityMapper mapper = new EntityMapper();
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private EntityHelper helper = new EntityHelper();
 
 	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
 	{
@@ -156,6 +158,36 @@ public class EntityLoader
 		return list;
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <ID, JOIN_ID, V> List<V> loadJoinListProperty(ID key,
+			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> listPropertyMeta)
+	{
+		DynamicComposite start = keyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
+		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
+
+		EntityMeta<JOIN_ID> joinMeta = listPropertyMeta.getJoinProperties().getEntityMeta();
+		PropertyMeta<Void, ?> joinIdMeta = joinMeta.getIdMeta();
+
+		for (Pair<DynamicComposite, String> pair : columns)
+		{
+			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
+		}
+
+		Map<JOIN_ID, V> entitiesMap = this.loadJoinEntities(listPropertyMeta.getValueClass(),
+				(List<JOIN_ID>) joinIds, joinMeta);
+
+		List<V> joinEntities = new ArrayList<V>();
+		for (JOIN_ID joinId : joinIds)
+		{
+			joinEntities.add(entitiesMap.get(joinId));
+		}
+
+		return joinEntities;
+	}
+
 	protected <ID, V> Set<V> loadSetProperty(ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> setPropertyMeta)
 	{
@@ -170,6 +202,42 @@ public class EntityLoader
 			set.add(setPropertyMeta.getValueFromString(pair.right));
 		}
 		return set;
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	protected <ID, V> Set<V> loadJoinSetProperty(ID key, GenericDynamicCompositeDao<ID> dao,
+			PropertyMeta<?, V> setPropertyMeta)
+	{
+
+		DynamicComposite start = keyFactory.createBaseForQuery(setPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
+
+		List<Object> joinIds = new ArrayList<Object>();
+
+		EntityMeta<?> joinMeta = setPropertyMeta.getJoinProperties().getEntityMeta();
+		PropertyMeta<Void, ?> joinIdMeta = joinMeta.getIdMeta();
+
+		for (Pair<DynamicComposite, String> pair : columns)
+		{
+			joinIds.add(joinIdMeta.getValueFromString(pair.right));
+		}
+
+		Map<Object, V> entitiesMap = this.loadJoinEntities(setPropertyMeta.getValueClass(),
+				(List) joinIds, joinMeta);
+
+		Set<V> joinEntities = new HashSet<V>();
+		for (Object joinId : joinIds)
+		{
+			joinEntities.add(entitiesMap.get(joinId));
+		}
+
+		return joinEntities;
 	}
 
 	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
@@ -190,6 +258,50 @@ public class EntityLoader
 			map.put(keyClass.cast(holder.getKey()),
 					mapPropertyMeta.getValueFromString(holder.getValue()));
 		}
+		return map;
+	}
+
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	protected <ID, K, V> Map<K, V> loadJoinMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
+			PropertyMeta<K, V> mapPropertyMeta)
+	{
+
+		DynamicComposite start = keyFactory.createBaseForQuery(mapPropertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
+				Integer.MAX_VALUE);
+
+		EntityMeta<?> joinMeta = mapPropertyMeta.getJoinProperties().getEntityMeta();
+		PropertyMeta<Void, ?> joinIdMeta = joinMeta.getIdMeta();
+
+		Map<K, V> map = mapPropertyMeta.newMapInstance();
+		Map<K, Object> partialMap = new HashMap<K, Object>();
+
+		Class<K> keyClass = mapPropertyMeta.getKeyClass();
+
+		List<Object> joinIds = new ArrayList<Object>();
+
+		for (Pair<DynamicComposite, String> pair : columns)
+		{
+			KeyValue<K, V> holder = mapPropertyMeta.getKeyValueFromString(pair.right);
+
+			Object joinId = joinIdMeta.getValueFromString(holder.getValue());
+			partialMap.put(keyClass.cast(holder.getKey()), joinId);
+			joinIds.add(joinId);
+		}
+
+		Map<Object, V> entitiesMap = this.loadJoinEntities(mapPropertyMeta.getValueClass(),
+				(List) joinIds, joinMeta);
+
+		for (Entry<K, Object> entry : partialMap.entrySet())
+		{
+			map.put(entry.getKey(), entitiesMap.get(entry.getValue()));
+		}
+
 		return map;
 	}
 
@@ -217,6 +329,15 @@ public class EntityLoader
 				break;
 			case JOIN_SIMPLE:
 				value = this.loadJoinColumn(key, dao, propertyMeta);
+				break;
+			case JOIN_LIST:
+				value = this.loadJoinListProperty(key, dao, propertyMeta);
+				break;
+			case JOIN_SET:
+				value = this.loadJoinSetProperty(key, dao, propertyMeta);
+				break;
+			case JOIN_MAP:
+				value = this.loadJoinMapProperty(key, dao, propertyMeta);
 				break;
 			default:
 				return;

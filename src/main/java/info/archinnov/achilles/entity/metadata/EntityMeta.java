@@ -21,7 +21,7 @@ public class EntityMeta<ID>
 	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
-	private Serializer<?> idSerializer;
+	private Serializer<ID> idSerializer;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
 	private GenericDynamicCompositeDao<ID> entityDao;
@@ -60,12 +60,12 @@ public class EntityMeta<ID>
 		this.serialVersionUID = serialVersionUID;
 	}
 
-	public Serializer<?> getIdSerializer()
+	public Serializer<ID> getIdSerializer()
 	{
 		return idSerializer;
 	}
 
-	public void setIdSerializer(Serializer<?> idSerializer)
+	public void setIdSerializer(Serializer<ID> idSerializer)
 	{
 		this.idSerializer = idSerializer;
 	}

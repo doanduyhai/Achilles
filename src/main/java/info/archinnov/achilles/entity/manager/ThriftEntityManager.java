@@ -40,13 +40,13 @@ public class ThriftEntityManager implements EntityManager
 
 	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	EntityPersister persister = new EntityPersister();
-	EntityLoader loader = new EntityLoader();
-	EntityMerger merger = new EntityMerger();
-	EntityRefresher entityRefresher = new EntityRefresher();
-	EntityHelper helper = new EntityHelper();
-	EntityValidator entityValidator = new EntityValidator();
-	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	private EntityPersister persister = new EntityPersister();
+	private EntityLoader loader = new EntityLoader();
+	private EntityMerger merger = new EntityMerger();
+	private EntityRefresher entityRefresher = new EntityRefresher();
+	private EntityHelper helper = new EntityHelper();
+	private EntityValidator entityValidator = new EntityValidator();
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
 	public ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
 		this.entityMetaMap = entityMetaMap;
@@ -103,10 +103,6 @@ public class ThriftEntityManager implements EntityManager
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		Validator
-				.validateSerializable(primaryKey.getClass(),
-						"Entity '" + entityClass.getCanonicalName()
-								+ "' primaryKey should be Serializable");
 
 		EntityMeta<Serializable> entityMeta = (EntityMeta<Serializable>) this.entityMetaMap
 				.get(entityClass);
@@ -258,7 +254,7 @@ public class ThriftEntityManager implements EntityManager
 			"rawtypes",
 			"unchecked"
 	})
-	public Mutator<?> startBatch(Object entity)
+	public void startBatch(Object entity)
 	{
 		Mutator<?> mutator;
 		if (!helper.isProxy(entity))
@@ -288,8 +284,6 @@ public class ThriftEntityManager implements EntityManager
 			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
 			interceptor.setMutator((Mutator) mutator);
 			interceptor.setMutatorMap(mutatorMap);
-
-			return mutator;
 		}
 	}
 

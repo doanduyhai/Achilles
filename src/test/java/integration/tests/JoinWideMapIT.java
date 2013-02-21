@@ -10,9 +10,9 @@ import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
@@ -222,7 +222,7 @@ public class JoinWideMapIT
 						+ Tweet.class.getCanonicalName()
 						+ "' with id '"
 						+ unkonwTweet.getId().toString()
-						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
+						+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST");
 
 		user.getTimeline().insert(RandomUtils.nextLong(), unkonwTweet);
 	}

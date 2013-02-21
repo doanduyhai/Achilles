@@ -26,8 +26,8 @@ public class CompositeKeyFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(CompositeKeyFactory.class);
 
-	CompositeHelper helper = new CompositeHelper();
-	EntityHelper entityHelper = new EntityHelper();
+	private CompositeHelper helper = new CompositeHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)

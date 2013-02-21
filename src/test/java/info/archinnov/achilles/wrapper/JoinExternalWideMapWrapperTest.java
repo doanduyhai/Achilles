@@ -16,12 +16,12 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.lang.reflect.Method;
@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -100,12 +101,12 @@ public class JoinExternalWideMapWrapperTest
 	public void setUp()
 	{
 		wrapper.setId(id);
-		wrapper.persister = persister;
-		wrapper.loader = loader;
-		wrapper.helper = helper;
-		wrapper.compositeKeyFactory = compositeKeyFactory;
-		wrapper.keyValueFactory = keyValueFactory;
-		wrapper.iteratorFactory = iteratorFactory;
+		Whitebox.setInternalState(wrapper, "persister", persister);
+		Whitebox.setInternalState(wrapper, "loader", loader);
+		Whitebox.setInternalState(wrapper, "helper", helper);
+		Whitebox.setInternalState(wrapper, "compositeKeyFactory", compositeKeyFactory);
+		Whitebox.setInternalState(wrapper, "keyValueFactory", keyValueFactory);
+		Whitebox.setInternalState(wrapper, "iteratorFactory", iteratorFactory);
 	}
 
 	@Test

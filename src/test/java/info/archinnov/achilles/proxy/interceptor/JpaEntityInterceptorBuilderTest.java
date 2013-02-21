@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * JpaEntityInterceptorBuilderTest
@@ -84,11 +85,11 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(interceptor.columnFamilyDao).isNull();
-		assertThat(interceptor.entityDao).isNotNull();
+		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNull();
+		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNotNull();
 		assertThat(interceptor.getDirectColumnFamilyMapping()).isFalse();
 
-		Object entityLoader = interceptor.loader;
+		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
@@ -132,11 +133,11 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(interceptor.columnFamilyDao).isNotNull();
-		assertThat(interceptor.entityDao).isNull();
+		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNotNull();
+		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNull();
 		assertThat(interceptor.getDirectColumnFamilyMapping()).isTrue();
 
-		Object entityLoader = interceptor.loader;
+		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);

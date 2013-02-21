@@ -32,8 +32,7 @@ public class ColumnFamilyBuilder
 
 	private static final String DYNAMIC_TYPE_ALIASES = "(a=>AsciiType,b=>BytesType,c=>BooleanType,d=>DateType,e=>DecimalType,z=>DoubleType,f=>FloatType,i=>IntegerType,j=>Int32Type,x=>LexicalUUIDType,l=>LongType,t=>TimeUUIDType,s=>UTF8Type,u=>UUIDType)";
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
-
-	PropertyHelper helper = new PropertyHelper();
+	public PropertyHelper helper = new PropertyHelper();
 
 	public <ID> ColumnFamilyDefinition buildDynamicCompositeCF(EntityMeta<ID> entityMeta,
 			String keyspaceName)
@@ -49,6 +48,7 @@ public class ColumnFamilyBuilder
 
 		cfDef.setKeyValidationClass(keyValidationType);
 		cfDef.setComparatorTypeAlias(DYNAMIC_TYPE_ALIASES);
+		cfDef.setDefaultValidationClass(STRING_SRZ.getComparatorType().getTypeName());
 		cfDef.setComment("Column family for entity '" + entityName + "'");
 
 		StringBuilder builder = new StringBuilder("\n\n");
@@ -60,7 +60,7 @@ public class ColumnFamilyBuilder
 				ComparatorType.DYNAMICCOMPOSITETYPE.getTypeName());
 		builder.append(DYNAMIC_TYPE_ALIASES).append("'\n");
 		builder.append("\t\tand default_validation_class = ")
-				.append(ComparatorType.BYTESTYPE.getTypeName()).append("\n");
+				.append(ComparatorType.UTF8TYPE.getTypeName()).append("\n");
 		builder.append("\t\tand comment = 'Column family for entity ").append(entityName)
 				.append("'\n\n");
 

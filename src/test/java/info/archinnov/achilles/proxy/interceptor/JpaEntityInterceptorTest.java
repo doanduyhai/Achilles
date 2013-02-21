@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -135,7 +136,7 @@ public class JpaEntityInterceptorTest
 				.lazyLoaded(lazyLoaded).build();
 
 		interceptor.setKey(key);
-		interceptor.loader = loader;
+		Whitebox.setInternalState(interceptor, "loader", loader);
 		interceptor.setDirtyMap(dirtyMap);
 		interceptor.setDirectColumnFamilyMapping(false);
 		interceptor.setMutator(mutator);
@@ -277,7 +278,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		interceptor.directColumnFamilyMapping = false;
+		Whitebox.setInternalState(interceptor, "directColumnFamilyMapping", false);
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -294,7 +295,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		interceptor.directColumnFamilyMapping = true;
+		Whitebox.setInternalState(interceptor, "directColumnFamilyMapping", true);
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -311,7 +312,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-		interceptor.directColumnFamilyMapping = false;
+		Whitebox.setInternalState(interceptor, "directColumnFamilyMapping", false);
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 

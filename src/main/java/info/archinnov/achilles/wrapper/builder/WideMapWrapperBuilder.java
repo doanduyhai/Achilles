@@ -48,7 +48,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 	protected void build(WideMapWrapper<ID, K, V> wrapper)
 	{
 		wrapper.setId(id);
-		wrapper.setDao(dao);
+		wrapper.setEntityDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);
 		wrapper.setInterceptor(interceptor);
 	}

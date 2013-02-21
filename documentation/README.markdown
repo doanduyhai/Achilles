@@ -13,6 +13,7 @@
 11. [Join columns][joinColumns]
 12. [Manual Column Family Creation][manualCFCreation]
 13. [JSON Serialization][json]
+14. [Performance][perf]
 
 [quickTuto]: /documentation/quickTuto.markdown
 [annotations]: /documentation/annotations.markdown
@@ -27,4 +28,4 @@
 [joinColumns]: /documentation/joinColumns.markdown
 [manualCFCreation]:  /documentation/manualCFCreation.markdown
 [json]: /documentation/jsonSerialization.markdown
-	
+[perf]: /documentation/performance.markdown	

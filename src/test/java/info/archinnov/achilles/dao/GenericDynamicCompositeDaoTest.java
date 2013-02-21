@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * GenericDynamicCompositeDaoTest
@@ -47,7 +48,7 @@ public class GenericDynamicCompositeDaoTest
 	public void should_build_start_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = dao.startCompositeForEagerFetch;
+		DynamicComposite comp = Whitebox.getInternalState(dao, "startCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -57,7 +58,7 @@ public class GenericDynamicCompositeDaoTest
 	public void should_build_end_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = dao.endCompositeForEagerFetch;
+		DynamicComposite comp = Whitebox.getInternalState(dao, "endCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(

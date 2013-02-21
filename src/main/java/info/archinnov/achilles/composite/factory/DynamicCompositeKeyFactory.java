@@ -31,8 +31,8 @@ public class DynamicCompositeKeyFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(DynamicCompositeKeyFactory.class);
 
-	CompositeHelper helper = new CompositeHelper();
-	EntityHelper entityHelper = new EntityHelper();
+	private CompositeHelper helper = new CompositeHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	public <K, V> DynamicComposite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
 	{

@@ -3,11 +3,13 @@ package info.archinnov.achilles.entity.parser;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
+import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.validation.Validator;
@@ -24,7 +26,6 @@ import javax.persistence.JoinColumn;
 
 import me.prettyprint.hector.api.Keyspace;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -35,9 +36,10 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class EntityParser
 {
-	PropertyParser parser = new PropertyParser();
-	PropertyFilter filter = new PropertyFilter();
-	EntityHelper helper = new EntityHelper();
+	private PropertyParser parser = new PropertyParser();
+	private JoinPropertyParser joinParser = new JoinPropertyParser();
+	private PropertyFilter filter = new PropertyFilter();
+	private EntityHelper helper = new EntityHelper();
 	private ObjectMapperFactory objectMapperFactory;
 
 	public EntityParser(ObjectMapperFactory objectMapperFactory) {
@@ -46,82 +48,50 @@ public class EntityParser
 		this.objectMapperFactory = objectMapperFactory;
 	}
 
-	public EntityMeta<?> parseEntity(Keyspace keyspace, Class<?> entityClass,
-			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
+	@SuppressWarnings("unchecked")
+	public Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> parseEntity(Keyspace keyspace,
+			Class<?> entityClass)
 	{
-		Map<Field, String> externalWideMaps = new HashMap<Field, String>();
-		Map<Field, String> externalJoinWideMaps = new HashMap<Field, String>();
 
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+		Validator.validateSerializable(entityClass, "The entity '" + entityClass.getCanonicalName()
+				+ "' should implements java.io.Serializable");
+		Validator.validateInstantiable(entityClass);
 		ObjectMapper objectMapper = objectMapperFactory.getMapper(entityClass);
 		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '"
 				+ entityClass.getCanonicalName() + "'");
 
-		Validator.validateInstantiable(entityClass);
+		Map<Field, String> externalWideMaps = new HashMap<Field, String>();
+		Map<Field, String> externalJoinWideMaps = new HashMap<Field, String>();
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+
 		String columnFamilyName = helper.inferColumnFamilyName(entityClass, entityClass.getName());
 		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
 		boolean columnFamilyDirectMapping = entityClass
 				.getAnnotation(info.archinnov.achilles.annotations.ColumnFamily.class) != null ? true
 				: false;
 
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		PropertyMeta<Void, ?> idMeta = null;
 
 		List<Field> inheritedFields = helper.getInheritedPrivateFields(entityClass);
 
 		for (Field field : inheritedFields)
 		{
-			boolean isWideMap = WideMap.class.isAssignableFrom(field.getType());
 			if (filter.hasAnnotation(field, Id.class))
 			{
-				idMeta = parser.parse(entityClass, field, field.getName(), objectMapper);
-				continue;
+				idMeta = parser.parseSimpleProperty(entityClass, field, field.getName(),
+						objectMapper);
 			}
 
 			else if (filter.hasAnnotation(field, Column.class))
 			{
-				Column column = field.getAnnotation(Column.class);
-				String externalTableName = field.getAnnotation(Column.class).table();
-				String propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field
-						.getName();
-
-				Validator.validateFalse(propertyMetas.containsKey(propertyName),
-						"The property '" + propertyName + "' is already used for the entity '"
-								+ entityClass.getCanonicalName() + "'");
-
-				if (StringUtils.isNotBlank(externalTableName) && isWideMap)
-				{
-					externalWideMaps.put(field, propertyName);
-				}
-				else
-				{
-					propertyMetas.put(propertyName,
-							parser.parse(entityClass, field, propertyName, objectMapper));
-				}
+				parser.parse(propertyMetas, externalWideMaps, entityClass, field, false,
+						objectMapper);
 			}
 			else if (filter.hasAnnotation(field, JoinColumn.class))
 			{
-				JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-				String externalTableName = field.getAnnotation(JoinColumn.class).table();
-
-				String propertyName = StringUtils.isNotBlank(joinColumn.name()) ? joinColumn.name()
-						: field.getName();
-				Validator.validateFalse(propertyMetas.containsKey(propertyName),
-						"The property '" + propertyName + "' is already used for the entity '"
-								+ entityClass.getCanonicalName() + "'");
-
-				if ((StringUtils.isNotBlank(externalTableName) || columnFamilyDirectMapping)
-						&& isWideMap)
-				{
-					externalJoinWideMaps.put(field, propertyName);
-				}
-				else
-				{
-					PropertyMeta<?, ?> joinPropertyMeta = parser.parse(entityClass, field,
-							propertyName, objectMapper);
-					propertyMetas.put(propertyName, joinPropertyMeta);
-					joinPropertyMetaToBeFilled.put(joinPropertyMeta,
-							joinPropertyMeta.getValueClass());
-				}
+				joinParser.parseJoin(propertyMetas, externalJoinWideMaps,
+						joinPropertyMetaToBeFilled, entityClass, field, objectMapper);
 			}
 
 		}
@@ -143,19 +113,9 @@ public class EntityParser
 		{
 			String propertyName = entry.getValue();
 
-			PropertyMeta<Object, Object> joinPropertyMeta;
-			if (columnFamilyDirectMapping)
-			{
-				joinPropertyMeta = parser.parseJoinWideMapPropertyForColumnFamily(keyspace, idMeta,
-						entityClass, entry.getKey(), propertyName, columnFamilyName, objectMapper);
-
-			}
-			else
-			{
-				joinPropertyMeta = parser.parseExternalJoinWideMapProperty(keyspace, idMeta,
-						entityClass, entry.getKey(), propertyName, objectMapper);
-
-			}
+			PropertyMeta<?, ?> joinPropertyMeta;
+			joinPropertyMeta = joinParser.parseExternalJoinWideMapProperty(keyspace, idMeta,
+					entityClass, entry.getKey(), propertyName, columnFamilyName, objectMapper);
 			propertyMetas.put(propertyName, joinPropertyMeta);
 			joinPropertyMetaToBeFilled.put(joinPropertyMeta, joinPropertyMeta.getValueClass());
 		}
@@ -163,13 +123,57 @@ public class EntityParser
 		validatePropertyMetas(entityClass, propertyMetas, columnFamilyDirectMapping);
 		validateColumnFamily(entityClass, columnFamilyDirectMapping, propertyMetas);
 
-		return entityMetaBuilder(idMeta).keyspace(keyspace)
-				.className(entityClass.getCanonicalName()) //
-				.columnFamilyName(columnFamilyName) //
-				.serialVersionUID(serialVersionUID) //
-				.propertyMetas(propertyMetas) //
-				.columnFamilyDirectMapping(columnFamilyDirectMapping) //
-				.build();
+		return new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(//
+				entityMetaBuilder((PropertyMeta<Void, Object>) idMeta).keyspace(keyspace)
+						.className(entityClass.getCanonicalName()) //
+						.columnFamilyName(columnFamilyName) //
+						.serialVersionUID(serialVersionUID) //
+						.propertyMetas(propertyMetas) //
+						.columnFamilyDirectMapping(columnFamilyDirectMapping) //
+						.build(), //
+				joinPropertyMetaToBeFilled);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID> void fillJoinEntityMeta(
+			Keyspace keyspace, //
+			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled,
+			Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	{
+		// Retrieve EntityMeta objects for join columns after entities parsing
+		for (Entry<PropertyMeta<?, ?>, Class<?>> entry : joinPropertyMetaToBeFilled.entrySet())
+		{
+			Class<?> clazz = entry.getValue();
+			if (entityMetaMap.containsKey(clazz))
+			{
+				PropertyMeta<?, ?> propertyMeta = entry.getKey();
+				EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) entityMetaMap.get(clazz);
+
+				if (joinEntityMeta.isColumnFamilyDirectMapping())
+				{
+					throw new BeanMappingException("The entity '" + clazz.getCanonicalName()
+							+ "' is a direct Column Family mapping and cannot be a join entity");
+				}
+
+				propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
+				if (propertyMeta.type().isExternal())
+				{
+					ExternalWideMapProperties<ID> externalWideMapProperties = (ExternalWideMapProperties<ID>) propertyMeta
+							.getExternalWideMapProperties();
+
+					externalWideMapProperties.setExternalWideMapDao( //
+							new GenericCompositeDao<ID, JOIN_ID>(keyspace, //
+									externalWideMapProperties.getIdSerializer(), //
+									joinEntityMeta.getIdSerializer(), //
+									externalWideMapProperties.getExternalColumnFamilyName()));
+				}
+			}
+			else
+			{
+				throw new BeanMappingException("Cannot find mapping for join entity '"
+						+ clazz.getCanonicalName() + "'");
+			}
+		}
 	}
 
 	private void validateIdMeta(Class<?> entityClass, PropertyMeta<Void, ?> idMeta)

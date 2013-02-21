@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -56,7 +57,7 @@ public class ColumnFamilyValidatorTest
 	@Before
 	public void setUp()
 	{
-		columnFamilyValidator.helper = helper;
+		Whitebox.setInternalState(columnFamilyValidator, "helper", helper);
 	}
 
 	@Test
@@ -66,7 +67,8 @@ public class ColumnFamilyValidatorTest
 		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
-		columnFamilyValidator.COMPARATOR_TYPE_AND_ALIAS = ComparatorType.ASCIITYPE.getTypeName();
+		Whitebox.setInternalState(columnFamilyValidator, "COMPARATOR_TYPE_AND_ALIAS",
+				ComparatorType.ASCIITYPE.getTypeName());
 		columnFamilyValidator.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 

@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper;
 
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.List;

@@ -19,14 +19,14 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 {
 
-	EntityPersister persister = new EntityPersister();
-	EntityLoader loader = new EntityLoader();
+	private EntityPersister persister = new EntityPersister();
+	private EntityLoader loader = new EntityLoader();
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public V get(K key)
 	{
-		String joinId = dao.getValue(id, buildComposite(key));
+		String joinId = entityDao.getValue(id, buildComposite(key));
 		EntityMeta entityMeta = wideMapMeta.getJoinProperties().getEntityMeta();
 
 		return (V) loader.loadJoinEntity(wideMapMeta.getValueClass(), entityMeta.getIdMeta()
@@ -39,12 +39,14 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		if (this.interceptor.isBatchMode())
 		{
-			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl,
+			entityDao.setValueBatch(id, buildComposite(key),
+					wideMapMeta.writeValueToString(joinId), ttl,
 					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl);
+			entityDao
+					.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl);
 		}
 	}
 
@@ -54,12 +56,12 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		if (this.interceptor.isBatchMode())
 		{
-			dao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(joinId),
-					(Mutator<ID>) interceptor.getMutator());
+			entityDao.setValueBatch(id, buildComposite(key),
+					wideMapMeta.writeValueToString(joinId), (Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			dao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId));
+			entityDao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId));
 		}
 	}
 

@@ -13,8 +13,8 @@ import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.holder.KeyValue;
 import integration.tests.entity.ColumnFamilyMultiKey;
 import integration.tests.entity.MultiKeyColumnFamilyBean;
 

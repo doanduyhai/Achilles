@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.type;
 
-import info.archinnov.achilles.holder.KeyValue;
 
 import java.util.Iterator;
 

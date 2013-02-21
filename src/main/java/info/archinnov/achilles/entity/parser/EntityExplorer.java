@@ -22,6 +22,7 @@ import java.util.zip.ZipInputStream;
 public class EntityExplorer
 {
 
+	@SuppressWarnings("unchecked")
 	public List<Class<?>> discoverEntities(List<String> packageNames)
 			throws ClassNotFoundException, IOException
 	{
@@ -29,13 +30,15 @@ public class EntityExplorer
 		for (String packageName : packageNames)
 		{
 			candidates.addAll(this.listCandidateClassesFromPackage(packageName,
-					javax.persistence.Entity.class));
+					javax.persistence.Entity.class, javax.persistence.Table.class));
 		}
 		return candidates;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Class<?>> listCandidateClassesFromPackage(String packageName,
-			Class<? extends Annotation> annotationClass) throws ClassNotFoundException, IOException
+			Class<? extends Annotation>... annotationClass) throws ClassNotFoundException,
+			IOException
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		assert classLoader != null;
@@ -56,9 +59,12 @@ public class EntityExplorer
 		for (String className : classes)
 		{
 			Class<?> clazz = Class.forName(className);
-			if (clazz.isAnnotationPresent(annotationClass))
+			for (Class<?> annotation : annotationClass)
 			{
-				classList.add(clazz);
+				if (clazz.isAnnotationPresent((Class<Annotation>) annotation))
+				{
+					classList.add(clazz);
+				}
 			}
 		}
 		return classList;

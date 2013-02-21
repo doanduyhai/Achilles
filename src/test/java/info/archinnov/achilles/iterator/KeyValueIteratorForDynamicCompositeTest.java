@@ -5,8 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
+import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * KeyValueIteratorForEntityTest
@@ -54,7 +55,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 	@Before
 	public void setUp()
 	{
-		iterator.factory = factory;
+		Whitebox.setInternalState(iterator, "factory", factory);
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}
 

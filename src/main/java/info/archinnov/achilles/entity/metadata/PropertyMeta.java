@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.metadata;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import info.archinnov.achilles.entity.PropertyHelper;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

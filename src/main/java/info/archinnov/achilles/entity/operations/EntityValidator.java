@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class EntityValidator
 {
-	EntityHelper helper = new EntityHelper();
+	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)

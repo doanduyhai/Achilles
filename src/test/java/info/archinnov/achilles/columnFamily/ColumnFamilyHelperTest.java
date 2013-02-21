@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * ColumnFamilyHelperTest
@@ -79,8 +80,8 @@ public class ColumnFamilyHelperTest
 		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
 				.propertyName("id").accessors(accessors).build();
 
-		helper.columnFamilyBuilder = columnFamilyBuilder;
-		helper.columnFamilyValidator = columnFamilyValidator;
+		Whitebox.setInternalState(helper, "columnFamilyBuilder", columnFamilyBuilder);
+		Whitebox.setInternalState(helper, "columnFamilyValidator", columnFamilyValidator);
 	}
 
 	@Test

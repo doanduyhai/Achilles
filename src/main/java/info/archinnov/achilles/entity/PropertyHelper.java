@@ -43,7 +43,7 @@ public class PropertyHelper
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-	private final EntityHelper entityHelper = new EntityHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	public PropertyHelper() {
 		// Bytes

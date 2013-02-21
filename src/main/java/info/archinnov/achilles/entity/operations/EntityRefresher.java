@@ -18,9 +18,9 @@ import net.sf.cglib.proxy.Factory;
 public class EntityRefresher
 {
 
-	EntityHelper helper = new EntityHelper();
-	EntityValidator entityValidator = new EntityValidator();
-	EntityLoader loader = new EntityLoader();
+	private EntityHelper helper = new EntityHelper();
+	private EntityValidator entityValidator = new EntityValidator();
+	private EntityLoader loader = new EntityLoader();
 
 	@SuppressWarnings(
 	{

@@ -32,7 +32,7 @@ public class EntityHelper
 
 	private static final Logger log = LoggerFactory.getLogger(EntityHelper.class);
 
-	PropertyFilter filter = new PropertyFilter();
+	private PropertyFilter filter = new PropertyFilter();
 
 	protected String deriveGetterName(Field field)
 	{

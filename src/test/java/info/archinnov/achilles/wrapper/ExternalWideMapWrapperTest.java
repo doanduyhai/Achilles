@@ -8,13 +8,13 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.List;
@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * ExternalWideMapWrapperTest
@@ -80,9 +81,9 @@ public class ExternalWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		wrapper.compositeHelper = compositeHelper;
-		wrapper.keyValueFactory = keyValueFactory;
-		wrapper.iteratorFactory = iteratorFactory;
+		Whitebox.setInternalState(wrapper, "compositeHelper", compositeHelper);
+		Whitebox.setInternalState(wrapper, "keyValueFactory", keyValueFactory);
+		Whitebox.setInternalState(wrapper, "iteratorFactory", iteratorFactory);
 		wrapper.setId(id);
 
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);

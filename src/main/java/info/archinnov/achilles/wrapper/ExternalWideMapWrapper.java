@@ -3,12 +3,12 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
 import java.util.List;
 
@@ -33,10 +33,10 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	protected GenericCompositeDao dao;
 	protected PropertyMeta<K, V> wideMapMeta;
 
-	CompositeHelper compositeHelper = new CompositeHelper();
-	KeyValueFactory keyValueFactory = new KeyValueFactory();
-	IteratorFactory iteratorFactory = new IteratorFactory();
-	CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	private CompositeHelper compositeHelper = new CompositeHelper();
+	private KeyValueFactory keyValueFactory = new KeyValueFactory();
+	private IteratorFactory iteratorFactory = new IteratorFactory();
+	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 
 	protected Composite buildComposite(K key)
 	{

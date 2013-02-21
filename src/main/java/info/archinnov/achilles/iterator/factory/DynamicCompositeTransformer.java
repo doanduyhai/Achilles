@@ -1,15 +1,15 @@
-package info.archinnov.achilles.holder.factory;
+package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import com.google.common.base.Function;
 
 /**
- * TransformerBuilder
+ * DynamicCompositeTransformer
  * 
  * @author DuyHai DOAN
  * 
@@ -17,7 +17,7 @@ import com.google.common.base.Function;
 public class DynamicCompositeTransformer
 {
 
-	PropertyHelper helper = new PropertyHelper();
+	private PropertyHelper helper = new PropertyHelper();
 
 	public <K, V> Function<HColumn<DynamicComposite, String>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)

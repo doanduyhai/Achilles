@@ -13,7 +13,7 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.ArrayList;
@@ -39,6 +39,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -106,10 +107,9 @@ public class EntityMapperTest
 				return objectMapper;
 			}
 		};
-		mapper.helper = helper;
+		Whitebox.setInternalState(mapper, "helper", helper);
 		parser = new EntityParser(factory);
-		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class,
-				joinPropertyMetaToBeFilled);
+		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class).left;
 	}
 
 	@Test

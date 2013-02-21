@@ -37,6 +37,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import parser.entity.Bean;
 
@@ -94,12 +95,12 @@ public class ThriftEntityManagerTest
 	@Before
 	public void setUp() throws Exception
 	{
-		em.persister = persister;
+		Whitebox.setInternalState(em, "persister", persister);
 		merger.setPersister(persister);
-		em.loader = loader;
-		em.merger = merger;
-		em.helper = helper;
-		em.interceptorBuilder = interceptorBuilder;
+		Whitebox.setInternalState(em, "loader", loader);
+		Whitebox.setInternalState(em, "merger", merger);
+		Whitebox.setInternalState(em, "helper", helper);
+		Whitebox.setInternalState(em, "interceptorBuilder", interceptorBuilder);
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 

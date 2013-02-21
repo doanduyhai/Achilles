@@ -31,7 +31,7 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 
 import java.lang.reflect.Method;
@@ -57,6 +57,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
@@ -124,8 +125,8 @@ public class EntityLoaderTest
 	public void setUp()
 	{
 		bean = CompleteBeanTestBuilder.builder().buid();
-		loader.interceptorBuilder = interceptorBuilder;
-		loader.helper = helper;
+		Whitebox.setInternalState(loader, "interceptorBuilder", interceptorBuilder);
+		Whitebox.setInternalState(loader, "helper", helper);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -486,7 +487,7 @@ public class EntityLoaderTest
 				.build();
 
 		EntityMeta<Long> entityMeta = EntityMetaTestBuilder.entityMeta().build(
-				mock(ExecutingKeyspace.class), dao, CompleteBean.class, null);
+				mock(ExecutingKeyspace.class), dao, CompleteBean.class);
 		entityMeta.setIdMeta(idMeta);
 
 		JoinProperties joinProperties = new JoinProperties();

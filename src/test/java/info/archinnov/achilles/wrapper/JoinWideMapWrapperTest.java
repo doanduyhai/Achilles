@@ -51,7 +51,7 @@ public class JoinWideMapWrapperTest
 	private JoinWideMapWrapper<Long, Integer, UserBean> wrapper;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericDynamicCompositeDao<Long> entityDao;
 
 	@Mock
 	private GenericDynamicCompositeDao<Long> joinDao;
@@ -85,9 +85,6 @@ public class JoinWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		wrapper.helper = helper;
-		wrapper.persister = persister;
-		wrapper.loader = loader;
 		wrapper.setId(id);
 	}
 
@@ -109,7 +106,7 @@ public class JoinWideMapWrapperTest
 		when(joinWideMapMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
 
 		when(keyFactory.createForInsert(joinWideMapMeta, key)).thenReturn(comp);
-		when(dao.getValue(id, comp)).thenReturn(joinId.toString());
+		when(entityDao.getValue(id, comp)).thenReturn(joinId.toString());
 		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
 
 		UserBean expected = wrapper.get(key);
@@ -138,7 +135,7 @@ public class JoinWideMapWrapperTest
 		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean);
 
-		verify(dao).setValue(id, comp, userId.toString());
+		verify(entityDao).setValue(id, comp, userId.toString());
 	}
 
 	@SuppressWarnings(
@@ -170,7 +167,7 @@ public class JoinWideMapWrapperTest
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
 		wrapper.insert(key, userBean);
 
-		verify(dao).setValueBatch(id, comp, userId.toString(), mutator);
+		verify(entityDao).setValueBatch(id, comp, userId.toString(), mutator);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -200,7 +197,7 @@ public class JoinWideMapWrapperTest
 		when(interceptor.isBatchMode()).thenReturn(false);
 		wrapper.insert(key, userBean, 150);
 
-		verify(dao).setValue(id, comp, userId.toString(), 150);
+		verify(entityDao).setValue(id, comp, userId.toString(), 150);
 	}
 
 	@SuppressWarnings(
@@ -231,7 +228,7 @@ public class JoinWideMapWrapperTest
 		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
 		wrapper.insert(key, userBean, 150);
 
-		verify(dao).setValueBatch(id, comp, userId.toString(), 150, mutator);
+		verify(entityDao).setValueBatch(id, comp, userId.toString(), 150, mutator);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception

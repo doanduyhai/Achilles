@@ -11,8 +11,8 @@ import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.holder.KeyValue;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 

@@ -28,9 +28,9 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
-import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Method;
@@ -452,7 +452,7 @@ public class EntityPersisterTest
 						+ UserBean.class.getCanonicalName()
 						+ "' with id '"
 						+ joinId
-						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST/CascadeType.ALL");
+						+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
 
 		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 

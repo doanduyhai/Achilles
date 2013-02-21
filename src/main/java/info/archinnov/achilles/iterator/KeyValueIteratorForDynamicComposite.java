@@ -1,9 +1,9 @@
 package info.archinnov.achilles.iterator;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
-import info.archinnov.achilles.holder.KeyValue;
-import info.archinnov.achilles.holder.factory.KeyValueFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -19,7 +19,7 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterator<K, V>
 {
-	KeyValueFactory factory = new KeyValueFactory();
+	private KeyValueFactory factory = new KeyValueFactory();
 
 	private Iterator<HColumn<DynamicComposite, String>> achillesSliceIterator;
 	private PropertyMeta<K, V> wideMapMeta;

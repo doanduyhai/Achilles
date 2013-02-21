@@ -1,4 +1,4 @@
-package info.archinnov.achilles.holder;
+package info.archinnov.achilles.entity.type;
 
 import java.io.Serializable;
 

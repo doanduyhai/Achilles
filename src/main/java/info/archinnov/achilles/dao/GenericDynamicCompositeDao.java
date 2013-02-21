@@ -31,8 +31,8 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 {
 	private static final Logger log = LoggerFactory.getLogger(GenericDynamicCompositeDao.class);
 
-	DynamicComposite startCompositeForEagerFetch;
-	DynamicComposite endCompositeForEagerFetch;
+	private DynamicComposite startCompositeForEagerFetch;
+	private DynamicComposite endCompositeForEagerFetch;
 
 	protected GenericDynamicCompositeDao() {
 		this.initComposites();

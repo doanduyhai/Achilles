@@ -13,7 +13,7 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;

@@ -14,9 +14,13 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 
@@ -31,9 +35,9 @@ import net.sf.cglib.proxy.Factory;
  */
 public class EntityMerger
 {
-	EntityPersister persister = new EntityPersister();
-	EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
-	EntityHelper helper = new EntityHelper();
+	private EntityPersister persister = new EntityPersister();
+	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
+	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
@@ -77,20 +81,29 @@ public class EntityMerger
 			{
 
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				if (propertyMeta.type() == JOIN_SIMPLE)
-				{
 
-					JoinProperties joinProperties = propertyMeta.getJoinProperties();
-					List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
+				if (propertyMeta.type().isJoinColumn())
+				{
+					List<CascadeType> cascadeTypes = propertyMeta.getJoinProperties()
+							.getCascadeTypes();
 					if (cascadeTypes.contains(MERGE) || cascadeTypes.contains(ALL))
 					{
-						Object joinEntity = helper.getValueFromField(entity,
-								propertyMeta.getGetter());
-						if (joinEntity != null)
+						switch (propertyMeta.type())
 						{
-							Object mergedEntity = this.mergeEntity(joinEntity,
-									joinProperties.getEntityMeta());
-							helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
+							case JOIN_SIMPLE:
+								mergeJoinProperty(entity, propertyMeta);
+								break;
+							case JOIN_LIST:
+								mergeJoinListProperty(entity, propertyMeta);
+								break;
+							case JOIN_SET:
+								mergeJoinSetProperty(entity, propertyMeta);
+								break;
+							case JOIN_MAP:
+								mergeJoinMapProperty(entity, propertyMeta);
+								break;
+							default:
+								break;
 						}
 					}
 				}
@@ -104,6 +117,71 @@ public class EntityMerger
 		}
 
 		return proxy;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void mergeJoinProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	{
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		Object joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
+		if (joinEntity != null)
+		{
+			Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
+			helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void mergeJoinListProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	{
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		List<?> joinEntities = (List<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		List<Object> mergedEntities = new ArrayList<Object>();
+		if (joinEntities != null)
+		{
+			for (Object joinEntity : joinEntities)
+			{
+				Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
+				mergedEntities.add(mergedEntity);
+			}
+		}
+		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void mergeJoinSetProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	{
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		Set<?> joinEntities = (Set<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		Set<Object> mergedEntities = new HashSet<Object>();
+		if (joinEntities != null)
+		{
+			for (Object joinEntity : joinEntities)
+			{
+				Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
+				mergedEntities.add(mergedEntity);
+			}
+		}
+		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void mergeJoinMapProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	{
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		Map<?, ?> joinEntitiesMap = (Map<?, ?>) helper.getValueFromField(entity,
+				propertyMeta.getGetter());
+		Map<Object, Object> mergedEntitiesMap = new HashMap<Object, Object>();
+		if (joinEntitiesMap != null)
+		{
+			for (Entry<?, ?> joinEntityEntry : joinEntitiesMap.entrySet())
+			{
+				Object mergedEntity = this.mergeEntity(joinEntityEntry.getValue(),
+						joinProperties.getEntityMeta());
+				mergedEntitiesMap.put(joinEntityEntry.getKey(), mergedEntity);
+			}
+		}
+		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntitiesMap);
 	}
 
 	public void setPersister(EntityPersister persister)

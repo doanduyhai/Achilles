@@ -18,7 +18,7 @@ import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;

@@ -2,13 +2,10 @@ package info.archinnov.achilles.entity.metadata.builder;
 
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import me.prettyprint.hector.api.Keyspace;
 
@@ -47,16 +44,10 @@ public class EntityMetaTestBuilder
 
 	@SuppressWarnings("unchecked")
 	public <ID extends Serializable> EntityMeta<ID> build(Keyspace keyspace,
-			GenericDynamicCompositeDao<ID> dao, Class<?> entityClass,
-			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetasToBeFilled)
+			GenericDynamicCompositeDao<ID> dao, Class<?> entityClass)
 	{
 
-		if (joinPropertyMetasToBeFilled == null)
-		{
-			joinPropertyMetasToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		}
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) parser.parseEntity(keyspace, entityClass,
-				joinPropertyMetasToBeFilled);
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) parser.parseEntity(keyspace, entityClass).left;
 		entityMeta.setEntityDao(dao);
 
 		return entityMeta;

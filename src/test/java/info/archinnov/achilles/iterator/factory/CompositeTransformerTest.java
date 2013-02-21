@@ -1,11 +1,11 @@
-package info.archinnov.achilles.holder.factory;
+package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -46,7 +47,7 @@ public class CompositeTransformerTest
 	@Before
 	public void setUp()
 	{
-		transformer.helper = helper;
+		Whitebox.setInternalState(transformer, "helper", helper);
 	}
 
 	@SuppressWarnings("unchecked")

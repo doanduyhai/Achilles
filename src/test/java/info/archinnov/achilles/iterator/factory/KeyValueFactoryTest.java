@@ -1,4 +1,4 @@
-package info.archinnov.achilles.holder.factory;
+package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -9,7 +9,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.util.Arrays;
@@ -32,6 +32,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -80,9 +81,10 @@ public class KeyValueFactoryTest
 	@Before
 	public void setUp()
 	{
-		factory.loader = loader;
-		factory.compositeTransformer = compositeTransformer;
-		factory.dynamicCompositeTransformer = dynamicCompositeTransformer;
+		Whitebox.setInternalState(factory, "loader", loader);
+		Whitebox.setInternalState(factory, "compositeTransformer", compositeTransformer);
+		Whitebox.setInternalState(factory, "dynamicCompositeTransformer",
+				dynamicCompositeTransformer);
 
 		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 	}

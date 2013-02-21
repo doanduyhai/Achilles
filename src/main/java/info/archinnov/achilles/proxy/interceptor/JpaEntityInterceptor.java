@@ -30,10 +30,10 @@ import net.sf.cglib.proxy.MethodProxy;
 public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
 {
 
-	EntityLoader loader = new EntityLoader();
-	GenericDynamicCompositeDao<ID> entityDao;
-	GenericCompositeDao<ID, ?> columnFamilyDao;
-	Boolean directColumnFamilyMapping;
+	private EntityLoader loader = new EntityLoader();
+	private GenericDynamicCompositeDao<ID> entityDao;
+	private GenericCompositeDao<ID, ?> columnFamilyDao;
+	private Boolean directColumnFamilyMapping;
 
 	private Object target;
 	private ID key;
@@ -102,18 +102,21 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		{
 			case LIST:
 			case LAZY_LIST:
+			case JOIN_LIST:
 				List<?> list = (List<?>) proxy.invoke(target, args);
 				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap)
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case SET:
 			case LAZY_SET:
+			case JOIN_SET:
 				Set<?> set = (Set<?>) proxy.invoke(target, args);
 				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap)
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
 				break;
 			case MAP:
 			case LAZY_MAP:
+			case JOIN_MAP:
 				Map<?, ?> map = (Map<?, ?>) proxy.invoke(target, args);
 				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap)
 						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();

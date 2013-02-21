@@ -182,7 +182,7 @@ public class JoinColumnIT
 						+ User.class.getCanonicalName()
 						+ "' with id '"
 						+ creator.getId()
-						+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST");
+						+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST");
 		em.persist(tweet);
 	}
 

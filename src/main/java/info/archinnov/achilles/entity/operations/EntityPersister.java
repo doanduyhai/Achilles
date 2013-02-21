@@ -15,10 +15,11 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.BeanMappingException;
-import info.archinnov.achilles.holder.KeyValue;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,8 +42,8 @@ import org.apache.commons.lang.Validate;
 public class EntityPersister
 {
 
-	EntityHelper helper = new EntityHelper();
-	EntityLoader loader = new EntityLoader();
+	private EntityHelper helper = new EntityHelper();
+	private EntityLoader loader = new EntityLoader();
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 
@@ -167,7 +168,7 @@ public class EntityPersister
 									+ joinProperties.getEntityMeta().getClassName()
 									+ "' with id '"
 									+ joinId
-									+ "' cannot be found. Maybe you should persist it first or set enable CascadeType.PERSIST/CascadeType.ALL");
+									+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
 		}
 
 		return joinId;
@@ -195,6 +196,40 @@ public class EntityPersister
 				count++;
 			}
 		}
+	}
+
+	private <ID> void batchPersistJoinListOrSetProperty(Object entity, ID key,
+			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+	{
+
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		EntityMeta<?> joinEntityMeta = joinProperties.getEntityMeta();
+		PropertyMeta<Void, ?> idMeta = joinEntityMeta.getIdMeta();
+		Mutator<?> joinMutator = joinEntityMeta.getEntityDao().buildMutator();
+
+		Collection<?> list = (Collection<?>) helper.getValueFromField(entity,
+				propertyMeta.getGetter());
+		int count = 0;
+		if (list != null)
+		{
+			for (Object joinEntity : list)
+			{
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
+						count);
+
+				Object joinEntityId = helper.getValueFromField(joinEntity, idMeta.getGetter());
+
+				String joinEntityIdStringValue = idMeta.writeValueToString(joinEntityId);
+				if (joinEntityIdStringValue != null)
+				{
+					dao.insertColumnBatch(key, name, joinEntityIdStringValue, mutator);
+					this.cascadePersistOrEnsureExists(joinEntity, joinProperties, joinMutator);
+				}
+				count++;
+			}
+		}
+
+		joinMutator.execute();
 	}
 
 	protected <ID> void batchPersistSetProperty(Object entity, ID key,
@@ -237,6 +272,38 @@ public class EntityPersister
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <ID, K, V> void batchPersistJoinMapProperty(Object entity, ID key,
+			GenericDynamicCompositeDao<ID> dao, PropertyMeta<K, V> propertyMeta, Mutator<ID> mutator)
+	{
+
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		EntityMeta<?> joinEntityMeta = joinProperties.getEntityMeta();
+		PropertyMeta<Void, ?> idMeta = joinEntityMeta.getIdMeta();
+		Mutator<?> joinMutator = joinEntityMeta.getEntityDao().buildMutator();
+
+		Map<K, V> map = (Map<K, V>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		if (map != null)
+		{
+			for (Entry<K, V> entry : map.entrySet())
+			{
+				DynamicComposite name = keyFactory.createForBatchInsertMultiValue(propertyMeta,
+						entry.getKey().hashCode());
+
+				V joinEntity = entry.getValue();
+				Object joinEntityId = helper.getValueFromField(joinEntity, idMeta.getGetter());
+				String joinEntityIdStringValue = idMeta.writeValueToString(joinEntityId);
+
+				String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry
+						.getKey(), joinEntityIdStringValue));
+				dao.insertColumnBatch(key, name, value, mutator);
+				this.cascadePersistOrEnsureExists(joinEntity, joinProperties, joinMutator);
+			}
+		}
+
+		joinMutator.execute();
+	}
+
 	public <ID, V> void persistProperty(Object entity, ID key, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<?, V> propertyMeta, Mutator<ID> mutator)
 	{
@@ -261,6 +328,14 @@ public class EntityPersister
 				break;
 			case JOIN_SIMPLE:
 				this.batchPersistJoinEntity(entity, key, dao, propertyMeta, mutator);
+				break;
+			case JOIN_LIST:
+			case JOIN_SET:
+				this.batchPersistJoinListOrSetProperty(entity, key, dao, propertyMeta, mutator);
+				break;
+			case JOIN_MAP:
+				this.batchPersistJoinMapProperty(entity, key, dao, propertyMeta, mutator);
+				break;
 			default:
 				break;
 		}

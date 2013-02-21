@@ -1,8 +1,8 @@
-package info.archinnov.achilles.holder.factory;
+package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.holder.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import com.google.common.collect.Lists;
  */
 public class KeyValueFactory
 {
-	EntityLoader loader = new EntityLoader();
-	CompositeTransformer compositeTransformer = new CompositeTransformer();
-	DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
+	private EntityLoader loader = new EntityLoader();
+	private CompositeTransformer compositeTransformer = new CompositeTransformer();
+	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
 
 	// Dynamic Composite
 	public <K, V> KeyValue<K, V> createKeyValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,

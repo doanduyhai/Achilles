@@ -65,9 +65,6 @@ public class PropertyHelperTest
 	private PropertyHelper helper;
 
 	@Mock
-	private EntityHelper entityHelper;
-
-	@Mock
 	private PropertyMeta<TweetMultiKey, String> multiKeyWideMeta;
 
 	@Mock
@@ -76,19 +73,11 @@ public class PropertyHelperTest
 	@Test
 	public void should_parse_multi_key() throws Exception
 	{
-		Field nameField = CorrectMultiKey.class.getDeclaredField("name");
 		Method nameGetter = CorrectMultiKey.class.getMethod("getName");
 		Method nameSetter = CorrectMultiKey.class.getMethod("setName", String.class);
 
-		Field rankField = CorrectMultiKey.class.getDeclaredField("rank");
 		Method rankGetter = CorrectMultiKey.class.getMethod("getRank");
 		Method rankSetter = CorrectMultiKey.class.getMethod("setRank", int.class);
-
-		when(entityHelper.findGetter(CorrectMultiKey.class, nameField)).thenReturn(nameGetter);
-		when(entityHelper.findGetter(CorrectMultiKey.class, rankField)).thenReturn(rankGetter);
-
-		when(entityHelper.findSetter(CorrectMultiKey.class, nameField)).thenReturn(nameSetter);
-		when(entityHelper.findSetter(CorrectMultiKey.class, rankField)).thenReturn(rankSetter);
 
 		MultiKeyProperties props = helper.parseMultiKey(CorrectMultiKey.class);
 
