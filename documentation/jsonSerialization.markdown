@@ -10,7 +10,7 @@
   2. Deserialization FAIL_ON_UNKNOWN_PROPERTIES = false
   3. JacksonAnnotationIntrospector + JaxbAnnotationIntrospector
   
- **Jackson** will serialize all your entities even if they do not have any JSON annotations. You can also 
+**Jackson** will serialize all your entities even if they do not have any JSON annotations. You can also 
  use **JAXB** annotations.
  
  Otherwise you can inject a custom **Object Mapper* into **Achilles** as constructor argument for the
