@@ -31,6 +31,9 @@
 		<constructor-arg index="3" value="true"/>		
 	</bean>
 
+ There is also a Gist showing how to create a simple FactoryBean for Achilles ThriftEntityManager
+ here: https://gist.github.com/doanduyhai/5008510
+ 
 ### Bean Mapping #
 
  Let's create an **User** bean in JPA style
