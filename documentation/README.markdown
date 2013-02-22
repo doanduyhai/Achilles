@@ -29,5 +29,5 @@
 [joinColumns]: /documentation/joinColumns.markdown
 [manualCFCreation]:  /documentation/manualCFCreation.markdown
 [json]: /documentation/jsonSerialization.markdown
-[perf]: /documentation/performance.markdown	
+[perf]: /documentation/performance.markdown
 [faqs]: /documentation/faqs.markdown
