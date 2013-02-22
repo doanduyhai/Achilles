@@ -1,9 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SET;
@@ -12,9 +10,9 @@ import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
@@ -56,8 +54,6 @@ public class JoinCollectionAndMapIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private final String ENTITY_PACKAGE = "integration.tests.entity";
-
 	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
@@ -68,10 +64,7 @@ public class JoinCollectionAndMapIT
 			normalizerAndValidateColumnFamilyName(BeanWithJoinCollectionAndMap.class
 					.getCanonicalName()));
 
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
-			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
-
-	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
 	private Tweet tweet1, tweet2, tweet3, tweet4, tweet5;
 

@@ -1,15 +1,13 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -36,14 +34,10 @@ import org.junit.Test;
 public class ObjectAsWideMapValueIT
 {
 
-	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
 
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
-			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
-
-	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
 	private BeanWithObjectAsWideMapValue bean;
 

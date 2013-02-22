@@ -2,6 +2,8 @@ package info.archinnov.achilles.common;
 
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,12 +40,14 @@ public abstract class CassandraDaoTest
 	public static final String CASSANDRA_TEST_HOST = "localhost";
 	public static final String CASSANDRA_HOST = "cassandraHost";
 	public static int CASSANDRA_TEST_PORT = 9160;
-
+	private static final String ENTITY_PACKAGE = "integration.tests.entity";
 	private static Cluster cluster;
 
 	private static Keyspace keyspace;
 
 	public static final Logger log = LoggerFactory.getLogger(CassandraDaoTest.class);
+
+	private static ThriftEntityManager em;
 
 	static
 	{
@@ -87,6 +91,9 @@ public abstract class CassandraDaoTest
 					+ CASSANDRA_TEST_PORT);
 			keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
 		}
+		ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(getCluster(),
+				getKeyspace(), ENTITY_PACKAGE, true);
+		em = (ThriftEntityManager) factory.createEntityManager();
 	}
 
 	private static File prepareEmbeddedCassandraConfig() throws IOException
@@ -117,8 +124,13 @@ public abstract class CassandraDaoTest
 		return keyspace;
 	}
 
-	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(Serializer<K> keySerializer,
-			String columnFamily)
+	public static ThriftEntityManager getEm()
+	{
+		return em;
+	}
+
+	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(
+			Serializer<K> keySerializer, String columnFamily)
 	{
 		return new GenericDynamicCompositeDao<K>(keyspace, keySerializer, columnFamily);
 	}

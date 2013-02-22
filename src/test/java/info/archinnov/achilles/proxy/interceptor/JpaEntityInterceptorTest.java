@@ -47,7 +47,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * JpaEntityInterceptorTest
@@ -338,7 +337,7 @@ public class JpaEntityInterceptorTest
 				(Object[]) null, proxy);
 
 		assertThat(externalWideMap).isInstanceOf(ExternalWideMapWrapper.class);
-		Object dao = ReflectionTestUtils.getField(externalWideMap, "dao");
+		Object dao = Whitebox.getInternalState(externalWideMap, "dao");
 
 		assertThat(dao).isNotNull();
 		assertThat(dao).isSameAs(externalWideMapDao);

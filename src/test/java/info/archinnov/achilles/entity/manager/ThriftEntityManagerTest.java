@@ -300,6 +300,5 @@ public class ThriftEntityManagerTest
 		exception.expectMessage("The entity is not in 'managed' state");
 
 		em.endBatch(bean);
-
 	}
 }

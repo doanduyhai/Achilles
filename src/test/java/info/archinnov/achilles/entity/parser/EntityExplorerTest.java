@@ -2,15 +2,12 @@ package info.archinnov.achilles.entity.parser;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import info.archinnov.achilles.entity.parser.EntityExplorer;
-
 import java.util.Arrays;
 import java.util.List;
 
 import more.entity.Entity3;
 
 import org.junit.Test;
-
 
 import sample.entity.Entity1;
 import sample.entity.Entity2;
@@ -37,6 +34,7 @@ public class EntityExplorerTest
 		assertThat(entities).contains(Entity3.class);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_classes_from_single_package() throws Exception
 	{
@@ -47,6 +45,7 @@ public class EntityExplorerTest
 		assertThat(entities).contains(Entity1.class, Entity2.class);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_find_classes_when_not_matching_annotation() throws Exception
 	{
@@ -56,6 +55,7 @@ public class EntityExplorerTest
 		assertThat(entities).isEmpty();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_find_classes_when_no_annotation_found() throws Exception
 	{

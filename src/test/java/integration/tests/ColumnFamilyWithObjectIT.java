@@ -1,15 +1,12 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -46,11 +43,7 @@ public class ColumnFamilyWithObjectIT
 			(Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithObject.class.getName()));
 
-	private final String ENTITY_PACKAGE = "integration.tests.entity";
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
-			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
-
-	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

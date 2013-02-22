@@ -140,12 +140,6 @@
             </exclusions>
         </dependency>
  		 <dependency>
- 		 	<groupId>org.springframework</groupId>
- 		 	<artifactId>spring-test</artifactId>
- 		 	<version>3.2.0.RELEASE</version>
- 		 	<scope>test</scope>
- 		 </dependency>
- 		 <dependency>
  		 	<groupId>junit</groupId>
  		 	<artifactId>junit</artifactId>
  		 	<version>4.10</version>
@@ -155,12 +149,6 @@
  		 	<groupId>org.easytesting</groupId>
  		 	<artifactId>fest-util</artifactId>
  		 	<version>1.2.3</version>
- 		 	<scope>test</scope>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.springframework</groupId>
- 		 	<artifactId>spring-core</artifactId>
- 		 	<version>3.2.0.RELEASE</version>
  		 	<scope>test</scope>
  		 </dependency>
  		 <dependency>
@@ -183,6 +171,12 @@
  		 	<groupId>org.codehaus.jackson</groupId>
  		 	<artifactId>jackson-xc</artifactId>
  		 	<version>${jackson.version}</version>
+ 		 </dependency>
+ 		 <dependency>
+ 		 	<groupId>commons-collections</groupId>
+ 		 	<artifactId>commons-collections</artifactId>
+ 		 	<version>3.2.1</version>
+ 		 	<scope>test</scope>
  		 </dependency>
   </dependencies>
 <build>
@@ -256,7 +250,7 @@
             			<version>2.12</version>
 						<configuration>			
 							<includes>
-								<include>**/fr/doan/**/*.java</include>
+								<include>**/info/archinnov/**/*.java</include>
 								<include>**/integration/tests/*.java</include>
 							</includes>	 
 						</configuration>

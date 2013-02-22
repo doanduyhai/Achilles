@@ -31,6 +31,14 @@ import org.slf4j.LoggerFactory;
 /**
  * ThriftEntityManager
  * 
+ * Thrift-based Entity Manager for Achilles. This entity manager is perfectly thread-safe and
+ * 
+ * can be used as a singleton. Entity state is stored in proxy object, which is obviously not
+ * 
+ * thread-safe.
+ * 
+ * Internally the ThriftEntityManager relies on Hector API for common operations
+ * 
  * @author DuyHai DOAN
  * 
  */
@@ -48,10 +56,18 @@ public class ThriftEntityManager implements EntityManager
 	private EntityValidator entityValidator = new EntityValidator();
 	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
-	public ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
+	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
 		this.entityMetaMap = entityMetaMap;
 	}
 
+	/**
+	 * Persist an entity. All join entities with CascadeType.PERSIST or CascadeType.ALL
+	 * 
+	 * will be also persisted, overriding their current state in Cassandra
+	 * 
+	 * @param entity
+	 *            Entity to be persisted
+	 */
 	@Override
 	public void persist(Object entity)
 	{
@@ -69,6 +85,29 @@ public class ThriftEntityManager implements EntityManager
 		this.persister.persist(entity, entityMeta);
 	}
 
+	/**
+	 * Merge an entity. All join entities with CascadeType.MERGE or CascadeType.ALL
+	 * 
+	 * will be also merged, updating their current state in Cassandra.
+	 * 
+	 * Calling merge on a transient entity will persist it and returns a managed
+	 * 
+	 * instance
+	 * 
+	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * 
+	 * in parameter if the latter is in managed state. It was designed on purpose
+	 * 
+	 * so you do not loose the reference of the passed entity. For transient
+	 * 
+	 * entity, the return value is a new proxy object
+	 * 
+	 * </strong>
+	 * 
+	 * @param entity
+	 *            Entity to be merged
+	 * @return Merged entity or a new proxy object
+	 */
 	@Override
 	public <T> T merge(T entity)
 	{
@@ -78,6 +117,18 @@ public class ThriftEntityManager implements EntityManager
 		return this.merger.mergeEntity(entity, entityMeta);
 	}
 
+	/**
+	 * Remove an entity. Join entities are <strong>not</strong> removed
+	 * 
+	 * CascadeType.REMOVE is not supported as per design to avoid
+	 * 
+	 * inconsistencies while removing <em>shared</em> join entities
+	 * 
+	 * You need to remove the join entities manually
+	 * 
+	 * @param entity
+	 *            Entity to be removed
+	 */
 	@Override
 	public void remove(Object entity)
 	{
@@ -97,6 +148,16 @@ public class ThriftEntityManager implements EntityManager
 
 	}
 
+	/**
+	 * Find an entity.
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to load
+	 * @param entity
+	 *            Found entity or null if no entity is found
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
@@ -117,18 +178,34 @@ public class ThriftEntityManager implements EntityManager
 		return entity;
 	}
 
+	/**
+	 * Find an entity. Works exactly as find(Class<T> entityClass, Object primaryKey)
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to load
+	 * @param entity
+	 *            Found entity or null if no entity is found
+	 */
 	@Override
 	public <T> T getReference(Class<T> entityClass, Object primaryKey)
 	{
 		return this.find(entityClass, primaryKey);
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void flush()
 	{
 		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void setFlushMode(FlushModeType flushMode)
 	{
@@ -136,12 +213,18 @@ public class ThriftEntityManager implements EntityManager
 
 	}
 
+	/**
+	 * Always return FlushModeType.AUTO
+	 */
 	@Override
 	public FlushModeType getFlushMode()
 	{
 		return FlushModeType.AUTO;
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void lock(Object entity, LockModeType lockMode)
 	{
@@ -149,6 +232,14 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Refresh an entity. All join entities with CascadeType.REFRESH or CascadeType.ALL
+	 * 
+	 * will be also refreshed from Cassandra.
+	 * 
+	 * @param entity
+	 *            Entity to be refreshed
+	 */
 	@Override
 	public void refresh(Object entity)
 	{
@@ -163,6 +254,9 @@ public class ThriftEntityManager implements EntityManager
 		}
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void clear()
 	{
@@ -170,6 +264,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public boolean contains(Object entity)
 	{
@@ -177,6 +274,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public Query createQuery(String qlString)
 	{
@@ -184,6 +284,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public Query createNamedQuery(String name)
 	{
@@ -191,6 +294,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Entity Manager");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public Query createNativeQuery(String sqlString)
 	{
@@ -198,6 +304,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass)
@@ -206,6 +315,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping)
 	{
@@ -213,6 +325,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void joinTransaction()
 	{
@@ -221,12 +336,18 @@ public class ThriftEntityManager implements EntityManager
 
 	}
 
+	/**
+	 * @return the ThriftEntityManager instance itself
+	 */
 	@Override
 	public Object getDelegate()
 	{
 		return this;
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public void close()
 	{
@@ -235,6 +356,9 @@ public class ThriftEntityManager implements EntityManager
 
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public boolean isOpen()
 	{
@@ -242,6 +366,9 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
 	@Override
 	public EntityTransaction getTransaction()
 	{
@@ -249,6 +376,19 @@ public class ThriftEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
+	/**
+	 * Start a batch session using a Hector mutator.
+	 * 
+	 * All insertions done on <strong>WideMap</strong> fields of the entity
+	 * 
+	 * will be batched through the mutator.
+	 * 
+	 * A new mutator is created for each join <strong>WideMap</strong> entity
+	 * 
+	 * The batch does not affect dirty checking of other fields.
+	 * 
+	 * It only works on <strong>WideMap</strong> fields
+	 */
 	@SuppressWarnings(
 	{
 			"rawtypes",
@@ -287,6 +427,12 @@ public class ThriftEntityManager implements EntityManager
 		}
 	}
 
+	/**
+	 * End an existing batch and flush all the mutators.
+	 * 
+	 * All join entities will be flushed through their own mutator
+	 * 
+	 */
 	public void endBatch(Object entity)
 	{
 		if (!helper.isProxy(entity))
@@ -297,10 +443,19 @@ public class ThriftEntityManager implements EntityManager
 		{
 			Factory proxy = (Factory) entity;
 			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
-			interceptor.getMutator().execute();
+
+			Mutator<?> mutator = interceptor.getMutator();
+
+			if (mutator != null)
+			{
+				mutator.execute();
+			}
 			for (Mutator<?> joinMutator : interceptor.getMutatorMap().values())
 			{
-				joinMutator.execute();
+				if (joinMutator != null)
+				{
+					joinMutator.execute();
+				}
 			}
 		}
 	}

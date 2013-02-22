@@ -1,9 +1,7 @@
 package integration.tests;
 
-import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import integration.tests.entity.CompleteBean;
@@ -13,7 +11,6 @@ import net.sf.cglib.proxy.Factory;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * LazyLoadingIT
  * 
@@ -22,12 +19,7 @@ import org.junit.Test;
  */
 public class LazyLoadingIT
 {
-	private final String ENTITY_PACKAGE = "integration.tests.entity";
-
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
-			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
-
-	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
 	private CompleteBean bean;
 

@@ -1,9 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCluster;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.common.CassandraDaoTest.getKeyspace;
 import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
@@ -11,10 +9,10 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.factory.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -47,14 +45,10 @@ import org.junit.Test;
  */
 public class JPAOperationsIT
 {
-	private final String ENTITY_PACKAGE = "integration.tests.entity";
 	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(
-			getCluster(), getKeyspace(), ENTITY_PACKAGE, true);
-
-	private ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 

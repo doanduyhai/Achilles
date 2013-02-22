@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.factory;
+package info.archinnov.achilles.entity.manager;
 
 import javax.persistence.EntityManagerFactory;
 
