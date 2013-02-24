@@ -14,7 +14,10 @@ import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Table;
 
@@ -376,5 +379,57 @@ public class EntityHelper
 		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
 				.getCallback(0);
 		return interceptor;
+	}
+
+	public <T> void ensureProxy(T proxy)
+	{
+		if (!this.isProxy(proxy))
+		{
+			throw new IllegalStateException("The entity '" + proxy + "' is not in 'managed' state.");
+		}
+	}
+
+	public <T> T unproxy(T proxy)
+	{
+		this.ensureProxy(proxy);
+
+		return this.getRealObject(proxy);
+	}
+
+	public <T> Collection<T> unproxy(Collection<T> proxies)
+	{
+
+		Collection<T> result = new ArrayList<T>();
+		for (T proxy : proxies)
+		{
+			this.ensureProxy(proxy);
+			result.add(this.getRealObject(proxy));
+		}
+
+		return result;
+	}
+
+	public <T> List<T> unproxy(List<T> proxies)
+	{
+		List<T> result = new ArrayList<T>();
+		for (T proxy : proxies)
+		{
+			this.ensureProxy(proxy);
+			result.add(this.getRealObject(proxy));
+		}
+
+		return result;
+	}
+
+	public <T> Set<T> unproxy(Set<T> proxies)
+	{
+		Set<T> result = new HashSet<T>();
+		for (T proxy : proxies)
+		{
+			this.ensureProxy(proxy);
+			result.add(this.getRealObject(proxy));
+		}
+
+		return result;
 	}
 }

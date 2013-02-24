@@ -1,11 +1,17 @@
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -14,16 +20,26 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import integration.tests.entity.User;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.FlushModeType;
+import javax.persistence.JoinColumn;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 
@@ -40,6 +56,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import parser.entity.Bean;
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * ThriftEntityManagerTest
@@ -154,7 +171,7 @@ public class ThriftEntityManagerTest
 	public void should_exception_when_removing_unmanaged_entity() throws Exception
 	{
 		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-		when(helper.isProxy(entity)).thenReturn(false);
+		doThrow(new IllegalStateException()).when(helper).ensureProxy(entity);
 
 		em.remove(entity);
 	}
@@ -253,24 +270,27 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_exception_when_trying_to_batch_transient_entity() throws Exception
 	{
-		Factory bean = mock(Factory.class);
-		when(helper.isProxy(bean)).thenReturn(false);
+
+		CompleteBean completeBean = new CompleteBean();
+
+		doThrow(new IllegalStateException("test")).when(helper).ensureProxy(completeBean);
 
 		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("The entity is not in 'managed' state. Please merge it before starting a batch");
+		exception.expectMessage("test");
 
-		em.startBatch(bean);
+		em.startBatch(completeBean);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception
 	{
-		Factory bean = mock(Factory.class);
-		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
+		CompleteBean bean = new CompleteBean();
+		JpaEntityInterceptor<Object, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Mutator<Object> mutator = mock(Mutator.class);
 
 		when(helper.isProxy(bean)).thenReturn(true);
-		when(bean.getCallback(0)).thenReturn(interceptor);
+		when(helper.getInterceptor(bean)).thenReturn(interceptor);
 		when(interceptor.getMutator()).thenReturn(mutator);
 
 		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
@@ -286,25 +306,13 @@ public class ThriftEntityManagerTest
 	}
 
 	@Test
-	public void should_exception_when_trying_to_end_batch_on_transient_entity() throws Exception
-	{
-		Factory bean = mock(Factory.class);
-
-		when(helper.isProxy(bean)).thenReturn(false);
-
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("The entity is not in 'managed' state");
-
-		em.endBatch(bean);
-	}
-
-	@Test
 	public void should_do_nothing_when_no_batch_started() throws Exception
 	{
-		Factory bean = mock(Factory.class);
-		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
+		CompleteBean bean = new CompleteBean();
+		JpaEntityInterceptor<Object, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		when(helper.getInterceptor(bean)).thenReturn(interceptor);
 		when(helper.isProxy(bean)).thenReturn(true);
-		when(bean.getCallback(0)).thenReturn(interceptor);
 		when(interceptor.getMutator()).thenReturn(null);
 		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
 		mutatorMap.put("test", null);
@@ -314,4 +322,172 @@ public class ThriftEntityManagerTest
 
 		verifyZeroInteractions(mutator);
 	}
+
+	@Test
+	public void should_initialize_all_lazy_fields() throws Exception
+	{
+		final List<Integer> getFriendsCalled = new ArrayList<Integer>();
+		final List<Integer> getUserCalled = new ArrayList<Integer>();
+		final List<Integer> getNameCalled = new ArrayList<Integer>();
+		final List<Integer> getTweetsCalled = new ArrayList<Integer>();
+
+		@SuppressWarnings("unused")
+		class TestBean
+		{
+			@Column
+			@Lazy
+			private List<String> friends;
+
+			@JoinColumn
+			private UserBean user;
+
+			@Column
+			private String name;
+
+			@Column
+			private WideMap<UUID, String> tweets;
+
+			public List<String> getFriends()
+			{
+				getFriendsCalled.add(1);
+				return friends;
+			}
+
+			public void setFriends(List<String> friends)
+			{
+				this.friends = friends;
+			}
+
+			public UserBean getUser()
+			{
+				getUserCalled.add(1);
+				return user;
+			}
+
+			public void setUser(UserBean user)
+			{
+				this.user = user;
+			}
+
+			public String getName()
+			{
+				getNameCalled.add(1);
+				return name;
+			}
+
+			public void setName(String name)
+			{
+				this.name = name;
+			}
+
+			public WideMap<UUID, String> getTweets()
+			{
+				getTweetsCalled.add(1);
+				return tweets;
+			}
+
+			public void setTweets(WideMap<UUID, String> tweets)
+			{
+				this.tweets = tweets;
+			}
+		}
+
+		TestBean bean = new TestBean();
+		when(helper.isProxy(bean)).thenReturn(true);
+		when(entityMetaMap.get(TestBean.class)).thenReturn(entityMeta);
+
+		PropertyMeta<Void, String> friendsMeta = PropertyMetaTestBuilder //
+				.of(TestBean.class, Void.class, String.class) //
+				.field("friends") //
+				.accesors() //
+				.type(LAZY_LIST).build();
+
+		PropertyMeta<Void, UserBean> userMeta = PropertyMetaTestBuilder //
+				.of(TestBean.class, Void.class, UserBean.class) //
+				.field("user") //
+				.accesors() //
+				.type(JOIN_SIMPLE).build();
+
+		PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+				.of(TestBean.class, Void.class, String.class) //
+				.field("name") //
+				.accesors() //
+				.type(SIMPLE).build();
+
+		PropertyMeta<UUID, String> tweetsMeta = PropertyMetaTestBuilder //
+				.of(TestBean.class, UUID.class, String.class) //
+				.field("tweets") //
+				.accesors() //
+				.type(WIDE_MAP).build();
+
+		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		propertyMetas.put("friends", friendsMeta);
+		propertyMetas.put("user", userMeta);
+		propertyMetas.put("name", nameMeta);
+		propertyMetas.put("tweets", tweetsMeta);
+
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
+
+		em.initialize(bean);
+
+		assertThat(getFriendsCalled).hasSize(1);
+		assertThat(getUserCalled).hasSize(1);
+		assertThat(getNameCalled).isEmpty();
+		assertThat(getTweetsCalled).isEmpty();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_when_entity_is_not_managed() throws Exception
+	{
+		CompleteBean completeBean = new CompleteBean();
+		doThrow(new IllegalStateException()).when(helper).ensureProxy(completeBean);
+		em.initialize(completeBean);
+	}
+
+	@Test
+	public void should_unproxy_entity() throws Exception
+	{
+		when(helper.unproxy(entity)).thenReturn(entity);
+
+		CompleteBean actual = em.unproxy(entity);
+
+		assertThat(actual).isSameAs(entity);
+	}
+
+	@Test
+	public void should_unproxy_collection_of_entity() throws Exception
+	{
+		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
+
+		when(helper.unproxy(proxies)).thenReturn(proxies);
+
+		Collection<CompleteBean> actual = em.unproxy(proxies);
+
+		assertThat(actual).isSameAs(proxies);
+	}
+
+	@Test
+	public void should_unproxy_list_of_entity() throws Exception
+	{
+		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
+
+		when(helper.unproxy(proxies)).thenReturn(proxies);
+
+		List<CompleteBean> actual = em.unproxy(proxies);
+
+		assertThat(actual).isSameAs(proxies);
+	}
+
+	@Test
+	public void should_unproxy_set_of_entity() throws Exception
+	{
+		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
+
+		when(helper.unproxy(proxies)).thenReturn(proxies);
+
+		Set<CompleteBean> actual = em.unproxy(proxies);
+
+		assertThat(actual).isSameAs(proxies);
+	}
+
 }

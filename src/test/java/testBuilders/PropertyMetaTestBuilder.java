@@ -106,7 +106,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 		{
 			Field declaredField = clazz.getDeclaredField(field);
 			propertyMeta.setGetter(entityHelper.findGetter(clazz, declaredField));
-			propertyMeta.setGetter(entityHelper.findSetter(clazz, declaredField));
+			propertyMeta.setSetter(entityHelper.findSetter(clazz, declaredField));
 		}
 
 		if (joinMeta != null || !cascadeTypes.isEmpty())

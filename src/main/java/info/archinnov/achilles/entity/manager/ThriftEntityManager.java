@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.manager;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -12,8 +13,11 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -131,18 +135,12 @@ public class ThriftEntityManager implements EntityManager
 	public void remove(Object entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		if (helper.isProxy(entity))
-		{
-			Class<?> baseClass = helper.deriveBaseClass(entity);
-			EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
-			this.persister.remove(entity, entityMeta);
 
-		}
-		else
-		{
-			throw new IllegalStateException(
-					"Then entity is not in 'managed' state. Please use the merge() or find() method to load it first");
-		}
+		helper.ensureProxy(entity);
+
+		Class<?> baseClass = helper.deriveBaseClass(entity);
+		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+		this.persister.remove(entity, entityMeta);
 
 	}
 
@@ -242,14 +240,8 @@ public class ThriftEntityManager implements EntityManager
 	public void refresh(Object entity)
 	{
 
-		if (!helper.isProxy(entity))
-		{
-			throw new IllegalStateException("The entity " + entity + " is not in 'managed' state");
-		}
-		else
-		{
-			entityRefresher.refresh(entity, entityMetaMap);
-		}
+		helper.ensureProxy(entity);
+		entityRefresher.refresh(entity, entityMetaMap);
 	}
 
 	/**
@@ -390,36 +382,30 @@ public class ThriftEntityManager implements EntityManager
 	@SuppressWarnings("unchecked")
 	public <ID, T> void startBatch(T entity)
 	{
+		helper.ensureProxy(entity);
+
 		Mutator<ID> mutator;
-		if (!helper.isProxy(entity))
-		{
-			throw new IllegalStateException(
-					"The entity is not in 'managed' state. Please merge it before starting a batch");
-		}
-		else
-		{
-			Class<?> baseClass = helper.deriveBaseClass(entity);
-			EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(baseClass);
+		Class<?> baseClass = helper.deriveBaseClass(entity);
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(baseClass);
 
-			Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
 
-			for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+		{
+			if (propertyMeta.type().isJoinColumn())
 			{
-				if (propertyMeta.type().isJoinColumn())
-				{
-					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.getJoinProperties()
-							.getEntityMeta().getEntityDao().buildMutator());
-				}
+				mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.getJoinProperties()
+						.getEntityMeta().getEntityDao().buildMutator());
 			}
-
-			mutator = entityMeta.getEntityDao().buildMutator();
-
-			Factory proxy = (Factory) entity;
-			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
-					.getCallback(0);
-			interceptor.setMutator(mutator);
-			interceptor.setMutatorMap(mutatorMap);
 		}
+
+		mutator = entityMeta.getEntityDao().buildMutator();
+
+		Factory proxy = (Factory) entity;
+		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
+				.getCallback(0);
+		interceptor.setMutator(mutator);
+		interceptor.setMutatorMap(mutatorMap);
 	}
 
 	/**
@@ -430,32 +416,109 @@ public class ThriftEntityManager implements EntityManager
 	 * Do nothing if no batch mutator was started
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> void endBatch(T entity)
 	{
-		if (!helper.isProxy(entity))
+		helper.ensureProxy(entity);
+
+		JpaEntityInterceptor<?, T> interceptor = helper.getInterceptor(entity);
+
+		Mutator<?> mutator = interceptor.getMutator();
+
+		if (mutator != null)
 		{
-			throw new IllegalStateException("The entity is not in 'managed' state.");
+			mutator.execute();
 		}
-		else
+		for (Mutator<?> joinMutator : interceptor.getMutatorMap().values())
 		{
-			Factory proxy = (Factory) entity;
-			JpaEntityInterceptor<?, T> interceptor = (JpaEntityInterceptor<?, T>) proxy
-					.getCallback(0);
-
-			Mutator<?> mutator = interceptor.getMutator();
-
-			if (mutator != null)
+			if (joinMutator != null)
 			{
-				mutator.execute();
+				joinMutator.execute();
 			}
-			for (Mutator<?> joinMutator : interceptor.getMutatorMap().values())
+		}
+	}
+
+	/**
+	 * Initialize all lazy fields of a 'managed' entity, except WideMap fields.
+	 * 
+	 * Raise an IllegalStateException if the entity is not 'managed'
+	 * 
+	 */
+	public <T> void initialize(T entity)
+	{
+		helper.ensureProxy(entity);
+
+		EntityMeta<?> entityMeta = entityMetaMap.get(entity.getClass());
+		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+		{
+			PropertyType type = propertyMeta.type();
+			if (type.isLazy() && !type.isWideMap())
 			{
-				if (joinMutator != null)
+				try
 				{
-					joinMutator.execute();
+					propertyMeta.getGetter().invoke(entity);
+				}
+				catch (Exception e)
+				{
+					log.error("Cannot initialize property '" + propertyMeta.getPropertyName()
+							+ "' for entity '" + entity + "'", e);
 				}
 			}
 		}
 	}
+
+	/**
+	 * Unproxy a 'managed' entity to prepare it for serialization
+	 * 
+	 * Raise an IllegalStateException if the entity is not managed'
+	 * 
+	 * @param proxy
+	 * @return real object
+	 */
+	public <T> T unproxy(T proxy)
+	{
+		return this.helper.unproxy(proxy);
+	}
+
+	/**
+	 * Unproxy a collection of 'managed' entities to prepare them for serialization
+	 * 
+	 * Raise an IllegalStateException if an entity is not managed' in the collection
+	 * 
+	 * @param proxy
+	 *            collection
+	 * @return real object collection
+	 */
+	public <T> Collection<T> unproxy(Collection<T> proxies)
+	{
+		return helper.unproxy(proxies);
+	}
+
+	/**
+	 * Unproxy a list of 'managed' entities to prepare them for serialization
+	 * 
+	 * Raise an IllegalStateException if an entity is not managed' in the list
+	 * 
+	 * @param proxy
+	 *            list
+	 * @return real object list
+	 */
+	public <T> List<T> unproxy(List<T> proxies)
+	{
+		return helper.unproxy(proxies);
+	}
+
+	/**
+	 * Unproxy a set of 'managed' entities to prepare them for serialization
+	 * 
+	 * Raise an IllegalStateException if an entity is not managed' in the set
+	 * 
+	 * @param proxy
+	 *            set
+	 * @return real object set
+	 */
+	public <T> Set<T> unproxy(Set<T> proxies)
+	{
+		return helper.unproxy(proxies);
+	}
+
 }

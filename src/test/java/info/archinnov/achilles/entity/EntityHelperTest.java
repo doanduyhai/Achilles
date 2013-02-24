@@ -14,9 +14,13 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -551,6 +555,113 @@ public class EntityHelperTest
 
 		assertThat(actual).isSameAs(interceptor);
 
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_ensure_proxy() throws Exception
+	{
+		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(UserBean.class);
+		enhancer.setCallback(interceptor);
+		UserBean proxy = (UserBean) enhancer.create();
+
+		helper.ensureProxy(proxy);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void should_exception_when_not_proxy() throws Exception
+	{
+
+		helper.ensureProxy(new CompleteBean());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_unproxy_entity() throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		CompleteBean actual = helper.unproxy(proxy);
+
+		assertThat(actual).isSameAs(realObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_unproxy_collection_of_entities() throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
+
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+		proxies.add(proxy);
+
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		Collection<CompleteBean> actual = helper.unproxy(proxies);
+
+		assertThat(actual).containsExactly(realObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_unproxy_list_of_entities() throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
+
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+		proxies.add(proxy);
+
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		List<CompleteBean> actual = helper.unproxy(proxies);
+
+		assertThat(actual).containsExactly(realObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_unproxy_set_of_entities() throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
+
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+		proxies.add(proxy);
+
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		Set<CompleteBean> actual = helper.unproxy(proxies);
+
+		assertThat(actual).containsExactly(realObject);
 	}
 
 	class Bean
