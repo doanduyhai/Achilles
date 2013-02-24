@@ -1,5 +1,6 @@
 package info.archinnov.achilles.validation;
 
+import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
@@ -13,7 +14,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-
 
 /**
  * Validator
@@ -66,6 +66,11 @@ public class Validator
 
 	public static void validateSerializable(Class<?> clazz, String message)
 	{
+		if (clazz.isPrimitive() || clazz.isEnum() || isSupportedType(clazz))
+		{
+			return;
+		}
+
 		if (!Serializable.class.isAssignableFrom(clazz))
 		{
 			throw new BeanMappingException(message);
