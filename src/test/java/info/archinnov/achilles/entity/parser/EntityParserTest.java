@@ -13,8 +13,8 @@ import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -87,7 +87,7 @@ public class EntityParserTest
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
 
 	@Mock
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ColumnFamilyCreator columnFamilyCreator;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -386,7 +386,7 @@ public class EntityParserTest
 
 		assertThat(externalWideMapProperties).isNotNull();
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
-				ColumnFamilyBuilder
+				ColumnFamilyHelper
 						.normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithJoinEntity.class
 								.getName()));
 		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();

@@ -7,6 +7,9 @@ import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,6 +18,7 @@ import java.util.List;
 
 import javax.persistence.Table;
 
+import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.StringUtils;
@@ -293,8 +297,7 @@ public class EntityHelper
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			Factory proxy = (Factory) entity;
-			AchillesInterceptor interceptor = (AchillesInterceptor) proxy.getCallback(0);
+			AchillesInterceptor interceptor = this.getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 
@@ -341,5 +344,37 @@ public class EntityHelper
 			}
 		}
 		return multiKeyValues;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T buildProxy(T entity, EntityMeta<?> entityMeta)
+	{
+		Validator.validateNotNull(entity, "entity for proxy builder should not be null");
+		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be");
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(entity.getClass());
+
+		enhancer.setCallback(JpaEntityInterceptorBuilder.builder(entityMeta, entity).build());
+
+		return (T) enhancer.create();
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T, ID> T getRealObject(T proxy)
+	{
+		Factory factory = (Factory) proxy;
+		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
+				.getCallback(0);
+		return (T) interceptor.getTarget();
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T, ID> JpaEntityInterceptor<ID, T> getInterceptor(T proxy)
+	{
+		Factory factory = (Factory) proxy;
+		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
+				.getCallback(0);
+		return interceptor;
 	}
 }

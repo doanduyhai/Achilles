@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -93,7 +93,7 @@ public class ThriftEntityManagerFactoryImplTest
 	private EntityExplorer entityExplorer;
 
 	@Mock
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ColumnFamilyCreator columnFamilyCreator;
 
 	@Test
 	public void should_bootstrap() throws Exception
@@ -120,7 +120,7 @@ public class ThriftEntityManagerFactoryImplTest
 		verify(entityMetaMap).put(String.class, entityMeta2);
 		verify(entityParser).fillJoinEntityMeta(eq(keyspace), mapCaptor.capture(),
 				eq(entityMetaMap));
-		verify(columnFamilyHelper).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean());
+		verify(columnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean());
 
 		assertThat((Class) mapCaptor.getValue().get(longPropertyMeta)).isEqualTo(Long.class);
 	}

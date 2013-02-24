@@ -74,8 +74,8 @@ public class JpaEntityInterceptorBuilderTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		JpaEntityInterceptor<Long> interceptor = JpaEntityInterceptorBuilder.builder(entityMeta)
-				.target(entity).build();
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = JpaEntityInterceptorBuilder.builder(
+				entityMeta, entity).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(1L);
 		assertThat(interceptor.getTarget()).isEqualTo(entity);
@@ -122,8 +122,8 @@ public class JpaEntityInterceptorBuilderTest
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 
-		JpaEntityInterceptor<Long> interceptor = JpaEntityInterceptorBuilder.builder(entityMeta)
-				.target(entity).build();
+		JpaEntityInterceptor<Long, ColumnFamilyBean> interceptor = JpaEntityInterceptorBuilder
+				.builder(entityMeta, entity).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(1545L);
 		assertThat(interceptor.getTarget()).isEqualTo(entity);
@@ -142,5 +142,4 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
 	}
-
 }

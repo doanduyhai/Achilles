@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.metadata.builder;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
+import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -58,12 +58,12 @@ public class EntityMetaBuilder<ID>
 		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ColumnFamilyBuilder
+			columnFamilyName = ColumnFamilyHelper
 					.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName(className);
+			columnFamilyName = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(className);
 		}
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");

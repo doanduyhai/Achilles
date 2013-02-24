@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
+import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class EntityMapper
 {
 
-	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
 
 	private EntityHelper helper = new EntityHelper();
 

@@ -8,7 +8,6 @@ import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
@@ -54,7 +53,6 @@ public class ThriftEntityManager implements EntityManager
 	private EntityRefresher entityRefresher = new EntityRefresher();
 	private EntityHelper helper = new EntityHelper();
 	private EntityValidator entityValidator = new EntityValidator();
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 
 	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
 		this.entityMetaMap = entityMetaMap;
@@ -172,7 +170,7 @@ public class ThriftEntityManager implements EntityManager
 
 		if (entity != null)
 		{
-			entity = (T) this.interceptorBuilder.build(entity, entityMeta);
+			entity = (T) helper.buildProxy(entity, entityMeta);
 		}
 
 		return entity;
@@ -389,14 +387,10 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * It only works on <strong>WideMap</strong> fields
 	 */
-	@SuppressWarnings(
+	@SuppressWarnings("unchecked")
+	public <ID, T> void startBatch(T entity)
 	{
-			"rawtypes",
-			"unchecked"
-	})
-	public void startBatch(Object entity)
-	{
-		Mutator<?> mutator;
+		Mutator<ID> mutator;
 		if (!helper.isProxy(entity))
 		{
 			throw new IllegalStateException(
@@ -405,7 +399,7 @@ public class ThriftEntityManager implements EntityManager
 		else
 		{
 			Class<?> baseClass = helper.deriveBaseClass(entity);
-			EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
+			EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(baseClass);
 
 			Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
 
@@ -421,8 +415,9 @@ public class ThriftEntityManager implements EntityManager
 			mutator = entityMeta.getEntityDao().buildMutator();
 
 			Factory proxy = (Factory) entity;
-			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
-			interceptor.setMutator((Mutator) mutator);
+			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
+					.getCallback(0);
+			interceptor.setMutator(mutator);
 			interceptor.setMutatorMap(mutatorMap);
 		}
 	}
@@ -432,8 +427,11 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * All join entities will be flushed through their own mutator
 	 * 
+	 * Do nothing if no batch mutator was started
+	 * 
 	 */
-	public void endBatch(Object entity)
+	@SuppressWarnings("unchecked")
+	public <T> void endBatch(T entity)
 	{
 		if (!helper.isProxy(entity))
 		{
@@ -442,7 +440,8 @@ public class ThriftEntityManager implements EntityManager
 		else
 		{
 			Factory proxy = (Factory) entity;
-			JpaEntityInterceptor<?> interceptor = (JpaEntityInterceptor<?>) proxy.getCallback(0);
+			JpaEntityInterceptor<?, T> interceptor = (JpaEntityInterceptor<?, T>) proxy
+					.getCallback(0);
 
 			Mutator<?> mutator = interceptor.getMutator();
 

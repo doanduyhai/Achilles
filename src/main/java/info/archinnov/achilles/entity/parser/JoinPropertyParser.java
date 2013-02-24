@@ -6,7 +6,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
-import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
+import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -122,7 +122,7 @@ public class JoinPropertyParser
 		if (columnFamilyDirectMapping)
 		{
 			joinPropertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
-					ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName(columnFamilyName),
+					ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(columnFamilyName),
 					null, idMeta.getValueSerializer()));
 		}
 		else

@@ -6,7 +6,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -14,9 +13,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityMerger;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import java.lang.reflect.Method;
@@ -37,7 +33,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 /**
  * EntityMergerTest
  * 
@@ -55,10 +50,7 @@ public class EntityMergerTest
 	private EntityPersister persister;
 
 	@Mock
-	private EntityProxyBuilder interceptorBuilder;
-
-	@Mock
-	private JpaEntityInterceptor<Long> interceptor;
+	private JpaEntityInterceptor<Object, Bean> interceptor;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -89,7 +81,7 @@ public class EntityMergerTest
 	{
 		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
 
-		when(interceptorBuilder.build(entity, entityMeta)).thenReturn(entity);
+		when(helper.buildProxy(entity, entityMeta)).thenReturn(entity);
 
 		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
 
@@ -101,9 +93,10 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_simple_dirty() throws Exception
 	{
-		Factory factory = (Factory) entity;
 		when(helper.isProxy(entity)).thenReturn(true);
-		when(factory.getCallback(0)).thenReturn(interceptor);
+		when(helper.getRealObject(entity)).thenReturn(entity);
+		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
 
@@ -134,9 +127,11 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_multi_value_dirty() throws Exception
 	{
-		Factory factory = (Factory) entity;
+
 		when(helper.isProxy(entity)).thenReturn(true);
-		when(factory.getCallback(0)).thenReturn(interceptor);
+		when(helper.getRealObject(entity)).thenReturn(entity);
+		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
 
@@ -169,9 +164,10 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_no_dirty() throws Exception
 	{
-		Factory factory = (Factory) entity;
 		when(helper.isProxy(entity)).thenReturn(true);
-		when(factory.getCallback(0)).thenReturn(interceptor);
+		when(helper.getRealObject(entity)).thenReturn(entity);
+		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
 
@@ -192,9 +188,10 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_join_entity() throws Exception
 	{
-		Factory factory = (Factory) entity;
 		when(helper.isProxy(entity)).thenReturn(true);
-		when(factory.getCallback(0)).thenReturn(interceptor);
+		when(helper.getRealObject(entity)).thenReturn(entity);
+		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
 
@@ -225,7 +222,7 @@ public class EntityMergerTest
 		UserBean userBean = new UserBean();
 
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
-		when(interceptorBuilder.build(userBean, joinEntityMeta)).thenReturn(userBean);
+		when(helper.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
 
 		merger.mergeEntity(entity, entityMeta);
 

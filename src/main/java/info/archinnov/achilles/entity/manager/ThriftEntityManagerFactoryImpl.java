@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.validation.Validator.validateNotEmpty;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -48,7 +48,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	boolean forceColumnFamilyCreation = false;
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ColumnFamilyCreator columnFamilyCreator;
 	private ObjectMapperFactory objectMapperFactory = new DefaultObjectMapperFactory();
 
 	protected ThriftEntityManagerFactoryImpl() {}
@@ -496,7 +496,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		this.keyspace = keyspace;
 		this.entityPackages = entityPackages;
 		this.forceColumnFamilyCreation = forceCFCreation;
-		this.columnFamilyHelper = new ColumnFamilyHelper(this.cluster, this.keyspace);
+		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
 		this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
 		this.entityParser = new EntityParser(this.objectMapperFactory);
 		this.bootstrap();
@@ -543,7 +543,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		this.keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		this.entityPackages = entityPackages;
 		this.forceColumnFamilyCreation = forceCFCreation;
-		this.columnFamilyHelper = new ColumnFamilyHelper(this.cluster, this.keyspace);
+		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
 		this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
 		this.entityParser = new EntityParser(this.objectMapperFactory);
 		this.bootstrap();
@@ -566,7 +566,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 			throw new RuntimeException(e);
 		}
 
-		this.columnFamilyHelper.validateOrCreateColumnFamilies(this.entityMetaMap,
+		this.columnFamilyCreator.validateOrCreateColumnFamilies(this.entityMetaMap,
 				this.forceColumnFamilyCreation);
 	}
 

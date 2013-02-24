@@ -68,7 +68,7 @@ public class JpaEntityInterceptorTest
 	@Mock
 	private EntityMeta<Long> entityMeta;
 
-	private JpaEntityInterceptor<Long> interceptor;
+	private JpaEntityInterceptor<Long, CompleteBean> interceptor;
 
 	@Mock
 	private GenericDynamicCompositeDao<Long> dao;
@@ -131,7 +131,7 @@ public class JpaEntityInterceptorTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		interceptor = JpaEntityInterceptorBuilder.builder(entityMeta).target(entity)
+		interceptor = JpaEntityInterceptorBuilder.builder(entityMeta, entity)
 				.lazyLoaded(lazyLoaded).build();
 
 		interceptor.setKey(key);

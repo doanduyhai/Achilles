@@ -3,9 +3,9 @@ package info.archinnov.achilles.entity;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -23,8 +24,10 @@ import javax.persistence.Id;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.TweetMultiKey;
+import mapping.entity.UserBean;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
 
 import org.junit.Rule;
@@ -59,6 +62,15 @@ public class EntityHelperTest
 
 	@Mock
 	private PropertyMeta<TweetMultiKey, String> wideMapMeta;
+
+	@Mock
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
+
+	@Mock
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
+
+	@Mock
+	private GenericDynamicCompositeDao<Long> dao;
 
 	private final EntityHelper helper = new EntityHelper();
 
@@ -387,7 +399,7 @@ public class EntityHelperTest
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		JpaEntityInterceptor<Long> interceptor = new JpaEntityInterceptor<Long>();
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = new JpaEntityInterceptor<Long, CompleteBean>();
 		interceptor.setTarget(entity);
 
 		enhancer.setCallback(interceptor);
@@ -472,6 +484,73 @@ public class EntityHelperTest
 		assertThat(multiKeyList.get(0)).isEqualTo(uuid);
 		assertThat(multiKeyList.get(1)).isNull();
 		assertThat(multiKeyList.get(2)).isEqualTo(12);
+	}
+
+	@Test
+	public void should_build_proxy() throws Exception
+	{
+		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
+		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
+
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
+
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getGetter()).thenReturn(idGetter);
+		when(idMeta.getSetter()).thenReturn(idSetter);
+
+		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
+		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
+		when(entityMeta.getEntityDao()).thenReturn(dao);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+
+		when(idMeta.getGetter()).thenReturn(idGetter);
+		when(idMeta.getSetter()).thenReturn(idSetter);
+
+		CompleteBean proxy = helper.buildProxy(entity, entityMeta);
+
+		assertThat(proxy).isNotNull();
+		assertThat(proxy).isInstanceOf(Factory.class);
+		Factory factory = (Factory) proxy;
+
+		assertThat(factory.getCallbacks()).hasSize(1);
+		assertThat(factory.getCallback(0)).isInstanceOf(JpaEntityInterceptor.class);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_get_real_object_from_proxy() throws Exception
+	{
+		UserBean realObject = new UserBean();
+		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(UserBean.class);
+		enhancer.setCallback(interceptor);
+		UserBean proxy = (UserBean) enhancer.create();
+
+		UserBean actual = helper.getRealObject(proxy);
+
+		assertThat(actual).isSameAs(realObject);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_get_interceptor_from_proxy() throws Exception
+	{
+		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(UserBean.class);
+		enhancer.setCallback(interceptor);
+		UserBean proxy = (UserBean) enhancer.create();
+
+		JpaEntityInterceptor<Long, UserBean> actual = helper.getInterceptor(proxy);
+
+		assertThat(actual).isSameAs(interceptor);
+
 	}
 
 	class Bean

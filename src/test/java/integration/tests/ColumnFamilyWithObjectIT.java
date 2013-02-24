@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;

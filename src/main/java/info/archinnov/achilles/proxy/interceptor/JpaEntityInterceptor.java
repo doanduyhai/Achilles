@@ -27,7 +27,7 @@ import net.sf.cglib.proxy.MethodProxy;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInterceptor
+public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor
 {
 
 	private EntityLoader loader = new EntityLoader();
@@ -35,7 +35,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 	private GenericCompositeDao<ID, ?> columnFamilyDao;
 	private Boolean directColumnFamilyMapping;
 
-	private Object target;
+	private T target;
 	private ID key;
 	private Method idGetter;
 	private Method idSetter;
@@ -229,7 +229,7 @@ public class JpaEntityInterceptor<ID> implements MethodInterceptor, AchillesInte
 		return key;
 	}
 
-	public void setTarget(Object target)
+	public void setTarget(T target)
 	{
 		this.target = target;
 	}

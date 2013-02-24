@@ -6,7 +6,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.validation.Validator;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,43 +17,38 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptorBuilder<ID extends Serializable>
+public class JpaEntityInterceptorBuilder<ID, T>
 {
 
-	private Object target;
+	private T target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
 	private EntityMeta<ID> entityMeta;
 	private EntityHelper helper = new EntityHelper();
 	private EntityLoader loader = new EntityLoader();
 
-	public static <ID extends Serializable> JpaEntityInterceptorBuilder<ID> builder(
-			EntityMeta<ID> entityMeta)
+	public static <ID, T> JpaEntityInterceptorBuilder<ID, T> builder(EntityMeta<ID> entityMeta,
+			T entity)
 	{
-		return new JpaEntityInterceptorBuilder<ID>(entityMeta);
+		return new JpaEntityInterceptorBuilder<ID, T>(entityMeta, entity);
 	}
 
-	public JpaEntityInterceptorBuilder(EntityMeta<ID> entityMeta) {
+	public JpaEntityInterceptorBuilder(EntityMeta<ID> entityMeta, T entity) {
 		Validator.validateNotNull(entityMeta, "EntityMeta for interceptor should not be null");
+		Validator.validateNotNull(entity, "Target object for interceptor should not be null");
 		this.entityMeta = entityMeta;
+		this.target = entity;
 	}
 
-	public JpaEntityInterceptorBuilder<ID> target(Object target)
-	{
-		Validator.validateNotNull(target, "Target object for interceptor should not be null");
-		this.target = target;
-		return this;
-	}
-
-	public JpaEntityInterceptorBuilder<ID> lazyLoaded(Set<Method> lazyLoaded)
+	public JpaEntityInterceptorBuilder<ID, T> lazyLoaded(Set<Method> lazyLoaded)
 	{
 		this.lazyLoaded = lazyLoaded;
 		return this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public JpaEntityInterceptor<ID> build()
+	public JpaEntityInterceptor<ID, T> build()
 	{
-		JpaEntityInterceptor<ID> interceptor = new JpaEntityInterceptor<ID>();
+		JpaEntityInterceptor<ID, T> interceptor = new JpaEntityInterceptor<ID, T>();
 
 		Validator.validateNotNull(this.target, "Target object for interceptor should not be null");
 		Validator.validateNotNull(entityMeta.getGetterMetas(),

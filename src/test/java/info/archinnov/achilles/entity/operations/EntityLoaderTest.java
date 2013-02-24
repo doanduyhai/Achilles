@@ -32,7 +32,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -106,9 +105,6 @@ public class EntityLoaderTest
 	private DynamicCompositeKeyFactory keyFactory;
 
 	@Mock
-	private EntityProxyBuilder interceptorBuilder;
-
-	@Mock
 	private EntityHelper helper;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
@@ -125,7 +121,6 @@ public class EntityLoaderTest
 	public void setUp()
 	{
 		bean = CompleteBeanTestBuilder.builder().buid();
-		Whitebox.setInternalState(loader, "interceptorBuilder", interceptorBuilder);
 		Whitebox.setInternalState(loader, "helper", helper);
 	}
 
@@ -465,8 +460,7 @@ public class EntityLoaderTest
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
 		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
 				idCaptor.capture());
-		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
-				userBean);
+		when(helper.buildProxy(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(userBean);
 
 		UserBean expected = this.loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
 
@@ -513,8 +507,7 @@ public class EntityLoaderTest
 		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
 		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idMeta.getSetter()),
 				idCaptor.capture());
-		when(interceptorBuilder.build(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(
-				userBean);
+		when(helper.buildProxy(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(userBean);
 
 		doNothing().when(helper).setValueToField(eq(bean), eq(joinPropertyMeta.getSetter()),
 				userBeanCaptor.capture());

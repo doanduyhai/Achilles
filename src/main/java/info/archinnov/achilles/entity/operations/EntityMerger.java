@@ -9,7 +9,6 @@ import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
@@ -25,7 +24,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 
 import me.prettyprint.hector.api.mutation.Mutator;
-import net.sf.cglib.proxy.Factory;
 
 /**
  * EntityMerger
@@ -36,7 +34,6 @@ import net.sf.cglib.proxy.Factory;
 public class EntityMerger
 {
 	private EntityPersister persister = new EntityPersister();
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 	private EntityHelper helper = new EntityHelper();
 
 	@SuppressWarnings("unchecked")
@@ -48,16 +45,13 @@ public class EntityMerger
 		T proxy;
 		if (helper.isProxy(entity))
 		{
-			// TODO
-			// User EntityProxyBuilder;
-			Factory factory = (Factory) entity;
-			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory
-					.getCallback(0);
+			Object realObject = helper.getRealObject(entity);
+			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
+					.getInterceptor(entity);
+
 			GenericDynamicCompositeDao<ID> dao = entityMeta.getEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
-
-			Object realObject = interceptor.getTarget();
 
 			if (dirtyMap.size() > 0)
 			{
@@ -115,7 +109,7 @@ public class EntityMerger
 		else
 		{
 			this.persister.persist(entity, entityMeta);
-			proxy = (T) interceptorBuilder.build(entity, entityMeta);
+			proxy = (T) helper.buildProxy(entity, entityMeta);
 		}
 
 		return proxy;

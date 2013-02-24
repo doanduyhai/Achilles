@@ -4,6 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
@@ -13,7 +14,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import integration.tests.entity.User;
 
@@ -74,9 +74,6 @@ public class ThriftEntityManagerTest
 	private EntityMerger merger;
 
 	@Mock
-	private EntityProxyBuilder interceptorBuilder;
-
-	@Mock
 	private EntityHelper helper;
 
 	@Mock
@@ -100,7 +97,6 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "loader", loader);
 		Whitebox.setInternalState(em, "merger", merger);
 		Whitebox.setInternalState(em, "helper", helper);
-		Whitebox.setInternalState(em, "interceptorBuilder", interceptorBuilder);
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 
@@ -168,7 +164,7 @@ public class ThriftEntityManagerTest
 	{
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(loader.load(CompleteBean.class, 1L, entityMeta)).thenReturn(entity);
-		when(interceptorBuilder.build(entity, entityMeta)).thenReturn(entity);
+		when(helper.buildProxy(entity, entityMeta)).thenReturn(entity);
 
 		CompleteBean bean = em.find(CompleteBean.class, 1L);
 
@@ -180,7 +176,7 @@ public class ThriftEntityManagerTest
 	{
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(loader.load(CompleteBean.class, 1L, entityMeta)).thenReturn(entity);
-		when(interceptorBuilder.build(entity, entityMeta)).thenReturn(entity);
+		when(helper.buildProxy(entity, entityMeta)).thenReturn(entity);
 
 		CompleteBean bean = em.find(CompleteBean.class, 1L);
 
@@ -240,7 +236,7 @@ public class ThriftEntityManagerTest
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
-		JpaEntityInterceptor<Long> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
 
 		when(bean.getCallback(0)).thenReturn(interceptor);
 		when(joinDao.buildMutator()).thenReturn(joinMutator);
@@ -271,7 +267,7 @@ public class ThriftEntityManagerTest
 	public void should_end_batch() throws Exception
 	{
 		Factory bean = mock(Factory.class);
-		JpaEntityInterceptor<Long> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
 
 		when(helper.isProxy(bean)).thenReturn(true);
 		when(bean.getCallback(0)).thenReturn(interceptor);
@@ -300,5 +296,22 @@ public class ThriftEntityManagerTest
 		exception.expectMessage("The entity is not in 'managed' state");
 
 		em.endBatch(bean);
+	}
+
+	@Test
+	public void should_do_nothing_when_no_batch_started() throws Exception
+	{
+		Factory bean = mock(Factory.class);
+		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
+		when(helper.isProxy(bean)).thenReturn(true);
+		when(bean.getCallback(0)).thenReturn(interceptor);
+		when(interceptor.getMutator()).thenReturn(null);
+		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
+		mutatorMap.put("test", null);
+		when(interceptor.getMutatorMap()).thenReturn(mutatorMap);
+
+		em.endBatch(bean);
+
+		verifyZeroInteractions(mutator);
 	}
 }

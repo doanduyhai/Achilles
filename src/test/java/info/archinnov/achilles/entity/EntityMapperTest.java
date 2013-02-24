@@ -8,7 +8,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -72,7 +72,7 @@ public class EntityMapperTest
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
 
 	@Mock
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ColumnFamilyCreator columnFamilyCreator;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

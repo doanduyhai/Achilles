@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyBuilder.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;

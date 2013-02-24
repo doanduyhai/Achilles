@@ -11,7 +11,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.proxy.builder.EntityProxyBuilder;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EntityLoader
 {
-	private EntityProxyBuilder interceptorBuilder = new EntityProxyBuilder();
 	private EntityMapper mapper = new EntityMapper();
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 	private EntityHelper helper = new EntityHelper();
@@ -105,7 +103,7 @@ public class EntityLoader
 				{
 					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
 					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
-					entitiesByKey.put(key, interceptorBuilder.build(entity, entityMeta));
+					entitiesByKey.put(key, helper.buildProxy(entity, entityMeta));
 				}
 			}
 			catch (Exception e)
@@ -351,7 +349,7 @@ public class EntityLoader
 		V joinEntity = this.load(entityClass, joinId, joinEntityMeta);
 		if (joinEntity != null)
 		{
-			return this.interceptorBuilder.build(joinEntity, joinEntityMeta);
+			return helper.buildProxy(joinEntity, joinEntityMeta);
 		}
 		else
 		{
