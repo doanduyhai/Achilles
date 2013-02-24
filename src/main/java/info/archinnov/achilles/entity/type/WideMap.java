@@ -342,6 +342,25 @@ public interface WideMap<K, V>
 	public List<K> findLastKeys(int count);
 
 	/**
+	 * Find a key/value iterator. Start = null & end = null
+	 * 
+	 * Default count = 100;
+	 * 
+	 * @return KeyValue iterator
+	 */
+	public KeyValueIterator<K, V> iterator();
+
+	/**
+	 * Find a key/value iterator. Start = null & end = null
+	 * 
+	 * @param length
+	 *            size of the batch to be loaded by the iterator
+	 * 
+	 * @return KeyValue iterator
+	 */
+	public KeyValueIterator<K, V> iterator(int length);
+
+	/**
 	 * Find a key/value iterator
 	 * 
 	 * @param start
@@ -349,8 +368,8 @@ public interface WideMap<K, V>
 	 * @param end
 	 *            End key, inclusive. Should be less than start key with respect to the default comparator
 	 * @param count
-	 *            Maximum number of keys to be fetched
-	 * @return List of keys
+	 *            Maximum number of key/value pairs to be fetched
+	 * @return KeyValue iterator
 	 */
 	public KeyValueIterator<K, V> iterator(K start, K end, int count);
 
@@ -362,10 +381,29 @@ public interface WideMap<K, V>
 	 * @param end
 	 *            End key, inclusive. Should be less than start key with respect to the default comparator
 	 * @param count
-	 *            Maximum number of keys to be fetched
-	 * @return List of keys
+	 *            Maximum number of key/value pairs to be fetched
+	 * @return KeyValue iterator
 	 */
 	public KeyValueIterator<K, V> iteratorBoundsExclusive(K start, K end, int count);
+
+	/**
+	 * Find a key/value iterator in reverse order. Start = null & end = null
+	 * 
+	 * Default count = 100;
+	 * 
+	 * @return KeyValue iterator
+	 */
+	public KeyValueIterator<K, V> iteratorReverse();
+
+	/**
+	 * Find a key/value iterator in reverse order. Start = null & end = null
+	 * 
+	 * @param length
+	 *            size of the batch to be loaded by the iterator
+	 * 
+	 * @return KeyValue iterator
+	 */
+	public KeyValueIterator<K, V> iteratorReverse(int length);
 
 	/**
 	 * Find a key/value iterator, bounds inclusive, in reversed order
@@ -375,8 +413,8 @@ public interface WideMap<K, V>
 	 * @param end
 	 *            End key, inclusive. Should be greater than start key with respect to the default comparator
 	 * @param count
-	 *            Maximum number of keys to be fetched
-	 * @return List of keys
+	 *            Maximum number of key/value pairs to be fetched
+	 * @return KeyValue iterator
 	 */
 	public KeyValueIterator<K, V> iteratorReverse(K start, K end, int count);
 
@@ -388,8 +426,8 @@ public interface WideMap<K, V>
 	 * @param end
 	 *            End key, exclusive. Should be greater than start key with respect to the default comparator
 	 * @param count
-	 *            Maximum number of keys to be fetched
-	 * @return List of keys
+	 *            Maximum number of key/value pairs to be fetched
+	 * @return KeyValue iterator
 	 */
 	public KeyValueIterator<K, V> iteratorReverseBoundsExclusive(K start, K end, int count);
 
@@ -407,8 +445,8 @@ public interface WideMap<K, V>
 	 * @param reverse
 	 *            true = descending order, false = ascending order
 	 * @param count
-	 *            Maximum number of keys to be fetched
-	 * @return List of keys
+	 *            Maximum number of key/value pairs to be fetched
+	 * @return KeyValue iterator
 	 */
 	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
 			boolean inclusiveEnd, boolean reverse, int count);

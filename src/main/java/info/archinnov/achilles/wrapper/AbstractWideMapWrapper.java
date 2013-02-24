@@ -18,6 +18,8 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 
 	protected AchillesInterceptor interceptor;
 
+	private static final int DEFAULT_COUNT = 100;
+
 	@Override
 	public List<KeyValue<K, V>> find(K start, K end, int count)
 	{
@@ -211,6 +213,18 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	}
 
 	@Override
+	public KeyValueIterator<K, V> iterator()
+	{
+		return iterator(null, true, null, true, false, DEFAULT_COUNT);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iterator(int count)
+	{
+		return iterator(null, true, null, true, false, count);
+	}
+
+	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, int count)
 	{
 		return iterator(start, true, end, true, false, count);
@@ -220,6 +234,18 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	public KeyValueIterator<K, V> iteratorBoundsExclusive(K start, K end, int count)
 	{
 		return iterator(start, false, end, false, false, count);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iteratorReverse()
+	{
+		return iterator(null, true, null, true, true, DEFAULT_COUNT);
+	}
+
+	@Override
+	public KeyValueIterator<K, V> iteratorReverse(int count)
+	{
+		return iterator(null, true, null, true, true, count);
 	}
 
 	@Override
