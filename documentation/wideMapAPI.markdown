@@ -40,42 +40,42 @@
 	// Find Value
 	public List<V> findValues(K start, K end, int count);
 
-	public List<V> findValuesBoundsExclusive(K start, K end, int count);
+	public List<V> findBoundsExclusiveValues(K start, K end, int count);
 
-	public List<V> findValuesReverse(K start, K end, int count);
+	public List<V> findReverseValues(K start, K end, int count);
 
-	public List<V> findValuesReverseBoundsExclusive(K start, K end, int count);
+	public List<V> findReverseBoundsExclusiveValues(K start, K end, int count);
 
 	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count);
 
-	public V findValuesFirst();
+	public V findFirstValue();
 
-	public List<V> findValuesFirst(int count);
+	public List<V> findFirstValues(int count);
 
-	public V findValuesLast();
+	public V findLastValue();
 
-	public List<V> findValuesLast(int count);
+	public List<V> findLastValues(int count);
 
 	// Find Key
 	public List<K> findKeys(K start, K end, int count);
 
-	public List<K> findKeysBoundsExclusive(K start, K end, int count);
+	public List<K> findBoundsExclusiveKeys(K start, K end, int count);
 
-	public List<K> findKeysReverse(K start, K end, int count);
+	public List<K> findReverseKeys(K start, K end, int count);
 
-	public List<K> findKeysReverseBoundsExclusive(K start, K end, int count);
+	public List<K> findReverseBoundsExclusiveKeys(K start, K end, int count);
 
 	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count);
 
-	public K findKeysFirst();
+	public K findFirstKey();
 
-	public List<K> findKeysFirst(int count);
+	public List<K> findFirstKeys(int count);
 
-	public K findKeysLast();
+	public K findLastKey();
 
-	public List<K> findKeysLast(int count);
+	public List<K> findLastKeys(int count);
 	
 	// Iterator
 	public KeyValueIterator<K, V> iterator(K start, K end, int count);

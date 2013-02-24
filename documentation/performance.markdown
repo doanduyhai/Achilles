@@ -45,8 +45,16 @@ On `startBatch()` call, **Achilles** will create a batch mutator in the entity p
 	em.endBatch(user);
 
  
-> Please notice that the batch mode only works for **WideMap** fields. For normal fields (simple, collection
- or map) **Achilles** also relies on an internal mutator to flush data when the entity is persisted
- or merged. In this case, join entities are also saved through a mutator.
+> Please notice that the batch mode only works for **WideMap** fields. 
+
+For normal fields (simple, collection or map) **Achilles** also relies on an internal mutator to flush
+ data when the entity is persisted or merged. 
+ 
+ Join entities on non-WideMap fields are saved at flush time using internal mutators. There is one mutator
+ per type of join entity. Indeed batch mutation is based on row key type so different join entity types
+ require distinct batch mutators.
+ 
+  
+ a mutator.
  
    

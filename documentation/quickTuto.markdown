@@ -4,18 +4,12 @@
 
  First of all you need to initialize the **EntityManagerFactory**.
 
-	Cluster cluster = ...
-	
-	Keyspace keyspace = ...
 	
 	EntityManagerFactory entityManagerFactory = new ThriftEntityManagerFactoryImpl(
-			cluster, keyspace, "my.package1,my.package2", true);
+			"localhost:9160", "Test Cluster","my_keyspace" "my.package1,my.package2", true);
 
-
- You need to provide a `me.prettyprint.hector.api.Cluster` and 	`me.prettyprint.hector.api.Keyspace` 
- for the initialization of the **EntityManagerFactory**. 
  
- The third argument is a list of packages (coma separated) for entities scanning.
+ The fourth argument is a list of packages (coma separated) for entities scanning.
  
  The *last boolean flag* tells **Achilles** whether to force the column families creation if they do not 
  exist or not. This flag should be set to **true** most of the time because **Achilles** creates its own 
