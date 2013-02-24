@@ -19,10 +19,11 @@
  For Spring users:
 
 	<bean id="entityManagerFactory" class="fr.doan.achilles.entity.factory.ThriftEntityManagerFactoryImpl">
-		<constructor-arg index="0" value="cluster"/>
-		<constructor-arg index="1" value="keyspace"/>
-		<constructor-arg index="2" value=""my.package1,my.package2""/>
-		<constructor-arg index="3" value="true"/>		
+ 		<constructor-arg index="0" value="localhost:9160"/>
+		<constructor-arg index="1" value="achillesCluster"/>
+		<constructor-arg index="2" value="achilles"/>
+		<constructor-arg index="3" value=""my.package1,my.package2""/>
+		<constructor-arg index="4" value="true"/>		
 	</bean>
 
  There is also a Gist showing how to create a simple FactoryBean for Achilles ThriftEntityManager
