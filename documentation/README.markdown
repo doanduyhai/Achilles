@@ -13,8 +13,8 @@
 11. [Join columns][joinColumns]
 12. [Manual Column Family Creation][manualCFCreation]
 13. [JSON Serialization][json]
-14. [Performance][perf]
-15. [FAQs][faqs]
+15. [Dealing with proxy objects]
+16. [FAQs][faqs]
 
 [quickTuto]: /documentation/quickTuto.markdown
 [annotations]: /documentation/annotations.markdown
@@ -30,4 +30,5 @@
 [manualCFCreation]:  /documentation/manualCFCreation.markdown
 [json]: /documentation/jsonSerialization.markdown
 [perf]: /documentation/performance.markdown
+[proxy]: /documentation/proxy.markdown
 [faqs]: /documentation/faqs.markdown
