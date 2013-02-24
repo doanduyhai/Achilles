@@ -89,9 +89,17 @@ public class ColumnFamilyBuilder
 
 		Serializer<?> valueSerializer = SerializerTypeInferer.getSerializer(valueClass);
 
-		if (valueSerializer == OBJECT_SRZ && !propertyMeta.type().isJoinColumn())
+		if (valueSerializer == OBJECT_SRZ)
 		{
-			valueSerializer = STRING_SRZ;
+			if (propertyMeta.type().isJoinColumn())
+			{
+				valueSerializer = propertyMeta.getJoinProperties().getEntityMeta().getIdMeta()
+						.getValueSerializer();
+			}
+			else
+			{
+				valueSerializer = STRING_SRZ;
+			}
 		}
 
 		String defaultValidationType = valueSerializer.getComparatorType().getTypeName();
