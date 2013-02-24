@@ -105,8 +105,7 @@ public class EntityLoader
 				{
 					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
 					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
-
-					entitiesByKey.put(key, entity);
+					entitiesByKey.put(key, interceptorBuilder.build(entity, entityMeta));
 				}
 			}
 			catch (Exception e)

@@ -87,6 +87,50 @@ public class PropertyMetaTest
 	}
 
 	@Test
+	public void should_get_primitive_value_from_string() throws Exception
+	{
+
+		PropertyMeta<String, Boolean> propertyMeta = new PropertyMeta<String, Boolean>();
+		propertyMeta.setValueClass(boolean.class);
+		propertyMeta.setObjectMapper(objectMapper);
+
+		Object test = "true";
+
+		boolean value = propertyMeta.getValueFromString(test);
+		assertThat(value).isTrue();
+	}
+
+	@Test
+	public void should_get_enum_value_from_string() throws Exception
+	{
+
+		PropertyMeta<String, PropertyType> propertyMeta = new PropertyMeta<String, PropertyType>();
+		propertyMeta.setValueClass(PropertyType.class);
+		propertyMeta.setObjectMapper(objectMapper);
+
+		Object test = "\"JOIN_MAP\"";
+
+		PropertyType value = propertyMeta.getValueFromString(test);
+		assertThat(value).isEqualTo(PropertyType.JOIN_MAP);
+	}
+
+	@Test
+	public void should_get_allowed_type_from_string() throws Exception
+	{
+
+		PropertyMeta<String, UUID> propertyMeta = new PropertyMeta<String, UUID>();
+		propertyMeta.setValueClass(UUID.class);
+		propertyMeta.setObjectMapper(objectMapper);
+
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+
+		Object test = objectMapper.writeValueAsString(uuid);
+
+		UUID value = propertyMeta.getValueFromString(test);
+		assertThat(value).isEqualTo(uuid);
+	}
+
+	@Test
 	public void should_get_key_value_from_string() throws Exception
 	{
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();

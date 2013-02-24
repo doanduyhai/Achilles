@@ -383,8 +383,9 @@ public class JoinExternalWideMapWrapperTest
 						reverse, count)).thenReturn(iterator);
 
 		KeyValueIterator<Integer, UserBean> keyValueIterator = mock(KeyValueIterator.class);
-		when(iteratorFactory.createKeyValueIteratorForComposite(iterator, externalJoinWideMapMeta))
-				.thenReturn(keyValueIterator);
+		when(
+				iteratorFactory.createKeyValueJoinIteratorForComposite(iterator,
+						externalJoinWideMapMeta)).thenReturn(keyValueIterator);
 
 		KeyValueIterator<Integer, UserBean> expected = wrapper.iterator(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);

@@ -128,6 +128,83 @@ public class PropertyParserTest
 	}
 
 	@Test
+	public void should_parse_primitive_property() throws Exception
+	{
+		class Test
+		{
+			@Column
+			private boolean active;
+
+			public boolean isActive()
+			{
+				return active;
+			}
+
+			public void setActive(boolean active)
+			{
+				this.active = active;
+			}
+
+		}
+
+		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
+				Test.class.getDeclaredField("active"), false, objectMapper);
+
+		assertThat((Class) meta.getValueClass()).isEqualTo(boolean.class);
+	}
+
+	@Test
+	public void should_parse_enum_property() throws Exception
+	{
+		class Test
+		{
+			@Column
+			private PropertyType type;
+
+			public PropertyType getType()
+			{
+				return type;
+			}
+
+			public void setType(PropertyType type)
+			{
+				this.type = type;
+			}
+
+		}
+
+		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
+				Test.class.getDeclaredField("type"), false, objectMapper);
+
+		assertThat((Class) meta.getValueClass()).isEqualTo(PropertyType.class);
+	}
+
+	@Test
+	public void should_parse_allowed_type_property() throws Exception
+	{
+		class Test
+		{
+			@Column
+			private UUID uuid;
+
+			public UUID getUuid()
+			{
+				return uuid;
+			}
+
+			public void setUuid(UUID uuid)
+			{
+				this.uuid = uuid;
+			}
+		}
+
+		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
+				Test.class.getDeclaredField("uuid"), false, objectMapper);
+
+		assertThat((Class) meta.getValueClass()).isEqualTo(UUID.class);
+	}
+
+	@Test
 	public void should_parse_lazy() throws Exception
 	{
 		class Test

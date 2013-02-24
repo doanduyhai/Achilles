@@ -165,7 +165,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 				.getJoinColumnsIterator(externalWideMapMeta, id, composites[0], composites[1],
 						reverse, count);
 
-		return iteratorFactory.createKeyValueIteratorForComposite(joinColumnSliceIterator,
+		return iteratorFactory.createKeyValueJoinIteratorForComposite(joinColumnSliceIterator,
 				externalWideMapMeta);
 	}
 

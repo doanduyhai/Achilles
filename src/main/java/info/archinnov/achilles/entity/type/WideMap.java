@@ -165,7 +165,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of values to be fetched
 	 * @return List of values
 	 */
-	public List<V> findValuesBoundsExclusive(K start, K end, int count);
+	public List<V> findBoundsExclusiveValues(K start, K end, int count);
 
 	/**
 	 * Find a range of value, bounds inclusive, in reversed order
@@ -178,7 +178,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of values to be fetched
 	 * @return List of values
 	 */
-	public List<V> findValuesReverse(K start, K end, int count);
+	public List<V> findReverseValues(K start, K end, int count);
 
 	/**
 	 * Find a range of value, bounds exclusive, in reversed order
@@ -191,7 +191,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of values to be fetched
 	 * @return List of values
 	 */
-	public List<V> findValuesReverseBoundsExclusive(K start, K end, int count);
+	public List<V> findReverseBoundsExclusiveValues(K start, K end, int count);
 
 	/**
 	 * Find a range of value
@@ -218,28 +218,28 @@ public interface WideMap<K, V>
 	 * 
 	 * @return First value
 	 */
-	public V findValuesFirst();
+	public V findFirstValue();
 
 	/**
 	 * Find maximum n first values, normal order
 	 * 
 	 * @return n first values (or less)
 	 */
-	public List<V> findValuesFirst(int count);
+	public List<V> findFirstValues(int count);
 
 	/**
 	 * Find last value, normal order
 	 * 
 	 * @return Last value
 	 */
-	public V findValuesLast();
+	public V findLastValue();
 
 	/**
 	 * Find maximum n last values, normal order
 	 * 
 	 * @return n last values (or less)
 	 */
-	public List<V> findValuesLast(int count);
+	public List<V> findLastValues(int count);
 
 	/**
 	 * Find a range of key, bounds inclusive
@@ -265,7 +265,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of keys to be fetched
 	 * @return List of keys
 	 */
-	public List<K> findKeysBoundsExclusive(K start, K end, int count);
+	public List<K> findBoundsExclusiveKeys(K start, K end, int count);
 
 	/**
 	 * Find a range of key, bounds inclusive, in reversed order
@@ -278,7 +278,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of keys to be fetched
 	 * @return List of keys
 	 */
-	public List<K> findKeysReverse(K start, K end, int count);
+	public List<K> findReverseKeys(K start, K end, int count);
 
 	/**
 	 * Find a range of key, bounds exclusive, in reversed order
@@ -291,7 +291,7 @@ public interface WideMap<K, V>
 	 *            Maximum number of keys to be fetched
 	 * @return List of keys
 	 */
-	public List<K> findKeysReverseBoundsExclusive(K start, K end, int count);
+	public List<K> findReverseBoundsExclusiveKeys(K start, K end, int count);
 
 	/**
 	 * Find a range of key
@@ -316,30 +316,30 @@ public interface WideMap<K, V>
 	/**
 	 * Find first key, normal order
 	 * 
-	 * @return First keys
+	 * @return First key
 	 */
-	public K findKeysFirst();
+	public K findFirstKey();
 
 	/**
 	 * Find maximum n first keys, normal order
 	 * 
 	 * @return n first keys (or less)
 	 */
-	public List<K> findKeysFirst(int count);
+	public List<K> findFirstKeys(int count);
 
 	/**
 	 * Find last key, normal order
 	 * 
 	 * @return Last key
 	 */
-	public K findKeysLast();
+	public K findLastKey();
 
 	/**
 	 * Find maximum n last keys, normal order
 	 * 
 	 * @return n last keys (or less)
 	 */
-	public List<K> findKeysLast(int count);
+	public List<K> findLastKeys(int count);
 
 	/**
 	 * Find a key/value iterator

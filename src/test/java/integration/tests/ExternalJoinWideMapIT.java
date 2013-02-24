@@ -21,6 +21,8 @@ import integration.tests.entity.UserTestBuilder;
 import java.util.List;
 import java.util.UUID;
 
+import net.sf.cglib.proxy.Factory;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -149,14 +151,14 @@ public class ExternalJoinWideMapIT
 		assertThat(foundReTweet2.getId()).isEqualTo(reTweet1.getId());
 		assertThat(foundReTweet2.getContent()).isEqualTo(reTweet1.getContent());
 
-		List<Tweet> foundReTweetsValues = user.getRetweets().findValuesReverse(2, 1, 5);
+		List<Tweet> foundReTweetsValues = user.getRetweets().findReverseValues(2, 1, 5);
 
 		assertThat(foundReTweetsValues.get(0).getId()).isEqualTo(reTweet2.getId());
 		assertThat(foundReTweetsValues.get(0).getContent()).isEqualTo(reTweet2.getContent());
 		assertThat(foundReTweetsValues.get(1).getId()).isEqualTo(reTweet1.getId());
 		assertThat(foundReTweetsValues.get(1).getContent()).isEqualTo(reTweet1.getContent());
 
-		List<Integer> foundReTweetsKeys = user.getRetweets().findKeysReverse(2, 1, 5);
+		List<Integer> foundReTweetsKeys = user.getRetweets().findReverseKeys(2, 1, 5);
 
 		assertThat(foundReTweetsKeys.get(0)).isEqualTo(2);
 		assertThat(foundReTweetsKeys.get(1)).isEqualTo(1);
@@ -240,6 +242,28 @@ public class ExternalJoinWideMapIT
 
 		assertThat(savedReTweetsUUIDs).hasSize(0);
 
+	}
+
+	@Test
+	public void should_proxy_join_entity() throws Exception
+	{
+		user = em.merge(user);
+		user.getRetweets().insert(1, reTweet1);
+
+		Tweet tweetProxy = user.getRetweets().get(1);
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getRetweets().findFirst().getValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getRetweets().findFirstValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getRetweets().iterator(null, null, 1).next().getValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getRetweets().iterator(null, null, 1).nextValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
 	}
 
 	@After

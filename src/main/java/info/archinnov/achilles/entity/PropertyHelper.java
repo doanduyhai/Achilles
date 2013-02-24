@@ -42,10 +42,11 @@ public class PropertyHelper
 {
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
-	public Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
+	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
 	private EntityHelper entityHelper = new EntityHelper();
 
-	public PropertyHelper() {
+	static
+	{
 		// Bytes
 		allowedTypes.add(byte[].class);
 		allowedTypes.add(ByteBuffer.class);
@@ -89,8 +90,9 @@ public class PropertyHelper
 
 		// UUID
 		allowedTypes.add(UUID.class);
-
 	}
+
+	public PropertyHelper() {}
 
 	public MultiKeyProperties parseMultiKey(Class<?> keyClass)
 	{
@@ -343,7 +345,7 @@ public class PropertyHelper
 		return key;
 	}
 
-	public <T> boolean isSupportedType(Class<T> valueClass)
+	public static <T> boolean isSupportedType(Class<T> valueClass)
 	{
 		return allowedTypes.contains(valueClass);
 	}

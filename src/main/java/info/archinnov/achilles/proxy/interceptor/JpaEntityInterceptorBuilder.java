@@ -25,6 +25,7 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 	private Set<Method> lazyLoaded = new HashSet<Method>();
 	private EntityMeta<ID> entityMeta;
 	private EntityHelper helper = new EntityHelper();
+	private EntityLoader loader = new EntityLoader();
 
 	public static <ID extends Serializable> JpaEntityInterceptorBuilder<ID> builder(
 			EntityMeta<ID> entityMeta)
@@ -90,7 +91,7 @@ public class JpaEntityInterceptorBuilder<ID extends Serializable>
 		interceptor.setKey((ID) helper
 				.getValueFromField(target, entityMeta.getIdMeta().getGetter()));
 
-		interceptor.setLoader(new EntityLoader());
+		interceptor.setLoader(loader);
 		return interceptor;
 	}
 }

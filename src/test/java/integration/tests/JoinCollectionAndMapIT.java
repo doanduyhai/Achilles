@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -277,24 +278,32 @@ public class JoinCollectionAndMapIT
 
 		User foundFriend1 = foundFriends.iterator().next();
 		User foundFriend2 = foundFriends.iterator().next();
+
+		assertThat(foundFriend1).isInstanceOf(Factory.class);
+		assertThat(foundFriend2).isInstanceOf(Factory.class);
 		assertThat(foundFriend1.getFirstname()).isIn("friend1", "friend2");
 		assertThat(foundFriend2.getFirstname()).isIn("friend1", "friend2");
 
 		List<Tweet> foundTweets = bean.getTweets();
 
 		assertThat(foundTweets).hasSize(2);
+		assertThat(foundTweets.get(0)).isInstanceOf(Factory.class);
 		assertThat(foundTweets.get(0).getId()).isEqualTo(tweet1.getId());
 		assertThat(foundTweets.get(0).getContent()).isEqualTo(tweet1.getContent());
+		assertThat(foundTweets.get(1)).isInstanceOf(Factory.class);
 		assertThat(foundTweets.get(1).getId()).isEqualTo(tweet2.getId());
 		assertThat(foundTweets.get(1).getContent()).isEqualTo(tweet2.getContent());
 
 		Map<Integer, Tweet> foundTimeline = bean.getTimeline();
 
 		assertThat(foundTimeline).hasSize(3);
+		assertThat(foundTimeline.get(3)).isInstanceOf(Factory.class);
 		assertThat(foundTimeline.get(3).getId()).isEqualTo(tweet3.getId());
 		assertThat(foundTimeline.get(3).getContent()).isEqualTo(tweet3.getContent());
+		assertThat(foundTimeline.get(4)).isInstanceOf(Factory.class);
 		assertThat(foundTimeline.get(4).getId()).isEqualTo(tweet4.getId());
 		assertThat(foundTimeline.get(4).getContent()).isEqualTo(tweet4.getContent());
+		assertThat(foundTimeline.get(5)).isInstanceOf(Factory.class);
 		assertThat(foundTimeline.get(5).getId()).isEqualTo(tweet5.getId());
 		assertThat(foundTimeline.get(5).getContent()).isEqualTo(tweet5.getContent());
 	}
@@ -315,8 +324,10 @@ public class JoinCollectionAndMapIT
 
 		em.refresh(bean);
 
-		assertThat(bean.getFriends().iterator().next().getFirstname()).isEqualTo(
-				"updated_firstname");
+		User friend = bean.getFriends().iterator().next();
+
+		assertThat(friend).isInstanceOf(Factory.class);
+		assertThat(friend.getFirstname()).isEqualTo("updated_firstname");
 	}
 
 	@Test

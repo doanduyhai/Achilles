@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -102,6 +103,7 @@ public class JoinColumnIT
 		User joinUser = tweet.getCreator();
 
 		assertThat(joinUser).isNotNull();
+		assertThat(joinUser).isInstanceOf(Factory.class);
 		assertThat(joinUser.getId()).isEqualTo(creatorId);
 		assertThat(joinUser.getFirstname()).isEqualTo("fn");
 		assertThat(joinUser.getLastname()).isEqualTo("ln");
@@ -125,6 +127,7 @@ public class JoinColumnIT
 		User joinUser = tweet.getCreator();
 
 		assertThat(joinUser).isNotNull();
+		assertThat(joinUser).isInstanceOf(Factory.class);
 		assertThat(joinUser.getId()).isEqualTo(creatorId);
 		assertThat(joinUser.getFirstname()).isEqualTo("fn");
 		assertThat(joinUser.getLastname()).isEqualTo("ln");
@@ -154,6 +157,7 @@ public class JoinColumnIT
 		joinUser = tweet.getCreator();
 
 		assertThat(joinUser).isNotNull();
+		assertThat(joinUser).isInstanceOf(Factory.class);
 		assertThat(joinUser.getId()).isEqualTo(creatorId);
 		assertThat(joinUser.getFirstname()).isEqualTo("changed_fn");
 		assertThat(joinUser.getLastname()).isEqualTo("changed_ln");

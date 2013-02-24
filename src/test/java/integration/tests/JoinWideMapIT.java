@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -134,14 +135,14 @@ public class JoinWideMapIT
 		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet1.getId());
 		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet1.getContent());
 
-		List<Tweet> foundOwnTweetsValues = user.getTweets().findValuesReverse(2, 1, 5);
+		List<Tweet> foundOwnTweetsValues = user.getTweets().findReverseValues(2, 1, 5);
 
 		assertThat(foundOwnTweetsValues.get(0).getId()).isEqualTo(ownTweet2.getId());
 		assertThat(foundOwnTweetsValues.get(0).getContent()).isEqualTo(ownTweet2.getContent());
 		assertThat(foundOwnTweetsValues.get(1).getId()).isEqualTo(ownTweet1.getId());
 		assertThat(foundOwnTweetsValues.get(1).getContent()).isEqualTo(ownTweet1.getContent());
 
-		List<Integer> foundOwnTweetsKeys = user.getTweets().findKeysReverse(2, 1, 5);
+		List<Integer> foundOwnTweetsKeys = user.getTweets().findReverseKeys(2, 1, 5);
 
 		assertThat(foundOwnTweetsKeys.get(0)).isEqualTo(2);
 		assertThat(foundOwnTweetsKeys.get(1)).isEqualTo(1);
@@ -218,6 +219,28 @@ public class JoinWideMapIT
 						+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST");
 
 		user.getTimeline().insert(RandomUtils.nextLong(), unkonwTweet);
+	}
+
+	@Test
+	public void should_proxy_join_entity() throws Exception
+	{
+		user = em.merge(user);
+		user.getTweets().insert(1, ownTweet1);
+
+		Tweet tweetProxy = user.getTweets().get(1);
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getTweets().findFirst().getValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getTweets().findFirstValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getTweets().iterator(null, null, 1).next().getValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
+
+		tweetProxy = user.getTweets().iterator(null, null, 1).nextValue();
+		assertThat(tweetProxy).isInstanceOf(Factory.class);
 	}
 
 	private UUID readUUID(String value) throws Exception

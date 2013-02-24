@@ -1,8 +1,6 @@
 package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -14,11 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 import me.prettyprint.cassandra.service.ColumnSliceIterator.ColumnSliceFinish;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.SliceQuery;
 
 /**
@@ -41,7 +37,7 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 	private int count = DEFAULT_LENGTH;
 	private int columns = 0;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
-	EntityLoader loader = new EntityLoader();
+	private EntityLoader loader = new EntityLoader();
 
 	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
@@ -117,15 +113,15 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 		Iterator<HColumn<N, V>> iter = query.execute().get().getColumns().iterator();
 		List<V> joinIds = new ArrayList<V>();
 		Map<V, Pair<N, Integer>> hColumMap = new HashMap<V, Pair<N, Integer>>();
-		Serializer<?> nameSerializer;
-		if (propertyMeta.type().isExternal())
-		{
-			nameSerializer = COMPOSITE_SRZ;
-		}
-		else
-		{
-			nameSerializer = DYNA_COMP_SRZ;
-		}
+		// Serializer<?> nameSerializer;
+		// if (propertyMeta.type().isExternal())
+		// {
+		// nameSerializer = COMPOSITE_SRZ;
+		// }
+		// else
+		// {
+		// nameSerializer = DYNA_COMP_SRZ;
+		// }
 
 		while (iter.hasNext())
 		{
@@ -158,10 +154,9 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 			N name = pair.left;
 			Integer ttl = pair.right;
 
-			HColumn<N, VALUE> joinedHColumn = HFactory.createColumn(name,
-					loadedEntities.get(joinId), ttl, (Serializer<N>) nameSerializer,
-					propertyMeta.getValueSerializer());
+			HColumn<N, VALUE> joinedHColumn = new JoinHColumn<N, VALUE>();
 
+			joinedHColumn.setName(name).setValue(loadedEntities.get(joinId)).setTtl(ttl);
 			joinedHColumns.add(joinedHColumn);
 		}
 

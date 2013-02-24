@@ -1,5 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
+import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
+import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
@@ -248,7 +250,7 @@ public class PropertyParser
 					Validator
 							.validateAllowedTypes(
 									keyClass,
-									propertyHelper.allowedTypes,
+									allowedTypes,
 									"The class '"
 											+ keyClass.getCanonicalName()
 											+ "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
@@ -291,11 +293,11 @@ public class PropertyParser
 			ObjectMapper objectMapper)
 	{
 		String externalColumnFamilyName = field.getAnnotation(Column.class).table();
-		PropertyMeta<?, ?> propertyMeta = this.parseWideMapProperty(entityClass, field, propertyName,
-				objectMapper);
+		PropertyMeta<?, ?> propertyMeta = this.parseWideMapProperty(entityClass, field,
+				propertyName, objectMapper);
 		propertyMeta.setType(EXTERNAL_WIDE_MAP);
 		GenericCompositeDao<ID, ?> dao;
-		if (propertyHelper.isSupportedType(propertyMeta.getValueClass()))
+		if (isSupportedType(propertyMeta.getValueClass()))
 		{
 			dao = new GenericCompositeDao(keyspace, idMeta.getValueSerializer(),
 					propertyMeta.getValueSerializer(), externalColumnFamilyName);

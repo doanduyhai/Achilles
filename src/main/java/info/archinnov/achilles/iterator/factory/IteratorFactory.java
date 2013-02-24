@@ -38,11 +38,18 @@ public class IteratorFactory
 			"unchecked",
 			"rawtypes"
 	})
-	public <K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForDynamicComposite(
-			AchillesJoinSliceIterator<?, DynamicComposite, ?, K, V> joinColumnSliceIterator,
+	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForDynamicComposite(
+			AchillesJoinSliceIterator<ID, DynamicComposite, JOIN_ID, K, V> joinColumnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		return new KeyValueIteratorForDynamicComposite<K, V>(
 				(AchillesJoinSliceIterator) joinColumnSliceIterator, propertyMeta);
+	}
+
+	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForComposite(
+			AchillesJoinSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator,
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return new KeyValueIteratorForComposite<K, V>(joinColumnSliceIterator, propertyMeta);
 	}
 }

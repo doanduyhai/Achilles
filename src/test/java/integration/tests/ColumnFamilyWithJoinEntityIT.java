@@ -19,6 +19,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+import net.sf.cglib.proxy.Factory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -129,7 +130,7 @@ public class ColumnFamilyWithJoinEntityIT
 		assertThat(foundUser2.getFirstname()).isEqualTo(user1.getFirstname());
 		assertThat(foundUser2.getLastname()).isEqualTo(user1.getLastname());
 
-		List<User> foundFriendValues = friends.findValuesReverse(2, 1, 5);
+		List<User> foundFriendValues = friends.findReverseValues(2, 1, 5);
 
 		assertThat(foundFriendValues.get(0).getId()).isEqualTo(user2.getId());
 		assertThat(foundFriendValues.get(0).getFirstname()).isEqualTo(user2.getFirstname());
@@ -139,7 +140,7 @@ public class ColumnFamilyWithJoinEntityIT
 		assertThat(foundFriendValues.get(1).getFirstname()).isEqualTo(user1.getFirstname());
 		assertThat(foundFriendValues.get(1).getLastname()).isEqualTo(user1.getLastname());
 
-		List<Integer> foundFriendKeys = friends.findKeysReverse(2, 1, 5);
+		List<Integer> foundFriendKeys = friends.findReverseKeys(2, 1, 5);
 
 		assertThat(foundFriendKeys.get(0)).isEqualTo(2);
 		assertThat(foundFriendKeys.get(1)).isEqualTo(1);
@@ -219,6 +220,27 @@ public class ColumnFamilyWithJoinEntityIT
 
 		assertThat(saveFriendIds).hasSize(0);
 
+	}
+
+	@Test
+	public void should_proxy_join_entity() throws Exception
+	{
+		friends.insert(2, user1);
+
+		User userProxy = friends.get(2);
+		assertThat(userProxy).isInstanceOf(Factory.class);
+
+		userProxy = friends.findFirst().getValue();
+		assertThat(userProxy).isInstanceOf(Factory.class);
+
+		userProxy = friends.findFirstValue();
+		assertThat(userProxy).isInstanceOf(Factory.class);
+
+		userProxy = friends.iterator(null, null, 1).next().getValue();
+		assertThat(userProxy).isInstanceOf(Factory.class);
+
+		userProxy = friends.iterator(null, null, 1).nextValue();
+		assertThat(userProxy).isInstanceOf(Factory.class);
 	}
 
 	private void insert5Users()

@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.metadata.builder;
 
+import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.columnFamily.ColumnFamilyBuilder;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -36,8 +36,6 @@ public class EntityMetaBuilder<ID>
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
 	private boolean columnFamilyDirectMapping = false;
-
-	PropertyHelper propertyHelper = new PropertyHelper();
 
 	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
 	{
@@ -91,7 +89,7 @@ public class EntityMetaBuilder<ID>
 			Serializer<?> valueSerializer = wideMapMeta.getValueSerializer();
 			GenericCompositeDao<ID, ?> dao;
 
-			if (propertyHelper.isSupportedType(wideMapMeta.getValueClass()))
+			if (isSupportedType(wideMapMeta.getValueClass()))
 			{
 				dao = new GenericCompositeDao(keyspace, idSerializer, valueSerializer,
 						this.columnFamilyName);

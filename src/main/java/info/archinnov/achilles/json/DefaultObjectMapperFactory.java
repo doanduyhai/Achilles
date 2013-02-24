@@ -19,7 +19,7 @@ public class DefaultObjectMapperFactory implements ObjectMapperFactory
 
 	public DefaultObjectMapperFactory() {
 		mapper = new ObjectMapper();
-		mapper.getSerializationConfig().withSerializationInclusion(Inclusion.NON_NULL);
+		mapper.setSerializationInclusion(Inclusion.NON_NULL);
 		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		AnnotationIntrospector primary = new JacksonAnnotationIntrospector();

@@ -194,12 +194,12 @@ public class ExternalWideMapIT
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(4);
 		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value4");
 
-		List<String> foundValues = externalWideMap.findValuesBoundsExclusive(2, 5, 10);
+		List<String> foundValues = externalWideMap.findBoundsExclusiveValues(2, 5, 10);
 
 		assertThat(foundValues.get(0)).isEqualTo("value3");
 		assertThat(foundValues.get(1)).isEqualTo("value4");
 
-		List<Integer> foundKeys = externalWideMap.findKeysBoundsExclusive(2, 5, 10);
+		List<Integer> foundKeys = externalWideMap.findBoundsExclusiveKeys(2, 5, 10);
 
 		assertThat(foundKeys.get(0)).isEqualTo(3);
 		assertThat(foundKeys.get(1)).isEqualTo(4);

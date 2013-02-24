@@ -1,9 +1,11 @@
 package info.archinnov.achilles.proxy.builder;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 import info.archinnov.achilles.validation.Validator;
 import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.Factory;
 
 /**
  * EntityProxyBuilder
@@ -31,5 +33,12 @@ public class EntityProxyBuilder
 				.target(entity).build());
 
 		return (T) enhancer.create();
+	}
+
+	public <T> T getRealObject(T proxy)
+	{
+		Factory factory = (Factory) proxy;
+		JpaEntityInterceptor<T> interceptor = (JpaEntityInterceptor<T>) factory.getCallback(0);
+		return (T) interceptor.getTarget();
 	}
 }

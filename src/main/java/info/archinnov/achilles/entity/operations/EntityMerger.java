@@ -48,6 +48,8 @@ public class EntityMerger
 		T proxy;
 		if (helper.isProxy(entity))
 		{
+			// TODO
+			// User EntityProxyBuilder;
 			Factory factory = (Factory) entity;
 			JpaEntityInterceptor<ID> interceptor = (JpaEntityInterceptor<ID>) factory
 					.getCallback(0);

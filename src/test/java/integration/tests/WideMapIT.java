@@ -202,12 +202,12 @@ public class WideMapIT
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(uuid4);
 		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("tweet4");
 
-		List<String> foundValues = tweets.findValuesBoundsExclusive(uuid2, uuid5, 10);
+		List<String> foundValues = tweets.findBoundsExclusiveValues(uuid2, uuid5, 10);
 
 		assertThat(foundValues.get(0)).isEqualTo("tweet3");
 		assertThat(foundValues.get(1)).isEqualTo("tweet4");
 
-		List<UUID> foundKeys = tweets.findKeysBoundsExclusive(uuid2, uuid5, 10);
+		List<UUID> foundKeys = tweets.findBoundsExclusiveKeys(uuid2, uuid5, 10);
 
 		assertThat(foundKeys.get(0)).isEqualTo(uuid3);
 		assertThat(foundKeys.get(1)).isEqualTo(uuid4);

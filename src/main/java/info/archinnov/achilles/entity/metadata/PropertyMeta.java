@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.lang.reflect.Method;
@@ -42,8 +42,6 @@ public class PropertyMeta<K, V>
 	private ExternalWideMapProperties<?> externalWideMapProperties;
 
 	private boolean singleKey;
-
-	PropertyHelper propertyHelper = new PropertyHelper();
 
 	private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
@@ -216,7 +214,7 @@ public class PropertyMeta<K, V>
 	{
 		try
 		{
-			if (propertyHelper.isSupportedType(valueClass))
+			if (isSupportedType(valueClass))
 			{
 				return value;
 			}
@@ -240,7 +238,7 @@ public class PropertyMeta<K, V>
 			{
 				return this.valueClass.cast(object);
 			}
-			else if (propertyHelper.isSupportedType(valueClass))
+			else if (isSupportedType(valueClass))
 			{
 				return this.valueClass.cast(object);
 			}
