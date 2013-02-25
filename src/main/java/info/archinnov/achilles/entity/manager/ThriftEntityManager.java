@@ -447,7 +447,9 @@ public class ThriftEntityManager implements EntityManager
 	{
 		helper.ensureProxy(entity);
 
-		EntityMeta<?> entityMeta = entityMetaMap.get(entity.getClass());
+		Object realObject = helper.getRealObject(entity);
+
+		EntityMeta<?> entityMeta = entityMetaMap.get(realObject.getClass());
 		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
 		{
 			PropertyType type = propertyMeta.type();
@@ -518,7 +520,9 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> T unproxy(T proxy)
 	{
-		return this.helper.unproxy(proxy);
+		T realObject = this.helper.unproxy(proxy);
+
+		return realObject;
 	}
 
 	/**

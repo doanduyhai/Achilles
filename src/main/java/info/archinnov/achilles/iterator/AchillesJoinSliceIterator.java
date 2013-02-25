@@ -144,20 +144,24 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 			joinIds.add(joinId);
 			hColumMap.put(joinId, new Pair<N, Integer>(hColumn.getName(), hColumn.getTtl()));
 		}
-		Map<V, VALUE> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, propertyMeta.getJoinProperties().getEntityMeta());
-
 		List<HColumn<N, VALUE>> joinedHColumns = new ArrayList<HColumn<N, VALUE>>();
-		for (V joinId : joinIds)
+
+		if (joinIds.size() > 0)
 		{
-			Pair<N, Integer> pair = hColumMap.get(joinId);
-			N name = pair.left;
-			Integer ttl = pair.right;
+			Map<V, VALUE> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+					joinIds, propertyMeta.getJoinProperties().getEntityMeta());
 
-			HColumn<N, VALUE> joinedHColumn = new JoinHColumn<N, VALUE>();
+			for (V joinId : joinIds)
+			{
+				Pair<N, Integer> pair = hColumMap.get(joinId);
+				N name = pair.left;
+				Integer ttl = pair.right;
 
-			joinedHColumn.setName(name).setValue(loadedEntities.get(joinId)).setTtl(ttl);
-			joinedHColumns.add(joinedHColumn);
+				HColumn<N, VALUE> joinedHColumn = new JoinHColumn<N, VALUE>();
+
+				joinedHColumn.setName(name).setValue(loadedEntities.get(joinId)).setTtl(ttl);
+				joinedHColumns.add(joinedHColumn);
+			}
 		}
 
 		iterator = joinedHColumns.iterator();

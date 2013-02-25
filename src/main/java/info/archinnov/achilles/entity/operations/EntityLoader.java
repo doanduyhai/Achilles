@@ -103,6 +103,8 @@ public class EntityLoader
 				{
 					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
 					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
+					// TODO Refactor
+					// helper.buildProxy(entity, entityMeta)
 					entitiesByKey.put(key, helper.buildProxy(entity, entityMeta));
 				}
 			}
@@ -173,13 +175,16 @@ public class EntityLoader
 			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
 		}
 
-		Map<JOIN_ID, V> entitiesMap = this.loadJoinEntities(listPropertyMeta.getValueClass(),
-				(List<JOIN_ID>) joinIds, joinMeta);
-
 		List<V> joinEntities = new ArrayList<V>();
-		for (JOIN_ID joinId : joinIds)
+		if (joinIds.size() > 0)
 		{
-			joinEntities.add(entitiesMap.get(joinId));
+			Map<JOIN_ID, V> entitiesMap = this.loadJoinEntities(listPropertyMeta.getValueClass(),
+					(List<JOIN_ID>) joinIds, joinMeta);
+
+			for (JOIN_ID joinId : joinIds)
+			{
+				joinEntities.add(entitiesMap.get(joinId));
+			}
 		}
 
 		return joinEntities;
@@ -225,13 +230,16 @@ public class EntityLoader
 			joinIds.add(joinIdMeta.getValueFromString(pair.right));
 		}
 
-		Map<Object, V> entitiesMap = this.loadJoinEntities(setPropertyMeta.getValueClass(),
-				(List) joinIds, joinMeta);
-
 		Set<V> joinEntities = new HashSet<V>();
-		for (Object joinId : joinIds)
+		if (joinIds.size() > 0)
 		{
-			joinEntities.add(entitiesMap.get(joinId));
+			Map<Object, V> entitiesMap = this.loadJoinEntities(setPropertyMeta.getValueClass(),
+					(List) joinIds, joinMeta);
+
+			for (Object joinId : joinIds)
+			{
+				joinEntities.add(entitiesMap.get(joinId));
+			}
 		}
 
 		return joinEntities;
@@ -291,12 +299,15 @@ public class EntityLoader
 			joinIds.add(joinId);
 		}
 
-		Map<Object, V> entitiesMap = this.loadJoinEntities(mapPropertyMeta.getValueClass(),
-				(List) joinIds, joinMeta);
-
-		for (Entry<K, Object> entry : partialMap.entrySet())
+		if (joinIds.size() > 0)
 		{
-			map.put(entry.getKey(), entitiesMap.get(entry.getValue()));
+			Map<Object, V> entitiesMap = this.loadJoinEntities(mapPropertyMeta.getValueClass(),
+					(List) joinIds, joinMeta);
+
+			for (Entry<K, Object> entry : partialMap.entrySet())
+			{
+				map.put(entry.getKey(), entitiesMap.get(entry.getValue()));
+			}
 		}
 
 		return map;

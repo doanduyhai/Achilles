@@ -394,6 +394,7 @@ public class ThriftEntityManagerTest
 
 		TestBean bean = new TestBean();
 		when(helper.isProxy(bean)).thenReturn(true);
+		when(helper.getRealObject(bean)).thenReturn(bean);
 		when(entityMetaMap.get(TestBean.class)).thenReturn(entityMeta);
 
 		PropertyMeta<Void, String> friendsMeta = PropertyMetaTestBuilder //
