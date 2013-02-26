@@ -352,7 +352,11 @@ public class EntityHelper
 	@SuppressWarnings("unchecked")
 	public <T> T buildProxy(T entity, EntityMeta<?> entityMeta)
 	{
-		Validator.validateNotNull(entity, "entity for proxy builder should not be null");
+		if (entity == null)
+		{
+			return null;
+		}
+
 		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be");
 
 		Enhancer enhancer = new Enhancer();
@@ -391,9 +395,14 @@ public class EntityHelper
 
 	public <T> T unproxy(T proxy)
 	{
-		this.ensureProxy(proxy);
-
-		return this.getRealObject(proxy);
+		if (this.isProxy(proxy))
+		{
+			return this.getRealObject(proxy);
+		}
+		else
+		{
+			return proxy;
+		}
 	}
 
 	public <T> Collection<T> unproxy(Collection<T> proxies)
@@ -402,8 +411,7 @@ public class EntityHelper
 		Collection<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{
-			this.ensureProxy(proxy);
-			result.add(this.getRealObject(proxy));
+			result.add(this.unproxy(proxy));
 		}
 
 		return result;
@@ -414,8 +422,7 @@ public class EntityHelper
 		List<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{
-			this.ensureProxy(proxy);
-			result.add(this.getRealObject(proxy));
+			result.add(this.unproxy(proxy));
 		}
 
 		return result;
@@ -426,8 +433,7 @@ public class EntityHelper
 		Set<T> result = new HashSet<T>();
 		for (T proxy : proxies)
 		{
-			this.ensureProxy(proxy);
-			result.add(this.getRealObject(proxy));
+			result.add(this.unproxy(proxy));
 		}
 
 		return result;

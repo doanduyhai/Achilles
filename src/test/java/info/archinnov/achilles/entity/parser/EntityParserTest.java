@@ -13,8 +13,8 @@ import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -417,6 +417,7 @@ public class EntityParserTest
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_fill_join_entity_meta_map_with_entity_meta() throws Exception
 	{
@@ -435,7 +436,8 @@ public class EntityParserTest
 
 		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 
-		assertThat(joinPropertyMeta.getJoinProperties().getEntityMeta()).isSameAs(joinEntityMeta);
+		assertThat((EntityMeta<Long>) joinPropertyMeta.getJoinProperties().getEntityMeta())
+				.isSameAs(joinEntityMeta);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -464,7 +466,8 @@ public class EntityParserTest
 
 		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 
-		assertThat(joinPropertyMeta.getJoinProperties().getEntityMeta()).isSameAs(joinEntityMeta);
+		assertThat((EntityMeta<Long>) joinPropertyMeta.getJoinProperties().getEntityMeta())
+				.isSameAs(joinEntityMeta);
 
 		GenericCompositeDao<?, ?> externalWideMapDao = joinPropertyMeta
 				.getExternalWideMapProperties().getExternalWideMapDao();

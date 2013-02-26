@@ -45,7 +45,7 @@ public class EntityMerger
 		T proxy;
 		if (helper.isProxy(entity))
 		{
-			Object realObject = helper.getRealObject(entity);
+			T realObject = helper.getRealObject(entity);
 			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
 					.getInterceptor(entity);
 
@@ -78,7 +78,7 @@ public class EntityMerger
 
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
 
-				if (propertyMeta.type().isJoinColumn())
+				if (propertyMeta.isJoin())
 				{
 					List<CascadeType> cascadeTypes = propertyMeta.getJoinProperties()
 							.getCascadeTypes();
@@ -87,16 +87,16 @@ public class EntityMerger
 						switch (propertyMeta.type())
 						{
 							case JOIN_SIMPLE:
-								mergeJoinProperty(entity, propertyMeta);
+								mergeJoinProperty(realObject, propertyMeta);
 								break;
 							case JOIN_LIST:
-								mergeJoinListProperty(entity, propertyMeta);
+								mergeJoinListProperty(realObject, propertyMeta);
 								break;
 							case JOIN_SET:
-								mergeJoinSetProperty(entity, propertyMeta);
+								mergeJoinSetProperty(realObject, propertyMeta);
 								break;
 							case JOIN_MAP:
-								mergeJoinMapProperty(entity, propertyMeta);
+								mergeJoinMapProperty(realObject, propertyMeta);
 								break;
 							default:
 								break;
@@ -104,6 +104,7 @@ public class EntityMerger
 					}
 				}
 			}
+			interceptor.setTarget(realObject);
 			proxy = entity;
 		}
 		else
@@ -115,7 +116,6 @@ public class EntityMerger
 		return proxy;
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> void mergeJoinProperty(T entity, PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -127,7 +127,6 @@ public class EntityMerger
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> void mergeJoinListProperty(T entity, PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -144,7 +143,6 @@ public class EntityMerger
 		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> void mergeJoinSetProperty(T entity, PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -161,7 +159,6 @@ public class EntityMerger
 		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> void mergeJoinMapProperty(T entity, PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();

@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 /**
  * ExternalWideMapWrapperTest
@@ -81,10 +80,6 @@ public class ExternalWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(wrapper, "compositeHelper", compositeHelper);
-		Whitebox.setInternalState(wrapper, "keyValueFactory", keyValueFactory);
-		Whitebox.setInternalState(wrapper, "iteratorFactory", iteratorFactory);
-		wrapper.setId(id);
 
 		when(wideMapMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 		when(compositeKeyFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);

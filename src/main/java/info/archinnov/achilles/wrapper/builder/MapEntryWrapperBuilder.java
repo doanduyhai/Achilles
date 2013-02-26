@@ -4,7 +4,6 @@ import info.archinnov.achilles.wrapper.MapEntryWrapper;
 
 import java.util.Map;
 
-
 /**
  * MapEntryWrapperBuilder
  * 

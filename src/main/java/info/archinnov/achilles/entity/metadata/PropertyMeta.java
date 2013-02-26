@@ -255,6 +255,36 @@ public class PropertyMeta<K, V>
 		}
 	}
 
+	public boolean isJoin()
+	{
+		return type.isJoinColumn();
+	}
+
+	public EntityMeta<?> joinMeta()
+	{
+		if (joinProperties != null)
+		{
+			return joinProperties.getEntityMeta();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public PropertyMeta<Void, ?> joinIdMeta()
+	{
+		if (joinProperties != null && joinProperties.getEntityMeta() != null)
+		{
+			return joinProperties.getEntityMeta().getIdMeta();
+		}
+		else
+		{
+			return null;
+		}
+
+	}
+
 	public JoinProperties getJoinProperties()
 	{
 		return joinProperties;

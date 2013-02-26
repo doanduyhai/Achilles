@@ -351,6 +351,54 @@ public class JoinCollectionAndMapIT
 
 	}
 
+	@Test
+	public void should_unproxy_join_entity() throws Exception
+	{
+		em.persist(friend1);
+		em.persist(friend2);
+
+		Set<User> friends = new HashSet<User>();
+		friends.add(friend1);
+		friends.add(friend2);
+
+		bean.setTweets(Arrays.asList(tweet1, tweet2));
+		bean.setFriends(friends);
+
+		Map<Integer, Tweet> timeline = new HashMap<Integer, Tweet>();
+
+		timeline.put(3, tweet3);
+		timeline.put(4, tweet4);
+		timeline.put(5, tweet5);
+
+		bean.setTimeline(timeline);
+
+		em.merge(bean);
+
+		bean = em.unproxy(bean);
+
+		Set<User> foundFriends = bean.getFriends();
+
+		assertThat(foundFriends).hasSize(2);
+
+		User foundFriend1 = foundFriends.iterator().next();
+		User foundFriend2 = foundFriends.iterator().next();
+
+		assertThat(foundFriend1).isNotInstanceOf(Factory.class);
+		assertThat(foundFriend2).isNotInstanceOf(Factory.class);
+
+		List<Tweet> foundTweets = bean.getTweets();
+
+		assertThat(foundTweets.get(0)).isNotInstanceOf(Factory.class);
+		assertThat(foundTweets.get(1)).isNotInstanceOf(Factory.class);
+
+		Map<Integer, Tweet> foundTimeline = bean.getTimeline();
+
+		assertThat(foundTimeline.get(3)).isNotInstanceOf(Factory.class);
+		assertThat(foundTimeline.get(4)).isNotInstanceOf(Factory.class);
+		assertThat(foundTimeline.get(5)).isNotInstanceOf(Factory.class);
+
+	}
+
 	private Long readLong(String value) throws Exception
 	{
 		return this.objectMapper.readValue(value, Long.class);

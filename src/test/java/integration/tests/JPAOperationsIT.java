@@ -343,6 +343,32 @@ public class JPAOperationsIT
 	}
 
 	@Test
+	public void should_return_managed_entity_after_merge() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
+		bean = em.merge(bean);
+
+		assertThat(bean).isInstanceOf(Factory.class);
+	}
+
+	@Test
+	public void should_return_same_entity_as_merged_bean_when_managed() throws Exception
+	{
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
+		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
+		bean.setWelcomeTweet(tweet);
+
+		bean = em.merge(bean);
+
+		CompleteBean bean2 = em.merge(bean);
+
+		assertThat(bean2).isSameAs(bean);
+		assertThat(bean.getWelcomeTweet()).isInstanceOf(Factory.class);
+		assertThat(bean2.getWelcomeTweet()).isInstanceOf(Factory.class);
+	}
+
+	@Test
 	public void should_remove() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)

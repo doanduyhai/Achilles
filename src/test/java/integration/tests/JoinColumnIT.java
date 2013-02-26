@@ -183,6 +183,22 @@ public class JoinColumnIT
 		em.persist(tweet);
 	}
 
+	@Test
+	public void should_unproxy_entity() throws Exception
+	{
+		em.persist(creator);
+
+		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+				.buid();
+
+		tweet = em.merge(tweet);
+		em.initialize(tweet);
+		tweet = em.unproxy(tweet);
+
+		assertThat(tweet).isNotInstanceOf(Factory.class);
+		assertThat(tweet.getCreator()).isNotInstanceOf(Factory.class);
+	}
+
 	private Long readLong(String value) throws Exception
 	{
 		return this.objectMapper.readValue(value, Long.class);

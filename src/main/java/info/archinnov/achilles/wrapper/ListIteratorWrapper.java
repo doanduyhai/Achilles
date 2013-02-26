@@ -20,7 +20,7 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public void add(V e)
 	{
-		this.target.add(e);
+		this.target.add(helper.unproxy(e));
 		this.markDirty();
 	}
 
@@ -39,7 +39,14 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public V next()
 	{
-		return this.target.next();
+		if (isJoin())
+		{
+			return helper.buildProxy(this.target.next(), joinMeta());
+		}
+		else
+		{
+			return this.target.next();
+		}
 	}
 
 	@Override
@@ -51,7 +58,14 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public V previous()
 	{
-		return this.target.previous();
+		if (isJoin())
+		{
+			return helper.buildProxy(this.target.previous(), joinMeta());
+		}
+		else
+		{
+			return this.target.previous();
+		}
 	}
 
 	@Override
@@ -71,7 +85,7 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public void set(V e)
 	{
-		this.target.set(e);
+		this.target.set(helper.unproxy(e));
 		this.markDirty();
 
 	}

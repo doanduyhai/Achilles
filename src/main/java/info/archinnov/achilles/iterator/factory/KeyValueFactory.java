@@ -1,5 +1,7 @@
 package info.archinnov.achilles.iterator.factory;
 
+import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -23,6 +25,7 @@ import com.google.common.collect.Lists;
 public class KeyValueFactory
 {
 	private EntityLoader loader = new EntityLoader();
+	private EntityHelper helper = new EntityHelper();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
 
@@ -57,18 +60,25 @@ public class KeyValueFactory
 				dynamicCompositeTransformer.buildValueTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public <K, V> List<V> createJoinValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		List<?> joinIds = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
 		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
-				propertyMeta.getJoinProperties().getEntityMeta());
+				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<V> result = new ArrayList<V>();
 		for (Object joinId : joinIds)
 		{
-			result.add(joinEntities.get(joinId));
+
+			V value = joinEntities.get(joinId);
+			V proxy = helper.buildProxy(value, propertyMeta.joinMeta());
+			result.add(proxy);
 		}
 
 		return result;
@@ -88,7 +98,11 @@ public class KeyValueFactory
 				dynamicCompositeTransformer.buildKeyValueTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForDynamicComposite(
 			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, String>> hColumns)
 	{
@@ -98,7 +112,7 @@ public class KeyValueFactory
 				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
 
 		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, propertyMeta.getJoinProperties().getEntityMeta());
+				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<Integer> ttls = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildTtlTransformer());
 
@@ -106,8 +120,9 @@ public class KeyValueFactory
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			result.add(new KeyValue<K, V>(keys.get(i), joinEntities.get(joinIds.get(i)), ttls
-					.get(i)));
+			V value = joinEntities.get(joinIds.get(i));
+			V proxy = helper.buildProxy(value, propertyMeta.joinMeta());
+			result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
 		}
 		return result;
 	}
@@ -149,18 +164,25 @@ public class KeyValueFactory
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public <K, V> List<V> createJoinValueListForComposite(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, ?>> hColumns)
 	{
 		List<?> joinIds = Lists
 				.transform(hColumns, compositeTransformer.buildRawValueTransformer());
 		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
-				propertyMeta.getJoinProperties().getEntityMeta());
+				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<V> result = new ArrayList<V>();
 		for (Object joinId : joinIds)
 		{
-			result.add(joinEntities.get(joinId));
+			V joinEntity = joinEntities.get(joinId);
+			V proxy = helper.buildProxy(joinEntity, propertyMeta.getJoinProperties()
+					.getEntityMeta());
+			result.add(proxy);
 		}
 
 		return result;
@@ -173,7 +195,11 @@ public class KeyValueFactory
 				compositeTransformer.buildKeyValueTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForComposite(
 			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, ?>> hColumns)
 	{
@@ -182,15 +208,17 @@ public class KeyValueFactory
 		List<Object> joinIds = Lists.transform(hColumns,
 				compositeTransformer.buildRawValueTransformer());
 		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, propertyMeta.getJoinProperties().getEntityMeta());
+				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<Integer> ttls = Lists.transform(hColumns, compositeTransformer.buildTtlTransformer());
 
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			result.add(new KeyValue<K, V>(keys.get(i), joinEntities.get(joinIds.get(i)), ttls
-					.get(i)));
+			V joinEntity = joinEntities.get(joinIds.get(i));
+			V proxy = helper.buildProxy(joinEntity, propertyMeta.getJoinProperties()
+					.getEntityMeta());
+			result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
 		}
 		return result;
 	}

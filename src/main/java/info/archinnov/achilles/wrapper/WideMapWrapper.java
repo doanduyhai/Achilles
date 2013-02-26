@@ -3,6 +3,7 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -27,26 +28,28 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 {
 
-	private CompositeHelper helper = new CompositeHelper();
-	private KeyValueFactory keyValueFactory = new KeyValueFactory();
-	private IteratorFactory iteratorFactory = new IteratorFactory();
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
-
 	protected ID id;
 	protected GenericDynamicCompositeDao<ID> entityDao;
 	protected GenericCompositeDao<ID, ?> columnFamilyDao;
-	protected PropertyMeta<K, V> wideMapMeta;
+	protected PropertyMeta<K, V> propertyMeta;
+	protected EntityHelper entityHelper;
+
+	protected CompositeHelper compositeHelper;
+	protected KeyValueFactory keyValueFactory;
+	protected IteratorFactory iteratorFactory;
+	protected DynamicCompositeKeyFactory keyFactory;
 
 	protected DynamicComposite buildComposite(K key)
 	{
-		return keyFactory.createForInsert(wideMapMeta, key);
+		return keyFactory.createForInsert(propertyMeta, key);
 	}
 
 	@Override
 	public V get(K key)
 	{
 		Object value = entityDao.getValue(id, buildComposite(key));
-		return wideMapMeta.getValueFromString(value);
+
+		return propertyMeta.getValueFromString(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -55,12 +58,14 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	{
 		if (this.interceptor.isBatchMode())
 		{
-			entityDao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(value),
-					ttl, (Mutator<ID>) interceptor.getMutator());
+			entityDao.setValueBatch(id, buildComposite(key),
+					propertyMeta.writeValueToString(value), ttl,
+					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			entityDao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value), ttl);
+			entityDao
+					.setValue(id, buildComposite(key), propertyMeta.writeValueToString(value), ttl);
 		}
 	}
 
@@ -70,12 +75,12 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	{
 		if (this.interceptor.isBatchMode())
 		{
-			entityDao.setValueBatch(id, buildComposite(key), wideMapMeta.writeValueToString(value),
-					(Mutator<ID>) interceptor.getMutator());
+			entityDao.setValueBatch(id, buildComposite(key),
+					propertyMeta.writeValueToString(value), (Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			entityDao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(value));
+			entityDao.setValue(id, buildComposite(key), propertyMeta.writeValueToString(value));
 		}
 	}
 
@@ -84,22 +89,23 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 			boolean reverse, int count)
 	{
 
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
 
-		if (wideMapMeta.type().isJoinColumn())
+		if (propertyMeta.isJoin())
 		{
-			return keyValueFactory.createJoinKeyValueListForDynamicComposite(wideMapMeta, hColumns);
+			return keyValueFactory
+					.createJoinKeyValueListForDynamicComposite(propertyMeta, hColumns);
 		}
 		else
 		{
 
-			return keyValueFactory.createKeyValueListForDynamicComposite(wideMapMeta, hColumns);
+			return keyValueFactory.createKeyValueListForDynamicComposite(propertyMeta, hColumns);
 		}
 	}
 
@@ -108,21 +114,21 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 			boolean reverse, int count)
 	{
 
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
-		if (wideMapMeta.type().isJoinColumn())
+		if (propertyMeta.isJoin())
 		{
-			return keyValueFactory.createJoinValueListForDynamicComposite(wideMapMeta, hColumns);
+			return keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns);
 		}
 		else
 		{
 
-			return keyValueFactory.createValueListForDynamicComposite(wideMapMeta, hColumns);
+			return keyValueFactory.createValueListForDynamicComposite(propertyMeta, hColumns);
 		}
 	}
 
@@ -131,14 +137,14 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 			boolean reverse, int count)
 	{
 
-		helper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
 				queryComps[0], queryComps[1], reverse, count);
-		return keyValueFactory.createKeyListForDynamicComposite(wideMapMeta, hColumns);
+		return keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns);
 	}
 
 	@Override
@@ -147,17 +153,17 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	{
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		if (wideMapMeta.type().isJoinColumn())
+		if (propertyMeta.isJoin())
 		{
 
 			AchillesJoinSliceIterator<ID, DynamicComposite, String, K, V> joinColumnSliceIterator = entityDao
-					.getJoinColumnsIterator(wideMapMeta, id, queryComps[0], queryComps[1], reverse,
-							count);
+					.getJoinColumnsIterator(propertyMeta, id, queryComps[0], queryComps[1],
+							reverse, count);
 
 			return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
-					joinColumnSliceIterator, wideMapMeta);
+					joinColumnSliceIterator, propertyMeta);
 
 		}
 		else
@@ -167,7 +173,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 					.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
 
 			return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator,
-					wideMapMeta);
+					propertyMeta);
 		}
 	}
 
@@ -181,10 +187,10 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
 
-		helper.checkBounds(wideMapMeta, start, end, false);
+		compositeHelper.checkBounds(propertyMeta, start, end, false);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery(//
-				wideMapMeta, start, inclusiveStart, end, inclusiveEnd, false);
+				propertyMeta, start, inclusiveStart, end, inclusiveEnd, false);
 
 		entityDao.removeColumnRange(id, queryComps[0], queryComps[1]);
 	}
@@ -219,7 +225,31 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 
 	public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
 	{
-		this.wideMapMeta = wideMapMeta;
+		this.propertyMeta = wideMapMeta;
 	}
 
+	public void setEntityHelper(EntityHelper entityHelper)
+	{
+		this.entityHelper = entityHelper;
+	}
+
+	public void setCompositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+	}
+
+	public void setKeyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+	}
+
+	public void setIteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+	}
+
+	public void setKeyFactory(DynamicCompositeKeyFactory keyFactory)
+	{
+		this.keyFactory = keyFactory;
+	}
 }

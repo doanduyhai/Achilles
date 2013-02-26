@@ -31,16 +31,15 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 {
 	protected ID id;
 	protected GenericCompositeDao dao;
-	protected PropertyMeta<K, V> wideMapMeta;
-
-	private CompositeHelper compositeHelper = new CompositeHelper();
-	private KeyValueFactory keyValueFactory = new KeyValueFactory();
-	private IteratorFactory iteratorFactory = new IteratorFactory();
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	protected PropertyMeta<K, V> propertyMeta;
+	private CompositeHelper compositeHelper;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private CompositeKeyFactory compositeKeyFactory;
 
 	protected Composite buildComposite(K key)
 	{
-		Composite comp = compositeKeyFactory.createBaseComposite(wideMapMeta, key);
+		Composite comp = compositeKeyFactory.createBaseComposite(propertyMeta, key);
 		return comp;
 	}
 
@@ -48,7 +47,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	public V get(K key)
 	{
 		Object value = dao.getValue(id, buildComposite(key));
-		return wideMapMeta.castValue(value);
+		return propertyMeta.castValue(value);
 	}
 
 	@Override
@@ -57,13 +56,13 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		if (this.interceptor.isBatchMode())
 		{
 			dao.setValueBatch(id, buildComposite(key),
-					wideMapMeta.writeValueAsSupportedTypeOrString(value),
+					propertyMeta.writeValueAsSupportedTypeOrString(value),
 					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
 			dao.setValue(id, buildComposite(key),
-					wideMapMeta.writeValueAsSupportedTypeOrString(value));
+					propertyMeta.writeValueAsSupportedTypeOrString(value));
 		}
 	}
 
@@ -73,14 +72,14 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		if (this.interceptor.isBatchMode())
 		{
 			dao.setValueBatch(id, buildComposite(key),
-					wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl,
+					propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
 					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
 
 			dao.setValue(id, buildComposite(key),
-					wideMapMeta.writeValueAsSupportedTypeOrString(value), ttl);
+					propertyMeta.writeValueAsSupportedTypeOrString(value), ttl);
 		}
 	}
 
@@ -88,43 +87,43 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns);
+		return keyValueFactory.createKeyValueListForComposite(propertyMeta, (List) hColumns);
 	}
 
 	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createValueListForComposite(wideMapMeta, (List) hColumns);
+		return keyValueFactory.createValueListForComposite(propertyMeta, (List) hColumns);
 	}
 
 	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
 			boolean reverse, int count)
 	{
-		compositeHelper.checkBounds(wideMapMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], reverse, count);
 
-		return keyValueFactory.createKeyListForComposite(wideMapMeta, (List) hColumns);
+		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
 	}
 
 	@Override
@@ -132,13 +131,13 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 			boolean inclusiveEnd, boolean reverse, int count)
 	{
 
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
 				inclusiveStart, end, inclusiveEnd, reverse);
 
 		AchillesSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
 				composites[0], composites[1], reverse, count);
 
-		return iteratorFactory.createKeyValueIteratorForComposite(columnSliceIterator, wideMapMeta);
+		return iteratorFactory.createKeyValueIteratorForComposite(columnSliceIterator, propertyMeta);
 
 	}
 
@@ -151,8 +150,8 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 	@Override
 	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
 	{
-		compositeHelper.checkBounds(wideMapMeta, start, end, false);
-		Composite[] composites = compositeKeyFactory.createForQuery(wideMapMeta, start,
+		compositeHelper.checkBounds(propertyMeta, start, end, false);
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
 				inclusiveStart, end, inclusiveEnd, false);
 		dao.removeColumnRange(id, composites[0], composites[1]);
 	}
@@ -182,6 +181,26 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 
 	public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
 	{
-		this.wideMapMeta = wideMapMeta;
+		this.propertyMeta = wideMapMeta;
+	}
+
+	public void setCompositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+	}
+
+	public void setKeyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+	}
+
+	public void setIteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+	}
+
+	public void setCompositeKeyFactory(CompositeKeyFactory compositeKeyFactory)
+	{
+		this.compositeKeyFactory = compositeKeyFactory;
 	}
 }

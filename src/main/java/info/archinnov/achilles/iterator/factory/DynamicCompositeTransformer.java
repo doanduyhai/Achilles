@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -18,6 +19,7 @@ public class DynamicCompositeTransformer
 {
 
 	private PropertyHelper helper = new PropertyHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
 	public <K, V> Function<HColumn<DynamicComposite, String>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)
@@ -55,8 +57,7 @@ public class DynamicCompositeTransformer
 			{
 				if (propertyMeta.type().isJoinColumn())
 				{
-					return propertyMeta.getJoinProperties().getEntityMeta().getIdMeta()
-							.getValueFromString(hColumn.getValue());
+					return propertyMeta.joinIdMeta().getValueFromString(hColumn.getValue());
 				}
 				else
 				{
@@ -106,9 +107,9 @@ public class DynamicCompositeTransformer
 			HColumn<DynamicComposite, String> hColumn)
 	{
 		V value;
-		if (propertyMeta.type().isJoinColumn())
+		if (propertyMeta.isJoin())
 		{
-			value = (V) hColumn.getValue();
+			value = entityHelper.buildProxy((V) hColumn.getValue(), propertyMeta.joinMeta());
 		}
 		else
 		{

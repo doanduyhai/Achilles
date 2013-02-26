@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -40,7 +41,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -78,7 +78,10 @@ public class JoinExternalWideMapWrapperTest
 	private EntityLoader loader;
 
 	@Mock
-	private CompositeHelper helper;
+	private EntityHelper entityHelper;
+
+	@Mock
+	private CompositeHelper compositeHelper;
 
 	@Mock
 	private KeyValueFactory keyValueFactory;
@@ -101,12 +104,6 @@ public class JoinExternalWideMapWrapperTest
 	public void setUp()
 	{
 		wrapper.setId(id);
-		Whitebox.setInternalState(wrapper, "persister", persister);
-		Whitebox.setInternalState(wrapper, "loader", loader);
-		Whitebox.setInternalState(wrapper, "helper", helper);
-		Whitebox.setInternalState(wrapper, "compositeKeyFactory", compositeKeyFactory);
-		Whitebox.setInternalState(wrapper, "keyValueFactory", keyValueFactory);
-		Whitebox.setInternalState(wrapper, "iteratorFactory", iteratorFactory);
 	}
 
 	@Test
@@ -291,7 +288,7 @@ public class JoinExternalWideMapWrapperTest
 		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);
 
-		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -324,7 +321,7 @@ public class JoinExternalWideMapWrapperTest
 		List<UserBean> expected = wrapper.findValues(start, inclusiveStart, end, inclusiveEnd,
 				reverse, count);
 
-		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -357,7 +354,7 @@ public class JoinExternalWideMapWrapperTest
 		List<Integer> expected = wrapper.findKeys(start, inclusiveStart, end, inclusiveEnd,
 				reverse, count);
 
-		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -425,7 +422,7 @@ public class JoinExternalWideMapWrapperTest
 
 		wrapper.remove(start, inclusiveStart, end, inclusiveEnd);
 
-		verify(helper).checkBounds(externalJoinWideMapMeta, start, end, false);
+		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, false);
 		verify(dao).removeColumnRange(id, startComp, endComp);
 
 	}

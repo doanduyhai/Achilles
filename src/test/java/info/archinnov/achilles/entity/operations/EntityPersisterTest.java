@@ -309,10 +309,7 @@ public class EntityPersisterTest
 		assertThat(holder3.getValue()).isEqualTo("75014");
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked"
-	})
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_batch_join_entity_when_cascade_persist() throws Exception
 	{
@@ -324,11 +321,13 @@ public class EntityPersisterTest
 		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when((PropertyMeta) propertyMeta.joinIdMeta()).thenReturn(
+				joinProperties.getEntityMeta().getIdMeta());
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
-
+		when(helper.unproxy(userBean)).thenReturn(userBean);
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
@@ -340,7 +339,8 @@ public class EntityPersisterTest
 
 	@SuppressWarnings(
 	{
-		"unchecked"
+			"unchecked",
+			"rawtypes"
 	})
 	@Test
 	public void should_not_batch_join_entity_when_no_cascade() throws Exception
@@ -354,13 +354,15 @@ public class EntityPersisterTest
 		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when((PropertyMeta) propertyMeta.joinIdMeta()).thenReturn(
+				joinProperties.getEntityMeta().getIdMeta());
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
-		when(loader.load(UserBean.class, joinId, joinProperties.getEntityMeta())).thenReturn(
-				userBean);
+		when(loader.load(UserBean.class, joinId, (EntityMeta<Long>) joinProperties.getEntityMeta()))
+				.thenReturn(userBean);
 
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
@@ -371,10 +373,7 @@ public class EntityPersisterTest
 		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
 	}
 
-	@SuppressWarnings(
-	{
-		"unchecked"
-	})
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_persist_join_entity_when_cascade_persist() throws Exception
 	{
@@ -386,17 +385,19 @@ public class EntityPersisterTest
 		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
 
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when((PropertyMeta) propertyMeta.joinIdMeta()).thenReturn(
+				joinProperties.getEntityMeta().getIdMeta());
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
 		when(dao.buildMutator()).thenReturn(mutator);
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
 		DynamicComposite composite = new DynamicComposite();
 		when(keyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(composite);
 		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
-
+		when(helper.unproxy(userBean)).thenReturn(userBean);
 		persister.persistProperty(entity, id, dao, propertyMeta, mutator);
 
 		verify(dao)
@@ -404,30 +405,30 @@ public class EntityPersisterTest
 		verify(dao).insertColumnBatch(id, composite, joinId.toString(), mutator);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_cascade_persist() throws Exception
 	{
 		JoinProperties joinProperties = prepareJoinProperties();
-
+		when((PropertyMeta) propertyMeta.joinIdMeta()).thenReturn(
+				joinProperties.getEntityMeta().getIdMeta());
 		when(dao.buildMutator()).thenReturn(joinMutator);
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
-
+		when(helper.unproxy(userBean)).thenReturn(userBean);
 		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 
 		verify(joinMutator).execute();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_check_for_join_entity_when_persisting() throws Exception
 	{
 		JoinProperties joinProperties = prepareJoinProperties();
 		joinProperties.getCascadeTypes().clear();
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 		when(loader.loadVersionSerialUID(joinId, dao)).thenReturn(123L);
 
@@ -435,7 +436,6 @@ public class EntityPersisterTest
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_no_join_entity_found_when_persisting() throws Exception
 	{
@@ -443,7 +443,7 @@ public class EntityPersisterTest
 		joinProperties.getCascadeTypes().clear();
 		when(loader.loadVersionSerialUID(joinId, dao)).thenReturn(null);
 
-		when(helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
 		exception.expect(AchillesException.class);

@@ -110,12 +110,11 @@ public class EntityPersister
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public <ID> void batchPersistJoinEntity(Object entity, ID key,
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		PropertyMeta<Void, ?> idMeta = joinProperties.getEntityMeta().getIdMeta();
+		PropertyMeta<Void, ?> idMeta = propertyMeta.joinIdMeta();
 		Object joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
 
 		if (joinEntity != null)
@@ -136,7 +135,8 @@ public class EntityPersister
 	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
 			JoinProperties joinProperties)
 	{
-		Mutator<JOIN_ID> joinMutator = joinProperties.getEntityMeta().getEntityDao().buildMutator();
+		Mutator<JOIN_ID> joinMutator = (Mutator<JOIN_ID>) joinProperties.getEntityMeta()
+				.getEntityDao().buildMutator();
 		JOIN_ID joinId = this.cascadePersistOrEnsureExists(joinEntity, joinProperties, joinMutator);
 		joinMutator.execute();
 
@@ -147,7 +147,7 @@ public class EntityPersister
 	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(V joinEntity,
 			JoinProperties joinProperties, Mutator<JOIN_ID> joinMutator)
 	{
-		EntityMeta<JOIN_ID> joinEntityMeta = joinProperties.getEntityMeta();
+		EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();
 		JOIN_ID joinId = helper.getKey(joinEntity, joinEntityMeta.getIdMeta());
 		Validate.notNull(joinId, "key value for entity '" + joinEntityMeta.getClassName()
 				+ "' should not be null");
@@ -155,7 +155,7 @@ public class EntityPersister
 		List<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
 		if (cascadeTypes.contains(PERSIST) || cascadeTypes.contains(ALL))
 		{
-			this.persist(joinEntity, joinEntityMeta, joinMutator);
+			this.persist(helper.unproxy(joinEntity), joinEntityMeta, joinMutator);
 		}
 		else
 		{

@@ -105,7 +105,7 @@ public class EntityLoader
 					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
 					// TODO Refactor
 					// helper.buildProxy(entity, entityMeta)
-					entitiesByKey.put(key, helper.buildProxy(entity, entityMeta));
+					entitiesByKey.put(key, entity);
 				}
 			}
 			catch (Exception e)
@@ -167,7 +167,8 @@ public class EntityLoader
 				Integer.MAX_VALUE);
 		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
 
-		EntityMeta<JOIN_ID> joinMeta = listPropertyMeta.getJoinProperties().getEntityMeta();
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) listPropertyMeta.getJoinProperties()
+				.getEntityMeta();
 		PropertyMeta<Void, ?> joinIdMeta = joinMeta.getIdMeta();
 
 		for (Pair<DynamicComposite, String> pair : columns)
@@ -357,15 +358,15 @@ public class EntityLoader
 			EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 
-		V joinEntity = this.load(entityClass, joinId, joinEntityMeta);
-		if (joinEntity != null)
-		{
-			return helper.buildProxy(joinEntity, joinEntityMeta);
-		}
-		else
-		{
-			return null;
-		}
+		return this.load(entityClass, joinId, joinEntityMeta);
+		// if (joinEntity != null)
+		// {
+		// return helper.buildProxy(joinEntity, joinEntityMeta);
+		// }
+		// else
+		// {
+		// return null;
+		// }
 
 	}
 
@@ -387,6 +388,7 @@ public class EntityLoader
 			joinId = joinEntityMeta.getIdMeta().getValueFromString(joinId);
 			return (V) this
 					.loadJoinEntity(joinPropertyMeta.getValueClass(), joinId, joinEntityMeta);
+
 		}
 		else
 		{

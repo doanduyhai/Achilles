@@ -25,7 +25,15 @@ public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iter
 	@Override
 	public V next()
 	{
-		return this.target.next();
+		if (isJoin())
+		{
+			return helper.buildProxy(this.target.next(), joinMeta());
+		}
+		else
+		{
+
+			return this.target.next();
+		}
 	}
 
 	@Override

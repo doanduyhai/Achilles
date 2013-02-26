@@ -5,6 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -68,6 +69,9 @@ public class KeyValueFactoryTest
 	private EntityLoader loader;
 
 	@Mock
+	private EntityHelper helper;
+
+	@Mock
 	private CompositeTransformer compositeTransformer;
 
 	@Mock
@@ -81,6 +85,7 @@ public class KeyValueFactoryTest
 	@Before
 	public void setUp()
 	{
+		Whitebox.setInternalState(factory, "helper", helper);
 		Whitebox.setInternalState(factory, "loader", loader);
 		Whitebox.setInternalState(factory, "compositeTransformer", compositeTransformer);
 		Whitebox.setInternalState(factory, "dynamicCompositeTransformer",
@@ -200,6 +205,8 @@ public class KeyValueFactoryTest
 
 		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
+		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
+		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
 		List<UserBean> builtList = factory.createJoinValueListForDynamicComposite(propertyMeta,
 				Arrays.asList(hCol1, hCol2));
 
@@ -335,6 +342,9 @@ public class KeyValueFactoryTest
 
 		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
+		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
+		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
+
 		List<KeyValue<Integer, UserBean>> builtList = factory
 				.createJoinKeyValueListForDynamicComposite(propertyMeta,
 						Arrays.asList(hCol1, hCol2));
@@ -458,6 +468,8 @@ public class KeyValueFactoryTest
 
 		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
+		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
+		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
 		List<UserBean> builtList = factory.createJoinValueListForComposite(propertyMeta,
 				Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
 
@@ -592,6 +604,8 @@ public class KeyValueFactoryTest
 
 		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
+		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
+		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
 		List<KeyValue<Integer, UserBean>> builtList = factory.createJoinKeyValueListForComposite(
 				propertyMeta, Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
 

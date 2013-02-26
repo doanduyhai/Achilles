@@ -19,18 +19,20 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 {
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityLoader loader = new EntityLoader();
+	private EntityPersister persister;
+	private EntityLoader loader;
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public V get(K key)
 	{
 		String joinId = entityDao.getValue(id, buildComposite(key));
-		EntityMeta entityMeta = wideMapMeta.getJoinProperties().getEntityMeta();
+		EntityMeta entityMeta = propertyMeta.getJoinProperties().getEntityMeta();
 
-		return (V) loader.loadJoinEntity(wideMapMeta.getValueClass(), entityMeta.getIdMeta()
+		V entity = (V) loader.loadJoinEntity(propertyMeta.getValueClass(), entityMeta.getIdMeta()
 				.getValueFromString(joinId), entityMeta);
+
+		return entityHelper.buildProxy(entity, propertyMeta.joinMeta());
 	}
 
 	@Override
@@ -40,13 +42,13 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		if (this.interceptor.isBatchMode())
 		{
 			entityDao.setValueBatch(id, buildComposite(key),
-					wideMapMeta.writeValueToString(joinId), ttl,
+					propertyMeta.writeValueToString(joinId), ttl,
 					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			entityDao
-					.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId), ttl);
+			entityDao.setValue(id, buildComposite(key), propertyMeta.writeValueToString(joinId),
+					ttl);
 		}
 	}
 
@@ -56,25 +58,27 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		if (this.interceptor.isBatchMode())
 		{
-			entityDao.setValueBatch(id, buildComposite(key),
-					wideMapMeta.writeValueToString(joinId), (Mutator<ID>) interceptor.getMutator());
+			entityDao
+					.setValueBatch(id, buildComposite(key),
+							propertyMeta.writeValueToString(joinId),
+							(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			entityDao.setValue(id, buildComposite(key), wideMapMeta.writeValueToString(joinId));
+			entityDao.setValue(id, buildComposite(key), propertyMeta.writeValueToString(joinId));
 		}
 	}
 
 	private Object persistOrEnsureJoinEntityExists(V value)
 	{
 		Object joinId = null;
-		JoinProperties joinProperties = wideMapMeta.getJoinProperties();
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 
 		if (value != null)
 		{
 			if (interceptor.isBatchMode())
 			{
-				Mutator<?> joinMutator = interceptor.getMutatorForProperty(wideMapMeta
+				Mutator<?> joinMutator = interceptor.getMutatorForProperty(propertyMeta
 						.getPropertyName());
 				joinId = persister.cascadePersistOrEnsureExists(value, joinProperties, joinMutator);
 			}
@@ -90,4 +94,13 @@ public class JoinWideMapWrapper<ID, K, V> extends WideMapWrapper<ID, K, V>
 		return joinId;
 	}
 
+	public void setPersister(EntityPersister persister)
+	{
+		this.persister = persister;
+	}
+
+	public void setLoader(EntityLoader loader)
+	{
+		this.loader = loader;
+	}
 }

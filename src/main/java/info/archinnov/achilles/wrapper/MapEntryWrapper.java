@@ -27,13 +27,20 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
 	@Override
 	public V getValue()
 	{
-		return this.target.getValue();
+		if (isJoin())
+		{
+			return helper.buildProxy(this.target.getValue(), joinMeta());
+		}
+		else
+		{
+			return this.target.getValue();
+		}
 	}
 
 	@Override
 	public V setValue(V value)
 	{
-		V result = this.target.setValue(value);
+		V result = this.target.setValue(helper.unproxy(value));
 		this.markDirty();
 		return result;
 	}
@@ -41,7 +48,7 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
 	public boolean equals(Entry<K, V> entry)
 	{
 		K key = entry.getKey();
-		V value = entry.getValue();
+		V value = helper.unproxy(entry.getValue());
 
 		boolean keyEquals = this.target.getKey().equals(key);
 

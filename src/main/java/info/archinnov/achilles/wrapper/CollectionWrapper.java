@@ -22,7 +22,8 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public boolean add(V arg0)
 	{
-		boolean result = target.add(arg0);
+
+		boolean result = target.add(helper.unproxy(arg0));
 		this.markDirty();
 		return result;
 	}
@@ -30,7 +31,8 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public boolean addAll(Collection<? extends V> arg0)
 	{
-		boolean result = target.addAll(arg0);
+
+		boolean result = target.addAll(helper.unproxy(arg0));
 		if (result)
 		{
 			this.markDirty();
@@ -41,7 +43,6 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public void clear()
 	{
-
 		if (this.target.size() > 0)
 		{
 			this.markDirty();
@@ -52,13 +53,13 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public boolean contains(Object arg0)
 	{
-		return this.target.contains(arg0);
+		return this.target.contains(helper.unproxy(arg0));
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> arg0)
 	{
-		return this.target.containsAll(arg0);
+		return this.target.containsAll(helper.unproxy(arg0));
 	}
 
 	@Override
@@ -70,14 +71,18 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public Iterator<V> iterator()
 	{
-		return builder(this.target.iterator()).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		return builder(this.target.iterator()) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 	}
 
 	@Override
 	public boolean remove(Object arg0)
 	{
-		boolean result = this.target.remove(arg0);
+		boolean result = this.target.remove(helper.unproxy(arg0));
 		if (result)
 		{
 			this.markDirty();
@@ -88,7 +93,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public boolean removeAll(Collection<?> arg0)
 	{
-		boolean result = this.target.removeAll(arg0);
+		boolean result = this.target.removeAll(helper.unproxy(arg0));
 		if (result)
 		{
 			this.markDirty();
@@ -99,7 +104,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public boolean retainAll(Collection<?> arg0)
 	{
-		boolean result = this.target.retainAll(arg0);
+		boolean result = this.target.retainAll(helper.unproxy(arg0));
 		if (result)
 		{
 			this.markDirty();
@@ -116,13 +121,44 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 	@Override
 	public Object[] toArray()
 	{
-		return this.target.toArray();
+
+		if (isJoin())
+		{
+			Object[] array = new Object[this.target.size()];
+			int i = 0;
+			for (V joinEntity : this.target)
+			{
+				array[i] = helper.buildProxy(joinEntity, joinMeta());
+				i++;
+			}
+
+			return array;
+		}
+		else
+		{
+
+			return this.target.toArray();
+		}
 	}
 
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{
-		return this.target.toArray(arg0);
+		if (isJoin())
+		{
+			T[] array = this.target.toArray(arg0);
+
+			for (int i = 0; i < array.length; i++)
+			{
+				array[i] = helper.buildProxy(array[i], joinMeta());
+			}
+			return array;
+		}
+		else
+		{
+
+			return this.target.toArray(arg0);
+		}
 	}
 
 	public Collection<V> getTarget()

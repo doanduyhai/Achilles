@@ -23,14 +23,14 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	@Override
 	public void add(int arg0, V arg1)
 	{
-		((List<V>) super.target).add(arg0, arg1);
+		((List<V>) super.target).add(arg0, helper.unproxy(arg1));
 		super.markDirty();
 	}
 
 	@Override
 	public boolean addAll(int arg0, Collection<? extends V> arg1)
 	{
-		boolean result = ((List<V>) super.target).addAll(arg0, arg1);
+		boolean result = ((List<V>) super.target).addAll(arg0, helper.unproxy(arg1));
 		if (result)
 		{
 			super.markDirty();
@@ -41,7 +41,16 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	@Override
 	public V get(int arg0)
 	{
-		return ((List<V>) super.target).get(arg0);
+		V result = ((List<V>) super.target).get(arg0);
+		if (isJoin())
+		{
+			return helper.buildProxy(result, joinMeta());
+		}
+		else
+		{
+
+			return result;
+		}
 	}
 
 	@Override
@@ -61,7 +70,12 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator();
 
-		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return builder(target) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 	}
 
 	@Override
@@ -69,7 +83,12 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator(arg0);
 
-		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return builder(target) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 	}
 
 	@Override
@@ -83,7 +102,7 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	@Override
 	public V set(int arg0, V arg1)
 	{
-		V result = ((List<V>) super.target).set(arg0, arg1);
+		V result = ((List<V>) super.target).set(arg0, helper.unproxy(arg1));
 		super.markDirty();
 		return result;
 	}
@@ -93,7 +112,12 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		List<V> target = ((List<V>) super.target).subList(arg0, arg1);
 
-		return builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return builder(target) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 	}
 
 	@Override

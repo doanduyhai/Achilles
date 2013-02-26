@@ -249,4 +249,72 @@ public class PropertyMetaTest
 		assertThat(cast.getName()).isEqualTo(bean.getName());
 		assertThat(cast.getUserId()).isEqualTo(bean.getUserId());
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_return_join_entity_meta() throws Exception
+	{
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.JOIN_WIDE_MAP) //
+				.joinMeta(joinMeta) //
+				.build();
+
+		assertThat((EntityMeta<Long>) propertyMeta.joinMeta()).isSameAs(joinMeta);
+	}
+
+	@Test
+	public void should_return_null_if_not_join_type() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.WIDE_MAP) //
+				.build();
+
+		assertThat(propertyMeta.joinMeta()).isNull();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_return_join_id_meta() throws Exception
+	{
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.JOIN_WIDE_MAP) //
+				.joinMeta(joinMeta) //
+				.build();
+
+		assertThat((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).isSameAs(joinIdMeta);
+	}
+
+	@Test
+	public void should_return_null_when_joinid_invoke() throws Exception
+	{
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.JOIN_WIDE_MAP) //
+				.joinMeta(joinMeta) //
+				.build();
+
+		assertThat(propertyMeta.joinIdMeta()).isNull();
+	}
+
+	@Test
+	public void should_return_true_when_join_type() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.JOIN_SIMPLE) //
+				.build();
+
+		assertThat(propertyMeta.isJoin()).isTrue();
+	}
 }

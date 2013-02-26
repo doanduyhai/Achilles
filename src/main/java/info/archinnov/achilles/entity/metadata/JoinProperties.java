@@ -8,26 +8,24 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 
-
 /**
  * JoinProperties
  * 
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings("rawtypes")
 public class JoinProperties
 {
 
-	private EntityMeta entityMeta;
+	private EntityMeta<?> entityMeta;
 	private List<CascadeType> cascadeTypes = new ArrayList<CascadeType>();
 
-	public EntityMeta getEntityMeta()
+	public EntityMeta<?> getEntityMeta()
 	{
 		return entityMeta;
 	}
 
-	public void setEntityMeta(EntityMeta entityMeta)
+	public void setEntityMeta(EntityMeta<?> entityMeta)
 	{
 		this.entityMeta = entityMeta;
 	}

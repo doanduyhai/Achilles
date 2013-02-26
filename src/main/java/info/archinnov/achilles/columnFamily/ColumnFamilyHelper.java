@@ -94,10 +94,9 @@ public class ColumnFamilyHelper
 
 		if (valueSerializer == OBJECT_SRZ)
 		{
-			if (propertyMeta.type().isJoinColumn())
+			if (propertyMeta.isJoin())
 			{
-				valueSerializer = propertyMeta.getJoinProperties().getEntityMeta().getIdMeta()
-						.getValueSerializer();
+				valueSerializer = propertyMeta.joinIdMeta().getValueSerializer();
 			}
 			else
 			{

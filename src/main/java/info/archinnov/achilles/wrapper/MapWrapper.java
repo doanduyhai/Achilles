@@ -6,6 +6,7 @@ import static info.archinnov.achilles.wrapper.builder.ValueCollectionWrapperBuil
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +45,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public boolean containsValue(Object value)
 	{
-		return this.target.containsValue(value);
+		return this.target.containsValue(helper.unproxy(value));
 	}
 
 	@SuppressWarnings(
@@ -58,8 +59,11 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0)
 		{
-			EntrySetWrapper<K, V> wrapperSet = builder(targetEntrySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta((PropertyMeta) propertyMeta).build();
+			EntrySetWrapper<K, V> wrapperSet = builder(targetEntrySet).dirtyMap(dirtyMap) //
+					.setter(setter) //
+					.propertyMeta((PropertyMeta) propertyMeta) //
+					.helper(helper) //
+					.build();
 			targetEntrySet = wrapperSet;
 		}
 		return targetEntrySet;
@@ -68,7 +72,14 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public V get(Object key)
 	{
-		return this.target.get(key);
+		if (isJoin())
+		{
+			return helper.buildProxy(this.target.get(key), joinMeta());
+		}
+		else
+		{
+			return this.target.get(key);
+		}
 	}
 
 	@Override
@@ -88,8 +99,12 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<K> keySet = this.target.keySet();
 		if (keySet.size() > 0)
 		{
-			KeySetWrapper<K> keySetWrapper = builder(keySet).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta((PropertyMeta) propertyMeta).build();
+			KeySetWrapper<K> keySetWrapper = builder(keySet) //
+					.dirtyMap(dirtyMap) //
+					.setter(setter) //
+					.propertyMeta((PropertyMeta) propertyMeta) //
+					.helper(helper) //
+					.build();
 			keySet = keySetWrapper;
 		}
 		return keySet;
@@ -98,7 +113,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public V put(K key, V value)
 	{
-		V result = this.target.put(key, value);
+		V result = this.target.put(key, helper.unproxy(value));
 		this.markDirty();
 		return result;
 	}
@@ -106,18 +121,24 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public void putAll(Map<? extends K, ? extends V> m)
 	{
-		this.target.putAll(m);
+		Map<K, V> map = new HashMap<K, V>();
+		for (Entry<? extends K, ? extends V> entry : m.entrySet())
+		{
+			map.put(entry.getKey(), helper.unproxy(entry.getValue()));
+		}
+		this.target.putAll(map);
 		this.markDirty();
 	}
 
 	@Override
 	public V remove(Object key)
 	{
-		if (this.target.containsKey(key))
+		Object unproxy = helper.unproxy(key);
+		if (this.target.containsKey(unproxy))
 		{
 			this.markDirty();
 		}
-		return this.target.remove(key);
+		return this.target.remove(unproxy);
 	}
 
 	@Override
@@ -138,8 +159,12 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 
 		if (values.size() > 0)
 		{
-			ValueCollectionWrapper<V> collectionWrapper = builder(values).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta((PropertyMeta) propertyMeta).build();
+			ValueCollectionWrapper<V> collectionWrapper = builder(values) //
+					.dirtyMap(dirtyMap) //
+					.setter(setter) //
+					.propertyMeta((PropertyMeta) propertyMeta) //
+					.helper(helper) //
+					.build();
 			values = collectionWrapper;
 		}
 		return values;

@@ -31,7 +31,12 @@ public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 	public Entry<K, V> next()
 	{
 		Entry<K, V> entry = this.target.next();
-		return builder(entry).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return builder(entry) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 	}
 
 	@Override

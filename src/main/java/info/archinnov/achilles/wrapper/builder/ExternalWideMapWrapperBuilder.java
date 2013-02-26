@@ -1,7 +1,11 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.helper.CompositeHelper;
+import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
 
@@ -17,6 +21,10 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 	private GenericCompositeDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
 	private AchillesInterceptor interceptor;
+	private CompositeHelper compositeHelper;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private CompositeKeyFactory compositeKeyFactory;
 
 	public ExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
@@ -38,6 +46,31 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
+	public ExternalWideMapWrapperBuilder<ID, K, V> compositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+		return this;
+	}
+
+	public ExternalWideMapWrapperBuilder<ID, K, V> keyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+		return this;
+	}
+
+	public ExternalWideMapWrapperBuilder<ID, K, V> iteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+		return this;
+	}
+
+	public ExternalWideMapWrapperBuilder<ID, K, V> compositeKeyFactory(
+			CompositeKeyFactory compositeKeyFactory)
+	{
+		this.compositeKeyFactory = compositeKeyFactory;
+		return this;
+	}
+
 	public ExternalWideMapWrapper<ID, K, V> build()
 	{
 		ExternalWideMapWrapper<ID, K, V> wrapper = new ExternalWideMapWrapper<ID, K, V>();
@@ -45,6 +78,10 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 		wrapper.setDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);
 		wrapper.setInterceptor(interceptor);
+		wrapper.setCompositeHelper(compositeHelper);
+		wrapper.setCompositeKeyFactory(compositeKeyFactory);
+		wrapper.setIteratorFactory(iteratorFactory);
+		wrapper.setKeyValueFactory(keyValueFactory);
 		return wrapper;
 	}
 

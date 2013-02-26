@@ -1,9 +1,16 @@
 package info.archinnov.achilles.proxy.interceptor;
 
+import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.helper.CompositeHelper;
+import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
@@ -31,6 +38,14 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 {
 
 	private EntityLoader loader = new EntityLoader();
+	private CompositeHelper compositeHelper = new CompositeHelper();
+	private KeyValueFactory keyValueFactory = new KeyValueFactory();
+	private IteratorFactory iteratorFactory = new IteratorFactory();
+	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private EntityPersister persister = new EntityPersister();
+	private EntityHelper entityHelper = new EntityHelper();
+
 	private GenericDynamicCompositeDao<ID> entityDao;
 	private GenericCompositeDao<ID, ?> columnFamilyDao;
 	private Boolean directColumnFamilyMapping;
@@ -100,26 +115,41 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 
 		switch (propertyMeta.type())
 		{
+			case JOIN_SIMPLE:
+				result = entityHelper.buildProxy(proxy.invoke(target, args),
+						propertyMeta.joinMeta());
+				break;
 			case LIST:
 			case LAZY_LIST:
 			case JOIN_LIST:
 				List<?> list = (List<?>) proxy.invoke(target, args);
-				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap)
-						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = ListWrapperBuilder.builder(list) //
+						.dirtyMap(dirtyMap) //
+						.setter(propertyMeta.getSetter()) //
+						.propertyMeta(propertyMeta) //
+						.helper(entityHelper) //
+						.build();
 				break;
 			case SET:
 			case LAZY_SET:
 			case JOIN_SET:
 				Set<?> set = (Set<?>) proxy.invoke(target, args);
-				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap)
-						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap) //
+						.setter(propertyMeta.getSetter())//
+						.propertyMeta(propertyMeta) //
+						.helper(entityHelper) //
+						.build();
 				break;
 			case MAP:
 			case LAZY_MAP:
 			case JOIN_MAP:
 				Map<?, ?> map = (Map<?, ?>) proxy.invoke(target, args);
-				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap)
-						.setter(propertyMeta.getSetter()).propertyMeta(propertyMeta).build();
+				result = MapWrapperBuilder.builder(map)//
+						.dirtyMap(dirtyMap) //
+						.setter(propertyMeta.getSetter()) //
+						.propertyMeta(propertyMeta) //
+						.helper(entityHelper) //
+						.build();
 				break;
 			case WIDE_MAP:
 				if (directColumnFamilyMapping)
@@ -156,7 +186,13 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.builder(
 						key,
 						(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
-								.getExternalWideMapDao(), propertyMeta).interceptor(this).build();
+								.getExternalWideMapDao(), propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.keyValueFactory(keyValueFactory)//
+				.iteratorFactory(iteratorFactory)//
+				.compositeKeyFactory(compositeKeyFactory) //
+				.build();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -167,19 +203,42 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.builder(
 						key,
 						(GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
-								.getExternalWideMapDao(), propertyMeta).interceptor(this).build();
+								.getExternalWideMapDao(), propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.compositeKeyFactory(compositeKeyFactory) //
+				.entityHelper(entityHelper) //
+				.iteratorFactory(iteratorFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.loader(loader) //
+				.persister(persister) //
+				.build();
 	}
 
 	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta).interceptor(this)
+		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
+				.interceptor(this) //
+				.entityHelper(entityHelper) //
+				.compositeHelper(compositeHelper) //
+				.keyFactory(keyFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.iteratorFactory(iteratorFactory) //
 				.build();
 	}
 
 	private <K extends Comparable<K>, V> Object buildJoinWideMapWrapper(
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta).interceptor(this)
+		return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
+				.loader(loader) //
+				.persister(persister) //
+				.interceptor(this) //
+				.entityHelper(entityHelper) //
+				.compositeHelper(compositeHelper) //
+				.keyFactory(keyFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.iteratorFactory(iteratorFactory) //
 				.build();
 	}
 
@@ -188,8 +247,13 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			PropertyMeta<K, V> propertyMeta)
 	{
 		return ExternalWideMapWrapperBuilder
-				.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao, propertyMeta)
-				.interceptor(this).build();
+				.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao, propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.keyValueFactory(keyValueFactory)//
+				.iteratorFactory(iteratorFactory)//
+				.compositeKeyFactory(compositeKeyFactory) //
+				.build();
 	}
 
 	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)

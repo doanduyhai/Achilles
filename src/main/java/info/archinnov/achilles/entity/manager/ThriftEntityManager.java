@@ -392,7 +392,7 @@ public class ThriftEntityManager implements EntityManager
 
 		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
 		{
-			if (propertyMeta.type().isJoinColumn())
+			if (propertyMeta.isJoin())
 			{
 				mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.getJoinProperties()
 						.getEntityMeta().getEntityDao().buildMutator());
@@ -462,7 +462,7 @@ public class ThriftEntityManager implements EntityManager
 				catch (Exception e)
 				{
 					log.error("Cannot initialize property '" + propertyMeta.getPropertyName()
-							+ "' for entity '" + entity + "'", e);
+							+ "' for entity '" + realObject + "'", e);
 				}
 			}
 		}
