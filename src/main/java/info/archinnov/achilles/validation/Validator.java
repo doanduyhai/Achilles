@@ -102,6 +102,7 @@ public class Validator {
             throw new AchillesException("Cannot instantiate the class '" + canonicalName
                     + "'. Please ensure the class has a public nullary (default) constructor");
         } catch (SecurityException e) {
+            throw new AchillesException("Cannot instantiate the class '" + canonicalName + "'");
         }
     }
 
