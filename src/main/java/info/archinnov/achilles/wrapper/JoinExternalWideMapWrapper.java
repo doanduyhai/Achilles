@@ -47,18 +47,16 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		return comp;
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	@Override
 	public V get(K key)
 	{
 		JOIN_ID joinId = dao.getValue(id, buildComposite(key));
-		EntityMeta entityMeta = propertyMeta.getJoinProperties().getEntityMeta();
-		V entity = (V) loader.loadJoinEntity(propertyMeta.getValueClass(), entityMeta.getIdMeta()
-				.castValue(joinId), entityMeta);
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
+				.joinIdMeta();
+		V entity = (V) loader.load(propertyMeta.getValueClass(), joinIdMeta.castValue(joinId),
+				joinMeta);
 
 		return entityHelper.buildProxy(entity, propertyMeta.joinMeta());
 	}
@@ -110,8 +108,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
 				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], reverse, count);
 
 		return keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -130,8 +128,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
 				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], reverse, count);
 
 		return keyValueFactory.createJoinValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -150,8 +148,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
 				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
 
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], reverse, count);
 
 		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
 	}

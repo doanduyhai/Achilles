@@ -4,11 +4,11 @@ import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,6 +24,7 @@ import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.SliceQuery;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,11 +65,12 @@ public class AchillesJoinSliceIteratorTest
 	private Iterator<HColumn<DynamicComposite, String>> columnsIterator;
 
 	@Mock
-	private EntityLoader loader;
+	private JoinEntityHelper joinHelper;
 
 	private UserBean user1 = new UserBean();
 	private UserBean user2 = new UserBean();
 	private UserBean user3 = new UserBean();
+	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
@@ -97,6 +99,11 @@ public class AchillesJoinSliceIteratorTest
 		user3.setName("user3");
 
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
+
+		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+		joinIdMeta.setValueClass(Long.class);
+		joinIdMeta.setObjectMapper(objectMapper);
+		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -134,12 +141,13 @@ public class AchillesJoinSliceIteratorTest
 		entitiesMap.put(joinId3, user3);
 
 		when(
-				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2, joinId3),
-						joinEntityMeta)).thenReturn(entitiesMap);
+				joinHelper.loadJoinEntities(UserBean.class,
+						Arrays.asList(joinId1, joinId2, joinId3), joinEntityMeta)).thenReturn(
+				entitiesMap);
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, 10);
 
-		Whitebox.setInternalState(iterator, "loader", loader);
+		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
@@ -202,15 +210,15 @@ public class AchillesJoinSliceIteratorTest
 		entitiesMap.put(joinId3, user3);
 
 		when(
-				loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
+				joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
 						joinEntityMeta)).thenReturn(entitiesMap);
-		when(loader.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta))
+		when(joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta))
 				.thenReturn(entitiesMap);
 
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
 				propertyMeta, query, start, end, false, count);
 
-		Whitebox.setInternalState(iterator, "loader", loader);
+		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<DynamicComposite, UserBean> h1 = iterator.next();

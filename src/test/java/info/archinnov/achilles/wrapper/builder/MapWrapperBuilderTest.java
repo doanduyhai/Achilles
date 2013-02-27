@@ -1,11 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.MapWrapper;
-import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -18,8 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * MapWrapperBuilderTest
@@ -38,6 +36,9 @@ public class MapWrapperBuilderTest
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
 
+	@Mock
+	private EntityHelper helper;
+
 	@Before
 	public void setUp() throws Exception
 	{
@@ -52,13 +53,19 @@ public class MapWrapperBuilderTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		MapWrapper<Integer, String> mapWrapper = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).build();
+		MapWrapper<Integer, String> wrapper = MapWrapperBuilder //
+				.builder(map) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 
-		assertThat(mapWrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(wrapper.getTarget()).isSameAs(map);
+		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(helper);
 
-		mapWrapper.put(5, "sdfsdf");
-
-		verify(dirtyMap).put(setter, propertyMeta);
 	}
 }

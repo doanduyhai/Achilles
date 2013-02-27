@@ -11,7 +11,7 @@ import java.util.ListIterator;
 public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V>
 {
 
-	private final ListIterator<V> target;
+	private ListIterator<V> target;
 
 	public ListIteratorWrapper(ListIterator<V> target) {
 		this.target = target;

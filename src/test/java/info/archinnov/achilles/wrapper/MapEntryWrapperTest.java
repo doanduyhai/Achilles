@@ -2,9 +2,12 @@ package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.MapEntryWrapper;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -21,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 /**
  * MapEntryWrapperTest
  * 
@@ -34,6 +36,9 @@ public class MapEntryWrapperTest
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
+	@Mock
+	private EntityHelper helper;
+
 	private Method setter;
 
 	@Mock
@@ -43,6 +48,7 @@ public class MapEntryWrapperTest
 	public void setUp() throws Exception
 	{
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+		when(propertyMeta.type()).thenReturn(PropertyType.MAP);
 	}
 
 	@Test
@@ -56,11 +62,11 @@ public class MapEntryWrapperTest
 
 		MapEntryWrapper<Integer, String> mapEntryWrapper = new MapEntryWrapper<Integer, String>(
 				mapEntry);
-
+		mapEntryWrapper.setHelper(helper);
 		mapEntryWrapper.setDirtyMap(dirtyMap);
 		mapEntryWrapper.setSetter(setter);
 		mapEntryWrapper.setPropertyMeta(propertyMeta);
-
+		when(helper.unproxy("TEST")).thenReturn("TEST");
 		mapEntryWrapper.setValue("TEST");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -75,6 +81,12 @@ public class MapEntryWrapperTest
 
 		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		wrapper2.setHelper(helper);
+		wrapper2.setPropertyMeta(propertyMeta);
+
+		when(helper.unproxy("csdf")).thenReturn("csdf");
 
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
@@ -88,6 +100,14 @@ public class MapEntryWrapperTest
 		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
 
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		wrapper2.setHelper(helper);
+		wrapper2.setPropertyMeta(propertyMeta);
+
+		when(helper.unproxy("csdf")).thenReturn("csdf");
+		when(helper.unproxy("df")).thenReturn("df");
+
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -100,6 +120,12 @@ public class MapEntryWrapperTest
 		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
 
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		wrapper2.setHelper(helper);
+		wrapper2.setPropertyMeta(propertyMeta);
+
+		when(helper.unproxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -112,6 +138,12 @@ public class MapEntryWrapperTest
 		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
 
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		wrapper2.setHelper(helper);
+		wrapper2.setPropertyMeta(propertyMeta);
+
+		when(helper.unproxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
 
@@ -124,6 +156,12 @@ public class MapEntryWrapperTest
 		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
 
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		wrapper2.setHelper(helper);
+		wrapper2.setPropertyMeta(propertyMeta);
+
+		when(helper.unproxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -161,5 +199,25 @@ public class MapEntryWrapperTest
 		MapEntryWrapper<Integer, String> wrapper2 = new MapEntryWrapper<Integer, String>(entry2);
 
 		assertThat(wrapper1.hashCode()).isNotEqualTo(wrapper2.hashCode());
+	}
+
+	@Test
+	public void should_get_join_value() throws Exception
+	{
+		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "abc");
+		MapEntryWrapper<Integer, String> wrapper1 = new MapEntryWrapper<Integer, String>(entry1);
+
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinMeta);
+
+		wrapper1.setHelper(helper);
+		wrapper1.setPropertyMeta(propertyMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
+		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
+
+		when(helper.buildProxy("abc", joinMeta)).thenReturn("def");
+
+		assertThat(wrapper1.getValue()).isSameAs("def");
 	}
 }

@@ -31,7 +31,7 @@ public class DynamicCompositeKeyFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(DynamicCompositeKeyFactory.class);
 
-	private CompositeHelper helper = new CompositeHelper();
+	private CompositeHelper compositeHelper = new CompositeHelper();
 	private EntityHelper entityHelper = new EntityHelper();
 
 	public <K, V> DynamicComposite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
@@ -170,7 +170,7 @@ public class DynamicCompositeKeyFactory
 			Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
 					+ " values for the key of WideMap '" + propertyName + "'");
 
-			int lastNotNullIndex = helper
+			int lastNotNullIndex = compositeHelper
 					.findLastNonNullIndexForComponents(propertyName, keyValues);
 
 			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
@@ -202,7 +202,7 @@ public class DynamicCompositeKeyFactory
 	{
 		DynamicComposite[] queryComp = new DynamicComposite[2];
 
-		ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd,
+		ComponentEquality[] equalities = compositeHelper.determineEquality(inclusiveStart, inclusiveEnd,
 				reverse);
 
 		DynamicComposite startComp = this.createForQuery(propertyMeta, start, equalities[0]);

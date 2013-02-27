@@ -66,7 +66,7 @@ public class JoinExternalWideMapWrapperTest
 	private GenericDynamicCompositeDao<Long> joinDao;
 
 	@Mock
-	private PropertyMeta<Integer, UserBean> externalJoinWideMapMeta;
+	private PropertyMeta<Integer, UserBean> propertyMeta;
 
 	@Mock
 	private CompositeKeyFactory compositeKeyFactory;
@@ -106,6 +106,7 @@ public class JoinExternalWideMapWrapperTest
 		wrapper.setId(id);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_value() throws Exception
 	{
@@ -116,21 +117,22 @@ public class JoinExternalWideMapWrapperTest
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-		joinEntityMeta.setIdMeta(PropertyMetaTestBuilder //
+		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
 				.noClass(Void.class, Long.class) //
 				.type(EXTERNAL_JOIN_WIDE_MAP) //
-				.build());
+				.build();
+		joinEntityMeta.setIdMeta(joinIdMeta);
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 
-		when(externalJoinWideMapMeta.getValueClass()).thenReturn(UserBean.class);
-		when(externalJoinWideMapMeta.getJoinProperties()).thenReturn(
-				(JoinProperties) joinProperties);
-
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
+		when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 		when(dao.getValue(id, comp)).thenReturn(joinId);
-		when(loader.loadJoinEntity(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+		when(loader.load(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when(entityHelper.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
 
 		UserBean expected = wrapper.get(key);
 
@@ -150,10 +152,8 @@ public class JoinExternalWideMapWrapperTest
 		userBean.setUserId(userId);
 		Composite comp = new Composite();
 
-		when(externalJoinWideMapMeta.getJoinProperties()).thenReturn(
-				(JoinProperties) joinProperties);
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(false);
@@ -180,11 +180,9 @@ public class JoinExternalWideMapWrapperTest
 		userBean.setUserId(userId);
 		Composite comp = new Composite();
 
-		when(externalJoinWideMapMeta.getJoinProperties()).thenReturn(
-				(JoinProperties) joinProperties);
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
-		when(externalJoinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when(propertyMeta.getPropertyName()).thenReturn("joinProperty");
 		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
 				.thenReturn(userId);
@@ -214,10 +212,8 @@ public class JoinExternalWideMapWrapperTest
 		userBean.setUserId(userId);
 		Composite comp = new Composite();
 
-		when(externalJoinWideMapMeta.getJoinProperties()).thenReturn(
-				(JoinProperties) joinProperties);
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 		when(joinDao.buildMutator()).thenReturn(joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
 		when(interceptor.isBatchMode()).thenReturn(false);
@@ -243,11 +239,9 @@ public class JoinExternalWideMapWrapperTest
 		userBean.setUserId(userId);
 		Composite comp = new Composite();
 
-		when(externalJoinWideMapMeta.getJoinProperties()).thenReturn(
-				(JoinProperties) joinProperties);
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
-		when(externalJoinWideMapMeta.getPropertyName()).thenReturn("joinProperty");
+		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when(propertyMeta.getPropertyName()).thenReturn("joinProperty");
 		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
 		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
 				.thenReturn(userId);
@@ -272,8 +266,8 @@ public class JoinExternalWideMapWrapperTest
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
-						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
+						inclusiveEnd, reverse)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
@@ -282,13 +276,13 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
 				(List) hColumns);
 		List<KeyValue<Integer, UserBean>> values = mock(List.class);
-		when(keyValueFactory.createJoinKeyValueListForComposite(externalJoinWideMapMeta, hColumns))
+		when(keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, hColumns))
 				.thenReturn(values);
 
 		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);
 
-		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -305,8 +299,8 @@ public class JoinExternalWideMapWrapperTest
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
-						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
+						inclusiveEnd, reverse)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
@@ -315,13 +309,13 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
 				(List) hColumns);
 		List<UserBean> values = mock(List.class);
-		when(keyValueFactory.createJoinValueListForComposite(externalJoinWideMapMeta, hColumns))
-				.thenReturn(values);
+		when(keyValueFactory.createJoinValueListForComposite(propertyMeta, hColumns)).thenReturn(
+				values);
 
 		List<UserBean> expected = wrapper.findValues(start, inclusiveStart, end, inclusiveEnd,
 				reverse, count);
 
-		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -338,8 +332,8 @@ public class JoinExternalWideMapWrapperTest
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
-						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
+						inclusiveEnd, reverse)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
@@ -348,13 +342,12 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
 				(List) hColumns);
 		List<Integer> values = mock(List.class);
-		when(keyValueFactory.createKeyListForComposite(externalJoinWideMapMeta, hColumns))
-				.thenReturn(values);
+		when(keyValueFactory.createKeyListForComposite(propertyMeta, hColumns)).thenReturn(values);
 
 		List<Integer> expected = wrapper.findKeys(start, inclusiveStart, end, inclusiveEnd,
 				reverse, count);
 
-		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -367,22 +360,20 @@ public class JoinExternalWideMapWrapperTest
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
-						end, inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
+						inclusiveEnd, reverse)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 
 		AchillesJoinSliceIterator<Long, Composite, Long, Integer, UserBean> iterator = mock(AchillesJoinSliceIterator.class);
-		when(
-				dao.getJoinColumnsIterator(externalJoinWideMapMeta, id, startComp, endComp,
-						reverse, count)).thenReturn(iterator);
+		when(dao.getJoinColumnsIterator(propertyMeta, id, startComp, endComp, reverse, count))
+				.thenReturn(iterator);
 
 		KeyValueIterator<Integer, UserBean> keyValueIterator = mock(KeyValueIterator.class);
-		when(
-				iteratorFactory.createKeyValueJoinIteratorForComposite(iterator,
-						externalJoinWideMapMeta)).thenReturn(keyValueIterator);
+		when(iteratorFactory.createKeyValueJoinIteratorForComposite(iterator, propertyMeta))
+				.thenReturn(keyValueIterator);
 
 		KeyValueIterator<Integer, UserBean> expected = wrapper.iterator(start, inclusiveStart, end,
 				inclusiveEnd, reverse, count);
@@ -396,8 +387,7 @@ public class JoinExternalWideMapWrapperTest
 		int key = 4567;
 		Composite comp = new Composite();
 
-		when(compositeKeyFactory.createBaseComposite(externalJoinWideMapMeta, key))
-				.thenReturn(comp);
+		when(compositeKeyFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 
 		wrapper.remove(key);
 
@@ -413,8 +403,8 @@ public class JoinExternalWideMapWrapperTest
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(externalJoinWideMapMeta, start, inclusiveStart,
-						end, inclusiveEnd, false)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
+						inclusiveEnd, false)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
@@ -422,7 +412,7 @@ public class JoinExternalWideMapWrapperTest
 
 		wrapper.remove(start, inclusiveStart, end, inclusiveEnd);
 
-		verify(compositeHelper).checkBounds(externalJoinWideMapMeta, start, end, false);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, false);
 		verify(dao).removeColumnRange(id, startComp, endComp);
 
 	}

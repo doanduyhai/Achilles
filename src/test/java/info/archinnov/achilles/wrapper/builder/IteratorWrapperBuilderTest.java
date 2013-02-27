@@ -1,14 +1,13 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.IteratorWrapper;
-import info.archinnov.achilles.wrapper.builder.IteratorWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * IteratorWrapperBuilderTest
@@ -36,6 +35,9 @@ public class IteratorWrapperBuilderTest
 	private Method setter;
 
 	@Mock
+	private EntityHelper helper;
+
+	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Before
@@ -50,14 +52,20 @@ public class IteratorWrapperBuilderTest
 		List<String> target = new ArrayList<String>();
 		target.add("a");
 
-		IteratorWrapper<String> iteratorWrapper = IteratorWrapperBuilder.builder(target.iterator())
-				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		Iterator<String> iterator = target.iterator();
+		IteratorWrapper<String> wrapper = IteratorWrapperBuilder //
+				.builder(iterator) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.helper(helper) //
+				.build();
 
-		assertThat(iteratorWrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(iterator);
+		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(helper);
 
-		iteratorWrapper.next();
-		iteratorWrapper.remove();
-
-		verify(dirtyMap).put(setter, propertyMeta);
 	}
 }

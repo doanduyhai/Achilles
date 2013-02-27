@@ -4,9 +4,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.MapWrapper;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -26,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 /**
  * MapWrapperTest
  * 
@@ -44,10 +44,14 @@ public class MapWrapperTest
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
 
+	@Mock
+	private EntityHelper helper;
+
 	@Before
 	public void setUp() throws Exception
 	{
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+		when(propertyMeta.type()).thenReturn(PropertyType.MAP);
 	}
 
 	@Test
@@ -96,6 +100,7 @@ public class MapWrapperTest
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
 		Entry<Integer, String> entry = target.entrySet().iterator().next();
+		when(helper.unproxy(entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -135,7 +140,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Integer> keySet = wrapper.keySet();
-
+		when(helper.unproxy(1)).thenReturn(1);
 		keySet.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -148,7 +153,6 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Iterator<Integer> keyIterator = wrapper.keySet().iterator();
-
 		keyIterator.next();
 		keyIterator.remove();
 
@@ -186,7 +190,7 @@ public class MapWrapperTest
 	{
 		Map<Integer, String> target = prepareMap();
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
-
+		when(helper.unproxy(1)).thenReturn(1);
 		wrapper.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -210,7 +214,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Collection<String> collectionWrapper = wrapper.values();
-
+		when(helper.unproxy("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -244,6 +248,7 @@ public class MapWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
+		wrapper.setHelper(helper);
 		return wrapper;
 	}
 }

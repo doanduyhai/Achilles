@@ -2,9 +2,8 @@ package info.archinnov.achilles.wrapper;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.EntrySetWrapper;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -23,7 +22,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 /**
  * EntrySetWrapperTest
  * 
@@ -40,6 +38,8 @@ public class EntrySetWrapperTest
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
+
+	private EntityHelper helper = new EntityHelper();
 
 	@Before
 	public void setUp() throws Exception
@@ -89,8 +89,9 @@ public class EntrySetWrapperTest
 		map.put(3, "75014");
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
-
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
+
+		wrapper.setHelper(helper);
 
 		wrapper.remove(entry);
 
@@ -107,6 +108,8 @@ public class EntrySetWrapperTest
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
+
+		wrapper.setHelper(helper);
 
 		wrapper.remove(entry);
 
@@ -129,6 +132,8 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry1 = iterator.next();
 		Entry<Integer, String> entry2 = iterator.next();
 
+		wrapper.setHelper(helper);
+
 		wrapper.removeAll(Arrays.asList(entry1, entry2));
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -148,6 +153,8 @@ public class EntrySetWrapperTest
 		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(5, "csdf");
 
+		wrapper.setHelper(helper);
+
 		wrapper.removeAll(Arrays.asList(entry1, entry2));
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
@@ -166,9 +173,10 @@ public class EntrySetWrapperTest
 
 		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
 
-		Entry<Integer, String> entry1 = iterator.next();
+		Entry<Integer, String> entry = iterator.next();
+		wrapper.setHelper(helper);
 
-		wrapper.retainAll(Arrays.asList(entry1));
+		wrapper.retainAll(Arrays.asList(entry));
 
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
@@ -190,7 +198,10 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry2 = iterator.next();
 		Entry<Integer, String> entry3 = iterator.next();
 
-		wrapper.retainAll(Arrays.asList(entry1, entry2, entry3));
+		wrapper.setHelper(helper);
+		List<Entry<Integer, String>> list = Arrays.asList(entry1, entry2, entry3);
+
+		wrapper.retainAll(list);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}

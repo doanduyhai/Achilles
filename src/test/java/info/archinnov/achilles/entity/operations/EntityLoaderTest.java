@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
@@ -27,14 +26,13 @@ import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +55,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
-import testBuilders.CompositeTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityLoaderTest
@@ -93,7 +88,10 @@ public class EntityLoaderTest
 	private PropertyMeta<Integer, String> mapMeta;
 
 	@Mock
-	private PropertyMeta<Void, CompleteBean> joinMeta;
+	private EntityMeta<Long> joinMeta;
+
+	@Mock
+	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
 	private EntityMapper mapper;
@@ -106,6 +104,9 @@ public class EntityLoaderTest
 
 	@Mock
 	private EntityHelper helper;
+
+	@Mock
+	private JoinEntityLoader joinLoader;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -430,158 +431,106 @@ public class EntityLoaderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_load_join_entity_into_object() throws Exception
+	public void should_load_join_simple() throws Exception
 	{
-		Long joinId = 45L;
-
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setEntityDao(dao);
+		Long key = 11L;
 		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
 
-		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
-		idMeta.setType(SIMPLE);
-		idMeta.setSetter(idSetter);
-		entityMeta.setIdMeta(idMeta);
+		PropertyMeta<Void, UserBean> propertyMeta = mock(PropertyMeta.class);
 
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(entityMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
+		when(propertyMeta.getSetter()).thenReturn(idSetter);
 
-		PropertyMeta<Integer, UserBean> joinPropertyMeta = new PropertyMeta<Integer, UserBean>();
-		joinPropertyMeta.setType(PropertyType.JOIN_WIDE_MAP);
-		joinPropertyMeta.setSingleKey(true);
-
-		joinPropertyMeta.setValueClass(UserBean.class);
-		joinPropertyMeta.setJoinProperties(joinProperties);
-
-		UserBean userBean = new UserBean();
-
-		List<Pair<DynamicComposite, String>> columns = mock(List.class);
-		when(columns.size()).thenReturn(1);
-		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
-		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idSetter),
-				idCaptor.capture());
-		when(helper.buildProxy(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(userBean);
-
-		UserBean expected = this.loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
-
-		assertThat(expected).isSameAs(userBean);
-		assertThat(idCaptor.getValue()).isEqualTo(joinId);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_load_join_column() throws Throwable
-	{
-		Long joinId = 45L, id = 545L;
-
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.type(SIMPLE) //
-				.field("userId") //
-				.build();
-
-		EntityMeta<Long> entityMeta = EntityMetaTestBuilder.entityMeta().build(
-				mock(ExecutingKeyspace.class), dao, CompleteBean.class);
-		entityMeta.setIdMeta(idMeta);
-
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(entityMeta);
-
-		PropertyMeta<Void, UserBean> joinPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, UserBean.class) //
-				.field("user") //
-				.type(JOIN_SIMPLE) //
-				.joinMeta(entityMeta) //
-				.build();
-
-		UserBean userBean = new UserBean();
-		userBean.setUserId(joinId);
-
-		List<Pair<DynamicComposite, String>> columns = mock(List.class);
-		when(columns.size()).thenReturn(1);
-
-		DynamicComposite comp = CompositeTestBuilder.builder().values(0, 0).buildDynamic();
-
-		when(keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL)).thenReturn(comp);
-		when(dao.getValue(id, comp)).thenReturn(joinId.toString());
-		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
-		doNothing().when(helper).setValueToField(any(UserBean.class), eq(idMeta.getSetter()),
-				idCaptor.capture());
-		when(helper.buildProxy(userBeanCaptor.capture(), eq(entityMeta))).thenReturn(userBean);
-
-		doNothing().when(helper).setValueToField(eq(bean), eq(joinPropertyMeta.getSetter()),
-				userBeanCaptor.capture());
-
-		loader.loadPropertyIntoObject(bean, id, dao, joinPropertyMeta);
-
-		List<UserBean> userBeans = userBeanCaptor.getAllValues();
-
-		verify(mapper).setEagerPropertiesToEntity(joinId, columns, entityMeta, userBeans.get(0));
-		verify(helper).setValueToField(userBeans.get(0), idMeta.getSetter(), joinId);
-		assertThat(userBeans.get(0)).isInstanceOf(UserBean.class);
-		assertThat(idCaptor.getValue()).isEqualTo(joinId);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_return_null_when_null_join_column() throws Exception
-	{
-		Long id = 545L;
-
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setEntityDao(dao);
-		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
-		Method userSetter = CompleteBean.class.getDeclaredMethod("setUser", UserBean.class);
-
-		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
-		idMeta.setType(SIMPLE);
-		idMeta.setSetter(idSetter);
-		entityMeta.setIdMeta(idMeta);
-
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(entityMeta);
-
-		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
-		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
-		joinPropertyMeta.setSingleKey(true);
-
-		joinPropertyMeta.setValueClass(UserBean.class);
-		joinPropertyMeta.setJoinProperties(joinProperties);
-		joinPropertyMeta.setSetter(userSetter);
-
-		List<Pair<DynamicComposite, String>> columns = mock(List.class);
-		when(columns.size()).thenReturn(1);
+		when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinMeta);
+		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
 
 		DynamicComposite comp = new DynamicComposite();
-		comp.addComponent(0, 0, ComponentEquality.EQUAL);
-		comp.addComponent(1, 0, ComponentEquality.EQUAL);
+		when(keyFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(comp);
 
-		when(keyFactory.createBaseForQuery(joinPropertyMeta, EQUAL)).thenReturn(comp);
-		when(dao.getValue(id, comp)).thenReturn(null);
+		when(dao.getValue(key, comp)).thenReturn("120");
+		when(joinIdMeta.getValueFromString("120")).thenReturn(120L);
+		when(joinMeta.getEntityDao()).thenReturn(dao);
+		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
+		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
-		loader.loadPropertyIntoObject(bean, id, dao, joinPropertyMeta);
+		DynamicComposite start = new DynamicComposite();
+		DynamicComposite end = new DynamicComposite();
+		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
+		columns.add(new Pair<DynamicComposite, String>(start, "John"));
+		columns.add(new Pair<DynamicComposite, String>(end, "DOE"));
 
-		assertThat(bean.getUser()).isNull();
+		when(dao.eagerFetchEntity(120L)).thenReturn(columns);
+
+		ArgumentCaptor<UserBean> userCaptor = ArgumentCaptor.forClass(UserBean.class);
+
+		CompleteBean realObject = new CompleteBean();
+		loader.loadPropertyIntoObject(realObject, key, dao, propertyMeta);
+
+		verify(mapper).setEagerPropertiesToEntity(eq(120L), eq(columns), eq(joinMeta),
+				userCaptor.capture());
+		verify(helper).setValueToField(userCaptor.capture(), eq(idSetter), eq(120L));
+
+		verify(helper).setValueToField(eq(realObject), eq(idSetter), userCaptor.capture());
+
+		List<UserBean> capturedUsers = userCaptor.getAllValues();
+		assertThat(capturedUsers).hasSize(3);
+		UserBean user = capturedUsers.get(0);
+		assertThat(capturedUsers).containsExactly(user, user, user);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void should_return_null_when_join_entity_not_found() throws Exception
+	public void should_load_join_list_into_entity() throws Exception
 	{
-		Long joinId = 45L;
+		Method setter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setEntityDao(dao);
+		PropertyMeta<Void, UserBean> propertyMeta = new PropertyMeta<Void, UserBean>();
+		propertyMeta.setType(PropertyType.JOIN_LIST);
+		propertyMeta.setSetter(setter);
 
-		List<Pair<DynamicComposite, String>> columns = mock(List.class);
+		CompleteBean realObject = new CompleteBean();
+		List<UserBean> users = new ArrayList<UserBean>();
+		when(joinLoader.loadJoinListProperty(11L, dao, propertyMeta)).thenReturn(users);
 
-		when(dao.eagerFetchEntity(joinId)).thenReturn(columns);
-		when(columns.size()).thenReturn(0);
+		this.loader.loadPropertyIntoObject(realObject, 11L, dao, propertyMeta);
 
-		UserBean loadedBean = loader.loadJoinEntity(UserBean.class, joinId, entityMeta);
+		verify(helper).setValueToField(realObject, setter, users);
+	}
 
-		assertThat(loadedBean).isNull();
+	@Test
+	public void should_load_join_set_into_entity() throws Exception
+	{
+		Method setter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
+		PropertyMeta<Void, UserBean> propertyMeta = new PropertyMeta<Void, UserBean>();
+		propertyMeta.setType(PropertyType.JOIN_SET);
+		propertyMeta.setSetter(setter);
+
+		CompleteBean realObject = new CompleteBean();
+		Set<UserBean> users = new HashSet<UserBean>();
+		when(joinLoader.loadJoinSetProperty(11L, dao, propertyMeta)).thenReturn(users);
+
+		this.loader.loadPropertyIntoObject(realObject, 11L, dao, propertyMeta);
+
+		verify(helper).setValueToField(realObject, setter, users);
+	}
+
+	@Test
+	public void should_load_join_map_into_entity() throws Exception
+	{
+		Method setter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
+
+		PropertyMeta<Integer, UserBean> propertyMeta = new PropertyMeta<Integer, UserBean>();
+		propertyMeta.setType(PropertyType.JOIN_MAP);
+		propertyMeta.setSetter(setter);
+
+		CompleteBean realObject = new CompleteBean();
+		Map<Integer, UserBean> users = new HashMap<Integer, UserBean>();
+		when(joinLoader.loadJoinMapProperty(11L, dao, propertyMeta)).thenReturn(users);
+
+		this.loader.loadPropertyIntoObject(realObject, 11L, dao, propertyMeta);
+
+		verify(helper).setValueToField(realObject, setter, users);
 	}
 
 	private String writeToString(Object object) throws Exception

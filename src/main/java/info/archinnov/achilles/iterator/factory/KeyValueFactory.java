@@ -1,9 +1,9 @@
 package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import com.google.common.collect.Lists;
  */
 public class KeyValueFactory
 {
-	private EntityLoader loader = new EntityLoader();
+	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 	private EntityHelper helper = new EntityHelper();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
@@ -70,7 +70,7 @@ public class KeyValueFactory
 	{
 		List<?> joinIds = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
-		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
+		Map<?, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
 				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<V> result = new ArrayList<V>();
 		for (Object joinId : joinIds)
@@ -111,7 +111,7 @@ public class KeyValueFactory
 		List<Object> joinIds = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
 
-		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<Integer> ttls = Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildTtlTransformer());
@@ -174,7 +174,7 @@ public class KeyValueFactory
 	{
 		List<?> joinIds = Lists
 				.transform(hColumns, compositeTransformer.buildRawValueTransformer());
-		Map<?, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
+		Map<?, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
 				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<V> result = new ArrayList<V>();
 		for (Object joinId : joinIds)
@@ -207,7 +207,7 @@ public class KeyValueFactory
 				compositeTransformer.buildKeyTransformer(propertyMeta));
 		List<Object> joinIds = Lists.transform(hColumns,
 				compositeTransformer.buildRawValueTransformer());
-		Map<Object, V> joinEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
+		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
 		List<Integer> ttls = Lists.transform(hColumns, compositeTransformer.buildTtlTransformer());
 

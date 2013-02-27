@@ -6,10 +6,10 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
@@ -66,7 +66,7 @@ public class KeyValueFactoryTest
 	private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
 	@Mock
-	private EntityLoader loader;
+	private JoinEntityHelper joinHelper;
 
 	@Mock
 	private EntityHelper helper;
@@ -86,7 +86,7 @@ public class KeyValueFactoryTest
 	public void setUp()
 	{
 		Whitebox.setInternalState(factory, "helper", helper);
-		Whitebox.setInternalState(factory, "loader", loader);
+		Whitebox.setInternalState(factory, "joinHelper", joinHelper);
 		Whitebox.setInternalState(factory, "compositeTransformer", compositeTransformer);
 		Whitebox.setInternalState(factory, "dynamicCompositeTransformer",
 				dynamicCompositeTransformer);
@@ -203,7 +203,7 @@ public class KeyValueFactoryTest
 		map.put(joinId1, bean1);
 		map.put(joinId2, bean2);
 
-		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
+		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
 		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
 		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
@@ -340,7 +340,7 @@ public class KeyValueFactoryTest
 		map.put(joinId1, bean1);
 		map.put(joinId2, bean2);
 
-		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
+		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
 		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
 		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
@@ -466,7 +466,7 @@ public class KeyValueFactoryTest
 		map.put(joinId1, bean1);
 		map.put(joinId2, bean2);
 
-		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
+		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
 		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
 		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);
@@ -602,7 +602,7 @@ public class KeyValueFactoryTest
 		map.put(joinId1, bean1);
 		map.put(joinId2, bean2);
 
-		when(loader.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
+		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
 				.thenReturn(map);
 		when(helper.buildProxy(bean1, joinMeta)).thenReturn(bean1);
 		when(helper.buildProxy(bean2, joinMeta)).thenReturn(bean2);

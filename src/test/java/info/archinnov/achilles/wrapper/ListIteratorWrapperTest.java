@@ -1,9 +1,10 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.ListIteratorWrapper;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * ListIteratorWrapperTest
@@ -37,6 +37,9 @@ public class ListIteratorWrapperTest
 	@Mock
 	private PropertyMeta<Void, Integer> propertyMeta;
 
+	@Mock
+	private EntityHelper helper;
+
 	ListIteratorWrapper<Integer> wrapper;
 
 	@Before
@@ -52,7 +55,9 @@ public class ListIteratorWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
+		wrapper.setHelper(helper);
 
+		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 	}
 
 	@Test
@@ -66,6 +71,7 @@ public class ListIteratorWrapperTest
 	@Test
 	public void should_mark_dirty_on_set() throws Exception
 	{
+		when(helper.unproxy(1)).thenReturn(1);
 		wrapper.next();
 		wrapper.set(1);
 
@@ -75,6 +81,7 @@ public class ListIteratorWrapperTest
 	@Test
 	public void should_mark_dirty_on_remove() throws Exception
 	{
+
 		wrapper.next();
 		wrapper.remove();
 

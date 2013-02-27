@@ -3,10 +3,10 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.IteratorWrapper;
-import info.archinnov.achilles.wrapper.ListWrapper;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * CollectionWrapperTest
@@ -41,10 +40,14 @@ public class CollectionWrapperTest
 	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
 
+	@Mock
+	private EntityHelper helper;
+
 	@Before
 	public void setUp() throws Exception
 	{
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 	}
 
 	@Test
@@ -53,6 +56,7 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		when(helper.unproxy("a")).thenReturn("a");
 		listWrapper.add("a");
 
 		assertThat(target).hasSize(1);
@@ -67,6 +71,8 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		listWrapper.setHelper(new EntityHelper());
+
 		listWrapper.addAll(Arrays.asList("a", "b"));
 
 		assertThat(target).hasSize(2);
@@ -124,6 +130,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		when(helper.unproxy("a")).thenReturn("a");
 		listWrapper.remove("a");
 
 		assertThat(target).hasSize(1);
@@ -158,6 +165,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		listWrapper.setHelper(new EntityHelper());
 		listWrapper.removeAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(1);
@@ -194,6 +202,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		listWrapper.setHelper(new EntityHelper());
 		listWrapper.retainAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(2);
@@ -212,6 +221,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		listWrapper.setHelper(new EntityHelper());
 		listWrapper.retainAll(Arrays.asList("a", "b", "c"));
 
 		assertThat(target).hasSize(3);
@@ -247,7 +257,7 @@ public class CollectionWrapperTest
 		listWrapper.setDirtyMap(dirtyMap);
 		listWrapper.setSetter(setter);
 		listWrapper.setPropertyMeta(propertyMeta);
-
+		listWrapper.setHelper(helper);
 		return listWrapper;
 	}
 }

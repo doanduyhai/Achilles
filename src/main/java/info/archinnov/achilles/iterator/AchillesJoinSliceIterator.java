@@ -2,9 +2,9 @@ package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 	private int count = DEFAULT_LENGTH;
 	private int columns = 0;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
-	private EntityLoader loader = new EntityLoader();
+	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
 	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
@@ -139,8 +139,9 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 
 		if (joinIds.size() > 0)
 		{
-			Map<V, VALUE> loadedEntities = loader.loadJoinEntities(propertyMeta.getValueClass(),
-					joinIds, (EntityMeta<V>) propertyMeta.getJoinProperties().getEntityMeta());
+			Map<V, VALUE> loadedEntities = joinHelper.loadJoinEntities(
+					propertyMeta.getValueClass(), joinIds, (EntityMeta<V>) propertyMeta
+							.getJoinProperties().getEntityMeta());
 
 			for (V joinId : joinIds)
 			{

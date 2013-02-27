@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.IteratorWrapper;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * IteratorWrapperTest
@@ -54,6 +53,8 @@ public class IteratorWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
+
+		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
 		wrapper.next();
 		wrapper.remove();
