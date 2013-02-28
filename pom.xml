@@ -280,4 +280,14 @@
 		<system>GitHub</system>
 		<url>https://github.com/doanduyhai/achilles/issues</url>
 	</issueManagement>
+	<repositories>
+		<repository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>OSS Snapshot</name>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+	</repositories>
 </project>
