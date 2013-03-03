@@ -66,11 +66,12 @@ public class JoinPropertyParser
 		else
 		{
 			joinPropertyMeta = this.parser.parse(propertyMetas, externalJoinWideMaps, entityClass,
-					field, true, objectMapper);
+					field, true, objectMapper, null);
 
 			JoinProperties joinProperties = findCascadeType(entityClass.getCanonicalName(), field);
 			joinPropertyMeta.setJoinProperties(joinProperties);
 
+			// Override each type by their JOIN type counterpart
 			switch (joinPropertyMeta.type())
 			{
 				case SIMPLE:

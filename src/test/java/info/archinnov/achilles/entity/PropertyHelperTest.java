@@ -7,6 +7,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
@@ -236,6 +237,26 @@ public class PropertyHelperTest
 		Field field = Test.class.getDeclaredField("name");
 
 		assertThat(helper.isLazy(field)).isTrue();
+	}
+
+	@Test
+	public void should_check_counter_annotation() throws Exception
+	{
+		class Test
+		{
+			@Counter
+			private String counter;
+		}
+
+		Field field = Test.class.getDeclaredField("counter");
+
+		assertThat(helper.hasCounterAnnotation(field)).isTrue();
+	}
+
+	@Test
+	public void should_not_find_counter_if_not_long_type() throws Exception
+	{
+
 	}
 
 	@Test

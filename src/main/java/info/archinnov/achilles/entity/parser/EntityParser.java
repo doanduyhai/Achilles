@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.parser;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
@@ -50,7 +51,7 @@ public class EntityParser
 
 	@SuppressWarnings("unchecked")
 	public Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> parseEntity(Keyspace keyspace,
-			Class<?> entityClass)
+			CounterDao counterDao, Class<?> entityClass)
 	{
 
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
@@ -80,13 +81,12 @@ public class EntityParser
 			if (filter.hasAnnotation(field, Id.class))
 			{
 				idMeta = parser.parseSimpleProperty(entityClass, field, field.getName(),
-						objectMapper);
+						objectMapper, entityClass.getCanonicalName(), counterDao);
 			}
-
 			else if (filter.hasAnnotation(field, Column.class))
 			{
 				parser.parse(propertyMetas, externalWideMaps, entityClass, field, false,
-						objectMapper);
+						objectMapper, counterDao);
 			}
 			else if (filter.hasAnnotation(field, JoinColumn.class))
 			{
@@ -219,5 +219,4 @@ public class EntityParser
 			}
 		}
 	}
-
 }

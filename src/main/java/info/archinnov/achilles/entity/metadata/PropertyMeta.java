@@ -36,7 +36,7 @@ public class PropertyMeta<K, V>
 	private Serializer<V> valueSerializer;
 	private Method getter;
 	private Method setter;
-
+	private CounterProperties counterProperties;
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
 	private ExternalWideMapProperties<?> externalWideMapProperties;
@@ -318,5 +318,40 @@ public class PropertyMeta<K, V>
 	public void setObjectMapper(ObjectMapper objectMapper)
 	{
 		this.objectMapper = objectMapper;
+	}
+
+	public CounterProperties getCounterProperties()
+	{
+		return counterProperties;
+	}
+
+	public void setCounterProperties(CounterProperties counterProperties)
+	{
+		this.counterProperties = counterProperties;
+	}
+
+	public boolean isExternal()
+	{
+		return this.type.isExternal();
+	}
+
+	public boolean isJoinColumn()
+	{
+		return this.type.isJoinColumn();
+	}
+
+	public boolean isLazy()
+	{
+		return this.type.isLazy();
+	}
+
+	public boolean isWideMap()
+	{
+		return this.type.isWideMap();
+	}
+
+	public boolean isCounter()
+	{
+		return this.type == PropertyType.COUNTER;
 	}
 }

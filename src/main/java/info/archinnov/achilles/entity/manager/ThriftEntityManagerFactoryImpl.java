@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.validation.Validator.validateNotEmpty;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -50,8 +51,11 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	private Keyspace keyspace;
 	private ColumnFamilyCreator columnFamilyCreator;
 	private ObjectMapperFactory objectMapperFactory = new DefaultObjectMapperFactory();
+	private CounterDao counterDao;
 
-	protected ThriftEntityManagerFactoryImpl() {}
+	protected ThriftEntityManagerFactoryImpl() {
+		this.counterDao = null;
+	}
 
 	/**
 	 * Create a new ThriftEntityManagerFactoryImpl
@@ -499,6 +503,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
 		this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
 		this.entityParser = new EntityParser(this.objectMapperFactory);
+		this.counterDao = new CounterDao(keyspace);
 		this.bootstrap();
 	}
 
@@ -546,6 +551,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
 		this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
 		this.entityParser = new EntityParser(this.objectMapperFactory);
+		this.counterDao = new CounterDao(keyspace);
 		this.bootstrap();
 	}
 
@@ -584,7 +590,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 			{
 
 				Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair = entityParser
-						.parseEntity(this.keyspace, clazz);
+						.parseEntity(this.keyspace, counterDao, clazz);
 				entityMetaMap.put(clazz, pair.left);
 				joinPropertyMetaToBeFilled.putAll(pair.right);
 			}

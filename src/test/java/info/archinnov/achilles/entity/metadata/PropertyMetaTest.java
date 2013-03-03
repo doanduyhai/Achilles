@@ -317,4 +317,59 @@ public class PropertyMetaTest
 
 		assertThat(propertyMeta.isJoin()).isTrue();
 	}
+
+	@Test
+	public void should_return_true_for_isExternal() throws Exception
+	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class) //
+				.type(PropertyType.EXTERNAL_WIDE_MAP) //
+				.build();
+
+		assertThat(propertyMeta.isExternal()).isTrue();
+	}
+
+	@Test
+	public void should_return_true_for_isJoinColumn() throws Exception
+	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class) //
+				.type(PropertyType.JOIN_SIMPLE) //
+				.build();
+
+		assertThat(propertyMeta.isJoinColumn()).isTrue();
+	}
+
+	@Test
+	public void should_return_true_for_isLazy() throws Exception
+	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class) //
+				.type(PropertyType.LAZY_LIST) //
+				.build();
+
+		assertThat(propertyMeta.isLazy()).isTrue();
+	}
+
+	@Test
+	public void should_return_true_for_isWideMap() throws Exception
+	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class) //
+				.type(PropertyType.WIDE_MAP) //
+				.build();
+
+		assertThat(propertyMeta.isWideMap()).isTrue();
+	}
+
+	@Test
+	public void should_return_true_for_isCounter() throws Exception
+	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class) //
+				.type(PropertyType.COUNTER) //
+				.build();
+
+		assertThat(propertyMeta.isCounter()).isTrue();
+	}
 }

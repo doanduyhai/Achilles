@@ -9,8 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
@@ -95,6 +95,9 @@ public class ThriftEntityManagerFactoryImplTest
 	@Mock
 	private ColumnFamilyCreator columnFamilyCreator;
 
+	@Mock
+	private CounterDao counterDao;
+
 	@Test
 	public void should_bootstrap() throws Exception
 	{
@@ -111,8 +114,10 @@ public class ThriftEntityManagerFactoryImplTest
 		Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair2 = new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(
 				entityMeta2, map);
 
-		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(pair1);
-		when(entityParser.parseEntity(eq(keyspace), eq(String.class))).thenReturn(pair2);
+		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(Long.class))).thenReturn(
+				pair1);
+		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(String.class))).thenReturn(
+				pair2);
 
 		factory.bootstrap();
 
@@ -134,7 +139,8 @@ public class ThriftEntityManagerFactoryImplTest
 
 		Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair1 = new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(
 				entityMeta1, joinPropertyMetaToBeFilled);
-		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(pair1);
+		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(Long.class))).thenReturn(
+				pair1);
 
 		factory.bootstrap();
 

@@ -9,6 +9,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -74,6 +75,9 @@ public class EntityMapperTest
 	@Mock
 	private ColumnFamilyCreator columnFamilyCreator;
 
+	@Mock
+	private CounterDao counterDao;
+
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Captor
@@ -109,7 +113,8 @@ public class EntityMapperTest
 		};
 		Whitebox.setInternalState(mapper, "helper", helper);
 		parser = new EntityParser(factory);
-		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class).left;
+		entityMeta = (EntityMeta<Long>) parser
+				.parseEntity(keyspace, counterDao, CompleteBean.class).left;
 	}
 
 	@Test

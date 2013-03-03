@@ -87,7 +87,6 @@ public class EntityHelper
 		{
 			try
 			{
-
 				getterMethod = beanClass.getMethod(getter);
 				if (getterMethod.getReturnType() != field.getType())
 				{

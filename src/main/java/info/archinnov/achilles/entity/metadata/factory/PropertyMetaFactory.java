@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata.factory;
 
+import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -26,6 +27,7 @@ public class PropertyMetaFactory<K, V>
 	private Class<V> valueClass;
 	private Method[] accessors;
 	private ObjectMapper objectMapper;
+	private CounterProperties counterProperties;
 
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
@@ -75,6 +77,7 @@ public class PropertyMetaFactory<K, V>
 			case LAZY_LIST:
 			case LAZY_SET:
 			case JOIN_SIMPLE:
+			case COUNTER:
 				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
 				break;
 			case MAP:
@@ -106,7 +109,7 @@ public class PropertyMetaFactory<K, V>
 		meta.setMultiKeyProperties(multiKeyProperties);
 
 		meta.setSingleKey(singleKey);
-
+		meta.setCounterProperties(counterProperties);
 		return meta;
 	}
 
@@ -131,6 +134,12 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMetaFactory<K, V> multiKeyProperties(MultiKeyProperties multiKeyProperties)
 	{
 		this.multiKeyProperties = multiKeyProperties;
+		return this;
+	}
+
+	public PropertyMetaFactory<K, V> counterProperties(CounterProperties counterProperties)
+	{
+		this.counterProperties = counterProperties;
 		return this;
 	}
 

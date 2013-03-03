@@ -47,7 +47,8 @@ public class EntityMetaTestBuilder
 			GenericDynamicCompositeDao<ID> dao, Class<?> entityClass)
 	{
 
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) parser.parseEntity(keyspace, entityClass).left;
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) parser
+				.parseEntity(keyspace, null, entityClass).left;
 		entityMeta.setEntityDao(dao);
 
 		return entityMeta;

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.parser;
 
+import static info.archinnov.achilles.entity.PropertyHelper.allowedCounterTypes;
 import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
@@ -13,9 +14,11 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -58,7 +61,7 @@ public class PropertyParser
 			Map<Field, String> externalWideMaps, //
 			Class<?> entityClass, Field field, //
 			boolean joinColumn, //
-			ObjectMapper objectMapper)
+			ObjectMapper objectMapper, CounterDao counterDao)
 	{
 		String externalTableName;
 		String propertyName;
@@ -111,7 +114,8 @@ public class PropertyParser
 
 			else
 			{
-				propertyMeta = parseSimpleProperty(entityClass, field, propertyName, objectMapper);
+				propertyMeta = parseSimpleProperty(entityClass, field, propertyName, objectMapper,
+						entityClass.getCanonicalName(), counterDao);
 			}
 
 			propertyMetas.put(propertyName, propertyMeta);
@@ -121,18 +125,39 @@ public class PropertyParser
 	}
 
 	public PropertyMeta<Void, ?> parseSimpleProperty(Class<?> beanClass, Field field,
-			String propertyName, ObjectMapper objectMapper)
+			String propertyName, ObjectMapper objectMapper, String fqcn, CounterDao counterDao)
 	{
 		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
 				+ "' should be Serializable");
 
 		Method[] accessors = entityHelper.findAccessors(beanClass, field);
 
-		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+		PropertyType type;
+		CounterProperties counterProperties = null;
+		if (propertyHelper.hasCounterAnnotation(field))
+		{
+			Validator
+					.validateAllowedTypes(
+							field.getType(),
+							allowedCounterTypes,
+							"Wrong type for the field '"
+									+ field.getName()
+									+ "'. Only java.lang.Long and primitive long are allowed for @Counter types");
+			type = PropertyType.COUNTER;
+			counterProperties = new CounterProperties(fqcn, counterDao);
+		}
+		else
+		{
+			type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+		}
+
 		return factory(field.getType()) //
 				.objectMapper(objectMapper) //
 				.type(type) //
-				.propertyName(propertyName).accessors(accessors).build();
+				.propertyName(propertyName) //
+				.accessors(accessors) //
+				.counterProperties(counterProperties) //
+				.build();
 
 	}
 

@@ -23,6 +23,7 @@ public enum PropertyType
 	WIDE_MAP(70, true, false, false, true), //
 	EXTERNAL_WIDE_MAP(70, true, false, true, true), //
 	JOIN_SIMPLE(70, true, true, false, false), //
+	COUNTER(70, true, true, true, false), //
 	JOIN_LIST(70, true, true, false, false), //
 	JOIN_SET(70, true, true, false, false), //
 	JOIN_MAP(70, true, true, false, false), //
