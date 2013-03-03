@@ -51,4 +51,14 @@ public class LazyLoadingIT
 		assertThat(trueBean.getLabel()).isEqualTo("label");
 		assertThat(trueBean.getFriends()).containsExactly("foo", "bar");
 	}
+
+	@Test
+	public void should_set_lazy_field() throws Exception
+	{
+		bean = em.find(CompleteBean.class, bean.getId());
+
+		bean.setLabel("newLabel");
+
+		assertThat(bean.getLabel()).isEqualTo("newLabel");
+	}
 }

@@ -100,7 +100,7 @@ public class MapWrapperTest
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
 		Entry<Integer, String> entry = target.entrySet().iterator().next();
-		when(helper.unproxy(entry)).thenReturn(entry);
+		when(helper.unproxy((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);

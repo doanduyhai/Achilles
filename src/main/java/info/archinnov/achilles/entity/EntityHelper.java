@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.Table;
@@ -41,20 +42,30 @@ public class EntityHelper
 
 	private PropertyFilter filter = new PropertyFilter();
 
-	protected String deriveGetterName(Field field)
+	protected String[] deriveGetterName(Field field)
 	{
 
 		String camelCase = field.getName().substring(0, 1).toUpperCase()
 				+ field.getName().substring(1);
 
+		String[] getters;
+
 		if (StringUtils.equals(field.getType().toString(), "boolean"))
 		{
-			return "is" + camelCase;
+			getters = new String[]
+			{
+					"is" + camelCase,
+					"get" + camelCase
+			};
 		}
 		else
 		{
-			return "get" + camelCase;
+			getters = new String[]
+			{
+				"get" + camelCase
+			};
 		}
+		return getters;
 	}
 
 	protected String deriveSetterName(String fieldName)
@@ -68,27 +79,33 @@ public class EntityHelper
 		log.trace("Find getter for field {} in bean {}", field.getName(),
 				beanClass.getCanonicalName());
 
+		Method getterMethod = null;
 		String fieldName = field.getName();
+		String[] getters = this.deriveGetterName(field);
 
-		try
+		for (String getter : getters)
 		{
-
-			String getter = this.deriveGetterName(field);
-			Method getterMethod = beanClass.getMethod(getter);
-			if (getterMethod.getReturnType() != field.getType())
+			try
 			{
-				throw new BeanMappingException("The getter for field '" + fieldName
-						+ "' does not return correct type");
+
+				getterMethod = beanClass.getMethod(getter);
+				if (getterMethod.getReturnType() != field.getType())
+				{
+					throw new BeanMappingException("The getter for field '" + fieldName
+							+ "' does not return correct type");
+				}
 			}
-
-			return getterMethod;
-
+			catch (NoSuchMethodException e)
+			{
+				// Do nothing here
+			}
 		}
-		catch (NoSuchMethodException e)
+		if (getterMethod == null)
 		{
 			throw new BeanMappingException("The getter for field '" + fieldName
 					+ "' does not exist");
 		}
+		return getterMethod;
 	}
 
 	public Method findSetter(Class<?> beanClass, Field field)
@@ -151,7 +168,8 @@ public class EntityHelper
 			}
 			catch (Exception e)
 			{
-				throw new RuntimeException(e);
+				throw new AchillesException("Cannot invoke '" + getter.getName() + "' on object '"
+						+ target + "'", e);
 			}
 		}
 		return value;
@@ -168,7 +186,8 @@ public class EntityHelper
 			}
 			catch (Exception e)
 			{
-				throw new RuntimeException(e);
+				throw new AchillesException("Cannot invoke '" + setter.getName() + "' on object '"
+						+ target + "'", e);
 			}
 		}
 	}
@@ -230,7 +249,6 @@ public class EntityHelper
 			if (StringUtils.isNotBlank(table.name()))
 			{
 				return table.name();
-
 			}
 		}
 		return canonicalName;
@@ -405,6 +423,17 @@ public class EntityHelper
 		}
 	}
 
+	public <K, V> Entry<K, V> unproxy(Entry<K, V> entry)
+	{
+		V value = entry.getValue();
+		if (this.isProxy(value))
+		{
+			value = this.getRealObject(value);
+			entry.setValue(value);
+		}
+		return entry;
+	}
+
 	public <T> Collection<T> unproxy(Collection<T> proxies)
 	{
 
@@ -413,7 +442,6 @@ public class EntityHelper
 		{
 			result.add(this.unproxy(proxy));
 		}
-
 		return result;
 	}
 

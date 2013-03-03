@@ -39,46 +39,73 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 	@Override
 	public void clear()
 	{
-		this.target.clear();
-		this.markDirty();
+		if (target != null)
+		{
+			this.target.clear();
+			this.markDirty();
+		}
 	}
 
 	@Override
 	public boolean contains(Object arg0)
 	{
-		return this.target.contains(helper.unproxy(arg0));
+		boolean result = false;
+		if (target != null)
+		{
+			result = this.target.contains(helper.unproxy(arg0));
+		}
+		return result;
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> arg0)
 	{
-		return this.target.containsAll(helper.unproxy(arg0));
+		boolean result = false;
+		if (target != null)
+		{
+			result = this.target.containsAll(helper.unproxy(arg0));
+		}
+		return result;
 	}
 
 	@Override
 	public boolean isEmpty()
 	{
-		return this.target.isEmpty();
+		boolean result = false;
+		if (target != null)
+		{
+			result = this.target.isEmpty();
+		}
+		return result;
 	}
 
 	@Override
 	public Iterator<Entry<K, V>> iterator()
 	{
-		return builder(this.target.iterator()) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.helper(helper) //
-				.build();
+		Iterator<Entry<K, V>> result = null;
+		if (target != null)
+		{
+			result = builder(this.target.iterator()) //
+					.dirtyMap(dirtyMap) //
+					.setter(setter) //
+					.propertyMeta(propertyMeta) //
+					.helper(helper) //
+					.build();
+		}
+		return result;
 	}
 
 	@Override
 	public boolean remove(Object arg0)
 	{
-		boolean result = this.target.remove(helper.unproxy(arg0));
-		if (result)
+		boolean result = false;
+		if (target != null)
 		{
-			this.markDirty();
+			result = this.target.remove(helper.unproxy(arg0));
+			if (result)
+			{
+				this.markDirty();
+			}
 		}
 		return result;
 	}
@@ -86,10 +113,14 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 	@Override
 	public boolean removeAll(Collection<?> arg0)
 	{
-		boolean result = this.target.removeAll(helper.unproxy(arg0));
-		if (result)
+		boolean result = false;
+		if (target != null)
 		{
-			this.markDirty();
+			result = this.target.removeAll(helper.unproxy(arg0));
+			if (result)
+			{
+				this.markDirty();
+			}
 		}
 		return result;
 	}
@@ -97,10 +128,14 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 	@Override
 	public boolean retainAll(Collection<?> arg0)
 	{
-		boolean result = this.target.retainAll(helper.unproxy(arg0));
-		if (result)
+		boolean result = false;
+		if (target != null)
 		{
-			this.markDirty();
+			result = this.target.retainAll(helper.unproxy(arg0));
+			if (result)
+			{
+				this.markDirty();
+			}
 		}
 		return result;
 	}
@@ -108,52 +143,67 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 	@Override
 	public int size()
 	{
-		return this.target.size();
+		int result = 0;
+		if (target != null)
+		{
+			result = this.target.size();
+		}
+		return result;
 	}
 
 	@Override
 	public Object[] toArray()
 	{
-		if (isJoin())
+		Object[] result = null;
+		if (target != null)
 		{
-			Object[] array = new MapEntryWrapper[this.target.size()];
-			int i = 0;
-			for (Map.Entry<K, V> entry : this.target)
+			if (isJoin())
 			{
-				array[i] = builder(entry) //
-						.dirtyMap(dirtyMap) //
-						.setter(setter) //
-						.propertyMeta(propertyMeta) //
-						.helper(helper) //
-						.build();
-				i++;
-			}
+				Object[] array = new MapEntryWrapper[this.target.size()];
+				int i = 0;
+				for (Map.Entry<K, V> entry : this.target)
+				{
+					array[i] = builder(entry) //
+							.dirtyMap(dirtyMap) //
+							.setter(setter) //
+							.propertyMeta(propertyMeta) //
+							.helper(helper) //
+							.build();
+					i++;
+				}
 
-			return array;
+				result = array;
+			}
+			else
+			{
+				result = this.target.toArray();
+			}
 		}
-		else
-		{
-			return this.target.toArray();
-		}
+		return result;
 	}
 
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{
-		if (isJoin())
+		T[] result = null;
+		if (target != null)
 		{
-			T[] array = this.target.toArray(arg0);
-
-			for (int i = 0; i < array.length; i++)
+			if (isJoin())
 			{
-				array[i] = helper.buildProxy(array[i], joinMeta());
+				T[] array = this.target.toArray(arg0);
+
+				for (int i = 0; i < array.length; i++)
+				{
+					array[i] = helper.buildProxy(array[i], joinMeta());
+				}
+				result = array;
 			}
-			return array;
+			else
+			{
+				result = this.target.toArray(arg0);
+			}
 		}
-		else
-		{
-			return this.target.toArray(arg0);
-		}
+		return result;
 	}
 
 }

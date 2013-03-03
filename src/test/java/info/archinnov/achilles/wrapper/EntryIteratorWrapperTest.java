@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.verifyZeroInteractions;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.wrapper.EntryIteratorWrapper;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * EntryIteratorWrapperTest
@@ -44,6 +43,33 @@ public class EntryIteratorWrapperTest
 	}
 
 	@Test
+	public void should_return_true_on_hasNext() throws Exception
+	{
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1, "FR");
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+				map.entrySet().iterator());
+
+		assertThat(wrapper.hasNext()).isTrue();
+	}
+
+	@Test
+	public void should_return_false_on_hasNext_when_null_target() throws Exception
+	{
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+				null);
+		assertThat(wrapper.hasNext()).isFalse();
+	}
+
+	@Test
+	public void should_return_null_on_next_when_null_target() throws Exception
+	{
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+				null);
+		assertThat(wrapper.next()).isNull();
+	}
+
+	@Test
 	public void should_mark_dirty_on_element_remove() throws Exception
 	{
 
@@ -62,7 +88,16 @@ public class EntryIteratorWrapperTest
 		wrapper.remove();
 
 		verify(dirtyMap).put(setter, propertyMeta);
+	}
 
+	@Test
+	public void should_not_mark_dirty_on_element_remove_when_null_target() throws Exception
+	{
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+				null);
+		wrapper.remove();
+
+		verifyZeroInteractions(dirtyMap);
 	}
 
 }

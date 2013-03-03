@@ -1,8 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.EntrySetWrapper;
@@ -11,7 +9,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import mapping.entity.CompleteBean;
 
@@ -20,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * EntrySetWrapperBuilderTest
@@ -51,25 +49,24 @@ public class EntrySetWrapperBuilderTest
 	@Test
 	public void should_build() throws Exception
 	{
-		Map<Integer, String> map = new HashMap<Integer, String>();
-		map.put(1, "FR");
-		map.put(2, "Paris");
-		map.put(3, "75014");
+		Map<Integer, String> target = new HashMap<Integer, String>();
+		target.put(1, "FR");
+		target.put(2, "Paris");
+		target.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> entrySetWrapper = EntrySetWrapperBuilder
-				.builder(map.entrySet()) //
+		EntrySetWrapper<Integer, String> wrapper = EntrySetWrapperBuilder
+				.builder(target.entrySet()) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
 				.helper(helper) //
 				.build();
 
-		assertThat(entrySetWrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(target.entrySet());
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(helper);
 
-		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(helper.unproxy(entry)).thenReturn(entry);
-		entrySetWrapper.remove(entry);
-
-		verify(dirtyMap).put(setter, propertyMeta);
 	}
 }

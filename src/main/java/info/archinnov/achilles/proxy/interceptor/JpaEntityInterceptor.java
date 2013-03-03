@@ -261,19 +261,20 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	{
 		PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
 		Object result = null;
-		switch (propertyMeta.type())
-		{
-			case WIDE_MAP:
-			case JOIN_WIDE_MAP:
-			case EXTERNAL_WIDE_MAP:
-				throw new UnsupportedOperationException(
-						"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
-			default:
 
-				this.dirtyMap.put(method, propertyMeta);
-				result = proxy.invoke(target, args);
+		if (propertyMeta.type().isWideMap())
+		{
+			throw new UnsupportedOperationException(
+					"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
 		}
 
+		if (propertyMeta.type().isLazy())
+		{
+			this.lazyLoaded.add(propertyMeta.getGetter());
+		}
+
+		this.dirtyMap.put(method, propertyMeta);
+		result = proxy.invoke(target, args);
 		return result;
 	}
 

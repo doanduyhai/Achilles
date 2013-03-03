@@ -17,14 +17,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.TweetMultiKey;
@@ -88,7 +91,9 @@ public class EntityHelperTest
 			Boolean old;
 		}
 
-		assertThat(helper.deriveGetterName(Test.class.getDeclaredField("old"))).isEqualTo("getOld");
+		String[] getterNames = helper.deriveGetterName(Test.class.getDeclaredField("old"));
+		assertThat(getterNames).hasSize(1);
+		assertThat(getterNames[0]).isEqualTo("getOld");
 	}
 
 	@Test
@@ -101,7 +106,10 @@ public class EntityHelperTest
 			boolean old;
 		}
 
-		assertThat(helper.deriveGetterName(Test.class.getDeclaredField("old"))).isEqualTo("isOld");
+		String[] getterNames = helper.deriveGetterName(Test.class.getDeclaredField("old"));
+		assertThat(getterNames).hasSize(2);
+		assertThat(getterNames[0]).isEqualTo("isOld");
+		assertThat(getterNames[1]).isEqualTo("getOld");
 	}
 
 	@Test
@@ -222,6 +230,52 @@ public class EntityHelperTest
 	}
 
 	@Test
+	public void should_find_getter_from_boolean_as_isOld() throws Exception
+	{
+		class Test
+		{
+			boolean old;
+
+			public boolean isOld()
+			{
+				return old;
+			}
+
+			public void setOld(boolean old)
+			{
+				this.old = old;
+			}
+		}
+
+		Method[] accessors = helper.findAccessors(Test.class, Test.class.getDeclaredField("old"));
+
+		assertThat(accessors[0].getName()).isEqualTo("isOld");
+	}
+
+	@Test
+	public void should_find_getter_from_boolean_as_getOld() throws Exception
+	{
+		class Test
+		{
+			boolean old;
+
+			public boolean getOld()
+			{
+				return old;
+			}
+
+			public void setOld(boolean old)
+			{
+				this.old = old;
+			}
+		}
+
+		Method[] accessors = helper.findAccessors(Test.class, Test.class.getDeclaredField("old"));
+
+		assertThat(accessors[0].getName()).isEqualTo("getOld");
+	}
+
+	@Test
 	public void should_find_accessors() throws Exception
 	{
 
@@ -268,6 +322,13 @@ public class EntityHelperTest
 	}
 
 	@Test
+	public void should_get_value_from_null_field() throws Exception
+	{
+		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+		assertThat(helper.getValueFromField(null, getter)).isNull();
+	}
+
+	@Test
 	public void should_set_value_to_field() throws Exception
 	{
 		Bean bean = new Bean();
@@ -276,6 +337,13 @@ public class EntityHelperTest
 		helper.setValueToField(bean, setter, "fecezzef");
 
 		assertThat(bean.getComplicatedAttributeName()).isEqualTo("fecezzef");
+	}
+
+	@Test
+	public void should_not_set_value_when_null_field() throws Exception
+	{
+		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+		helper.setValueToField(null, setter, "fecezzef");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -305,6 +373,25 @@ public class EntityHelperTest
 		assertThat(key).isEqualTo("test");
 	}
 
+	@Test
+	public void should_return_null_key_when_null_entity() throws Exception
+	{
+		PropertyMeta<Void, String> idMeta = new PropertyMeta<Void, String>();
+		assertThat(helper.getKey(null, idMeta)).isNull();
+	}
+
+	@Test
+	public void should_get_inherited_fields() throws Exception
+	{
+		List<Field> fields = helper.getInheritedPrivateFields(ChildBean.class);
+
+		assertThat(fields).hasSize(4);
+		assertThat(fields.get(0).getName()).isEqualTo("nickname");
+		assertThat(fields.get(1).getName()).isEqualTo("name");
+		assertThat(fields.get(2).getName()).isEqualTo("address");
+		assertThat(fields.get(3).getName()).isEqualTo("id");
+	}
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -319,6 +406,13 @@ public class EntityHelperTest
 		assertThat(id.getType()).isEqualTo((Class) Long.class);
 	}
 
+	@Test
+	public void should_not_get_inherited_field_by_annotation_when_no_match() throws Exception
+	{
+		assertThat(helper.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class))
+				.isNull();
+	}
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -331,6 +425,15 @@ public class EntityHelperTest
 
 		assertThat(address.getName()).isEqualTo("address");
 		assertThat(address.getType()).isEqualTo((Class) String.class);
+	}
+
+	@Test
+	public void should_not_get_inherited_field_by_annotation_and_name_when_no_match()
+			throws Exception
+	{
+		assertThat(
+				helper.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class,
+						"address")).isNull();
 	}
 
 	@Test
@@ -376,6 +479,19 @@ public class EntityHelperTest
 	}
 
 	@Test
+	public void should_infer_column_family_from_default_name_when_empty_annotation_name()
+			throws Exception
+	{
+		@Table(name = "")
+		class Test
+		{
+
+		}
+		String cfName = helper.inferColumnFamilyName(Test.class, "canonicalName");
+		assertThat(cfName).isEqualTo("canonicalName");
+	}
+
+	@Test
 	public void should_proxy_true() throws Exception
 	{
 		Enhancer enhancer = new Enhancer();
@@ -414,6 +530,14 @@ public class EntityHelperTest
 				CompleteBean.class);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_derive_base_class_from_transient() throws Exception
+	{
+		assertThat((Class<CompleteBean>) helper.deriveBaseClass(new CompleteBean())).isEqualTo(
+				CompleteBean.class);
+	}
+
 	@Test
 	public void should_determine_primary_key() throws Exception
 	{
@@ -427,6 +551,14 @@ public class EntityHelperTest
 		Object key = helper.determinePrimaryKey(bean, entityMeta);
 
 		assertThat(key).isEqualTo(12L);
+	}
+
+	@Test
+	public void should_return_null_for_primary_key_when_exception() throws Exception
+	{
+		when(entityMeta.getIdMeta()).thenThrow(new RuntimeException());
+
+		assertThat(helper.determinePrimaryKey(new CompleteBean(), entityMeta)).isNull();
 	}
 
 	@Test
@@ -491,6 +623,12 @@ public class EntityHelperTest
 	}
 
 	@Test
+	public void should_return_empty_multikey_when_null_entity() throws Exception
+	{
+		assertThat(helper.determineMultiKey(null, new ArrayList<Method>())).isEmpty();
+	}
+
+	@Test
 	public void should_build_proxy() throws Exception
 	{
 		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
@@ -521,6 +659,12 @@ public class EntityHelperTest
 
 	}
 
+	@Test
+	public void should_build_null_proxy() throws Exception
+	{
+		assertThat(helper.buildProxy(null, entityMeta)).isNull();
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_real_object_from_proxy() throws Exception
@@ -537,7 +681,6 @@ public class EntityHelperTest
 		UserBean actual = helper.getRealObject(proxy);
 
 		assertThat(actual).isSameAs(realObject);
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -574,7 +717,6 @@ public class EntityHelperTest
 	@Test(expected = IllegalStateException.class)
 	public void should_exception_when_not_proxy() throws Exception
 	{
-
 		helper.ensureProxy(new CompleteBean());
 	}
 
@@ -596,6 +738,46 @@ public class EntityHelperTest
 		CompleteBean actual = helper.unproxy(proxy);
 
 		assertThat(actual).isSameAs(realObject);
+	}
+
+	@Test
+	public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity()
+			throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+		CompleteBean actual = helper.unproxy(realObject);
+
+		assertThat(actual).isSameAs(realObject);
+	}
+
+	@Test
+	public void should_unproxy_real_entryset() throws Exception
+	{
+		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
+		map.put(1, new CompleteBean());
+		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
+
+		assertThat(helper.unproxy(entry)).isSameAs(entry);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_unproxy_entryset_containing_proxy() throws Exception
+	{
+		CompleteBean realObject = new CompleteBean();
+		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+
+		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
+		map.put(1, proxy);
+		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
+
+		when(interceptor.getTarget()).thenReturn(realObject);
+
+		assertThat(helper.unproxy(entry).getValue()).isSameAs(realObject);
 	}
 
 	@SuppressWarnings("unchecked")
