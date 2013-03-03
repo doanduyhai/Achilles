@@ -1,7 +1,7 @@
 ## Manual Column Family Creation
 
  If you want to create manually all the column families instead of letting **Achilles** do it for you, you can active the 
- log level of `info.archinnov.achilles.columnFamily.ColumnFamilyBuilder` to **DEBUG**. The creation script will be displayed:
+ log level of `info.archinnov.achilles.columnFamily.ColumnFamilyHelper` to **DEBUG**. The creation script will be displayed:
  
 	Create Dynamic Composite-based column family for entity 'integration.tests.entity.CompleteBean' : 
 		create column family CompleteBean
