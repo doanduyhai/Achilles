@@ -4,6 +4,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.validation.Validator;
 
@@ -129,12 +130,11 @@ public class CompositeKeyFactory
 	}
 
 	public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start,
-			boolean inclusiveStart, K end, boolean inclusiveEnd, boolean reverse)
+			K end, WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
 	{
 		Composite[] queryComp = new Composite[2];
 
-		ComponentEquality[] equalities = helper.determineEquality(inclusiveStart, inclusiveEnd,
-				reverse);
+		ComponentEquality[] equalities = helper.determineEquality(bounds, ordering);
 
 		Composite startComp = this.createForQuery(propertyMeta, start, equalities[0]);
 		Composite endComp = this.createForQuery(propertyMeta, end, equalities[1]);

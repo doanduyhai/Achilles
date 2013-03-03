@@ -3,6 +3,7 @@ package info.archinnov.achilles.dao;
 import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
 import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.CounterColumnSliceIterator;
@@ -250,8 +251,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		return Lists.transform(columns, hColumnToPair);
 	}
 
-	public List<HColumn<N, V>> findRawColumnsRange(K key, N startName, N endName, boolean reverse,
-			int count)
+	public List<HColumn<N, V>> findRawColumnsRange(K key, N startName, N endName, int count, boolean reverse)
 	{
 		return createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
 				.setColumnFamily(columnFamily).setKey(key)

@@ -11,6 +11,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 
@@ -92,7 +94,7 @@ public class WideMapIT
 		endComp.addComponent(2, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
-				startComp, endComp, false, 10);
+				startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(15);
@@ -111,7 +113,7 @@ public class WideMapIT
 		DynamicComposite endComp = buildComposite();
 		endComp.addComponent(2, uuid2, ComponentEquality.GREATER_THAN_EQUAL);
 		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
-				startComp, endComp, false, 10);
+				startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(0);
 	}
@@ -219,10 +221,8 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		List<KeyValue<UUID, String>> foundKeyValues = tweets.find( //
-				uuid4, false, //
-				uuid2, true, //
-				true, 10);
+		List<KeyValue<UUID, String>> foundKeyValues = tweets.find(uuid4, uuid2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeyValues).hasSize(2);
 		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(uuid3);
@@ -230,16 +230,14 @@ public class WideMapIT
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(uuid2);
 		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("tweet2");
 
-		List<String> foundValues = tweets.findValues(uuid4, false, //
-				uuid2, true, //
-				true, 10);
+		List<String> foundValues = tweets.findValues(uuid4, uuid2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundValues.get(0)).isEqualTo("tweet3");
 		assertThat(foundValues.get(1)).isEqualTo("tweet2");
 
-		List<UUID> foundKeys = tweets.findKeys(uuid4, false, //
-				uuid2, true, //
-				true, 10);
+		List<UUID> foundKeys = tweets.findKeys(uuid4, uuid2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeys.get(0)).isEqualTo(uuid3);
 		assertThat(foundKeys.get(1)).isEqualTo(uuid2);
@@ -337,8 +335,8 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		Iterator<KeyValue<UUID, String>> iter = tweets.iterator(uuid2, true, uuid4, false, false,
-				10);
+		Iterator<KeyValue<UUID, String>> iter = tweets.iterator(uuid2, uuid4, 10, 
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("tweet2");
 		assertThat(iter.next().getValue()).isEqualTo("tweet3");
@@ -393,7 +391,7 @@ public class WideMapIT
 	{
 		insert5Tweets();
 
-		tweets.remove(uuid2, true, uuid5, false);
+		tweets.remove(uuid2, uuid5, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<UUID, String>> foundKeyValues = tweets.find(null, null, 10);
 

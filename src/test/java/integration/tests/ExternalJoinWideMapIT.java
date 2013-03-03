@@ -12,6 +12,8 @@ import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
@@ -175,7 +177,7 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		user.getRetweets().remove(2, true, 4, false);
+		user.getRetweets().remove(2, 4, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<UUID> savedReTweetsUUIDs = externalJoinWideMapDao.findValuesRange(userId, null, null,
 				false, 10);
@@ -212,8 +214,7 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(3, true, 1, false,
-				true, 10);
+		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(3, 1, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		Tweet foundReTweet1 = iterator.next().getValue();
 		Tweet foundReTweet2 = iterator.next().getValue();

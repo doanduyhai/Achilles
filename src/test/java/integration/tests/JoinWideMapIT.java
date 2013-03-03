@@ -10,6 +10,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
@@ -159,7 +161,7 @@ public class JoinWideMapIT
 		user.getTweets().insert(3, ownTweet3);
 		user.getTweets().insert(4, ownTweet4);
 
-		user.getTweets().remove(2, true, 4, false);
+		user.getTweets().remove(2, 4, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<Integer, Tweet>> foundOwnTweets = user.getTweets().find(1, 4, 10);
 
@@ -189,8 +191,7 @@ public class JoinWideMapIT
 		user.getTweets().insert(3, ownTweet3);
 		user.getTweets().insert(4, ownTweet4);
 
-		KeyValueIterator<Integer, Tweet> iterator = user.getTweets().iterator(1, false, 3, true,
-				false, 10);
+		KeyValueIterator<Integer, Tweet> iterator = user.getTweets().iterator(1, 3, 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		Tweet foundOwnTweet1 = iterator.next().getValue();
 		Tweet foundOwnTweet2 = iterator.next().getValue();

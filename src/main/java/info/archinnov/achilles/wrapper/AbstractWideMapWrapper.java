@@ -23,73 +23,73 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	@Override
 	public List<KeyValue<K, V>> find(K start, K end, int count)
 	{
-		return find(start, true, end, true, false, count);
+		return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<V> findValues(K start, K end, int count)
 	{
-		return findValues(start, true, end, true, false, count);
+		return findValues(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<K> findKeys(K start, K end, int count)
 	{
-		return findKeys(start, true, end, true, false, count);
+		return findKeys(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<KeyValue<K, V>> findBoundsExclusive(K start, K end, int count)
 	{
-		return find(start, false, end, false, false, count);
+		return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<V> findBoundsExclusiveValues(K start, K end, int count)
 	{
-		return findValues(start, false, end, false, false, count);
+		return findValues(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<K> findBoundsExclusiveKeys(K start, K end, int count)
 	{
-		return findKeys(start, false, end, false, false, count);
+		return findKeys(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public List<KeyValue<K, V>> findReverse(K start, K end, int count)
 	{
-		return find(start, true, end, true, true, count);
+		return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public List<V> findReverseValues(K start, K end, int count)
 	{
-		return findValues(start, true, end, true, true, count);
+		return findValues(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public List<K> findReverseKeys(K start, K end, int count)
 	{
-		return findKeys(start, true, end, true, true, count);
+		return findKeys(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public List<KeyValue<K, V>> findReverseBoundsExclusive(K start, K end, int count)
 	{
-		return find(start, false, end, false, true, count);
+		return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public List<V> findReverseBoundsExclusiveValues(K start, K end, int count)
 	{
-		return findValues(start, false, end, false, true, count);
+		return findValues(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public List<K> findReverseBoundsExclusiveKeys(K start, K end, int count)
 	{
-		return findKeys(start, false, end, false, true, count);
+		return findKeys(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
@@ -215,61 +215,61 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	@Override
 	public KeyValueIterator<K, V> iterator()
 	{
-		return iterator(null, true, null, true, false, DEFAULT_COUNT);
+		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iterator(int count)
 	{
-		return iterator(null, true, null, true, false, count);
+		return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, int count)
 	{
-		return iterator(start, true, end, true, false, count);
+		return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iteratorBoundsExclusive(K start, K end, int count)
 	{
-		return iterator(start, false, end, false, false, count);
+		return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse()
 	{
-		return iterator(null, true, null, true, true, DEFAULT_COUNT);
+		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse(int count)
 	{
-		return iterator(null, true, null, true, true, count);
+		return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse(K start, K end, int count)
 	{
-		return iterator(start, true, end, true, true, count);
+		return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iteratorReverseBoundsExclusive(K start, K end, int count)
 	{
-		return iterator(start, false, end, false, true, count);
+		return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 	}
 
 	@Override
 	public void remove(K start, K end)
 	{
-		remove(start, true, end, true);
+		remove(start, end, BoundingMode.INCLUSIVE_BOUNDS);
 	}
 
 	@Override
 	public void removeBoundsExclusive(K start, K end)
 	{
-		remove(start, false, end, false);
+		remove(start, end, BoundingMode.EXCLUSIVE_BOUNDS);
 	}
 
 	@Override

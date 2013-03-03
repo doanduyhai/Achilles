@@ -19,6 +19,8 @@ import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -262,27 +264,27 @@ public class JoinExternalWideMapWrapperTest
 	public void should_find_keyvalue_range() throws Exception
 	{
 		int start = 7, end = 5, count = 10;
-		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
+		
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
-						inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.DESCENDING)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.asBoolean())).thenReturn(
 				(List) hColumns);
 		List<KeyValue<Integer, UserBean>> values = mock(List.class);
 		when(keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, hColumns))
 				.thenReturn(values);
 
-		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, inclusiveStart, end,
-				inclusiveEnd, reverse, count);
+		List<KeyValue<Integer, UserBean>> expected = wrapper.find(start, end, count, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
-		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -295,27 +297,27 @@ public class JoinExternalWideMapWrapperTest
 	public void should_find_values_range() throws Exception
 	{
 		int start = 7, end = 5, count = 10;
-		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
+		
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
-						inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.DESCENDING)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.asBoolean())).thenReturn(
 				(List) hColumns);
 		List<UserBean> values = mock(List.class);
 		when(keyValueFactory.createJoinValueListForComposite(propertyMeta, hColumns)).thenReturn(
 				values);
 
-		List<UserBean> expected = wrapper.findValues(start, inclusiveStart, end, inclusiveEnd,
-				reverse, count);
+		List<UserBean> expected = wrapper.findValues(start, end, count, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
-		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -328,26 +330,26 @@ public class JoinExternalWideMapWrapperTest
 	public void should_find_keys_range() throws Exception
 	{
 		int start = 7, end = 5, count = 10;
-		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
+		
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
-						inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.DESCENDING)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, reverse, count)).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.asBoolean())).thenReturn(
 				(List) hColumns);
 		List<Integer> values = mock(List.class);
 		when(keyValueFactory.createKeyListForComposite(propertyMeta, hColumns)).thenReturn(values);
 
-		List<Integer> expected = wrapper.findKeys(start, inclusiveStart, end, inclusiveEnd,
-				reverse, count);
+		List<Integer> expected = wrapper.findKeys(start, end, count, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
-		verify(compositeHelper).checkBounds(propertyMeta, start, end, reverse);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -356,27 +358,27 @@ public class JoinExternalWideMapWrapperTest
 	public void should_get_iterator() throws Exception
 	{
 		int start = 7, end = 5, count = 10;
-		boolean reverse = true, inclusiveStart = false, inclusiveEnd = true;
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
-						inclusiveEnd, reverse)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.DESCENDING)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 
 		AchillesJoinSliceIterator<Long, Composite, Long, Integer, UserBean> iterator = mock(AchillesJoinSliceIterator.class);
-		when(dao.getJoinColumnsIterator(propertyMeta, id, startComp, endComp, reverse, count))
+		when(dao.getJoinColumnsIterator(propertyMeta, id, startComp, endComp, OrderingMode.DESCENDING.asBoolean(), count))
 				.thenReturn(iterator);
 
 		KeyValueIterator<Integer, UserBean> keyValueIterator = mock(KeyValueIterator.class);
 		when(iteratorFactory.createKeyValueJoinIteratorForComposite(iterator, propertyMeta))
 				.thenReturn(keyValueIterator);
 
-		KeyValueIterator<Integer, UserBean> expected = wrapper.iterator(start, inclusiveStart, end,
-				inclusiveEnd, reverse, count);
+		KeyValueIterator<Integer, UserBean> expected = wrapper.iterator(start, end, count,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
 		assertThat(expected).isSameAs(keyValueIterator);
 	}
@@ -399,20 +401,20 @@ public class JoinExternalWideMapWrapperTest
 	{
 
 		int start = 7, end = 5;
-		boolean inclusiveStart = false, inclusiveEnd = true;
+		
 		Composite startComp = new Composite(), endComp = new Composite();
 
 		when(
-				compositeKeyFactory.createForQuery(propertyMeta, start, inclusiveStart, end,
-						inclusiveEnd, false)).thenReturn(new Composite[]
+				compositeKeyFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.ASCENDING)).thenReturn(new Composite[]
 		{
 				startComp,
 				endComp
 		});
 
-		wrapper.remove(start, inclusiveStart, end, inclusiveEnd);
+		wrapper.remove(start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
 
-		verify(compositeHelper).checkBounds(propertyMeta, start, end, false);
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 		verify(dao).removeColumnRange(id, startComp, endComp);
 
 	}

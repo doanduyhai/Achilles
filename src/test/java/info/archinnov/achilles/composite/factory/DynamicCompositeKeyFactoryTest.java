@@ -15,12 +15,12 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CompositeHelper;
 
@@ -298,20 +298,17 @@ public class DynamicCompositeKeyFactoryTest
 	@Test
 	public void should_create_pair_for_query() throws Exception
 	{
-		boolean inclusiveStart = true, inclusiveEnd = true, reverse = false;
-
 		when(propertyMeta.getPropertyName()).thenReturn("name");
 		when(propertyMeta.type()).thenReturn(SIMPLE);
 
-		when(helper.determineEquality(inclusiveStart, inclusiveEnd, reverse)).thenReturn(
+		when(helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)).thenReturn(
 				new ComponentEquality[]
 				{
 						EQUAL,
 						GREATER_THAN_EQUAL
 				});
 
-		DynamicComposite[] composites = keyFactory.createForQuery(propertyMeta, 12, inclusiveStart,
-				15, inclusiveEnd, reverse);
+		DynamicComposite[] composites = keyFactory.createForQuery(propertyMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 
@@ -332,13 +329,11 @@ public class DynamicCompositeKeyFactoryTest
 		componentSerializers.add(INT_SRZ);
 		componentSerializers.add(LONG_SRZ);
 
-		boolean inclusiveStart = true, inclusiveEnd = true, reverse = false;
-
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(componentSerializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 
-		when(helper.determineEquality(inclusiveStart, inclusiveEnd, reverse)).thenReturn(
+		when(helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)).thenReturn(
 				new ComponentEquality[]
 				{
 						EQUAL,
@@ -354,11 +349,10 @@ public class DynamicCompositeKeyFactoryTest
 		when(helper.findLastNonNullIndexForComponents("property", endCompValues)).thenReturn(2);
 
 		DynamicComposite[] composites = keyFactory.createForQuery(multiKeyPropertyMeta, //
-				start, //
-				inclusiveStart, //
+				start, 
 				end, //
-				inclusiveEnd, //
-				reverse);
+				BoundingMode.INCLUSIVE_BOUNDS, //
+				OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 
