@@ -10,6 +10,44 @@ import java.util.List;
  */
 public interface WideMap<K, V>
 {
+	
+	public enum BoundingMode {
+		INCLUSIVE_BOUNDS(true, true),
+		EXCLUSIVE_BOUNDS(false, false),
+		INCLUSIVE_START_BOUND_ONLY(true, false),
+		INCLUSIVE_END_BOUND_ONLY(false, true);
+	
+		private boolean inclusiveStart;
+		private boolean inclusiveEnd;
+		
+		private BoundingMode(boolean inclusiveStart, boolean inclusiveEnd){
+			this.inclusiveStart = inclusiveStart;
+			this.inclusiveEnd = inclusiveEnd;
+		}
+
+		public boolean isInclusiveStart() {
+			return inclusiveStart;
+		}
+
+		public boolean isInclusiveEnd() {
+			return inclusiveEnd;
+		}
+	}
+	
+	public enum OrderingMode {
+		DESCENDING(true), ASCENDING(false);
+		
+		private boolean asBoolean;
+		
+		private OrderingMode(boolean equivalent){
+			this.asBoolean = equivalent;
+		}
+
+		public boolean asBoolean() {
+			return asBoolean;
+		}	
+	}
+	
 	/**
 	 * Insert a new value with ttl
 	 * 
@@ -98,20 +136,17 @@ public interface WideMap<K, V>
 	 * 
 	 * @param start
 	 *            Start key
-	 * @param inclusiveStart
-	 *            true = inclusive, false = exclusive
 	 * @param end
 	 *            End key. Should be less/greater than start key depending on the reverse flag
-	 * @param inclusiveEnd
-	 *            true = inclusive, false = exclusive
-	 * @param reverse
-	 *            true = descending order, false = ascending order
 	 * @param count
 	 *            Maximum number of key/value pairs to be fetched
+	 * @param bounds
+	 * 			  Bounds specified mode
+	 * @param ordering
+	 * 			  Order specified mode
 	 * @return List of key/value pairs
 	 */
-	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count);
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering);
 
 	/**
 	 * Find first pair of key/value, normal order
@@ -198,21 +233,18 @@ public interface WideMap<K, V>
 	 * 
 	 * @param start
 	 *            Start key
-	 * @param inclusiveStart
-	 *            true = inclusive, false = exclusive
 	 * @param end
 	 *            End key. Should be less/greater than start key depending on the reverse flag
-	 * @param inclusiveEnd
-	 *            true = inclusive, false = exclusive
-	 * @param reverse
-	 *            true = descending order, false = ascending order
 	 * @param count
 	 *            Maximum number of values to be fetched
+	 * @param bounds
+	 * 			  Bounds specified mode
+	 * @param ordering
+	 * 			  Order specified mode
 	 * @return List of values
 	 */
-	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count);
-
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering);
+	
 	/**
 	 * Find first value, normal order
 	 * 
@@ -298,20 +330,17 @@ public interface WideMap<K, V>
 	 * 
 	 * @param start
 	 *            Start key
-	 * @param inclusiveStart
-	 *            true = inclusive, false = exclusive
 	 * @param end
 	 *            End key. Should be less/greater than start key depending on the reverse flag
-	 * @param inclusiveEnd
-	 *            true = inclusive, false = exclusive
-	 * @param reverse
-	 *            true = descending order, false = ascending order
 	 * @param count
 	 *            Maximum number of keys to be fetched
+	 * @param bounds
+	 * 			  Bounds specified mode
+	 * @param ordering
+	 * 			  Order specified mode
 	 * @return List of keys
 	 */
-	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count);
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering);
 
 	/**
 	 * Find first key, normal order
@@ -436,20 +465,17 @@ public interface WideMap<K, V>
 	 * 
 	 * @param start
 	 *            Start key
-	 * @param inclusiveStart
-	 *            true = inclusive, false = exclusive
 	 * @param end
 	 *            End key. Should be less/greater than start key depending on the reverse flag
-	 * @param inclusiveEnd
-	 *            true = inclusive, false = exclusive
-	 * @param reverse
-	 *            true = descending order, false = ascending order
 	 * @param count
 	 *            Maximum number of key/value pairs to be fetched
+	 * @param bounds
+	 * 			  Bounds specified mode
+	 * @param ordering
+	 * 			  Order specified mode
 	 * @return KeyValue iterator
 	 */
-	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count);
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering);
 
 	/**
 	 * Remove a key/value pair by key
@@ -483,14 +509,12 @@ public interface WideMap<K, V>
 	 * 
 	 * @param start
 	 *            Start key, exclusive
-	 * @param inclusiveStart
-	 *            true = inclusive, false = exclusive
 	 * @param end
 	 *            End key, exclusive
-	 * @param inclusiveEnd
-	 *            true = inclusive, false = exclusive
+	 * @param bounds
+	 * 			  Bounds specified mode
 	 */
-	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd);
+	public void remove(K start, K end, BoundingMode bounds);
 
 	/**
 	 * Remove the first key/value pair

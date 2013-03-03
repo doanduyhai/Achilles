@@ -12,6 +12,8 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBean.UserTweetKey;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -101,7 +103,7 @@ public class MultiKeyExternalWideMapIT
 		endComp.addComponent(0, bar, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<HColumn<Composite, String>> columns = multiKeyExternalWideMapDao.findRawColumnsRange(
-				bean.getId(), startComp, endComp, false, 10);
+				bean.getId(), startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(150);
@@ -129,9 +131,8 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
-				new UserTweetKey(qux, uuid5), false, //
-				new UserTweetKey(foo, uuid3), true, //
-				true, 10);
+				new UserTweetKey(qux, uuid5), new UserTweetKey(foo, uuid3), 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
 		assertThat(results).hasSize(2);
 
@@ -152,10 +153,9 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
-				new UserTweetKey(bar, null), true, //
-				new UserTweetKey(foo, uuid3), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+				new UserTweetKey(bar, null), new UserTweetKey(foo, uuid3), 10, 
+				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -178,10 +178,9 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
-				new UserTweetKey(bar, uuid1), true, //
-				new UserTweetKey(foo, null), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+				new UserTweetKey(bar, uuid1), new UserTweetKey(foo, null), 10, 
+				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -204,10 +203,8 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
-				null, true, //
-				new UserTweetKey(foo, null), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+				null, new UserTweetKey(foo, null), 10, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -263,10 +260,8 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
-		multiKeyExternalWideMap.iterator( //
-				new UserTweetKey(qux, uuid5), false, //
-				new UserTweetKey(bar, uuid1), true, //
-				true, 2);
+		multiKeyExternalWideMap.iterator(new UserTweetKey(qux, uuid5), new UserTweetKey(bar, uuid1), 2, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(iter.hasNext());
 
@@ -317,9 +312,8 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		multiKeyExternalWideMap.remove( //
-				new UserTweetKey(bar, uuid2), true, //
-				new UserTweetKey(qux, uuid4), false);
+		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4), 
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(
 				bean.getId(), null, null, false, 20);

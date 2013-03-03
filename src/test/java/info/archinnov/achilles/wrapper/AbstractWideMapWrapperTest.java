@@ -1,11 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
-import info.archinnov.achilles.wrapper.AbstractWideMapWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +40,13 @@ public class AbstractWideMapWrapperTest
 		{
 
 			@Override
-			public void remove(Long start, boolean inclusiveStart, Long end, boolean inclusiveEnd)
+			public void remove(Long start, Long end, BoundingMode bounds)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = start;
 				capture.end = end;
-				capture.inclusiveStart = inclusiveStart;
-				capture.inclusiveEnd = inclusiveEnd;
+				capture.inclusiveStart = bounds.isInclusiveStart();
+				capture.inclusiveEnd = bounds.isInclusiveEnd();
 
 				variableCapture.set(capture);
 			}
@@ -87,15 +85,15 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public KeyValueIterator<Long, String> iterator(Long start, boolean inclusiveStart,
-					Long end, boolean inclusiveEnd, boolean reverse, int count)
+			public KeyValueIterator<Long, String> iterator(Long start, Long end, int count, 
+					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = start;
 				capture.end = end;
-				capture.inclusiveStart = inclusiveStart;
-				capture.inclusiveEnd = inclusiveEnd;
-				capture.reverse = reverse;
+				capture.inclusiveStart = bounds.isInclusiveStart();
+				capture.inclusiveEnd = bounds.isInclusiveEnd();
+				capture.reverse = ordering.asBoolean();
 				capture.count = count;
 
 				variableCapture.set(capture);
@@ -133,15 +131,15 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<KeyValue<Long, String>> find(Long start, boolean inclusiveStart, Long end,
-					boolean inclusiveEnd, boolean reverse, int count)
+			public List<KeyValue<Long, String>> find(Long start, Long end, int count, 
+					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = start;
 				capture.end = end;
-				capture.inclusiveStart = inclusiveStart;
-				capture.inclusiveEnd = inclusiveEnd;
-				capture.reverse = reverse;
+				capture.inclusiveStart = bounds.isInclusiveStart();
+				capture.inclusiveEnd = bounds.isInclusiveEnd();
+				capture.reverse = ordering.asBoolean();
 				capture.count = count;
 
 				variableCapture.set(capture);
@@ -178,8 +176,8 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<String> findValues(Long start, boolean inclusiveStart, Long end,
-					boolean inclusiveEnd, boolean reverse, int count)
+			public List<String> findValues(Long start, Long end, int count, 
+					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = null;
@@ -195,8 +193,8 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<Long> findKeys(Long start, boolean inclusiveStart, Long end,
-					boolean inclusiveEnd, boolean reverse, int count)
+			public List<Long> findKeys(Long start, Long end, int count, 
+					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = null;

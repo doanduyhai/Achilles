@@ -11,6 +11,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.ColumnFamilyBean;
 
 import java.util.Iterator;
@@ -89,7 +91,7 @@ public class ColumnFamilyIT
 		endComp.addComponent(0, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<HColumn<Composite, String>> columns = dao.findRawColumnsRange(bean.getId(), startComp,
-				endComp, false, 10);
+				endComp, 10, false);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(15);
@@ -108,7 +110,7 @@ public class ColumnFamilyIT
 		Composite endComp = new Composite();
 		endComp.addComponent(0, 12, ComponentEquality.GREATER_THAN_EQUAL);
 		List<HColumn<Composite, String>> columns = dao.findRawColumnsRange(bean.getId(), startComp,
-				endComp, false, 10);
+				endComp, 10, false);
 
 		assertThat(columns).hasSize(0);
 	}
@@ -169,10 +171,8 @@ public class ColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.find( //
-				14, false, //
-				12, true, //
-				true, 10);
+		List<KeyValue<Integer, String>> foundMaps = map.find(14, 12, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundMaps).hasSize(2);
 		assertThat(foundMaps.get(0).getValue()).isEqualTo("value3");
@@ -237,7 +237,8 @@ public class ColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = map.iterator(12, true, 14, false, false, 10);
+		Iterator<KeyValue<Integer, String>> iter = map.iterator(12, 14, 10, 
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");
 		assertThat(iter.next().getValue()).isEqualTo("value3");
@@ -292,7 +293,7 @@ public class ColumnFamilyIT
 	{
 		insert5Values();
 
-		map.remove(12, true, 15, false);
+		map.remove(12, 15, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<Integer, String>> foundMaps = map.find(null, null, 10);
 

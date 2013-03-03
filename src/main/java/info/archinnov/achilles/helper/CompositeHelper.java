@@ -5,6 +5,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
@@ -48,7 +49,7 @@ public class CompositeHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end, boolean reverse)
+	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end, WideMap.OrderingMode ordering)
 	{
 
 		if (start != null && end != null)
@@ -57,7 +58,7 @@ public class CompositeHelper
 			{
 				Comparable<K> startComp = (Comparable<K>) start;
 
-				if (reverse)
+				if (WideMap.OrderingMode.DESCENDING.equals(ordering))
 				{
 					Validator
 							.validateTrue(startComp.compareTo(end) >= 0,
@@ -89,7 +90,7 @@ public class CompositeHelper
 							.get(i);
 					Object endValue = endComponentValues.get(i);
 
-					if (reverse)
+					if (WideMap.OrderingMode.DESCENDING.equals(ordering))
 					{
 						if (startValue != null && endValue != null)
 						{
@@ -113,25 +114,42 @@ public class CompositeHelper
 		}
 	}
 
-	public ComponentEquality[] determineEquality(boolean inclusiveStart, boolean inclusiveEnd,
-			boolean reverse)
+	public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
 	{
 		ComponentEquality[] result = new ComponentEquality[2];
-		ComponentEquality start;
-		ComponentEquality end;
-		if (reverse)
+		if (WideMap.OrderingMode.DESCENDING.equals(ordering))
 		{
-			start = inclusiveStart ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
-			end = inclusiveEnd ? EQUAL : GREATER_THAN_EQUAL;
+			if(WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds)){
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = EQUAL;
+			} else if(WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds)) {
+				result[0] = LESS_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			} else if(WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds)) {
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			} else if(WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds)) {
+				result[0] = LESS_THAN_EQUAL;
+				result[1] = EQUAL;
+			}
 		}
 		else
 		{
-			start = inclusiveStart ? EQUAL : GREATER_THAN_EQUAL;
-			end = inclusiveEnd ? GREATER_THAN_EQUAL : LESS_THAN_EQUAL;
+			if(WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds)){
+				result[0] = EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			} else if(WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds)) {
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = LESS_THAN_EQUAL;
+			} else if(WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds)) {
+				result[0] = EQUAL;
+				result[1] = LESS_THAN_EQUAL;
+			} else if(WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds)) {
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			}
 		}
 
-		result[0] = start;
-		result[1] = end;
 		return result;
 	}
 }

@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Method;
@@ -161,11 +162,11 @@ public class DynamicCompositeKeyFactory {
         return composite;
     }
 
-    public <K, V> DynamicComposite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, boolean inclusiveStart,
-            K end, boolean inclusiveEnd, boolean reverse) {
+    public <K, V> DynamicComposite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start,
+            K end, WideMap.BoundingMode bounds, WideMap.OrderingMode ordering) {
         DynamicComposite[] queryComp = new DynamicComposite[2];
 
-        ComponentEquality[] equalities = compositeHelper.determineEquality(inclusiveStart, inclusiveEnd, reverse);
+        ComponentEquality[] equalities = compositeHelper.determineEquality(bounds, ordering);
 
         DynamicComposite startComp = this.createForQuery(propertyMeta, start, equalities[0]);
         DynamicComposite endComp = this.createForQuery(propertyMeta, end, equalities[1]);

@@ -11,6 +11,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 
@@ -84,7 +86,7 @@ public class ExternalWideMapIT
 		endComp.addComponent(0, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<HColumn<Composite, String>> columns = externalWideMapDao.findRawColumnsRange(
-				bean.getId(), startComp, endComp, false, 10);
+				bean.getId(), startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(15);
@@ -103,7 +105,7 @@ public class ExternalWideMapIT
 		Composite endComp = new Composite();
 		endComp.addComponent(0, 2, ComponentEquality.GREATER_THAN_EQUAL);
 		List<HColumn<Composite, String>> columns = externalWideMapDao.findRawColumnsRange(
-				bean.getId(), startComp, endComp, false, 10);
+				bean.getId(), startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(0);
 	}
@@ -211,10 +213,8 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find( //
-				4, false, //
-				2, true, //
-				true, 10);
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(4, 2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeyValues).hasSize(2);
 		assertThat(foundKeyValues.get(0).getKey()).isEqualTo(3);
@@ -222,18 +222,14 @@ public class ExternalWideMapIT
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
 		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
 
-		List<String> foundValues = externalWideMap.findValues( //
-				4, false, //
-				2, true, //
-				true, 10);
+		List<String> foundValues = externalWideMap.findValues(4, 2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundValues.get(0)).isEqualTo("value3");
 		assertThat(foundValues.get(1)).isEqualTo("value2");
 
-		List<Integer> foundKeys = externalWideMap.findKeys( //
-				4, false, //
-				2, true, //
-				true, 10);
+		List<Integer> foundKeys = externalWideMap.findKeys(4, 2, 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeys.get(0)).isEqualTo(3);
 		assertThat(foundKeys.get(1)).isEqualTo(2);
@@ -331,8 +327,8 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(2, true, 4, false,
-				false, 10);
+		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(2, 4, 10, 
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");
 		assertThat(iter.next().getValue()).isEqualTo("value3");
@@ -406,7 +402,7 @@ public class ExternalWideMapIT
 	{
 		insert5Values();
 
-		externalWideMap.remove(2, true, 5, false);
+		externalWideMap.remove(2, 5, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<Integer, String>> foundValues = externalWideMap.find(null, null, 10);
 
