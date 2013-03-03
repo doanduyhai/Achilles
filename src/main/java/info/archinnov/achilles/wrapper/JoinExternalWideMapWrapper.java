@@ -100,16 +100,15 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 			"unchecked"
 	})
 	@Override
-	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
-				queryComps[1], reverse, count);
+				queryComps[1], count, ordering.asBoolean());
 
 		return keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -120,16 +119,15 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 			"unchecked"
 	})
 	@Override
-	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
-				queryComps[1], reverse, count);
+				queryComps[1], count, ordering.asBoolean());
 
 		return keyValueFactory.createJoinValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -140,29 +138,27 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 			"unchecked"
 	})
 	@Override
-	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		Composite[] queryComps = compositeKeyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
-				queryComps[1], reverse, count);
+				queryComps[1], count, ordering.asBoolean());
 
 		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start,
-				inclusiveStart, end, inclusiveEnd, reverse);
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, 
+				bounds, ordering);
 
 		AchillesJoinSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator = dao
-				.getJoinColumnsIterator(propertyMeta, id, composites[0], composites[1], reverse,
+				.getJoinColumnsIterator(propertyMeta, id, composites[0], composites[1], ordering.asBoolean(),
 						count);
 
 		return iteratorFactory.createKeyValueJoinIteratorForComposite(joinColumnSliceIterator,
@@ -177,12 +173,12 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	}
 
 	@Override
-	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void remove(K start, K end, BoundingMode bounds)
 	{
-		compositeHelper.checkBounds(propertyMeta, start, end, false);
+		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 
 		Composite[] queryComps = compositeKeyFactory.createForQuery(//
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, false);
+				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
 		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
 

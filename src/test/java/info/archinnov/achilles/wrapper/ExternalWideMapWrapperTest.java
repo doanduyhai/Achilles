@@ -10,6 +10,8 @@ import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
@@ -159,14 +161,14 @@ public class ExternalWideMapWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
 						endComp
 				});
 
-		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
 		when(keyValueFactory.createKeyValueListForComposite(wideMapMeta, (List) hColumns))
 				.thenReturn(keyValues).thenReturn(keyValues);
 
@@ -187,14 +189,14 @@ public class ExternalWideMapWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
 						endComp
 				});
 
-		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
 		when(keyValueFactory.createValueListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
 				keyValues).thenReturn(keyValues);
 
@@ -215,14 +217,14 @@ public class ExternalWideMapWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
 						endComp
 				});
 
-		when(dao.findRawColumnsRange(id, startComp, endComp, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
 		when(keyValueFactory.createKeyListForComposite(wideMapMeta, (List) hColumns)).thenReturn(
 				keyValues).thenReturn(keyValues);
 
@@ -239,7 +241,7 @@ public class ExternalWideMapWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, true, 15, false, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
@@ -248,8 +250,7 @@ public class ExternalWideMapWrapperTest
 		when(dao.getColumnsIterator(id, startComp, endComp, false, 10)).thenReturn(iterator);
 		when(iteratorFactory.createKeyValueIteratorForComposite(iterator, wideMapMeta)).thenReturn(
 				keyValues);
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(12, true, 15, false, false,
-				10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(12, 15, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(keyValues);
 	}
@@ -271,14 +272,14 @@ public class ExternalWideMapWrapperTest
 		Composite startComp = new Composite();
 		Composite endComp = new Composite();
 
-		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, false, 15, true, false)) //
+		when(compositeKeyFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)) //
 				.thenReturn(new Composite[]
 				{
 						startComp,
 						endComp
 				});
 
-		wrapper.remove(12, false, 15, true);
+		wrapper.remove(12, 15, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
 
 		verify(dao).removeColumnRange(id, startComp, endComp);
 	}

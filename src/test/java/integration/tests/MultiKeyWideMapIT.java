@@ -12,6 +12,8 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBean.UserTweetKey;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -101,7 +103,7 @@ public class MultiKeyWideMapIT
 		endComp.addComponent(2, bar, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<HColumn<DynamicComposite, String>> columns = dao.findRawColumnsRange(bean.getId(),
-				startComp, endComp, false, 10);
+				startComp, endComp, 10, false);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).getTtl()).isEqualTo(150);
@@ -128,10 +130,8 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
-				new UserTweetKey(qux, uuid5), false, //
-				new UserTweetKey(foo, uuid3), true, //
-				true, 10);
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find(new UserTweetKey(qux, uuid5), new UserTweetKey(foo, uuid3), 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(results).hasSize(2);
 
@@ -152,10 +152,8 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
-				new UserTweetKey(bar, null), true, //
-				new UserTweetKey(foo, uuid3), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find(new UserTweetKey(bar, null), new UserTweetKey(foo, uuid3), 
+				10, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -178,10 +176,8 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
-				new UserTweetKey(bar, uuid1), true, //
-				new UserTweetKey(foo, null), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find(new UserTweetKey(bar, uuid1), new UserTweetKey(foo, null), 10, 
+				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -204,10 +200,8 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = userTweets.find( //
-				null, true, //
-				new UserTweetKey(foo, null), true, //
-				false, 10);
+		List<KeyValue<UserTweetKey, String>> results = userTweets.find(null, new UserTweetKey(foo, null), 10, 
+				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -263,10 +257,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
-		userTweets.iterator( //
-				new UserTweetKey(qux, uuid5), false, //
-				new UserTweetKey(bar, uuid1), true, //
-				true, 2);
+		userTweets.iterator(new UserTweetKey(qux, uuid5), new UserTweetKey(bar, uuid1), 2, BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(iter.hasNext());
 
@@ -317,9 +308,7 @@ public class MultiKeyWideMapIT
 		userTweets.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		userTweets.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		userTweets.remove( //
-				new UserTweetKey(bar, uuid2), true, //
-				new UserTweetKey(qux, uuid4), false);
+		userTweets.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4), BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		DynamicComposite startComp = new DynamicComposite();
 		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);

@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CompositeHelper;
 
@@ -208,13 +210,14 @@ public class CompositeKeyFactoryTest
 	public void should_create_composites_for_query() throws Exception
 	{
 
-		when(helper.determineEquality(true, false, false)) //
+		when(helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING)) //
 				.thenReturn(new ComponentEquality[]
 				{
 						EQUAL,
 						LESS_THAN_EQUAL
 				});
-		Composite[] composites = factory.createForQuery(wideMapMeta, 12, true, 15, false, false);
+		Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_START_BOUND_ONLY,
+													OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 		assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
@@ -236,7 +239,7 @@ public class CompositeKeyFactoryTest
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues2 = Arrays.asList((Object) 5, "c", uuid);
 
-		when(helper.determineEquality(false, true, false)) //
+		when(helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)) //
 				.thenReturn(new ComponentEquality[]
 				{
 						LESS_THAN_EQUAL,
@@ -252,7 +255,7 @@ public class CompositeKeyFactoryTest
 		when(helper.findLastNonNullIndexForComponents("property", keyValues2)).thenReturn(2);
 
 		Composite[] composites = factory.createForQuery( //
-				multiKeyWideMapMeta, tweetKey1, false, tweetKey2, true, false);
+				multiKeyWideMapMeta, tweetKey1, tweetKey2, BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 		assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);

@@ -85,17 +85,16 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public List<KeyValue<K, V>> find(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
 
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+				queryComps[0], queryComps[1], count, ordering.asBoolean());
 
 		if (propertyMeta.isJoin())
 		{
@@ -110,17 +109,16 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public List<V> findValues(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
 
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds,  ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+				queryComps[0], queryComps[1], count, ordering.asBoolean());
 		if (propertyMeta.isJoin())
 		{
 			return keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns);
@@ -133,34 +131,32 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public List<K> findKeys(K start, boolean inclusiveStart, K end, boolean inclusiveEnd,
-			boolean reverse, int count)
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
 
-		compositeHelper.checkBounds(propertyMeta, start, end, reverse);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], reverse, count);
+				queryComps[0], queryComps[1], count, ordering.asBoolean());
 		return keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns);
 	}
 
 	@Override
-	public KeyValueIterator<K, V> iterator(K start, boolean inclusiveStart, K end,
-			boolean inclusiveEnd, boolean reverse, int count)
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, reverse);
+				propertyMeta, start, end, bounds, ordering);
 
 		if (propertyMeta.isJoin())
 		{
-
+			
 			AchillesJoinSliceIterator<ID, DynamicComposite, String, K, V> joinColumnSliceIterator = entityDao
 					.getJoinColumnsIterator(propertyMeta, id, queryComps[0], queryComps[1],
-							reverse, count);
+							ordering.asBoolean(), count);
 
 			return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
 					joinColumnSliceIterator, propertyMeta);
@@ -170,7 +166,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		{
 
 			AchillesSliceIterator<ID, DynamicComposite, String> columnSliceIterator = entityDao
-					.getColumnsIterator(id, queryComps[0], queryComps[1], reverse, count);
+					.getColumnsIterator(id, queryComps[0], queryComps[1], ordering.asBoolean(), count);
 
 			return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator,
 					propertyMeta);
@@ -184,13 +180,13 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 	}
 
 	@Override
-	public void remove(K start, boolean inclusiveStart, K end, boolean inclusiveEnd)
+	public void remove(K start, K end, BoundingMode bounds)
 	{
 
-		compositeHelper.checkBounds(propertyMeta, start, end, false);
+		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 
 		DynamicComposite[] queryComps = keyFactory.createForQuery(//
-				propertyMeta, start, inclusiveStart, end, inclusiveEnd, false);
+				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
 		entityDao.removeColumnRange(id, queryComps[0], queryComps[1]);
 	}

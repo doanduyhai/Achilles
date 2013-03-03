@@ -12,6 +12,8 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.ColumnFamilyMultiKey;
 import integration.tests.entity.MultiKeyColumnFamilyBean;
 
@@ -147,10 +149,8 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find( //
-				new ColumnFamilyMultiKey(14L, "14"), false, //
-				new ColumnFamilyMultiKey(12L, "12"), true, //
-				true, 10);
+		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(new ColumnFamilyMultiKey(14L, "14"), new ColumnFamilyMultiKey(12L, "12"), 10, 
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value3");
@@ -219,11 +219,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iterator(//
-				new ColumnFamilyMultiKey(12L, "12"), //
-				true, //
-				new ColumnFamilyMultiKey(14L, "14"), //
-				false, false, 10);
+		Iterator<KeyValue<ColumnFamilyMultiKey, String>> iter = map.iterator(new ColumnFamilyMultiKey(12L, "12"), 
+				new ColumnFamilyMultiKey(14L, "14"), 10,
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");
 		assertThat(iter.next().getValue()).isEqualTo("value3");
@@ -279,8 +277,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.remove(new ColumnFamilyMultiKey(12L, "12"), true, new ColumnFamilyMultiKey(15L, "15"),
-				false);
+		map.remove(new ColumnFamilyMultiKey(12L, "12"), new ColumnFamilyMultiKey(15L, "15"), BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<ColumnFamilyMultiKey, String>> foundTweets = map.find(null, null, 10);
 

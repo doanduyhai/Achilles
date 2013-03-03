@@ -11,6 +11,8 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import integration.tests.entity.ColumnFamilyBeanWithJoinEntity;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
@@ -152,7 +154,7 @@ public class ColumnFamilyWithJoinEntityIT
 
 		insert5Users();
 
-		friends.remove(2, true, 4, false);
+		friends.remove(2, 4, BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<Long> savedFriendIds = dao.findValuesRange(id, null, null, false, 10);
 
@@ -193,7 +195,7 @@ public class ColumnFamilyWithJoinEntityIT
 
 		insert5Users();
 
-		KeyValueIterator<Integer, User> iterator = friends.iterator(3, true, 1, false, true, 10);
+		KeyValueIterator<Integer, User> iterator = friends.iterator(3, 1, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		User foundUser1 = iterator.next().getValue();
 		User foundUser2 = iterator.next().getValue();

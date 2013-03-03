@@ -12,6 +12,8 @@ import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
@@ -190,19 +192,21 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
-		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
 
 		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
 		when(keyValueFactory.createKeyValueListForDynamicComposite(propertyMeta, hColumns))
 				.thenReturn(result);
-		List<KeyValue<Integer, String>> expected = wrapper.find(1, true, 2, false, false, 10);
+		List<KeyValue<Integer, String>> expected = wrapper.find(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(result);
 	}
@@ -215,19 +219,21 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
-		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
 		when(propertyMeta.isJoin()).thenReturn(true);
 
 		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
 		when(keyValueFactory.createJoinKeyValueListForDynamicComposite(propertyMeta, hColumns))
 				.thenReturn(result);
-		List<KeyValue<Integer, String>> expected = wrapper.find(1, true, 2, false, false, 10);
+		List<KeyValue<Integer, String>> expected = wrapper.find(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(result);
 	}
@@ -240,21 +246,23 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 
-		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
 
 		List<String> result = new ArrayList<String>();
 		when(keyValueFactory.createValueListForDynamicComposite(propertyMeta, hColumns))
 				.thenReturn(result);
 
-		List<String> expected = wrapper.findValues(1, true, 2, false, false, 10);
+		List<String> expected = wrapper.findValues(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(result);
 	}
@@ -267,21 +275,23 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 
-		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
 		when(propertyMeta.isJoin()).thenReturn(true);
 
 		List<String> result = new ArrayList<String>();
 		when(keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns))
 				.thenReturn(result);
 
-		List<String> expected = wrapper.findValues(1, true, 2, false, false, 10);
+		List<String> expected = wrapper.findValues(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(result);
 	}
@@ -294,21 +304,23 @@ public class WideMapWrapperTest
 		DynamicComposite end = new DynamicComposite();
 		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
 						end
 				});
 
-		when(dao.findRawColumnsRange(id, start, end, false, 10)).thenReturn(hColumns);
+		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
 
 		List<Integer> result = new ArrayList<Integer>();
 		when(keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns)).thenReturn(
 				result);
 
-		List<Integer> expected = wrapper.findKeys(1, true, 2, false, false, 10);
+		List<Integer> expected = wrapper.findKeys(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(result);
 	}
@@ -320,7 +332,8 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 2, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -336,7 +349,8 @@ public class WideMapWrapperTest
 				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
 						propertyMeta)).thenReturn(iterator);
 
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, true, 2, false, false, 10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(iterator);
 
@@ -349,7 +363,8 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery(propertyMeta, 1, true, 3, false, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 1, 3, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,
@@ -366,7 +381,8 @@ public class WideMapWrapperTest
 				iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
 						achillesJoinSliceIterator, propertyMeta)).thenReturn(iterator);
 
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, true, 3, false, false, 10);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
+				OrderingMode.ASCENDING);
 
 		assertThat(expected).isSameAs(iterator);
 
@@ -389,7 +405,7 @@ public class WideMapWrapperTest
 		DynamicComposite start = new DynamicComposite();
 		DynamicComposite end = new DynamicComposite();
 
-		when(keyFactory.createForQuery(propertyMeta, 5, true, 10, true, false)).thenReturn(
+		when(keyFactory.createForQuery(propertyMeta, 5, 10, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)).thenReturn(
 				new DynamicComposite[]
 				{
 						start,

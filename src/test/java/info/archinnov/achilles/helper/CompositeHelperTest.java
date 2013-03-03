@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CompositeHelper;
 
@@ -97,19 +99,19 @@ public class CompositeHelperTest
 	@Test
 	public void should_validate_bounds() throws Exception
 	{
-		helper.checkBounds(wideMapMeta, 12, 15, false);
+		helper.checkBounds(wideMapMeta, 12, 15, OrderingMode.ASCENDING);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_start_null() throws Exception
 	{
-		helper.checkBounds(wideMapMeta, null, 15, false);
+		helper.checkBounds(wideMapMeta, null, 15, OrderingMode.ASCENDING);
 	}
 
 	@Test
 	public void should_validate_asc_bounds_with_end_null() throws Exception
 	{
-		helper.checkBounds(wideMapMeta, 12, null, false);
+		helper.checkBounds(wideMapMeta, 12, null, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -119,7 +121,7 @@ public class CompositeHelperTest
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("For range query, start value should be lesser or equal to end");
 
-		helper.checkBounds(wideMapMeta, 15, 12, false);
+		helper.checkBounds(wideMapMeta, 15, 12, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -130,7 +132,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For reverse range query, start value should be greater or equal to end value");
 
-		helper.checkBounds(wideMapMeta, 12, 15, true);
+		helper.checkBounds(wideMapMeta, 12, 15, OrderingMode.DESCENDING);
 	}
 
 	@Test
@@ -149,7 +151,7 @@ public class CompositeHelperTest
 				startComponentValues);
 		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -168,7 +170,7 @@ public class CompositeHelperTest
 				startComponentValues);
 		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
-		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -191,7 +193,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
 
-		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -213,7 +215,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("There should not be any null value between two non-null keys of WideMap 'any_property'");
 
-		helper.checkBounds(multiKeyWideMapMeta, start, end, false);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -236,7 +238,7 @@ public class CompositeHelperTest
 		expectedEx
 				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
 
-		helper.checkBounds(multiKeyWideMapMeta, start, end, true);
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.DESCENDING);
 	}
 
 	// Ascending order
@@ -244,7 +246,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_inclusive_start_and_end_asc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(true, true, false);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 		assertThat(equality[0]).isEqualTo(EQUAL);
 		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
 	}
@@ -253,7 +255,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_exclusive_start_and_end_asc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(false, false, false);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(LESS_THAN_EQUAL);
 	}
@@ -262,7 +264,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_inclusive_start_exclusive_end_asc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(true, false, false);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 		assertThat(equality[0]).isEqualTo(EQUAL);
 		assertThat(equality[1]).isEqualTo(LESS_THAN_EQUAL);
 	}
@@ -271,7 +273,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_exclusive_start_inclusive_end_asc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(false, true, false);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING);
 		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
 	}
@@ -281,7 +283,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_inclusive_start_and_end_desc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(true, true, true);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(EQUAL);
 	}
@@ -290,7 +292,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_exclusive_start_and_end_desc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(false, false, true);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
 		assertThat(equality[0]).isEqualTo(LESS_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
 	}
@@ -299,7 +301,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_inclusive_start_exclusive_end_desc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(true, false, true);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
 		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
 	}
@@ -308,7 +310,7 @@ public class CompositeHelperTest
 	public void should_return_determine_equalities_for_exclusive_start_inclusive_end_desc()
 			throws Exception
 	{
-		ComponentEquality[] equality = helper.determineEquality(false, true, true);
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 		assertThat(equality[0]).isEqualTo(LESS_THAN_EQUAL);
 		assertThat(equality[1]).isEqualTo(EQUAL);
 	}
