@@ -84,9 +84,12 @@ public class EntityLoader {
         DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
-        List<V> list = listPropertyMeta.newListInstance();
-        for (Pair<DynamicComposite, String> pair : columns) {
-            list.add(listPropertyMeta.getValueFromString(pair.right));
+        List<V> list = null;
+        if (columns.size() > 0) {
+            list = listPropertyMeta.newListInstance();
+            for (Pair<DynamicComposite, String> pair : columns) {
+                list.add(listPropertyMeta.getValueFromString(pair.right));
+            }
         }
         return list;
     }
@@ -98,9 +101,12 @@ public class EntityLoader {
         DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
-        Set<V> set = setPropertyMeta.newSetInstance();
-        for (Pair<DynamicComposite, String> pair : columns) {
-            set.add(setPropertyMeta.getValueFromString(pair.right));
+        Set<V> set = null;
+        if (columns.size() > 0) {
+            set = setPropertyMeta.newSetInstance();
+            for (Pair<DynamicComposite, String> pair : columns) {
+                set.add(setPropertyMeta.getValueFromString(pair.right));
+            }
         }
         return set;
     }
@@ -112,13 +118,16 @@ public class EntityLoader {
         DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
-        Map<K, V> map = mapPropertyMeta.newMapInstance();
 
         Class<K> keyClass = mapPropertyMeta.getKeyClass();
-        for (Pair<DynamicComposite, String> pair : columns) {
-            KeyValue<K, V> holder = mapPropertyMeta.getKeyValueFromString(pair.right);
+        Map<K, V> map = null;
+        if (columns.size() > 0) {
+            map = mapPropertyMeta.newMapInstance();
+            for (Pair<DynamicComposite, String> pair : columns) {
+                KeyValue<K, V> holder = mapPropertyMeta.getKeyValueFromString(pair.right);
 
-            map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.getValueFromString(holder.getValue()));
+                map.put(keyClass.cast(holder.getKey()), mapPropertyMeta.getValueFromString(holder.getValue()));
+            }
         }
         return map;
     }
