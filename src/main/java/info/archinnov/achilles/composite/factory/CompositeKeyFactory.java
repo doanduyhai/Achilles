@@ -1,5 +1,6 @@
 package info.archinnov.achilles.composite.factory;
 
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
@@ -129,8 +130,8 @@ public class CompositeKeyFactory
 		return composite;
 	}
 
-	public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start,
-			K end, WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
+	public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,
+			WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
 	{
 		Composite[] queryComp = new Composite[2];
 
@@ -143,5 +144,14 @@ public class CompositeKeyFactory
 		queryComp[1] = endComp;
 
 		return queryComp;
+	}
+
+	public <ID> Composite createKeyForCounter(String fqcn, ID key, PropertyMeta<Void, ID> idMeta)
+	{
+		Composite comp = new Composite();
+		comp.setComponent(0, fqcn, STRING_SRZ);
+		comp.setComponent(1, key, idMeta.getValueSerializer());
+
+		return comp;
 	}
 }

@@ -91,7 +91,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
-				composites[1], count, ordering.asBoolean());
+				composites[1], count, ordering.reverse());
 
 		return keyValueFactory.createKeyValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -105,7 +105,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 				bounds, ordering);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
-				composites[1], count, ordering.asBoolean());
+				composites[1], count, ordering.reverse());
 
 		return keyValueFactory.createValueListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -118,7 +118,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 				bounds, ordering);
 
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
-				composites[1], count, ordering.asBoolean());
+				composites[1], count, ordering.reverse());
 
 		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
 	}
@@ -131,7 +131,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
 				bounds, ordering);
 
 		AchillesSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id,
-				composites[0], composites[1], ordering.asBoolean(), count);
+				composites[0], composites[1], ordering.reverse(), count);
 
 		return iteratorFactory.createKeyValueIteratorForComposite(columnSliceIterator, propertyMeta);
 

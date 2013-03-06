@@ -1,13 +1,17 @@
 package info.archinnov.achilles.entity.parser;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -17,7 +21,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +29,13 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 
+import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,7 +46,6 @@ import parser.entity.CorrectMultiKeyUnorderedKeys;
 import parser.entity.MultiKeyNotInstantiable;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
-import parser.entity.UserBean;
 
 /**
  * PropertyParserTest
@@ -68,11 +72,24 @@ public class PropertyParserTest
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-	private Map<Field, String> externalWideMaps = new HashMap<Field, String>();
+	private Map<PropertyMeta<?, ?>, String> externalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
+
+	@Before
+	public void setUp()
+	{
+		propertyMetas.clear();
+		externalWideMaps.clear();
+
+		EntityParser.externalWideMapTL.set(externalWideMaps);
+		EntityParser.propertyMetasTL.set(propertyMetas);
+		EntityParser.objectMapperTL.set(objectMapper);
+		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
+	}
 
 	@Test
 	public void should_parse_simple_property_string() throws Exception
 	{
+
 		class Test
 		{
 			@Column
@@ -88,9 +105,8 @@ public class PropertyParserTest
 				this.name = name;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("name"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("name"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -124,9 +140,8 @@ public class PropertyParserTest
 				this.name = name;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("name"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("name"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
 	}
@@ -150,9 +165,8 @@ public class PropertyParserTest
 			}
 
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("active"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("active"), false);
 
 		assertThat((Class) meta.getValueClass()).isEqualTo(boolean.class);
 	}
@@ -176,9 +190,8 @@ public class PropertyParserTest
 				this.counter = counter;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("counter"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("counter"), false);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
 		assertThat(meta.getCounterProperties()).isNotNull();
@@ -205,9 +218,8 @@ public class PropertyParserTest
 				this.counter = counter;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("counter"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("counter"), false);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
 		assertThat(meta.getCounterProperties()).isNotNull();
@@ -237,10 +249,9 @@ public class PropertyParserTest
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx
-				.expectMessage("Wrong type for the field 'counter'. Only java.lang.Long and primitive long are allowed for @Counter types");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("counter"), false, objectMapper, counterDao);
+				.expectMessage("Wrong counter type for the field 'counter'. Only java.lang.Long and primitive long are allowed for @Counter types");
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("counter"), false);
 	}
 
 	@Test
@@ -261,9 +272,8 @@ public class PropertyParserTest
 				this.type = type;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("type"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("type"), false);
 
 		assertThat((Class) meta.getValueClass()).isEqualTo(PropertyType.class);
 	}
@@ -286,9 +296,8 @@ public class PropertyParserTest
 				this.uuid = uuid;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("uuid"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("uuid"), false);
 
 		assertThat((Class) meta.getValueClass()).isEqualTo(UUID.class);
 	}
@@ -312,9 +321,8 @@ public class PropertyParserTest
 				this.friends = friends;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("friends"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("friends"), false);
 
 		assertThat(meta.type().isLazy()).isTrue();
 	}
@@ -337,9 +345,8 @@ public class PropertyParserTest
 				this.friends = friends;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("friends"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("friends"), false);
 
 		assertThat(meta.type().isLazy()).isFalse();
 	}
@@ -362,9 +369,8 @@ public class PropertyParserTest
 				this.friends = friends;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("friends"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("friends"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -396,9 +402,8 @@ public class PropertyParserTest
 				this.followers = followers;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("followers"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("followers"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
@@ -430,9 +435,8 @@ public class PropertyParserTest
 				this.preferences = preferences;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("preferences"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("preferences"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -467,9 +471,8 @@ public class PropertyParserTest
 				this.tweets = tweets;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("tweets"), false);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
@@ -479,6 +482,38 @@ public class PropertyParserTest
 		assertThat((Class) meta.getKeyClass()).isEqualTo(UUID.class);
 
 		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
+	}
+
+	@Test
+	public void should_parse_counter_widemap() throws Exception
+	{
+		class Test
+		{
+			@Counter
+			@Column
+			private WideMap<UUID, Long> counters;
+
+			public WideMap<UUID, Long> getCounters()
+			{
+				return counters;
+			}
+
+			public void setCounters(WideMap<UUID, Long> counters)
+			{
+				this.counters = counters;
+			}
+		}
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("counters"), false);
+
+		assertThat(meta.type()).isEqualTo(EXTERNAL_WIDE_MAP_COUNTER);
+		assertThat(meta.getPropertyName()).isEqualTo("counters");
+		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(LONG_SRZ);
+
+		assertThat((Class) meta.getKeyClass()).isEqualTo(UUID.class);
+
+		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(UUID_SRZ);
 	}
 
 	@Test
@@ -499,80 +534,95 @@ public class PropertyParserTest
 				this.tweets = tweets;
 			}
 		}
-
-		Field tweetsField = Test.class.getDeclaredField("tweets");
-		parser.parse(propertyMetas, externalWideMaps, Test.class, tweetsField, false, objectMapper,
-				counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("tweets"), false);
 
 		assertThat(externalWideMaps).hasSize(1);
-		assertThat(externalWideMaps.get(tweetsField)).isEqualTo("tweets");
+		PropertyMeta<?, ?> propertyMeta = externalWideMaps.keySet().iterator().next();
+		assertThat(propertyMeta.type()).isEqualTo(PropertyType.WIDE_MAP);
+		assertThat(propertyMeta.getPropertyName()).isEqualTo("tweets");
 	}
 
 	@Test
 	public void should_parse_external_widemap() throws Exception
 	{
-		class Test
-		{
-			@Column(table = "tablename")
-			private WideMap<UUID, String> tweets;
-
-			public WideMap<UUID, String> getTweets()
-			{
-				return tweets;
-			}
-
-			public void setTweets(WideMap<UUID, String> tweets)
-			{
-				this.tweets = tweets;
-			}
-		}
-
 		Keyspace keyspace = mock(ExecutingKeyspace.class);
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
-		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
+		when(idMeta.getValueSerializer()).thenReturn(LONG_SRZ);
+		PropertyMeta<Long, UUID> propertyMeta = new PropertyMeta<Long, UUID>();
+		propertyMeta.setValueClass(UUID.class);
+		propertyMeta.setValueSerializer(UUID_SRZ);
 
-		PropertyMeta<?, ?> meta = parser.parseExternalWideMapProperty(keyspace, idMeta, Test.class,
-				Test.class.getDeclaredField("tweets"), "tweets", objectMapper);
+		parser.fillExternalWideMap(keyspace, idMeta, propertyMeta, "externalTableName");
 
-		assertThat(meta.type()).isEqualTo(PropertyType.EXTERNAL_WIDE_MAP);
-		assertThat(meta.getPropertyName()).isEqualTo("tweets");
-		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(SerializerUtils.STRING_SRZ);
+		assertThat(propertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
+		assertThat(propertyMeta.getExternalWideMapProperties()).isNotNull();
 
-		assertThat((Class) meta.getKeyClass()).isEqualTo(UUID.class);
-		assertThat((Serializer) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
-		ExternalWideMapProperties<?> externalWideMapProperties = meta
+		ExternalWideMapProperties<Long> externalProps = (ExternalWideMapProperties<Long>) propertyMeta
 				.getExternalWideMapProperties();
-		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNotNull();
-		assertThat((Serializer) externalWideMapProperties.getIdSerializer()).isEqualTo(
-				SerializerUtils.LONG_SRZ);
-		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo("tablename");
+
+		assertThat(externalProps.getExternalColumnFamilyName()).isEqualTo("externalTableName");
+		assertThat(externalProps.getIdSerializer()).isEqualTo(LONG_SRZ);
+		assertThat(externalProps.getExternalWideMapDao()).isNotNull();
+		assertThat(externalProps.getExternalWideMapDao().getColumnFamily()).isEqualTo(
+				"externalTableName");
+		assertThat(
+				Whitebox.getInternalState(externalProps.getExternalWideMapDao(), "valueSerializer"))
+				.isEqualTo(UUID_SRZ);
+
+		assertThat(propertyMetas).hasSize(1);
+		PropertyMeta<Long, UUID> meta = (PropertyMeta<Long, UUID>) propertyMetas.values()
+				.iterator().next();
+		assertThat(meta).isSameAs(propertyMeta);
 	}
 
 	@Test
 	public void should_parse_external_widemap_with_non_primitive_value() throws Exception
 	{
+
+		Keyspace keyspace = mock(ExecutingKeyspace.class);
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
+		when(idMeta.getValueSerializer()).thenReturn(LONG_SRZ);
+		PropertyMeta<Long, CompleteBean> propertyMeta = new PropertyMeta<Long, CompleteBean>();
+		propertyMeta.setValueClass(CompleteBean.class);
+		parser.fillExternalWideMap(keyspace, idMeta, propertyMeta, "externalTableName");
+		assertThat(propertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
+
+		assertThat(
+				Whitebox.getInternalState(propertyMeta.getExternalWideMapProperties()
+						.getExternalWideMapDao(), "valueSerializer")).isEqualTo(STRING_SRZ);
+	}
+
+	@Test
+	public void should_exception_when_counter_widemap_is_external() throws Exception
+	{
 		class Test
 		{
+			@Counter
 			@Column(table = "tablename")
-			private WideMap<UUID, UserBean> users;
+			private WideMap<UUID, Long> counters;
 
-			public WideMap<UUID, UserBean> getUsers()
+			public WideMap<UUID, Long> getCounters()
 			{
-				return users;
+				return counters;
 			}
 
+			public void setCounters(WideMap<UUID, Long> counters)
+			{
+				this.counters = counters;
+			}
 		}
 
 		Keyspace keyspace = mock(ExecutingKeyspace.class);
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		when(idMeta.getValueSerializer()).thenReturn(SerializerUtils.LONG_SRZ);
 
-		PropertyMeta<?, ?> meta = parser.parseExternalWideMapProperty(keyspace, idMeta, Test.class,
-				Test.class.getDeclaredField("users"), "users", objectMapper);
+		expectedEx.expect(BeanMappingException.class);
+		expectedEx
+				.expectMessage("Counter value are already stored in external column families. There is no sense having a counter with external table");
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("counters"), false);
 
-		GenericCompositeDao<?, ?> dao = meta.getExternalWideMapProperties().getExternalWideMapDao();
-		assertThat(Whitebox.getInternalState(dao, "valueSerializer")).isEqualTo(STRING_SRZ);
 	}
 
 	@Test
@@ -597,9 +647,8 @@ public class PropertyParserTest
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The class '" + Void.class.getCanonicalName()
 				+ "' is not allowed as WideMap key");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("tweets"), false);
 	}
 
 	@Test
@@ -621,9 +670,8 @@ public class PropertyParserTest
 				this.tweets = tweets;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("tweets"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -669,9 +717,8 @@ public class PropertyParserTest
 				this.tweets = tweets;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parse(Test.class.getDeclaredField("tweets"), false);
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -716,9 +763,8 @@ public class PropertyParserTest
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("tweets"), false);
 
 	}
 
@@ -744,9 +790,8 @@ public class PropertyParserTest
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("tweets"), false);
 	}
 
 	@Test
@@ -771,9 +816,8 @@ public class PropertyParserTest
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("tweets"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("tweets"), false);
 	}
 
 	@Test
@@ -798,9 +842,8 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Value of 'parser' should be Serializable");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("parser"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("parser"), false);
 	}
 
 	@Test
@@ -825,9 +868,8 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("parsers"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("parsers"), false);
 	}
 
 	@Test
@@ -852,9 +894,8 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("parsers"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("parsers"), false);
 	}
 
 	@Test
@@ -879,9 +920,8 @@ public class PropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
-
-		parser.parse(propertyMetas, externalWideMaps, Test.class,
-				Test.class.getDeclaredField("parsers"), false, objectMapper, counterDao);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parse(Test.class.getDeclaredField("parsers"), false);
 	}
 
 }

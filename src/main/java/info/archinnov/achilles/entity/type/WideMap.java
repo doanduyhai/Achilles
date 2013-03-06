@@ -37,14 +37,14 @@ public interface WideMap<K, V>
 	public enum OrderingMode {
 		DESCENDING(true), ASCENDING(false);
 		
-		private boolean asBoolean;
+		private boolean reverse;
 		
 		private OrderingMode(boolean equivalent){
-			this.asBoolean = equivalent;
+			this.reverse = equivalent;
 		}
 
-		public boolean asBoolean() {
-			return asBoolean;
+		public boolean reverse() {
+			return reverse;
 		}	
 	}
 	

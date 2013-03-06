@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityParser;
@@ -70,9 +71,6 @@ public class EntityMapperTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
-	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
-
-	@Mock
 	private ColumnFamilyCreator columnFamilyCreator;
 
 	@Mock
@@ -99,6 +97,8 @@ public class EntityMapperTest
 
 	private EntityMeta<Long> entityMeta;
 
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp()
@@ -111,10 +111,12 @@ public class EntityMapperTest
 				return objectMapper;
 			}
 		};
+		joinPropertyMetaToBeFilled.clear();
+		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
+		ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
 		Whitebox.setInternalState(mapper, "helper", helper);
 		parser = new EntityParser(factory);
-		entityMeta = (EntityMeta<Long>) parser
-				.parseEntity(keyspace, counterDao, CompleteBean.class).left;
+		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class);
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package info.archinnov.achilles.composite.factory;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
@@ -210,14 +211,16 @@ public class CompositeKeyFactoryTest
 	public void should_create_composites_for_query() throws Exception
 	{
 
-		when(helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING)) //
+		when(
+				helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY,
+						OrderingMode.ASCENDING)) //
 				.thenReturn(new ComponentEquality[]
 				{
 						EQUAL,
 						LESS_THAN_EQUAL
 				});
-		Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_START_BOUND_ONLY,
-													OrderingMode.ASCENDING);
+		Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15,
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 		assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
@@ -239,7 +242,9 @@ public class CompositeKeyFactoryTest
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues2 = Arrays.asList((Object) 5, "c", uuid);
 
-		when(helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)) //
+		when(
+				helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+						OrderingMode.ASCENDING)) //
 				.thenReturn(new ComponentEquality[]
 				{
 						LESS_THAN_EQUAL,
@@ -254,8 +259,10 @@ public class CompositeKeyFactoryTest
 		when(helper.findLastNonNullIndexForComponents("property", keyValues1)).thenReturn(1);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues2)).thenReturn(2);
 
-		Composite[] composites = factory.createForQuery( //
-				multiKeyWideMapMeta, tweetKey1, tweetKey2, BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING);
+		Composite[] composites = factory.createForQuery(
+				//
+				multiKeyWideMapMeta, tweetKey1, tweetKey2, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.ASCENDING);
 
 		assertThat(composites).hasSize(2);
 		assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
@@ -269,6 +276,20 @@ public class CompositeKeyFactoryTest
 		assertThat(composites[1].getComponent(1).getValue()).isEqualTo("c");
 		assertThat(composites[1].getComponent(2).getEquality()).isEqualTo(GREATER_THAN_EQUAL);
 		assertThat(composites[1].getComponent(2).getValue()).isEqualTo(uuid);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_return_composite_key_for_counter() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
+		when(idMeta.getValueSerializer()).thenReturn(LONG_SRZ);
+
+		Composite comp = factory.createKeyForCounter("fqcn", 11L, idMeta);
+
+		assertThat(comp.getComponents()).hasSize(2);
+		assertThat(comp.getComponent(0).getValue()).isEqualTo("fqcn");
+		assertThat(comp.getComponent(1).getValue()).isEqualTo(11L);
 
 	}
 }

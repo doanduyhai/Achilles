@@ -12,6 +12,7 @@ public class CounterProperties
 {
 	private String fqcn;
 	private CounterDao dao;
+	private PropertyMeta<Void, ?> idMeta;
 
 	public CounterProperties(String fqcn, CounterDao counterDao) {
 		this.fqcn = fqcn;
@@ -38,4 +39,13 @@ public class CounterProperties
 		this.dao = dao;
 	}
 
+	public PropertyMeta<Void, ?> getIdMeta()
+	{
+		return idMeta;
+	}
+
+	public void setIdMeta(PropertyMeta<Void, ?> idMeta)
+	{
+		this.idMeta = idMeta;
+	}
 }

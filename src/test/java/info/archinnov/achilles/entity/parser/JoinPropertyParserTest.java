@@ -9,13 +9,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.BeanMappingException;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -29,15 +30,16 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
 
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
 
 import parser.entity.UserBean;
 
@@ -53,13 +55,27 @@ public class JoinPropertyParserTest
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
+	@Mock
+	private CounterDao counterDao;
+
 	private JoinPropertyParser parser = new JoinPropertyParser();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-	private Map<Field, String> joinExternalWideMaps = new HashMap<Field, String>();
+	private Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+
+	@Before
+	public void setUp()
+	{
+		EntityParser.joinExternalWideMapTL.set(joinExternalWideMaps);
+		EntityParser.externalWideMapTL.set(new HashMap<PropertyMeta<?, ?>, String>());
+		EntityParser.propertyMetasTL.set(propertyMetas);
+		EntityParser.objectMapperTL.set(objectMapper);
+		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
+		ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
+	}
 
 	@SuppressWarnings("rawtypes")
 	@Test
@@ -85,12 +101,8 @@ public class JoinPropertyParserTest
 				this.user = user;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("user"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("user"));
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SIMPLE);
 		JoinProperties joinProperties = meta.getJoinProperties();
@@ -119,12 +131,8 @@ public class JoinPropertyParserTest
 				this.user = user;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("user"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("user"));
 
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).isEmpty();
@@ -158,12 +166,8 @@ public class JoinPropertyParserTest
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("CascadeType.REMOVE is not supported for join columns");
-
-		parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("user"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		parser.parseJoin(Test.class.getDeclaredField("user"));
 	}
 
 	@Test
@@ -189,12 +193,8 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("users"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("users"));
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_LIST);
 		JoinProperties joinProperties = meta.getJoinProperties();
@@ -225,12 +225,8 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("users"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("users"));
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SET);
 		JoinProperties joinProperties = meta.getJoinProperties();
@@ -261,12 +257,8 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("users"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("users"));
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_MAP);
 		JoinProperties joinProperties = meta.getJoinProperties();
@@ -298,52 +290,13 @@ public class JoinPropertyParserTest
 			}
 
 		}
-
-		PropertyMeta<?, ?> meta = parser.parseJoin(propertyMetas, //
-				joinExternalWideMaps, //
-				joinPropertyMetaToBeFilled, //
-				Test.class, //
-				Test.class.getDeclaredField("users"), objectMapper);
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> meta = parser.parseJoin(Test.class.getDeclaredField("users"));
 
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).containsExactly(PERSIST, MERGE);
 		assertThat(joinExternalWideMaps).isEmpty();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_parse_external_join_wide_map() throws Exception
-	{
-		class Test
-		{
-			@ManyToMany
-			@JoinColumn(table = "tablename")
-			private WideMap<Integer, UserBean> users;
-
-			public WideMap<Integer, UserBean> getUsers()
-			{
-				return users;
-			}
-		}
-
-		Keyspace keyspace = mock(ExecutingKeyspace.class);
-		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
-		when(idMeta.getValueSerializer()).thenReturn(LONG_SRZ);
-
-		PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser
-				.parseExternalJoinWideMapProperty(keyspace, idMeta, Test.class,
-						Test.class.getDeclaredField("users"), "users", "cf", objectMapper);
-
-		assertThat(meta.type()).isEqualTo(PropertyType.EXTERNAL_JOIN_WIDE_MAP);
-		JoinProperties joinProperties = meta.getJoinProperties();
-		assertThat(joinProperties.getCascadeTypes()).isEmpty();
-
-		ExternalWideMapProperties<Long> externalWideMapProperties = (ExternalWideMapProperties<Long>) meta
-				.getExternalWideMapProperties();
-		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
-		assertThat(externalWideMapProperties.getIdSerializer()).isEqualTo(SerializerUtils.LONG_SRZ);
-		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo("tablename");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -362,51 +315,46 @@ public class JoinPropertyParserTest
 				return users;
 			}
 		}
-
+		EntityParser.entityClassTL.set(Test.class);
 		Field usersField = Test.class.getDeclaredField("users");
-		PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser.parseJoin(
-				propertyMetas, //
-				joinExternalWideMaps, joinPropertyMetaToBeFilled, //
-				Test.class, usersField, objectMapper);
+		PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser
+				.parseJoin(usersField);
 
 		assertThat(joinExternalWideMaps).hasSize(1);
-		assertThat(joinExternalWideMaps.get(usersField)).isEqualTo("users");
+		assertThat(
+				(PropertyMeta<Integer, UserBean>) joinExternalWideMaps.keySet().iterator().next())
+				.isSameAs(meta);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_parse_join_widemap_for_column_family() throws Exception
+	public void should_parse_external_join_wide_map() throws Exception
 	{
-		@ColumnFamily
-		@Table(name = "columnFamily")
-		class Test
-		{
-			@ManyToMany
-			@JoinColumn
-			private WideMap<Integer, UserBean> users;
-
-			public WideMap<Integer, UserBean> getUsers()
-			{
-				return users;
-			}
-		}
-
 		Keyspace keyspace = mock(ExecutingKeyspace.class);
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		when(idMeta.getValueSerializer()).thenReturn(LONG_SRZ);
+		PropertyMeta<Integer, UserBean> propertyMeta = new PropertyMeta<Integer, UserBean>();
 
-		PropertyMeta<?, ?> meta = parser.parseExternalJoinWideMapProperty(keyspace, idMeta,
-				Test.class, Test.class.getDeclaredField("users"), "users", "columnFamily",
-				objectMapper);
+		parser.fillExternalJoinWideMap(keyspace, idMeta, propertyMeta, "externalTableName");
 
-		assertThat(meta.type()).isEqualTo(PropertyType.EXTERNAL_JOIN_WIDE_MAP);
-		JoinProperties joinProperties = meta.getJoinProperties();
-		assertThat(joinProperties.getCascadeTypes()).isEmpty();
-		ExternalWideMapProperties<Long> externalWideMapProperties = (ExternalWideMapProperties<Long>) meta
+		assertThat(propertyMeta.type()).isEqualTo(PropertyType.EXTERNAL_JOIN_WIDE_MAP);
+
+		assertThat(propertyMeta.getExternalWideMapProperties()).isNotNull();
+		ExternalWideMapProperties<Long> externalWideMapProperties = (ExternalWideMapProperties<Long>) propertyMeta
 				.getExternalWideMapProperties();
 		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
 		assertThat(externalWideMapProperties.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
-				"columnFamily");
+				"externalTableName");
+
+		assertThat(propertyMetas).hasSize(1);
+		assertThat((PropertyMeta<Integer, UserBean>) propertyMetas.values().iterator().next())
+				.isSameAs(propertyMeta);
+
+		assertThat(joinPropertyMetaToBeFilled).hasSize(1);
+		assertThat(
+				(PropertyMeta<Integer, UserBean>) joinPropertyMetaToBeFilled.keySet().iterator()
+						.next()).isSameAs(propertyMeta);
 	}
+
 }

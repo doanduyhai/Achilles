@@ -1,5 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.counterDaoTL;
+import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyMap;
@@ -10,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
@@ -29,6 +30,7 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,7 +39,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  * ThriftEntityManagerFactoryImplTest
@@ -72,7 +76,7 @@ public class ThriftEntityManagerFactoryImplTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
-	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 
 	@Captor
 	private ArgumentCaptor<Map<PropertyMeta<?, ?>, Class<?>>> mapCaptor;
@@ -98,26 +102,37 @@ public class ThriftEntityManagerFactoryImplTest
 	@Mock
 	private CounterDao counterDao;
 
+	@Before
+	public void setUp()
+	{
+		joinPropertyMetaToBeFilled.clear();
+		counterDaoTL.set(counterDao);
+		joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
+	}
+
 	@Test
 	public void should_bootstrap() throws Exception
 	{
-		List<Class<?>> classes = new ArrayList<Class<?>>();
+		final List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(Long.class);
 		classes.add(String.class);
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
 
-		Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair1 = new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(
-				entityMeta1, joinPropertyMetaToBeFilled);
+		when(entityExplorer.discoverEntities(entityPackages)).thenAnswer(
+				new Answer<List<Class<?>>>()
+				{
+					@Override
+					public List<Class<?>> answer(InvocationOnMock invocation) throws Throwable
+					{
+						joinPropertyMetaToBeFilledTL.get().put(longPropertyMeta, Long.class);
+						return classes;
+					}
+				});
+
 		Map<PropertyMeta<?, ?>, Class<?>> map = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 		map.put(longPropertyMeta, Long.class);
 
-		Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair2 = new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(
-				entityMeta2, map);
-
-		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(Long.class))).thenReturn(
-				pair1);
-		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(String.class))).thenReturn(
-				pair2);
+		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(entityMeta1);
+		when(entityParser.parseEntity(eq(keyspace), eq(String.class))).thenReturn(entityMeta2);
 
 		factory.bootstrap();
 
@@ -137,10 +152,7 @@ public class ThriftEntityManagerFactoryImplTest
 		classes.add(Long.class);
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
 
-		Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair1 = new Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>>(
-				entityMeta1, joinPropertyMetaToBeFilled);
-		when(entityParser.parseEntity(eq(keyspace), eq(counterDao), eq(Long.class))).thenReturn(
-				pair1);
+		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(entityMeta1);
 
 		factory.bootstrap();
 

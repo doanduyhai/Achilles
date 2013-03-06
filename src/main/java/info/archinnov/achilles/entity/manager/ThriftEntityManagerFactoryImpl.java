@@ -4,7 +4,6 @@ import static info.archinnov.achilles.validation.Validator.validateNotEmpty;
 import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
@@ -52,6 +51,9 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	private ColumnFamilyCreator columnFamilyCreator;
 	private ObjectMapperFactory objectMapperFactory = new DefaultObjectMapperFactory();
 	private CounterDao counterDao;
+
+	public static final ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>> joinPropertyMetaToBeFilledTL = new ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>>();
+	public static final ThreadLocal<CounterDao> counterDaoTL = new ThreadLocal<CounterDao>();
 
 	protected ThriftEntityManagerFactoryImpl() {
 		this.counterDao = null;
@@ -580,7 +582,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	{
 		log.info("Start discovery of entities searching in packages '{}'",
 				StringUtils.join(entityPackages, ","));
-		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+		joinPropertyMetaToBeFilledTL.set(new HashMap<PropertyMeta<?, ?>, Class<?>>());
+		counterDaoTL.set(counterDao);
 
 		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
 		if (!classes.isEmpty())
@@ -589,18 +592,19 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 			for (Class<?> clazz : classes)
 			{
 
-				Pair<EntityMeta<?>, Map<PropertyMeta<?, ?>, Class<?>>> pair = entityParser
-						.parseEntity(this.keyspace, counterDao, clazz);
-				entityMetaMap.put(clazz, pair.left);
-				joinPropertyMetaToBeFilled.putAll(pair.right);
+				entityMetaMap.put(clazz, entityParser.parseEntity(this.keyspace, clazz));
 			}
 
+			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilledTL
+					.get();
 			if (!joinPropertyMetaToBeFilled.isEmpty())
 			{
 				entityParser
 						.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 			}
 
+			joinPropertyMetaToBeFilledTL.remove();
+			counterDaoTL.remove();
 		}
 		else
 		{

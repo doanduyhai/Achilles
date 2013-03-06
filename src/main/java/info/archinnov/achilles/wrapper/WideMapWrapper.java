@@ -94,7 +94,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.asBoolean());
+				queryComps[0], queryComps[1], count, ordering.reverse());
 
 		if (propertyMeta.isJoin())
 		{
@@ -118,7 +118,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 				propertyMeta, start, end, bounds,  ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.asBoolean());
+				queryComps[0], queryComps[1], count, ordering.reverse());
 		if (propertyMeta.isJoin())
 		{
 			return keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns);
@@ -140,7 +140,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 				propertyMeta, start, end, bounds, ordering);
 
 		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.asBoolean());
+				queryComps[0], queryComps[1], count, ordering.reverse());
 		return keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns);
 	}
 
@@ -156,7 +156,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 			
 			AchillesJoinSliceIterator<ID, DynamicComposite, String, K, V> joinColumnSliceIterator = entityDao
 					.getJoinColumnsIterator(propertyMeta, id, queryComps[0], queryComps[1],
-							ordering.asBoolean(), count);
+							ordering.reverse(), count);
 
 			return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
 					joinColumnSliceIterator, propertyMeta);
@@ -166,7 +166,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V>
 		{
 
 			AchillesSliceIterator<ID, DynamicComposite, String> columnSliceIterator = entityDao
-					.getColumnsIterator(id, queryComps[0], queryComps[1], ordering.asBoolean(), count);
+					.getColumnsIterator(id, queryComps[0], queryComps[1], ordering.reverse(), count);
 
 			return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator,
 					propertyMeta);
