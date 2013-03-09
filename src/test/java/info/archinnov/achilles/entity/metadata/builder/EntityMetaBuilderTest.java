@@ -11,18 +11,14 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.serializer.SerializerUtils;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import parser.entity.Bean;
 
 /**
@@ -32,104 +28,98 @@ import parser.entity.Bean;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMetaBuilderTest
-{
+public class EntityMetaBuilderTest {
 
-	@Mock
-	private ExecutingKeyspace keyspace;
+    @Mock
+    private ExecutingKeyspace keyspace;
 
-	@Mock
-	private GenericDynamicCompositeDao<?> dao;
+    @Mock
+    private GenericDynamicCompositeDao<?> dao;
 
-	@Mock
-	private PropertyMeta<Void, Long> idMeta;
+    @Mock
+    private PropertyMeta<Void, Long> idMeta;
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_build_meta() throws Exception
-	{
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void should_build_meta() throws Exception {
 
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
-		simpleMeta.setType(SIMPLE);
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
+        simpleMeta.setType(SIMPLE);
 
-		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
-		simpleMeta.setGetter(getter);
+        Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
+        simpleMeta.setGetter(getter);
 
-		Method setter = Bean.class.getDeclaredMethod("setName", String.class);
-		simpleMeta.setSetter(setter);
+        Method setter = Bean.class.getDeclaredMethod("setName", String.class);
+        simpleMeta.setSetter(setter);
 
-		propertyMetas.put("name", simpleMeta);
+        propertyMetas.put("name", simpleMeta);
 
-		when(idMeta.getValueClass()).thenReturn(Long.class);
+        when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).keyspace(keyspace).build();
+        EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+                .propertyMetas(propertyMetas).keyspace(keyspace).hasCounter(true).build();
 
-		assertThat(meta.getClassName()).isEqualTo("Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
-		assertThat(meta.getIdMeta()).isSameAs(idMeta);
-		assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(
-				SerializerUtils.LONG_SRZ.getComparatorType());
-		assertThat(meta.getPropertyMetas()).containsKey("name");
-		assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
+        assertThat(meta.getClassName()).isEqualTo("Bean");
+        assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
+        assertThat(meta.getIdMeta()).isSameAs(idMeta);
+        assertThat(meta.getIdSerializer().getComparatorType())
+                .isEqualTo(SerializerUtils.LONG_SRZ.getComparatorType());
+        assertThat(meta.getPropertyMetas()).containsKey("name");
+        assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
 
-		assertThat(meta.getGetterMetas()).hasSize(1);
-		assertThat(meta.getGetterMetas().containsKey(getter));
-		assertThat(meta.getGetterMetas().get(getter)).isSameAs((PropertyMeta) simpleMeta);
+        assertThat(meta.getGetterMetas()).hasSize(1);
+        assertThat(meta.getGetterMetas().containsKey(getter));
+        assertThat(meta.getGetterMetas().get(getter)).isSameAs((PropertyMeta) simpleMeta);
 
-		assertThat(meta.getSetterMetas()).hasSize(1);
-		assertThat(meta.getSetterMetas().containsKey(setter));
-		assertThat(meta.getSetterMetas().get(setter)).isSameAs((PropertyMeta) simpleMeta);
+        assertThat(meta.getSetterMetas()).hasSize(1);
+        assertThat(meta.getSetterMetas().containsKey(setter));
+        assertThat(meta.getSetterMetas().get(setter)).isSameAs((PropertyMeta) simpleMeta);
 
-		assertThat(meta.getEntityDao()).isNotNull();
+        assertThat(meta.getEntityDao()).isNotNull();
 
-	}
+        assertThat(meta.hasCounter()).isTrue();
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_build_meta_with_column_family_name() throws Exception
-	{
+    }
 
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
-		simpleMeta.setType(SIMPLE);
-		propertyMetas.put("name", simpleMeta);
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_build_meta_with_column_family_name() throws Exception {
 
-		when(idMeta.getValueClass()).thenReturn(Long.class);
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        PropertyMeta<Void, String> simpleMeta = new PropertyMeta<Void, String>();
+        simpleMeta.setType(SIMPLE);
+        propertyMetas.put("name", simpleMeta);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace).build();
+        when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		assertThat(meta.getClassName()).isEqualTo("Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
-		assertThat(meta.getColumnFamilyDao()).isNull();
-		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericDynamicCompositeDao.class);
-	}
+        EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+                .propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace).build();
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_build_meta_for_wide_row() throws Exception
-	{
+        assertThat(meta.getClassName()).isEqualTo("Bean");
+        assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
+        assertThat(meta.getColumnFamilyDao()).isNull();
+        assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericDynamicCompositeDao.class);
+    }
 
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
-		wideMapMeta.setValueSerializer(STRING_SRZ);
-		wideMapMeta.setType(PropertyType.WIDE_MAP);
-		propertyMetas.put("name", wideMapMeta);
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_build_meta_for_wide_row() throws Exception {
 
-		when(idMeta.getValueClass()).thenReturn(Long.class);
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
+        wideMapMeta.setValueSerializer(STRING_SRZ);
+        wideMapMeta.setType(PropertyType.WIDE_MAP);
+        propertyMetas.put("name", wideMapMeta);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace)
-				.columnFamilyDirectMapping(true).build();
+        when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
-		assertThat(meta.getEntityDao()).isNull();
-		assertThat(meta.getColumnFamilyDao()).isExactlyInstanceOf(GenericCompositeDao.class);
-	}
+        EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
+                .propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace)
+                .columnFamilyDirectMapping(true).build();
+
+        assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
+        assertThat(meta.getEntityDao()).isNull();
+        assertThat(meta.getColumnFamilyDao()).isExactlyInstanceOf(GenericCompositeDao.class);
+    }
 }

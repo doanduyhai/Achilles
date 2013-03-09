@@ -8,44 +8,43 @@ import info.archinnov.achilles.dao.CounterDao;
  * @author DuyHai DOAN
  * 
  */
-public class CounterProperties
-{
-	private String fqcn;
-	private CounterDao dao;
-	private PropertyMeta<Void, ?> idMeta;
+public class CounterProperties {
+    private String fqcn;
+    private CounterDao dao;
+    private PropertyMeta<Void, ?> idMeta;
 
-	public CounterProperties(String fqcn, CounterDao counterDao) {
-		this.fqcn = fqcn;
-		this.dao = counterDao;
-	}
+    public CounterProperties(String fqcn, CounterDao counterDao) {
+        this.fqcn = fqcn;
+        this.dao = counterDao;
+    }
 
-	public String getFqcn()
-	{
-		return fqcn;
-	}
+    public CounterProperties(String fqcn, CounterDao counterDao, PropertyMeta<Void, ?> idMeta) {
+        this.fqcn = fqcn;
+        this.dao = counterDao;
+        this.idMeta = idMeta;
+    }
 
-	public void setFqcn(String fqcn)
-	{
-		this.fqcn = fqcn;
-	}
+    public String getFqcn() {
+        return fqcn;
+    }
 
-	public CounterDao getDao()
-	{
-		return dao;
-	}
+    public void setFqcn(String fqcn) {
+        this.fqcn = fqcn;
+    }
 
-	public void setDao(CounterDao dao)
-	{
-		this.dao = dao;
-	}
+    public CounterDao getDao() {
+        return dao;
+    }
 
-	public PropertyMeta<Void, ?> getIdMeta()
-	{
-		return idMeta;
-	}
+    public void setDao(CounterDao dao) {
+        this.dao = dao;
+    }
 
-	public void setIdMeta(PropertyMeta<Void, ?> idMeta)
-	{
-		this.idMeta = idMeta;
-	}
+    public PropertyMeta<Void, ?> getIdMeta() {
+        return idMeta;
+    }
+
+    public void setIdMeta(PropertyMeta<Void, ?> idMeta) {
+        this.idMeta = idMeta;
+    }
 }

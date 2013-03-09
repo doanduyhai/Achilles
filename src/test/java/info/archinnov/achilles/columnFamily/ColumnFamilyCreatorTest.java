@@ -1,5 +1,6 @@
 package info.archinnov.achilles.columnFamily;
 
+import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
@@ -14,20 +15,22 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory;
 import info.archinnov.achilles.exception.InvalidColumnFamilyException;
 import info.archinnov.achilles.serializer.SerializerUtils;
-
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
+import java.util.Set;
 import me.prettyprint.cassandra.model.BasicColumnFamilyDefinition;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
-
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,286 +44,330 @@ import org.powermock.reflect.Whitebox;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ColumnFamilyCreatorTest
-{
+public class ColumnFamilyCreatorTest {
 
-	@InjectMocks
-	private ColumnFamilyCreator creator;
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	@Mock
-	private Cluster cluster;
+    @InjectMocks
+    private ColumnFamilyCreator creator;
 
-	@Mock
-	private Keyspace keyspace;
+    @Mock
+    private Cluster cluster;
 
-	@Mock
-	private KeyspaceDefinition keyspaceDefinition;
+    @Mock
+    private Keyspace keyspace;
 
-	@Mock
-	private ColumnFamilyHelper columnFamilyHelper;
+    @Mock
+    private KeyspaceDefinition keyspaceDefinition;
 
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+    @Mock
+    private ColumnFamilyHelper columnFamilyHelper;
 
-	private EntityMeta<?> meta;
+    private Set<String> cfs = new HashSet<String>();
 
-	private PropertyMeta<Void, String> simplePropertyMeta;
+    private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	private final Method[] accessors = new Method[2];
+    private EntityMeta<?> meta;
 
-	private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta<Void, String> simplePropertyMeta;
 
-	@Before
-	public void setUp() throws Exception
-	{
-		accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
-		accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
-		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
-				.propertyName("id").accessors(accessors).build();
+    private final Method[] accessors = new Method[2];
 
-		Whitebox.setInternalState(creator, "columnFamilyHelper", columnFamilyHelper);
-	}
+    private PropertyMeta<Void, Long> idMeta;
 
-	@Test
-	public void should_discover_column_family() throws Exception
-	{
-		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+    @Before
+    public void setUp() throws Exception {
+        accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
+        accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
+        idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE).propertyName("id")
+                .accessors(accessors).build();
 
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-		cfDef.setKeyValidationClass("keyValidationClass");
-		cfDef.setComment("comment");
+        cfs.clear();
+        Whitebox.setInternalState(creator, "columnFamilyHelper", columnFamilyHelper);
+        Whitebox.setInternalState(creator, "cfs", cfs);
+    }
 
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) cfDef));
+    @Test
+    public void should_list_all_column_families_on_initialization() throws Exception {
+        ArrayList<ColumnFamilyDefinition> cfDefs = new ArrayList<ColumnFamilyDefinition>();
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+        when(keyspaceDefinition.getCfDefs()).thenReturn(cfDefs);
 
-		ColumnFamilyDefinition discoveredCfDef = creator.discoverColumnFamily("testCF");
+        ColumnFamilyCreator creator = new ColumnFamilyCreator(cluster, keyspace);
 
-		assertThat(discoveredCfDef).isNotNull();
-		assertThat(discoveredCfDef.getName()).isEqualTo("testCF");
-		assertThat(discoveredCfDef.getKeyValidationClass()).isEqualTo("keyValidationClass");
-		assertThat(discoveredCfDef.getComment()).isEqualTo("comment");
-	}
+        assertThat(Whitebox.getInternalState(creator, "cfDefs")).isSameAs(cfDefs);
 
-	@Test
-	public void should_add_column_family() throws Exception
-	{
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+    }
 
-		when(cluster.addColumnFamily(cfDef, true)).thenReturn("id");
+    @Test
+    public void should_discover_column_family() throws Exception {
 
-		String id = this.creator.addColumnFamily(cfDef);
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+        cfDef.setKeyValidationClass("keyValidationClass");
+        cfDef.setComment("comment");
 
-		assertThat(id).isEqualTo("id");
-	}
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-	@Test
-	public void should_create_column_family_for_entity() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+        ColumnFamilyDefinition discoveredCfDef = creator.discoverColumnFamily("testCF");
 
-		creator.createColumnFamily(meta);
-
-		verify(columnFamilyHelper).buildDynamicCompositeCF(meta, "keyspace");
-		verify(cluster).addColumnFamily(cfDef, true);
-
-	}
-
-	@Test
-	public void should_create_column_family_for_column_family() throws Exception
-	{
-		prepareData();
-		meta.setColumnFamilyDirectMapping(true);
-		idMeta.setValueClass(Long.class);
-
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		meta.setClassName("entity");
-		when(
-				columnFamilyHelper.buildCompositeCF("keyspace", simplePropertyMeta, Long.class,
-						"testCF", "entity")).thenReturn(cfDef);
-
-		creator.createColumnFamily(meta);
-
-		verify(cluster).addColumnFamily(cfDef, true);
-
-	}
-
-	@Test
-	public void should_validate_column_family() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) cfDef));
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_validate_column_family_for_external_wide_map() throws Exception
-	{
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", externalWideMapDao, LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
-
-		prepareData(externalWideMapMeta);
-		idMeta.setValueClass(Long.class);
-		when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
-
-		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
-		externalCFDef.setName("externalCF");
-
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) externalCFDef, cfDef));
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyHelper).validateCFWithPropertyMeta(externalCFDef, externalWideMapMeta,
-				"externalCF");
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
-	}
-
-	@Test
-	public void should_validate_then_create_column_family_when_not_matching() throws Exception
-	{
-		prepareData();
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF2");
-
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) cfDef));
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyHelper).buildDynamicCompositeCF(meta, "keyspace");
-	}
-
-	@Test
-	public void should_validate_then_create_column_family_when_null() throws Exception
-	{
-		prepareData();
-		when(keyspaceDefinition.getCfDefs()).thenReturn(null);
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, true);
-		verify(columnFamilyHelper).buildDynamicCompositeCF(meta, "keyspace");
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_validate_then_create_column_family_for_external_wide_map_when_null()
-			throws Exception
-	{
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", externalWideMapDao, LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
-
-		prepareData(externalWideMapMeta);
-		idMeta.setValueClass(Long.class);
-		when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
-
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) cfDef));
-		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
-		externalCFDef.setName("externalCF");
-		when(
-				columnFamilyHelper.buildCompositeCF("keyspace", externalWideMapMeta, Long.class,
-						"externalCF", meta.getClassName())).thenReturn(externalCFDef);
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, true);
-
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
-		verify(cluster).addColumnFamily(externalCFDef, true);
-	}
-
-	@Test(expected = InvalidColumnFamilyException.class)
-	public void should_exception_because_column_family_not_found() throws Exception
-	{
-		prepareData();
-		when(keyspaceDefinition.getCfDefs()).thenReturn(null);
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, false);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test(expected = InvalidColumnFamilyException.class)
-	public void should_exception_because_column_family_not_found_for_external_wide_map()
-			throws Exception
-	{
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", externalWideMapDao, SerializerUtils.LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
-
-		prepareData(externalWideMapMeta);
-		idMeta.setValueClass(Long.class);
-		when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
-
-		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		cfDef.setName("testCF");
-
-		when(keyspaceDefinition.getCfDefs()).thenReturn(
-				Arrays.asList((ColumnFamilyDefinition) cfDef));
-
-		creator.validateOrCreateColumnFamilies(entityMetaMap, false);
-	}
-
-	private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas)
-	{
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-
-		for (PropertyMeta<?, ?> propertyMeta : extraPropertyMetas)
-		{
-			propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
-		}
-
-		simplePropertyMeta = (PropertyMeta<Void, String>) PropertyMetaFactory
-				.factory(Void.class, String.class).type(SIMPLE).propertyName("name")
-				.accessors(accessors).build();
-
-		propertyMetas.put("name", simplePropertyMeta);
-
-		meta = entityMetaBuilder(idMeta).keyspace(keyspace).className("TestBean")
-				.columnFamilyName("testCF").serialVersionUID(1L).propertyMetas(propertyMetas)
-				.build();
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-		entityMetaMap.put(this.getClass(), meta);
-
-		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
-	}
-
-	class TestBean
-	{
-
-		private Long id;
-
-		public Long getId()
-		{
-			return id;
-		}
-
-		public void setId(Long id)
-		{
-			this.id = id;
-		}
-
-	}
+        assertThat(discoveredCfDef).isNotNull();
+        assertThat(discoveredCfDef.getName()).isEqualTo("testCF");
+        assertThat(discoveredCfDef.getKeyValidationClass()).isEqualTo("keyValidationClass");
+        assertThat(discoveredCfDef.getComment()).isEqualTo("comment");
+    }
+
+    @Test
+    public void should_add_column_family() throws Exception {
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+
+        when(cluster.addColumnFamily(cfDef, true)).thenReturn("id");
+
+        String id = this.creator.addColumnFamily(cfDef);
+
+        assertThat(id).isEqualTo("id");
+    }
+
+    @Test
+    public void should_create_column_family_for_entity() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+
+        creator.createColumnFamily(meta);
+
+        verify(columnFamilyHelper).buildDynamicCompositeCF(meta, "keyspace");
+        verify(cluster).addColumnFamily(cfDef, true);
+
+    }
+
+    @Test
+    public void should_create_column_family_for_column_family_direct_mapping() throws Exception {
+        prepareData();
+        meta.setColumnFamilyDirectMapping(true);
+        idMeta.setValueClass(Long.class);
+
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        meta.setClassName("entity");
+        when(columnFamilyHelper.buildCompositeCF("keyspace", simplePropertyMeta, Long.class, "testCF", "entity"))
+                .thenReturn(cfDef);
+
+        creator.createColumnFamily(meta);
+
+        verify(cluster).addColumnFamily(cfDef, true);
+    }
+
+    @Test
+    public void should_create_column_family_for_counter() throws Exception {
+
+        Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
+        ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
+
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(columnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
+
+        creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), true, true);
+
+        verify(cluster).addColumnFamily(cfDef, true);
+
+    }
+
+    @Test
+    public void should_validate_column_family() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
+        verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_validate_column_family_for_external_wide_map() throws Exception {
+        GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+        PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
+        ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>("externalCF",
+                externalWideMapDao, LONG_SRZ);
+        externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
+        externalWideMapMeta.setPropertyName("externalWideMap");
+
+        prepareData(externalWideMapMeta);
+        idMeta.setValueClass(Long.class);
+        when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
+
+        BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
+        externalCFDef.setName("externalCF");
+
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
+        verify(columnFamilyHelper).validateCFWithPropertyMeta(externalCFDef, externalWideMapMeta, "externalCF");
+        verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+    }
+
+    @Test
+    public void should_validate_counter_column_family() throws Exception {
+
+        ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
+        when(cfDef.getName()).thenReturn(COUNTER_CF);
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList(cfDef));
+
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(columnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
+
+        creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), true, true);
+
+        verify(columnFamilyHelper).validateCounterCF(cfDef);
+    }
+
+    @Test
+    public void should_validate_then_create_column_family_when_not_matching() throws Exception {
+        prepareData();
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF2");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
+        when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
+
+        verify(cluster).addColumnFamily(cfDef, true);
+        assertThat(cfs).containsOnly("testCF2");
+    }
+
+    @Test
+    public void should_validate_then_create_column_family_when_null() throws Exception {
+        prepareData();
+
+        Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
+        ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
+        when(cfDef.getName()).thenReturn("mocked_cfDef");
+        when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
+
+        verify(cluster).addColumnFamily(cfDef, true);
+        assertThat(cfs).containsOnly("mocked_cfDef");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_validate_then_create_column_family_for_external_wide_map_when_null() throws Exception {
+        GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+        PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
+        ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>("externalCF",
+                externalWideMapDao, LONG_SRZ);
+        externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
+        externalWideMapMeta.setPropertyName("externalWideMap");
+
+        prepareData(externalWideMapMeta);
+        idMeta.setValueClass(Long.class);
+        when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
+
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
+        BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
+        externalCFDef.setName("externalCF");
+        when(
+                columnFamilyHelper.buildCompositeCF("keyspace", externalWideMapMeta, Long.class, "externalCF",
+                        meta.getClassName())).thenReturn(externalCFDef);
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
+
+        verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+        verify(cluster).addColumnFamily(externalCFDef, true);
+    }
+
+    @Test
+    public void should_exception_because_column_family_not_found() throws Exception {
+        prepareData();
+        Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
+
+        exception.expect(InvalidColumnFamilyException.class);
+        exception.expectMessage("The required column family 'testCF' does not exist for entity 'TestBean'");
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, false, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_exception_because_column_family_not_found_for_external_wide_map() throws Exception {
+        GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+        PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
+        ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>("externalCF",
+                externalWideMapDao, SerializerUtils.LONG_SRZ);
+        externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
+        externalWideMapMeta.setPropertyName("externalWideMap");
+
+        prepareData(externalWideMapMeta);
+        idMeta.setValueClass(Long.class);
+        when(externalWideMapDao.getColumnFamily()).thenReturn("externalCF");
+
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
+
+        exception.expect(InvalidColumnFamilyException.class);
+        exception.expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap'");
+
+        creator.validateOrCreateColumnFamilies(entityMetaMap, false, false);
+    }
+
+    @Test
+    public void should_exception_when_no_column_family_for_counter() throws Exception {
+
+        Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
+
+        exception.expect(InvalidColumnFamilyException.class);
+        exception.expectMessage("The required column family '" + COUNTER_CF + "' does not exist");
+
+        creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), false, true);
+
+    }
+
+    private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas) {
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+
+        for (PropertyMeta<?, ?> propertyMeta : extraPropertyMetas) {
+            propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
+        }
+
+        simplePropertyMeta = PropertyMetaFactory.factory(Void.class, String.class).type(SIMPLE).propertyName("name")
+                .accessors(accessors).build();
+
+        propertyMetas.put("name", simplePropertyMeta);
+
+        meta = entityMetaBuilder(idMeta).keyspace(keyspace).className("TestBean").columnFamilyName("testCF")
+                .serialVersionUID(1L).propertyMetas(propertyMetas).build();
+        entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+        entityMetaMap.put(this.getClass(), meta);
+
+        when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+        when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+    }
+
+    class TestBean {
+
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+    }
 }

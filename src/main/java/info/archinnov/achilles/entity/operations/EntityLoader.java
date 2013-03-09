@@ -2,6 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.apache.commons.lang.StringUtils;
 
@@ -26,7 +28,9 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public class EntityLoader {
-    private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+
+    private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+    private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
     private EntityMapper mapper = new EntityMapper();
     private EntityHelper helper = new EntityHelper();
     private JoinEntityLoader joinLoader = new JoinEntityLoader();
@@ -74,14 +78,23 @@ public class EntityLoader {
     }
 
     protected <ID, V> V loadSimpleProperty(ID key, GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> propertyMeta) {
-        DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
+        DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
         return propertyMeta.getValueFromString(dao.getValue(key, composite));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <ID> Long loadSimpleCounterProperty(ID key, PropertyMeta<?, ?> propertyMeta) {
+        Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(), key,
+                (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
+        DynamicComposite comp = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
+
+        return propertyMeta.counterDao().getCounterValue(keyComp, comp);
     }
 
     protected <ID, V> List<V> loadListProperty(ID key, GenericDynamicCompositeDao<ID> dao,
             PropertyMeta<?, V> listPropertyMeta) {
-        DynamicComposite start = keyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
-        DynamicComposite end = keyFactory.createBaseForQuery(listPropertyMeta, GREATER_THAN_EQUAL);
+        DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(listPropertyMeta, EQUAL);
+        DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(listPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
         List<V> list = null;
@@ -97,8 +110,8 @@ public class EntityLoader {
     protected <ID, V> Set<V> loadSetProperty(ID key, GenericDynamicCompositeDao<ID> dao,
             PropertyMeta<?, V> setPropertyMeta) {
 
-        DynamicComposite start = keyFactory.createBaseForQuery(setPropertyMeta, EQUAL);
-        DynamicComposite end = keyFactory.createBaseForQuery(setPropertyMeta, GREATER_THAN_EQUAL);
+        DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(setPropertyMeta, EQUAL);
+        DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(setPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
         Set<V> set = null;
@@ -114,8 +127,8 @@ public class EntityLoader {
     protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
             PropertyMeta<K, V> mapPropertyMeta) {
 
-        DynamicComposite start = keyFactory.createBaseForQuery(mapPropertyMeta, EQUAL);
-        DynamicComposite end = keyFactory.createBaseForQuery(mapPropertyMeta, GREATER_THAN_EQUAL);
+        DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(mapPropertyMeta, EQUAL);
+        DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(mapPropertyMeta, GREATER_THAN_EQUAL);
         List<Pair<DynamicComposite, String>> columns = dao
                 .findColumnsRange(key, start, end, false, Integer.MAX_VALUE);
 
@@ -139,6 +152,9 @@ public class EntityLoader {
             case SIMPLE:
             case LAZY_SIMPLE:
                 value = this.loadSimpleProperty(key, dao, propertyMeta);
+                break;
+            case COUNTER:
+                value = this.loadSimpleCounterProperty(key, propertyMeta);
                 break;
             case LIST:
             case LAZY_LIST:
@@ -176,7 +192,7 @@ public class EntityLoader {
         EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
         PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta.joinIdMeta();
 
-        DynamicComposite composite = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
+        DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
 
         String stringJoinId = dao.getValue(key, composite);
 
@@ -187,6 +203,6 @@ public class EntityLoader {
         } else {
             return null;
         }
-
     }
+
 }
