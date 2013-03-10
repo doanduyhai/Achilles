@@ -51,7 +51,7 @@ public class CompleteBeanTestBuilder
 		bean.setFriends(friends);
 		bean.setFollowers(followers);
 		bean.setPreferences(preferences);
-		bean.setVersion(version);
+		bean.setVersion(version != null ? version : 0);
 		return bean;
 	}
 

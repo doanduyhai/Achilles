@@ -328,9 +328,11 @@ public class EntityPersister
 		Composite keyComp = compositeKeyFactory.createKeyForCounter(fqcn, key, idMeta);
 		DynamicComposite comp = dynamicCompositeKeyFactory
 				.createForBatchInsertSingleValue(propertyMeta);
-		dao.insertCounter(keyComp, comp,
-				(Long) helper.getValueFromField(entity, propertyMeta.getGetter()),
-				counterMutatorTL.get());
+		Object counterValue = helper.getValueFromField(entity, propertyMeta.getGetter());
+		if (counterValue != null)
+		{
+			dao.insertCounter(keyComp, comp, (Long) counterValue, counterMutatorTL.get());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
