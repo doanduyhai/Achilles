@@ -43,7 +43,7 @@ public interface WideMap<K, V>
 			this.reverse = equivalent;
 		}
 
-		public boolean reverse() {
+		public boolean isReverse() {
 			return reverse;
 		}	
 	}

@@ -78,7 +78,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V> {
                 propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id, queryComps[0],
-                queryComps[1], count, ordering.reverse());
+                queryComps[1], count, ordering.isReverse());
 
         if (propertyMeta.isJoin()) {
             return keyValueFactory.createJoinKeyValueListForDynamicComposite(propertyMeta, hColumns);
@@ -97,7 +97,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V> {
                 propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id, queryComps[0],
-                queryComps[1], count, ordering.reverse());
+                queryComps[1], count, ordering.isReverse());
         if (propertyMeta.isJoin()) {
             return keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns);
         } else {
@@ -115,7 +115,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V> {
                 propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id, queryComps[0],
-                queryComps[1], count, ordering.reverse());
+                queryComps[1], count, ordering.isReverse());
         return keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns);
     }
 
@@ -128,7 +128,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V> {
         if (propertyMeta.isJoin()) {
 
             AchillesJoinSliceIterator<ID, DynamicComposite, String, K, V> joinColumnSliceIterator = entityDao
-                    .getJoinColumnsIterator(propertyMeta, id, queryComps[0], queryComps[1], ordering.reverse(), count);
+                    .getJoinColumnsIterator(propertyMeta, id, queryComps[0], queryComps[1], ordering.isReverse(), count);
 
             return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(joinColumnSliceIterator,
                     propertyMeta);
@@ -136,7 +136,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, V> {
         } else {
 
             AchillesSliceIterator<ID, DynamicComposite, String> columnSliceIterator = entityDao.getColumnsIterator(
-                    id, queryComps[0], queryComps[1], ordering.reverse(), count);
+                    id, queryComps[0], queryComps[1], ordering.isReverse(), count);
 
             return iteratorFactory.createKeyValueIteratorForDynamicComposite(columnSliceIterator, propertyMeta);
         }

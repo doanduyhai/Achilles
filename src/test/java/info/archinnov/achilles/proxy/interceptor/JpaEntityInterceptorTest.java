@@ -18,6 +18,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
@@ -38,7 +39,10 @@ import java.util.UUID;
 
 import mapping.entity.ColumnFamilyBean;
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
+import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.mutation.Mutator;
+import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.junit.Before;
@@ -108,6 +112,8 @@ public class JpaEntityInterceptorTest
 
 	private Method nameSetter;
 
+	private Method userGetter;
+
 	private Long key = 452L;
 
 	@Before
@@ -116,8 +122,10 @@ public class JpaEntityInterceptorTest
 		idGetter = CompleteBean.class.getDeclaredMethod("getId");
 		idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
-		nameGetter = CompleteBean.class.getDeclaredMethod("getName", (Class<?>[]) null);
+		nameGetter = CompleteBean.class.getDeclaredMethod("getName");
 		nameSetter = CompleteBean.class.getDeclaredMethod("setName", String.class);
+
+		userGetter = CompleteBean.class.getDeclaredMethod("getUser");
 
 		PropertyMeta<Void, Long> idMeta = mock(PropertyMeta.class);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
@@ -227,6 +235,40 @@ public class JpaEntityInterceptorTest
 	}
 
 	@Test
+	public void should_create_simple_join_wrapper() throws Throwable
+	{
+		UserBean user = new UserBean();
+
+		EntityMeta<Long> joinEntityMeta = EntityMetaTestBuilder.entityMeta().build(
+				mock(Keyspace.class), dao, UserBean.class);
+		when(getterMetas.containsKey(userGetter)).thenReturn(true);
+		when(getterMetas.get(userGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
+		when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when(proxy.invoke(entity, null)).thenReturn(user);
+
+		Object actual = this.interceptor.intercept(entity, userGetter, (Object[]) null, proxy);
+
+		assertThat(actual).isInstanceOf(Factory.class);
+		assertThat(actual).isInstanceOf(UserBean.class);
+	}
+
+	@Test
+	public void should_return_null_when_no_join_simple() throws Throwable
+	{
+		EntityMeta<Long> joinEntityMeta = EntityMetaTestBuilder.entityMeta().build(
+				mock(Keyspace.class), dao, UserBean.class);
+		when(getterMetas.containsKey(userGetter)).thenReturn(true);
+		when(getterMetas.get(userGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
+		when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when(proxy.invoke(entity, null)).thenReturn(null);
+		Object actual = this.interceptor.intercept(entity, userGetter, (Object[]) null, proxy);
+
+		assertThat(actual).isNull();
+	}
+
+	@Test
 	public void should_create_list_wrapper() throws Throwable
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
@@ -238,6 +280,20 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(ListWrapper.class);
+	}
+
+	@Test
+	public void should_return_null_when_no_list() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
+
+		when(proxy.invoke(entity, null)).thenReturn(null);
+
+		Object actual = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(actual).isNull();
 	}
 
 	@Test
@@ -255,6 +311,20 @@ public class JpaEntityInterceptorTest
 	}
 
 	@Test
+	public void should_return_null_when_no_set() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.type()).thenReturn(PropertyType.SET);
+
+		when(proxy.invoke(entity, null)).thenReturn(null);
+
+		Object actual = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(actual).isNull();
+	}
+
+	@Test
 	public void should_create_map_wrapper() throws Throwable
 	{
 		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
@@ -266,6 +336,20 @@ public class JpaEntityInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(MapWrapper.class);
+	}
+
+	@Test
+	public void should_return_null_when_no_map() throws Throwable
+	{
+		when(getterMetas.containsKey(nameGetter)).thenReturn(true);
+		when(getterMetas.get(nameGetter)).thenReturn(propertyMeta);
+		when(propertyMeta.type()).thenReturn(LAZY_MAP);
+
+		when(proxy.invoke(entity, null)).thenReturn(null);
+
+		Object actual = this.interceptor.intercept(entity, nameGetter, (Object[]) null, proxy);
+
+		assertThat(actual).isNull();
 	}
 
 	@Test

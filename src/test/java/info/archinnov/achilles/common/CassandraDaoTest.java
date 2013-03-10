@@ -1,5 +1,6 @@
 package info.archinnov.achilles.common;
 
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -139,5 +140,10 @@ public abstract class CassandraDaoTest
 			Serializer<V> valueSerializer, String columnFamily)
 	{
 		return new GenericCompositeDao<K, V>(keyspace, keySerializer, valueSerializer, columnFamily);
+	}
+
+	public static CounterDao getCounterDao()
+	{
+		return new CounterDao(keyspace);
 	}
 }

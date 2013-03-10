@@ -2,6 +2,7 @@ package testBuilders;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
@@ -41,6 +42,11 @@ public class HColumnTestBuilder
 			int ttl)
 	{
 		return HFactory.createColumn(name, value, ttl, DYNA_COMP_SRZ, STRING_SRZ);
+	}
+
+	public static HColumn<DynamicComposite, Long> counter(DynamicComposite name, Long value)
+	{
+		return HFactory.createColumn(name, value, DYNA_COMP_SRZ, LONG_SRZ);
 	}
 
 }

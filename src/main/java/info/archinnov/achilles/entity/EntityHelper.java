@@ -374,7 +374,7 @@ public class EntityHelper
 			return null;
 		}
 
-		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be");
+		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be null");
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());

@@ -11,6 +11,7 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+import info.archinnov.achilles.wrapper.builder.CounterWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinExternalWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
@@ -18,10 +19,12 @@ import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.SetWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -32,316 +35,406 @@ import net.sf.cglib.proxy.MethodProxy;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor {
+public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor
+{
 
-    private EntityLoader loader = new EntityLoader();
-    private CompositeHelper compositeHelper = new CompositeHelper();
-    private KeyValueFactory keyValueFactory = new KeyValueFactory();
-    private IteratorFactory iteratorFactory = new IteratorFactory();
-    private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
-    private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
-    private EntityPersister persister = new EntityPersister();
-    private EntityHelper entityHelper = new EntityHelper();
+	private EntityLoader loader = new EntityLoader();
+	private CompositeHelper compositeHelper = new CompositeHelper();
+	private KeyValueFactory keyValueFactory = new KeyValueFactory();
+	private IteratorFactory iteratorFactory = new IteratorFactory();
+	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
+	private EntityPersister persister = new EntityPersister();
+	private EntityHelper entityHelper = new EntityHelper();
 
-    private GenericDynamicCompositeDao<ID> entityDao;
-    private GenericCompositeDao<ID, ?> columnFamilyDao;
-    private Boolean directColumnFamilyMapping;
+	private GenericDynamicCompositeDao<ID> entityDao;
+	private GenericCompositeDao<ID, ?> columnFamilyDao;
+	private Boolean directColumnFamilyMapping;
 
-    private T target;
-    private ID key;
-    private Method idGetter;
-    private Method idSetter;
-    private Map<Method, PropertyMeta<?, ?>> getterMetas;
-    private Map<Method, PropertyMeta<?, ?>> setterMetas;
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap;
-    private Set<Method> lazyAlreadyLoaded;
-    private Mutator<ID> mutator;
-    private Map<String, Mutator<?>> mutatorMap;
+	private T target;
+	private ID key;
+	private Method idGetter;
+	private Method idSetter;
+	private Map<Method, PropertyMeta<?, ?>> getterMetas;
+	private Map<Method, PropertyMeta<?, ?>> setterMetas;
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+	private Set<Method> lazyAlreadyLoaded;
+	private Mutator<ID> mutator;
+	private Map<String, Mutator<?>> mutatorMap;
 
-    @Override
-    public Object getTarget() {
-        return this.target;
-    }
+	@Override
+	public Object getTarget()
+	{
+		return this.target;
+	}
 
-    @Override
-    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        if (this.idGetter == method) {
-            return this.key;
-        } else if (this.idSetter == method) {
-            throw new IllegalAccessException("Cannot change id value for existing entity ");
-        }
+	@Override
+	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
+	{
+		if (this.idGetter == method)
+		{
+			return this.key;
+		}
+		else if (this.idSetter == method)
+		{
+			throw new IllegalAccessException("Cannot change id value for existing entity ");
+		}
 
-        Object result = null;
-        if (this.getterMetas.containsKey(method)) {
-            result = interceptGetter(method, args, proxy);
-        } else if (this.setterMetas.containsKey(method)) {
-            result = interceptSetter(method, args, proxy);
-        } else {
-            result = proxy.invoke(target, args);
-        }
-        return result;
-    }
+		Object result = null;
+		if (this.getterMetas.containsKey(method))
+		{
+			result = interceptGetter(method, args, proxy);
+		}
+		else if (this.setterMetas.containsKey(method))
+		{
+			result = interceptSetter(method, args, proxy);
+		}
+		else
+		{
+			result = proxy.invoke(target, args);
+		}
+		return result;
+	}
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        Object result = null;
-        PropertyMeta propertyMeta = this.getterMetas.get(method);
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
+	{
+		Object result = null;
+		PropertyMeta propertyMeta = this.getterMetas.get(method);
 
-        // Load lazy into target object
-        if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method)) {
-            this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);
-            this.lazyAlreadyLoaded.add(method);
-        }
+		// Load lazy into target object
+		if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method))
+		{
+			this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);
+			this.lazyAlreadyLoaded.add(method);
+		}
 
-        Object rawValue = proxy.invoke(target, args);
+		Object rawValue = proxy.invoke(target, args);
 
-        // Build proxy when necessary
-        switch (propertyMeta.type()) {
-            case JOIN_SIMPLE:
-                if (rawValue != null) {
-                    result = entityHelper.buildProxy(rawValue, propertyMeta.joinMeta());
-                }
-                break;
-            case LIST:
-            case LAZY_LIST:
-            case JOIN_LIST:
-                if (rawValue != null) {
-                    List<?> list = (List<?>) rawValue;
-                    result = ListWrapperBuilder.builder(list) //
-                            .dirtyMap(dirtyMap) //
-                            .setter(propertyMeta.getSetter()) //
-                            .propertyMeta(propertyMeta) //
-                            .helper(entityHelper) //
-                            .build();
-                }
-                break;
-            case SET:
-            case LAZY_SET:
-            case JOIN_SET:
-                if (rawValue != null) {
-                    Set<?> set = (Set<?>) rawValue;
-                    result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap) //
-                            .setter(propertyMeta.getSetter())//
-                            .propertyMeta(propertyMeta) //
-                            .helper(entityHelper) //
-                            .build();
-                }
-                break;
-            case MAP:
-            case LAZY_MAP:
-            case JOIN_MAP:
-                if (rawValue != null) {
-                    Map<?, ?> map = (Map<?, ?>) rawValue;
-                    result = MapWrapperBuilder.builder(map)//
-                            .dirtyMap(dirtyMap) //
-                            .setter(propertyMeta.getSetter()) //
-                            .propertyMeta(propertyMeta) //
-                            .helper(entityHelper) //
-                            .build();
-                }
-                break;
-            case WIDE_MAP:
-                if (directColumnFamilyMapping) {
-                    result = buildColumnFamilyWrapper(propertyMeta);
-                } else {
-                    result = buildWideMapWrapper(propertyMeta);
-                }
-                break;
-            case EXTERNAL_WIDE_MAP:
-                result = buildExternalWideMapWrapper(propertyMeta);
-                break;
-            case JOIN_WIDE_MAP:
-                result = buildJoinWideMapWrapper(propertyMeta);
-                break;
+		// Build proxy when necessary
+		switch (propertyMeta.type())
+		{
+			case JOIN_SIMPLE:
+				if (rawValue != null)
+				{
+					result = entityHelper.buildProxy(rawValue, propertyMeta.joinMeta());
+				}
+				break;
+			case LIST:
+			case LAZY_LIST:
+			case JOIN_LIST:
+				if (rawValue != null)
+				{
+					List<?> list = (List<?>) rawValue;
+					result = ListWrapperBuilder.builder(list) //
+							.dirtyMap(dirtyMap) //
+							.setter(propertyMeta.getSetter()) //
+							.propertyMeta(propertyMeta) //
+							.helper(entityHelper) //
+							.build();
+				}
+				break;
+			case SET:
+			case LAZY_SET:
+			case JOIN_SET:
+				if (rawValue != null)
+				{
+					Set<?> set = (Set<?>) rawValue;
+					result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap) //
+							.setter(propertyMeta.getSetter())//
+							.propertyMeta(propertyMeta) //
+							.helper(entityHelper) //
+							.build();
+				}
+				break;
+			case MAP:
+			case LAZY_MAP:
+			case JOIN_MAP:
+				if (rawValue != null)
+				{
+					Map<?, ?> map = (Map<?, ?>) rawValue;
+					result = MapWrapperBuilder.builder(map)//
+							.dirtyMap(dirtyMap) //
+							.setter(propertyMeta.getSetter()) //
+							.propertyMeta(propertyMeta) //
+							.helper(entityHelper) //
+							.build();
+				}
+				break;
+			case WIDE_MAP:
+				if (directColumnFamilyMapping)
+				{
+					result = buildColumnFamilyWrapper(propertyMeta);
+				}
+				else
+				{
+					result = buildWideMapWrapper(propertyMeta);
+				}
+				break;
+			case EXTERNAL_WIDE_MAP:
+				result = buildExternalWideMapWrapper(propertyMeta);
+				break;
+			case EXTERNAL_WIDE_MAP_COUNTER:
+				result = buildCounterWideMapWrapper(propertyMeta);
+				break;
+			case JOIN_WIDE_MAP:
+				result = buildJoinWideMapWrapper(propertyMeta);
+				break;
 
-            case EXTERNAL_JOIN_WIDE_MAP:
-                result = buildExternalJoinWideMapWrapper(propertyMeta);
-                break;
-            default:
-                result = rawValue;
-                break;
-        }
-        return result;
-    }
+			case EXTERNAL_JOIN_WIDE_MAP:
+				result = buildExternalJoinWideMapWrapper(propertyMeta);
+				break;
+			default:
+				result = rawValue;
+				break;
+		}
+		return result;
+	}
 
-    @SuppressWarnings("unchecked")
-    private <K extends Comparable<K>, V> Object buildExternalWideMapWrapper(PropertyMeta<K, V> propertyMeta) {
-        return ExternalWideMapWrapperBuilder
-                .builder(
-                        key,
-                        (GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
-                                .getExternalWideMapDao(), propertyMeta) //
-                .interceptor(this) //
-                .compositeHelper(compositeHelper) //
-                .keyValueFactory(keyValueFactory)//
-                .iteratorFactory(iteratorFactory)//
-                .compositeKeyFactory(compositeKeyFactory) //
-                .build();
-    }
+	@SuppressWarnings("unchecked")
+	private <K extends Comparable<K>, V> Object buildExternalWideMapWrapper(
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return ExternalWideMapWrapperBuilder
+				.builder(
+						key,
+						(GenericCompositeDao<ID, V>) propertyMeta.getExternalWideMapProperties()
+								.getExternalWideMapDao(), propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.keyValueFactory(keyValueFactory)//
+				.iteratorFactory(iteratorFactory)//
+				.compositeKeyFactory(compositeKeyFactory) //
+				.build();
+	}
 
-    @SuppressWarnings("unchecked")
-    private <K extends Comparable<K>, V> Object buildExternalJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta) {
-        return JoinExternalWideMapWrapperBuilder
-                .builder(
-                        key,
-                        (GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
-                                .getExternalWideMapDao(), propertyMeta) //
-                .interceptor(this) //
-                .compositeHelper(compositeHelper) //
-                .compositeKeyFactory(compositeKeyFactory) //
-                .entityHelper(entityHelper) //
-                .iteratorFactory(iteratorFactory) //
-                .keyValueFactory(keyValueFactory) //
-                .loader(loader) //
-                .persister(persister) //
-                .build();
-    }
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	private <K extends Comparable<K>> Object buildCounterWideMapWrapper(
+			PropertyMeta<K, Long> propertyMeta)
+	{
+		return CounterWideMapWrapperBuilder //
+				.builder(key, propertyMeta.counterDao(), propertyMeta)//
+				.interceptor(this) //
+				.fqcn(propertyMeta.fqcn()) //
+				.idMeta((PropertyMeta) propertyMeta.counterIdMeta()) //
+				.compositeHelper(compositeHelper) //
+				.keyValueFactory(keyValueFactory) //
+				.iteratorFactory(iteratorFactory) //
+				.compositeKeyFactory(compositeKeyFactory) //
+				.dynamicCompositeKeyFactory(dynamicCompositeKeyFactory) //
+				.build();
+	}
 
-    private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta) {
-        return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
-                .interceptor(this) //
-                .entityHelper(entityHelper) //
-                .compositeHelper(compositeHelper) //
-                .keyFactory(keyFactory) //
-                .keyValueFactory(keyValueFactory) //
-                .iteratorFactory(iteratorFactory) //
-                .build();
-    }
+	@SuppressWarnings("unchecked")
+	private <K extends Comparable<K>, V> Object buildExternalJoinWideMapWrapper(
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return JoinExternalWideMapWrapperBuilder
+				.builder(
+						key,
+						(GenericCompositeDao<ID, ?>) propertyMeta.getExternalWideMapProperties()
+								.getExternalWideMapDao(), propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.compositeKeyFactory(compositeKeyFactory) //
+				.entityHelper(entityHelper) //
+				.iteratorFactory(iteratorFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.loader(loader) //
+				.persister(persister) //
+				.build();
+	}
 
-    private <K extends Comparable<K>, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta) {
-        return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
-                .loader(loader) //
-                .persister(persister) //
-                .interceptor(this) //
-                .entityHelper(entityHelper) //
-                .compositeHelper(compositeHelper) //
-                .keyFactory(keyFactory) //
-                .keyValueFactory(keyValueFactory) //
-                .iteratorFactory(iteratorFactory) //
-                .build();
-    }
+	private <K extends Comparable<K>, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
+	{
+		return WideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
+				.interceptor(this) //
+				.entityHelper(entityHelper) //
+				.compositeHelper(compositeHelper) //
+				.keyFactory(dynamicCompositeKeyFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.iteratorFactory(iteratorFactory) //
+				.build();
+	}
 
-    @SuppressWarnings("unchecked")
-    private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(PropertyMeta<K, V> propertyMeta) {
-        return ExternalWideMapWrapperBuilder.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao, propertyMeta) //
-                .interceptor(this) //
-                .compositeHelper(compositeHelper) //
-                .keyValueFactory(keyValueFactory)//
-                .iteratorFactory(iteratorFactory)//
-                .compositeKeyFactory(compositeKeyFactory) //
-                .build();
-    }
+	private <K extends Comparable<K>, V> Object buildJoinWideMapWrapper(
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return JoinWideMapWrapperBuilder.builder(key, entityDao, propertyMeta) //
+				.loader(loader) //
+				.persister(persister) //
+				.interceptor(this) //
+				.entityHelper(entityHelper) //
+				.compositeHelper(compositeHelper) //
+				.keyFactory(dynamicCompositeKeyFactory) //
+				.keyValueFactory(keyValueFactory) //
+				.iteratorFactory(iteratorFactory) //
+				.build();
+	}
 
-    private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
-        Object result = null;
+	@SuppressWarnings("unchecked")
+	private <K extends Comparable<K>, V> Object buildColumnFamilyWrapper(
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return ExternalWideMapWrapperBuilder
+				.builder(key, (GenericCompositeDao<ID, V>) columnFamilyDao, propertyMeta) //
+				.interceptor(this) //
+				.compositeHelper(compositeHelper) //
+				.keyValueFactory(keyValueFactory)//
+				.iteratorFactory(iteratorFactory)//
+				.compositeKeyFactory(compositeKeyFactory) //
+				.build();
+	}
 
-        if (propertyMeta.type().isWideMap()) {
-            throw new UnsupportedOperationException(
-                    "Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
-        }
+	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
+			throws Throwable
+	{
+		PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
+		Object result = null;
 
-        if (propertyMeta.type().isLazy()) {
-            this.lazyAlreadyLoaded.add(propertyMeta.getGetter());
-        }
-        this.dirtyMap.put(method, propertyMeta);
-        result = proxy.invoke(target, args);
-        return result;
-    }
+		if (propertyMeta.type().isWideMap())
+		{
+			throw new UnsupportedOperationException(
+					"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
+		}
 
-    public Map<Method, PropertyMeta<?, ?>> getDirtyMap() {
-        return dirtyMap;
-    }
+		if (propertyMeta.type().isLazy())
+		{
+			this.lazyAlreadyLoaded.add(propertyMeta.getGetter());
+		}
+		this.dirtyMap.put(method, propertyMeta);
+		result = proxy.invoke(target, args);
+		return result;
+	}
 
-    public Set<Method> getLazyAlreadyLoaded() {
-        return lazyAlreadyLoaded;
-    }
+	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
+	{
+		return dirtyMap;
+	}
 
-    @Override
-    public ID getKey() {
-        return key;
-    }
+	public Set<Method> getLazyAlreadyLoaded()
+	{
+		return lazyAlreadyLoaded;
+	}
 
-    public void setTarget(T target) {
-        this.target = target;
-    }
+	@Override
+	public ID getKey()
+	{
+		return key;
+	}
 
-    void setEntityDao(GenericDynamicCompositeDao<ID> dao) {
-        this.entityDao = dao;
-    }
+	public void setTarget(T target)
+	{
+		this.target = target;
+	}
 
-    public <V> void setColumnFamilyDao(GenericCompositeDao<ID, V> columnFamilyDao) {
-        this.columnFamilyDao = columnFamilyDao;
-    }
+	void setEntityDao(GenericDynamicCompositeDao<ID> dao)
+	{
+		this.entityDao = dao;
+	}
 
-    void setKey(ID key) {
-        this.key = key;
-    }
+	public <V> void setColumnFamilyDao(GenericCompositeDao<ID, V> columnFamilyDao)
+	{
+		this.columnFamilyDao = columnFamilyDao;
+	}
 
-    void setIdGetter(Method idGetter) {
-        this.idGetter = idGetter;
-    }
+	void setKey(ID key)
+	{
+		this.key = key;
+	}
 
-    void setIdSetter(Method idSetter) {
-        this.idSetter = idSetter;
-    }
+	void setIdGetter(Method idGetter)
+	{
+		this.idGetter = idGetter;
+	}
 
-    void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas) {
-        this.getterMetas = getterMetas;
-    }
+	void setIdSetter(Method idSetter)
+	{
+		this.idSetter = idSetter;
+	}
 
-    void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas) {
-        this.setterMetas = setterMetas;
-    }
+	void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas)
+	{
+		this.getterMetas = getterMetas;
+	}
 
-    void setDirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap) {
-        this.dirtyMap = dirtyMap;
-    }
+	void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas)
+	{
+		this.setterMetas = setterMetas;
+	}
 
-    void setLazyLoaded(Set<Method> lazyLoaded) {
-        this.lazyAlreadyLoaded = lazyLoaded;
-    }
+	void setDirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
+	{
+		this.dirtyMap = dirtyMap;
+	}
 
-    void setLoader(EntityLoader loader) {
-        this.loader = loader;
-    }
+	void setLazyLoaded(Set<Method> lazyLoaded)
+	{
+		this.lazyAlreadyLoaded = lazyLoaded;
+	}
 
-    public void setDirectColumnFamilyMapping(Boolean directColumnFamilyMapping) {
-        this.directColumnFamilyMapping = directColumnFamilyMapping;
-    }
+	void setLoader(EntityLoader loader)
+	{
+		this.loader = loader;
+	}
 
-    public Boolean getDirectColumnFamilyMapping() {
-        return directColumnFamilyMapping;
-    }
+	public void setDirectColumnFamilyMapping(Boolean directColumnFamilyMapping)
+	{
+		this.directColumnFamilyMapping = directColumnFamilyMapping;
+	}
 
-    @Override
-    public Mutator<ID> getMutator() {
-        return mutator;
-    }
+	public Boolean getDirectColumnFamilyMapping()
+	{
+		return directColumnFamilyMapping;
+	}
 
-    public void setMutator(Mutator<ID> mutator) {
-        this.mutator = mutator;
-    }
+	@Override
+	public Mutator<ID> getMutator()
+	{
+		return mutator;
+	}
 
-    public Map<String, Mutator<?>> getMutatorMap() {
-        return mutatorMap;
-    }
+	public void setMutator(Mutator<ID> mutator)
+	{
+		this.mutator = mutator;
+	}
 
-    @Override
-    public Mutator<?> getMutatorForProperty(String property) {
-        if (mutatorMap != null) {
-            return mutatorMap.get(property);
-        } else {
-            return null;
-        }
-    }
+	public Map<String, Mutator<?>> getMutatorMap()
+	{
+		return mutatorMap;
+	}
 
-    public void setMutatorMap(Map<String, Mutator<?>> mutatorMap) {
-        this.mutatorMap = mutatorMap;
-    }
+	@Override
+	public Mutator<?> getMutatorForProperty(String property)
+	{
+		if (mutatorMap != null)
+		{
+			return mutatorMap.get(property);
+		}
+		else
+		{
+			return null;
+		}
+	}
 
-    @Override
-    public boolean isBatchMode() {
-        return this.mutator != null;
-    }
+	public void setMutatorMap(Map<String, Mutator<?>> mutatorMap)
+	{
+		this.mutatorMap = mutatorMap;
+	}
+
+	@Override
+	public boolean isBatchMode()
+	{
+		return this.mutator != null;
+	}
 }

@@ -93,7 +93,7 @@ public class AbstractWideMapWrapperTest
 				capture.end = end;
 				capture.inclusiveStart = bounds.isInclusiveStart();
 				capture.inclusiveEnd = bounds.isInclusiveEnd();
-				capture.reverse = ordering.reverse();
+				capture.reverse = ordering.isReverse();
 				capture.count = count;
 
 				variableCapture.set(capture);
@@ -139,7 +139,7 @@ public class AbstractWideMapWrapperTest
 				capture.end = end;
 				capture.inclusiveStart = bounds.isInclusiveStart();
 				capture.inclusiveEnd = bounds.isInclusiveEnd();
-				capture.reverse = ordering.reverse();
+				capture.reverse = ordering.isReverse();
 				capture.count = count;
 
 				variableCapture.set(capture);

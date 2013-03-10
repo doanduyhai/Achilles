@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -171,5 +172,31 @@ public class DynamicCompositeTransformerTest
 		assertThat(keyValues.get(1).getKey()).isEqualTo(12);
 		assertThat(keyValues.get(1).getValue()).isEqualTo("test2");
 		assertThat(keyValues.get(1).getTtl()).isEqualTo(789);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_counter_keyvalue_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 1).buildDynamic();
+		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 2).buildDynamic();
+		HColumn<DynamicComposite, Long> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
+		HColumn<DynamicComposite, Long> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
+
+		PropertyMeta<Integer, Long> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, Long.class).type(COUNTER).build();
+
+		List<KeyValue<Integer, Long>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildCounterKeyValueTransformer(propertyMeta));
+
+		assertThat(keyValues).hasSize(2);
+
+		assertThat(keyValues.get(0).getKey()).isEqualTo(1);
+		assertThat(keyValues.get(0).getValue()).isEqualTo(11L);
+		assertThat(keyValues.get(0).getTtl()).isEqualTo(0);
+
+		assertThat(keyValues.get(1).getKey()).isEqualTo(2);
+		assertThat(keyValues.get(1).getValue()).isEqualTo(12L);
+		assertThat(keyValues.get(1).getTtl()).isEqualTo(0);
 	}
 }

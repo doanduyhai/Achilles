@@ -1,5 +1,6 @@
 package integration.tests.entity;
 
+import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.entity.type.MultiKey;
@@ -17,7 +18,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
 
 /**
  * CompleteBean
@@ -69,6 +69,14 @@ public class CompleteBean implements Serializable
 
 	@Column(table = "MultiKeyExternalWideMap")
 	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
+
+	@Counter
+	@Column
+	private long version;
+
+	@Counter
+	@Column
+	private WideMap<String, Long> popularTopics;
 
 	public Long getId()
 	{
@@ -178,6 +186,26 @@ public class CompleteBean implements Serializable
 	public WideMap<UserTweetKey, String> getMultiKeyExternalWideMap()
 	{
 		return multiKeyExternalWideMap;
+	}
+
+	public long getVersion()
+	{
+		return version;
+	}
+
+	public void setVersion(long version)
+	{
+		this.version = version;
+	}
+
+	public WideMap<String, Long> getPopularTopics()
+	{
+		return popularTopics;
+	}
+
+	public void setPopularTopics(WideMap<String, Long> popularTopics)
+	{
+		this.popularTopics = popularTopics;
 	}
 
 	public static class UserTweetKey implements MultiKey

@@ -1,5 +1,7 @@
 package integration.tests.entity;
 
+import info.archinnov.achilles.annotations.Counter;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -31,6 +33,10 @@ public class Tweet implements Serializable
 	@Column
 	private String content;
 
+	@Counter
+	@Column
+	private Long favoriteCount;
+
 	public UUID getId()
 	{
 		return id;
@@ -59,5 +65,15 @@ public class Tweet implements Serializable
 	public void setContent(String content)
 	{
 		this.content = content;
+	}
+
+	public Long getFavoriteCount()
+	{
+		return favoriteCount;
+	}
+
+	public void setFavoriteCount(Long favoriteCount)
+	{
+		this.favoriteCount = favoriteCount;
 	}
 }

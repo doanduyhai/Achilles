@@ -275,7 +275,7 @@ public class JoinExternalWideMapWrapperTest
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.reverse())).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.isReverse())).thenReturn(
 				(List) hColumns);
 		List<KeyValue<Integer, UserBean>> values = mock(List.class);
 		when(keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, hColumns))
@@ -308,7 +308,7 @@ public class JoinExternalWideMapWrapperTest
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.reverse())).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.isReverse())).thenReturn(
 				(List) hColumns);
 		List<UserBean> values = mock(List.class);
 		when(keyValueFactory.createJoinValueListForComposite(propertyMeta, hColumns)).thenReturn(
@@ -341,7 +341,7 @@ public class JoinExternalWideMapWrapperTest
 				endComp
 		});
 		List<HColumn<Composite, ?>> hColumns = mock(List.class);
-		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.reverse())).thenReturn(
+		when(dao.findRawColumnsRange(id, startComp, endComp, count, OrderingMode.DESCENDING.isReverse())).thenReturn(
 				(List) hColumns);
 		List<Integer> values = mock(List.class);
 		when(keyValueFactory.createKeyListForComposite(propertyMeta, hColumns)).thenReturn(values);
@@ -369,7 +369,7 @@ public class JoinExternalWideMapWrapperTest
 		});
 
 		AchillesJoinSliceIterator<Long, Composite, Long, Integer, UserBean> iterator = mock(AchillesJoinSliceIterator.class);
-		when(dao.getJoinColumnsIterator(propertyMeta, id, startComp, endComp, OrderingMode.DESCENDING.reverse(), count))
+		when(dao.getJoinColumnsIterator(propertyMeta, id, startComp, endComp, OrderingMode.DESCENDING.isReverse(), count))
 				.thenReturn(iterator);
 
 		KeyValueIterator<Integer, UserBean> keyValueIterator = mock(KeyValueIterator.class);

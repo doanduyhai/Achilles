@@ -68,7 +68,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
         Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.reverse());
+                ordering.isReverse());
 
         return keyValueFactory.createKeyValueListForComposite(propertyMeta, (List) hColumns);
     }
@@ -80,7 +80,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
         Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.reverse());
+                ordering.isReverse());
 
         return keyValueFactory.createValueListForComposite(propertyMeta, (List) hColumns);
     }
@@ -92,7 +92,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
         Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
 
         List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.reverse());
+                ordering.isReverse());
 
         return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
     }
@@ -103,7 +103,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<K, 
         Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
 
         AchillesSliceIterator<ID, Composite, V> columnSliceIterator = dao.getColumnsIterator(id, composites[0],
-                composites[1], ordering.reverse(), count);
+                composites[1], ordering.isReverse(), count);
 
         return iteratorFactory.createKeyValueIteratorForComposite(columnSliceIterator, propertyMeta);
 
