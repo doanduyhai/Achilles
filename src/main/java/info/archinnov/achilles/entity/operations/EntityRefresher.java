@@ -39,7 +39,7 @@ public class EntityRefresher
 		T freshEntity = this.loader.load(entityClass, primaryKey, entityMeta);
 
 		interceptor.getDirtyMap().clear();
-		interceptor.getLazyLoaded().clear();
+		interceptor.getLazyAlreadyLoaded().clear();
 		interceptor.setTarget(freshEntity);
 	}
 }

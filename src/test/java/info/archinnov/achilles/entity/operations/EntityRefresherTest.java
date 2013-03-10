@@ -86,7 +86,7 @@ public class EntityRefresherTest
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(jpaEntityInterceptor.getLazyLoaded()).thenReturn(lazyLoaded);
+		when(jpaEntityInterceptor.getLazyAlreadyLoaded()).thenReturn(lazyLoaded);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(helper.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
 		when(loader.load(eq(CompleteBean.class), eq(12L), eq(entityMeta))).thenReturn(bean);

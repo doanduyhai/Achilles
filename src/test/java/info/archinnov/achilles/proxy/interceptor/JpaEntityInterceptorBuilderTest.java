@@ -82,8 +82,8 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
 
-		assertThat(interceptor.getLazyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
+		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
 
 		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNull();
 		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNotNull();
@@ -130,8 +130,8 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
 
-		assertThat(interceptor.getLazyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyLoaded()).isInstanceOf(HashSet.class);
+		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
 
 		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNotNull();
 		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNull();

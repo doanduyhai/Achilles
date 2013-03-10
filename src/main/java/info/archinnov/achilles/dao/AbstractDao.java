@@ -305,7 +305,15 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V> {
     }
 
     public void insertCounter(K key, N name, Long value, Mutator<K> mutator) {
+
         mutator.insertCounter(key, columnFamily, HFactory.createCounterColumn(name, value, columnNameSerializer));
+    }
+
+    public void insertCounter(K key, N name, Long value) {
+
+        Mutator<K> mutator = buildMutator();
+        mutator.insertCounter(key, columnFamily, HFactory.createCounterColumn(name, value, columnNameSerializer));
+        mutator.execute();
     }
 
     public void truncate() {

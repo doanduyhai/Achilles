@@ -54,7 +54,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
     private Map<Method, PropertyMeta<?, ?>> getterMetas;
     private Map<Method, PropertyMeta<?, ?>> setterMetas;
     private Map<Method, PropertyMeta<?, ?>> dirtyMap;
-    private Set<Method> lazyLoaded;
+    private Set<Method> lazyAlreadyLoaded;
     private Mutator<ID> mutator;
     private Map<String, Mutator<?>> mutatorMap;
 
@@ -86,13 +86,16 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
     private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
         Object result = null;
         PropertyMeta propertyMeta = this.getterMetas.get(method);
-        if (propertyMeta.type().isLazy() //
-                && !this.lazyLoaded.contains(method)) {
+
+        // Load lazy into target object
+        if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method)) {
             this.loader.loadPropertyIntoObject(target, key, entityDao, propertyMeta);
-            this.lazyLoaded.add(method);
+            this.lazyAlreadyLoaded.add(method);
         }
 
         Object rawValue = proxy.invoke(target, args);
+
+        // Build proxy when necessary
         switch (propertyMeta.type()) {
             case JOIN_SIMPLE:
                 if (rawValue != null) {
@@ -239,9 +242,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
         }
 
         if (propertyMeta.type().isLazy()) {
-            this.lazyLoaded.add(propertyMeta.getGetter());
+            this.lazyAlreadyLoaded.add(propertyMeta.getGetter());
         }
-
         this.dirtyMap.put(method, propertyMeta);
         result = proxy.invoke(target, args);
         return result;
@@ -251,8 +253,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
         return dirtyMap;
     }
 
-    public Set<Method> getLazyLoaded() {
-        return lazyLoaded;
+    public Set<Method> getLazyAlreadyLoaded() {
+        return lazyAlreadyLoaded;
     }
 
     @Override
@@ -297,7 +299,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
     }
 
     void setLazyLoaded(Set<Method> lazyLoaded) {
-        this.lazyLoaded = lazyLoaded;
+        this.lazyAlreadyLoaded = lazyLoaded;
     }
 
     void setLoader(EntityLoader loader) {
