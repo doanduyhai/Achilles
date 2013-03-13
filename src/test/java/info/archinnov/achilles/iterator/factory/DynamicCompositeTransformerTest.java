@@ -15,6 +15,7 @@ import java.util.List;
 import mapping.entity.TweetMultiKey;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -180,8 +181,8 @@ public class DynamicCompositeTransformerTest
 	{
 		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 1).buildDynamic();
 		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 2).buildDynamic();
-		HColumn<DynamicComposite, Long> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
-		HColumn<DynamicComposite, Long> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
 
 		PropertyMeta<Integer, Long> propertyMeta = PropertyMetaTestBuilder
 				.noClass(Integer.class, Long.class).type(COUNTER).build();
@@ -199,4 +200,7 @@ public class DynamicCompositeTransformerTest
 		assertThat(keyValues.get(1).getValue()).isEqualTo(12L);
 		assertThat(keyValues.get(1).getTtl()).isEqualTo(0);
 	}
+
+	// TODO Add missing tests
+
 }

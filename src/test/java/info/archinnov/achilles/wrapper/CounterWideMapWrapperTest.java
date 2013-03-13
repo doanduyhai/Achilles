@@ -14,7 +14,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.iterator.AchillesSliceIterator;
+import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.CounterKeyValueIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -25,7 +25,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
@@ -83,7 +83,7 @@ public class CounterWideMapWrapperTest
 	private Mutator<Composite> counterMutator;
 
 	@Mock
-	private AchillesSliceIterator<Composite, DynamicComposite, Long> achillesSliceIterator;
+	private AchillesCounterSliceIterator<Composite, DynamicComposite> achillesCounterSliceIterator;
 
 	private Long id = 12L;
 	private Integer key = 11;
@@ -156,9 +156,9 @@ public class CounterWideMapWrapperTest
 				start,
 				end
 		});
-		List<HColumn<DynamicComposite, Long>> hColumns = mock(List.class);
+		List<HCounterColumn<DynamicComposite>> hColumns = mock(List.class);
 
-		when(counterDao.findRawColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
+		when(counterDao.findCounterColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
 				.thenReturn(hColumns);
 		List<KeyValue<Integer, Long>> expected = new ArrayList<KeyValue<Integer, Long>>();
 
@@ -184,9 +184,9 @@ public class CounterWideMapWrapperTest
 				start,
 				end
 		});
-		List<HColumn<DynamicComposite, Long>> hColumns = mock(List.class);
+		List<HCounterColumn<DynamicComposite>> hColumns = mock(List.class);
 
-		when(counterDao.findRawColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
+		when(counterDao.findCounterColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
 				.thenReturn(hColumns);
 
 		List<Long> expected = new ArrayList<Long>();
@@ -212,9 +212,9 @@ public class CounterWideMapWrapperTest
 				start,
 				end
 		});
-		List<HColumn<DynamicComposite, Long>> hColumns = mock(List.class);
+		List<HCounterColumn<DynamicComposite>> hColumns = mock(List.class);
 
-		when(counterDao.findRawColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
+		when(counterDao.findCounterColumnsRange(keyComp, start, end, 100, DESCENDING.isReverse()))
 				.thenReturn(hColumns);
 
 		List<Integer> expected = new ArrayList<Integer>();
@@ -241,13 +241,13 @@ public class CounterWideMapWrapperTest
 				end
 		});
 
-		when(counterDao.getColumnsIterator(keyComp, start, end, DESCENDING.isReverse(), 100))
-				.thenReturn(achillesSliceIterator);
+		when(counterDao.getCounterColumnsIterator(keyComp, start, end, DESCENDING.isReverse(), 100))
+				.thenReturn(achillesCounterSliceIterator);
 		CounterKeyValueIterator<Integer> expected = mock(CounterKeyValueIterator.class);
 
 		when(
 				iteratorFactory.createCounterKeyValueIteratorForDynamicComposite(
-						achillesSliceIterator, propertyMeta)).thenReturn(expected);
+						achillesCounterSliceIterator, propertyMeta)).thenReturn(expected);
 
 		KeyValueIterator<Integer, Long> actual = wrapper.iterator(11, 12, 100, INCLUSIVE_BOUNDS,
 				DESCENDING);

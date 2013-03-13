@@ -141,6 +141,8 @@ public class EntityPersister
 				DynamicComposite joinName = dynamicCompositeKeyFactory
 						.createForBatchInsertSingleValue(propertyMeta);
 				dao.insertColumnBatch(key, joinName, joinId, mutator);
+
+				cascadePersistOrEnsureExists(joinEntity, joinProperties);
 			}
 		}
 	}
@@ -409,13 +411,16 @@ public class EntityPersister
 
 			if (propertyMeta.isCounter())
 			{
-				this.removeCounter(id, (PropertyMeta<Void, Long>) propertyMeta);
+				if (!propertyMeta.isWideMap())
+				{
+					this.removeSimpleCounter(id, (PropertyMeta<Void, Long>) propertyMeta);
+				}
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID> void removeCounter(ID key, PropertyMeta<Void, Long> propertyMeta)
+	private <ID> void removeSimpleCounter(ID key, PropertyMeta<Void, Long> propertyMeta)
 	{
 		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(), key,
 				(PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());

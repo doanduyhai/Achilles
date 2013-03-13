@@ -13,6 +13,7 @@ import java.util.Map;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import com.google.common.collect.Lists;
 
@@ -49,6 +50,11 @@ public class KeyValueFactory
 	}
 
 	public Integer createTtlForDynamicComposite(HColumn<DynamicComposite, ?> hColumn)
+	{
+		return hColumn.getTtl();
+	}
+
+	public Integer createCounterTtlForDynamicComposite(HCounterColumn<DynamicComposite> hColumn)
 	{
 		return hColumn.getTtl();
 	}
@@ -225,43 +231,44 @@ public class KeyValueFactory
 
 	// Counter
 	public <K> KeyValue<K, Long> createCounterKeyValueForDynamicComposite(
-			PropertyMeta<K, Long> propertyMeta, HColumn<DynamicComposite, Long> hColumn)
+			PropertyMeta<K, Long> propertyMeta, HCounterColumn<DynamicComposite> hColumn)
 	{
 		return dynamicCompositeTransformer.buildCounterKeyValueFromDynamicComposite(propertyMeta,
 				hColumn);
 	}
 
 	public <K> K createCounterKeyForDynamicComposite(PropertyMeta<K, Long> propertyMeta,
-			HColumn<DynamicComposite, Long> hColumn)
+			HCounterColumn<DynamicComposite> hColumn)
 	{
-		return dynamicCompositeTransformer.buildKeyFromDynamicComposite(propertyMeta, hColumn);
+		return dynamicCompositeTransformer.buildCounterKeyFromDynamicComposite(propertyMeta,
+				hColumn);
 	}
 
 	public <K> Long createCounterValueForDynamicComposite(PropertyMeta<K, Long> propertyMeta,
-			HColumn<DynamicComposite, Long> hColumn)
+			HCounterColumn<DynamicComposite> hColumn)
 	{
 		return dynamicCompositeTransformer.buildCounterValueFromDynamicComposite(propertyMeta,
 				hColumn);
 	}
 
 	public <K> List<KeyValue<K, Long>> createCounterKeyValueListForDynamicComposite(
-			PropertyMeta<K, Long> propertyMeta, List<HColumn<DynamicComposite, Long>> hColumns)
+			PropertyMeta<K, Long> propertyMeta, List<HCounterColumn<DynamicComposite>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildCounterKeyValueTransformer(propertyMeta));
 	}
 
 	public <K> List<Long> createCounterValueListForDynamicComposite(
-			PropertyMeta<K, Long> propertyMeta, List<HColumn<DynamicComposite, Long>> hColumns)
+			PropertyMeta<K, Long> propertyMeta, List<HCounterColumn<DynamicComposite>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildCounterValueTransformer(propertyMeta));
 	}
 
 	public <K> List<K> createCounterKeyListForDynamicComposite(PropertyMeta<K, Long> propertyMeta,
-			List<HColumn<DynamicComposite, Long>> hColumns)
+			List<HCounterColumn<DynamicComposite>> hColumns)
 	{
 		return Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
+				dynamicCompositeTransformer.buildCounterKeyTransformer(propertyMeta));
 	}
 }

@@ -13,6 +13,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -481,9 +482,10 @@ public class EntityPersisterTest
 		when(helper.unproxy(userBean)).thenReturn(userBean);
 		persister.persistProperty(entity, id, entityDao, propertyMeta, mutator);
 
-		verify(entityDao).insertColumnBatch(eq(joinId), any(DynamicComposite.class), eq("0"),
-				eq(mutator));
-		verify(entityDao).insertColumnBatch(id, composite, joinId.toString(), mutator);
+		verify(entityDao, atLeastOnce()).insertColumnBatch(id, composite, joinId.toString(),
+				mutator);
+		verify(entityDao, atLeastOnce()).insertColumnBatch(eq(joinId), any(DynamicComposite.class),
+				eq("0"), eq(mutator));
 	}
 
 	@SuppressWarnings("rawtypes")

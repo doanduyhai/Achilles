@@ -3,6 +3,7 @@ package info.archinnov.achilles.dao;
 import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
 import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.CounterColumnSliceIterator;
@@ -261,6 +262,14 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				.setRange(startName, endName, reverse, count).execute().get().getColumns();
 	}
 
+	public List<HCounterColumn<N>> findCounterColumnsRange(K key, N startName, N endName,
+			int count, boolean reverse)
+	{
+		return HFactory.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
+				.setColumnFamily(columnFamily).setKey(key)
+				.setRange(startName, endName, reverse, count).execute().get().getColumns();
+	}
+
 	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse,
 			int length)
 	{
@@ -280,6 +289,15 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
 		return new AchillesSliceIterator<K, N, V>(query, startName, endName, reverse, length);
+	}
+
+	public AchillesCounterSliceIterator<K, N> getCounterColumnsIterator(K key, N startName,
+			N endName, boolean reverse, int length)
+	{
+		SliceCounterQuery<K, N> query = createCounterSliceQuery(keyspace, keySerializer,
+				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
+
+		return new AchillesCounterSliceIterator<K, N>(query, startName, endName, reverse, length);
 	}
 
 	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
@@ -373,17 +391,17 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void insertCounter(K key, N name, Long value, Mutator<K> mutator)
 	{
-		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
-		mutator.insertCounter(key, columnFamily,
-				HFactory.createCounterColumn(name, value, columnNameSerializer));
+		Long currentValue = this.getCounterValue(key, name);
+		long delta = value - currentValue;
+		mutator.incrementCounter(key, columnFamily, name, delta);
 	}
 
 	public void insertCounter(K key, N name, Long value)
 	{
 		Mutator<K> mutator = buildMutator();
-		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
-		mutator.insertCounter(key, columnFamily,
-				HFactory.createCounterColumn(name, value, columnNameSerializer));
+		Long currentValue = this.getCounterValue(key, name);
+		long delta = value - currentValue;
+		mutator.incrementCounter(key, columnFamily, name, delta);
 		mutator.execute();
 	}
 

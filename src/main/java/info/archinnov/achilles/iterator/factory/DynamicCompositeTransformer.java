@@ -6,6 +6,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import com.google.common.base.Function;
 
@@ -35,6 +36,20 @@ public class DynamicCompositeTransformer
 		};
 	}
 
+	public <K> Function<HCounterColumn<DynamicComposite>, K> buildCounterKeyTransformer(
+			final PropertyMeta<K, ?> propertyMeta)
+	{
+
+		return new Function<HCounterColumn<DynamicComposite>, K>()
+		{
+			@Override
+			public K apply(HCounterColumn<DynamicComposite> hColumn)
+			{
+				return buildCounterKeyFromDynamicComposite(propertyMeta, hColumn);
+			}
+		};
+	}
+
 	public <K, V> Function<HColumn<DynamicComposite, String>, V> buildValueTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
@@ -49,14 +64,14 @@ public class DynamicCompositeTransformer
 		};
 	}
 
-	public <K> Function<HColumn<DynamicComposite, Long>, Long> buildCounterValueTransformer(
+	public <K> Function<HCounterColumn<DynamicComposite>, Long> buildCounterValueTransformer(
 			final PropertyMeta<K, Long> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Long>, Long>()
+		return new Function<HCounterColumn<DynamicComposite>, Long>()
 		{
 			@Override
-			public Long apply(HColumn<DynamicComposite, Long> hColumn)
+			public Long apply(HCounterColumn<DynamicComposite> hColumn)
 			{
 				return hColumn.getValue();
 			}
@@ -154,14 +169,14 @@ public class DynamicCompositeTransformer
 		return key;
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, Long>, KeyValue<K, Long>> buildCounterKeyValueTransformer(
+	public <K, V> Function<HCounterColumn<DynamicComposite>, KeyValue<K, Long>> buildCounterKeyValueTransformer(
 			final PropertyMeta<K, Long> propertyMeta)
 	{
 
-		return new Function<HColumn<DynamicComposite, Long>, KeyValue<K, Long>>()
+		return new Function<HCounterColumn<DynamicComposite>, KeyValue<K, Long>>()
 		{
 			@Override
-			public KeyValue<K, Long> apply(HColumn<DynamicComposite, Long> hColumn)
+			public KeyValue<K, Long> apply(HCounterColumn<DynamicComposite> hColumn)
 			{
 				return buildCounterKeyValueFromDynamicComposite(propertyMeta, hColumn);
 			}
@@ -169,16 +184,32 @@ public class DynamicCompositeTransformer
 	}
 
 	public <K> KeyValue<K, Long> buildCounterKeyValueFromDynamicComposite(
-			PropertyMeta<K, Long> propertyMeta, HColumn<DynamicComposite, Long> hColumn)
+			PropertyMeta<K, Long> propertyMeta, HCounterColumn<DynamicComposite> hColumn)
 	{
-		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
+		K key = buildCounterKeyFromDynamicComposite(propertyMeta, hColumn);
 		Long value = this.buildCounterValueFromDynamicComposite(propertyMeta, hColumn);
 
 		return new KeyValue<K, Long>(key, value, 0);
 	}
 
+	public <K> K buildCounterKeyFromDynamicComposite(PropertyMeta<K, ?> propertyMeta,
+			HCounterColumn<DynamicComposite> hColumn)
+	{
+		K key;
+		if (propertyMeta.isSingleKey())
+		{
+			key = hColumn.getName().get(2, propertyMeta.getKeySerializer());
+		}
+		else
+		{
+			key = helper.buildMultiKeyForDynamicComposite(propertyMeta, hColumn.getName()
+					.getComponents());
+		}
+		return key;
+	}
+
 	public <K> Long buildCounterValueFromDynamicComposite(PropertyMeta<K, Long> propertyMeta,
-			HColumn<DynamicComposite, Long> hColumn)
+			HCounterColumn<DynamicComposite> hColumn)
 	{
 		return propertyMeta.castValue(hColumn.getValue());
 	}

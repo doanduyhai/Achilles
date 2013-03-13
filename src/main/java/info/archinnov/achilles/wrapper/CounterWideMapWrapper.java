@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.iterator.AchillesSliceIterator;
+import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
@@ -84,8 +84,8 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<K, Long
 		DynamicComposite[] queryComps = dynamicCompositeKeyFactory.createForQuery(propertyMeta,
 				start, end, bounds, ordering);
 
-		List<HColumn<DynamicComposite, Long>> hColumns = counterDao.findRawColumnsRange(keyComp,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HCounterColumn<DynamicComposite>> hColumns = counterDao.findCounterColumnsRange(
+				keyComp, queryComps[0], queryComps[1], count, ordering.isReverse());
 
 		return keyValueFactory.createCounterKeyValueListForDynamicComposite(propertyMeta, hColumns);
 	}
@@ -101,8 +101,8 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<K, Long
 		DynamicComposite[] queryComps = dynamicCompositeKeyFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
-		List<HColumn<DynamicComposite, Long>> hColumns = counterDao.findRawColumnsRange(keyComp,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HCounterColumn<DynamicComposite>> hColumns = counterDao.findCounterColumnsRange(
+				keyComp, queryComps[0], queryComps[1], count, ordering.isReverse());
 
 		return keyValueFactory.createCounterValueListForDynamicComposite(propertyMeta, hColumns);
 	}
@@ -115,8 +115,8 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<K, Long
 		DynamicComposite[] queryComps = dynamicCompositeKeyFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
-		List<HColumn<DynamicComposite, Long>> hColumns = counterDao.findRawColumnsRange(keyComp,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HCounterColumn<DynamicComposite>> hColumns = counterDao.findCounterColumnsRange(
+				keyComp, queryComps[0], queryComps[1], count, ordering.isReverse());
 		return keyValueFactory.createCounterKeyListForDynamicComposite(propertyMeta, hColumns);
 	}
 
@@ -128,9 +128,9 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<K, Long
 		DynamicComposite[] queryComps = dynamicCompositeKeyFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
-		AchillesSliceIterator<Composite, DynamicComposite, Long> columnSliceIterator = counterDao
-				.getColumnsIterator(keyComp, queryComps[0], queryComps[1], ordering.isReverse(),
-						count);
+		AchillesCounterSliceIterator<Composite, DynamicComposite> columnSliceIterator = counterDao
+				.getCounterColumnsIterator(keyComp, queryComps[0], queryComps[1],
+						ordering.isReverse(), count);
 
 		return iteratorFactory.createCounterKeyValueIteratorForDynamicComposite(
 				columnSliceIterator, propertyMeta);

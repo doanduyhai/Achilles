@@ -49,7 +49,8 @@ public class CompositeHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end, WideMap.OrderingMode ordering)
+	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end,
+			WideMap.OrderingMode ordering)
 	{
 
 		if (start != null && end != null)
@@ -114,37 +115,52 @@ public class CompositeHelper
 		}
 	}
 
-	public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
+	public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds,
+			WideMap.OrderingMode ordering)
 	{
 		ComponentEquality[] result = new ComponentEquality[2];
 		if (WideMap.OrderingMode.DESCENDING.equals(ordering))
 		{
-			if(WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds)){
+			if (WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds))
+			{
 				result[0] = GREATER_THAN_EQUAL;
 				result[1] = EQUAL;
-			} else if(WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds))
+			{
 				result[0] = LESS_THAN_EQUAL;
 				result[1] = GREATER_THAN_EQUAL;
-			} else if(WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds))
+			{
 				result[0] = GREATER_THAN_EQUAL;
 				result[1] = GREATER_THAN_EQUAL;
-			} else if(WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds))
+			{
 				result[0] = LESS_THAN_EQUAL;
 				result[1] = EQUAL;
 			}
 		}
 		else
 		{
-			if(WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds)){
+			if (WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds))
+			{
 				result[0] = EQUAL;
 				result[1] = GREATER_THAN_EQUAL;
-			} else if(WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds))
+			{
 				result[0] = GREATER_THAN_EQUAL;
 				result[1] = LESS_THAN_EQUAL;
-			} else if(WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds))
+			{
 				result[0] = EQUAL;
 				result[1] = LESS_THAN_EQUAL;
-			} else if(WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds)) {
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds))
+			{
 				result[0] = GREATER_THAN_EQUAL;
 				result[1] = GREATER_THAN_EQUAL;
 			}

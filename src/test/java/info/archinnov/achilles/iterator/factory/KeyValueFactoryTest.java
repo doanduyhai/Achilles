@@ -23,6 +23,7 @@ import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -653,7 +654,7 @@ public class KeyValueFactoryTest
 	public void should_create_counter_keyvalue_from_dynamic_composite_hcolumn() throws Exception
 	{
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Long> hColumn = HColumnTestBuilder.counter(dynComp, 150L);
+		HCounterColumn<DynamicComposite> hColumn = HColumnTestBuilder.counter(dynComp, 150L);
 
 		KeyValue<Integer, Long> keyValue = new KeyValue<Integer, Long>(12, 150L);
 		when(
@@ -669,10 +670,10 @@ public class KeyValueFactoryTest
 	public void should_create_counter_key_from_dynamic_composite_hcolumn() throws Exception
 	{
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Long> hColumn = HColumnTestBuilder.counter(dynComp, 150L);
+		HCounterColumn<DynamicComposite> hColumn = HColumnTestBuilder.counter(dynComp, 150L);
 
 		Integer key = 123;
-		when(dynamicCompositeTransformer.buildKeyFromDynamicComposite(counterMeta, hColumn))
+		when(dynamicCompositeTransformer.buildCounterKeyFromDynamicComposite(counterMeta, hColumn))
 				.thenReturn(key);
 		Integer built = factory.createCounterKeyForDynamicComposite(counterMeta, hColumn);
 
@@ -684,7 +685,7 @@ public class KeyValueFactoryTest
 	{
 		Long value = 150L;
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Long> hColumn = HColumnTestBuilder.counter(dynComp, value);
+		HCounterColumn<DynamicComposite> hColumn = HColumnTestBuilder.counter(dynComp, value);
 
 		when(
 				dynamicCompositeTransformer.buildCounterValueFromDynamicComposite(counterMeta,
@@ -700,13 +701,13 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 1).buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 2).buildDynamic();
-		HColumn<DynamicComposite, Long> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
-		HColumn<DynamicComposite, Long> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
 
-		Function<HColumn<DynamicComposite, Long>, KeyValue<Integer, Long>> function = new Function<HColumn<DynamicComposite, Long>, KeyValue<Integer, Long>>()
+		Function<HCounterColumn<DynamicComposite>, KeyValue<Integer, Long>> function = new Function<HCounterColumn<DynamicComposite>, KeyValue<Integer, Long>>()
 		{
 			@Override
-			public KeyValue<Integer, Long> apply(HColumn<DynamicComposite, Long> hCol)
+			public KeyValue<Integer, Long> apply(HCounterColumn<DynamicComposite> hCol)
 			{
 				Integer key = (Integer) hCol.getName().getComponent(2)
 						.getValue(SerializerUtils.INT_SRZ);
@@ -740,13 +741,13 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, Long> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
-		HColumn<DynamicComposite, Long> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
 
-		Function<HColumn<DynamicComposite, Long>, Long> function = new Function<HColumn<DynamicComposite, Long>, Long>()
+		Function<HCounterColumn<DynamicComposite>, Long> function = new Function<HCounterColumn<DynamicComposite>, Long>()
 		{
 			@Override
-			public Long apply(HColumn<DynamicComposite, Long> hCol)
+			public Long apply(HCounterColumn<DynamicComposite> hCol)
 			{
 				return hCol.getValue();
 			}
@@ -771,20 +772,20 @@ public class KeyValueFactoryTest
 	{
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 1).buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 2).buildDynamic();
-		HColumn<DynamicComposite, Long> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
-		HColumn<DynamicComposite, Long> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
 
-		Function<HColumn<DynamicComposite, Long>, Integer> function = new Function<HColumn<DynamicComposite, Long>, Integer>()
+		Function<HCounterColumn<DynamicComposite>, Integer> function = new Function<HCounterColumn<DynamicComposite>, Integer>()
 		{
 			@Override
-			public Integer apply(HColumn<DynamicComposite, Long> hCol)
+			public Integer apply(HCounterColumn<DynamicComposite> hCol)
 			{
 				return (Integer) hCol.getName().getComponent(2).getValue(INT_SRZ);
 			}
 		};
 
-		when((Function) dynamicCompositeTransformer.buildKeyTransformer(counterMeta)).thenReturn(
-				function);
+		when((Function) dynamicCompositeTransformer.buildCounterKeyTransformer(counterMeta))
+				.thenReturn(function);
 
 		List<Integer> builtList = factory.createCounterKeyListForDynamicComposite(counterMeta,
 				Arrays.asList(hCol1, hCol2));
@@ -796,4 +797,6 @@ public class KeyValueFactoryTest
 	{
 		return objectMapper.readValue(value, Long.class);
 	}
+
+	// TODO Add missing tests
 }
