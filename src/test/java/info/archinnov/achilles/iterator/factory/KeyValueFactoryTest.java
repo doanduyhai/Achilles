@@ -793,10 +793,27 @@ public class KeyValueFactoryTest
 		assertThat(builtList).containsExactly(1, 2);
 	}
 
+	@Test
+	public void should_create_ttl_for_composite() throws Exception
+	{
+		Composite name = new Composite();
+		HColumn<Composite, String> hCol = HColumnTestBuilder.simple(name, "test", 1212);
+
+		assertThat(factory.createTtlForComposite(hCol)).isEqualTo(1212);
+	}
+
+	@Test
+	public void should_create_counter_ttl_for_dynamic_composite() throws Exception
+	{
+		DynamicComposite name = new DynamicComposite();
+		HColumn<DynamicComposite, String> hCol = HColumnTestBuilder.dynamic(name, "test", 12);
+
+		assertThat(factory.createTtlForDynamicComposite(hCol)).isEqualTo(12);
+	}
+
 	private Long readLong(String value) throws Exception
 	{
 		return objectMapper.readValue(value, Long.class);
 	}
 
-	// TODO Add missing tests
 }

@@ -631,7 +631,7 @@ public class EntityPersisterTest
 	}
 
 	@Test
-	public void should_remove_entity_and_counter() throws Exception
+	public void should_remove_entity_and_simple_counter() throws Exception
 	{
 		Long idValue = 7856L;
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
@@ -656,6 +656,30 @@ public class EntityPersisterTest
 		persister.removeById(idValue, entityMeta);
 
 		verify(counterDao).removeCounter(keyComp, comp);
+	}
+
+	@Test
+	public void should_remove_entity_and_widemap_counter() throws Exception
+	{
+		Long idValue = 7856L;
+		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		entityMeta.setEntityDao(entityDao);
+		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		PropertyMeta<Integer, Long> propertyMeta = new PropertyMeta<Integer, Long>();
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+		CounterProperties counterProperties = new CounterProperties("fqcn", counterDao, idMeta);
+		propertyMeta.setCounterProperties(counterProperties);
+		propertyMeta.setType(PropertyType.EXTERNAL_WIDE_MAP_COUNTER);
+
+		propertyMetas.put("counter", propertyMeta);
+		entityMeta.setPropertyMetas(propertyMetas);
+
+		Composite keyComp = new Composite();
+		when(compositeKeyFactory.createKeyForCounter("fqcn", idValue, idMeta)).thenReturn(keyComp);
+
+		persister.removeById(idValue, entityMeta);
+
+		verify(counterDao).removeCounterRow(keyComp);
 	}
 
 	@Test

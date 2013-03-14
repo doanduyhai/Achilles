@@ -1,11 +1,17 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 
@@ -48,10 +54,14 @@ public class DynamicCompositeTransformerTest
 	@Mock
 	private PropertyHelper helper;
 
+	@Mock
+	private EntityHelper entityHelper;
+
 	@Before
 	public void setUp()
 	{
 		Whitebox.setInternalState(transformer, "helper", helper);
+		Whitebox.setInternalState(transformer, "entityHelper", entityHelper);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,6 +126,30 @@ public class DynamicCompositeTransformerTest
 		assertThat(values).containsExactly("test1", "test2");
 	}
 
+	@Test
+	public void should_build_join_value_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().buildDynamic();
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "test1");
+
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+				.valueClass(String.class).type(JOIN_SIMPLE).build();
+
+		PropertyMeta<Void, String> joinIdMeta = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(SIMPLE).build();
+
+		EntityMeta<String> entityMeta = new EntityMeta<String>();
+		entityMeta.setIdMeta(joinIdMeta);
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(entityMeta);
+
+		propertyMeta.setJoinProperties(joinProperties);
+
+		when(entityHelper.buildProxy("test1", entityMeta)).thenReturn("test1");
+		assertThat(transformer.buildValueFromDynamicComposite(propertyMeta, hCol1)).isEqualTo(
+				"test1");
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_raw_value_transformer() throws Exception
@@ -127,6 +161,34 @@ public class DynamicCompositeTransformerTest
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
 				.noClass(Void.class, String.class).type(SIMPLE).build();
+
+		List<Object> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildRawValueTransformer(propertyMeta));
+
+		assertThat(rawValues).containsExactly("test1", "test2");
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_raw_join_value_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().buildDynamic();
+		DynamicComposite comp2 = CompositeTestBuilder.builder().buildDynamic();
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "test1");
+		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(comp2, "test2");
+
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(JOIN_SIMPLE).build();
+
+		PropertyMeta<Void, String> joinIdMeta = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(SIMPLE).build();
+
+		EntityMeta<String> entityMeta = new EntityMeta<String>();
+		entityMeta.setIdMeta(joinIdMeta);
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(entityMeta);
+
+		propertyMeta.setJoinProperties(joinProperties);
 
 		List<Object> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildRawValueTransformer(propertyMeta));
@@ -201,6 +263,69 @@ public class DynamicCompositeTransformerTest
 		assertThat(keyValues.get(1).getTtl()).isEqualTo(0);
 	}
 
-	// TODO Add missing tests
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_counter_key_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 1).buildDynamic();
+		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 2).buildDynamic();
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
 
+		PropertyMeta<Integer, Long> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, Long.class).type(COUNTER).build();
+
+		List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildCounterKeyTransformer(propertyMeta));
+
+		assertThat(keys).hasSize(2);
+		assertThat(keys.get(0)).isEqualTo(1);
+		assertThat(keys.get(1)).isEqualTo(2);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_counter_multi_key_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 1).buildDynamic();
+		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 2).buildDynamic();
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
+
+		PropertyMeta<TweetMultiKey, Long> propertyMeta = PropertyMetaTestBuilder
+				.noClass(TweetMultiKey.class, Long.class).type(COUNTER).build();
+
+		TweetMultiKey multiKey1 = new TweetMultiKey();
+		TweetMultiKey multiKey2 = new TweetMultiKey();
+
+		when(helper.buildMultiKeyForDynamicComposite(eq(propertyMeta), any(List.class)))
+				.thenReturn(multiKey1, multiKey2);
+
+		List<TweetMultiKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildCounterKeyTransformer(propertyMeta));
+
+		assertThat(keys).hasSize(2);
+		assertThat(keys).contains(multiKey1, multiKey2);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_build_counter_value_transformer() throws Exception
+	{
+		DynamicComposite comp1 = CompositeTestBuilder.builder().values(1, 2, 1).buildDynamic();
+		DynamicComposite comp2 = CompositeTestBuilder.builder().values(1, 3, 2).buildDynamic();
+		HCounterColumn<DynamicComposite> hCol1 = HColumnTestBuilder.counter(comp1, 11L);
+		HCounterColumn<DynamicComposite> hCol2 = HColumnTestBuilder.counter(comp2, 12L);
+
+		PropertyMeta<Integer, Long> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, Long.class).type(COUNTER).build();
+
+		List<Long> values = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildCounterValueTransformer(propertyMeta));
+
+		assertThat(values).hasSize(2);
+		assertThat(values.get(0)).isEqualTo(11L);
+		assertThat(values.get(1)).isEqualTo(12L);
+	}
 }

@@ -48,5 +48,4 @@ public class HColumnTestBuilder
 	{
 		return HFactory.createCounterColumn(name, value, DYNA_COMP_SRZ);
 	}
-
 }

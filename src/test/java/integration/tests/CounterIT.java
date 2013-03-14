@@ -329,6 +329,48 @@ public class CounterIT
 		popularTopics.remove("cassandra", null, BoundingMode.INCLUSIVE_BOUNDS);
 	}
 
+	@Test
+	public void should_remove_counter_widemap_when_entity_remove() throws Exception
+	{
+		long javaCount = 4564, cassandraCount = 873, scalaCount = 321, groovyCount = 54364, //
+		hibernateCount = 545365464, springCount = 845143654;
+
+		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
+		bean = em.merge(bean);
+
+		WideMap<String, Long> popularTopics = bean.getPopularTopics();
+
+		popularTopics.insert("cassandra", cassandraCount);
+		popularTopics.insert("groovy", groovyCount);
+		popularTopics.insert("hibernate", hibernateCount);
+		popularTopics.insert("java", javaCount);
+		popularTopics.insert("scala", scalaCount);
+		popularTopics.insert("spring", springCount);
+
+		em.remove(bean);
+
+		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
+		DynamicComposite comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics",
+				"cassandra");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "groovy");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "hibernate");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "java");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "scala");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "spring");
+		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+
+	}
+
 	private Tweet createTweet()
 	{
 		Tweet tweet = new Tweet();

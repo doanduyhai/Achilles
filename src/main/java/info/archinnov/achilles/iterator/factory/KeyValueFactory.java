@@ -54,11 +54,6 @@ public class KeyValueFactory
 		return hColumn.getTtl();
 	}
 
-	public Integer createCounterTtlForDynamicComposite(HCounterColumn<DynamicComposite> hColumn)
-	{
-		return hColumn.getTtl();
-	}
-
 	public <K, V> List<V> createValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<DynamicComposite, String>> hColumns)
 	{

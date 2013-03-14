@@ -108,7 +108,8 @@ public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implem
 	@Override
 	public void remove()
 	{
-		iterator.remove();
+		throw new UnsupportedOperationException(
+				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
 	}
 
 	public interface ColumnSliceFinish<N>

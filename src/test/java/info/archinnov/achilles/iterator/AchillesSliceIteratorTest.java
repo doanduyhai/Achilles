@@ -6,9 +6,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.iterator.AchillesSliceIterator;
 
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * AchillesSliceIteratorTest
@@ -58,7 +55,7 @@ public class AchillesSliceIteratorTest
 	@Mock
 	private Iterator<HColumn<DynamicComposite, String>> columnsIterator;
 
-	AchillesSliceIterator<Long, DynamicComposite, String> iterator;
+	private AchillesSliceIterator<Long, DynamicComposite, String> iterator;
 
 	@SuppressWarnings(
 	{

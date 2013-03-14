@@ -6,11 +6,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
-import info.archinnov.achilles.iterator.CounterColumnSliceIterator;
-import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,7 +16,6 @@ import me.prettyprint.cassandra.service.KeyIterator;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite;
-import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.beans.Rows;
@@ -83,28 +79,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		this.keyspace = keyspace;
 	}
 
-	public void insertName(K key, N name)
-	{
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		this.insertNameBatch(key, name, mutator);
-		mutator.execute();
-	}
-
-	public void insertNameBatch(K key, N name, Mutator<K> mutator)
-	{
-		mutator.addInsertion(key, columnFamily,
-				HFactory.createColumn(name, null, columnNameSerializer, SerializerUtils.OBJECT_SRZ));
-	}
-
-	public void insertColumnBatch(K key, N name, V value, int ttl, Mutator<K> mutator)
-	{
-		mutator.addInsertion(
-				key,
-				columnFamily,
-				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
-						ttl));
-	}
-
 	public void insertColumnBatch(K key, N name, V value, Mutator<K> mutator)
 	{
 		mutator.addInsertion(key, columnFamily,
@@ -151,24 +125,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
 						ttl));
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<HColumn<N, V>> getColumns(K key, List<N> names)
-	{
-		N[] columnsName = (N[]) names.toArray();
-		List<HColumn<N, V>> columns = new ArrayList<HColumn<N, V>>();
-		ColumnSlice<N, V> slices = HFactory
-				.createSliceQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
-				.setColumnFamily(columnFamily).setKey(key).setColumnNames(columnsName).execute()
-				.get();
-
-		if (slices.getColumns() != null && slices.getColumns().size() > 0)
-		{
-			columns = slices.getColumns();
-		}
-
-		return columns;
 	}
 
 	public void removeColumn(K key, N name)
@@ -230,20 +186,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		return Lists.transform(columns, hColumnToValue);
 	}
 
-	public List<N> findNamesRange(K key, N startName, boolean reverse, int count)
-	{
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
-				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(startName, null, reverse, count).execute().get().getColumns();
-
-		return Lists.transform(columns, hColumnToName);
-	}
-
-	public List<Pair<N, V>> findColumnsRange(K key, N startName, boolean reverse, int count)
-	{
-		return this.findColumnsRange(key, startName, (N) null, reverse, count);
-	}
-
 	public List<Pair<N, V>> findColumnsRange(K key, N startName, N endName, boolean reverse,
 			int count)
 	{
@@ -270,18 +212,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				.setRange(startName, endName, reverse, count).execute().get().getColumns();
 	}
 
-	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, boolean reverse,
-			int length)
-	{
-		return getColumnsIterator(key, startName, null, reverse, length);
-	}
-
-	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
-			boolean reverse)
-	{
-		return getColumnsIterator(key, startName, null, reverse, DEFAULT_LENGTH);
-	}
-
 	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
 			boolean reverse, int length)
 	{
@@ -301,18 +231,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	}
 
 	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
-			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, boolean reverse, int length)
-	{
-		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, length);
-	}
-
-	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
-			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reverse)
-	{
-		return getJoinColumnsIterator(propertyMeta, key, startName, null, reverse, DEFAULT_LENGTH);
-	}
-
-	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
 			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reversed,
 			int count)
 	{
@@ -321,36 +239,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 		return new AchillesJoinSliceIterator<K, N, V, KEY, VALUE>(propertyMeta, query, startName,
 				endName, reversed, count);
-	}
-
-	public CounterColumnSliceIterator<K, N> getCounterColumnsIterator(K key, N startName,
-			boolean reverse, int length)
-	{
-		SliceCounterQuery<K, N> query = createCounterSliceQuery(keyspace, keySerializer,
-				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
-
-		return new CounterColumnSliceIterator<K, N>(query, startName, (N) null, reverse, length);
-	}
-
-	public <KEY, NAME extends AbstractComposite, VALUE> AchillesSliceIterator<KEY, NAME, VALUE> getSpecificColumnsIterator(
-			Serializer<KEY> keySz, Serializer<NAME> nameSz, Serializer<VALUE> valueSz, String CF,
-			KEY key, NAME startName, boolean reverse, int length)
-	{
-		SliceQuery<KEY, NAME, VALUE> query = createSliceQuery(keyspace, keySz, nameSz, valueSz)
-				.setColumnFamily(CF).setKey(key);
-
-		return new AchillesSliceIterator<KEY, NAME, VALUE>(query, startName, (NAME) null, reverse,
-				length);
-	}
-
-	public List<HCounterColumn<N>> findCounterColumnsRange(K key, N startName, boolean reverse,
-			int size)
-	{
-		SliceCounterQuery<K, N> counterQuery = createCounterSliceQuery(keyspace, keySerializer,
-				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
-
-		return counterQuery.setRange(startName, (N) null, reverse, size).execute().get()
-				.getColumns();
 	}
 
 	public Rows<K, N, V> multiGetSliceRange(List<K> keys, N startName, N endName, boolean reverse,
@@ -374,21 +262,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		mutator.addDeletion(key, columnFamily);
 	}
 
-	public void incrementCounter(K key, N name, Long value)
-	{
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.incrementCounter(key, columnFamily, name, value);
-		mutator.execute();
-	}
-
-	public void decrementCounter(K key, N name, Long value)
-	{
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		mutator.decrementCounter(key, columnFamily, name, value);
-		mutator.execute();
-
-	}
-
 	public void insertCounter(K key, N name, Long value, Mutator<K> mutator)
 	{
 		Long currentValue = this.getCounterValue(key, name);
@@ -408,7 +281,26 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void removeCounter(K key, N name)
 	{
 		Mutator<K> mutator = buildMutator();
-		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
+		Long currentValue = this.getCounterValue(key, name);
+		mutator.decrementCounter(key, columnFamily, name, currentValue);
+		mutator.execute();
+	}
+
+	public void removeCounterRow(K key)
+	{
+		SliceCounterQuery<K, N> query = HFactory
+				.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
+				.setColumnFamily(columnFamily).setKey(key);
+
+		AchillesCounterSliceIterator<K, N> iterator = new AchillesCounterSliceIterator<K, N>(query,
+				(N) null, (N) null, false, DEFAULT_LENGTH);
+
+		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
+		while (iterator.hasNext())
+		{
+			HCounterColumn<N> counterCol = iterator.next();
+			mutator.decrementCounter(key, columnFamily, counterCol.getName(), counterCol.getValue());
+		}
 		mutator.execute();
 	}
 

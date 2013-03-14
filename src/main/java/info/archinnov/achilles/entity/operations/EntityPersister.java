@@ -411,7 +411,11 @@ public class EntityPersister
 
 			if (propertyMeta.isCounter())
 			{
-				if (!propertyMeta.isWideMap())
+				if (propertyMeta.isWideMap())
+				{
+					this.removeCounterWideMap(id, (PropertyMeta<Void, Long>) propertyMeta);
+				}
+				else
 				{
 					this.removeSimpleCounter(id, (PropertyMeta<Void, Long>) propertyMeta);
 				}
@@ -428,6 +432,14 @@ public class EntityPersister
 				.createForBatchInsertSingleValue(propertyMeta);
 
 		propertyMeta.counterDao().removeCounter(keyComp, com);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <ID> void removeCounterWideMap(ID key, PropertyMeta<Void, Long> propertyMeta)
+	{
+		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(), key,
+				(PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
+		propertyMeta.counterDao().removeCounterRow(keyComp);
 	}
 
 	public <ID, V> void removeProperty(ID key, GenericDynamicCompositeDao<ID> dao,

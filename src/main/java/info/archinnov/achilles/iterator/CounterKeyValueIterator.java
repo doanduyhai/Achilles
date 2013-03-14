@@ -89,24 +89,14 @@ public class CounterKeyValueIterator<K> implements KeyValueIterator<K, Long>
 	@Override
 	public Integer nextTtl()
 	{
-		Integer ttl = null;
-		if (this.achillesSliceIterator.hasNext())
-		{
-			HCounterColumn<DynamicComposite> column = this.achillesSliceIterator.next();
-			ttl = factory.createCounterTtlForDynamicComposite(column);
-		}
-		else
-		{
-			throw new NoSuchElementException();
-		}
-		return ttl;
+		throw new UnsupportedOperationException("Ttl does not exist for counter type");
 	}
 
 	@Override
 	public void remove()
 	{
 		throw new UnsupportedOperationException(
-				"Remove from iterator is not supported. Please use removeValue() or removeValues() instead");
+				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
 	}
 
 }
