@@ -1,5 +1,9 @@
 package info.archinnov.achilles.common;
 
+import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.CLUSTER_PARAM;
+import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
@@ -9,6 +13,7 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
@@ -24,6 +29,8 @@ import org.cassandraunit.dataset.json.ClassPathJsonDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * CassandraDaoTest
@@ -92,8 +99,12 @@ public abstract class CassandraDaoTest
 					+ CASSANDRA_TEST_PORT);
 			keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
 		}
-		ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(getCluster(),
-				getKeyspace(), ENTITY_PACKAGE, true);
+
+		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, ENTITY_PACKAGE,
+				CLUSTER_PARAM, getCluster(), KEYSPACE_PARAM, getKeyspace(),
+				FORCE_CF_CREATION_PARAM, true);
+
+		ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(configMap);
 		em = (ThriftEntityManager) factory.createEntityManager();
 	}
 

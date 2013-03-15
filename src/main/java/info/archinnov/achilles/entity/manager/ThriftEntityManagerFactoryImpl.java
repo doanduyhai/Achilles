@@ -1,7 +1,5 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.validation.Validator.validateNotEmpty;
-import static info.archinnov.achilles.validation.Validator.validateNotNull;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -9,20 +7,20 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.exception.BeanMappingException;
-import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.validation.Validator;
+
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.persistence.EntityManager;
-import me.prettyprint.cassandra.service.CassandraHostConfigurator;
+
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.factory.HFactory;
+
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,587 +30,209 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory {
+public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory
+{
 
-    private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactoryImpl.class);
 
-    private List<String> entityPackages;
-    private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-    private EntityParser entityParser;
-    private EntityExplorer entityExplorer = new EntityExplorer();
-    boolean forceColumnFamilyCreation = false;
-    private Cluster cluster;
-    private Keyspace keyspace;
-    private ColumnFamilyCreator columnFamilyCreator;
-    private ObjectMapperFactory objectMapperFactory = new DefaultObjectMapperFactory();
-    private CounterDao counterDao;
+	private List<String> entityPackages;
+	private Cluster cluster;
+	private Keyspace keyspace;
+	private ColumnFamilyCreator columnFamilyCreator;
+	private ObjectMapperFactory objectMapperFactory;
 
-    public static final ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>> joinPropertyMetaToBeFilledTL = new ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>>();
-    public static final ThreadLocal<CounterDao> counterDaoTL = new ThreadLocal<CounterDao>();
+	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	private EntityParser entityParser;
+	private EntityExplorer entityExplorer = new EntityExplorer();
+	boolean forceColumnFamilyCreation = false;
+	private CounterDao counterDao;
 
-    protected ThriftEntityManagerFactoryImpl() {
-        this.counterDao = null;
-    }
+	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages) {
-        this(cluster, keyspace, entityPackages, false);
-    }
+	public static final ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>> joinPropertyMetaToBeFilledTL = new ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>>();
+	public static final ThreadLocal<CounterDao> counterDaoTL = new ThreadLocal<CounterDao>();
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false);
-    }
+	protected ThriftEntityManagerFactoryImpl() {
+		this.counterDao = null;
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages,
-            ObjectMapperFactory factory) {
-        this(cluster, keyspace, entityPackages, false, factory);
-    }
+	/**
+	 * Create a new ThriftEntityManagerFactoryImpl with a configuration map
+	 * 
+	 * @param configurationMap
+	 * 
+	 *            The configurationMap accepts the following properties:
+	 * 
+	 *            - achilles.entity.packages (MANDATORY): list of java packages for entity scanning, separated by comma. Example: my.project.entity,another.project.entity
+	 * 
+	 *            ------------------------------------------------------------------------------------------
+	 * 
+	 *            - achilles.cassandra.host: hostname/port of the Cassandra cluster Example: localhost:9160
+	 * 
+	 *            - achilles.cassandra.cluster.name: Cassandra cluster name
+	 * 
+	 *            - achilles.cassandra.keyspace.name: Cassandra keyspace name
+	 * 
+	 *            ------------------------------------------------------------------------------------------
+	 * 
+	 *            - achilles.cassandra.cluster: instance of pre-configured me.prettyprint.hector.api.Cluster object from Hector API
+	 * 
+	 *            - achilles.cassandra.keyspace: instance of pre-configured me.prettyprint.hector.api.Keyspace object from Hector API
+	 * 
+	 *            ------------------------------------------------------------------------------------------
+	 * 
+	 *            Either 'achilles.cassandra.cluster' or 'achilles.cassandra.host'/'achilles.cassandra.cluster.name' parameters should be provided
+	 * 
+	 *            Either 'achilles.cassandra.keyspace' or 'achilles.cassandra.keyspace.name' parameters should be provided
+	 * 
+	 *            ------------------------------------------------------------------------------------------
+	 * 
+	 *            - achilles.ddl.force.column.family.creation (OPTIONAL): create missing column families for entities if they are not found. Default = 'false'.
+	 * 
+	 *            If 'achilles.ddl.force.column.family.creation' = false and no column family is found for any entity, Achilles will raise an InvalidColumnFamilyException
+	 * 
+	 *            ------------------------------------------------------------------------------------------
+	 * 
+	 *            - achilles.json.object.mapper.factory (OPTIONAL): an implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface to build custom Jackson ObjectMapper based on
+	 *            entity class
+	 * 
+	 *            - achilles.json.object.mapper (OPTIONAL): default Jackson ObjectMapper to use for serializing entities
+	 * 
+	 *            If both 'achilles.json.object.mapper.factory' and 'achilles.json.object.mapper' parameters are provided, Achilles will ignore the 'achilles.json.object.mapper' value and use the
+	 *            'achilles.json.object.mapper.factory'
+	 * 
+	 *            If none is provided, Achilles will use a default Jackson ObjectMapper with the following configuration:
+	 * 
+	 *            1. SerializationInclusion = Inclusion.NON_NULL
+	 * 
+	 *            2. DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES = false
+	 * 
+	 *            3. AnnotationIntrospector pair : primary = JacksonAnnotationIntrospector, secondary = JaxbAnnotationIntrospector
+	 * 
+	 */
+	public ThriftEntityManagerFactoryImpl(Map<String, Object> configurationMap) {
+		Validator.validateNotNull(configurationMap,
+				"Configuration map for Achilles ThrifEntityManagerFactory should not be null");
+		Validator.validateNotEmpty(configurationMap,
+				"Configuration map for Achilles ThrifEntityManagerFactory should not be empty");
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages, ObjectMapperFactory factory) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false, factory);
-    }
+		this.entityPackages = argumentExtractor.initEntityPackages(configurationMap);
+		this.cluster = argumentExtractor.initCluster(configurationMap);
+		this.keyspace = argumentExtractor.initKeyspace(this.cluster, configurationMap);
+		this.forceColumnFamilyCreation = argumentExtractor.initForceCFCreation(configurationMap);
+		this.objectMapperFactory = argumentExtractor.initObjectMapperFactory(configurationMap);
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages,
-            ObjectMapper mapper) {
-        this(cluster, keyspace, entityPackages, false, factoryFromMapper(mapper));
-    }
+		log.info(
+				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
+				cluster.getName(), keyspace.getKeyspaceName());
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages, ObjectMapper mapper) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false, factoryFromMapper(mapper));
-    }
+		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
+		this.entityParser = new EntityParser(this.objectMapperFactory);
+		this.counterDao = new CounterDao(keyspace);
+		this.bootstrap();
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages,
-            boolean forceCFCreation) {
-        this(cluster, keyspace, Arrays.asList(StringUtils.split(entityPackages, ",")), forceCFCreation, null);
-    }
+	protected void bootstrap()
+	{
+		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
+		boolean hasCounter;
+		try
+		{
+			hasCounter = this.discoverEntities();
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages, boolean forceCFCreation) {
-        this(cassandraHost, clusterName, keyspaceName, Arrays.asList(StringUtils.split(entityPackages, ",")),
-                forceCFCreation, null);
-    }
+		this.columnFamilyCreator.validateOrCreateColumnFamilies(this.entityMetaMap,
+				this.forceColumnFamilyCreation, hasCounter);
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages,
-            boolean forceCFCreation, ObjectMapperFactory factory) {
-        this(cluster, keyspace, Arrays.asList(StringUtils.split(entityPackages, ",")), forceCFCreation, factory);
-    }
+	protected boolean discoverEntities() throws ClassNotFoundException, IOException
+	{
+		log.info("Start discovery of entities searching in packages '{}'",
+				StringUtils.join(entityPackages, ","));
+		joinPropertyMetaToBeFilledTL.set(new HashMap<PropertyMeta<?, ?>, Class<?>>());
+		counterDaoTL.set(counterDao);
+		boolean hasCounter = false;
+		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
+		if (!classes.isEmpty())
+		{
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages, boolean forceCFCreation, ObjectMapperFactory factory) {
-        this(cassandraHost, clusterName, keyspaceName, Arrays.asList(StringUtils.split(entityPackages, ",")),
-                forceCFCreation, factory);
-    }
+			for (Class<?> clazz : classes)
+			{
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, String entityPackages,
-            boolean forceCFCreation, ObjectMapper mapper) {
-        this(cluster, keyspace, Arrays.asList(StringUtils.split(entityPackages, ",")), forceCFCreation,
-                factoryFromMapper(mapper));
-    }
+				EntityMeta<?> entityMeta = entityParser.parseEntity(this.keyspace, clazz);
+				entityMetaMap.put(clazz, entityMeta);
+				if (entityMeta.hasCounter())
+				{
+					hasCounter = true;
+				}
+			}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            String entityPackages, boolean forceCFCreation, ObjectMapper mapper) {
-        this(cassandraHost, clusterName, keyspaceName, Arrays.asList(StringUtils.split(entityPackages, ",")),
-                forceCFCreation, factoryFromMapper(mapper));
-    }
+			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilledTL
+					.get();
+			if (!joinPropertyMetaToBeFilled.isEmpty())
+			{
+				entityParser
+						.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+			}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages) {
-        this(cluster, keyspace, entityPackages, false, null);
-    }
+			joinPropertyMetaToBeFilledTL.remove();
+			counterDaoTL.remove();
+		}
+		else
+		{
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            List<String> entityPackages) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false, null);
-    }
+			throw new BeanMappingException(
+					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
+							+ StringUtils.join(entityPackages, ","));
+		}
+		return hasCounter;
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages,
-            ObjectMapperFactory factory) {
-        this(cluster, keyspace, entityPackages, false, factory);
-    }
+	/**
+	 * Create a new ThriftEntityManager
+	 * 
+	 * @return ThriftEntityManager
+	 */
+	@Override
+	public EntityManager createEntityManager()
+	{
+		return new ThriftEntityManager(entityMetaMap);
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            List<String> entityPackages, ObjectMapperFactory factory) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false, factory);
-    }
+	/**
+	 * Create a new ThriftEntityManager
+	 * 
+	 * @return ThriftEntityManager
+	 */
+	@Override
+	public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map)
+	{
+		return new ThriftEntityManager(entityMetaMap);
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages,
-            ObjectMapper mapper) {
-        this(cluster, keyspace, entityPackages, false, factoryFromMapper(mapper));
-    }
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
+	@Override
+	public void close()
+	{
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
+	}
 
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param mapper
-     *            A Jackson ObjectMapper for JSON serialization of all entities
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            List<String> entityPackages, ObjectMapper mapper) {
-        this(cassandraHost, clusterName, keyspaceName, entityPackages, false, factoryFromMapper(mapper));
-    }
-
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cluster
-     *            A me.prettyprint.hector.api.Cluster object from Hector API
-     * @param keyspace
-     *            A me.prettyprint.hector.api.Keyspace object from Hector API
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(Cluster cluster, Keyspace keyspace, List<String> entityPackages,
-            boolean forceCFCreation, ObjectMapperFactory factory) {
-        log.info("Initializing Achilles Thrift-based EntityManagerFactory for cluster '{}' and keyspace '{}' ",
-                cluster.getName(), keyspace.getKeyspaceName());
-
-        validateNotNull(cluster, "Cluster should not be null");
-        validateNotNull(keyspace, "Keyspace should not be null");
-        validateNotEmpty(entityPackages, "EntityPackages should not be empty");
-        this.cluster = cluster;
-        this.keyspace = keyspace;
-        this.entityPackages = entityPackages;
-        this.forceColumnFamilyCreation = forceCFCreation;
-        this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
-        this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
-        this.entityParser = new EntityParser(this.objectMapperFactory);
-        this.counterDao = new CounterDao(keyspace);
-        this.bootstrap();
-    }
-
-    /**
-     * Create a new ThriftEntityManagerFactoryImpl
-     * 
-     * @param cassandraHost
-     *            Hostname and port to connect to a Cassandra cluster.
-     * 
-     *            Example: localhost:9160
-     * @param clusterName
-     *            The cluster name to connect to
-     * @param keyspaceName
-     *            The keyspace to use
-     * @param entityPackages
-     *            List of packages separated by comma
-     * @param forceCFCreation
-     *            If true, Achilles will create the missing column family.
-     * 
-     *            In any case, Achilles check for the existence and validates existing column family for each entity
-     * @param factory
-     *            An implementation of the info.archinnov.achilles.json.ObjectMapperFactory interface.
-     * 
-     *            This factory returns a Jackson ObjectMapper based on entity type
-     * @return ThriftEntityManagerFactoryImpl
-     */
-    public ThriftEntityManagerFactoryImpl(String cassandraHost, String clusterName, String keyspaceName,
-            List<String> entityPackages, boolean forceCFCreation, ObjectMapperFactory factory) {
-        log.info(
-                "Initializing Achilles Thrift-based EntityManagerFactory for cassandra host {}, cluster '{}' and keyspace '{}' ",
-                cassandraHost, clusterName, keyspaceName);
-
-        validateNotNull(cassandraHost, "cassandraHost should not be null");
-        validateNotNull(clusterName, "clusterName should not be null");
-        validateNotNull(keyspaceName, "keyspaceName should not be null");
-        validateNotEmpty(entityPackages, "EntityPackages should not be empty");
-
-        this.cluster = HFactory.getOrCreateCluster(clusterName, new CassandraHostConfigurator(cassandraHost));
-        this.keyspace = HFactory.createKeyspace(keyspaceName, cluster);
-        this.entityPackages = entityPackages;
-        this.forceColumnFamilyCreation = forceCFCreation;
-        this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
-        this.objectMapperFactory = factory != null ? factory : objectMapperFactory;
-        this.entityParser = new EntityParser(this.objectMapperFactory);
-        this.counterDao = new CounterDao(keyspace);
-        this.bootstrap();
-    }
-
-    protected void bootstrap() {
-        log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
-        boolean hasCounter;
-        try {
-            hasCounter = this.discoverEntities();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        this.columnFamilyCreator.validateOrCreateColumnFamilies(this.entityMetaMap, this.forceColumnFamilyCreation,
-                hasCounter);
-    }
-
-    protected boolean discoverEntities() throws ClassNotFoundException, IOException {
-        log.info("Start discovery of entities searching in packages '{}'", StringUtils.join(entityPackages, ","));
-        joinPropertyMetaToBeFilledTL.set(new HashMap<PropertyMeta<?, ?>, Class<?>>());
-        counterDaoTL.set(counterDao);
-        boolean hasCounter = false;
-        List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
-        if (!classes.isEmpty()) {
-
-            for (Class<?> clazz : classes) {
-
-                EntityMeta<?> entityMeta = entityParser.parseEntity(this.keyspace, clazz);
-                entityMetaMap.put(clazz, entityMeta);
-                if (entityMeta.hasCounter()) {
-                    hasCounter = true;
-                }
-            }
-
-            Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilledTL.get();
-            if (!joinPropertyMetaToBeFilled.isEmpty()) {
-                entityParser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
-            }
-
-            joinPropertyMetaToBeFilledTL.remove();
-            counterDaoTL.remove();
-        } else {
-
-            throw new BeanMappingException(
-                    "No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
-                            + StringUtils.join(entityPackages, ","));
-        }
-        return hasCounter;
-    }
-
-    /**
-     * Create a new ThriftEntityManager
-     * 
-     * @return ThriftEntityManager
-     */
-    @Override
-    public EntityManager createEntityManager() {
-        return new ThriftEntityManager(entityMetaMap);
-    }
-
-    /**
-     * Create a new ThriftEntityManager
-     * 
-     * @return ThriftEntityManager
-     */
-    @Override
-    public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map) {
-        return new ThriftEntityManager(entityMetaMap);
-    }
-
-    /**
-     * Not supported operation. Will throw UnsupportedOperationException
-     */
-    @Override
-    public void close() {
-        throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-    }
-
-    /**
-     * Not supported operation. Will throw UnsupportedOperationException
-     */
-    @Override
-    public boolean isOpen() {
-        throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-    }
-
-    protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper) {
-        return new ObjectMapperFactory() {
-            @Override
-            public <T> ObjectMapper getMapper(Class<T> type) {
-                return mapper;
-            }
-        };
-    }
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
+	@Override
+	public boolean isOpen()
+	{
+		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
+	}
 }
