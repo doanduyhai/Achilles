@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -50,6 +51,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
 
 	public static final ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>> joinPropertyMetaToBeFilledTL = new ThreadLocal<Map<PropertyMeta<?, ?>, Class<?>>>();
+	public static final ThreadLocal<AchillesConfigurableConsistencyLevelPolicy> configurableCLPolicyTL = new ThreadLocal<AchillesConfigurableConsistencyLevelPolicy>();
+
 	public static final ThreadLocal<CounterDao> counterDaoTL = new ThreadLocal<CounterDao>();
 
 	protected ThriftEntityManagerFactoryImpl() {
@@ -128,7 +131,6 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 		this.columnFamilyCreator = new ColumnFamilyCreator(this.cluster, this.keyspace);
 		this.entityParser = new EntityParser(this.objectMapperFactory);
-		this.counterDao = new CounterDao(keyspace);
 		this.bootstrap();
 	}
 
@@ -157,8 +159,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	{
 		log.info("Start discovery of entities searching in packages '{}'",
 				StringUtils.join(entityPackages, ","));
-		joinPropertyMetaToBeFilledTL.set(new HashMap<PropertyMeta<?, ?>, Class<?>>());
-		counterDaoTL.set(counterDao);
+		initThreadLocalsAndCounterDao();
+
 		boolean hasCounter = false;
 		List<Class<?>> classes = this.entityExplorer.discoverEntities(entityPackages);
 		if (!classes.isEmpty())
@@ -182,9 +184,6 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 				entityParser
 						.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 			}
-
-			joinPropertyMetaToBeFilledTL.remove();
-			counterDaoTL.remove();
 		}
 		else
 		{
@@ -193,6 +192,10 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
 							+ StringUtils.join(entityPackages, ","));
 		}
+
+		this.keyspace.setConsistencyLevelPolicy(configurableCLPolicyTL.get());
+		cleanThreadLocals();
+
 		return hasCounter;
 	}
 
@@ -234,5 +237,19 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	public boolean isOpen()
 	{
 		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
+	}
+
+	private void initThreadLocalsAndCounterDao()
+	{
+		joinPropertyMetaToBeFilledTL.set(new HashMap<PropertyMeta<?, ?>, Class<?>>());
+		configurableCLPolicyTL.set(new AchillesConfigurableConsistencyLevelPolicy());
+		this.counterDao = new CounterDao(keyspace, configurableCLPolicyTL.get());
+		counterDaoTL.set(counterDao);
+	}
+
+	private void cleanThreadLocals()
+	{
+		joinPropertyMetaToBeFilledTL.remove();
+		counterDaoTL.remove();
 	}
 }

@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.parser;
 import static info.archinnov.achilles.entity.PropertyHelper.allowedCounterTypes;
 import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
+import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.configurableCLPolicyTL;
 import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.counterDaoTL;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
@@ -15,24 +16,30 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
+import static info.archinnov.achilles.entity.parser.EntityParser.consistencyLevelsTL;
 import static info.archinnov.achilles.entity.parser.EntityParser.counterMetasTL;
 import static info.archinnov.achilles.entity.parser.EntityParser.entityClassTL;
 import static info.archinnov.achilles.entity.parser.EntityParser.externalWideMapTL;
 import static info.archinnov.achilles.entity.parser.EntityParser.objectMapperTL;
 import static info.archinnov.achilles.entity.parser.EntityParser.propertyMetasTL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.validation.Validator;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -40,9 +47,13 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
+
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -52,273 +63,404 @@ import org.codehaus.jackson.map.ObjectMapper;
  * @author DuyHai DOAN
  * 
  */
-public class PropertyParser {
+public class PropertyParser
+{
 
-    private PropertyHelper propertyHelper = new PropertyHelper();
-    private EntityHelper entityHelper = new EntityHelper();
+	private PropertyHelper propertyHelper = new PropertyHelper();
+	private EntityHelper entityHelper = new EntityHelper();
 
-    public PropertyMeta<?, ?> parse(Field field, boolean joinColumn) {
+	public PropertyMeta<?, ?> parse(Field field, boolean joinColumn)
+	{
 
-        Class<?> entityClass = entityClassTL.get();
+		Class<?> entityClass = entityClassTL.get();
 
-        String externalTableName;
-        String propertyName;
+		String[] result = this.inferPropertyNameAndExternalTableName(field, joinColumn);
+		String propertyName = result[0];
+		String externalTableName = result[1];
 
-        if (joinColumn) {
-            JoinColumn column = field.getAnnotation(JoinColumn.class);
-            externalTableName = field.getAnnotation(JoinColumn.class).table();
-            propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
-        } else {
-            Column column = field.getAnnotation(Column.class);
-            externalTableName = field.getAnnotation(Column.class).table();
-            propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
-        }
-        boolean isCounter = propertyHelper.hasCounterAnnotation(field);
-        boolean isExternal = StringUtils.isNotBlank(externalTableName);
+		boolean isCounter = propertyHelper.hasCounterAnnotation(field);
+		boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(field);
+		boolean isExternal = StringUtils.isNotBlank(externalTableName);
 
-        Validator.validateFalse(propertyMetasTL.get().containsKey(propertyName), "The property '" + propertyName
-                + "' is already used for the entity '" + entityClass.getCanonicalName() + "'");
+		Validator.validateBeanMappingFalse(propertyMetasTL.get().containsKey(propertyName),
+				"The property '" + propertyName + "' is already used for the entity '"
+						+ entityClass.getCanonicalName() + "'");
 
-        PropertyMeta<?, ?> propertyMeta = null;
-        if (isExternal && isCounter) {
-            throw new BeanMappingException(
-                    "Error for field '"
-                            + field.getName()
-                            + "' of entity '"
-                            + entityClass.getCanonicalName()
-                            + "'. Counter value are already stored in external column families. There is no sense having a counter with external table");
-        } else {
-            Class<?> fieldType = field.getType();
+		PropertyMeta<?, ?> propertyMeta = null;
+		if (isExternal && isCounter)
+		{
+			throw new BeanMappingException(
+					"Error for field '"
+							+ field.getName()
+							+ "' of entity '"
+							+ entityClass.getCanonicalName()
+							+ "'. Counter value are already stored in external column families. There is no sense having a counter with external table");
+		}
+		else
+		{
+			Class<?> fieldType = field.getType();
 
-            if (List.class.isAssignableFrom(fieldType)) {
-                propertyMeta = parseListProperty(field, propertyName);
-            }
+			if (List.class.isAssignableFrom(fieldType))
+			{
+				propertyMeta = parseListProperty(field, propertyName);
+			}
 
-            else if (Set.class.isAssignableFrom(fieldType)) {
-                propertyMeta = parseSetProperty(field, propertyName);
-            }
+			else if (Set.class.isAssignableFrom(fieldType))
+			{
+				propertyMeta = parseSetProperty(field, propertyName);
+			}
 
-            else if (Map.class.isAssignableFrom(fieldType)) {
-                propertyMeta = parseMapProperty(field, propertyName);
-            }
+			else if (Map.class.isAssignableFrom(fieldType))
+			{
+				propertyMeta = parseMapProperty(field, propertyName);
+			}
 
-            else if (WideMap.class.isAssignableFrom(fieldType)) {
-                propertyMeta = parseWideMapProperty(field, propertyName, entityClass.getCanonicalName());
-            }
+			else if (WideMap.class.isAssignableFrom(fieldType))
+			{
+				propertyMeta = parseWideMapProperty(field, propertyName,
+						entityClass.getCanonicalName());
+			}
 
-            else {
-                propertyMeta = parseSimpleProperty(field, propertyName, entityClass.getCanonicalName());
-            }
+			else
+			{
+				propertyMeta = parseSimpleProperty(field, propertyName,
+						entityClass.getCanonicalName());
+			}
 
-            propertyMetasTL.get().put(propertyName, propertyMeta);
-            if (isExternal) {
-                externalWideMapTL.get().put(propertyMeta, externalTableName);
-            }
-        }
+			propertyMetasTL.get().put(propertyName, propertyMeta);
+			if (isExternal)
+			{
+				processExternalWideMap(field, externalTableName, isCustomConsistencyLevel,
+						isExternal, propertyMeta);
+			}
+			if (isCounter && isCustomConsistencyLevel)
+			{
+				processCounterConsistencyLevel(field, entityClass, isCounter,
+						isCustomConsistencyLevel, propertyMeta);
+			}
+		}
 
-        return propertyMeta;
-    }
+		return propertyMeta;
+	}
 
-    public PropertyMeta<Void, ?> parseSimpleProperty(Field field, String propertyName, String fqcn) {
-        Validator.validateSerializable(field.getType(), "Value of '" + field.getName() + "' should be Serializable");
-        ObjectMapper objectMapper = objectMapperTL.get();
-        Class<?> entityClass = entityClassTL.get();
-        Method[] accessors = entityHelper.findAccessors(entityClass, field);
+	public PropertyMeta<Void, ?> parseSimpleProperty(Field field, String propertyName, String fqcn)
+	{
+		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
+				+ "' should be Serializable");
+		ObjectMapper objectMapper = objectMapperTL.get();
+		Class<?> entityClass = entityClassTL.get();
+		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		PropertyType type;
+		CounterProperties counterProperties = null;
+		if (propertyHelper.hasCounterAnnotation(field))
+		{
+			counterProperties = buildCounterProperties(field.getType(), field.getName(), fqcn);
+			type = PropertyType.COUNTER;
+		}
+		else
+		{
+			type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+		}
 
-        PropertyType type;
-        CounterProperties counterProperties = null;
-        if (propertyHelper.hasCounterAnnotation(field)) {
-            Validator.validateAllowedTypes(field.getType(), allowedCounterTypes, "Wrong counter type for the field '"
-                    + field.getName() + "'. Only java.lang.Long and primitive long are allowed for @Counter types");
-            type = PropertyType.COUNTER;
-            counterProperties = new CounterProperties(fqcn, counterDaoTL.get());
+		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
+				.accessors(accessors) //
+				.counterProperties(counterProperties) //
+				.consistencyLevels(consistencyLevelsTL.get()) //
+				.build();
 
-        } else {
-            type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
-        }
+		if (counterProperties != null)
+		{
+			counterMetasTL.get().add(propertyMeta);
+		}
 
-        PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
-                .objectMapper(objectMapper) //
-                .type(type) //
-                .propertyName(propertyName) //
-                .accessors(accessors) //
-                .counterProperties(counterProperties) //
-                .build();
+		return propertyMeta;
 
-        if (counterProperties != null) {
-            counterMetasTL.get().add(propertyMeta);
-        }
+	}
 
-        return propertyMeta;
+	public PropertyMeta<Void, ?> parseListProperty(Field field, String propertyName)
+	{
 
-    }
+		ObjectMapper objectMapper = objectMapperTL.get();
+		Class<?> entityClass = entityClassTL.get();
 
-    public PropertyMeta<Void, ?> parseListProperty(Field field, String propertyName) {
+		Class<?> valueClass;
+		Type genericType = field.getGenericType();
 
-        ObjectMapper objectMapper = objectMapperTL.get();
-        Class<?> entityClass = entityClassTL.get();
+		valueClass = propertyHelper.inferValueClass(genericType);
 
-        Class<?> valueClass;
-        Type genericType = field.getGenericType();
+		Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
+				+ "' should be Serializable");
+		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-        valueClass = propertyHelper.inferValueClass(genericType);
+		return factory(valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
+				.consistencyLevels(consistencyLevelsTL.get()) //
+				.accessors(accessors).build();
 
-        Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
-                + "' should be Serializable");
-        Method[] accessors = entityHelper.findAccessors(entityClass, field);
-        PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
+	}
 
-        return factory(valueClass) //
-                .objectMapper(objectMapper) //
-                .type(type) //
-                .propertyName(propertyName) //
-                .accessors(accessors).build();
+	public PropertyMeta<Void, ?> parseSetProperty(Field field, String propertyName)
+	{
+		ObjectMapper objectMapper = objectMapperTL.get();
+		Class<?> entityClass = entityClassTL.get();
 
-    }
+		Class<?> valueClass;
+		Type genericType = field.getGenericType();
 
-    public PropertyMeta<Void, ?> parseSetProperty(Field field, String propertyName) {
-        ObjectMapper objectMapper = objectMapperTL.get();
-        Class<?> entityClass = entityClassTL.get();
+		valueClass = propertyHelper.inferValueClass(genericType);
+		Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
+				+ "' should be Serializable");
+		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-        Class<?> valueClass;
-        Type genericType = field.getGenericType();
+		return factory(valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
+				.consistencyLevels(consistencyLevelsTL.get()) //
+				.accessors(accessors).build();
+	}
 
-        valueClass = propertyHelper.inferValueClass(genericType);
-        Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
-                + "' should be Serializable");
-        Method[] accessors = entityHelper.findAccessors(entityClass, field);
-        PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
+	public PropertyMeta<?, ?> parseMapProperty(Field field, String propertyName)
+	{
 
-        return factory(valueClass) //
-                .objectMapper(objectMapper) //
-                .type(type) //
-                .propertyName(propertyName) //
-                .accessors(accessors).build();
-    }
+		ObjectMapper objectMapper = objectMapperTL.get();
+		Class<?> entityClass = entityClassTL.get();
 
-    public PropertyMeta<?, ?> parseMapProperty(Field field, String propertyName) {
+		Class<?> valueClass;
+		Class<?> keyType;
 
-        ObjectMapper objectMapper = objectMapperTL.get();
-        Class<?> entityClass = entityClassTL.get();
+		Type genericType = field.getGenericType();
 
-        Class<?> valueClass;
-        Class<?> keyType;
+		if (genericType instanceof ParameterizedType)
+		{
+			ParameterizedType pt = (ParameterizedType) genericType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if (actualTypeArguments.length > 1)
+			{
+				keyType = (Class<?>) actualTypeArguments[0];
+				valueClass = (Class<?>) actualTypeArguments[1];
+			}
+			else
+			{
+				keyType = Object.class;
+				valueClass = Object.class;
+			}
+		}
+		else
+		{
+			keyType = Object.class;
+			valueClass = Object.class;
+		}
+		Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
+				+ "' should be Serializable");
+		Validator.validateSerializable(keyType, "Map key type of '" + field.getName()
+				+ "' should be Serializable");
+		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-        Type genericType = field.getGenericType();
+		return factory(keyType, valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
+				.consistencyLevels(consistencyLevelsTL.get()) //
+				.accessors(accessors).build();
 
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
-            Type[] actualTypeArguments = pt.getActualTypeArguments();
-            if (actualTypeArguments.length > 1) {
-                keyType = (Class<?>) actualTypeArguments[0];
-                valueClass = (Class<?>) actualTypeArguments[1];
-            } else {
-                keyType = Object.class;
-                valueClass = Object.class;
-            }
-        } else {
-            keyType = Object.class;
-            valueClass = Object.class;
-        }
-        Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
-                + "' should be Serializable");
-        Validator.validateSerializable(keyType, "Map key type of '" + field.getName() + "' should be Serializable");
-        Method[] accessors = entityHelper.findAccessors(entityClass, field);
-        PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
+	}
 
-        return factory(keyType, valueClass) //
-                .objectMapper(objectMapper) //
-                .type(type) //
-                .propertyName(propertyName) //
-                .accessors(accessors).build();
+	public PropertyMeta<?, ?> parseWideMapProperty(Field field, String propertyName, String fqcn)
+	{
 
-    }
+		ObjectMapper objectMapper = objectMapperTL.get();
+		Class<?> entityClass = entityClassTL.get();
 
-    public PropertyMeta<?, ?> parseWideMapProperty(Field field, String propertyName, String fqcn) {
+		PropertyType type = PropertyType.WIDE_MAP;
+		MultiKeyProperties multiKeyProperties = null;
+		CounterProperties counterProperties = null;
 
-        ObjectMapper objectMapper = objectMapperTL.get();
-        Class<?> entityClass = entityClassTL.get();
+		Class<?> keyClass = null;
+		Class<?> valueClass = null;
 
-        PropertyType type = PropertyType.WIDE_MAP;
-        MultiKeyProperties multiKeyProperties = null;
-        Class<?> keyClass = null;
-        Class<?> valueClass = null;
+		// Multi or Single Key
+		Type genericType = field.getGenericType();
+		if (genericType instanceof ParameterizedType)
+		{
+			ParameterizedType pt = (ParameterizedType) genericType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if (actualTypeArguments.length > 1)
+			{
+				keyClass = (Class<?>) actualTypeArguments[0];
+				valueClass = (Class<?>) actualTypeArguments[1];
 
-        CounterProperties counterProperties = null;
-        // Multi or Single Key
-        Type genericType = field.getGenericType();
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
-            Type[] actualTypeArguments = pt.getActualTypeArguments();
-            if (actualTypeArguments.length > 1) {
-                keyClass = (Class<?>) actualTypeArguments[0];
-                valueClass = (Class<?>) actualTypeArguments[1];
+				multiKeyProperties = parseWideMapKey(multiKeyProperties, keyClass);
+				if (propertyHelper.hasCounterAnnotation(field))
+				{
+					counterProperties = buildCounterProperties(valueClass, field.getName(), fqcn);
+					type = EXTERNAL_WIDE_MAP_COUNTER;
+				}
+			}
+			else
+			{
+				throw new BeanMappingException(
+						"The WideMap type should be parameterized with <K,V> for the entity "
+								+ entityClass.getCanonicalName());
+			}
+		}
+		else
+		{
+			throw new BeanMappingException(
+					"The WideMap type should be parameterized for the entity "
+							+ entityClass.getCanonicalName());
+		}
 
-                if (MultiKey.class.isAssignableFrom(keyClass)) {
-                    multiKeyProperties = propertyHelper.parseMultiKey(keyClass);
-                } else {
-                    if (propertyHelper.hasCounterAnnotation(field)) {
-                        Validator.validateAllowedTypes(valueClass, allowedCounterTypes,
-                                "Wrong counter type for the field '" + field.getName()
-                                        + "'. Only java.lang.Long and primitive long are allowed for @Counter types");
-                        type = EXTERNAL_WIDE_MAP_COUNTER;
-                        counterProperties = new CounterProperties(fqcn, counterDaoTL.get());
-                    } else {
+		Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
+				+ "' should be Serializable");
+		Method[] accessors = entityHelper.findAccessors(entityClass, field);
 
-                        Validator
-                                .validateAllowedTypes(
-                                        keyClass,
-                                        allowedTypes,
-                                        "The class '"
-                                                + keyClass.getCanonicalName()
-                                                + "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
-                    }
-                }
-            } else {
-                throw new BeanMappingException("The WideMap type should be parameterized with <K,V> for the entity "
-                        + entityClass.getCanonicalName());
-            }
-        } else {
-            throw new BeanMappingException("The WideMap type should be parameterized for the entity "
-                    + entityClass.getCanonicalName());
-        }
+		PropertyMeta<?, ?> propertyMeta = factory(keyClass, valueClass) //
+				.objectMapper(objectMapper) //
+				.type(type) //
+				.propertyName(propertyName) //
+				.accessors(accessors) //
+				.multiKeyProperties(multiKeyProperties) //
+				.counterProperties(counterProperties) //
+				.consistencyLevels(consistencyLevelsTL.get()) //
+				.build();
 
-        Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
-                + "' should be Serializable");
-        Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		if (counterProperties != null)
+		{
+			counterMetasTL.get().add(propertyMeta);
+		}
 
-        PropertyMeta<?, ?> propertyMeta = factory(keyClass, valueClass) //
-                .objectMapper(objectMapper) //
-                .type(type) //
-                .propertyName(propertyName) //
-                .accessors(accessors) //
-                .multiKeyProperties(multiKeyProperties) //
-                .counterProperties(counterProperties) //
-                .build();
+		return propertyMeta;
+	}
 
-        if (counterProperties != null) {
-            counterMetasTL.get().add(propertyMeta);
-        }
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public <ID> void fillExternalWideMap(Keyspace keyspace, PropertyMeta<Void, ID> idMeta,
+			PropertyMeta<?, ?> propertyMeta, String externalTableName)
+	{
+		propertyMeta.setType(EXTERNAL_WIDE_MAP);
+		GenericCompositeDao<ID, ?> dao;
+		if (isSupportedType(propertyMeta.getValueClass()))
+		{
+			dao = new GenericCompositeDao(keyspace, idMeta.getValueSerializer(),
+					propertyMeta.getValueSerializer(), externalTableName,
+					configurableCLPolicyTL.get());
+		}
+		else
+		{
+			dao = new GenericCompositeDao<ID, String>(keyspace, idMeta.getValueSerializer(),
+					STRING_SRZ, externalTableName, configurableCLPolicyTL.get());
+		}
 
-        return propertyMeta;
-    }
+		propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
+				externalTableName, dao, idMeta.getValueSerializer()));
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <ID> void fillExternalWideMap(Keyspace keyspace, PropertyMeta<Void, ID> idMeta,
-            PropertyMeta<?, ?> propertyMeta, String externalTableName) {
-        propertyMeta.setType(EXTERNAL_WIDE_MAP);
-        GenericCompositeDao<ID, ?> dao;
-        if (isSupportedType(propertyMeta.getValueClass())) {
-            dao = new GenericCompositeDao(keyspace, idMeta.getValueSerializer(), propertyMeta.getValueSerializer(),
-                    externalTableName);
-        } else {
-            dao = new GenericCompositeDao<ID, String>(keyspace, idMeta.getValueSerializer(), STRING_SRZ,
-                    externalTableName);
-        }
+		propertyMetasTL.get().put(propertyMeta.getPropertyName(), propertyMeta);
+	}
 
-        propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(externalTableName, dao, idMeta
-                .getValueSerializer()));
+	private <T> CounterProperties buildCounterProperties(Class<T> valueClass, String fieldName,
+			String fqcn)
+	{
+		CounterProperties counterProperties;
+		Validator
+				.validateAllowedTypes(
+						valueClass,
+						allowedCounterTypes,
+						"Wrong counter type for the field '"
+								+ fieldName
+								+ "'. Only java.lang.Long and primitive long are allowed for @Counter types");
+		counterProperties = new CounterProperties(fqcn, counterDaoTL.get());
+		return counterProperties;
+	}
 
-        propertyMetasTL.get().put(propertyMeta.getPropertyName(), propertyMeta);
-    }
+	private MultiKeyProperties parseWideMapKey(MultiKeyProperties multiKeyProperties,
+			Class<?> keyClass)
+	{
+		if (MultiKey.class.isAssignableFrom(keyClass))
+		{
+			multiKeyProperties = propertyHelper.parseMultiKey(keyClass);
+		}
+		else
+		{
+			Validator
+					.validateAllowedTypes(
+							keyClass,
+							allowedTypes,
+							"The class '"
+									+ keyClass.getCanonicalName()
+									+ "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
+		}
+		return multiKeyProperties;
+	}
+
+	private String[] inferPropertyNameAndExternalTableName(Field field, boolean joinColumn)
+	{
+		String propertyName, externalTableName;
+		if (joinColumn)
+		{
+			JoinColumn column = field.getAnnotation(JoinColumn.class);
+			externalTableName = field.getAnnotation(JoinColumn.class).table();
+			propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
+		}
+		else
+		{
+			Column column = field.getAnnotation(Column.class);
+			externalTableName = field.getAnnotation(Column.class).table();
+			propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
+		}
+
+		return new String[]
+		{
+				propertyName,
+				externalTableName
+		};
+	}
+
+	private void processExternalWideMap(Field field, String externalTableName,
+			boolean isCustomConsistencyLevel, boolean isExternal, PropertyMeta<?, ?> propertyMeta)
+	{
+
+		externalWideMapTL.get().put(propertyMeta, externalTableName);
+
+		if (isCustomConsistencyLevel)
+		{
+			Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> consistencyLevels = propertyHelper
+					.findConsistencyLevels(field);
+			ThriftEntityManagerFactoryImpl.configurableCLPolicyTL.get().setConsistencyLevelForRead(
+					consistencyLevels.right.left, externalTableName);
+			ThriftEntityManagerFactoryImpl.configurableCLPolicyTL.get()
+					.setConsistencyLevelForWrite(consistencyLevels.right.right, externalTableName);
+			propertyMeta.setConsistencyLevels(consistencyLevels.left);
+		}
+	}
+
+	private void processCounterConsistencyLevel(Field field, Class<?> entityClass,
+			boolean isCounter, boolean isCustomConsistencyLevel, PropertyMeta<?, ?> propertyMeta)
+	{
+
+		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
+				.findConsistencyLevels(field).left;
+
+		if (consistencyLevels.left == ANY || consistencyLevels.right == ANY)
+		{
+			throw new BeanMappingException(
+					"Counter field '"
+							+ field.getName()
+							+ "' of entity '"
+							+ entityClass.getCanonicalName()
+							+ "' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
+		}
+		propertyMeta.setConsistencyLevels(consistencyLevels);
+	}
 }

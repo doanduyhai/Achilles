@@ -4,8 +4,10 @@ import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.util.Iterator;
@@ -55,6 +57,11 @@ public class AchillesCounterSliceIteratorTest
 
 	private AchillesCounterSliceIterator<Long, DynamicComposite> iterator;
 
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	private String columnFamily = "cf";
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -98,8 +105,8 @@ public class AchillesCounterSliceIteratorTest
 		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(query, start, end,
-				false, 10);
+		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(policy, columnFamily,
+				query, start, end, false, 10);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HCounterColumn<DynamicComposite> h1 = iterator.next();
@@ -120,6 +127,9 @@ public class AchillesCounterSliceIteratorTest
 		assertThat(h3.getValue()).isEqualTo(val3);
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
+
+		verify(policy).loadConsistencyLevelForRead(columnFamily);
+		verify(policy).reinitDefaultConsistencyLevel();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -150,8 +160,8 @@ public class AchillesCounterSliceIteratorTest
 				false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(query, start, end,
-				false, count);
+		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(policy, columnFamily,
+				query, start, end, false, count);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HCounterColumn<DynamicComposite> h1 = iterator.next();
@@ -174,14 +184,16 @@ public class AchillesCounterSliceIteratorTest
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(query).setRange(name2, end, false, count);
+		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
+		verify(policy, times(2)).reinitDefaultConsistencyLevel();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_remove() throws Exception
 	{
 		DynamicComposite start = new DynamicComposite(), end = new DynamicComposite();
-		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(query, start, end,
-				false, 10);
+		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(policy, columnFamily,
+				query, start, end, false, 10);
 
 		iterator.remove();
 	}

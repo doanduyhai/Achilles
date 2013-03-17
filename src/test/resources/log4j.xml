@@ -13,15 +13,16 @@
 	</appender>
 	
 	
-	<logger name="info.archinnov.columnFamily.ColumnFamilyBuilder">
+	<logger name="info.archinnov.achilles.columnFamily.ColumnFamilyHelper">
 		<level value="DEBUG" />
-		<appender-ref ref="ConsoleAppender" />
 	</logger>
+	
+	
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->
 	<!-- ********************************************************* -->
 	<root>
-		<level value="INFO" />
+		<level value="WARN" />
 		<appender-ref ref="ConsoleAppender" />
 	</root>
 </log4j:configuration>

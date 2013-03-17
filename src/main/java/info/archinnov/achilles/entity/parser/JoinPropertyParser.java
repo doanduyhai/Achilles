@@ -55,7 +55,7 @@ public class JoinPropertyParser
 
 		String propertyName = StringUtils.isNotBlank(joinColumn.name()) ? joinColumn.name() : field
 				.getName();
-		Validator.validateFalse(propertyMetasTL.get().containsKey(propertyName),
+		Validator.validateBeanMappingFalse(propertyMetasTL.get().containsKey(propertyName),
 				"The property '" + propertyName + "' is already used for the entity '"
 						+ entityClass.getCanonicalName() + "'");
 

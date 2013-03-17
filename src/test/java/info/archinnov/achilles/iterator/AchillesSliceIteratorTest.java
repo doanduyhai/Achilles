@@ -4,8 +4,10 @@ import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.util.Iterator;
@@ -57,6 +59,11 @@ public class AchillesSliceIteratorTest
 
 	private AchillesSliceIterator<Long, DynamicComposite, String> iterator;
 
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	private String columnFamily = "cf";
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -101,8 +108,8 @@ public class AchillesSliceIteratorTest
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(query, start, end,
-				false, 10);
+		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(policy, columnFamily,
+				query, start, end, false, 10);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<DynamicComposite, String> h1 = iterator.next();
@@ -123,6 +130,10 @@ public class AchillesSliceIteratorTest
 		assertThat(h3.getValue()).isEqualTo(val3);
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
+
+		verify(policy).loadConsistencyLevelForRead(columnFamily);
+		verify(policy).reinitDefaultConsistencyLevel();
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -153,8 +164,8 @@ public class AchillesSliceIteratorTest
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false, true, false, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(query, start, end,
-				false, count);
+		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(policy, columnFamily,
+				query, start, end, false, count);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<DynamicComposite, String> h1 = iterator.next();
@@ -177,5 +188,9 @@ public class AchillesSliceIteratorTest
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(query).setRange(name2, end, false, count);
+
+		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
+		verify(policy, times(2)).reinitDefaultConsistencyLevel();
+
 	}
 }

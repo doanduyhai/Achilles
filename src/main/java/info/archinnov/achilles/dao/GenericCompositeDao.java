@@ -20,7 +20,7 @@ public class GenericCompositeDao<K, V> extends AbstractDao<K, Composite, V>
 	private static final Logger log = LoggerFactory.getLogger(GenericCompositeDao.class);
 
 	public GenericCompositeDao(Keyspace keyspace, Serializer<K> keySrz, Serializer<V> valSrz,
-			String cf)
+			String cf, AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
 
 		super(keyspace);
@@ -29,7 +29,7 @@ public class GenericCompositeDao<K, V> extends AbstractDao<K, Composite, V>
 		columnFamily = cf;
 		columnNameSerializer = COMPOSITE_SRZ;
 		valueSerializer = valSrz;
-
+		policy = consistencyPolicy;
 		log.debug(
 				"Initializing GenericCompositeDao for key serializer '{}', composite comparator and value serializer '{}'",
 				keySrz.getComparatorType().getTypeName(), valSrz.getComparatorType().getTypeName());

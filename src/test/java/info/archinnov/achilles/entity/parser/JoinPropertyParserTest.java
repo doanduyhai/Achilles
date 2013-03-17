@@ -1,5 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
@@ -9,6 +11,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -75,6 +79,8 @@ public class JoinPropertyParserTest
 		EntityParser.objectMapperTL.set(objectMapper);
 		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
 		ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
+		ThriftEntityManagerFactoryImpl.configurableCLPolicyTL
+				.set(new AchillesConfigurableConsistencyLevelPolicy());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -324,6 +330,27 @@ public class JoinPropertyParserTest
 		assertThat(
 				(PropertyMeta<Integer, UserBean>) joinExternalWideMaps.keySet().iterator().next())
 				.isSameAs(meta);
+	}
+
+	@Test
+	public void should_set_external_join_widemap_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@ManyToMany
+			@JoinColumn(table = "tablename")
+			@Consistency(read = QUORUM, write = ALL)
+			private WideMap<Integer, UserBean> users;
+
+			public WideMap<Integer, UserBean> getUsers()
+			{
+				return users;
+			}
+		}
+		EntityParser.entityClassTL.set(Test.class);
+		PropertyMeta<?, ?> propertyMeta = parser.parseJoin(Test.class.getDeclaredField("users"));
+		assertThat(propertyMeta.getReadConsistencyLevel()).isEqualTo(QUORUM);
+		assertThat(propertyMeta.getWriteConsistencyLevel()).isEqualTo(ALL);
 	}
 
 	@SuppressWarnings("unchecked")

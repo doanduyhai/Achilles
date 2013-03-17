@@ -1,5 +1,13 @@
 package info.archinnov.achilles.entity;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.TWO;
 import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
@@ -7,13 +15,16 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
@@ -28,6 +39,7 @@ import java.util.UUID;
 import mapping.entity.TweetMultiKey;
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -91,7 +103,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_incorrect_type() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx
 				.expectMessage("The class 'java.util.List' is not a valid key type for the MultiKey class '"
 						+ MultiKeyIncorrectType.class.getCanonicalName() + "'");
@@ -102,7 +114,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_wrong_key_order() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
@@ -112,7 +124,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_has_no_annotation() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
@@ -133,7 +145,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_not_instantiable() throws Exception
 	{
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
@@ -251,6 +263,20 @@ public class PropertyHelperTest
 		Field field = Test.class.getDeclaredField("counter");
 
 		assertThat(helper.hasCounterAnnotation(field)).isTrue();
+	}
+
+	@Test
+	public void should_check_consistency_annotation() throws Exception
+	{
+		class Test
+		{
+			@Consistency
+			private String consistency;
+		}
+
+		Field field = Test.class.getDeclaredField("consistency");
+
+		assertThat(helper.hasConsistencyAnnotation(field)).isTrue();
 	}
 
 	@Test
@@ -391,6 +417,166 @@ public class PropertyHelperTest
 		assertThat(multiKey.getId()).isEqualTo(uuid1);
 		assertThat(multiKey.getRetweetCount()).isEqualTo(11);
 
+	}
+
+	@Test
+	public void should_find_any_any_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = ANY, write = ANY)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(ANY);
+		assertThat(levels.left.right).isEqualTo(ANY);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ANY);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ANY);
+	}
+
+	@Test
+	public void should_find_one_one_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = ONE, write = ONE)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(ONE);
+		assertThat(levels.left.right).isEqualTo(ONE);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ONE);
+	}
+
+	@Test
+	public void should_find_two_two_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = TWO, write = TWO)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(TWO);
+		assertThat(levels.left.right).isEqualTo(TWO);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.TWO);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.TWO);
+	}
+
+	@Test
+	public void should_find_three_three_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = THREE, write = THREE)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(THREE);
+		assertThat(levels.left.right).isEqualTo(THREE);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.THREE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.THREE);
+	}
+
+	@Test
+	public void should_find_local_quorum_local_quorum_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = LOCAL_QUORUM, write = LOCAL_QUORUM)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(LOCAL_QUORUM);
+		assertThat(levels.left.right).isEqualTo(LOCAL_QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
+	}
+
+	@Test
+	public void should_find_each_quorum_each_quorum_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = EACH_QUORUM, write = EACH_QUORUM)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(EACH_QUORUM);
+		assertThat(levels.left.right).isEqualTo(EACH_QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.EACH_QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.EACH_QUORUM);
+	}
+
+	@Test
+	public void should_find_quorum_quorum_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = QUORUM, write = QUORUM)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(QUORUM);
+		assertThat(levels.left.right).isEqualTo(QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.QUORUM);
+	}
+
+	@Test
+	public void should_find_all_all_consistency_level() throws Exception
+	{
+		class Test
+		{
+			@Consistency(read = ALL, write = ALL)
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.left.left).isEqualTo(ALL);
+		assertThat(levels.left.right).isEqualTo(ALL);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ALL);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ALL);
+	}
+
+	@Test
+	public void should_find_one_one_consistency_level_by_default() throws Exception
+	{
+		class Test
+		{
+			@SuppressWarnings("unused")
+			private WideMap<Integer, String> field;
+		}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class.getDeclaredField("field"));
+
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ONE);
 	}
 
 	private Composite buildComposite(String author, UUID uuid, int retweetCount)

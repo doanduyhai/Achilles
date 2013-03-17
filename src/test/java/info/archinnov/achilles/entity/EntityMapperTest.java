@@ -9,6 +9,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
@@ -114,6 +115,9 @@ public class EntityMapperTest
 		joinPropertyMetaToBeFilled.clear();
 		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
 		ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
+		ThriftEntityManagerFactoryImpl.configurableCLPolicyTL
+				.set(new AchillesConfigurableConsistencyLevelPolicy());
+
 		Whitebox.setInternalState(mapper, "helper", helper);
 		parser = new EntityParser(factory);
 		entityMeta = (EntityMeta<Long>) parser.parseEntity(keyspace, CompleteBean.class);

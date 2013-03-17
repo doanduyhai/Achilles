@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
- * JoinWideMapIT
+ * BatchModeIT
  * 
  * @author DuyHai DOAN
  * 

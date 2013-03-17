@@ -10,6 +10,7 @@ package info.archinnov.achilles.iterator;
  */
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 
 import java.util.Iterator;
 
@@ -29,17 +30,19 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 	private boolean reversed;
 	private int count = DEFAULT_LENGTH;
 	private int columns = 0;
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private String columnFamily;
 
-	public AchillesSliceIterator(SliceQuery<K, N, V> query, N start, final N finish,
-			boolean reversed)
+	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
 	{
-		this(query, start, finish, reversed, DEFAULT_LENGTH);
+		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesSliceIterator(SliceQuery<K, N, V> query, N start, final N finish,
-			boolean reversed, int count)
+	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed, int count)
 	{
-		this(query, start, new ColumnSliceFinish<N>()
+		this(policy, cf, query, start, new ColumnSliceFinish<N>()
 		{
 
 			@Override
@@ -50,15 +53,18 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 		}, reversed, count);
 	}
 
-	public AchillesSliceIterator(SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish,
-			boolean reversed)
+	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed)
 	{
-		this(query, start, finish, reversed, DEFAULT_LENGTH);
+		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesSliceIterator(SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish,
-			boolean reversed, int count)
+	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed,
+			int count)
 	{
+		this.policy = policy;
+		this.columnFamily = cf;
 		this.query = query;
 		this.start = start;
 		this.finish = finish;
@@ -72,7 +78,9 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 	{
 		if (iterator == null)
 		{
+			policy.loadConsistencyLevelForRead(columnFamily);
 			iterator = query.execute().get().getColumns().iterator();
+			policy.reinitDefaultConsistencyLevel();
 		}
 		else if (!iterator.hasNext() && columns == count)
 		{ // only need to do another query if maximum columns were retrieved
@@ -88,7 +96,9 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 			}
 
 			query.setRange(start, finish.function(), reversed, count);
+			policy.loadConsistencyLevelForRead(columnFamily);
 			iterator = query.execute().get().getColumns().iterator();
+			policy.reinitDefaultConsistencyLevel();
 			columns = 0;
 		}
 

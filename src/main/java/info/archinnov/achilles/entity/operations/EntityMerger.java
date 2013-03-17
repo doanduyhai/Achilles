@@ -6,7 +6,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.operations.EntityPersister.counterMutatorTL;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
@@ -66,12 +65,6 @@ public class EntityMerger
 			if (dirtyMap.size() > 0)
 			{
 				Mutator<ID> mutator = dao.buildMutator();
-				boolean commit = false;
-				if (counterMutatorTL.get() == null && entityMeta.hasCounter())
-				{
-					counterMutatorTL.set(entityMeta.counterDao().buildMutator());
-					commit = true;
-				}
 
 				for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 				{
@@ -83,12 +76,7 @@ public class EntityMerger
 					}
 					this.persister.persistProperty(realObject, key, dao, propertyMeta, mutator);
 				}
-				mutator.execute();
-				if (commit)
-				{
-					counterMutatorTL.get().execute();
-					counterMutatorTL.remove();
-				}
+				dao.executeMutator(mutator);
 			}
 
 			dirtyMap.clear();

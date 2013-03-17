@@ -119,7 +119,7 @@ public class EntityMergerTest
 				mutatorCaptor.capture());
 		assertThat(mutatorCaptor.getValue()).isSameAs(mutator);
 
-		verify(mutator).execute();
+		verify(dao).executeMutator(mutator);
 		verify(dirtyMap).clear();
 	}
 
@@ -156,7 +156,7 @@ public class EntityMergerTest
 				mutatorCaptor.capture());
 
 		assertThat(mutatorCaptor.getAllValues()).containsExactly(mutator, mutator);
-		verify(mutator).execute();
+		verify(dao).executeMutator(mutator);
 
 		verify(dirtyMap).clear();
 	}

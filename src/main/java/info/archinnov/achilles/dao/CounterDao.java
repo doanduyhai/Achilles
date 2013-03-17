@@ -21,7 +21,9 @@ public class CounterDao extends AbstractDao<Composite, DynamicComposite, Long>
 	private static final Logger log = LoggerFactory.getLogger(CounterDao.class);
 	public static final String COUNTER_CF = "achillesCounterCF";
 
-	public CounterDao(Keyspace keyspace) {
+	public CounterDao(Keyspace keyspace,
+			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	{
 
 		super(keyspace);
 
@@ -29,7 +31,7 @@ public class CounterDao extends AbstractDao<Composite, DynamicComposite, Long>
 		columnFamily = COUNTER_CF;
 		columnNameSerializer = DYNA_COMP_SRZ;
 		valueSerializer = LONG_SRZ;
-
+		policy = consistencyPolicy;
 		log.debug("Initializing CounterDao with Composite key serializer, DynamicComposite comparator and Long value serializer ");
 	}
 }

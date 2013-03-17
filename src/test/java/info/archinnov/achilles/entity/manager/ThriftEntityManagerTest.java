@@ -15,14 +15,13 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
-import integration.tests.entity.User;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -94,10 +93,18 @@ public class ThriftEntityManagerTest
 	private EntityHelper helper;
 
 	@Mock
+	private EntityValidator entityValidator;
+
+	@Mock
 	private EntityMeta entityMeta;
+
+	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 
 	@Mock
 	private Mutator<Long> mutator;
+
+	@Mock
+	private GenericDynamicCompositeDao<Long> entityDao;
 
 	@Captor
 	ArgumentCaptor<Map<String, Mutator<?>>> mutatorMapCaptor;
@@ -114,6 +121,9 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "loader", loader);
 		Whitebox.setInternalState(em, "merger", merger);
 		Whitebox.setInternalState(em, "helper", helper);
+		Whitebox.setInternalState(em, "entityValidator", entityValidator);
+
+		propertyMetas = mock(Map.class);
 
 		idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 
@@ -129,9 +139,12 @@ public class ThriftEntityManagerTest
 	{
 		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
+		when(helper.isProxy(entity)).thenReturn(false);
 		em.persist(entity);
 
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(persister).persist(entity, entityMeta);
+
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -140,6 +153,7 @@ public class ThriftEntityManagerTest
 		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 		when(helper.isProxy(entity)).thenReturn(true);
+
 		em.persist(entity);
 	}
 
@@ -161,7 +175,6 @@ public class ThriftEntityManagerTest
 		when((Class<CompleteBean>) helper.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(helper.isProxy(entity)).thenReturn(true);
 		when(helper.deriveBaseClass(entity)).thenReturn((Class) CompleteBean.class);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn((entityMeta));
 
 		em.remove(entity);
 		verify(persister).remove(entity, entityMeta);
@@ -229,23 +242,21 @@ public class ThriftEntityManagerTest
 	{
 		Factory bean = mock(Factory.class);
 
-		when(helper.isProxy(bean)).thenReturn(true);
 		when(helper.deriveBaseClass(bean)).thenReturn((Class) CompleteBean.class);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		GenericDynamicCompositeDao<Long> entityDao = mock(GenericDynamicCompositeDao.class);
 		when(entityMeta.getEntityDao()).thenReturn(entityDao);
 
-		JoinProperties joinProperties = new JoinProperties();
-		EntityMeta<Integer> joinMeta = new EntityMeta<Integer>();
 		GenericDynamicCompositeDao<Integer> joinDao = mock(GenericDynamicCompositeDao.class);
+
+		EntityMeta<Integer> joinMeta = new EntityMeta<Integer>();
 		joinMeta.setEntityDao(joinDao);
-		joinProperties.setEntityMeta(joinMeta);
 		Mutator<Integer> joinMutator = mock(Mutator.class);
 
-		PropertyMeta<Long, User> propertyMeta = new PropertyMeta<Long, User>();
-		propertyMeta.setType(JOIN_WIDE_MAP);
-		propertyMeta.setPropertyName("users");
-		propertyMeta.setJoinProperties(joinProperties);
+		PropertyMeta<Long, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Long.class, UserBean.class) //
+				.type(JOIN_WIDE_MAP) //
+				.field("users") //
+				.joinMeta(joinMeta) //
+				.build();
 
 		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetaMap.put("users", propertyMeta);
@@ -253,13 +264,14 @@ public class ThriftEntityManagerTest
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
-		JpaEntityInterceptor<Long, User> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		when(bean.getCallback(0)).thenReturn(interceptor);
 		when(joinDao.buildMutator()).thenReturn(joinMutator);
 
 		em.startBatch(bean);
 
+		verify(helper).ensureProxy(bean);
 		verify(interceptor).setMutator(mutator);
 		verify(interceptor).setMutatorMap(mutatorMapCaptor.capture());
 
@@ -270,7 +282,6 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_exception_when_trying_to_batch_transient_entity() throws Exception
 	{
-
 		CompleteBean completeBean = new CompleteBean();
 
 		doThrow(new IllegalStateException("test")).when(helper).ensureProxy(completeBean);
@@ -282,27 +293,56 @@ public class ThriftEntityManagerTest
 	}
 
 	@Test
+	public void should_exception_when_trying_to_start_batch_with_null_entity() throws Exception
+	{
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("Cannot start batch for null entity ...");
+		em.startBatch(null);
+	}
+
+	@Test
 	public void should_end_batch() throws Exception
 	{
 		CompleteBean bean = new CompleteBean();
 		JpaEntityInterceptor<Object, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 
-		Mutator<Object> mutator = mock(Mutator.class);
-
 		when(helper.isProxy(bean)).thenReturn(true);
+		when(helper.deriveBaseClass(bean)).thenReturn((Class) CompleteBean.class);
 		when(helper.getInterceptor(bean)).thenReturn(interceptor);
-		when(interceptor.getMutator()).thenReturn(mutator);
+		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
+		when(entityMeta.getEntityDao()).thenReturn(entityDao);
 
 		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
 		Mutator<Integer> joinMutator = mock(Mutator.class);
 		mutatorMap.put("test", joinMutator);
-
 		when(interceptor.getMutatorMap()).thenReturn(mutatorMap);
+
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
+
+		GenericDynamicCompositeDao<Integer> joinDao = mock(GenericDynamicCompositeDao.class);
+		EntityMeta<Integer> joinMeta = new EntityMeta<Integer>();
+		joinMeta.setEntityDao(joinDao);
+
+		PropertyMeta<Void, UserBean> joinPropertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, UserBean.class) //
+				.joinMeta(joinMeta) //
+				.build();
+
+		when((PropertyMeta<Void, UserBean>) propertyMetas.get("test")).thenReturn(joinPropertyMeta);
 
 		em.endBatch(bean);
 
-		verify(mutator).execute();
-		verify(joinMutator).execute();
+		verify(helper).ensureProxy(bean);
+		verify(entityDao).executeMutator(mutator);
+		verify(joinDao).executeMutator(joinMutator);
+	}
+
+	@Test
+	public void should_exception_when_trying_to_end_batch_with_null_entity() throws Exception
+	{
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("Cannot end batch for null entity ...");
+		em.endBatch(null);
 	}
 
 	@Test
@@ -313,6 +353,7 @@ public class ThriftEntityManagerTest
 
 		when(helper.getInterceptor(bean)).thenReturn(interceptor);
 		when(helper.isProxy(bean)).thenReturn(true);
+		when(helper.getRealObject(bean)).thenReturn(bean);
 		when(interceptor.getMutator()).thenReturn(null);
 		Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
 		mutatorMap.put("test", null);
@@ -320,6 +361,7 @@ public class ThriftEntityManagerTest
 
 		em.endBatch(bean);
 
+		verifyZeroInteractions(entityDao);
 		verifyZeroInteractions(mutator);
 	}
 

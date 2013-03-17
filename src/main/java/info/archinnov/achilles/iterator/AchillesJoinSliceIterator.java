@@ -1,6 +1,7 @@
 package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -37,19 +38,23 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 	private boolean reversed;
 	private int count = DEFAULT_LENGTH;
 	private int columns = 0;
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private String columnFamily;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
-	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
-			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
+	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			PropertyMeta<KEY, VALUE> propertyMeta, SliceQuery<K, N, V> query, N start,
+			final N finish, boolean reversed)
 	{
-		this(propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
+		this(policy, cf, propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
-			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed, int count)
+	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			PropertyMeta<KEY, VALUE> propertyMeta, SliceQuery<K, N, V> query, N start,
+			final N finish, boolean reversed, int count)
 	{
-		this(propertyMeta, query, start, new ColumnSliceFinish<N>()
+		this(policy, cf, propertyMeta, query, start, new ColumnSliceFinish<N>()
 		{
 
 			@Override
@@ -60,16 +65,19 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 		}, reversed, count);
 	}
 
-	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
-			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed)
+	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			PropertyMeta<KEY, VALUE> propertyMeta, SliceQuery<K, N, V> query, N start,
+			ColumnSliceFinish<N> finish, boolean reversed)
 	{
-		this(propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
+		this(policy, cf, propertyMeta, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesJoinSliceIterator(PropertyMeta<KEY, VALUE> propertyMeta,
-			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed,
-			int count)
+	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+			PropertyMeta<KEY, VALUE> propertyMeta, SliceQuery<K, N, V> query, N start,
+			ColumnSliceFinish<N> finish, boolean reversed, int count)
 	{
+		this.policy = policy;
+		this.columnFamily = cf;
 		this.propertyMeta = propertyMeta;
 		this.query = query;
 		this.start = start;
@@ -111,7 +119,10 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, KEY, V
 	@SuppressWarnings("unchecked")
 	private void loadEntities()
 	{
+		policy.loadConsistencyLevelForRead(columnFamily);
 		Iterator<HColumn<N, V>> iter = query.execute().get().getColumns().iterator();
+		policy.reinitDefaultConsistencyLevel();
+
 		List<V> joinIds = new ArrayList<V>();
 		Map<V, Pair<N, Integer>> hColumMap = new HashMap<V, Pair<N, Integer>>();
 

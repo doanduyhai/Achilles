@@ -1,10 +1,12 @@
 package info.archinnov.achilles.entity.metadata.factory;
 
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
 
@@ -31,6 +33,7 @@ public class PropertyMetaFactory<K, V>
 
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
+	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	public PropertyMetaFactory(Class<K> keyClass, Class<V> valueClass) {
 		this.keyClass = keyClass;
@@ -111,6 +114,8 @@ public class PropertyMetaFactory<K, V>
 
 		meta.setSingleKey(singleKey);
 		meta.setCounterProperties(counterProperties);
+		meta.setConsistencyLevels(consistencyLevels);
+
 		return meta;
 	}
 
@@ -141,6 +146,13 @@ public class PropertyMetaFactory<K, V>
 	public PropertyMetaFactory<K, V> counterProperties(CounterProperties counterProperties)
 	{
 		this.counterProperties = counterProperties;
+		return this;
+	}
+
+	public PropertyMetaFactory<K, V> consistencyLevels(
+			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
+	{
+		this.consistencyLevels = consistencyLevels;
 		return this;
 	}
 

@@ -1,8 +1,12 @@
 package info.archinnov.achilles.entity;
 
+import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
@@ -22,6 +26,7 @@ import java.util.Set;
 
 import javax.persistence.Table;
 
+import me.prettyprint.hector.api.HConsistencyLevel;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 
@@ -241,16 +246,103 @@ public class EntityHelper
 	public String inferColumnFamilyName(Class<?> entity, String canonicalName)
 	{
 		log.debug("Infer column family name for entity {}", entity.getCanonicalName());
-
+		String columnFamilyName = null;
 		Table table = entity.getAnnotation(javax.persistence.Table.class);
 		if (table != null)
 		{
 			if (StringUtils.isNotBlank(table.name()))
 			{
-				return table.name();
+				columnFamilyName = table.name();
 			}
 		}
-		return canonicalName;
+
+		if (!StringUtils.isBlank(columnFamilyName))
+		{
+			columnFamilyName = ColumnFamilyHelper
+					.normalizerAndValidateColumnFamilyName(columnFamilyName);
+		}
+		else
+		{
+			columnFamilyName = ColumnFamilyHelper
+					.normalizerAndValidateColumnFamilyName(canonicalName);
+		}
+
+		return columnFamilyName;
+	}
+
+	public <T> Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> findConsistencyLevels(
+			Class<T> entity)
+	{
+		ConsistencyLevel achillesRead = ConsistencyLevel.ONE;
+		ConsistencyLevel achillesWrite = ConsistencyLevel.ONE;
+		HConsistencyLevel read = HConsistencyLevel.ONE;
+		HConsistencyLevel write = HConsistencyLevel.ONE;
+
+		Consistency clevel = entity.getAnnotation(Consistency.class);
+
+		if (clevel != null)
+		{
+			achillesRead = clevel.read();
+			switch (achillesRead)
+			{
+				case ANY:
+					read = HConsistencyLevel.ANY;
+					break;
+				case ONE:
+					read = HConsistencyLevel.ONE;
+					break;
+				case TWO:
+					read = HConsistencyLevel.TWO;
+					break;
+				case THREE:
+					read = HConsistencyLevel.THREE;
+					break;
+				case EACH_QUORUM:
+					read = HConsistencyLevel.EACH_QUORUM;
+					break;
+				case LOCAL_QUORUM:
+					read = HConsistencyLevel.LOCAL_QUORUM;
+					break;
+				case QUORUM:
+					read = HConsistencyLevel.QUORUM;
+					break;
+				case ALL:
+					read = HConsistencyLevel.ALL;
+					break;
+			}
+			achillesWrite = clevel.write();
+			switch (achillesWrite)
+			{
+				case ANY:
+					write = HConsistencyLevel.ANY;
+					break;
+				case ONE:
+					write = HConsistencyLevel.ONE;
+					break;
+				case TWO:
+					write = HConsistencyLevel.TWO;
+					break;
+				case THREE:
+					write = HConsistencyLevel.THREE;
+					break;
+				case EACH_QUORUM:
+					write = HConsistencyLevel.EACH_QUORUM;
+					break;
+				case LOCAL_QUORUM:
+					write = HConsistencyLevel.LOCAL_QUORUM;
+					break;
+				case QUORUM:
+					write = HConsistencyLevel.QUORUM;
+					break;
+				case ALL:
+					write = HConsistencyLevel.ALL;
+					break;
+			}
+		}
+
+		return new Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>>(
+				new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite),
+				new Pair<HConsistencyLevel, HConsistencyLevel>(read, write));
 	}
 
 	public List<Field> getInheritedPrivateFields(Class<?> type)

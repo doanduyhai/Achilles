@@ -2,8 +2,10 @@ package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -74,7 +76,12 @@ public class AchillesJoinSliceIteratorTest
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-	AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean> iterator;
+	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean> iterator;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	private String columnFamily = "cf";
 
 	@SuppressWarnings(
 	{
@@ -145,7 +152,7 @@ public class AchillesJoinSliceIteratorTest
 						Arrays.asList(joinId1, joinId2, joinId3), joinEntityMeta)).thenReturn(
 				entitiesMap);
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
-				propertyMeta, query, start, end, false, 10);
+				policy, columnFamily, propertyMeta, query, start, end, false, 10);
 
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
@@ -171,6 +178,10 @@ public class AchillesJoinSliceIteratorTest
 		assertThat(h3.getValue().getName()).isEqualTo(user3.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
+
+		verify(policy).loadConsistencyLevelForRead(columnFamily);
+		verify(policy).reinitDefaultConsistencyLevel();
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -216,7 +227,7 @@ public class AchillesJoinSliceIteratorTest
 				.thenReturn(entitiesMap);
 
 		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
-				propertyMeta, query, start, end, false, count);
+				policy, columnFamily, propertyMeta, query, start, end, false, count);
 
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 
@@ -241,5 +252,7 @@ public class AchillesJoinSliceIteratorTest
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(query).setRange(name2, end, false, count);
+		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
+		verify(policy, times(2)).reinitDefaultConsistencyLevel();
 	}
 }

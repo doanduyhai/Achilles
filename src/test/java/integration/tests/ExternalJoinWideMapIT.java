@@ -214,7 +214,8 @@ public class ExternalJoinWideMapIT
 		user.getRetweets().insert(3, reTweet3);
 		user.getRetweets().insert(4, reTweet4);
 
-		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(3, 1, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
+		KeyValueIterator<Integer, Tweet> iterator = user.getRetweets().iterator(3, 1, 10,
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		Tweet foundReTweet1 = iterator.next().getValue();
 		Tweet foundReTweet2 = iterator.next().getValue();

@@ -3,8 +3,9 @@ package parser.entity;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
-
+import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
@@ -19,7 +20,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
-
 /**
  * Bean
  * 
@@ -27,6 +27,7 @@ import javax.persistence.ManyToOne;
  * 
  */
 @Entity
+@Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
 public class Bean implements Serializable
 {
 	public static final long serialVersionUID = 1L;

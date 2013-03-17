@@ -38,7 +38,9 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 		this.initComposites();
 	}
 
-	public GenericDynamicCompositeDao(Keyspace keyspace, Serializer<K> keySrz, String cf) {
+	public GenericDynamicCompositeDao(Keyspace keyspace, Serializer<K> keySrz, String cf,
+			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	{
 		super(keyspace);
 
 		this.initComposites();
@@ -46,7 +48,7 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 		columnFamily = cf;
 		columnNameSerializer = DYNA_COMP_SRZ;
 		valueSerializer = STRING_SRZ;
-
+		policy = consistencyPolicy;
 		log.debug(
 				"Initializing GenericDynamicCompositeDao for key serializer '{}', dynamic composite comparator and value serializer 'BytesType'",
 				keySrz.getComparatorType().getTypeName());

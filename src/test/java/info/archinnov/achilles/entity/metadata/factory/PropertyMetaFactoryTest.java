@@ -9,14 +9,18 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -57,7 +61,11 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SIMPLE)
-				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
+				.propertyName("prop") //
+				.accessors(accessors) //
+				.objectMapper(objectMapper) //
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
+				.build();
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -70,6 +78,8 @@ public class PropertyMetaFactoryTest
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
 		assertThat(built.type().isJoinColumn()).isFalse();
+		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
+		assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
 	}
 
 	@Test

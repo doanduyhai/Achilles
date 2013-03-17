@@ -7,6 +7,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
@@ -25,6 +27,7 @@ import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
@@ -33,6 +36,7 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.BeanMappingException;
@@ -129,9 +133,6 @@ public class EntityPersisterTest
 
 	@Mock
 	private Mutator<Long> joinMutator;
-
-	@Mock
-	private Mutator<Composite> counterMutator;
 
 	@Captor
 	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
@@ -234,7 +235,7 @@ public class EntityPersisterTest
 		verify(entityDao).insertColumnBatch(eq(id), any(DynamicComposite.class), eq("1"),
 				eq(mutator));
 		verify(entityDao).insertColumnBatch(id, composite, "testValue", mutator);
-		verify(mutator).execute();
+		verify(entityDao).executeMutator(mutator);
 	}
 
 	@Test
@@ -338,9 +339,8 @@ public class EntityPersisterTest
 	}
 
 	@Test
-	public void should_batch_persist_simple_counter() throws Exception
+	public void should_persist_simple_counter() throws Exception
 	{
-
 		BeanWithSimpleCounter bean = new BeanWithSimpleCounter();
 		Method getter = BeanWithSimpleCounter.class.getDeclaredMethod("getCounter");
 
@@ -354,6 +354,7 @@ public class EntityPersisterTest
 				.fqcn("fqcn") //
 				.counterIdMeta(idMeta)//
 				.type(PropertyType.COUNTER) //
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
 				.build();
 
 		Composite keyComp = new Composite();
@@ -374,7 +375,6 @@ public class EntityPersisterTest
 		entityMeta.setPropertyMetas(map);
 
 		when(helper.getValueFromField(bean, getter)).thenReturn(150L);
-		when(counterDao.buildMutator()).thenReturn(counterMutator);
 
 		when(helper.getKey(bean, idMeta)).thenReturn(11L);
 		when(helper.findSerialVersionUID(bean.getClass())).thenReturn(11L);
@@ -382,10 +382,7 @@ public class EntityPersisterTest
 		persister.persist(bean, entityMeta, mutator);
 
 		verify(helper).getValueFromField(bean, getter);
-		verify(counterDao).insertCounter(keyComp, comp, 150L, counterMutator);
-		verify(counterMutator).execute();
-
-		assertThat(EntityPersister.counterMutatorTL.get()).isNull();
+		verify(counterDao).insertCounter(keyComp, comp, 150L);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -502,7 +499,7 @@ public class EntityPersisterTest
 		when(helper.unproxy(userBean)).thenReturn(userBean);
 		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 
-		verify(joinMutator).execute();
+		verify(entityDao).executeMutator(joinMutator);
 	}
 
 	@Test

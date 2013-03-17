@@ -6,6 +6,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.lang.reflect.Method;
@@ -43,6 +45,7 @@ public class PropertyMeta<K, V>
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
 	private ExternalWideMapProperties<?> externalWideMapProperties;
+	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	private boolean singleKey;
 
@@ -357,4 +360,20 @@ public class PropertyMeta<K, V>
 	{
 		return this.type == COUNTER || this.type == EXTERNAL_WIDE_MAP_COUNTER;
 	}
+
+	public ConsistencyLevel getReadConsistencyLevel()
+	{
+		return consistencyLevels != null ? consistencyLevels.left : null;
+	}
+
+	public ConsistencyLevel getWriteConsistencyLevel()
+	{
+		return consistencyLevels != null ? consistencyLevels.right : null;
+	}
+
+	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
+	{
+		this.consistencyLevels = consistencyLevels;
+	}
+
 }

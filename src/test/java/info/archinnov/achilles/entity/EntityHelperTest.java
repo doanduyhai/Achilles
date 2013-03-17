@@ -2,13 +2,24 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
@@ -33,6 +44,7 @@ import mapping.entity.CompleteBean;
 import mapping.entity.TweetMultiKey;
 import mapping.entity.UserBean;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
@@ -844,6 +856,147 @@ public class EntityHelperTest
 		Set<CompleteBean> actual = helper.unproxy(proxies);
 
 		assertThat(actual).containsExactly(realObject);
+	}
+
+	@Test
+	public void should_find_any_any_consistency_level() throws Exception
+	{
+		@Consistency(read = ANY, write = ANY)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(ANY);
+		assertThat(levels.left.right).isEqualTo(ANY);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ANY);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ANY);
+	}
+
+	@Test
+	public void should_find_one_one_consistency_level() throws Exception
+	{
+		@Consistency(read = ONE, write = ONE)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(ONE);
+		assertThat(levels.left.right).isEqualTo(ONE);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ONE);
+	}
+
+	@Test
+	public void should_find_two_two_consistency_level() throws Exception
+	{
+		@Consistency(read = TWO, write = TWO)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(TWO);
+		assertThat(levels.left.right).isEqualTo(TWO);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.TWO);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.TWO);
+	}
+
+	@Test
+	public void should_find_three_three_consistency_level() throws Exception
+	{
+		@Consistency(read = THREE, write = THREE)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(THREE);
+		assertThat(levels.left.right).isEqualTo(THREE);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.THREE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.THREE);
+	}
+
+	@Test
+	public void should_find_local_quorum_local_quorum_consistency_level() throws Exception
+	{
+		@Consistency(read = LOCAL_QUORUM, write = LOCAL_QUORUM)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(LOCAL_QUORUM);
+		assertThat(levels.left.right).isEqualTo(LOCAL_QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
+	}
+
+	@Test
+	public void should_find_each_quorum_each_quorum_consistency_level() throws Exception
+	{
+		@Consistency(read = EACH_QUORUM, write = EACH_QUORUM)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(EACH_QUORUM);
+		assertThat(levels.left.right).isEqualTo(EACH_QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.EACH_QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.EACH_QUORUM);
+	}
+
+	@Test
+	public void should_find_quorum_quorum_consistency_level() throws Exception
+	{
+		@Consistency(read = QUORUM, write = QUORUM)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(QUORUM);
+		assertThat(levels.left.right).isEqualTo(QUORUM);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.QUORUM);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.QUORUM);
+	}
+
+	@Test
+	public void should_find_all_all_consistency_level() throws Exception
+	{
+		@Consistency(read = ALL, write = ALL)
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.left.left).isEqualTo(ALL);
+		assertThat(levels.left.right).isEqualTo(ALL);
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ALL);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ALL);
+	}
+
+	@Test
+	public void should_find_one_one_consistency_level_by_default() throws Exception
+	{
+		class Test
+		{}
+
+		Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> levels = helper
+				.findConsistencyLevels(Test.class);
+
+		assertThat(levels.right.left).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(levels.right.right).isEqualTo(HConsistencyLevel.ONE);
 	}
 
 	class Bean
