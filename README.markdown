@@ -11,7 +11,8 @@
  - Support for Cassandra wide rows mapping inside entities
  - Support for multi components column name with wide row
  - Join columns with cascading support
-
+ - Support for counters
+ - Support for custom consistency levels
 
 # Installation #
 
@@ -59,7 +60,7 @@
 12. [Manual Column Family Creation][manualCFCreation]
 13. [JSON Serialization][json]
 14. [Performance][perf]
-15. [Dealing with proxy objects]
+15. [Dealing with proxy objects][proxy]
 16. [FAQs][faqs]
 
 # License #

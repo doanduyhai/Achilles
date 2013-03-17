@@ -209,7 +209,11 @@ When then *name* attribute is filled, it indicates the name of the column family
 <br/>
 
  For more detail on this annotation and its usage, please refer to  [Multi components for wide row][multiComponentKey]
- 
+
+---------------------------------------	 
+##### @Counter
+
+ This annotation should be used on a simple field of type `java.lang.Long` or **long** primitive type. 
  
 [quickTuto]: /documentation/quickTuto.markdown
 [annotations]: /documentation/annotations.markdown
