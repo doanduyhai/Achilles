@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import info.archinnov.achilles.dao.CounterDao;
@@ -358,7 +358,7 @@ public class PropertyMeta<K, V>
 
 	public boolean isCounter()
 	{
-		return this.type == COUNTER || this.type == EXTERNAL_WIDE_MAP_COUNTER;
+		return this.type == COUNTER || this.type == WIDE_MAP_COUNTER;
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel()

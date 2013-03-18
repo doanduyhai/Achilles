@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -406,7 +406,7 @@ public class ThriftEntityManager implements EntityManager
 					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.joinMeta()
 							.getEntityDao().buildMutator());
 				}
-				else if (propertyMeta.type() == EXTERNAL_WIDE_MAP_COUNTER)
+				else if (propertyMeta.type() == WIDE_MAP_COUNTER)
 				{
 					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.counterDao()
 							.buildMutator());

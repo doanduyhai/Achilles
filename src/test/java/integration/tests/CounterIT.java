@@ -1,7 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
@@ -216,12 +216,12 @@ public class CounterIT
 		bean.getPopularTopics().insert("java", javaCount);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics",
+		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
 				"java");
 
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(javaCount);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "cassandra");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
 
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(cassandraCount);
 	}
@@ -350,23 +350,23 @@ public class CounterIT
 		em.remove(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics",
+		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
 				"cassandra");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "groovy");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "groovy");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "hibernate");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "hibernate");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "java");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "java");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "scala");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "scala");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(EXTERNAL_WIDE_MAP_COUNTER, "popularTopics", "spring");
+		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "spring");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 	}

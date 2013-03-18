@@ -418,7 +418,7 @@ public class PropertyMetaTest
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
 				.noClass(Void.class, String.class) //
-				.type(PropertyType.EXTERNAL_WIDE_MAP_COUNTER) //
+				.type(PropertyType.WIDE_MAP_COUNTER) //
 				.build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();

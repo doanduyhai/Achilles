@@ -6,7 +6,7 @@ import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.configurableCLPolicyTL;
 import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.counterDaoTL;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
@@ -302,7 +302,7 @@ public class PropertyParser
 				if (propertyHelper.hasCounterAnnotation(field))
 				{
 					counterProperties = buildCounterProperties(valueClass, field.getName(), fqcn);
-					type = EXTERNAL_WIDE_MAP_COUNTER;
+					type = WIDE_MAP_COUNTER;
 				}
 			}
 			else

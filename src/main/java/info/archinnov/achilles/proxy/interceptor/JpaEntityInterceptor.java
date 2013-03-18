@@ -180,7 +180,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case EXTERNAL_WIDE_MAP:
 				result = buildExternalWideMapWrapper(propertyMeta);
 				break;
-			case EXTERNAL_WIDE_MAP_COUNTER:
+			case WIDE_MAP_COUNTER:
 				result = buildCounterWideMapWrapper(propertyMeta);
 				break;
 			case JOIN_WIDE_MAP:

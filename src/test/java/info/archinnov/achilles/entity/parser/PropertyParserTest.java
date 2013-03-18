@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
@@ -604,7 +604,7 @@ public class PropertyParserTest
 		PropertyMeta<UUID, Long> meta = (PropertyMeta<UUID, Long>) parser.parse(
 				Test.class.getDeclaredField("counters"), false);
 
-		assertThat(meta.type()).isEqualTo(EXTERNAL_WIDE_MAP_COUNTER);
+		assertThat(meta.type()).isEqualTo(WIDE_MAP_COUNTER);
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
 		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
 		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(LONG_SRZ);

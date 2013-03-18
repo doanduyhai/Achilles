@@ -9,40 +9,32 @@ package info.archinnov.achilles.entity.metadata;
 public enum PropertyType
 {
 
-	START_EAGER(0, false, false, false, false), //
-	SERIAL_VERSION_UID(10, false, false, false, false), //
-	SIMPLE(20, false, false, false, false), //
-	LIST(30, false, false, false, false), //
-	SET(40, false, false, false, false), //
-	MAP(50, false, false, false, false), //
-	END_EAGER(60, false, false, false, false), //
-	LAZY_SIMPLE(70, true, false, false, false), //
-	LAZY_LIST(70, true, false, false, false), //
-	LAZY_SET(70, true, false, false, false), //
-	LAZY_MAP(70, true, false, false, false), //
-	WIDE_MAP(70, true, false, false, true), //
-	EXTERNAL_WIDE_MAP(70, true, false, true, true), //
-	EXTERNAL_WIDE_MAP_COUNTER(70, true, false, false, true), //
-	JOIN_SIMPLE(70, true, true, false, false), //
-	COUNTER(70, true, false, false, false), //
-	JOIN_LIST(70, true, true, false, false), //
-	JOIN_SET(70, true, true, false, false), //
-	JOIN_MAP(70, true, true, false, false), //
-	JOIN_WIDE_MAP(70, true, true, false, true), //
-	EXTERNAL_JOIN_WIDE_MAP(70, true, true, true, true);
+	START_EAGER(0), //
+	SERIAL_VERSION_UID(10), //
+	SIMPLE(20), //
+	LIST(30), //
+	SET(40), //
+	MAP(50), //
+	END_EAGER(60), //
+	LAZY_SIMPLE(70), //
+	COUNTER(70), //
+	LAZY_LIST(70), //
+	LAZY_SET(70), //
+	LAZY_MAP(70), //
+	WIDE_MAP(70), //
+	WIDE_MAP_COUNTER(70), //
+	EXTERNAL_WIDE_MAP(70), //
+	JOIN_SIMPLE(70), //
+	JOIN_LIST(70), //
+	JOIN_SET(70), //
+	JOIN_MAP(70), //
+	JOIN_WIDE_MAP(70), //
+	EXTERNAL_JOIN_WIDE_MAP(70);
 
 	private final int flag;
-	private final boolean joinColumn;
-	private final boolean lazy;
-	private final boolean external;
-	private final boolean wideMap;
 
-	PropertyType(int flag, boolean lazy, boolean joinColumn, boolean external, boolean wideMap) {
+	PropertyType(int flag) {
 		this.flag = flag;
-		this.lazy = lazy;
-		this.joinColumn = joinColumn;
-		this.external = external;
-		this.wideMap = wideMap;
 	}
 
 	public byte[] flag()
@@ -55,21 +47,44 @@ public enum PropertyType
 
 	public boolean isLazy()
 	{
-		return lazy;
+		return (this == COUNTER //
+				|| this == LAZY_SIMPLE //
+				|| this == LAZY_LIST //
+				|| this == LAZY_SET //
+				|| this == LAZY_MAP //
+				|| this == WIDE_MAP //
+				|| this == EXTERNAL_WIDE_MAP //
+				|| this == WIDE_MAP_COUNTER //
+				|| this == JOIN_SIMPLE //
+				|| this == JOIN_LIST //
+				|| this == JOIN_SET //
+				|| this == JOIN_MAP //
+				|| this == JOIN_WIDE_MAP //
+		|| this == EXTERNAL_JOIN_WIDE_MAP);
 	}
 
 	public boolean isJoinColumn()
 	{
-		return joinColumn;
+		return (this == JOIN_SIMPLE //
+				|| this == JOIN_LIST //
+				|| this == JOIN_SET //
+				|| this == JOIN_MAP //
+				|| this == JOIN_WIDE_MAP //
+		|| this == EXTERNAL_JOIN_WIDE_MAP);
 	}
 
 	public boolean isExternal()
 	{
-		return external;
+		return (this == EXTERNAL_WIDE_MAP //
+		|| this == EXTERNAL_JOIN_WIDE_MAP);
 	}
 
 	public boolean isWideMap()
 	{
-		return wideMap;
+		return (this == WIDE_MAP //
+				|| this == WIDE_MAP_COUNTER //
+				|| this == EXTERNAL_WIDE_MAP //
+				|| this == JOIN_WIDE_MAP //
+		|| this == EXTERNAL_JOIN_WIDE_MAP);
 	}
 }

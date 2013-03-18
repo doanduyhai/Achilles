@@ -666,7 +666,7 @@ public class EntityPersisterTest
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 		CounterProperties counterProperties = new CounterProperties("fqcn", counterDao, idMeta);
 		propertyMeta.setCounterProperties(counterProperties);
-		propertyMeta.setType(PropertyType.EXTERNAL_WIDE_MAP_COUNTER);
+		propertyMeta.setType(PropertyType.WIDE_MAP_COUNTER);
 
 		propertyMetas.put("counter", propertyMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
