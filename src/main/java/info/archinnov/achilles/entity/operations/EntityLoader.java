@@ -125,10 +125,21 @@ public class EntityLoader
 			currentReadConsistencyLevel.set(propertyMeta.getReadConsistencyLevel());
 			resetConsistencyLevel = true;
 		}
-		Long counter = propertyMeta.counterDao().getCounterValue(keyComp, comp);
-		if (resetConsistencyLevel)
+		Long counter;
+		try
 		{
-			currentReadConsistencyLevel.remove();
+			counter = propertyMeta.counterDao().getCounterValue(keyComp, comp);
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			if (resetConsistencyLevel)
+			{
+				currentReadConsistencyLevel.remove();
+			}
 		}
 		return counter;
 	}

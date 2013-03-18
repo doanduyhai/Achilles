@@ -466,6 +466,7 @@ public class ThriftEntityManager implements EntityManager
 					joinDao.executeMutator((Mutator) joinMutator);
 				}
 			}
+			interceptor.setMutatorMap(null);
 		}
 		else
 		{
@@ -511,34 +512,6 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 */
 	public <T> void initialize(Collection<T> entities)
-	{
-		for (T entity : entities)
-		{
-			this.initialize(entity);
-		}
-	}
-
-	/**
-	 * Initialize all lazy fields of a list of 'managed' entities, except WideMap fields.
-	 * 
-	 * Raise an IllegalStateException if an entity is not 'managed'
-	 * 
-	 */
-	public <T> void initialize(List<T> entities)
-	{
-		for (T entity : entities)
-		{
-			this.initialize(entity);
-		}
-	}
-
-	/**
-	 * Initialize all lazy fields of a set of 'managed' entities, except WideMap fields.
-	 * 
-	 * Raise an IllegalStateException if an entity is not 'managed'
-	 * 
-	 */
-	public <T> void initialize(Set<T> entities)
 	{
 		for (T entity : entities)
 		{

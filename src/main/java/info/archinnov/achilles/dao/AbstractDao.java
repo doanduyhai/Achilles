@@ -90,14 +90,28 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		V result = null;
-		HColumn<N, V> column = HFactory
-				.createColumnQuery(keyspace, keySerializer, columnNameSerializer, valueSerializer)
-				.setColumnFamily(columnFamily).setKey(key).setName(name).execute().get();
+		HColumn<N, V> column;
+
+		try
+		{
+
+			column = HFactory
+					.createColumnQuery(keyspace, keySerializer, columnNameSerializer,
+							valueSerializer).setColumnFamily(columnFamily).setKey(key)
+					.setName(name).execute().get();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		if (column != null)
 		{
 			result = column.getValue();
 		}
-		this.policy.reinitDefaultConsistencyLevel();
 		return result;
 	}
 
@@ -182,10 +196,22 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public List<V> findValuesRange(K key, N start, N end, boolean reverse, int count)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
-				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(start, end, reverse, count).execute().get().getColumns();
-		this.policy.reinitDefaultConsistencyLevel();
+		List<HColumn<N, V>> columns;
+		try
+		{
+
+			columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
+					valueSerializer).setColumnFamily(columnFamily).setKey(key)
+					.setRange(start, end, reverse, count).execute().get().getColumns();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		return Lists.transform(columns, hColumnToValue);
 	}
 
@@ -193,11 +219,21 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 			int count)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
-				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(startName, endName, reverse, count).execute().get().getColumns();
-		this.policy.reinitDefaultConsistencyLevel();
-
+		List<HColumn<N, V>> columns;
+		try
+		{
+			columns = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
+					valueSerializer).setColumnFamily(columnFamily).setKey(key)
+					.setRange(startName, endName, reverse, count).execute().get().getColumns();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		return Lists.transform(columns, hColumnToPair);
 	}
 
@@ -205,10 +241,21 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 			boolean reverse)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<N, V>> result = createSliceQuery(keyspace, keySerializer,
-				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(startName, endName, reverse, count).execute().get().getColumns();
-		this.policy.reinitDefaultConsistencyLevel();
+		List<HColumn<N, V>> result;
+		try
+		{
+			result = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
+					valueSerializer).setColumnFamily(columnFamily).setKey(key)
+					.setRange(startName, endName, reverse, count).execute().get().getColumns();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		return result;
 	}
 
@@ -216,11 +263,23 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 			int count, boolean reverse)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HCounterColumn<N>> result = HFactory
-				.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
-				.setColumnFamily(columnFamily).setKey(key)
-				.setRange(startName, endName, reverse, count).execute().get().getColumns();
-		this.policy.reinitDefaultConsistencyLevel();
+
+		List<HCounterColumn<N>> result;
+		try
+		{
+			result = HFactory
+					.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
+					.setColumnFamily(columnFamily).setKey(key)
+					.setRange(startName, endName, reverse, count).execute().get().getColumns();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		return result;
 	}
 
@@ -259,11 +318,22 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 			int size)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		Rows<K, N, V> result = HFactory
-				.createMultigetSliceQuery(keyspace, keySerializer, columnNameSerializer,
-						valueSerializer).setColumnFamily(columnFamily).setKeys(keys)
-				.setRange(startName, endName, reverse, size).execute().get();
-		this.policy.reinitDefaultConsistencyLevel();
+		Rows<K, N, V> result;
+		try
+		{
+			result = HFactory
+					.createMultigetSliceQuery(keyspace, keySerializer, columnNameSerializer,
+							valueSerializer).setColumnFamily(columnFamily).setKeys(keys)
+					.setRange(startName, endName, reverse, size).execute().get();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 		return result;
 	}
 
@@ -337,18 +407,27 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		CounterQuery<K, N> counter = new ThriftCounterColumnQuery<K, N>(keyspace, keySerializer,
 				columnNameSerializer).setColumnFamily(columnFamily).setKey(key).setName(name);
 
+		long counterValue = 0;
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		HCounterColumn<N> column = counter.execute().get();
-		this.policy.reinitDefaultConsistencyLevel();
+		try
+		{
+			HCounterColumn<N> column = counter.execute().get();
+			if (column != null)
+			{
+				counterValue = column.getValue();
+			}
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 
-		if (column == null)
-		{
-			return 0;
-		}
-		else
-		{
-			return column.getValue();
-		}
+		return counterValue;
+
 	}
 
 	public Mutator<K> buildMutator()
@@ -359,8 +438,18 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void executeMutator(Mutator<K> mutator)
 	{
 		this.policy.loadConsistencyLevelForWrite(this.columnFamily);
-		mutator.execute();
-		this.policy.reinitDefaultConsistencyLevel();
+		try
+		{
+			mutator.execute();
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			this.policy.reinitDefaultConsistencyLevel();
+		}
 	}
 
 	public String getColumnFamily()

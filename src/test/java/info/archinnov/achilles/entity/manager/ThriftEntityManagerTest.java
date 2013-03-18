@@ -335,6 +335,7 @@ public class ThriftEntityManagerTest
 		verify(helper).ensureProxy(bean);
 		verify(entityDao).executeMutator(mutator);
 		verify(joinDao).executeMutator(joinMutator);
+		verify(interceptor).setMutatorMap(null);
 	}
 
 	@Test

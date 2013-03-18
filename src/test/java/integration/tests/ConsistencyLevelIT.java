@@ -17,8 +17,6 @@ import integration.tests.entity.BeanWithWriteOneAndReadLocalQuorumConsistency;
 
 import java.util.List;
 
-import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,9 +48,9 @@ public class ConsistencyLevelIT
 		bean.setId(id);
 		bean.setName("name");
 
-		expectedEx.expect(HInvalidRequestException.class);
+		expectedEx.expect(RuntimeException.class);
 		expectedEx
-				.expectMessage("why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy");
+				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		em.persist(bean);
 	}
@@ -126,9 +124,9 @@ public class ConsistencyLevelIT
 
 		bean = em.merge(bean);
 
-		expectedEx.expect(HInvalidRequestException.class);
+		expectedEx.expect(RuntimeException.class);
 		expectedEx
-				.expectMessage("why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy");
+				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		bean.getWideMap().insert(1, "one");
 	}
@@ -146,9 +144,9 @@ public class ConsistencyLevelIT
 		wideMap.insert(1, "one");
 		wideMap.insert(2, "two");
 
-		expectedEx.expect(HInvalidRequestException.class);
+		expectedEx.expect(RuntimeException.class);
 		expectedEx
-				.expectMessage("why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy");
+				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		wideMap.findValues(1, 5, 10);
 	}

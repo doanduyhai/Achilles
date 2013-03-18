@@ -452,10 +452,20 @@ public class EntityPersister
 			currentWriteConsistencyLevel.set(propertyMeta.getWriteConsistencyLevel());
 			resetConsistencyLevel = true;
 		}
-		dao.insertCounter(keyComp, comp, (Long) counterValue);
-		if (resetConsistencyLevel)
+		try
 		{
-			currentWriteConsistencyLevel.remove();
+			dao.insertCounter(keyComp, comp, (Long) counterValue);
+		}
+		catch (Throwable throwable)
+		{
+			throw new RuntimeException(throwable);
+		}
+		finally
+		{
+			if (resetConsistencyLevel)
+			{
+				currentWriteConsistencyLevel.remove();
+			}
 		}
 	}
 
