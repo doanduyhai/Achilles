@@ -24,8 +24,8 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public AchillesConfigurableConsistencyLevelPolicy() {
 		super();
-		this.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-		this.setDefaultWriteConsistencyLevel(HConsistencyLevel.ONE);
+		this.setDefaultReadConsistencyLevel(HConsistencyLevel.QUORUM);
+		this.setDefaultWriteConsistencyLevel(HConsistencyLevel.QUORUM);
 		this.setReadCfConsistencyLevels(new HashMap<String, HConsistencyLevel>());
 		this.setWriteCfConsistencyLevels(new HashMap<String, HConsistencyLevel>());
 	}
