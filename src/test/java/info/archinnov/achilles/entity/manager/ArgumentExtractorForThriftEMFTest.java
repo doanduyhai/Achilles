@@ -8,7 +8,13 @@ import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftE
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.THREE;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
@@ -36,6 +42,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * ArgumentExtractorForThriftEMFTest
@@ -251,5 +259,78 @@ public class ArgumentExtractorForThriftEMFTest
 				JaxbAnnotationIntrospector.class);
 		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
 				JaxbAnnotationIntrospector.class);
+	}
+
+	@Test
+	public void should_init_default_read_consistency_level() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_READ_CONSISTENCY_PARAM, "ONE");
+		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
+	}
+
+	@Test
+	public void should_init_default_write_consistency_level() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_WRITE_CONSISTENCY_PARAM, "LOCAL_QUORUM");
+		assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
+	}
+
+	@Test
+	public void should_return_default_quorum_level_when_no_parameter() throws Exception
+	{
+		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(QUORUM);
+	}
+
+	@Test
+	public void should_exception_when_invalid_consistency_lvel() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_READ_CONSISTENCY_PARAM, "wrong_value");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("'wrong_value' is not a valid Consistency Level");
+		extractor.initDefaultReadConsistencyLevel(configMap);
+	}
+
+	@Test
+	public void should_init_read_consistency_level_map() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.READ_CONSISTENCY_MAP_PARAM,
+				ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
+
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
+
+		assertThat(consistencyMap.get("cf1")).isEqualTo(ONE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(LOCAL_QUORUM);
+	}
+
+	@Test
+	public void should_init_write_consistency_level_map() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
+				ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
+
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+
+		assertThat(consistencyMap.get("cf1")).isEqualTo(THREE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_return_empty_consistency_map_when_no_parameter() throws Exception
+	{
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+
+		assertThat(consistencyMap).isEmpty();
+	}
+
+	@Test
+	public void should_return_empty_consistency_map_when_empty_map_parameter() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
+				new HashMap<String, String>());
+
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+
+		assertThat(consistencyMap).isEmpty();
 	}
 }

@@ -1,13 +1,16 @@
 package info.archinnov.achilles.entity.manager;
 
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
@@ -37,6 +40,13 @@ public class ArgumentExtractorForThriftEMF
 	public static final String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
 	public static final String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
 	public static final String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
+
+	public static final String DEFAUT_READ_CONSISTENCY_PARAM = "achilles.default.consistency.read";
+	public static final String DEFAUT_WRITE_CONSISTENCY_PARAM = "achilles.default.consistency.write";
+	public static final String READ_CONSISTENCY_MAP_PARAM = "achilles.consistency.read.map";
+	public static final String WRITE_CONSISTENCY_MAP_PARAM = "achilles.consistency.write.map";
+
+	private static final ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.QUORUM;
 
 	public List<String> initEntityPackages(Map<String, Object> configurationMap)
 	{
@@ -144,6 +154,69 @@ public class ArgumentExtractorForThriftEMF
 		return objectMapperFactory;
 	}
 
+	public ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap)
+	{
+		String defaultReadLevel = (String) configMap.get(DEFAUT_READ_CONSISTENCY_PARAM);
+		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
+	}
+
+	public ConsistencyLevel initDefaultWriteConsistencyLevel(Map<String, Object> configMap)
+	{
+		String defaultWriteLevel = (String) configMap.get(DEFAUT_WRITE_CONSISTENCY_PARAM);
+		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
+	{
+		Map<String, String> readConsistencyMap = (Map<String, String>) configMap
+				.get(READ_CONSISTENCY_MAP_PARAM);
+
+		return parseConsistencyLevelMap(readConsistencyMap);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
+	{
+		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
+				.get(WRITE_CONSISTENCY_MAP_PARAM);
+
+		return parseConsistencyLevelMap(writeConsistencyMap);
+	}
+
+	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(
+			Map<String, String> consistencyLevelMap)
+	{
+		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
+		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty())
+		{
+			for (Entry<String, String> entry : consistencyLevelMap.entrySet())
+			{
+				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
+			}
+		}
+
+		return map;
+	}
+
+	private ConsistencyLevel parseConsistencyLevelOrGetDefault(String consistencyLevel)
+	{
+		ConsistencyLevel level = DEFAULT_LEVEL;
+		if (StringUtils.isNotBlank(consistencyLevel))
+		{
+			try
+			{
+				level = ConsistencyLevel.valueOf(consistencyLevel);
+			}
+			catch (IllegalArgumentException e)
+			{
+				throw new IllegalArgumentException("'" + consistencyLevel
+						+ "' is not a valid Consistency Level");
+			}
+		}
+		return level;
+	}
+
 	protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper)
 	{
 		return new ObjectMapperFactory()
@@ -155,4 +228,5 @@ public class ArgumentExtractorForThriftEMF
 			}
 		};
 	}
+
 }
