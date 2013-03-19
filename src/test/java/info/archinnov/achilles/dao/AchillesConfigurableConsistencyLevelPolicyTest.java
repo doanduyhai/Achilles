@@ -11,7 +11,6 @@ import static me.prettyprint.cassandra.service.OperationType.WRITE;
 import static me.prettyprint.hector.api.HConsistencyLevel.ANY;
 import static me.prettyprint.hector.api.HConsistencyLevel.EACH_QUORUM;
 import static me.prettyprint.hector.api.HConsistencyLevel.LOCAL_QUORUM;
-import static me.prettyprint.hector.api.HConsistencyLevel.ONE;
 import static me.prettyprint.hector.api.HConsistencyLevel.QUORUM;
 import static me.prettyprint.hector.api.HConsistencyLevel.THREE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -42,8 +41,8 @@ public class AchillesConfigurableConsistencyLevelPolicyTest
 	@Test
 	public void should_get_default_consistency_level_for_read_and_write() throws Exception
 	{
-		assertThat(policy.get(READ)).isEqualTo(ONE);
-		assertThat(policy.get(WRITE)).isEqualTo(ONE);
+		assertThat(policy.get(READ)).isEqualTo(QUORUM);
+		assertThat(policy.get(WRITE)).isEqualTo(QUORUM);
 	}
 
 	@Test
@@ -64,8 +63,8 @@ public class AchillesConfigurableConsistencyLevelPolicyTest
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
 
-		assertThat(policy.get(META_READ)).isEqualTo(ONE);
-		assertThat(policy.get(META_WRITE)).isEqualTo(ONE);
+		assertThat(policy.get(META_READ)).isEqualTo(QUORUM);
+		assertThat(policy.get(META_WRITE)).isEqualTo(QUORUM);
 	}
 
 	@Test
@@ -96,8 +95,8 @@ public class AchillesConfigurableConsistencyLevelPolicyTest
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
 
-		assertThat(policy.get(META_READ, "cf")).isEqualTo(ONE);
-		assertThat(policy.get(META_WRITE, "cf")).isEqualTo(ONE);
+		assertThat(policy.get(META_READ, "cf")).isEqualTo(QUORUM);
+		assertThat(policy.get(META_WRITE, "cf")).isEqualTo(QUORUM);
 	}
 
 	@Test
