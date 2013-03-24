@@ -32,7 +32,12 @@ public class PersistenceContext<ID>
 	private ID primaryKey;
 	private GenericDynamicCompositeDao<ID> entityDao;
 	private GenericCompositeDao<ID, ?> columnFamilyDao;
+
+	// Batch
 	private Mutator<ID> mutator;
+	private boolean pendingBatch = false;
+	private GenericDynamicCompositeDao<?> joinEntityDao;
+	private Mutator<?> joinMutator;
 
 	public PersistenceContext(EntityMeta<ID> entityMeta,
 			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap,
@@ -94,12 +99,43 @@ public class PersistenceContext<ID>
 
 	public void startBatch()
 	{
-		this.mutator = this.getEntityDao().buildMutator();
+		if (!pendingBatch)
+		{
+			this.mutator = this.getEntityDao().buildMutator();
+		}
 	}
 
 	public void endBatch()
 	{
-		this.getEntityDao().executeMutator(mutator);
+		if (!pendingBatch)
+		{
+			this.getEntityDao().executeMutator(mutator);
+			this.mutator = null;
+		}
+	}
+
+	public void startBatchForJoin(String joinColumnFamilyName)
+	{
+		this.joinEntityDao = this.findEntityDao(joinColumnFamilyName);
+		this.joinMutator = joinEntityDao.buildMutator();
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	public void endBatchForJoin()
+	{
+		this.joinEntityDao.executeMutator((Mutator) joinMutator);
+		this.joinMutator = null;
+		this.joinEntityDao = null;
+	}
+
+	public void joinBatch(Mutator<ID> extistingMutator)
+	{
+		this.mutator = extistingMutator;
+		this.pendingBatch = true;
 	}
 
 	public EntityMeta<ID> getEntityMeta()
@@ -202,5 +238,10 @@ public class PersistenceContext<ID>
 		{
 			this.entityDao = (GenericDynamicCompositeDao<ID>) entityDaosMap.get(columnFamilyName);
 		}
+	}
+
+	public Mutator<?> getJoinMutator()
+	{
+		return joinMutator;
 	}
 }

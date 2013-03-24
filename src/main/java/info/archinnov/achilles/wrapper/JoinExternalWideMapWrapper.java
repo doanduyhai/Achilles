@@ -213,17 +213,15 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 
 		if (value != null)
 		{
-			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-
-			PersistenceContext<JOIN_ID> joinContext = context
-					.newPersistenceContext(joinMeta, value);
+			PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context
+					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
 			if (interceptor.isBatchMode())
 			{
-				Mutator<?> joinMutator = interceptor.getMutatorForProperty(propertyMeta
-						.getPropertyName());
-				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties,
-						joinMutator);
+				Mutator<JOIN_ID> joinMutator = (Mutator<JOIN_ID>) interceptor
+						.getMutatorForProperty(propertyMeta.getPropertyName());
+				joinContext.joinBatch(joinMutator);
+				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
 			}
 			else
 			{

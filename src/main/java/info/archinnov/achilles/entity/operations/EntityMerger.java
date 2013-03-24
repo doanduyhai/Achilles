@@ -8,7 +8,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-
-import me.prettyprint.hector.api.mutation.Mutator;
 
 import com.google.common.collect.Sets;
 
@@ -62,26 +59,21 @@ public class EntityMerger
 			T realObject = helper.getRealObject(entity);
 			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
 					.getInterceptor(entity);
-			ID key = interceptor.getKey();
-
-			GenericDynamicCompositeDao<ID> dao = context.getEntityDao();
-
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
 			if (dirtyMap.size() > 0)
 			{
-				Mutator<ID> mutator = dao.buildMutator();
-
+				context.startBatch();
 				for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 				{
 					PropertyMeta<?, ?> propertyMeta = entry.getValue();
 					if (multiValueTypes.contains(propertyMeta.type()))
 					{
-						this.persister.removePropertyBatch(key, dao, propertyMeta, mutator);
+						this.persister.removePropertyBatch(context, propertyMeta);
 					}
-					this.persister.persistProperty(context, propertyMeta, mutator);
+					this.persister.persistProperty(context, propertyMeta);
 				}
-				dao.executeMutator(mutator);
+				context.endBatch();
 			}
 
 			dirtyMap.clear();

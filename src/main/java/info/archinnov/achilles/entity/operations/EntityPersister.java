@@ -9,7 +9,6 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -51,64 +50,58 @@ public class EntityPersister
 	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
 	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 
-	public <ID> void persist(PersistenceContext<ID> context, Mutator<ID> mutator)
+	public <ID> void persist(PersistenceContext<ID> context)
 	{
+		context.startBatch();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
 		if (!entityMeta.isColumnFamilyDirectMapping())
 		{
-			this.batchPersistVersionSerialUID(context, mutator);
+			this.batchPersistVersionSerialUID(context);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				this.persistProperty(context, propertyMeta, mutator);
+				this.persistProperty(context, propertyMeta);
 			}
 		}
-	}
-
-	public <ID> void persist(PersistenceContext<ID> context)
-	{
-		GenericDynamicCompositeDao<ID> dao = context.getEntityDao();
-		Mutator<ID> mutator = dao.buildMutator();
-		this.persist(context, mutator);
-		dao.executeMutator(mutator);
+		context.endBatch();
 	}
 
 	@SuppressWarnings("unchecked")
 	public <ID, V> void persistProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<?, V> propertyMeta)
 	{
 
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				this.batchPersistSimpleProperty(context, propertyMeta, mutator);
+				this.batchPersistSimpleProperty(context, propertyMeta);
 				break;
 			case COUNTER:
 				this.atomicPersistCounter(context, (PropertyMeta<Void, Long>) propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				this.batchPersistListProperty(context, propertyMeta, mutator);
+				this.batchPersistListProperty(context, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				this.batchPersistSetProperty(context, propertyMeta, mutator);
+				this.batchPersistSetProperty(context, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				this.batchPersistMapProperty(context, propertyMeta, mutator);
+				this.batchPersistMapProperty(context, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				this.batchPersistJoinEntity(context, propertyMeta, mutator);
+				this.batchPersistJoinEntity(context, propertyMeta);
 				break;
 			case JOIN_LIST:
 			case JOIN_SET:
-				this.batchPersistJoinListOrSetProperty(context, propertyMeta, mutator);
+				this.batchPersistJoinListOrSetProperty(context, propertyMeta);
 				break;
 			case JOIN_MAP:
-				this.batchPersistJoinMapProperty(context, propertyMeta, mutator);
+				this.batchPersistJoinMapProperty(context, propertyMeta);
 				break;
 			default:
 				break;
@@ -116,7 +109,7 @@ public class EntityPersister
 	}
 
 	protected <ID> void batchPersistSimpleProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		DynamicComposite name = dynamicCompositeKeyFactory
 				.createForBatchInsertSingleValue(propertyMeta);
@@ -124,12 +117,13 @@ public class EntityPersister
 				context.getEntity(), propertyMeta.getGetter()));
 		if (value != null)
 		{
-			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, mutator);
+			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+					context.getMutator());
 		}
 	}
 
 	protected <ID> void batchPersistListProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<?, ?> propertyMeta)
 	{
 
 		List<?> list = (List<?>) helper.getValueFromField(context.getEntity(),
@@ -146,7 +140,7 @@ public class EntityPersister
 				if (stringValue != null)
 				{
 					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-							stringValue, mutator);
+							stringValue, context.getMutator());
 				}
 				count++;
 			}
@@ -154,7 +148,7 @@ public class EntityPersister
 	}
 
 	protected <ID> void batchPersistSetProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		Set<?> set = (Set<?>) helper.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
@@ -169,7 +163,7 @@ public class EntityPersister
 				if (stringValue != null)
 				{
 					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-							stringValue, mutator);
+							stringValue, context.getMutator());
 				}
 			}
 		}
@@ -177,7 +171,7 @@ public class EntityPersister
 
 	@SuppressWarnings("unchecked")
 	protected <ID, K, V> void batchPersistMapProperty(PersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<K, V> propertyMeta)
 	{
 
 		Map<K, V> map = (Map<K, V>) helper.getValueFromField(context.getEntity(),
@@ -192,13 +186,14 @@ public class EntityPersister
 				String value = propertyMeta.writeValueToString(new KeyValue<K, V>(entry.getKey(),
 						entry.getValue()));
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-						mutator);
+						context.getMutator());
 			}
 		}
 	}
 
-	public <ID> void batchPersistJoinEntity(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID> void batchPersistJoinEntity(PersistenceContext<ID> context,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		PropertyMeta<Void, ?> idMeta = propertyMeta.joinIdMeta();
@@ -211,18 +206,22 @@ public class EntityPersister
 					+ "' should not be null");
 			String joinIdString = idMeta.writeValueToString(joinId);
 
-			DynamicComposite joinName = dynamicCompositeKeyFactory
+			DynamicComposite joinComposite = dynamicCompositeKeyFactory
 					.createForBatchInsertSingleValue(propertyMeta);
-			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinName,
-					joinIdString, mutator);
+			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinComposite,
+					joinIdString, context.getMutator());
 
-			cascadePersistOrEnsureExists(context, joinEntity, joinProperties);
+			PersistenceContext<JOIN_ID> joinPersistenceContext = (PersistenceContext<JOIN_ID>) context
+					.newPersistenceContext(propertyMeta.joinMeta(), helper.unproxy(joinEntity));
+
+			cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
+
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(PersistenceContext<ID> context,
-			V joinEntity, JoinProperties joinProperties, Mutator<JOIN_ID> joinMutator)
+			V joinEntity, JoinProperties joinProperties)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();
 		JOIN_ID joinId = helper.getKey(joinEntity, joinMeta.getIdMeta());
@@ -232,9 +231,7 @@ public class EntityPersister
 		Set<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
 		if (cascadeTypes.contains(ALL) || cascadeTypes.contains(PERSIST))
 		{
-			PersistenceContext<JOIN_ID> joinPersistenceContext = context.newPersistenceContext(
-					joinMeta, helper.unproxy(joinEntity));
-			persist(joinPersistenceContext, joinMutator);
+			persist(context);
 		}
 		else
 		{
@@ -256,19 +253,18 @@ public class EntityPersister
 
 	@SuppressWarnings("unchecked")
 	protected <ID, K, V, JOIN_ID> void batchPersistJoinMapProperty(PersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<K, V> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		EntityMeta<?> joinEntityMeta = joinProperties.getEntityMeta();
 		PropertyMeta<Void, ?> idMeta = joinEntityMeta.getIdMeta();
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinEntityMeta
-				.getColumnFamilyName());
-		Mutator<JOIN_ID> joinMutator = joinEntityDao.buildMutator();
 
 		Map<K, V> map = (Map<K, V>) helper.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
+
 		if (map != null)
 		{
+			context.startBatchForJoin(joinEntityMeta.getColumnFamilyName());
 			for (Entry<K, V> entry : map.entrySet())
 			{
 				DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
@@ -281,12 +277,17 @@ public class EntityPersister
 				String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry
 						.getKey(), joinEntityIdStringValue));
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-						mutator);
-				cascadePersistOrEnsureExists(context, joinEntity, joinProperties, joinMutator);
+						context.getMutator());
+
+				PersistenceContext<JOIN_ID> joinPersistenceContext = (PersistenceContext<JOIN_ID>) context
+						.newPersistenceContext(propertyMeta.joinMeta(), helper.unproxy(joinEntity));
+				joinPersistenceContext.joinBatch((Mutator<JOIN_ID>) context.getJoinMutator());
+
+				cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
 			}
+			context.endBatchForJoin();
 		}
 
-		joinEntityDao.executeMutator(joinMutator);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -329,51 +330,32 @@ public class EntityPersister
 		}
 	}
 
-	public <ID, V> void removePropertyBatch(ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, V> propertyMeta, Mutator<ID> mutator)
+	public <ID, V> void removePropertyBatch(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
 	{
-		Validate.notNull(key, "key should not be null");
 		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				ComponentEquality.EQUAL);
 		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				GREATER_THAN_EQUAL);
-		dao.removeColumnRangeBatch(key, start, end, mutator);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(PersistenceContext<ID> context,
-			V joinEntity, JoinProperties joinProperties)
-	{
-
-		String joinColumnFamilyName = joinProperties.getEntityMeta().getColumnFamilyName();
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = (GenericDynamicCompositeDao<JOIN_ID>) context
-				.findEntityDao(joinColumnFamilyName);
-		Mutator<JOIN_ID> joinMutator = joinEntityDao.buildMutator();
-		JOIN_ID joinId = cascadePersistOrEnsureExists(context, joinEntity, joinProperties,
-				joinMutator);
-		joinEntityDao.executeMutator(joinMutator);
-
-		return joinId;
+		context.getEntityDao().removeColumnRangeBatch(context.getPrimaryKey(), start, end,
+				context.getMutator());
 	}
 
 	@SuppressWarnings("unchecked")
 	private <ID, JOIN_ID> void batchPersistJoinListOrSetProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Mutator<ID> mutator)
+			PropertyMeta<?, ?> propertyMeta)
 	{
 
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		EntityMeta<?> joinEntityMeta = joinProperties.getEntityMeta();
 		PropertyMeta<Void, ?> idMeta = joinEntityMeta.getIdMeta();
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = (GenericDynamicCompositeDao<JOIN_ID>) context
-				.findEntityDao(joinEntityMeta.getColumnFamilyName());
-
-		Mutator<JOIN_ID> joinMutator = joinEntityDao.buildMutator();
-
 		Collection<?> list = (Collection<?>) helper.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
+
 		int count = 0;
 		if (list != null)
 		{
+			context.startBatchForJoin(joinEntityMeta.getColumnFamilyName());
 			for (Object joinEntity : list)
 			{
 				DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
@@ -385,18 +367,23 @@ public class EntityPersister
 				if (joinEntityIdStringValue != null)
 				{
 					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-							joinEntityIdStringValue, mutator);
-					this.cascadePersistOrEnsureExists(context, joinEntity, joinProperties,
-							joinMutator);
+							joinEntityIdStringValue, context.getMutator());
+
+					PersistenceContext<JOIN_ID> joinPersistenceContext = (PersistenceContext<JOIN_ID>) context
+							.newPersistenceContext(propertyMeta.joinMeta(),
+									helper.unproxy(joinEntity));
+					joinPersistenceContext.joinBatch((Mutator<JOIN_ID>) context.getJoinMutator());
+
+					this.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity,
+							joinProperties);
 				}
 				count++;
 			}
+			context.endBatchForJoin();
 		}
-		joinEntityDao.executeMutator(joinMutator);
 	}
 
-	private <T, ID> void batchPersistVersionSerialUID(PersistenceContext<ID> context,
-			Mutator<ID> mutator)
+	private <T, ID> void batchPersistVersionSerialUID(PersistenceContext<ID> context)
 	{
 
 		DynamicComposite composite = new DynamicComposite();
@@ -409,7 +396,7 @@ public class EntityPersister
 		if (serialVersionUID != null)
 		{
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
-					serialVersionUID.toString(), mutator);
+					serialVersionUID.toString(), context.getMutator());
 		}
 		else
 		{
