@@ -68,13 +68,10 @@ public class EntityPersister
 
 	public <ID> void persist(PersistenceContext<ID> context)
 	{
-		GenericDynamicCompositeDao<ID> dao = context.fetchEntityDao();
-		if (dao != null)
-		{
-			Mutator<ID> mutator = dao.buildMutator();
-			this.persist(context, mutator);
-			dao.executeMutator(mutator);
-		}
+		GenericDynamicCompositeDao<ID> dao = context.getEntityDao();
+		Mutator<ID> mutator = dao.buildMutator();
+		this.persist(context, mutator);
+		dao.executeMutator(mutator);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -127,8 +124,7 @@ public class EntityPersister
 				context.getEntity(), propertyMeta.getGetter()));
 		if (value != null)
 		{
-			context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-					mutator);
+			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, mutator);
 		}
 	}
 
@@ -149,7 +145,7 @@ public class EntityPersister
 				String stringValue = propertyMeta.writeValueToString(value);
 				if (stringValue != null)
 				{
-					context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
+					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
 							stringValue, mutator);
 				}
 				count++;
@@ -172,7 +168,7 @@ public class EntityPersister
 				String stringValue = propertyMeta.writeValueToString(value);
 				if (stringValue != null)
 				{
-					context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
+					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
 							stringValue, mutator);
 				}
 			}
@@ -195,7 +191,7 @@ public class EntityPersister
 
 				String value = propertyMeta.writeValueToString(new KeyValue<K, V>(entry.getKey(),
 						entry.getValue()));
-				context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
 						mutator);
 			}
 		}
@@ -217,7 +213,7 @@ public class EntityPersister
 
 			DynamicComposite joinName = dynamicCompositeKeyFactory
 					.createForBatchInsertSingleValue(propertyMeta);
-			context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), joinName,
+			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinName,
 					joinIdString, mutator);
 
 			cascadePersistOrEnsureExists(context, joinEntity, joinProperties);
@@ -284,7 +280,7 @@ public class EntityPersister
 
 				String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry
 						.getKey(), joinEntityIdStringValue));
-				context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
 						mutator);
 				cascadePersistOrEnsureExists(context, joinEntity, joinProperties, joinMutator);
 			}
@@ -301,12 +297,12 @@ public class EntityPersister
 
 		if (context.isDirectColumnFamilyMapping())
 		{
-			context.fetchColumnFamilyDao().removeRow(primaryKey);
+			context.getColumnFamilyDao().removeRow(primaryKey);
 		}
 		else
 		{
 
-			context.fetchEntityDao().removeRow(primaryKey);
+			context.getEntityDao().removeRow(primaryKey);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -388,7 +384,7 @@ public class EntityPersister
 				String joinEntityIdStringValue = idMeta.writeValueToString(joinEntityId);
 				if (joinEntityIdStringValue != null)
 				{
-					context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
+					context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
 							joinEntityIdStringValue, mutator);
 					this.cascadePersistOrEnsureExists(context, joinEntity, joinProperties,
 							joinMutator);
@@ -412,7 +408,7 @@ public class EntityPersister
 
 		if (serialVersionUID != null)
 		{
-			context.fetchEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
+			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
 					serialVersionUID.toString(), mutator);
 		}
 		else

@@ -67,7 +67,7 @@ public class EntityLoader
 			}
 			else
 			{
-				List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao()
+				List<Pair<DynamicComposite, String>> columns = context.getEntityDao()
 						.eagerFetchEntity(primaryKey);
 				if (columns.size() > 0)
 				{
@@ -108,7 +108,7 @@ public class EntityLoader
 	{
 		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				EQUAL);
-		return propertyMeta.getValueFromString(context.fetchEntityDao().getValue(
+		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
 				context.getPrimaryKey(), composite));
 	}
 
@@ -213,7 +213,7 @@ public class EntityLoader
 		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
 		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 		return columns;
 	}
@@ -272,7 +272,7 @@ public class EntityLoader
 		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				EQUAL);
 
-		String stringJoinId = context.fetchEntityDao().getValue(context.getPrimaryKey(), composite);
+		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);
 
 		if (stringJoinId != null)
 		{

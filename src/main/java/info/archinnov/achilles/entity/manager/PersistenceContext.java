@@ -10,6 +10,8 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
+import me.prettyprint.hector.api.mutation.Mutator;
+
 /**
  * PersistenceContext
  * 
@@ -19,7 +21,6 @@ import java.util.Map;
 public class PersistenceContext<ID>
 {
 	private final EntityHelper helper = new EntityHelper();
-
 	private final EntityMeta<ID> entityMeta;
 	private final Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
 	private final Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
@@ -29,6 +30,9 @@ public class PersistenceContext<ID>
 	private Object entity;
 	private Class<?> entityClass;
 	private ID primaryKey;
+	private GenericDynamicCompositeDao<ID> entityDao;
+	private GenericCompositeDao<ID, ?> columnFamilyDao;
+	private Mutator<ID> mutator;
 
 	public PersistenceContext(EntityMeta<ID> entityMeta,
 			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap,
@@ -48,6 +52,8 @@ public class PersistenceContext<ID>
 
 		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
 				+ "' should not be null");
+
+		this.initDaos();
 	}
 
 	public PersistenceContext(EntityMeta<ID> entityMeta,
@@ -63,6 +69,11 @@ public class PersistenceContext<ID>
 		this.policy = policy;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
+
+		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
+				+ "' should not be null");
+
+		this.initDaos();
 	}
 
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(
@@ -79,6 +90,16 @@ public class PersistenceContext<ID>
 	{
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, policy, entityClass, joinId);
+	}
+
+	public void startBatch()
+	{
+		this.mutator = this.getEntityDao().buildMutator();
+	}
+
+	public void endBatch()
+	{
+		this.getEntityDao().executeMutator(mutator);
 	}
 
 	public EntityMeta<ID> getEntityMeta()
@@ -111,18 +132,14 @@ public class PersistenceContext<ID>
 		return counterDao;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDynamicCompositeDao<ID> fetchEntityDao()
+	public GenericDynamicCompositeDao<ID> getEntityDao()
 	{
-		String columnFamilyName = entityMeta.getColumnFamilyName();
-		return (GenericDynamicCompositeDao<ID>) entityDaosMap.get(columnFamilyName);
+		return entityDao;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericCompositeDao<ID, ?> fetchColumnFamilyDao()
+	public GenericCompositeDao<ID, ?> getColumnFamilyDao()
 	{
-		String columnFamilyName = entityMeta.getColumnFamilyName();
-		return (GenericCompositeDao<ID, ?>) columnFamilyDaosMap.get(columnFamilyName);
+		return columnFamilyDao;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -160,5 +177,30 @@ public class PersistenceContext<ID>
 	public AchillesConfigurableConsistencyLevelPolicy getPolicy()
 	{
 		return policy;
+	}
+
+	public Mutator<ID> getMutator()
+	{
+		return mutator;
+	}
+
+	public void setMutator(Mutator<ID> mutator)
+	{
+		this.mutator = mutator;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void initDaos()
+	{
+		String columnFamilyName = entityMeta.getColumnFamilyName();
+		if (entityMeta.isColumnFamilyDirectMapping())
+		{
+			this.columnFamilyDao = (GenericCompositeDao<ID, ?>) columnFamilyDaosMap
+					.get(columnFamilyName);
+		}
+		else
+		{
+			this.entityDao = (GenericDynamicCompositeDao<ID>) entityDaosMap.get(columnFamilyName);
+		}
 	}
 }

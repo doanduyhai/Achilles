@@ -429,7 +429,7 @@ public class ThriftEntityManager implements EntityManager
 			}
 		}
 
-		mutator = context.fetchEntityDao().buildMutator();
+		mutator = context.getEntityDao().buildMutator();
 
 		Factory proxy = (Factory) entity;
 		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
@@ -464,7 +464,7 @@ public class ThriftEntityManager implements EntityManager
 
 		if (mutator != null)
 		{
-			context.fetchEntityDao().executeMutator(mutator);
+			context.getEntityDao().executeMutator(mutator);
 		}
 		for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : interceptor
 				.getMutatorMap().entrySet())

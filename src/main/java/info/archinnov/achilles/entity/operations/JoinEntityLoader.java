@@ -89,7 +89,7 @@ public class JoinEntityLoader
 
 		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
 		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 
 		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
@@ -131,7 +131,7 @@ public class JoinEntityLoader
 	{
 		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
 		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
 

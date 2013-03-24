@@ -64,7 +64,7 @@ public class EntityMerger
 					.getInterceptor(entity);
 			ID key = interceptor.getKey();
 
-			GenericDynamicCompositeDao<ID> dao = context.fetchEntityDao();
+			GenericDynamicCompositeDao<ID> dao = context.getEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
@@ -120,7 +120,11 @@ public class EntityMerger
 		}
 		else
 		{
-			this.persister.persist(context);
+			if (!context.isDirectColumnFamilyMapping())
+			{
+				this.persister.persist(context);
+			}
+
 			proxy = helper.buildProxy(entity, context);
 		}
 

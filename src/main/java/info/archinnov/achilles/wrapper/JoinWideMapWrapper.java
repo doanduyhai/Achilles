@@ -28,7 +28,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 	@Override
 	public V get(K key)
 	{
-		String joinId = context.fetchEntityDao().getValue(id, buildComposite(key));
+		String joinId = context.getEntityDao().getValue(id, buildComposite(key));
 		if (joinId != null)
 		{
 			PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
@@ -56,13 +56,13 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
 		if (this.interceptor.isBatchMode())
 		{
-			context.fetchEntityDao().setValueBatch(id, buildComposite(key),
+			context.getEntityDao().setValueBatch(id, buildComposite(key),
 					joinIdMeta.writeValueToString(joinId), ttl,
 					(Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			context.fetchEntityDao().setValue(id, buildComposite(key),
+			context.getEntityDao().setValue(id, buildComposite(key),
 					joinIdMeta.writeValueToString(joinId), ttl);
 		}
 	}
@@ -75,12 +75,12 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
 		if (this.interceptor.isBatchMode())
 		{
-			context.fetchEntityDao().setValueBatch(id, buildComposite(key),
+			context.getEntityDao().setValueBatch(id, buildComposite(key),
 					joinIdMeta.writeValueToString(joinId), (Mutator<ID>) interceptor.getMutator());
 		}
 		else
 		{
-			context.fetchEntityDao().setValue(id, buildComposite(key),
+			context.getEntityDao().setValue(id, buildComposite(key),
 					joinIdMeta.writeValueToString(joinId));
 		}
 	}
@@ -95,7 +95,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 				.joinMeta().getColumnFamilyName());
 
 		AchillesJoinSliceIterator<ID, DynamicComposite, String, JOIN_ID, K, V> joinColumnSliceIterator = context
-				.fetchEntityDao().getJoinColumnsIterator(joinEntityDao, propertyMeta, id,
+				.getEntityDao().getJoinColumnsIterator(joinEntityDao, propertyMeta, id,
 						queryComps[0], queryComps[1], ordering.isReverse(), count);
 
 		return iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(context,
