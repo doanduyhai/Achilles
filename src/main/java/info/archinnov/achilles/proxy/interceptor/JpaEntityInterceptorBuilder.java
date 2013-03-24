@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.interceptor;
 
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -22,20 +22,19 @@ public class JpaEntityInterceptorBuilder<ID, T>
 
 	private T target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
-	private EntityMeta<ID> entityMeta;
-	private EntityHelper helper = new EntityHelper();
+	private PersistenceContext<ID> context;
 	private EntityLoader loader = new EntityLoader();
 
-	public static <ID, T> JpaEntityInterceptorBuilder<ID, T> builder(EntityMeta<ID> entityMeta,
-			T entity)
+	public static <ID, T> JpaEntityInterceptorBuilder<ID, T> builder(
+			PersistenceContext<ID> context, T entity)
 	{
-		return new JpaEntityInterceptorBuilder<ID, T>(entityMeta, entity);
+		return new JpaEntityInterceptorBuilder<ID, T>(context, entity);
 	}
 
-	public JpaEntityInterceptorBuilder(EntityMeta<ID> entityMeta, T entity) {
-		Validator.validateNotNull(entityMeta, "EntityMeta for interceptor should not be null");
-		Validator.validateNotNull(entity, "Target object for interceptor should not be null");
-		this.entityMeta = entityMeta;
+	public JpaEntityInterceptorBuilder(PersistenceContext<ID> context, T entity) {
+		Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
+		Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
+		this.context = context;
 		this.target = entity;
 	}
 
@@ -45,10 +44,11 @@ public class JpaEntityInterceptorBuilder<ID, T>
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public JpaEntityInterceptor<ID, T> build()
 	{
 		JpaEntityInterceptor<ID, T> interceptor = new JpaEntityInterceptor<ID, T>();
+
+		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
 		Validator.validateNotNull(this.target, "Target object for interceptor should not be null");
 		Validator.validateNotNull(entityMeta.getGetterMetas(),
@@ -57,20 +57,16 @@ public class JpaEntityInterceptorBuilder<ID, T>
 				"Setters metadata for interceptor should not be null");
 		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			interceptor.setDirectColumnFamilyMapping(true);
-			Validator.validateNotNull(entityMeta.getColumnFamilyDao(), "Dao for entity meta");
-			interceptor.setColumnFamilyDao(entityMeta.getColumnFamilyDao());
+			Validator.validateNotNull(context.fetchColumnFamilyDao(), "Dao for entity meta");
 		}
 		else
 		{
-			interceptor.setDirectColumnFamilyMapping(false);
-			Validator.validateNotNull(entityMeta.getEntityDao(), "Dao for entity meta");
-			interceptor.setEntityDao(entityMeta.getEntityDao());
-
+			Validator.validateNotNull(context.fetchEntityDao(), "Dao for entity meta");
 		}
 		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata");
 
 		interceptor.setTarget(target);
+		interceptor.setContext(context);
 		interceptor.setGetterMetas(entityMeta.getGetterMetas());
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
@@ -82,10 +78,9 @@ public class JpaEntityInterceptorBuilder<ID, T>
 		}
 		interceptor.setLazyLoaded(this.lazyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
-		interceptor.setKey((ID) helper
-				.getValueFromField(target, entityMeta.getIdMeta().getGetter()));
-
+		interceptor.setKey(context.getPrimaryKey());
 		interceptor.setLoader(loader);
+
 		return interceptor;
 	}
 }

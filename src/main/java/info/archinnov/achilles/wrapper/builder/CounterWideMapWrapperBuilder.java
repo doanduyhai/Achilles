@@ -3,6 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -30,6 +31,7 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	protected IteratorFactory iteratorFactory;
 	protected CompositeKeyFactory compositeKeyFactory;
 	protected DynamicCompositeKeyFactory dynamicCompositeKeyFactory;
+	protected PersistenceContext<ID> context;
 
 	public CounterWideMapWrapperBuilder(ID id, CounterDao counterDao,
 			PropertyMeta<K, Long> propertyMeta)
@@ -60,6 +62,12 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	public CounterWideMapWrapperBuilder<ID, K> interceptor(AchillesInterceptor interceptor)
 	{
 		this.interceptor = interceptor;
+		return this;
+	}
+
+	public CounterWideMapWrapperBuilder<ID, K> context(PersistenceContext<ID> context)
+	{
+		this.context = context;
 		return this;
 	}
 

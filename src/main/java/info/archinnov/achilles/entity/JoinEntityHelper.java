@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity;
 
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -24,7 +25,7 @@ public class JoinEntityHelper
 	private EntityHelper helper = new EntityHelper();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
-			EntityMeta<ID> entityMeta)
+			EntityMeta<ID> entityMeta, GenericDynamicCompositeDao<ID> joinEntityDao)
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotEmpty(keys, "List of join primary keys '" + keys
@@ -33,8 +34,7 @@ public class JoinEntityHelper
 				+ "' should not be null");
 
 		Map<ID, T> entitiesByKey = new HashMap<ID, T>();
-		Map<ID, List<Pair<DynamicComposite, String>>> rows = entityMeta.getEntityDao()
-				.eagerFetchEntities(keys);
+		Map<ID, List<Pair<DynamicComposite, String>>> rows = joinEntityDao.eagerFetchEntities(keys);
 
 		for (Entry<ID, List<Pair<DynamicComposite, String>>> entry : rows.entrySet())
 		{

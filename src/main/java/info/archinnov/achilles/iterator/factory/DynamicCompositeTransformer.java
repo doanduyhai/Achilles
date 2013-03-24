@@ -2,6 +2,8 @@ package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -112,8 +114,8 @@ public class DynamicCompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<DynamicComposite, String>, KeyValue<K, V>> buildKeyValueTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public <ID, K, V> Function<HColumn<DynamicComposite, String>, KeyValue<K, V>> buildKeyValueTransformer(
+			final PersistenceContext<ID> context, final PropertyMeta<K, V> propertyMeta)
 	{
 
 		return new Function<HColumn<DynamicComposite, String>, KeyValue<K, V>>()
@@ -121,29 +123,32 @@ public class DynamicCompositeTransformer
 			@Override
 			public KeyValue<K, V> apply(HColumn<DynamicComposite, String> hColumn)
 			{
-				return buildKeyValueFromDynamicComposite(propertyMeta, hColumn);
+				return buildKeyValueFromDynamicComposite(context, propertyMeta, hColumn);
 			}
 		};
 	}
 
-	public <K, V> KeyValue<K, V> buildKeyValueFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
+	public <ID, K, V> KeyValue<K, V> buildKeyValueFromDynamicComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
 			HColumn<DynamicComposite, String> hColumn)
 	{
 		K key = buildKeyFromDynamicComposite(propertyMeta, hColumn);
-		V value = this.buildValueFromDynamicComposite(propertyMeta, hColumn);
+		V value = this.buildValueFromDynamicComposite(context, propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
 
 		return new KeyValue<K, V>(key, value, ttl);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, V> V buildValueFromDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, ?> hColumn)
+	public <ID, JOIN_ID, K, V> V buildValueFromDynamicComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<DynamicComposite, ?> hColumn)
 	{
 		V value;
 		if (propertyMeta.isJoin())
 		{
-			value = entityHelper.buildProxy((V) hColumn.getValue(), propertyMeta.joinMeta());
+			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+					(EntityMeta<JOIN_ID>) propertyMeta.joinMeta(), (V) hColumn.getValue());
+			value = entityHelper.buildProxy((V) hColumn.getValue(), joinContext);
 		}
 		else
 		{

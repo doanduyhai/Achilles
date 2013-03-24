@@ -2,9 +2,9 @@ package info.archinnov.achilles.entity.metadata;
 
 import info.archinnov.achilles.exception.BeanMappingException;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 
@@ -18,7 +18,7 @@ public class JoinProperties
 {
 
 	private EntityMeta<?> entityMeta;
-	private List<CascadeType> cascadeTypes = new ArrayList<CascadeType>();
+	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
 	public EntityMeta<?> getEntityMeta()
 	{
@@ -30,12 +30,12 @@ public class JoinProperties
 		this.entityMeta = entityMeta;
 	}
 
-	public List<CascadeType> getCascadeTypes()
+	public Set<CascadeType> getCascadeTypes()
 	{
 		return cascadeTypes;
 	}
 
-	public void setCascadeTypes(List<CascadeType> cascadeTypes)
+	public void setCascadeTypes(Set<CascadeType> cascadeTypes)
 	{
 		this.cascadeTypes = cascadeTypes;
 	}

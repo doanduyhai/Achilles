@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -17,19 +18,21 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterator<K, V>
+public class KeyValueIteratorForDynamicComposite<ID, K, V> implements KeyValueIterator<K, V>
 {
 	private KeyValueFactory factory = new KeyValueFactory();
 
 	private Iterator<HColumn<DynamicComposite, String>> achillesSliceIterator;
-	private PropertyMeta<K, V> wideMapMeta;
+	private PropertyMeta<K, V> propertyMeta;
+	private PersistenceContext<ID> context;
 
-	public KeyValueIteratorForDynamicComposite(
+	public KeyValueIteratorForDynamicComposite(PersistenceContext<ID> context,
 			Iterator<HColumn<DynamicComposite, String>> columnSliceIterator,
-			PropertyMeta<K, V> wideMapMeta)
+			PropertyMeta<K, V> propertyMeta)
 	{
+		this.context = context;
 		this.achillesSliceIterator = columnSliceIterator;
-		this.wideMapMeta = wideMapMeta;
+		this.propertyMeta = propertyMeta;
 	}
 
 	@Override
@@ -46,7 +49,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		{
 			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
 
-			keyValue = factory.createKeyValueForDynamicComposite(wideMapMeta, column);
+			keyValue = factory.createKeyValueForDynamicComposite(context, propertyMeta, column);
 		}
 		else
 		{
@@ -62,7 +65,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
-			key = factory.createKeyForDynamicComposite(wideMapMeta, column);
+			key = factory.createKeyForDynamicComposite(propertyMeta, column);
 		}
 		else
 		{
@@ -78,7 +81,7 @@ public class KeyValueIteratorForDynamicComposite<K, V> implements KeyValueIterat
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<DynamicComposite, String> column = this.achillesSliceIterator.next();
-			value = factory.createValueForDynamicComposite(wideMapMeta, column);
+			value = factory.createValueForDynamicComposite(context, propertyMeta, column);
 		}
 		else
 		{

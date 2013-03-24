@@ -4,7 +4,6 @@ import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftE
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.FORCE_CF_CREATION_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.configurableCLPolicyTL;
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
@@ -29,6 +28,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.cassandraunit.DataLoader;
 import org.cassandraunit.dataset.json.ClassPathJsonDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +52,8 @@ public abstract class CassandraDaoTest
 	public static int CASSANDRA_TEST_PORT = 9160;
 	private static final String ENTITY_PACKAGE = "integration.tests.entity";
 	private static Cluster cluster;
-
 	private static Keyspace keyspace;
+	private static AchillesConfigurableConsistencyLevelPolicy policy;
 
 	public static final Logger log = LoggerFactory.getLogger(CassandraDaoTest.class);
 
@@ -107,6 +107,7 @@ public abstract class CassandraDaoTest
 				FORCE_CF_CREATION_PARAM, true);
 
 		ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(configMap);
+		policy = Whitebox.getInternalState(factory, "consistencyPolicy");
 		em = (ThriftEntityManager) factory.createEntityManager();
 	}
 
@@ -146,24 +147,24 @@ public abstract class CassandraDaoTest
 	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(
 			Serializer<K> keySerializer, String columnFamily)
 	{
-		return new GenericDynamicCompositeDao<K>(keyspace, keySerializer, columnFamily,
-				configurableCLPolicyTL.get());
+		return new GenericDynamicCompositeDao<K>(cluster, keyspace, keySerializer, columnFamily,
+				policy);
 	}
 
 	public static <K, V> GenericCompositeDao<K, V> getCompositeDao(Serializer<K> keySerializer,
 			Serializer<V> valueSerializer, String columnFamily)
 	{
-		return new GenericCompositeDao<K, V>(keyspace, keySerializer, valueSerializer,
-				columnFamily, configurableCLPolicyTL.get());
+		return new GenericCompositeDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
+				columnFamily, policy);
 	}
 
 	public static CounterDao getCounterDao()
 	{
-		return new CounterDao(keyspace, configurableCLPolicyTL.get());
+		return new CounterDao(cluster, keyspace, policy);
 	}
 
 	public static AchillesConfigurableConsistencyLevelPolicy getConsistencyPolicy()
 	{
-		return configurableCLPolicyTL.get();
+		return policy;
 	}
 }

@@ -15,6 +15,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
+import info.archinnov.achilles.entity.parser.EntityParsingContext;
 import info.archinnov.achilles.exception.BeanMappingException;
 
 import java.util.ArrayList;
@@ -39,8 +40,6 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-
-import parser.entity.BeanWithSimpleCounter;
 
 /**
  * ThriftEntityManagerFactoryImplTest
@@ -137,46 +136,28 @@ public class ThriftEntityManagerFactoryImplTest
 
 		verify(entityMetaMap).put(Long.class, entityMeta1);
 		verify(entityMetaMap).put(String.class, entityMeta2);
-		verify(entityParser).fillJoinEntityMeta(eq(keyspace), mapCaptor.capture(),
-				eq(entityMetaMap));
 		verify(columnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
-				anyBoolean());
-
-		assertThat((Class) mapCaptor.getValue().get(longPropertyMeta)).isEqualTo(Long.class);
+				eq(false));
+		verify(entityParser, never()).fillJoinEntityMeta(eq(keyspace), anyMap(), eq(entityMetaMap));
 	}
 
 	@Test
-	public void should_bootstrap_with_counter_property() throws Exception
-	{
-		final List<Class<?>> classes = new ArrayList<Class<?>>();
-		classes.add(BeanWithSimpleCounter.class);
-
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
-		when(entityParser.parseEntity(eq(keyspace), eq(BeanWithSimpleCounter.class))).thenReturn(
-				entityMeta1);
-		when(entityMeta1.hasCounter()).thenReturn(true);
-
-		factory.bootstrap();
-
-		verify(entityMetaMap).put(BeanWithSimpleCounter.class, entityMeta1);
-		verify(columnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
-				eq(true));
-
-	}
-
-	@Test
-	public void should_bootstrap_no_join_property() throws Exception
+	public void should_bootstrap_with_join_property() throws Exception
 	{
 		List<Class<?>> classes = new ArrayList<Class<?>>();
+		EntityParsingContext context = new EntityParsingContext();
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+		joinPropertyMetaToBeFilled.put(longPropertyMeta, Long.class);
 		classes.add(Long.class);
+
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
-
 		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(entityMeta1);
-
-		factory.bootstrap();
+		context.setJoinPropertyMetaToBeFilled(joinPropertyMetaToBeFilled);
+		factory.discoverEntities(context);
 
 		verify(entityMetaMap).put(Long.class, entityMeta1);
-		verify(entityParser, never()).fillJoinEntityMeta(eq(keyspace), anyMap(), eq(entityMetaMap));
+		verify(entityParser)
+				.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
 	}
 
 	@Test

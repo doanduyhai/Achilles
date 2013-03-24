@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -38,11 +39,10 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 		this.initComposites();
 	}
 
-	public GenericDynamicCompositeDao(Keyspace keyspace, Serializer<K> keySrz, String cf,
-			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	public GenericDynamicCompositeDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
+			String cf, AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
-		super(keyspace);
-
+		super(cluster, keyspace);
 		this.initComposites();
 		keySerializer = keySrz;
 		columnFamily = cf;

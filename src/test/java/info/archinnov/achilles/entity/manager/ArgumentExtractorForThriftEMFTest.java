@@ -8,13 +8,12 @@ import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftE
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.THREE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import static org.mockito.Mockito.verify;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
@@ -26,6 +25,7 @@ import java.util.Map;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
@@ -71,6 +71,9 @@ public class ArgumentExtractorForThriftEMFTest
 
 	@Mock
 	private ObjectMapper mapper;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	private Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -161,9 +164,10 @@ public class ArgumentExtractorForThriftEMFTest
 	{
 		configMap.put(KEYSPACE_PARAM, keyspace);
 
-		Keyspace actual = extractor.initKeyspace(null, configMap);
+		Keyspace actual = extractor.initKeyspace(null, policy, configMap);
 
 		assertThat(actual).isSameAs(keyspace);
+		verify(keyspace).setConsistencyLevelPolicy(policy);
 	}
 
 	@Test
@@ -174,7 +178,7 @@ public class ArgumentExtractorForThriftEMFTest
 		Cluster cluster = HFactory.getOrCreateCluster("Test Cluster",
 				new CassandraHostConfigurator("localhost:9161"));
 
-		Keyspace actual = extractor.initKeyspace(cluster, configMap);
+		Keyspace actual = extractor.initKeyspace(cluster, policy, configMap);
 
 		assertThat(actual).isNotNull();
 		assertThat(actual).isInstanceOf(Keyspace.class);
@@ -191,7 +195,7 @@ public class ArgumentExtractorForThriftEMFTest
 						+ "' property or '"
 						+ KEYSPACE_NAME_PARAM
 						+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
-		extractor.initKeyspace(null, configMap);
+		extractor.initKeyspace(null, policy, configMap);
 	}
 
 	@Test
@@ -297,10 +301,10 @@ public class ArgumentExtractorForThriftEMFTest
 		configMap.put(ArgumentExtractorForThriftEMF.READ_CONSISTENCY_MAP_PARAM,
 				ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
 
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
+		Map<String, HConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
 
-		assertThat(consistencyMap.get("cf1")).isEqualTo(ONE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(LOCAL_QUORUM);
+		assertThat(consistencyMap.get("cf1")).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test
@@ -309,16 +313,18 @@ public class ArgumentExtractorForThriftEMFTest
 		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
 				ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
 
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+		Map<String, HConsistencyLevel> consistencyMap = extractor
+				.initWriteConsistencyMap(configMap);
 
-		assertThat(consistencyMap.get("cf1")).isEqualTo(THREE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(EACH_QUORUM);
+		assertThat(consistencyMap.get("cf1")).isEqualTo(HConsistencyLevel.THREE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(HConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
 	public void should_return_empty_consistency_map_when_no_parameter() throws Exception
 	{
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+		Map<String, HConsistencyLevel> consistencyMap = extractor
+				.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
 	}
@@ -329,7 +335,8 @@ public class ArgumentExtractorForThriftEMFTest
 		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
 				new HashMap<String, String>());
 
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
+		Map<String, HConsistencyLevel> consistencyMap = extractor
+				.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
 	}

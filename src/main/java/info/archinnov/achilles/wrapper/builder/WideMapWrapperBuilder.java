@@ -3,6 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -19,7 +20,7 @@ import info.archinnov.achilles.wrapper.WideMapWrapper;
 public class WideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
-	private GenericDynamicCompositeDao<ID> dao;
+	protected GenericDynamicCompositeDao<ID> entityDao;
 	private PropertyMeta<K, V> wideMapMeta;
 	private AchillesInterceptor interceptor;
 	private EntityHelper entityHelper;
@@ -27,12 +28,13 @@ public class WideMapWrapperBuilder<ID, K, V>
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
 	private DynamicCompositeKeyFactory keyFactory;
+	protected PersistenceContext<ID> context;
 
 	public WideMapWrapperBuilder(ID id, GenericDynamicCompositeDao<ID> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
+		this.entityDao = dao;
 		this.id = id;
-		this.dao = dao;
 		this.wideMapMeta = wideMapMeta;
 	}
 
@@ -40,6 +42,12 @@ public class WideMapWrapperBuilder<ID, K, V>
 			GenericDynamicCompositeDao<ID> dao, PropertyMeta<K, V> wideMapMeta)
 	{
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
+	}
+
+	public WideMapWrapperBuilder<ID, K, V> context(PersistenceContext<ID> context)
+	{
+		this.context = context;
+		return this;
 	}
 
 	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor interceptor)
@@ -88,7 +96,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 	protected void build(WideMapWrapper<ID, K, V> wrapper)
 	{
 		wrapper.setId(id);
-		wrapper.setEntityDao(dao);
+		wrapper.setEntityDao(entityDao);
 		wrapper.setWideMapMeta(wideMapMeta);
 		wrapper.setInterceptor(interceptor);
 		wrapper.setEntityHelper(entityHelper);
@@ -96,6 +104,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 		wrapper.setIteratorFactory(iteratorFactory);
 		wrapper.setKeyFactory(keyFactory);
 		wrapper.setKeyValueFactory(keyValueFactory);
+		wrapper.setContext(context);
 	}
 
 }

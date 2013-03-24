@@ -1,5 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
+
 import java.util.Iterator;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Iterator;
  * @author DuyHai DOAN
  * 
  */
-public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iterator<V>
+public class IteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements Iterator<V>
 {
 	protected Iterator<V> target;
 
@@ -25,14 +27,17 @@ public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iter
 	@Override
 	public V next()
 	{
+		V value = this.target.next();
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.next(), joinMeta());
+			PersistenceContext<?> joinContext = context.newPersistenceContext(
+					propertyMeta.joinMeta(), value);
+			return helper.buildProxy(value, joinContext);
 		}
 		else
 		{
 
-			return this.target.next();
+			return value;
 		}
 	}
 

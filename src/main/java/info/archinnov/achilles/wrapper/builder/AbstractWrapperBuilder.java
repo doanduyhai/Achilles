@@ -1,6 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.AbstractWrapper;
 
@@ -14,12 +15,13 @@ import java.util.Map;
  * 
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T, K, V>, K, V>
+public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilder<ID, T, K, V>, K, V>
 {
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Method setter;
 	private PropertyMeta<K, V> propertyMeta;
 	private EntityHelper helper;
+	protected PersistenceContext<ID> context;
 
 	public T dirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
@@ -45,11 +47,18 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T,
 		return (T) this;
 	}
 
-	public void build(AbstractWrapper<K, V> wrapper)
+	public T context(PersistenceContext<ID> context)
+	{
+		this.context = context;
+		return (T) this;
+	}
+
+	public void build(AbstractWrapper<ID, K, V> wrapper)
 	{
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setHelper(helper);
+		wrapper.setContext(context);
 	}
 }

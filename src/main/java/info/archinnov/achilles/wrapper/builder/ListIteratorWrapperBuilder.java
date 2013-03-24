@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.wrapper.ListIteratorWrapper;
 
 import java.util.ListIterator;
-
 
 /**
  * ListIteratorWrapperBuilder
@@ -11,23 +11,25 @@ import java.util.ListIterator;
  * @author DuyHai DOAN
  * 
  */
-public class ListIteratorWrapperBuilder<V> extends
-		AbstractWrapperBuilder<ListIteratorWrapperBuilder<V>, Void, V>
+public class ListIteratorWrapperBuilder<ID, V> extends
+		AbstractWrapperBuilder<ID, ListIteratorWrapperBuilder<ID, V>, Void, V>
 {
 	private ListIterator<V> target;
 
-	public static <V> ListIteratorWrapperBuilder<V> builder(ListIterator<V> target)
+	public static <ID, V> ListIteratorWrapperBuilder<ID, V> builder(PersistenceContext<ID> context,
+			ListIterator<V> target)
 	{
-		return new ListIteratorWrapperBuilder<V>(target);
+		return new ListIteratorWrapperBuilder<ID, V>(context, target);
 	}
 
-	public ListIteratorWrapperBuilder(ListIterator<V> target) {
+	public ListIteratorWrapperBuilder(PersistenceContext<ID> context, ListIterator<V> target) {
+		super.context = context;
 		this.target = target;
 	}
 
-	public ListIteratorWrapper<V> build()
+	public ListIteratorWrapper<ID, V> build()
 	{
-		ListIteratorWrapper<V> listIteratorWrapper = new ListIteratorWrapper<V>(this.target);
+		ListIteratorWrapper<ID, V> listIteratorWrapper = new ListIteratorWrapper<ID, V>(this.target);
 		super.build(listIteratorWrapper);
 		return listIteratorWrapper;
 	}

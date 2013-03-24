@@ -8,7 +8,8 @@ import java.util.ListIterator;
  * @author DuyHai DOAN
  * 
  */
-public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V>
+public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements
+		ListIterator<V>
 {
 
 	private ListIterator<V> target;
@@ -39,13 +40,14 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public V next()
 	{
+		V entity = this.target.next();
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.next(), joinMeta());
+			return helper.buildProxy(entity, joinContext(entity));
 		}
 		else
 		{
-			return this.target.next();
+			return entity;
 		}
 	}
 
@@ -58,13 +60,14 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
 	@Override
 	public V previous()
 	{
+		V entity = this.target.previous();
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.previous(), joinMeta());
+			return helper.buildProxy(entity, joinContext(entity));
 		}
 		else
 		{
-			return this.target.previous();
+			return entity;
 		}
 	}
 

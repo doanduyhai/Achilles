@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.manager.ThriftEntityManager.current
 import static info.archinnov.achilles.entity.manager.ThriftEntityManager.currentWriteConsistencyLevel;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
 import me.prettyprint.cassandra.service.OperationType;
@@ -22,12 +22,15 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 	static final ThreadLocal<HConsistencyLevel> defaultReadConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 	static final ThreadLocal<HConsistencyLevel> defaultWriteConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 
-	public AchillesConfigurableConsistencyLevelPolicy() {
+	public AchillesConfigurableConsistencyLevelPolicy(ConsistencyLevel defaultReadLevel,
+			ConsistencyLevel defaultWriteLevel, Map<String, HConsistencyLevel> readConsistencyMap,
+			Map<String, HConsistencyLevel> writeConsistencyMap)
+	{
 		super();
-		this.setDefaultReadConsistencyLevel(HConsistencyLevel.QUORUM);
-		this.setDefaultWriteConsistencyLevel(HConsistencyLevel.QUORUM);
-		this.setReadCfConsistencyLevels(new HashMap<String, HConsistencyLevel>());
-		this.setWriteCfConsistencyLevels(new HashMap<String, HConsistencyLevel>());
+		this.setDefaultReadConsistencyLevel(defaultReadLevel.getHectorLevel());
+		this.setDefaultWriteConsistencyLevel(defaultWriteLevel.getHectorLevel());
+		this.setReadCfConsistencyLevels(readConsistencyMap);
+		this.setWriteCfConsistencyLevels(writeConsistencyMap);
 	}
 
 	@Override

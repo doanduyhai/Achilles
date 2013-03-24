@@ -34,7 +34,7 @@ public class EntityMetaTestBuilder
 			}
 		};
 
-		parser = new EntityParser(factory);
+		parser = new EntityParser();
 	}
 
 	public static EntityMetaTestBuilder entityMeta()

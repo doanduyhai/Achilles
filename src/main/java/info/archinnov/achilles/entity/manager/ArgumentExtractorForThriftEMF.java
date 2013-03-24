@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
@@ -14,6 +15,7 @@ import java.util.Map.Entry;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
@@ -100,7 +102,9 @@ public class ArgumentExtractorForThriftEMF
 		return cluster;
 	}
 
-	public Keyspace initKeyspace(Cluster cluster, Map<String, Object> configurationMap)
+	public Keyspace initKeyspace(Cluster cluster,
+			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy,
+			Map<String, Object> configurationMap)
 	{
 		Keyspace keyspace = (Keyspace) configurationMap.get(KEYSPACE_PARAM);
 		if (keyspace == null)
@@ -117,7 +121,7 @@ public class ArgumentExtractorForThriftEMF
 
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		}
-
+		keyspace.setConsistencyLevelPolicy(consistencyPolicy);
 		return keyspace;
 	}
 
@@ -167,7 +171,7 @@ public class ArgumentExtractorForThriftEMF
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
+	public Map<String, HConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap
 				.get(READ_CONSISTENCY_MAP_PARAM);
@@ -176,7 +180,7 @@ public class ArgumentExtractorForThriftEMF
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
+	public Map<String, HConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
 				.get(WRITE_CONSISTENCY_MAP_PARAM);
@@ -184,15 +188,16 @@ public class ArgumentExtractorForThriftEMF
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
 
-	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(
+	private Map<String, HConsistencyLevel> parseConsistencyLevelMap(
 			Map<String, String> consistencyLevelMap)
 	{
-		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
+		Map<String, HConsistencyLevel> map = new HashMap<String, HConsistencyLevel>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty())
 		{
 			for (Entry<String, String> entry : consistencyLevelMap.entrySet())
 			{
-				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
+				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue())
+						.getHectorLevel());
 			}
 		}
 

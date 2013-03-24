@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.wrapper.builder.ListIteratorWrapperBuilder.builder;
-import static info.archinnov.achilles.wrapper.builder.ListWrapperBuilder.builder;
+import info.archinnov.achilles.wrapper.builder.ListIteratorWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.ListIterator;
  * @author DuyHai DOAN
  * 
  */
-public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
+public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List<V>
 {
 
 	public ListWrapper(List<V> target) {
@@ -44,7 +44,7 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 		V result = ((List<V>) super.target).get(arg0);
 		if (isJoin())
 		{
-			return helper.buildProxy(result, joinMeta());
+			return helper.buildProxy(result, joinContext(result));
 		}
 		else
 		{
@@ -70,7 +70,8 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator();
 
-		return builder(target) //
+		return ListIteratorWrapperBuilder //
+				.builder(context, target) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
@@ -83,7 +84,8 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator(arg0);
 
-		return builder(target) //
+		return ListIteratorWrapperBuilder //
+				.builder(context, target) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
@@ -112,7 +114,8 @@ public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 	{
 		List<V> target = ((List<V>) super.target).subList(arg0, arg1);
 
-		return builder(target) //
+		return ListWrapperBuilder //
+				.builder(context, target) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //

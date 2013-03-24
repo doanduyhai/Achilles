@@ -7,6 +7,7 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.exception.BeanMappingException;
@@ -136,7 +137,7 @@ public class PropertyHelper
 				keySum += order;
 
 				Class<?> keySubType = multiKeyField.getType();
-				Validator.validateAllowedTypes(
+				PropertyParsingValidator.validateAllowedTypes(
 						keySubType,
 						allowedTypes,
 						"The class '" + keySubType.getCanonicalName()

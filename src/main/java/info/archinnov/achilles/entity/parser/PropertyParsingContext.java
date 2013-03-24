@@ -1,0 +1,194 @@
+package info.archinnov.achilles.entity.parser;
+
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+
+import me.prettyprint.hector.api.Keyspace;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+
+/**
+ * PropertyParsingContext
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
+public class PropertyParsingContext
+{
+	private EntityParsingContext context;
+	private Field currentField;
+	private String currentPropertyName;
+	private String currentExternalTableName;
+	private boolean joinColumn = false;
+	private boolean isCustomConsistencyLevels;
+	private boolean counterType;
+	private boolean primaryKey = false;
+
+	public PropertyParsingContext(EntityParsingContext context, //
+			Field currentField)
+	{
+		this.context = context;
+		this.currentField = currentField;
+	}
+
+	public Keyspace getKeyspace()
+	{
+		return context.getKeyspace();
+	}
+
+	public CounterDao getCounterDao()
+	{
+		return context.getCounterDao();
+	}
+
+	public ObjectMapper getCurrentObjectMapper()
+	{
+		return context.getCurrentObjectMapper();
+	}
+
+	public Map<PropertyMeta<?, ?>, String> getExternalWideMaps()
+	{
+		return context.getExternalWideMaps();
+	}
+
+	public Map<PropertyMeta<?, ?>, String> getJoinExternalWideMaps()
+	{
+		return context.getJoinExternalWideMaps();
+	}
+
+	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
+	{
+		return context.getPropertyMetas();
+	}
+
+	public Class<?> getCurrentEntityClass()
+	{
+		return context.getCurrentEntityClass();
+	}
+
+	public boolean isColumnFamilyDirectMapping()
+	{
+		return context.isColumnFamilyDirectMapping();
+	}
+
+	public Field getCurrentField()
+	{
+		return currentField;
+	}
+
+	public boolean isJoinColumn()
+	{
+		return joinColumn;
+	}
+
+	public void setJoinColumn(boolean joinColumn)
+	{
+		this.joinColumn = joinColumn;
+	}
+
+	public String getCurrentPropertyName()
+	{
+		return currentPropertyName;
+	}
+
+	public void setCurrentPropertyName(String currentPropertyName)
+	{
+		this.currentPropertyName = currentPropertyName;
+	}
+
+	public String getCurrentExternalTableName()
+	{
+		return currentExternalTableName;
+	}
+
+	public void setCurrentExternalTableName(String currentExternalTableName)
+	{
+		this.currentExternalTableName = currentExternalTableName;
+	}
+
+	public List<PropertyMeta<?, ?>> getCounterMetas()
+	{
+		return context.getCounterMetas();
+	}
+
+	public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels()
+	{
+		return context.getCurrentConsistencyLevels();
+	}
+
+	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
+	{
+		return context.getConfigurableCLPolicy();
+	}
+
+	public Map<String, GenericDynamicCompositeDao<?>> getEntityDaosMap()
+	{
+		return context.getEntityDaosMap();
+	}
+
+	public Map<String, GenericCompositeDao<?, ?>> getColumnFamilyDaosMap()
+	{
+		return context.getColumnFamilyDaosMap();
+	}
+
+	public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled()
+	{
+		return context.getJoinPropertyMetaToBeFilled();
+	}
+
+	public String getCurrentColumnFamilyName()
+	{
+		return context.getCurrentColumnFamilyName();
+	}
+
+	public void doesHaveCounter()
+	{
+		context.setHasCounter(true);
+	}
+
+	public boolean isExternal()
+	{
+		return !StringUtils.isBlank(currentExternalTableName);
+	}
+
+	public boolean isCustomConsistencyLevels()
+	{
+		return isCustomConsistencyLevels;
+	}
+
+	public void setCustomConsistencyLevels(boolean isCustomConsistencyLevels)
+	{
+		this.isCustomConsistencyLevels = isCustomConsistencyLevels;
+	}
+
+	public boolean isCounterType()
+	{
+		return counterType;
+	}
+
+	public void setCounterType(boolean counterType)
+	{
+		this.counterType = counterType;
+		context.setHasCounter(counterType);
+	}
+
+	public boolean isPrimaryKey()
+	{
+		return primaryKey;
+	}
+
+	public void setPrimaryKey(boolean primaryKey)
+	{
+		this.primaryKey = primaryKey;
+	}
+}

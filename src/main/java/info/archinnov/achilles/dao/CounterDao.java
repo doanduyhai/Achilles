@@ -3,6 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
@@ -21,11 +22,11 @@ public class CounterDao extends AbstractDao<Composite, DynamicComposite, Long>
 	private static final Logger log = LoggerFactory.getLogger(CounterDao.class);
 	public static final String COUNTER_CF = "achillesCounterCF";
 
-	public CounterDao(Keyspace keyspace,
+	public CounterDao(Cluster cluster, Keyspace keyspace,
 			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
 
-		super(keyspace);
+		super(cluster, keyspace);
 
 		keySerializer = COMPOSITE_SRZ;
 		columnFamily = COUNTER_CF;

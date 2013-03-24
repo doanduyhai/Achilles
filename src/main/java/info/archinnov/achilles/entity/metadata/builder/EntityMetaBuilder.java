@@ -1,11 +1,5 @@
 package info.archinnov.achilles.entity.metadata.builder;
 
-import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.configurableCLPolicyTL;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -37,8 +31,6 @@ public class EntityMetaBuilder<ID>
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private Keyspace keyspace;
 	private boolean columnFamilyDirectMapping = false;
-	private boolean hasCounter = false;
-	private CounterDao counterDao;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
@@ -50,12 +42,7 @@ public class EntityMetaBuilder<ID>
 		this.idMeta = idMeta;
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public EntityMeta build()
+	public EntityMeta<ID> build()
 	{
 
 		Validator.validateNotNull(keyspace, "keyspace should not be null");
@@ -65,10 +52,10 @@ public class EntityMetaBuilder<ID>
 		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN,
 				"columnFamilyName");
 
-		EntityMeta meta = new EntityMeta();
+		EntityMeta<ID> meta = new EntityMeta<ID>();
 
 		meta.setIdMeta(idMeta);
-		Serializer<?> idSerializer = SerializerTypeInferer.getSerializer(idMeta.getValueClass());
+		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(idMeta.getValueClass());
 		meta.setIdSerializer(idSerializer);
 		meta.setClassName(className);
 		meta.setColumnFamilyName(columnFamilyName);
@@ -77,34 +64,8 @@ public class EntityMetaBuilder<ID>
 		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));
 		meta.setSetterMetas(Collections.unmodifiableMap(this.extractSetterMetas(propertyMetas)));
 		meta.setColumnFamilyDirectMapping(columnFamilyDirectMapping);
-		meta.setHasCounter(hasCounter);
-		meta.setCounterDao(counterDao);
 		meta.setConsistencyLevels(consistencyLevels);
 
-		if (columnFamilyDirectMapping)
-		{
-			PropertyMeta<?, ?> wideMapMeta = propertyMetas.entrySet().iterator().next().getValue();
-			Serializer<?> valueSerializer = wideMapMeta.getValueSerializer();
-			GenericCompositeDao<ID, ?> dao;
-
-			if (isSupportedType(wideMapMeta.getValueClass()))
-			{
-				dao = new GenericCompositeDao(keyspace, idSerializer, valueSerializer,
-						this.columnFamilyName, configurableCLPolicyTL.get());
-			}
-			else
-			{
-				dao = new GenericCompositeDao(keyspace, idSerializer, STRING_SRZ,
-						this.columnFamilyName, configurableCLPolicyTL.get());
-			}
-
-			meta.setColumnFamilyDao(dao);
-		}
-		else
-		{
-			meta.setEntityDao(new GenericDynamicCompositeDao(keyspace, idSerializer,
-					this.columnFamilyName, configurableCLPolicyTL.get()));
-		}
 		return meta;
 	}
 
@@ -163,18 +124,6 @@ public class EntityMetaBuilder<ID>
 	public EntityMetaBuilder<ID> columnFamilyDirectMapping(boolean columnFamilyDirectMapping)
 	{
 		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
-		return this;
-	}
-
-	public EntityMetaBuilder<ID> hasCounter(boolean hasCounter)
-	{
-		this.hasCounter = hasCounter;
-		return this;
-	}
-
-	public EntityMetaBuilder<ID> counterDao(CounterDao counterDao)
-	{
-		this.counterDao = counterDao;
 		return this;
 	}
 

@@ -2,6 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -25,6 +26,7 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
 	private CompositeKeyFactory compositeKeyFactory;
+	private PersistenceContext<ID> context;
 
 	public ExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
@@ -43,6 +45,12 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 	public ExternalWideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor interceptor)
 	{
 		this.interceptor = interceptor;
+		return this;
+	}
+
+	public ExternalWideMapWrapperBuilder<ID, K, V> context(PersistenceContext<ID> context)
+	{
+		this.context = context;
 		return this;
 	}
 
@@ -82,6 +90,7 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 		wrapper.setCompositeKeyFactory(compositeKeyFactory);
 		wrapper.setIteratorFactory(iteratorFactory);
 		wrapper.setKeyValueFactory(keyValueFactory);
+		wrapper.setContext(context);
 		return wrapper;
 	}
 

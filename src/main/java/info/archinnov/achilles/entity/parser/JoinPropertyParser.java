@@ -1,34 +1,23 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
-import static info.archinnov.achilles.entity.parser.EntityParser.entityClassTL;
-import static info.archinnov.achilles.entity.parser.EntityParser.joinExternalWideMapTL;
-import static info.archinnov.achilles.entity.parser.EntityParser.propertyMetasTL;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-
-import me.prettyprint.hector.api.Keyspace;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * JoinPropertyParser
@@ -41,26 +30,12 @@ public class JoinPropertyParser
 	private PropertyFilter filter = new PropertyFilter();
 	private PropertyParser parser = new PropertyParser();
 
-	public PropertyMeta<?, ?> parseJoin(Field field)
+	public PropertyMeta<?, ?> parseJoin(PropertyParsingContext context)
 	{
-		Class<?> entityClass = entityClassTL.get();
+		Class<?> entityClass = context.getCurrentEntityClass();
+		Field field = context.getCurrentField();
 
-		JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-		String externalTableName = field.getAnnotation(JoinColumn.class).table();
-		boolean isWideMap = WideMap.class.isAssignableFrom(field.getType());
-		boolean columnFamilyDirectMapping = entityClass
-				.getAnnotation(info.archinnov.achilles.annotations.ColumnFamily.class) != null ? true
-				: false;
-		boolean isExternal = StringUtils.isNotBlank(externalTableName);
-
-		String propertyName = StringUtils.isNotBlank(joinColumn.name()) ? joinColumn.name() : field
-				.getName();
-		Validator.validateBeanMappingFalse(propertyMetasTL.get().containsKey(propertyName),
-				"The property '" + propertyName + "' is already used for the entity '"
-						+ entityClass.getCanonicalName() + "'");
-
-		PropertyMeta<?, ?> joinPropertyMeta = null;
-		joinPropertyMeta = this.parser.parse(field, true);
+		PropertyMeta<?, ?> joinPropertyMeta = this.parser.parse(context);
 
 		JoinProperties joinProperties = findCascadeType(entityClass.getCanonicalName(), field);
 		joinPropertyMeta.setJoinProperties(joinProperties);
@@ -91,27 +66,24 @@ public class JoinPropertyParser
 				break;
 		}
 
-		propertyMetasTL.get().put(propertyName, joinPropertyMeta);
-
-		if ((isExternal || columnFamilyDirectMapping) && isWideMap)
-		{
-			joinExternalWideMapTL.get().put(joinPropertyMeta, externalTableName);
-		}
-		joinPropertyMetaToBeFilledTL.get().put(joinPropertyMeta, joinPropertyMeta.getValueClass());
+		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
+				joinPropertyMeta.getValueClass());
 
 		return joinPropertyMeta;
 	}
 
-	public <ID> void fillExternalJoinWideMap(Keyspace keyspace, PropertyMeta<Void, ID> idMeta,
-			PropertyMeta<?, ?> joinPropertyMeta, String externalTableName)
+	public <ID> void fillExternalJoinWideMap(EntityParsingContext context,
+			PropertyMeta<Void, ID> idMeta, PropertyMeta<?, ?> joinPropertyMeta,
+			String externalTableName)
 	{
 		joinPropertyMeta.setType(EXTERNAL_JOIN_WIDE_MAP);
 
 		joinPropertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
-				ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(externalTableName), null,
-				idMeta.getValueSerializer()));
-		propertyMetasTL.get().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
-		joinPropertyMetaToBeFilledTL.get().put(joinPropertyMeta, joinPropertyMeta.getValueClass());
+				ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(externalTableName), idMeta
+						.getValueSerializer()));
+		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
+		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
+				joinPropertyMeta.getValueClass());
 	}
 
 	private JoinProperties findCascadeType(String entityFQN, Field field)

@@ -1,8 +1,5 @@
 package info.archinnov.achilles.entity.metadata;
 
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
@@ -27,13 +24,9 @@ public class EntityMeta<ID>
 	private Serializer<ID> idSerializer;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
-	private GenericDynamicCompositeDao<ID> entityDao;
-	private GenericCompositeDao<ID, ?> columnFamilyDao;
-	private CounterDao counterDao;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean columnFamilyDirectMapping = false;
-	private Boolean hasCounter = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	public String getClassName()
@@ -96,16 +89,6 @@ public class EntityMeta<ID>
 		this.idMeta = idMeta;
 	}
 
-	public GenericDynamicCompositeDao<ID> getEntityDao()
-	{
-		return entityDao;
-	}
-
-	public void setEntityDao(GenericDynamicCompositeDao<ID> entityDao)
-	{
-		this.entityDao = entityDao;
-	}
-
 	public Map<Method, PropertyMeta<?, ?>> getGetterMetas()
 	{
 		return getterMetas;
@@ -134,36 +117,6 @@ public class EntityMeta<ID>
 	public void setColumnFamilyDirectMapping(boolean columnFamilyDirectMapping)
 	{
 		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
-	}
-
-	public GenericCompositeDao<ID, ?> getColumnFamilyDao()
-	{
-		return columnFamilyDao;
-	}
-
-	public void setColumnFamilyDao(GenericCompositeDao<ID, ?> columnFamilyDao)
-	{
-		this.columnFamilyDao = columnFamilyDao;
-	}
-
-	public Boolean hasCounter()
-	{
-		return hasCounter;
-	}
-
-	public void setHasCounter(Boolean hasCounter)
-	{
-		this.hasCounter = hasCounter;
-	}
-
-	public CounterDao counterDao()
-	{
-		return counterDao;
-	}
-
-	public void setCounterDao(CounterDao counterDao)
-	{
-		this.counterDao = counterDao;
 	}
 
 	public Pair<ConsistencyLevel, ConsistencyLevel> getConsistencyLevels()

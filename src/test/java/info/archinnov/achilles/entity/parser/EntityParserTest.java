@@ -1,26 +1,22 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.configurableCLPolicyTL;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static info.archinnov.achilles.entity.parser.EntityParser.consistencyLevelsTL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -39,6 +35,7 @@ import java.util.Map;
 
 import javax.persistence.CascadeType;
 
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -49,6 +46,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -81,10 +79,26 @@ import parser.entity.UserBean;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest
 {
-	private EntityParser parser;
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
+
+	@InjectMocks
+	private EntityParser parser;
+
+	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
+	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
+	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
+	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
+			ONE, ALL, readConsistencyMap, writeConsistencyMap);
+
+	@Mock
+	private ColumnFamilyCreator columnFamilyCreator;
+
+	@Mock
+	private Cluster cluster;
 
 	@Mock
 	private Keyspace keyspace;
@@ -95,30 +109,25 @@ public class EntityParserTest
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+	private ObjectMapperFactory objectMapperFactory = new ObjectMapperFactory()
+	{
+		@Override
+		public <T> ObjectMapper getMapper(Class<T> type)
+		{
+			return objectMapper;
+		}
 
-	@Mock
-	private ColumnFamilyCreator columnFamilyCreator;
-
+	};
 	private ObjectMapper objectMapper = new ObjectMapper();
+
+	private EntityParsingContext entityContext;
 
 	@Before
 	public void setUp()
 	{
-		ObjectMapperFactory factory = new ObjectMapperFactory()
-		{
-			@Override
-			public <T> ObjectMapper getMapper(Class<T> type)
-			{
-				return objectMapper;
-			}
-		};
-		parser = new EntityParser(factory);
 		joinPropertyMetaToBeFilled.clear();
-		ThriftEntityManagerFactoryImpl.counterDaoTL.set(counterDao);
-		ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
-		ThriftEntityManagerFactoryImpl.configurableCLPolicyTL
-				.set(new AchillesConfigurableConsistencyLevelPolicy());
+		entityDaosMap.clear();
+		columnFamilyDaosMap.clear();
 	}
 
 	@SuppressWarnings(
@@ -130,12 +139,13 @@ public class EntityParserTest
 	public void should_parse_entity() throws Exception
 	{
 
-		EntityMeta<?> meta = parser.parseEntity(keyspace, Bean.class);
+		initEntityParsingContext(Bean.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta.getClassName()).isEqualTo("parser.entity.Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
 		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
-		assertThat((Class) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
+		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.getIdMeta().getValueSerializer().getComparatorType()).isEqualTo(
 				LONG_SRZ.getComparatorType());
@@ -217,15 +227,14 @@ public class EntityParserTest
 		assertThat(creator.getValueClass()).isEqualTo(UserBean.class);
 		assertThat((Serializer) creator.getValueSerializer()).isEqualTo(SerializerUtils.OBJECT_SRZ);
 		assertThat(creator.type()).isEqualTo(JOIN_SIMPLE);
-		assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(ALL);
+		assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(CascadeType.ALL);
 
 		assertThat(linkedUsers.getPropertyName()).isEqualTo("linked_users");
 		assertThat(linkedUsers.getValueClass()).isEqualTo(UserBean.class);
 		assertThat((Serializer) linkedUsers.getValueSerializer()).isEqualTo(
 				SerializerUtils.OBJECT_SRZ);
 		assertThat(linkedUsers.type()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).containsExactly(PERSIST,
-				MERGE);
+		assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).contains(PERSIST, MERGE);
 
 		assertThat((Class) joinPropertyMetaToBeFilled.get(creator)).isEqualTo(UserBean.class);
 		assertThat((Class) joinPropertyMetaToBeFilled.get(linkedUsers)).isEqualTo(UserBean.class);
@@ -233,22 +242,19 @@ public class EntityParserTest
 		assertThat(meta.getConsistencyLevels().left).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(
-				configurableCLPolicyTL.get().getConsistencyLevelForRead(meta.getColumnFamilyName()))
+		assertThat(configurableCLPolicy.getConsistencyLevelForRead(meta.getColumnFamilyName()))
 				.isEqualTo(HConsistencyLevel.ONE);
-		assertThat(
-				configurableCLPolicyTL.get()
-						.getConsistencyLevelForWrite(meta.getColumnFamilyName())).isEqualTo(
-				HConsistencyLevel.ALL);
-
-		assertThat(consistencyLevelsTL.get()).isNull();
+		assertThat(configurableCLPolicy.getConsistencyLevelForWrite(meta.getColumnFamilyName()))
+				.isEqualTo(HConsistencyLevel.ALL);
 	}
 
 	@Test
 	public void should_parse_entity_with_table_name() throws Exception
 	{
 
-		EntityMeta<?> meta = parser.parseEntity(keyspace, BeanWithColumnFamilyName.class);;
+		initEntityParsingContext(BeanWithColumnFamilyName.class);
+
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
@@ -257,8 +263,8 @@ public class EntityParserTest
 	@Test
 	public void should_parse_inherited_bean() throws Exception
 	{
-
-		EntityMeta<?> meta = parser.parseEntity(keyspace, ChildBean.class);
+		initEntityParsingContext(ChildBean.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
@@ -271,10 +277,11 @@ public class EntityParserTest
 	@Test
 	public void should_parse_bean_with_simple_counter_field() throws Exception
 	{
-		EntityMeta<?> meta = parser.parseEntity(keyspace, BeanWithSimpleCounter.class);
+		initEntityParsingContext(BeanWithSimpleCounter.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(meta.hasCounter()).isTrue();
+		assertThat(entityContext.getHasCounter()).isTrue();
 		PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
 		assertThat(idMeta).isNotNull();
 		PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counter");
@@ -285,7 +292,6 @@ public class EntityParserTest
 		assertThat(counterProperties).isNotNull();
 		assertThat(counterProperties.getFqcn()).isEqualTo(
 				BeanWithSimpleCounter.class.getCanonicalName());
-		assertThat(counterProperties.getDao()).isSameAs(counterDao);
 		assertThat((PropertyMeta<Void, Long>) counterProperties.getIdMeta()).isSameAs(idMeta);
 	}
 
@@ -293,10 +299,11 @@ public class EntityParserTest
 	@Test
 	public void should_parse_bean_with_widemap_counter_field() throws Exception
 	{
-		EntityMeta<?> meta = parser.parseEntity(keyspace, BeanWithWideMapCounter.class);
+		initEntityParsingContext(BeanWithWideMapCounter.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(meta.hasCounter()).isTrue();
+		assertThat(entityContext.getHasCounter()).isTrue();
 		PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
 		assertThat(idMeta).isNotNull();
 		PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counters");
@@ -307,15 +314,14 @@ public class EntityParserTest
 		assertThat(counterProperties).isNotNull();
 		assertThat(counterProperties.getFqcn()).isEqualTo(
 				BeanWithWideMapCounter.class.getCanonicalName());
-		assertThat(counterProperties.getDao()).isSameAs(counterDao);
 		assertThat((PropertyMeta<Void, Long>) counterProperties.getIdMeta()).isSameAs(idMeta);
 	}
 
 	@Test
 	public void should_parse_bean_with_external_wide_map() throws Exception
 	{
-
-		EntityMeta<?> meta = parser.parseEntity(keyspace, BeanWithExternalWideMap.class);
+		initEntityParsingContext(BeanWithExternalWideMap.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
 		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
@@ -325,15 +331,20 @@ public class EntityParserTest
 
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
 				"external_users");
-		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNotNull();
+		assertThat(entityContext.getColumnFamilyDaosMap()).isNotEmpty();
+		GenericCompositeDao<?, ?> dao = entityContext.getColumnFamilyDaosMap().values().iterator()
+				.next();
+
+		assertThat(dao.getColumnFamily()).isEqualTo("external_users");
+		assertThat(Whitebox.getInternalState(dao, "valueSerializer")).isEqualTo(STRING_SRZ);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_parse_bean_with_external_join_wide_map() throws Exception
 	{
-
-		EntityMeta<?> meta = parser.parseEntity(keyspace, BeanWithExternalJoinWideMap.class);
+		initEntityParsingContext(BeanWithExternalJoinWideMap.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
 		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
@@ -343,77 +354,79 @@ public class EntityParserTest
 
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
 				"external_users");
-		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
-		assertThat((Class) joinPropertyMetaToBeFilled.get(usersPropertyMeta)).isEqualTo(
+		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(usersPropertyMeta)).isEqualTo(
 				UserBean.class);
+		assertThat(entityContext.getColumnFamilyDaosMap()).isEmpty();
 	}
 
 	@Test
 	public void should_exception_when_entity_has_no_id() throws Exception
 	{
+		initEntityParsingContext(BeanWithNoId.class);
+
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
 				+ "' should have at least one field with javax.persistence.Id annotation");
-		parser.parseEntity(keyspace, BeanWithNoId.class);
+		parser.parseEntity(entityContext);
 	}
 
 	@Test
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
+		initEntityParsingContext(BeanWithNotSerializableId.class);
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Value of 'id' should be Serializable");
-		parser.parseEntity(keyspace, BeanWithNotSerializableId.class);
+		parser.parseEntity(entityContext);
 	}
 
 	@Test
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
+		initEntityParsingContext(BeanWithNoColumn.class);
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx
 				.expectMessage("The entity '"
 						+ BeanWithNoColumn.class.getCanonicalName()
 						+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
-		parser.parseEntity(keyspace, BeanWithNoColumn.class);
+		parser.parseEntity(entityContext);
 	}
 
 	@Test
 	public void should_exception_when_entity_has_duplicated_column_name() throws Exception
 	{
+		initEntityParsingContext(BeanWithDuplicatedColumnName.class);
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
 
-		parser.parseEntity(keyspace, BeanWithDuplicatedColumnName.class);
+		parser.parseEntity(entityContext);
 	}
 
 	@Test
 	public void should_exception_when_entity_has_duplicated_join_column_name() throws Exception
 	{
+		initEntityParsingContext(BeanWithDuplicatedJoinColumnName.class);
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedJoinColumnName.class.getCanonicalName() + "'");
 
-		parser.parseEntity(keyspace, BeanWithDuplicatedJoinColumnName.class);
+		parser.parseEntity(entityContext);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_parse_column_family() throws Exception
 	{
-
-		EntityMeta<?> meta = parser.parseEntity(keyspace, ColumnFamilyBean.class);
+		initEntityParsingContext(ColumnFamilyBean.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
 
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
+		assertThat((Class) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 
 		assertThat(meta.getPropertyMetas()).hasSize(1);
-		assertThat(meta.getPropertyMetas().get("values").type()).isEqualTo(WIDE_MAP);
+		assertThat(meta.getPropertyMetas().get("values").type()).isEqualTo(EXTERNAL_WIDE_MAP);
 	}
 
 	@SuppressWarnings(
@@ -424,12 +437,10 @@ public class EntityParserTest
 	@Test
 	public void should_parse_column_family_with_join() throws Exception
 	{
-		EntityMeta<?> meta = parser.parseEntity(keyspace, ColumnFamilyBeanWithJoinEntity.class);
+		initEntityParsingContext(ColumnFamilyBeanWithJoinEntity.class);
+		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
-		assertThat(meta.getColumnFamilyDao()).isNotNull();
-		assertThat(meta.getEntityDao()).isNull();
-
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
 
@@ -445,40 +456,32 @@ public class EntityParserTest
 
 		EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
 		assertThat(joinEntityMeta).isNull();
-
-		ExternalWideMapProperties<?> externalWideMapProperties = friendMeta
-				.getExternalWideMapProperties();
-
-		assertThat(externalWideMapProperties).isNotNull();
-		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
-				ColumnFamilyHelper
-						.normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithJoinEntity.class
-								.getName()));
-		assertThat(externalWideMapProperties.getExternalWideMapDao()).isNull();
-
 	}
 
 	@Test
 	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
 	{
+		initEntityParsingContext(ColumnFamilyBeanWithTwoColumns.class);
+
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
-		parser.parseEntity(keyspace, ColumnFamilyBeanWithTwoColumns.class);
+		parser.parseEntity(entityContext);
 
 	}
 
 	@Test
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
+		initEntityParsingContext(ColumnFamilyBeanWithWrongColumnType.class);
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have one and only one @Column/@JoinColumn of type WideMap");
 
-		parser.parseEntity(keyspace, ColumnFamilyBeanWithWrongColumnType.class);
+		parser.parseEntity(entityContext);
 
 	}
 
@@ -486,8 +489,7 @@ public class EntityParserTest
 	@Test
 	public void should_fill_join_entity_meta_map_with_entity_meta() throws Exception
 	{
-		joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		initEntityParsingContext(null);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setColumnFamilyDirectMapping(false);
@@ -497,9 +499,9 @@ public class EntityParserTest
 		joinPropertyMeta.setType(JOIN_WIDE_MAP);
 
 		joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
-
-		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+		parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 
 		assertThat((EntityMeta<Long>) joinPropertyMeta.getJoinProperties().getEntityMeta())
 				.isSameAs(joinEntityMeta);
@@ -509,8 +511,7 @@ public class EntityParserTest
 	@Test
 	public void should_fill_join_entity_meta_map_with_entity_meta_for_external() throws Exception
 	{
-		joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		initEntityParsingContext(null);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setColumnFamilyDirectMapping(false);
@@ -520,22 +521,22 @@ public class EntityParserTest
 		joinPropertyMeta.setJoinProperties(new JoinProperties());
 		joinPropertyMeta.setType(PropertyType.EXTERNAL_JOIN_WIDE_MAP);
 
-		GenericCompositeDao<Long, String> dao = mock(GenericCompositeDao.class);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"cfExternal", dao, LONG_SRZ);
+				"cfExternal", LONG_SRZ);
 
 		joinPropertyMeta.setExternalWideMapProperties(externalWideMapProperties);
 
 		joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
 
-		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+		parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 
 		assertThat((EntityMeta<Long>) joinPropertyMeta.getJoinProperties().getEntityMeta())
 				.isSameAs(joinEntityMeta);
 
-		GenericCompositeDao<?, ?> externalWideMapDao = joinPropertyMeta
-				.getExternalWideMapProperties().getExternalWideMapDao();
+		GenericCompositeDao<?, ?> externalWideMapDao = columnFamilyDaosMap.get("cfExternal");
+
 		assertThat(externalWideMapDao).isNotNull();
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "keyspace")).isSameAs(keyspace);
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "keySerializer")).isSameAs(
@@ -549,14 +550,15 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_join_entity_is_a_direct_cf_mapping() throws Exception
 	{
-		joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		initEntityParsingContext(BeanWithJoinColumnAsWideMap.class);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setColumnFamilyDirectMapping(true);
+		joinEntityMeta.setClassName(BeanWithJoinColumnAsWideMap.class.getCanonicalName());
 		PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
 
 		joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
 
 		expectedEx.expect(BeanMappingException.class);
@@ -564,26 +566,37 @@ public class EntityParserTest
 				+ BeanWithJoinColumnAsWideMap.class.getCanonicalName()
 				+ "' is a direct Column Family mapping and cannot be a join entity");
 
-		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+		parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 
 	}
 
 	@Test
 	public void should_exception_when_no_entity_meta_found_for_join_property() throws Exception
 	{
-		joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		initEntityParsingContext(null);
 
 		PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
 
 		joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 
 		expectedEx.expect(BeanMappingException.class);
 		expectedEx.expectMessage("Cannot find mapping for join entity '"
 				+ BeanWithJoinColumnAsWideMap.class.getCanonicalName() + "'");
 
-		parser.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+		parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 
 	}
 
+	private <T> void initEntityParsingContext(Class<T> entityClass)
+	{
+		entityContext = new EntityParsingContext( //
+				joinPropertyMetaToBeFilled, //
+				entityDaosMap, //
+				columnFamilyDaosMap, //
+				configurableCLPolicy, //
+				counterDao, //
+				cluster, keyspace, //
+				objectMapperFactory, entityClass);
+	}
 }

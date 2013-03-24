@@ -1,8 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
@@ -307,18 +305,6 @@ public class PropertyMetaTest
 				.build();
 
 		assertThat((PropertyMeta<Void, String>) propertyMeta.counterIdMeta()).isSameAs(idMeta);
-	}
-
-	public void should_return_counter_dao() throws Exception
-	{
-		CounterDao counterDao = mock(CounterDao.class);
-
-		PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class) //
-				.type(PropertyType.COUNTER) //
-				.counterDao(counterDao) //
-				.build();
-
-		assertThat(propertyMeta.counterDao()).isSameAs(counterDao);
 	}
 
 	public void should_return_fqcn() throws Exception

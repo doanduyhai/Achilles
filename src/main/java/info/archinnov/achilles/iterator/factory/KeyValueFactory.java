@@ -1,7 +1,9 @@
 package info.archinnov.achilles.iterator.factory;
 
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -31,10 +33,12 @@ public class KeyValueFactory
 	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
 
 	// Dynamic Composite
-	public <K, V> KeyValue<K, V> createKeyValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+	public <ID, K, V> KeyValue<K, V> createKeyValueForDynamicComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
 			HColumn<DynamicComposite, String> hColumn)
 	{
-		return dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(propertyMeta, hColumn);
+		return dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(context, propertyMeta,
+				hColumn);
 	}
 
 	public <K, V> K createKeyForDynamicComposite(PropertyMeta<K, V> propertyMeta,
@@ -43,10 +47,11 @@ public class KeyValueFactory
 		return dynamicCompositeTransformer.buildKeyFromDynamicComposite(propertyMeta, hColumn);
 	}
 
-	public <K, V> V createValueForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<DynamicComposite, String> hColumn)
+	public <ID, K, V> V createValueForDynamicComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<DynamicComposite, String> hColumn)
 	{
-		return dynamicCompositeTransformer.buildValueFromDynamicComposite(propertyMeta, hColumn);
+		return dynamicCompositeTransformer.buildValueFromDynamicComposite(context, propertyMeta,
+				hColumn);
 	}
 
 	public Integer createTtlForDynamicComposite(HColumn<DynamicComposite, ?> hColumn)
@@ -61,27 +66,47 @@ public class KeyValueFactory
 				dynamicCompositeTransformer.buildValueTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public <K, V> List<V> createJoinValueListForDynamicComposite(PropertyMeta<K, V> propertyMeta,
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID, K, V> List<V> createJoinValueListForDynamicComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
 			List<HColumn<DynamicComposite, String>> hColumns)
 	{
-		List<?> joinIds = Lists.transform(hColumns,
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
-		Map<?, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
-				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
+
+		Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
 		List<V> result = new ArrayList<V>();
 		for (Object joinId : joinIds)
 		{
-
-			V value = joinEntities.get(joinId);
-			V proxy = helper.buildProxy(value, propertyMeta.joinMeta());
+			V proxy = buildProxy(context, joinMeta, joinEntities, joinId);
 			result.add(proxy);
 		}
+		return result;
+	}
 
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID, K, V> List<KeyValue<K, V>> createJoinKeyValueListForDynamicComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, String>> hColumns)
+	{
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+		List<K> keys = Lists.transform(hColumns,
+				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
+		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
+				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
+
+		Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
+		List<Integer> ttls = Lists.transform(hColumns,
+				dynamicCompositeTransformer.buildTtlTransformer());
+
+		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
+
+		for (int i = 0; i < keys.size(); i++)
+		{
+			V proxy = buildProxy(context, joinMeta, joinEntities, joinIds.get(i));
+			result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
+		}
 		return result;
 	}
 
@@ -92,48 +117,19 @@ public class KeyValueFactory
 				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	public <K, V> List<KeyValue<K, V>> createKeyValueListForDynamicComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, String>> hColumns)
+	public <ID, K, V> List<KeyValue<K, V>> createKeyValueListForDynamicComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
+			List<HColumn<DynamicComposite, String>> hColumns)
 	{
 		return Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildKeyValueTransformer(propertyMeta));
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForDynamicComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<DynamicComposite, String>> hColumns)
-	{
-		List<K> keys = Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildKeyTransformer(propertyMeta));
-		List<Object> joinIds = Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta));
-
-		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
-		List<Integer> ttls = Lists.transform(hColumns,
-				dynamicCompositeTransformer.buildTtlTransformer());
-
-		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
-
-		for (int i = 0; i < keys.size(); i++)
-		{
-			V value = joinEntities.get(joinIds.get(i));
-			V proxy = helper.buildProxy(value, propertyMeta.joinMeta());
-			result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
-		}
-		return result;
+				dynamicCompositeTransformer.buildKeyValueTransformer(context, propertyMeta));
 	}
 
 	// Composite
-
-	public <K, V> KeyValue<K, V> createKeyValueForComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+	public <ID, K, V> KeyValue<K, V> createKeyValueForComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
-		return compositeTransformer.buildKeyValueFromComposite(propertyMeta, hColumn);
+		return compositeTransformer.buildKeyValueFromComposite(context, propertyMeta, hColumn);
 	}
 
 	public <K, V> K createKeyForComposite(PropertyMeta<K, V> propertyMeta,
@@ -142,10 +138,10 @@ public class KeyValueFactory
 		return compositeTransformer.buildKeyFromComposite(propertyMeta, hColumn);
 	}
 
-	public <K, V> V createValueForComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+	public <ID, K, V> V createValueForComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
-		return compositeTransformer.buildValueFromComposite(propertyMeta, hColumn);
+		return compositeTransformer.buildValueFromComposite(context, propertyMeta, hColumn);
 	}
 
 	public Integer createTtlForComposite(HColumn<Composite, ?> hColumn)
@@ -165,60 +161,53 @@ public class KeyValueFactory
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public <K, V> List<V> createJoinValueListForComposite(PropertyMeta<K, V> propertyMeta,
+	public <ID, K, V> List<KeyValue<K, V>> createKeyValueListForComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, ?>> hColumns)
 	{
-		List<?> joinIds = Lists
-				.transform(hColumns, compositeTransformer.buildRawValueTransformer());
-		Map<?, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
-				(EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
+		return Lists.transform(hColumns,
+				compositeTransformer.buildKeyValueTransformer(context, propertyMeta));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID, K, V> List<V> createJoinValueListForComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
+			List<HColumn<Composite, ?>> hColumns)
+	{
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
+				compositeTransformer.buildRawValueTransformer());
+		Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
+
 		List<V> result = new ArrayList<V>();
-		for (Object joinId : joinIds)
+		for (JOIN_ID joinId : joinIds)
 		{
-			V joinEntity = joinEntities.get(joinId);
-			V proxy = helper.buildProxy(joinEntity, propertyMeta.getJoinProperties()
-					.getEntityMeta());
+			V proxy = buildProxy(context, joinMeta, joinEntities, joinId);
 			result.add(proxy);
 		}
 
 		return result;
 	}
 
-	public <K, V> List<KeyValue<K, V>> createKeyValueListForComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, ?>> hColumns)
+	@SuppressWarnings("unchecked")
+	public <ID, JOIN_ID, K, V> List<KeyValue<K, V>> createJoinKeyValueListForComposite(
+			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
+			List<HColumn<Composite, ?>> hColumns)
 	{
-		return Lists.transform(hColumns,
-				compositeTransformer.buildKeyValueTransformer(propertyMeta));
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public <K, V> List<KeyValue<K, V>> createJoinKeyValueListForComposite(
-			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, ?>> hColumns)
-	{
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<K> keys = Lists.transform(hColumns,
 				compositeTransformer.buildKeyTransformer(propertyMeta));
-		List<Object> joinIds = Lists.transform(hColumns,
+		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
 				compositeTransformer.buildRawValueTransformer());
-		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-				joinIds, (EntityMeta) propertyMeta.getJoinProperties().getEntityMeta());
+		Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
+
 		List<Integer> ttls = Lists.transform(hColumns, compositeTransformer.buildTtlTransformer());
 
 		List<KeyValue<K, V>> result = new ArrayList<KeyValue<K, V>>();
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			V joinEntity = joinEntities.get(joinIds.get(i));
-			V proxy = helper.buildProxy(joinEntity, propertyMeta.getJoinProperties()
-					.getEntityMeta());
+			V proxy = buildProxy(context, joinMeta, joinEntities, joinIds.get(i));
 			result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
 		}
 		return result;
@@ -265,5 +254,26 @@ public class KeyValueFactory
 	{
 		return Lists.transform(hColumns,
 				dynamicCompositeTransformer.buildCounterKeyTransformer(propertyMeta));
+	}
+
+	private <JOIN_ID, V, ID, K> Map<JOIN_ID, V> loadJoinEntities(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds)
+	{
+		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+				.getColumnFamilyName());
+
+		Map<JOIN_ID, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
+				joinIds, joinMeta, joinEntityDao);
+		return joinEntities;
+	}
+
+	private <V, JOIN_ID, ID> V buildProxy(PersistenceContext<ID> context,
+			EntityMeta<JOIN_ID> joinMeta, Map<JOIN_ID, V> joinEntities, Object joinId)
+	{
+		V joinEntity = joinEntities.get(joinId);
+		PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(joinMeta,
+				joinEntity);
+		V proxy = helper.buildProxy(joinEntity, joinContext);
+		return proxy;
 	}
 }

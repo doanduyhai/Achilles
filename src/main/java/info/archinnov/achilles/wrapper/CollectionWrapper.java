@@ -11,7 +11,7 @@ import java.util.Iterator;
  * @author DuyHai DOAN
  * 
  */
-public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V>
+public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements Collection<V>
 {
 	protected Collection<V> target;
 
@@ -99,7 +99,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 		Iterator<V> result = null;
 		if (target != null)
 		{
-			result = builder(this.target.iterator()) //
+			result = builder(context, this.target.iterator()) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
@@ -177,7 +177,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 				int i = 0;
 				for (V joinEntity : this.target)
 				{
-					array[i] = helper.buildProxy(joinEntity, joinMeta());
+					array[i] = helper.buildProxy(joinEntity, joinContext(joinEntity));
 					i++;
 				}
 
@@ -192,6 +192,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{
@@ -204,7 +205,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 
 				for (int i = 0; i < array.length; i++)
 				{
-					array[i] = helper.buildProxy(array[i], joinMeta());
+					array[i] = helper.buildProxy(array[i], joinContext((V) array[i]));
 				}
 				result = array;
 			}

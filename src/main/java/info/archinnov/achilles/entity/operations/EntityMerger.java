@@ -10,6 +10,7 @@ import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -19,6 +20,7 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,8 +48,11 @@ public class EntityMerger
 			MAP, LAZY_MAP);
 
 	@SuppressWarnings("unchecked")
-	public <T, ID> T mergeEntity(T entity, EntityMeta<ID> entityMeta)
+	public <T, ID> T mergeEntity(PersistenceContext<ID> context)
 	{
+		T entity = (T) context.getEntity();
+		EntityMeta<ID> entityMeta = context.getEntityMeta();
+
 		Validator.validateNotNull(entity, "Proxy object should not be null");
 		Validator.validateNotNull(entityMeta, "entityMeta should not be null");
 
@@ -57,8 +62,9 @@ public class EntityMerger
 			T realObject = helper.getRealObject(entity);
 			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
 					.getInterceptor(entity);
+			ID key = interceptor.getKey();
 
-			GenericDynamicCompositeDao<ID> dao = entityMeta.getEntityDao();
+			GenericDynamicCompositeDao<ID> dao = context.fetchEntityDao();
 
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
@@ -69,12 +75,11 @@ public class EntityMerger
 				for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 				{
 					PropertyMeta<?, ?> propertyMeta = entry.getValue();
-					ID key = interceptor.getKey();
 					if (multiValueTypes.contains(propertyMeta.type()))
 					{
 						this.persister.removePropertyBatch(key, dao, propertyMeta, mutator);
 					}
-					this.persister.persistProperty(realObject, key, dao, propertyMeta, mutator);
+					this.persister.persistProperty(context, propertyMeta, mutator);
 				}
 				dao.executeMutator(mutator);
 			}
@@ -83,28 +88,26 @@ public class EntityMerger
 
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
-
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-
 				if (propertyMeta.isJoin())
 				{
-					List<CascadeType> cascadeTypes = propertyMeta.getJoinProperties()
+					Set<CascadeType> cascadeTypes = propertyMeta.getJoinProperties()
 							.getCascadeTypes();
 					if (cascadeTypes.contains(MERGE) || cascadeTypes.contains(ALL))
 					{
 						switch (propertyMeta.type())
 						{
 							case JOIN_SIMPLE:
-								mergeJoinProperty(realObject, propertyMeta);
+								mergeJoinProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_LIST:
-								mergeJoinListProperty(realObject, propertyMeta);
+								mergeJoinListProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_SET:
-								mergeJoinSetProperty(realObject, propertyMeta);
+								mergeJoinSetProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_MAP:
-								mergeJoinMapProperty(realObject, propertyMeta);
+								mergeJoinMapProperty(context, realObject, propertyMeta);
 								break;
 							default:
 								break;
@@ -117,57 +120,63 @@ public class EntityMerger
 		}
 		else
 		{
-			this.persister.persist(entity, entityMeta);
-			proxy = helper.buildProxy(entity, entityMeta);
+			this.persister.persist(context);
+			proxy = helper.buildProxy(entity, context);
 		}
 
 		return proxy;
 	}
 
-	private <T> void mergeJoinProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	private <T, ID> void mergeJoinProperty(PersistenceContext<ID> context, T entity,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		Object joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
 		if (joinEntity != null)
 		{
-			Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
+			Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+					joinProperties.getEntityMeta(), joinEntity));
 			helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
 		}
 	}
 
-	private <T> void mergeJoinListProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	private <T, ID> void mergeJoinListProperty(PersistenceContext<ID> context, T entity,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		List<?> joinEntities = (List<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
 		List<Object> mergedEntities = new ArrayList<Object>();
-		if (joinEntities != null)
-		{
-			for (Object joinEntity : joinEntities)
-			{
-				Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
-				mergedEntities.add(mergedEntity);
-			}
-		}
+		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
 		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <T> void mergeJoinSetProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	private <T, ID> void mergeJoinSetProperty(PersistenceContext<ID> context, T entity,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		Set<?> joinEntities = (Set<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
 		Set<Object> mergedEntities = new HashSet<Object>();
+		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
+		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
+	}
+
+	private <ID> void mergeCollectionOfJoinEntities(PersistenceContext<ID> context,
+			JoinProperties joinProperties, Collection<?> joinEntities,
+			Collection<Object> mergedEntities)
+	{
 		if (joinEntities != null)
 		{
 			for (Object joinEntity : joinEntities)
 			{
-				Object mergedEntity = this.mergeEntity(joinEntity, joinProperties.getEntityMeta());
+				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+						joinProperties.getEntityMeta(), joinEntity));
 				mergedEntities.add(mergedEntity);
 			}
 		}
-		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <T> void mergeJoinMapProperty(T entity, PropertyMeta<?, ?> propertyMeta)
+	private <T, ID> void mergeJoinMapProperty(PersistenceContext<ID> context, T entity,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		Map<?, ?> joinEntitiesMap = (Map<?, ?>) helper.getValueFromField(entity,
@@ -177,8 +186,8 @@ public class EntityMerger
 		{
 			for (Entry<?, ?> joinEntityEntry : joinEntitiesMap.entrySet())
 			{
-				Object mergedEntity = this.mergeEntity(joinEntityEntry.getValue(),
-						joinProperties.getEntityMeta());
+				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+						joinProperties.getEntityMeta(), joinEntityEntry.getValue()));
 				mergedEntitiesMap.put(joinEntityEntry.getKey(), mergedEntity);
 			}
 		}

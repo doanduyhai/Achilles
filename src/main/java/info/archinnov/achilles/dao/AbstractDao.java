@@ -13,6 +13,7 @@ import java.util.List;
 
 import me.prettyprint.cassandra.model.thrift.ThriftCounterColumnQuery;
 import me.prettyprint.cassandra.service.KeyIterator;
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite;
@@ -38,6 +39,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 {
 
 	protected Keyspace keyspace;
+	protected Cluster cluster;
 	protected Serializer<K> keySerializer;
 	protected Serializer<N> columnNameSerializer;
 	protected Serializer<V> valueSerializer;
@@ -75,8 +77,10 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	protected AbstractDao() {}
 
-	protected AbstractDao(Keyspace keyspace) {
+	protected AbstractDao(Cluster cluster, Keyspace keyspace) {
+		Validator.validateNotNull(cluster, "Cluster should not be null");
 		Validator.validateNotNull(keyspace, "keyspace should not be null");
+		this.cluster = cluster;
 		this.keyspace = keyspace;
 	}
 
@@ -303,15 +307,16 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				endName, reverse, length);
 	}
 
-	public <KEY, VALUE> AchillesJoinSliceIterator<K, N, V, KEY, VALUE> getJoinColumnsIterator(
+	public <JOIN_ID, KEY, VALUE> AchillesJoinSliceIterator<K, N, V, JOIN_ID, KEY, VALUE> getJoinColumnsIterator(
+			GenericDynamicCompositeDao<JOIN_ID> joinEntityDao,
 			PropertyMeta<KEY, VALUE> propertyMeta, K key, N startName, N endName, boolean reversed,
 			int count)
 	{
 		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 				valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesJoinSliceIterator<K, N, V, KEY, VALUE>(policy, columnFamily,
-				propertyMeta, query, startName, endName, reversed, count);
+		return new AchillesJoinSliceIterator<K, N, V, JOIN_ID, KEY, VALUE>(policy, joinEntityDao,
+				columnFamily, propertyMeta, query, startName, endName, reversed, count);
 	}
 
 	public Rows<K, N, V> multiGetSliceRange(List<K> keys, N startName, N endName, boolean reverse,

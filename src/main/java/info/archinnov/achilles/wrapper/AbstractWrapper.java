@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.entity.EntityHelper;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.lang.reflect.Method;
@@ -13,12 +13,13 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractWrapper<K, V>
+public abstract class AbstractWrapper<ID, K, V>
 {
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta<K, V> propertyMeta;
 	protected EntityHelper helper;
+	protected PersistenceContext<ID> context;
 
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
@@ -58,15 +59,13 @@ public abstract class AbstractWrapper<K, V>
 		return this.propertyMeta.type().isJoinColumn();
 	}
 
-	protected EntityMeta<?> joinMeta()
+	public void setContext(PersistenceContext<ID> context)
 	{
-		if (isJoin())
-		{
-			return this.propertyMeta.getJoinProperties().getEntityMeta();
-		}
-		else
-		{
-			return null;
-		}
+		this.context = context;
+	}
+
+	protected PersistenceContext<?> joinContext(V joinEntity)
+	{
+		return context.newPersistenceContext(propertyMeta.joinMeta(), joinEntity);
 	}
 }

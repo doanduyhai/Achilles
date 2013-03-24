@@ -2,6 +2,8 @@ package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.Composite;
@@ -71,37 +73,39 @@ public class CompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
-			final PropertyMeta<K, V> propertyMeta)
+	public <ID, K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
+			final PersistenceContext<ID> context, final PropertyMeta<K, V> propertyMeta)
 	{
 
 		return new Function<HColumn<Composite, ?>, KeyValue<K, V>>()
 		{
 			public KeyValue<K, V> apply(HColumn<Composite, ?> hColumn)
 			{
-				return buildKeyValueFromComposite(propertyMeta, hColumn);
+				return buildKeyValueFromComposite(context, propertyMeta, hColumn);
 			}
 		};
 	}
 
-	public <K, V> KeyValue<K, V> buildKeyValueFromComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+	public <ID, K, V> KeyValue<K, V> buildKeyValueFromComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
 		K key = buildKeyFromComposite(propertyMeta, hColumn);
-		V value = this.buildValueFromComposite(propertyMeta, hColumn);
+		V value = this.buildValueFromComposite(context, propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
 
 		return new KeyValue<K, V>(key, value, ttl);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <K, V> V buildValueFromComposite(PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+	public <ID, JOIN_ID, K, V> V buildValueFromComposite(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
 		V value;
 		if (propertyMeta.isJoin())
 		{
-			value = entityHelper.buildProxy((V) hColumn.getValue(), propertyMeta.joinMeta());
+			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+					(EntityMeta<JOIN_ID>) propertyMeta.joinMeta(), (V) hColumn.getValue());
+			value = entityHelper.buildProxy((V) hColumn.getValue(), joinContext);
 		}
 		else
 		{

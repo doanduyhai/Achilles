@@ -5,7 +5,6 @@ import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -72,7 +71,6 @@ public class EntityMetaBuilderTest
 				.columnFamilyName("cfName") //
 				.propertyMetas(propertyMetas) //
 				.keyspace(keyspace) //
-				.hasCounter(true) //
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
@@ -91,13 +89,8 @@ public class EntityMetaBuilderTest
 		assertThat(meta.getSetterMetas().containsKey(setter));
 		assertThat(meta.getSetterMetas().get(setter)).isSameAs((PropertyMeta) simpleMeta);
 
-		assertThat(meta.getEntityDao()).isNotNull();
-
-		assertThat(meta.hasCounter()).isTrue();
-
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_meta_with_column_family_name() throws Exception
 	{
@@ -114,11 +107,8 @@ public class EntityMetaBuilderTest
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
-		assertThat(meta.getColumnFamilyDao()).isNull();
-		assertThat(meta.getEntityDao()).isExactlyInstanceOf(GenericDynamicCompositeDao.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_meta_for_wide_row() throws Exception
 	{
@@ -136,7 +126,5 @@ public class EntityMetaBuilderTest
 				.columnFamilyDirectMapping(true).build();
 
 		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
-		assertThat(meta.getEntityDao()).isNull();
-		assertThat(meta.getColumnFamilyDao()).isExactlyInstanceOf(GenericCompositeDao.class);
 	}
 }

@@ -5,14 +5,17 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.EntityMapper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.List;
@@ -40,10 +43,15 @@ public class EntityLoader
 	private EntityHelper helper = new EntityHelper();
 	private JoinEntityLoader joinLoader = new JoinEntityLoader();
 
-	public <T, ID> T load(Class<T> entityClass, ID key, EntityMeta<ID> entityMeta)
+	@SuppressWarnings("unchecked")
+	public <T, ID> T load(PersistenceContext<ID> context)
 	{
+		Class<T> entityClass = (Class<T>) context.getEntityClass();
+		EntityMeta<ID> entityMeta = context.getEntityMeta();
+		ID primaryKey = context.getPrimaryKey();
+
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
-		Validator.validateNotNull(key, "Entity '" + entityClass.getCanonicalName()
+		Validator.validateNotNull(primaryKey, "Entity '" + entityClass.getCanonicalName()
 				+ "' key should not be null");
 		Validator.validateNotNull(entityMeta, "Entity meta for '" + entityClass.getCanonicalName()
 				+ "' should not be null");
@@ -55,26 +63,25 @@ public class EntityLoader
 			if (entityMeta.isColumnFamilyDirectMapping())
 			{
 				entity = entityClass.newInstance();
-				helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
+				helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 			}
 			else
 			{
-				List<Pair<DynamicComposite, String>> columns = entityMeta.getEntityDao()
-						.eagerFetchEntity(key);
+				List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao()
+						.eagerFetchEntity(primaryKey);
 				if (columns.size() > 0)
 				{
 					entity = entityClass.newInstance();
-					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
-					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
-
+					mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
+					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 				}
 			}
 
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Error when loading entity type '"
-					+ entityClass.getCanonicalName() + "' with key '" + key + "'", e);
+			throw new AchillesException("Error when loading entity type '"
+					+ entityClass.getCanonicalName() + "' with key '" + primaryKey + "'", e);
 		}
 		return entity;
 	}
@@ -96,28 +103,31 @@ public class EntityLoader
 		}
 	}
 
-	protected <ID, V> V loadSimpleProperty(ID key, GenericDynamicCompositeDao<ID> dao,
+	protected <ID, V> V loadSimpleProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				EQUAL);
-		return propertyMeta.getValueFromString(dao.getValue(key, composite));
+		return propertyMeta.getValueFromString(context.fetchEntityDao().getValue(
+				context.getPrimaryKey(), composite));
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID> Long loadSimpleCounterProperty(ID key, PropertyMeta<?, ?> propertyMeta)
+	protected <ID> Long loadSimpleCounterProperty(PersistenceContext<ID> context,
+			PropertyMeta<?, ?> propertyMeta)
 	{
-		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(), key,
-				(PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
+		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(),
+				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		DynamicComposite comp = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
 
-		Long counter = loadCounterWithConsistencyLevel(propertyMeta, keyComp, comp);
+		Long counter = loadCounterWithConsistencyLevel(propertyMeta, keyComp, comp,
+				context.getCounterDao());
 
 		return counter;
 	}
 
 	private Long loadCounterWithConsistencyLevel(PropertyMeta<?, ?> propertyMeta,
-			Composite keyComp, DynamicComposite comp)
+			Composite keyComp, DynamicComposite comp, CounterDao counterDao)
 	{
 		boolean resetConsistencyLevel = false;
 		if (currentReadConsistencyLevel.get() == null)
@@ -128,7 +138,7 @@ public class EntityLoader
 		Long counter;
 		try
 		{
-			counter = propertyMeta.counterDao().getCounterValue(keyComp, comp);
+			counter = counterDao.getCounterValue(keyComp, comp);
 		}
 		catch (Throwable throwable)
 		{
@@ -144,112 +154,106 @@ public class EntityLoader
 		return counter;
 	}
 
-	protected <ID, V> List<V> loadListProperty(ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, V> listPropertyMeta)
+	protected <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(listPropertyMeta,
-				EQUAL);
-		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(listPropertyMeta,
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
+		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
 		List<V> list = null;
 		if (columns.size() > 0)
 		{
-			list = listPropertyMeta.newListInstance();
+			list = propertyMeta.newListInstance();
 			for (Pair<DynamicComposite, String> pair : columns)
 			{
-				list.add(listPropertyMeta.getValueFromString(pair.right));
+				list.add(propertyMeta.getValueFromString(pair.right));
 			}
 		}
 		return list;
 	}
 
-	protected <ID, V> Set<V> loadSetProperty(ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<?, V> setPropertyMeta)
+	protected <ID, V> Set<V> loadSetProperty(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
 	{
 
-		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(setPropertyMeta,
-				EQUAL);
-		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(setPropertyMeta,
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
+		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<V> set = null;
 		if (columns.size() > 0)
 		{
-			set = setPropertyMeta.newSetInstance();
+			set = propertyMeta.newSetInstance();
 			for (Pair<DynamicComposite, String> pair : columns)
 			{
-				set.add(setPropertyMeta.getValueFromString(pair.right));
+				set.add(propertyMeta.getValueFromString(pair.right));
 			}
 		}
 		return set;
 	}
 
-	protected <ID, K, V> Map<K, V> loadMapProperty(ID key, GenericDynamicCompositeDao<ID> dao,
-			PropertyMeta<K, V> mapPropertyMeta)
+	protected <ID, K, V> Map<K, V> loadMapProperty(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta)
 	{
-
-		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(mapPropertyMeta,
-				EQUAL);
-		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(mapPropertyMeta,
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
-
-		Class<K> keyClass = mapPropertyMeta.getKeyClass();
+		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
+		Class<K> keyClass = propertyMeta.getKeyClass();
 		Map<K, V> map = null;
 		if (columns.size() > 0)
 		{
-			map = mapPropertyMeta.newMapInstance();
+			map = propertyMeta.newMapInstance();
 			for (Pair<DynamicComposite, String> pair : columns)
 			{
-				KeyValue<K, V> holder = mapPropertyMeta.getKeyValueFromString(pair.right);
+				KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
 
 				map.put(keyClass.cast(holder.getKey()),
-						mapPropertyMeta.getValueFromString(holder.getValue()));
+						propertyMeta.getValueFromString(holder.getValue()));
 			}
 		}
 		return map;
 	}
 
+	private <ID, V> List<Pair<DynamicComposite, String>> fetchColumns(
+			PersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
+	{
+		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
+		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
+				GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
+		return columns;
+	}
+
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+			PersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
 	{
 		Object value = null;
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				value = this.loadSimpleProperty(key, dao, propertyMeta);
+				value = loadSimpleProperty(context, propertyMeta);
 				break;
 			case COUNTER:
-				value = this.loadSimpleCounterProperty(key, propertyMeta);
+				value = loadSimpleCounterProperty(context, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				value = this.loadListProperty(key, dao, propertyMeta);
+				value = loadListProperty(context, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				value = this.loadSetProperty(key, dao, propertyMeta);
+				value = loadSetProperty(context, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				value = this.loadMapProperty(key, dao, propertyMeta);
+				value = loadMapProperty(context, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				value = this.loadJoinSimple(key, dao, propertyMeta);
+				value = loadJoinSimple(context, propertyMeta);
 				break;
 			case JOIN_LIST:
-				value = joinLoader.loadJoinListProperty(key, dao, propertyMeta);
+				value = joinLoader.loadJoinListProperty(context, propertyMeta);
 				break;
 			case JOIN_SET:
-				value = joinLoader.loadJoinSetProperty(key, dao, propertyMeta);
+				value = joinLoader.loadJoinSetProperty(context, propertyMeta);
 				break;
 			case JOIN_MAP:
-				value = joinLoader.loadJoinMapProperty(key, dao, propertyMeta);
+				value = joinLoader.loadJoinMapProperty(context, propertyMeta);
 				break;
 			default:
 				return;
@@ -258,7 +262,7 @@ public class EntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> V loadJoinSimple(ID key, GenericDynamicCompositeDao<ID> dao,
+	public <ID, JOIN_ID, V> V loadJoinSimple(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
@@ -268,12 +272,14 @@ public class EntityLoader
 		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				EQUAL);
 
-		String stringJoinId = dao.getValue(key, composite);
+		String stringJoinId = context.fetchEntityDao().getValue(context.getPrimaryKey(), composite);
 
 		if (stringJoinId != null)
 		{
 			JOIN_ID joinId = joinIdMeta.getValueFromString(stringJoinId);
-			return this.load(propertyMeta.getValueClass(), joinId, joinMeta);
+			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+					propertyMeta.getValueClass(), joinMeta, joinId);
+			return this.load(joinContext);
 
 		}
 		else

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
@@ -22,17 +23,21 @@ import me.prettyprint.hector.api.beans.HCounterColumn;
  */
 public class IteratorFactory
 {
-	public <K, V> KeyValueIterator<K, V> createKeyValueIteratorForComposite(
-			Iterator<HColumn<Composite, V>> columnSliceIterator, PropertyMeta<K, V> propertyMeta)
+	public <ID, K, V> KeyValueIterator<K, V> createKeyValueIteratorForComposite(
+			PersistenceContext<ID> context, Iterator<HColumn<Composite, V>> columnSliceIterator,
+			PropertyMeta<K, V> propertyMeta)
 	{
-		return new KeyValueIteratorForComposite<K, V>(columnSliceIterator, propertyMeta);
+		return new KeyValueIteratorForComposite<ID, K, V>(context, columnSliceIterator,
+				propertyMeta);
 	}
 
-	public <K, V> KeyValueIterator<K, V> createKeyValueIteratorForDynamicComposite(
+	public <ID, K, V> KeyValueIterator<K, V> createKeyValueIteratorForDynamicComposite(
+			PersistenceContext<ID> context,
 			Iterator<HColumn<DynamicComposite, String>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return new KeyValueIteratorForDynamicComposite<K, V>(columnSliceIterator, propertyMeta);
+		return new KeyValueIteratorForDynamicComposite<ID, K, V>(context, columnSliceIterator,
+				propertyMeta);
 	}
 
 	@SuppressWarnings(
@@ -41,18 +46,21 @@ public class IteratorFactory
 			"rawtypes"
 	})
 	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForDynamicComposite(
-			AchillesJoinSliceIterator<ID, DynamicComposite, JOIN_ID, K, V> joinColumnSliceIterator,
+			PersistenceContext<ID> context,
+			AchillesJoinSliceIterator<ID, DynamicComposite, String, JOIN_ID, K, V> joinColumnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return new KeyValueIteratorForDynamicComposite<K, V>(
+		return new KeyValueIteratorForDynamicComposite<ID, K, V>(context,
 				(AchillesJoinSliceIterator) joinColumnSliceIterator, propertyMeta);
 	}
 
 	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForComposite(
-			AchillesJoinSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator,
+			PersistenceContext<ID> context,
+			AchillesJoinSliceIterator<ID, Composite, ?, JOIN_ID, K, V> joinColumnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		return new KeyValueIteratorForComposite<K, V>(joinColumnSliceIterator, propertyMeta);
+		return new KeyValueIteratorForComposite<ID, K, V>(context, joinColumnSliceIterator,
+				propertyMeta);
 	}
 
 	public <K> KeyValueIterator<K, Long> createCounterKeyValueIteratorForDynamicComposite(

@@ -58,8 +58,6 @@ public class ColumnFamilyIT
 	@Test
 	public void should_insert_values() throws Exception
 	{
-
-		bean = em.find(ColumnFamilyBean.class, id);
 		map = bean.getMap();
 
 		insert3Values();
@@ -171,7 +169,7 @@ public class ColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundMaps = map.find(14, 12, 10, 
+		List<KeyValue<Integer, String>> foundMaps = map.find(14, 12, 10,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundMaps).hasSize(2);
@@ -237,7 +235,7 @@ public class ColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = map.iterator(12, 14, 10, 
+		Iterator<KeyValue<Integer, String>> iter = map.iterator(12, 14, 10,
 				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");

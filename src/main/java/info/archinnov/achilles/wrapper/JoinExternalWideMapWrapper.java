@@ -2,7 +2,9 @@ package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -14,7 +16,9 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+
 import java.util.List;
+
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
@@ -25,192 +29,261 @@ import me.prettyprint.hector.api.mutation.Mutator;
  * @author DuyHai DOAN
  * 
  */
-public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<K, V> {
-    private ID id;
-    private GenericCompositeDao<ID, JOIN_ID> dao;
-    private PropertyMeta<K, V> propertyMeta;
+public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
+{
+	private ID id;
+	private PropertyMeta<K, V> propertyMeta;
+	private GenericCompositeDao<ID, JOIN_ID> dao;
+	private EntityPersister persister;
+	private EntityLoader loader;
+	private EntityHelper entityHelper;
+	private CompositeHelper compositeHelper;
+	private CompositeKeyFactory compositeKeyFactory;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
 
-    private EntityPersister persister;
-    private EntityLoader loader;
-    private EntityHelper entityHelper;
-    private CompositeHelper compositeHelper;
-    private CompositeKeyFactory compositeKeyFactory;
-    private KeyValueFactory keyValueFactory;
-    private IteratorFactory iteratorFactory;
+	private Composite buildComposite(K key)
+	{
+		Composite comp = compositeKeyFactory.createBaseComposite(propertyMeta, key);
+		return comp;
+	}
 
-    private Composite buildComposite(K key) {
-        Composite comp = compositeKeyFactory.createBaseComposite(propertyMeta, key);
-        return comp;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public V get(K key)
+	{
+		JOIN_ID joinId = dao.getValue(id, buildComposite(key));
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public V get(K key) {
-        JOIN_ID joinId = dao.getValue(id, buildComposite(key));
-        EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-        PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta.joinIdMeta();
-        V entity = loader.load(propertyMeta.getValueClass(), joinIdMeta.castValue(joinId), joinMeta);
+		PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+				propertyMeta.getValueClass(), joinMeta, joinId);
 
-        return entityHelper.buildProxy(entity, propertyMeta.joinMeta());
-    }
+		V entity = loader.load(joinContext);
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value, int ttl) {
-        JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		return entityHelper.buildProxy(entity, joinContext);
+	}
 
-        if (this.interceptor.isBatchMode()) {
-            dao.setValueBatch(id, buildComposite(key), joinId, ttl, (Mutator<ID>) interceptor.getMutator());
-        } else {
-            dao.setValue(id, buildComposite(key), joinId, ttl);
-        }
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value, int ttl)
+	{
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value) {
-        JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-        if (this.interceptor.isBatchMode()) {
-            dao.setValueBatch(id, buildComposite(key), joinId, (Mutator<ID>) interceptor.getMutator());
-        } else {
-            dao.setValue(id, buildComposite(key), joinId);
-        }
-    }
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), joinId, ttl,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), joinId, ttl);
+		}
+	}
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value)
+	{
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		if (this.interceptor.isBatchMode())
+		{
+			dao.setValueBatch(id, buildComposite(key), joinId,
+					(Mutator<ID>) interceptor.getMutator());
+		}
+		else
+		{
+			dao.setValue(id, buildComposite(key), joinId);
+		}
+	}
 
-        Composite[] queryComps = compositeKeyFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Override
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+		Composite[] queryComps = compositeKeyFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
 
-        return keyValueFactory.createJoinKeyValueListForComposite(propertyMeta, (List) hColumns);
-    }
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		return keyValueFactory.createJoinKeyValueListForComposite(context, propertyMeta,
+				(List) hColumns);
+	}
 
-        Composite[] queryComps = compositeKeyFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Override
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+		Composite[] queryComps = compositeKeyFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
 
-        return keyValueFactory.createJoinValueListForComposite(propertyMeta, (List) hColumns);
-    }
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		return keyValueFactory.createJoinValueListForComposite(context, propertyMeta,
+				(List) hColumns);
+	}
 
-        Composite[] queryComps = compositeKeyFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+	@SuppressWarnings(
+	{
+			"rawtypes",
+			"unchecked"
+	})
+	@Override
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+		Composite[] queryComps = compositeKeyFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
 
-        return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
-    }
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-    @Override
-    public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
+	}
 
-        AchillesJoinSliceIterator<ID, Composite, JOIN_ID, K, V> joinColumnSliceIterator = dao.getJoinColumnsIterator(
-                propertyMeta, id, composites[0], composites[1], ordering.isReverse(), count);
+	@Override
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
+		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end,
+				bounds, ordering);
 
-        return iteratorFactory.createKeyValueJoinIteratorForComposite(joinColumnSliceIterator, propertyMeta);
-    }
+		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta
+				.joinMeta().getColumnFamilyName());
 
-    @Override
-    public void remove(K key) {
-        dao.removeColumn(id, buildComposite(key));
+		AchillesJoinSliceIterator<ID, Composite, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
+				.getJoinColumnsIterator(joinEntityDao, propertyMeta, id, composites[0],
+						composites[1], ordering.isReverse(), count);
 
-    }
+		return iteratorFactory.createKeyValueJoinIteratorForComposite(context,
+				joinColumnSliceIterator, propertyMeta);
+	}
 
-    @Override
-    public void remove(K start, K end, BoundingMode bounds) {
-        compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+	@Override
+	public void remove(K key)
+	{
+		dao.removeColumn(id, buildComposite(key));
 
-        Composite[] queryComps = compositeKeyFactory.createForQuery(//
-                propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
+	}
 
-        dao.removeColumnRange(id, queryComps[0], queryComps[1]);
+	@Override
+	public void remove(K start, K end, BoundingMode bounds)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 
-    }
+		Composite[] queryComps = compositeKeyFactory.createForQuery(//
+				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
-    @Override
-    public void removeFirst(int count) {
-        dao.removeColumnRange(id, null, null, false, count);
-    }
+		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
 
-    @Override
-    public void removeLast(int count) {
-        dao.removeColumnRange(id, null, null, true, count);
-    }
+	}
 
-    private Object persistOrEnsureJoinEntityExists(V value) {
-        Object joinId = null;
-        JoinProperties joinProperties = propertyMeta.getJoinProperties();
+	@Override
+	public void removeFirst(int count)
+	{
+		dao.removeColumnRange(id, null, null, false, count);
+	}
 
-        if (value != null) {
-            if (interceptor.isBatchMode()) {
-                Mutator<?> joinMutator = interceptor.getMutatorForProperty(propertyMeta.getPropertyName());
-                joinId = persister.cascadePersistOrEnsureExists(value, joinProperties, joinMutator);
-            } else {
-                joinId = persister.cascadePersistOrEnsureExists(value, joinProperties);
-            }
-        } else {
-            throw new IllegalArgumentException("Cannot persist null entity");
-        }
-        return joinId;
-    }
+	@Override
+	public void removeLast(int count)
+	{
+		dao.removeColumnRange(id, null, null, true, count);
+	}
 
-    public void setId(ID id) {
-        this.id = id;
-    }
+	@SuppressWarnings("unchecked")
+	private Object persistOrEnsureJoinEntityExists(V value)
+	{
+		Object joinId = null;
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 
-    public void setExternalWideMapDao(GenericCompositeDao<ID, JOIN_ID> externalWideMapDao) {
-        this.dao = externalWideMapDao;
-    }
+		if (value != null)
+		{
+			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 
-    public void setExternalWideMapMeta(PropertyMeta<K, V> externalWideMapMeta) {
-        this.propertyMeta = externalWideMapMeta;
-    }
+			PersistenceContext<JOIN_ID> joinContext = context
+					.newPersistenceContext(joinMeta, value);
 
-    public void setEntityHelper(EntityHelper entityHelper) {
-        this.entityHelper = entityHelper;
-    }
+			if (interceptor.isBatchMode())
+			{
+				Mutator<?> joinMutator = interceptor.getMutatorForProperty(propertyMeta
+						.getPropertyName());
+				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties,
+						joinMutator);
+			}
+			else
+			{
+				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
+			}
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot persist null entity");
+		}
+		return joinId;
+	}
 
-    public void setPersister(EntityPersister persister) {
-        this.persister = persister;
-    }
+	public void setId(ID id)
+	{
+		this.id = id;
+	}
 
-    public void setLoader(EntityLoader loader) {
-        this.loader = loader;
-    }
+	public void setExternalWideMapMeta(PropertyMeta<K, V> externalWideMapMeta)
+	{
+		this.propertyMeta = externalWideMapMeta;
+	}
 
-    public void setCompositeHelper(CompositeHelper compositeHelper) {
-        this.compositeHelper = compositeHelper;
-    }
+	public void setEntityHelper(EntityHelper entityHelper)
+	{
+		this.entityHelper = entityHelper;
+	}
 
-    public void setCompositeKeyFactory(CompositeKeyFactory compositeKeyFactory) {
-        this.compositeKeyFactory = compositeKeyFactory;
-    }
+	public void setPersister(EntityPersister persister)
+	{
+		this.persister = persister;
+	}
 
-    public void setKeyValueFactory(KeyValueFactory keyValueFactory) {
-        this.keyValueFactory = keyValueFactory;
-    }
+	public void setLoader(EntityLoader loader)
+	{
+		this.loader = loader;
+	}
 
-    public void setIteratorFactory(IteratorFactory iteratorFactory) {
-        this.iteratorFactory = iteratorFactory;
-    }
+	public void setCompositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+	}
 
+	public void setCompositeKeyFactory(CompositeKeyFactory compositeKeyFactory)
+	{
+		this.compositeKeyFactory = compositeKeyFactory;
+	}
+
+	public void setKeyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+	}
+
+	public void setIteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+	}
+
+	public void setDao(GenericCompositeDao<ID, JOIN_ID> dao)
+	{
+		this.dao = dao;
+	}
 }

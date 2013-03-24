@@ -654,7 +654,7 @@ public class EntityHelperTest
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getEntityDao()).thenReturn(dao);
+		// when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
 		when(idMeta.getGetter()).thenReturn(idGetter);

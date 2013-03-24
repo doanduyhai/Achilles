@@ -6,6 +6,7 @@ import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -32,28 +33,18 @@ public class JoinEntityLoader
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, V> List<V> loadJoinListProperty(ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	protected <ID, JOIN_ID, V> List<V> loadJoinListProperty(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
-		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
-
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
-
-		for (Pair<DynamicComposite, String> pair : columns)
-		{
-			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
-		}
-
+		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
+		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+				.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
 		if (joinIds.size() > 0)
 		{
 			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta);
+					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
 
 			for (JOIN_ID joinId : joinIds)
 			{
@@ -65,31 +56,18 @@ public class JoinEntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<?, V> propertyMeta)
+	protected <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
 	{
-
-		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
-
-		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
-
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
-				.joinIdMeta();
-
-		for (Pair<DynamicComposite, String> pair : columns)
-		{
-			joinIds.add(joinIdMeta.getValueFromString(pair.right));
-		}
-
+		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
+		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+				.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
 		if (joinIds.size() > 0)
 		{
 			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta);
+					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
 
 			for (JOIN_ID joinId : joinIds)
 			{
@@ -101,16 +79,19 @@ public class JoinEntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(ID key,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<K, V> propertyMeta)
+	protected <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(PersistenceContext<ID> context,
+			PropertyMeta<K, V> propertyMeta)
 	{
+
+		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+				.getColumnFamilyName());
 
 		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
 		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(key, start, end, false,
-				Integer.MAX_VALUE);
+		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 
-		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
 				.joinIdMeta();
 
@@ -133,7 +114,7 @@ public class JoinEntityLoader
 		if (joinIds.size() > 0)
 		{
 			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta);
+					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
 
 			for (Entry<K, JOIN_ID> entry : partialMap.entrySet())
 			{
@@ -144,4 +125,22 @@ public class JoinEntityLoader
 		return map;
 	}
 
+	@SuppressWarnings("unchecked")
+	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(PersistenceContext<ID> context,
+			PropertyMeta<?, V> propertyMeta)
+	{
+		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
+		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<DynamicComposite, String>> columns = context.fetchEntityDao().findColumnsRange(
+				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
+		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
+
+		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
+
+		for (Pair<DynamicComposite, String> pair : columns)
+		{
+			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
+		}
+		return joinIds;
+	}
 }

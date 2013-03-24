@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.wrapper.builder.EntrySetWrapperBuilder.builder;
-import static info.archinnov.achilles.wrapper.builder.KeySetWrapperBuilder.builder;
-import static info.archinnov.achilles.wrapper.builder.ValueCollectionWrapperBuilder.builder;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.wrapper.builder.EntrySetWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.KeySetWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.ValueCollectionWrapperBuilder;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
+public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map<K, V>
 {
 
 	private final Map<K, V> target;
@@ -61,7 +61,9 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0)
 		{
-			EntrySetWrapper<K, V> wrapperSet = builder(targetEntrySet).dirtyMap(dirtyMap) //
+			EntrySetWrapper<ID, K, V> wrapperSet = EntrySetWrapperBuilder //
+					.builder(context, targetEntrySet) //
+					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
 					.helper(helper) //
@@ -76,7 +78,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	{
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.get(key), joinMeta());
+			V joinEntity = this.target.get(key);
+			return helper.buildProxy(joinEntity, joinContext(joinEntity));
 		}
 		else
 		{
@@ -101,7 +104,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Set<K> keySet = this.target.keySet();
 		if (keySet.size() > 0)
 		{
-			KeySetWrapper<K> keySetWrapper = builder(keySet) //
+			KeySetWrapper<ID, K> keySetWrapper = KeySetWrapperBuilder //
+					.builder(context, keySet) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta((PropertyMeta) propertyMeta) //
@@ -161,7 +165,8 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 
 		if (values.size() > 0)
 		{
-			ValueCollectionWrapper<V> collectionWrapper = builder(values) //
+			ValueCollectionWrapper<ID, V> collectionWrapper = ValueCollectionWrapperBuilder //
+					.builder(context, values) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta((PropertyMeta) propertyMeta) //

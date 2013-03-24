@@ -30,13 +30,30 @@ public class EntityValidator
 	public void validateEntity(Object entity, EntityMeta<?> entityMeta)
 	{
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
-				+ " is not managed");
+				+ " is not managed by Achilles");
 
-		Object id = helper.determinePrimaryKey(entity, entityMeta);
+		Object id = helper.getKey(entity, entityMeta.getIdMeta());
 		if (id == null)
 		{
 			throw new IllegalArgumentException("Cannot get primary key for entity "
 					+ entity.getClass().getCanonicalName());
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T, ID> void validateNotCFDirectMapping(Object entity,
+			Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	{
+		Validator.validateNotNull(entity, "Entity should not be null");
+
+		Class<T> baseClass = (Class<T>) helper.deriveBaseClass(entity);
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(baseClass);
+
+		if (entityMeta.isColumnFamilyDirectMapping())
+		{
+			throw new IllegalArgumentException(
+					"This operation is not allowed for an entity directly mapped to a native column family");
+		}
+
 	}
 }

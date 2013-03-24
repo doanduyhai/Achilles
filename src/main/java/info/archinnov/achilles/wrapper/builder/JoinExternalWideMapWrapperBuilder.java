@@ -3,6 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -31,12 +32,13 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private CompositeKeyFactory compositeKeyFactory;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
+	private PersistenceContext<ID> context;
 
 	public JoinExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, JOIN_ID> dao,
 			PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
-		this.id = id;
 		this.dao = dao;
+		this.id = id;
 		this.joinExternalWideMapMeta = joinExternalWideMapMeta;
 	}
 
@@ -51,6 +53,13 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 			AchillesInterceptor interceptor)
 	{
 		this.interceptor = interceptor;
+		return this;
+	}
+
+	public JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> context(
+			PersistenceContext<ID> context)
+	{
+		this.context = context;
 		return this;
 	}
 
@@ -106,8 +115,8 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> wrapper = new JoinExternalWideMapWrapper<ID, JOIN_ID, K, V>();
 
 		wrapper.setId(id);
+		wrapper.setDao(dao);
 		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);
-		wrapper.setExternalWideMapDao(dao);
 		wrapper.setInterceptor(interceptor);
 		wrapper.setEntityHelper(entityHelper);
 		wrapper.setCompositeHelper(compositeHelper);
@@ -116,6 +125,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		wrapper.setKeyValueFactory(keyValueFactory);
 		wrapper.setLoader(loader);
 		wrapper.setPersister(persister);
+		wrapper.setContext(context);
 		return wrapper;
 	}
 

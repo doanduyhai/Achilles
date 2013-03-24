@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -13,7 +13,6 @@ import info.archinnov.achilles.exception.BeanMappingException;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
-import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -26,7 +25,6 @@ import java.util.Set;
 
 import javax.persistence.Table;
 
-import me.prettyprint.hector.api.HConsistencyLevel;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 
@@ -270,79 +268,20 @@ public class EntityHelper
 		return columnFamilyName;
 	}
 
-	public <T> Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> findConsistencyLevels(
-			Class<T> entity)
+	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity)
 	{
-		ConsistencyLevel achillesRead = ConsistencyLevel.ONE;
-		ConsistencyLevel achillesWrite = ConsistencyLevel.ONE;
-		HConsistencyLevel read = HConsistencyLevel.ONE;
-		HConsistencyLevel write = HConsistencyLevel.ONE;
+		ConsistencyLevel achillesRead = ConsistencyLevel.QUORUM;
+		ConsistencyLevel achillesWrite = ConsistencyLevel.QUORUM;
 
 		Consistency clevel = entity.getAnnotation(Consistency.class);
 
 		if (clevel != null)
 		{
 			achillesRead = clevel.read();
-			switch (achillesRead)
-			{
-				case ANY:
-					read = HConsistencyLevel.ANY;
-					break;
-				case ONE:
-					read = HConsistencyLevel.ONE;
-					break;
-				case TWO:
-					read = HConsistencyLevel.TWO;
-					break;
-				case THREE:
-					read = HConsistencyLevel.THREE;
-					break;
-				case EACH_QUORUM:
-					read = HConsistencyLevel.EACH_QUORUM;
-					break;
-				case LOCAL_QUORUM:
-					read = HConsistencyLevel.LOCAL_QUORUM;
-					break;
-				case QUORUM:
-					read = HConsistencyLevel.QUORUM;
-					break;
-				case ALL:
-					read = HConsistencyLevel.ALL;
-					break;
-			}
 			achillesWrite = clevel.write();
-			switch (achillesWrite)
-			{
-				case ANY:
-					write = HConsistencyLevel.ANY;
-					break;
-				case ONE:
-					write = HConsistencyLevel.ONE;
-					break;
-				case TWO:
-					write = HConsistencyLevel.TWO;
-					break;
-				case THREE:
-					write = HConsistencyLevel.THREE;
-					break;
-				case EACH_QUORUM:
-					write = HConsistencyLevel.EACH_QUORUM;
-					break;
-				case LOCAL_QUORUM:
-					write = HConsistencyLevel.LOCAL_QUORUM;
-					break;
-				case QUORUM:
-					write = HConsistencyLevel.QUORUM;
-					break;
-				case ALL:
-					write = HConsistencyLevel.ALL;
-					break;
-			}
 		}
 
-		return new Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>>(
-				new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite),
-				new Pair<HConsistencyLevel, HConsistencyLevel>(read, write));
+		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}
 
 	public List<Field> getInheritedPrivateFields(Class<?> type)
@@ -416,22 +355,6 @@ public class EntityHelper
 		return baseClass;
 	}
 
-	public Object determinePrimaryKey(Object entity, EntityMeta<?> entityMeta)
-	{
-		log.trace("Determine primary key field for entity {}", entity.getClass().getCanonicalName());
-
-		Object key;
-		try
-		{
-			key = entityMeta.getIdMeta().getGetter().invoke(entity);
-		}
-		catch (Exception e)
-		{
-			key = null;
-		}
-		return key;
-	}
-
 	public List<Object> determineMultiKey(Object entity, List<Method> componentGetters)
 	{
 		List<Object> multiKeyValues = new ArrayList<Object>();
@@ -459,19 +382,17 @@ public class EntityHelper
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T buildProxy(T entity, EntityMeta<?> entityMeta)
+	public <T, ID> T buildProxy(T entity, PersistenceContext<ID> context)
 	{
 		if (entity == null)
 		{
 			return null;
 		}
 
-		Validator.validateNotNull(entityMeta, "entityMeta for proxy builder should not be null");
-
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		enhancer.setCallback(JpaEntityInterceptorBuilder.builder(entityMeta, entity).build());
+		enhancer.setCallback(JpaEntityInterceptorBuilder.builder(context, entity).build());
 
 		return (T) enhancer.create();
 	}

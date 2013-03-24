@@ -2,10 +2,9 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import info.archinnov.achilles.dao.CounterDao;
+import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -279,11 +278,6 @@ public class PropertyMeta<K, V>
 	public PropertyMeta<Void, ?> counterIdMeta()
 	{
 		return counterProperties != null ? counterProperties.getIdMeta() : null;
-	}
-
-	public CounterDao counterDao()
-	{
-		return counterProperties != null ? counterProperties.getDao() : null;
 	}
 
 	public String fqcn()

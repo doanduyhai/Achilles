@@ -9,7 +9,7 @@ import java.util.Map.Entry;
  * @author DuyHai DOAN
  * 
  */
-public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.Entry<K, V>
+public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map.Entry<K, V>
 {
 
 	private final Map.Entry<K, V> target;
@@ -29,7 +29,7 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
 	{
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.getValue(), joinMeta());
+			return helper.buildProxy(this.target.getValue(), joinContext(this.target.getValue()));
 		}
 		else
 		{

@@ -25,7 +25,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<K, Long>
+public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Long>
 {
 
 	protected ID id;

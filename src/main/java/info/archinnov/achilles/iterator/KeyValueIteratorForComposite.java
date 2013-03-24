@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -17,19 +18,21 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V>
+public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<K, V>
 {
 	private KeyValueFactory factory = new KeyValueFactory();
 	protected Iterator<HColumn<Composite, V>> achillesSliceIterator;
-	private PropertyMeta<K, V> wideMapMeta;
+	private PropertyMeta<K, V> propertyMeta;
+	private PersistenceContext<ID> context;
 
 	protected KeyValueIteratorForComposite() {}
 
-	public KeyValueIteratorForComposite(Iterator<HColumn<Composite, V>> columnSliceIterator,
-			PropertyMeta<K, V> wideMapMeta)
+	public KeyValueIteratorForComposite(PersistenceContext<ID> context,
+			Iterator<HColumn<Composite, V>> columnSliceIterator, PropertyMeta<K, V> propertyMeta)
 	{
+		this.context = context;
 		this.achillesSliceIterator = columnSliceIterator;
-		this.wideMapMeta = wideMapMeta;
+		this.propertyMeta = propertyMeta;
 	}
 
 	@Override
@@ -45,7 +48,7 @@ public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			keyValue = factory.createKeyValueForComposite(wideMapMeta, column);
+			keyValue = factory.createKeyValueForComposite(context, propertyMeta, column);
 		}
 		else
 		{
@@ -61,7 +64,7 @@ public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			key = factory.createKeyForComposite(wideMapMeta, column);
+			key = factory.createKeyForComposite(propertyMeta, column);
 		}
 		else
 		{
@@ -77,7 +80,7 @@ public class KeyValueIteratorForComposite<K, V> implements KeyValueIterator<K, V
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			value = factory.createValueForComposite(wideMapMeta, column);
+			value = factory.createValueForComposite(context, propertyMeta, column);
 		}
 		else
 		{

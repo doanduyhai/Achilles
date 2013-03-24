@@ -1,5 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -13,9 +14,9 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
+public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
-
+	protected PersistenceContext<ID> context;
 	protected AchillesInterceptor interceptor;
 
 	private static final int DEFAULT_COUNT = 100;
@@ -215,7 +216,8 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	@Override
 	public KeyValueIterator<K, V> iterator()
 	{
-		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
+		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
+				OrderingMode.ASCENDING);
 	}
 
 	@Override
@@ -239,7 +241,8 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse()
 	{
-		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.DESCENDING);
+		return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
+				OrderingMode.DESCENDING);
 	}
 
 	@Override
@@ -292,5 +295,10 @@ public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 	public void setInterceptor(AchillesInterceptor interceptor)
 	{
 		this.interceptor = interceptor;
+	}
+
+	public void setContext(PersistenceContext<ID> context)
+	{
+		this.context = context;
 	}
 }

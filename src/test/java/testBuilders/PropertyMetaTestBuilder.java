@@ -1,7 +1,5 @@
 package testBuilders;
 
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
@@ -16,9 +14,10 @@ import info.archinnov.achilles.entity.type.MultiKey;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 
@@ -44,7 +43,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 	private Class<K> keyClass;
 	private Class<V> valueClass;
 	private EntityMeta<?> joinMeta;
-	private List<CascadeType> cascadeTypes = new ArrayList<CascadeType>();
+	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
 	private List<Class<?>> componentClasses;
 	private List<Serializer<?>> componentSerializers;
@@ -52,13 +51,11 @@ public class PropertyMetaTestBuilder<T, K, V>
 	private List<Method> componentSetters;
 
 	private String externalColumnFamilyName;
-	private GenericCompositeDao<?, ?> externalWideMapDao;
 	private Serializer<?> idSerializer;
 
 	private boolean buildAccessors;
 
 	private ObjectMapper objectMapper;
-	private CounterDao counterDao;
 	private PropertyMeta<Void, ?> counterIdMeta;
 	private String fqcn;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
@@ -145,17 +142,16 @@ public class PropertyMetaTestBuilder<T, K, V>
 			propertyMeta.setSingleKey(true);
 		}
 
-		if (externalColumnFamilyName != null || externalWideMapDao != null || idSerializer != null)
+		if (externalColumnFamilyName != null || idSerializer != null)
 		{
 			ExternalWideMapProperties<?> externalWideMapProperties = new ExternalWideMapProperties(
-					externalColumnFamilyName, externalWideMapDao, idSerializer);
+					externalColumnFamilyName, idSerializer);
 
 			propertyMeta.setExternalWideMapProperties(externalWideMapProperties);
 		}
-		if (counterIdMeta != null || counterDao != null || fqcn != null)
+		if (counterIdMeta != null || fqcn != null)
 		{
-			CounterProperties counterProperties = new CounterProperties(fqcn, counterDao,
-					counterIdMeta);
+			CounterProperties counterProperties = new CounterProperties(fqcn, counterIdMeta);
 			propertyMeta.setCounterProperties(counterProperties);
 
 		}
@@ -198,12 +194,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> externalCf(String externalCf)
 	{
 		this.externalColumnFamilyName = externalCf;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> externalDao(GenericCompositeDao<?, ?> externalDao)
-	{
-		this.externalWideMapDao = externalDao;
 		return this;
 	}
 
@@ -276,12 +266,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> counterIdMeta(PropertyMeta<Void, ?> counterIdMeta)
 	{
 		this.counterIdMeta = counterIdMeta;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> counterDao(CounterDao counterDao)
-	{
-		this.counterDao = counterDao;
 		return this;
 	}
 

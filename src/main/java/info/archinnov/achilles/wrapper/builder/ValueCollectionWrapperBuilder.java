@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.wrapper.ValueCollectionWrapper;
 
 import java.util.Collection;
-
 
 /**
  * ValueCollectionWrapperBuilder
@@ -11,23 +11,25 @@ import java.util.Collection;
  * @author DuyHai DOAN
  * 
  */
-public class ValueCollectionWrapperBuilder<V> extends
-		AbstractWrapperBuilder<ValueCollectionWrapperBuilder<V>, Void, V>
+public class ValueCollectionWrapperBuilder<ID, V> extends
+		AbstractWrapperBuilder<ID, ValueCollectionWrapperBuilder<ID, V>, Void, V>
 {
 	private Collection<V> target;
 
-	public ValueCollectionWrapperBuilder(Collection<V> target) {
+	public ValueCollectionWrapperBuilder(PersistenceContext<ID> context, Collection<V> target) {
+		super.context = context;
 		this.target = target;
 	}
 
-	public static <V> ValueCollectionWrapperBuilder<V> builder(Collection<V> target)
+	public static <ID, V> ValueCollectionWrapperBuilder<ID, V> builder(
+			PersistenceContext<ID> context, Collection<V> target)
 	{
-		return new ValueCollectionWrapperBuilder<V>(target);
+		return new ValueCollectionWrapperBuilder<ID, V>(context, target);
 	}
 
-	public ValueCollectionWrapper<V> build()
+	public ValueCollectionWrapper<ID, V> build()
 	{
-		ValueCollectionWrapper<V> valueCollectionWrapper = new ValueCollectionWrapper<V>(
+		ValueCollectionWrapper<ID, V> valueCollectionWrapper = new ValueCollectionWrapper<ID, V>(
 				this.target);
 		super.build(valueCollectionWrapper);
 		return valueCollectionWrapper;

@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.wrapper.MapWrapper;
 
 import java.util.Map;
-
 
 /**
  * MapWrapperBuilder
@@ -11,22 +11,25 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class MapWrapperBuilder<K, V> extends AbstractWrapperBuilder<MapWrapperBuilder<K, V>, K, V>
+public class MapWrapperBuilder<ID, K, V> extends
+		AbstractWrapperBuilder<ID, MapWrapperBuilder<ID, K, V>, K, V>
 {
 	private Map<K, V> target;
 
-	public static <K, V> MapWrapperBuilder<K, V> builder(Map<K, V> target)
+	public static <ID, K, V> MapWrapperBuilder<ID, K, V> builder(PersistenceContext<ID> context,
+			Map<K, V> target)
 	{
-		return new MapWrapperBuilder<K, V>(target);
+		return new MapWrapperBuilder<ID, K, V>(context, target);
 	}
 
-	public MapWrapperBuilder(Map<K, V> target) {
+	public MapWrapperBuilder(PersistenceContext<ID> context, Map<K, V> target) {
+		super.context = context;
 		this.target = target;
 	}
 
-	public MapWrapper<K, V> build()
+	public MapWrapper<ID, K, V> build()
 	{
-		MapWrapper<K, V> mapWrapper = new MapWrapper<K, V>(this.target);
+		MapWrapper<ID, K, V> mapWrapper = new MapWrapper<ID, K, V>(this.target);
 		super.build(mapWrapper);
 		return mapWrapper;
 	}

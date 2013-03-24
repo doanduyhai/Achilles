@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.wrapper.builder.EntryIteratorWrapperBuilder.builder;
-import static info.archinnov.achilles.wrapper.builder.MapEntryWrapperBuilder.builder;
+import info.archinnov.achilles.wrapper.builder.EntryIteratorWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.MapEntryWrapperBuilder;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,7 +15,8 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<Entry<K, V>>
+public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements
+		Set<Entry<K, V>>
 {
 
 	private Set<Entry<K, V>> target;
@@ -85,7 +86,8 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 		Iterator<Entry<K, V>> result = null;
 		if (target != null)
 		{
-			result = builder(this.target.iterator()) //
+			result = EntryIteratorWrapperBuilder //
+					.builder(context, this.target.iterator()) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
@@ -163,7 +165,8 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 				int i = 0;
 				for (Map.Entry<K, V> entry : this.target)
 				{
-					array[i] = builder(entry) //
+					array[i] = MapEntryWrapperBuilder //
+							.builder(context, entry) //
 							.dirtyMap(dirtyMap) //
 							.setter(setter) //
 							.propertyMeta(propertyMeta) //
@@ -182,6 +185,7 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{
@@ -194,7 +198,13 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 
 				for (int i = 0; i < array.length; i++)
 				{
-					array[i] = helper.buildProxy(array[i], joinMeta());
+					array[i] = (T) MapEntryWrapperBuilder //
+							.builder(context, (Entry<K, V>) array[i]) //
+							.dirtyMap(dirtyMap) //
+							.setter(setter) //
+							.propertyMeta(propertyMeta) //
+							.helper(helper) //
+							.build();
 				}
 				result = array;
 			}

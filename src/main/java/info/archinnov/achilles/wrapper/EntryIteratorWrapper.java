@@ -11,7 +11,7 @@ import java.util.Map.Entry;
  * @author DuyHai DOAN
  * 
  */
-public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
+public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements
 		Iterator<Entry<K, V>>
 {
 
@@ -39,7 +39,7 @@ public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 		if (target != null)
 		{
 			Entry<K, V> entry = this.target.next();
-			result = builder(entry) //
+			result = builder(context, entry) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //

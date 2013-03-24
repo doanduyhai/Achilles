@@ -1,7 +1,12 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
+import info.archinnov.achilles.dao.AbstractDao;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -15,7 +20,6 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 
@@ -54,6 +59,10 @@ public class ThriftEntityManager implements EntityManager
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private final Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
+	private final Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
+	private final CounterDao counterDao;
+	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
@@ -64,8 +73,17 @@ public class ThriftEntityManager implements EntityManager
 	public static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 	public static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 
-	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap) {
+	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
+			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap, //
+			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap,//
+			CounterDao counterDao, //
+			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	{
 		this.entityMetaMap = entityMetaMap;
+		this.entityDaosMap = entityDaosMap;
+		this.columnFamilyDaosMap = columnFamilyDaosMap;
+		this.counterDao = counterDao;
+		this.consistencyPolicy = consistencyPolicy;
 	}
 
 	/**
@@ -80,17 +98,16 @@ public class ThriftEntityManager implements EntityManager
 	public void persist(Object entity)
 	{
 		log.debug("Persisting entity '{}'", entity);
-
 		entityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
+
 		if (helper.isProxy(entity))
 		{
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
-
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(entity.getClass());
-
-		this.persister.persist(entity, entityMeta);
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		this.persister.persist(context);
 	}
 
 	/**
@@ -100,7 +117,7 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * Calling merge on a transient entity will persist it and returns a managed
 	 * 
-	 * instance
+	 * instance.
 	 * 
 	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
 	 * 
@@ -120,17 +137,16 @@ public class ThriftEntityManager implements EntityManager
 	public <T> T merge(T entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		Class<?> baseClass = helper.deriveBaseClass(entity);
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
-		return this.merger.mergeEntity(entity, entityMeta);
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		return this.merger.mergeEntity(context);
 	}
 
 	/**
-	 * Remove an entity. Join entities are <strong>not</strong> removed
+	 * Remove an entity. Join entities are <strong>not</strong> removed.
 	 * 
 	 * CascadeType.REMOVE is not supported as per design to avoid
 	 * 
-	 * inconsistencies while removing <em>shared</em> join entities
+	 * inconsistencies while removing <em>shared</em> join entities.
 	 * 
 	 * You need to remove the join entities manually
 	 * 
@@ -141,12 +157,9 @@ public class ThriftEntityManager implements EntityManager
 	public void remove(Object entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-
 		helper.ensureProxy(entity);
-
-		Class<?> baseClass = helper.deriveBaseClass(entity);
-		EntityMeta<?> entityMeta = this.entityMetaMap.get(baseClass);
-		this.persister.remove(entity, entityMeta);
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		this.persister.remove(context);
 
 	}
 
@@ -160,24 +173,21 @@ public class ThriftEntityManager implements EntityManager
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
 
-		EntityMeta<Serializable> entityMeta = (EntityMeta<Serializable>) this.entityMetaMap
-				.get(entityClass);
-
-		T entity = this.loader.load(entityClass, (Serializable) primaryKey, entityMeta);
+		PersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
+		T entity = loader.load(context);
 
 		if (entity != null)
 		{
-			entity = helper.buildProxy(entity, entityMeta);
+			entity = helper.buildProxy(entity, context);
 		}
-
 		return entity;
+
 	}
 
 	/**
@@ -225,7 +235,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public void lock(Object entity, LockModeType lockMode)
@@ -245,13 +255,15 @@ public class ThriftEntityManager implements EntityManager
 	@Override
 	public void refresh(Object entity)
 	{
-
+		entityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
 		helper.ensureProxy(entity);
-		entityRefresher.refresh(entity, entityMetaMap);
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		entityRefresher.refresh(context);
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public void clear()
@@ -261,7 +273,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public boolean contains(Object entity)
@@ -271,7 +283,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public Query createQuery(String qlString)
@@ -281,7 +293,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public Query createNamedQuery(String name)
@@ -291,7 +303,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public Query createNativeQuery(String sqlString)
@@ -301,7 +313,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -312,7 +324,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping)
@@ -322,7 +334,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public void joinTransaction()
@@ -342,7 +354,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public void close()
@@ -353,7 +365,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public boolean isOpen()
@@ -363,7 +375,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public EntityTransaction getTransaction()
@@ -379,7 +391,7 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * will be batched through the mutator.
 	 * 
-	 * A new mutator is created for each join <strong>WideMap</strong> entity
+	 * A new mutator is created for each join <strong>WideMap</strong> entity.
 	 * 
 	 * The batch does not affect dirty checking of other fields.
 	 * 
@@ -388,49 +400,49 @@ public class ThriftEntityManager implements EntityManager
 	@SuppressWarnings("unchecked")
 	public <ID, T> void startBatch(T entity)
 	{
-		if (entity != null)
+		entityValidator.validateEntity(entity, entityMetaMap);
+		helper.ensureProxy(entity);
+		PersistenceContext<ID> context = initPersistenceContext(entity);
+		EntityMeta<ID> entityMeta = context.getEntityMeta();
+		Mutator<ID> mutator;
+		Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+
+		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
 		{
-
-			helper.ensureProxy(entity);
-
-			Mutator<ID> mutator;
-			EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(helper
-					.deriveBaseClass(entity));
-
-			Map<String, Mutator<?>> mutatorMap = new HashMap<String, Mutator<?>>();
-
-			for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+			String propertyName = propertyMeta.getPropertyName();
+			if (propertyMeta.isJoin())
 			{
-				if (propertyMeta.isJoin())
-				{
-					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.joinMeta()
-							.getEntityDao().buildMutator());
-				}
-				else if (propertyMeta.type() == WIDE_MAP_COUNTER)
-				{
-					mutatorMap.put(propertyMeta.getPropertyName(), propertyMeta.counterDao()
-							.buildMutator());
-				}
+				String joinColumnFamilyName = propertyMeta.joinMeta().getColumnFamilyName();
+				AbstractDao<?, ?, ?> dao = context.findEntityDao(joinColumnFamilyName);
+				Mutator<?> joinMutator = dao.buildMutator();
+				mutatorMap.put(propertyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
+						joinMutator, dao));
 			}
+			else if (propertyMeta.type() == WIDE_MAP_COUNTER)
+			{
 
-			mutator = entityMeta.getEntityDao().buildMutator();
+				CounterDao counterDao = context.getCounterDao();
+				Mutator<Composite> counterMutator = counterDao.buildMutator();
 
-			Factory proxy = (Factory) entity;
-			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
-					.getCallback(0);
-			interceptor.setMutator(mutator);
-			interceptor.setMutatorMap(mutatorMap);
+				mutatorMap.put(propertyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
+						counterMutator, counterDao));
+			}
 		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot start batch for null entity ...");
-		}
+
+		mutator = context.fetchEntityDao().buildMutator();
+
+		Factory proxy = (Factory) entity;
+		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
+				.getCallback(0);
+
+		interceptor.setMutator(mutator);
+		interceptor.setMutatorMap(mutatorMap);
 	}
 
 	/**
 	 * End an existing batch and flush all the mutators.
 	 * 
-	 * All join entities will be flushed through their own mutator
+	 * All join entities will be flushed through their own mutator.
 	 * 
 	 * Do nothing if no batch mutator was started
 	 * 
@@ -442,42 +454,34 @@ public class ThriftEntityManager implements EntityManager
 	})
 	public <T, ID> void endBatch(T entity)
 	{
-		if (entity != null)
+		entityValidator.validateEntity(entity, entityMetaMap);
+		helper.ensureProxy(entity);
+		PersistenceContext<ID> context = initPersistenceContext(entity);
+
+		JpaEntityInterceptor<?, T> interceptor = helper.getInterceptor(entity);
+
+		Mutator<ID> mutator = (Mutator<ID>) interceptor.getMutator();
+
+		if (mutator != null)
 		{
-			helper.ensureProxy(entity);
-			EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(helper
-					.deriveBaseClass(entity));
-
-			JpaEntityInterceptor<?, T> interceptor = helper.getInterceptor(entity);
-
-			Mutator<ID> mutator = (Mutator<ID>) interceptor.getMutator();
-
-			if (mutator != null)
-			{
-				entityMeta.getEntityDao().executeMutator(mutator);
-			}
-			for (Entry<String, Mutator<?>> entry : interceptor.getMutatorMap().entrySet())
-			{
-				Mutator<?> joinMutator = entry.getValue();
-				if (joinMutator != null)
-				{
-					GenericDynamicCompositeDao<?> joinDao = entityMeta.getPropertyMetas()
-							.get(entry.getKey()).joinMeta().getEntityDao();
-					joinDao.executeMutator((Mutator) joinMutator);
-				}
-			}
-			interceptor.setMutatorMap(null);
+			context.fetchEntityDao().executeMutator(mutator);
 		}
-		else
+		for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : interceptor
+				.getMutatorMap().entrySet())
 		{
-			throw new IllegalArgumentException("Cannot end batch for null entity ...");
+			Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = entry.getValue();
+			if (pair != null)
+			{
+				pair.right.executeMutator((Mutator) pair.left);
+			}
 		}
+		interceptor.setMutatorMap(null);
 	}
 
 	/**
 	 * Initialize all lazy fields of a 'managed' entity, except WideMap fields.
 	 * 
-	 * Raise an IllegalStateException if the entity is not 'managed'
+	 * Raise an <strong>IllegalStateException</strong> if the entity is not 'managed'
 	 * 
 	 */
 	public <T> void initialize(T entity)
@@ -576,4 +580,22 @@ public class ThriftEntityManager implements EntityManager
 		return helper.unproxy(proxies);
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
+			ID primaryKey)
+	{
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
+		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
+				counterDao, consistencyPolicy, entityClass, primaryKey);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
+	{
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(helper
+				.deriveBaseClass(entity));
+
+		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
+				counterDao, consistencyPolicy, entity);
+	}
 }

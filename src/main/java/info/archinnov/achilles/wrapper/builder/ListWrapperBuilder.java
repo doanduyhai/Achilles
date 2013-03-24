@@ -1,9 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.wrapper.ListWrapper;
 
 import java.util.List;
-
 
 /**
  * ListWrapperBuilder
@@ -11,22 +11,25 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class ListWrapperBuilder<V> extends AbstractWrapperBuilder<ListWrapperBuilder<V>, Void, V>
+public class ListWrapperBuilder<ID, V> extends
+		AbstractWrapperBuilder<ID, ListWrapperBuilder<ID, V>, Void, V>
 {
 	private List<V> target;
 
-	public static <V> ListWrapperBuilder<V> builder(List<V> target)
+	public static <ID, V> ListWrapperBuilder<ID, V> builder(PersistenceContext<ID> context,
+			List<V> target)
 	{
-		return new ListWrapperBuilder<V>(target);
+		return new ListWrapperBuilder<ID, V>(context, target);
 	}
 
-	public ListWrapperBuilder(List<V> target) {
+	public ListWrapperBuilder(PersistenceContext<ID> context, List<V> target) {
+		super.context = context;
 		this.target = target;
 	}
 
-	public ListWrapper<V> build()
+	public ListWrapper<ID, V> build()
 	{
-		ListWrapper<V> listWrapper = new ListWrapper<V>(this.target);
+		ListWrapper<ID, V> listWrapper = new ListWrapper<ID, V>(this.target);
 		super.build(listWrapper);
 		return listWrapper;
 	}
