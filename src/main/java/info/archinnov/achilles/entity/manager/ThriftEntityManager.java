@@ -1,30 +1,24 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
-import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityBatcher;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -32,10 +26,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
-
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.mutation.Mutator;
-import net.sf.cglib.proxy.Factory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +57,12 @@ public class ThriftEntityManager implements EntityManager
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
 	private EntityMerger merger = new EntityMerger();
-	private EntityRefresher entityRefresher = new EntityRefresher();
-	private EntityHelper helper = new EntityHelper();
+	private EntityRefresher refresher = new EntityRefresher();
+	private EntityBatcher batcher = new EntityBatcher();
+	private EntityInitializer initializer = new EntityInitializer();
+	private EntityProxifier proxifier = new EntityProxifier();
 	private EntityValidator entityValidator = new EntityValidator();
+
 	public static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 	public static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 
@@ -101,7 +94,7 @@ public class ThriftEntityManager implements EntityManager
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
 
-		if (helper.isProxy(entity))
+		if (proxifier.isProxy(entity))
 		{
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
@@ -157,7 +150,7 @@ public class ThriftEntityManager implements EntityManager
 	public void remove(Object entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		helper.ensureProxy(entity);
+		proxifier.ensureProxy(entity);
 		PersistenceContext<?> context = initPersistenceContext(entity);
 		this.persister.remove(context);
 
@@ -184,7 +177,7 @@ public class ThriftEntityManager implements EntityManager
 
 		if (entity != null)
 		{
-			entity = helper.buildProxy(entity, context);
+			entity = proxifier.buildProxy(entity, context);
 		}
 		return entity;
 
@@ -257,9 +250,9 @@ public class ThriftEntityManager implements EntityManager
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
-		helper.ensureProxy(entity);
+		proxifier.ensureProxy(entity);
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		entityRefresher.refresh(context);
+		refresher.refresh(context);
 	}
 
 	/**
@@ -397,46 +390,12 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * It only works on <strong>WideMap</strong> fields
 	 */
-	@SuppressWarnings("unchecked")
 	public <ID, T> void startBatch(T entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		helper.ensureProxy(entity);
+		proxifier.ensureProxy(entity);
 		PersistenceContext<ID> context = initPersistenceContext(entity);
-		EntityMeta<ID> entityMeta = context.getEntityMeta();
-		Mutator<ID> mutator;
-		Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
-
-		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
-		{
-			String propertyName = propertyMeta.getPropertyName();
-			if (propertyMeta.isJoin())
-			{
-				String joinColumnFamilyName = propertyMeta.joinMeta().getColumnFamilyName();
-				AbstractDao<?, ?, ?> dao = context.findEntityDao(joinColumnFamilyName);
-				Mutator<?> joinMutator = dao.buildMutator();
-				mutatorMap.put(propertyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
-						joinMutator, dao));
-			}
-			else if (propertyMeta.type() == WIDE_MAP_COUNTER)
-			{
-
-				CounterDao counterDao = context.getCounterDao();
-				Mutator<Composite> counterMutator = counterDao.buildMutator();
-
-				mutatorMap.put(propertyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
-						counterMutator, counterDao));
-			}
-		}
-
-		mutator = context.getEntityDao().buildMutator();
-
-		Factory proxy = (Factory) entity;
-		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxy
-				.getCallback(0);
-
-		interceptor.setMutator(mutator);
-		interceptor.setMutatorMap(mutatorMap);
+		batcher.startBatchForEntity(entity, context);
 	}
 
 	/**
@@ -447,35 +406,12 @@ public class ThriftEntityManager implements EntityManager
 	 * Do nothing if no batch mutator was started
 	 * 
 	 */
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	public <T, ID> void endBatch(T entity)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
-		helper.ensureProxy(entity);
+		proxifier.ensureProxy(entity);
 		PersistenceContext<ID> context = initPersistenceContext(entity);
-
-		JpaEntityInterceptor<?, T> interceptor = helper.getInterceptor(entity);
-
-		Mutator<ID> mutator = (Mutator<ID>) interceptor.getMutator();
-
-		if (mutator != null)
-		{
-			context.getEntityDao().executeMutator(mutator);
-		}
-		for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : interceptor
-				.getMutatorMap().entrySet())
-		{
-			Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = entry.getValue();
-			if (pair != null)
-			{
-				pair.right.executeMutator((Mutator) pair.left);
-			}
-		}
-		interceptor.setMutatorMap(null);
+		batcher.endBatch(entity, context);
 	}
 
 	/**
@@ -486,27 +422,10 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> void initialize(T entity)
 	{
-		helper.ensureProxy(entity);
-
-		Object realObject = helper.getRealObject(entity);
-
+		proxifier.ensureProxy(entity);
+		Object realObject = proxifier.getRealObject(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(realObject.getClass());
-		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
-		{
-			PropertyType type = propertyMeta.type();
-			if (type.isLazy() && !type.isWideMap())
-			{
-				try
-				{
-					propertyMeta.getGetter().invoke(entity);
-				}
-				catch (Exception e)
-				{
-					log.error("Cannot initialize property '" + propertyMeta.getPropertyName()
-							+ "' for entity '" + realObject + "'", e);
-				}
-			}
-		}
+		initializer.initializeEntity(entity, entityMeta);
 	}
 
 	/**
@@ -519,7 +438,10 @@ public class ThriftEntityManager implements EntityManager
 	{
 		for (T entity : entities)
 		{
-			this.initialize(entity);
+			proxifier.ensureProxy(entity);
+			Object realObject = proxifier.getRealObject(entity);
+			EntityMeta<?> entityMeta = entityMetaMap.get(realObject.getClass());
+			initializer.initializeEntity(entity, entityMeta);
 		}
 	}
 
@@ -533,7 +455,7 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> T unproxy(T proxy)
 	{
-		T realObject = this.helper.unproxy(proxy);
+		T realObject = this.proxifier.unproxy(proxy);
 
 		return realObject;
 	}
@@ -549,7 +471,7 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> Collection<T> unproxy(Collection<T> proxies)
 	{
-		return helper.unproxy(proxies);
+		return proxifier.unproxy(proxies);
 	}
 
 	/**
@@ -563,7 +485,7 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> List<T> unproxy(List<T> proxies)
 	{
-		return helper.unproxy(proxies);
+		return proxifier.unproxy(proxies);
 	}
 
 	/**
@@ -577,7 +499,7 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> Set<T> unproxy(Set<T> proxies)
 	{
-		return helper.unproxy(proxies);
+		return proxifier.unproxy(proxies);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -592,9 +514,8 @@ public class ThriftEntityManager implements EntityManager
 	@SuppressWarnings("unchecked")
 	private <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
 	{
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(helper
+		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
-
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, consistencyPolicy, entity);
 	}

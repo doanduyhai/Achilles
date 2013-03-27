@@ -18,7 +18,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -58,7 +58,7 @@ public class PropertyParser
 {
 
 	private PropertyHelper propertyHelper = new PropertyHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 	private PropertyParsingValidator validator = new PropertyParsingValidator();
 
 	public PropertyMeta<?, ?> parse(PropertyParsingContext context)
@@ -114,7 +114,7 @@ public class PropertyParser
 
 		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type;
 		CounterProperties counterProperties = null;
 		if (context.isCounterType())
@@ -149,19 +149,19 @@ public class PropertyParser
 
 	}
 
-	public PropertyMeta<Void, ?> parseListProperty(PropertyParsingContext context)
+	public <V> PropertyMeta<Void, V> parseListProperty(PropertyParsingContext context)
 	{
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
-		Class<?> valueClass;
+		Class<V> valueClass;
 		Type genericType = field.getGenericType();
 
-		valueClass = propertyHelper.inferValueClass(genericType);
+		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 
 		Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
 		return factory(valueClass) //
@@ -173,18 +173,18 @@ public class PropertyParser
 
 	}
 
-	public PropertyMeta<Void, ?> parseSetProperty(PropertyParsingContext context)
+	public <V> PropertyMeta<Void, V> parseSetProperty(PropertyParsingContext context)
 	{
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
-		Class<?> valueClass;
+		Class<V> valueClass;
 		Type genericType = field.getGenericType();
 
-		valueClass = propertyHelper.inferValueClass(genericType);
+		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 		Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
 		return factory(valueClass) //
@@ -211,7 +211,7 @@ public class PropertyParser
 		Validator.validateSerializable(keyClass, "Map key type of '" + field.getName()
 				+ "' should be Serializable");
 
-		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
 		return factory(keyClass, valueClass) //
@@ -248,7 +248,7 @@ public class PropertyParser
 
 		Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityHelper.findAccessors(entityClass, field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 
 		PropertyMeta<?, ?> propertyMeta = factory(keyClass, valueClass) //
 				.objectMapper(context.getCurrentObjectMapper()) //

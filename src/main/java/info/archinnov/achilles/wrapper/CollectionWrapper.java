@@ -25,7 +25,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = target.add(helper.unproxy(arg0));
+			result = target.add(proxifier.unproxy(arg0));
 			this.markDirty();
 
 		}
@@ -38,7 +38,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = target.addAll(helper.unproxy(arg0));
+			result = target.addAll(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -66,7 +66,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.contains(helper.unproxy(arg0));
+			result = this.target.contains(proxifier.unproxy(arg0));
 		}
 		return result;
 	}
@@ -77,7 +77,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.containsAll(helper.unproxy(arg0));
+			result = this.target.containsAll(proxifier.unproxy(arg0));
 		}
 		return result;
 	}
@@ -103,7 +103,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 		}
 		return result;
@@ -115,7 +115,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.remove(helper.unproxy(arg0));
+			result = this.target.remove(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -130,7 +130,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.removeAll(helper.unproxy(arg0));
+			result = this.target.removeAll(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -145,7 +145,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.retainAll(helper.unproxy(arg0));
+			result = this.target.retainAll(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -177,7 +177,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 				int i = 0;
 				for (V joinEntity : this.target)
 				{
-					array[i] = helper.buildProxy(joinEntity, joinContext(joinEntity));
+					array[i] = proxifier.buildProxy(joinEntity, joinContext(joinEntity));
 					i++;
 				}
 
@@ -205,7 +205,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 
 				for (int i = 0; i < array.length; i++)
 				{
-					array[i] = helper.buildProxy(array[i], joinContext((V) array[i]));
+					array[i] = proxifier.buildProxy(array[i], joinContext((V) array[i]));
 				}
 				result = array;
 			}

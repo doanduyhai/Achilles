@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -14,14 +14,15 @@ import java.util.Map;
  */
 public class EntityValidator
 {
-	private EntityHelper helper = new EntityHelper();
+	private EntityIntrospector introspector = new EntityIntrospector();
+	private EntityProxifier proxifier = new EntityProxifier();
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
 		Validator.validateNotNull(entity, "Entity should not be null");
 
-		Class baseClass = helper.deriveBaseClass(entity);
+		Class baseClass = proxifier.deriveBaseClass(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(baseClass);
 		validateEntity(entity, entityMeta);
 
@@ -32,7 +33,7 @@ public class EntityValidator
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed by Achilles");
 
-		Object id = helper.getKey(entity, entityMeta.getIdMeta());
+		Object id = introspector.getKey(entity, entityMeta.getIdMeta());
 		if (id == null)
 		{
 			throw new IllegalArgumentException("Cannot get primary key for entity "
@@ -46,7 +47,7 @@ public class EntityValidator
 	{
 		Validator.validateNotNull(entity, "Entity should not be null");
 
-		Class<T> baseClass = (Class<T>) helper.deriveBaseClass(entity);
+		Class<T> baseClass = (Class<T>) proxifier.deriveBaseClass(entity);
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(baseClass);
 
 		if (entityMeta.isColumnFamilyDirectMapping())

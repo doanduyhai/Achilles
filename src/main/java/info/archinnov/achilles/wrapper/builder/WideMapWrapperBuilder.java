@@ -2,9 +2,9 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -23,7 +23,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 	protected GenericDynamicCompositeDao<ID> entityDao;
 	private PropertyMeta<K, V> wideMapMeta;
 	private AchillesInterceptor interceptor;
-	private EntityHelper entityHelper;
+	private EntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
@@ -56,9 +56,9 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> entityHelper(EntityHelper entityHelper)
+	public WideMapWrapperBuilder<ID, K, V> proxifier(EntityProxifier proxifier)
 	{
-		this.entityHelper = entityHelper;
+		this.proxifier = proxifier;
 		return this;
 	}
 
@@ -99,7 +99,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 		wrapper.setEntityDao(entityDao);
 		wrapper.setWideMapMeta(wideMapMeta);
 		wrapper.setInterceptor(interceptor);
-		wrapper.setEntityHelper(entityHelper);
+		wrapper.setEntityProxifier(proxifier);
 		wrapper.setCompositeHelper(compositeHelper);
 		wrapper.setIteratorFactory(iteratorFactory);
 		wrapper.setKeyFactory(keyFactory);

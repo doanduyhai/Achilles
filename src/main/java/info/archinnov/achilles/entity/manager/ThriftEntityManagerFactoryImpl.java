@@ -292,7 +292,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
 				.initDefaultReadConsistencyLevel(configurationMap);
 		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
-				.initDefaultReadConsistencyLevel(configurationMap);
+				.initDefaultWriteConsistencyLevel(configurationMap);
 		Map<String, HConsistencyLevel> readConsistencyMap = argumentExtractor
 				.initReadConsistencyMap(configurationMap);
 		Map<String, HConsistencyLevel> writeConsistencyMap = argumentExtractor

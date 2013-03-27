@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.ColumnFamily;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -36,7 +36,7 @@ public class EntityParser
 	private PropertyParser parser = new PropertyParser();
 	private JoinPropertyParser joinParser = new JoinPropertyParser();
 	private PropertyFilter filter = new PropertyFilter();
-	private EntityHelper helper = new EntityHelper();
+	private EntityIntrospector introspector = new EntityIntrospector();
 
 	@SuppressWarnings("unchecked")
 	public <ID> EntityMeta<ID> parseEntity(EntityParsingContext context)
@@ -44,9 +44,9 @@ public class EntityParser
 		Class<?> entityClass = context.getCurrentEntityClass();
 		validateEntityAndGetObjectMapper(context);
 
-		String columnFamilyName = helper.inferColumnFamilyName(entityClass, entityClass.getName());
-		Long serialVersionUID = helper.findSerialVersionUID(entityClass);
-		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = helper
+		String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
+		Long serialVersionUID = introspector.findSerialVersionUID(entityClass);
+		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
 				.findConsistencyLevels(entityClass);
 
 		context.setColumnFamilyDirectMapping(entityClass.getAnnotation(ColumnFamily.class) != null ? true
@@ -55,7 +55,7 @@ public class EntityParser
 		context.setCurrentColumnFamilyName(columnFamilyName);
 
 		PropertyMeta<Void, ID> idMeta = null;
-		List<Field> inheritedFields = helper.getInheritedPrivateFields(entityClass);
+		List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
 		for (Field field : inheritedFields)
 		{
 			PropertyParsingContext propertyContext = context.newPropertyContext(field);

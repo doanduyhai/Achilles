@@ -4,7 +4,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -33,7 +33,7 @@ public class DynamicCompositeKeyFactory
 	private static final Logger log = LoggerFactory.getLogger(DynamicCompositeKeyFactory.class);
 
 	private CompositeHelper compositeHelper = new CompositeHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	public <K, V> DynamicComposite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
 	{
@@ -90,7 +90,7 @@ public class DynamicCompositeKeyFactory
 		{
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityHelper.determineMultiKey(key,
+			List<Object> keyValues = entityIntrospector.determineMultiKey(key,
 					multiKeyProperties.getComponentGetters());
 
 			int srzCount = componentSerializers.size();
@@ -164,7 +164,7 @@ public class DynamicCompositeKeyFactory
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
 			List<Method> componentGetters = multiKeyProperties.getComponentGetters();
 
-			List<Object> keyValues = entityHelper.determineMultiKey(value, componentGetters);
+			List<Object> keyValues = entityIntrospector.determineMultiKey(value, componentGetters);
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
 

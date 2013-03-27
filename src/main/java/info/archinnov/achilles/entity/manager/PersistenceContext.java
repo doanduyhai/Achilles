@@ -4,7 +4,7 @@ import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -20,7 +20,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
  */
 public class PersistenceContext<ID>
 {
-	private final EntityHelper helper = new EntityHelper();
+	private final EntityIntrospector introspector = new EntityIntrospector();
 	private final EntityMeta<ID> entityMeta;
 	private final Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
 	private final Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
@@ -53,7 +53,8 @@ public class PersistenceContext<ID>
 		this.policy = policy;
 		this.entity = entity;
 		this.entityClass = entity.getClass();
-		this.primaryKey = helper.getKey(entity, entityMeta.getIdMeta());
+
+		this.primaryKey = introspector.getKey(entity, entityMeta.getIdMeta());
 
 		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
 				+ "' should not be null");
@@ -86,7 +87,7 @@ public class PersistenceContext<ID>
 	{
 		PersistenceContext<JOIN_ID> context = new PersistenceContext<JOIN_ID>(joinMeta,
 				entityDaosMap, columnFamilyDaosMap, counterDao, policy, joinEntity);
-		context.setPrimaryKey(helper.getKey(joinEntity, joinMeta.getIdMeta()));
+		context.setPrimaryKey(introspector.getKey(joinEntity, joinMeta.getIdMeta()));
 		return context;
 	}
 

@@ -21,7 +21,7 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public void add(V e)
 	{
-		this.target.add(helper.unproxy(e));
+		this.target.add(proxifier.unproxy(e));
 		this.markDirty();
 	}
 
@@ -43,7 +43,7 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 		V entity = this.target.next();
 		if (isJoin())
 		{
-			return helper.buildProxy(entity, joinContext(entity));
+			return proxifier.buildProxy(entity, joinContext(entity));
 		}
 		else
 		{
@@ -63,7 +63,7 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 		V entity = this.target.previous();
 		if (isJoin())
 		{
-			return helper.buildProxy(entity, joinContext(entity));
+			return proxifier.buildProxy(entity, joinContext(entity));
 		}
 		else
 		{
@@ -88,7 +88,7 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public void set(V e)
 	{
-		this.target.set(helper.unproxy(e));
+		this.target.set(proxifier.unproxy(e));
 		this.markDirty();
 
 	}

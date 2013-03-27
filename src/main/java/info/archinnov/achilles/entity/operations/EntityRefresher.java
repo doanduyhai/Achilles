@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
@@ -13,7 +12,7 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 public class EntityRefresher
 {
 
-	private EntityHelper helper = new EntityHelper();
+	private EntityProxifier proxifier = new EntityProxifier();
 	private EntityLoader loader = new EntityLoader();
 
 	@SuppressWarnings("unchecked")
@@ -22,7 +21,7 @@ public class EntityRefresher
 
 		Object entity = context.getEntity();
 
-		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
+		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxifier
 				.getInterceptor(entity);
 
 		T freshEntity = this.loader.load(context);

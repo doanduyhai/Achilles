@@ -52,7 +52,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	@Override
 	public boolean containsValue(Object value)
 	{
-		return this.target.containsValue(helper.unproxy(value));
+		return this.target.containsValue(proxifier.unproxy(value));
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 			targetEntrySet = wrapperSet;
 		}
@@ -79,7 +79,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		if (isJoin())
 		{
 			V joinEntity = this.target.get(key);
-			return helper.buildProxy(joinEntity, joinContext(joinEntity));
+			return proxifier.buildProxy(joinEntity, joinContext(joinEntity));
 		}
 		else
 		{
@@ -109,7 +109,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta((PropertyMeta) propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 			keySet = keySetWrapper;
 		}
@@ -119,7 +119,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	@Override
 	public V put(K key, V value)
 	{
-		V result = this.target.put(key, helper.unproxy(value));
+		V result = this.target.put(key, proxifier.unproxy(value));
 		this.markDirty();
 		return result;
 	}
@@ -130,7 +130,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		Map<K, V> map = new HashMap<K, V>();
 		for (Entry<? extends K, ? extends V> entry : m.entrySet())
 		{
-			map.put(entry.getKey(), helper.unproxy(entry.getValue()));
+			map.put(entry.getKey(), proxifier.unproxy(entry.getValue()));
 		}
 		this.target.putAll(map);
 		this.markDirty();
@@ -139,7 +139,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	@Override
 	public V remove(Object key)
 	{
-		Object unproxy = helper.unproxy(key);
+		Object unproxy = proxifier.unproxy(key);
 		if (this.target.containsKey(unproxy))
 		{
 			this.markDirty();
@@ -170,7 +170,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta((PropertyMeta) propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 			values = collectionWrapper;
 		}

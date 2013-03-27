@@ -3,13 +3,13 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -36,7 +36,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	private GenericCompositeDao<ID, JOIN_ID> dao;
 	private EntityPersister persister;
 	private EntityLoader loader;
-	private EntityHelper entityHelper;
+	private EntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private CompositeKeyFactory compositeKeyFactory;
 	private KeyValueFactory keyValueFactory;
@@ -60,7 +60,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 
 		V entity = loader.load(joinContext);
 
-		return entityHelper.buildProxy(entity, joinContext);
+		return proxifier.buildProxy(entity, joinContext);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -245,9 +245,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		this.propertyMeta = externalWideMapMeta;
 	}
 
-	public void setEntityHelper(EntityHelper entityHelper)
+	public void setEntityProxifier(EntityProxifier proxifier)
 	{
-		this.entityHelper = entityHelper;
+		this.proxifier = proxifier;
 	}
 
 	public void setPersister(EntityPersister persister)

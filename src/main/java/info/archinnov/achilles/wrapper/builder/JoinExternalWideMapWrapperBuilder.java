@@ -2,11 +2,11 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -27,7 +27,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private AchillesInterceptor interceptor;
 	private EntityPersister persister;
 	private EntityLoader loader;
-	private EntityHelper entityHelper;
+	private EntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private CompositeKeyFactory compositeKeyFactory;
 	private KeyValueFactory keyValueFactory;
@@ -63,10 +63,9 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		return this;
 	}
 
-	public JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> entityHelper(
-			EntityHelper entityHelper)
+	public JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> proxifier(EntityProxifier proxifier)
 	{
-		this.entityHelper = entityHelper;
+		this.proxifier = proxifier;
 		return this;
 	}
 
@@ -118,7 +117,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		wrapper.setDao(dao);
 		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);
 		wrapper.setInterceptor(interceptor);
-		wrapper.setEntityHelper(entityHelper);
+		wrapper.setEntityProxifier(proxifier);
 		wrapper.setCompositeHelper(compositeHelper);
 		wrapper.setCompositeKeyFactory(compositeKeyFactory);
 		wrapper.setIteratorFactory(iteratorFactory);

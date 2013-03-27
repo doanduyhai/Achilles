@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.HashMap;
@@ -22,7 +23,7 @@ public class JoinEntityHelper
 {
 
 	private EntityMapper mapper = new EntityMapper();
-	private EntityHelper helper = new EntityHelper();
+	private EntityIntrospector introspector = new EntityIntrospector();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
 			EntityMeta<ID> entityMeta, GenericDynamicCompositeDao<ID> joinEntityDao)
@@ -48,13 +49,13 @@ public class JoinEntityHelper
 				if (columns.size() > 0)
 				{
 					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);
-					helper.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
+					introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), key);
 					entitiesByKey.put(key, entity);
 				}
 			}
 			catch (Exception e)
 			{
-				throw new RuntimeException("Error when instantiating class '"
+				throw new AchillesException("Error when instantiating class '"
 						+ entityClass.getCanonicalName() + "' ", e);
 			}
 		}

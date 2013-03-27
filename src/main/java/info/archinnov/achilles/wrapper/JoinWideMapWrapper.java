@@ -40,7 +40,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 
 			V entity = (V) loader.load(joinContext);
 
-			return entityHelper.buildProxy(entity, joinContext);
+			return proxifier.buildProxy(entity, joinContext);
 		}
 		else
 		{

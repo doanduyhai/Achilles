@@ -32,7 +32,7 @@ public class IteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> impleme
 		{
 			PersistenceContext<?> joinContext = context.newPersistenceContext(
 					propertyMeta.joinMeta(), value);
-			return helper.buildProxy(value, joinContext);
+			return proxifier.buildProxy(value, joinContext);
 		}
 		else
 		{

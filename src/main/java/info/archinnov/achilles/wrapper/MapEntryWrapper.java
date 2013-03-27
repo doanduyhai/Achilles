@@ -29,7 +29,8 @@ public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	{
 		if (isJoin())
 		{
-			return helper.buildProxy(this.target.getValue(), joinContext(this.target.getValue()));
+			return proxifier
+					.buildProxy(this.target.getValue(), joinContext(this.target.getValue()));
 		}
 		else
 		{
@@ -40,7 +41,7 @@ public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public V setValue(V value)
 	{
-		V result = this.target.setValue(helper.unproxy(value));
+		V result = this.target.setValue(proxifier.unproxy(value));
 		this.markDirty();
 		return result;
 	}
@@ -48,7 +49,7 @@ public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	public boolean equals(Entry<K, V> entry)
 	{
 		K key = entry.getKey();
-		V value = helper.unproxy(entry.getValue());
+		V value = proxifier.unproxy(entry.getValue());
 
 		boolean keyEquals = this.target.getKey().equals(key);
 

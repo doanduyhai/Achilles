@@ -53,7 +53,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.contains(helper.unproxy(arg0));
+			result = this.target.contains(proxifier.unproxy(arg0));
 		}
 		return result;
 	}
@@ -64,7 +64,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.containsAll(helper.unproxy(arg0));
+			result = this.target.containsAll(proxifier.unproxy(arg0));
 		}
 		return result;
 	}
@@ -91,7 +91,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 		}
 		return result;
@@ -103,7 +103,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.remove(helper.unproxy(arg0));
+			result = this.target.remove(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -118,7 +118,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.removeAll(helper.unproxy(arg0));
+			result = this.target.removeAll(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -133,7 +133,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		boolean result = false;
 		if (target != null)
 		{
-			result = this.target.retainAll(helper.unproxy(arg0));
+			result = this.target.retainAll(proxifier.unproxy(arg0));
 			if (result)
 			{
 				this.markDirty();
@@ -170,7 +170,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 							.dirtyMap(dirtyMap) //
 							.setter(setter) //
 							.propertyMeta(propertyMeta) //
-							.helper(helper) //
+							.proxifier(proxifier) //
 							.build();
 					i++;
 				}
@@ -203,7 +203,7 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 							.dirtyMap(dirtyMap) //
 							.setter(setter) //
 							.propertyMeta(propertyMeta) //
-							.helper(helper) //
+							.proxifier(proxifier) //
 							.build();
 				}
 				result = array;

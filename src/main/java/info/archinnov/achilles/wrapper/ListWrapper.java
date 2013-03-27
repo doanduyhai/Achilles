@@ -23,14 +23,14 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 	@Override
 	public void add(int arg0, V arg1)
 	{
-		((List<V>) super.target).add(arg0, helper.unproxy(arg1));
+		((List<V>) super.target).add(arg0, proxifier.unproxy(arg1));
 		super.markDirty();
 	}
 
 	@Override
 	public boolean addAll(int arg0, Collection<? extends V> arg1)
 	{
-		boolean result = ((List<V>) super.target).addAll(arg0, helper.unproxy(arg1));
+		boolean result = ((List<V>) super.target).addAll(arg0, proxifier.unproxy(arg1));
 		if (result)
 		{
 			super.markDirty();
@@ -44,7 +44,7 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 		V result = ((List<V>) super.target).get(arg0);
 		if (isJoin())
 		{
-			return helper.buildProxy(result, joinContext(result));
+			return proxifier.buildProxy(result, joinContext(result));
 		}
 		else
 		{
@@ -75,7 +75,7 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
-				.helper(helper) //
+				.proxifier(proxifier) //
 				.build();
 	}
 
@@ -89,7 +89,7 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
-				.helper(helper) //
+				.proxifier(proxifier) //
 				.build();
 	}
 
@@ -104,7 +104,7 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 	@Override
 	public V set(int arg0, V arg1)
 	{
-		V result = ((List<V>) super.target).set(arg0, helper.unproxy(arg1));
+		V result = ((List<V>) super.target).set(arg0, proxifier.unproxy(arg1));
 		super.markDirty();
 		return result;
 	}
@@ -119,7 +119,7 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
-				.helper(helper) //
+				.proxifier(proxifier) //
 				.build();
 	}
 

@@ -1,11 +1,11 @@
 package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
 public class KeyValueFactory
 {
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
-	private EntityHelper helper = new EntityHelper();
+	private EntityProxifier proxifier = new EntityProxifier();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 	private DynamicCompositeTransformer dynamicCompositeTransformer = new DynamicCompositeTransformer();
 
@@ -273,7 +273,7 @@ public class KeyValueFactory
 		V joinEntity = joinEntities.get(joinId);
 		PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(joinMeta,
 				joinEntity);
-		V proxy = helper.buildProxy(joinEntity, joinContext);
+		V proxy = proxifier.buildProxy(joinEntity, joinContext);
 		return proxy;
 	}
 }

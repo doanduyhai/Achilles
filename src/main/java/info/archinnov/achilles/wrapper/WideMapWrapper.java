@@ -3,8 +3,8 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -29,7 +29,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 {
 	protected ID id;
 	protected PropertyMeta<K, V> propertyMeta;
-	protected EntityHelper entityHelper;
+	protected EntityProxifier proxifier;
 	protected GenericDynamicCompositeDao<ID> entityDao;
 	protected AbstractDao<K, ? extends AbstractComposite, V> dao;
 	protected CompositeHelper compositeHelper;
@@ -200,9 +200,9 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		this.propertyMeta = wideMapMeta;
 	}
 
-	public void setEntityHelper(EntityHelper entityHelper)
+	public void setEntityProxifier(EntityProxifier proxifier)
 	{
-		this.entityHelper = entityHelper;
+		this.proxifier = proxifier;
 	}
 
 	public void setCompositeHelper(CompositeHelper compositeHelper)

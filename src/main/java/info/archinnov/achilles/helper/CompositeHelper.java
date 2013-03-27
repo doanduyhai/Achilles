@@ -3,7 +3,7 @@ package info.archinnov.achilles.helper;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
@@ -21,7 +21,7 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
  */
 public class CompositeHelper
 {
-	private EntityHelper helper = new EntityHelper();
+	private EntityIntrospector introspector = new EntityIntrospector();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{
@@ -77,9 +77,9 @@ public class CompositeHelper
 						.getComponentGetters();
 				String propertyName = wideMapMeta.getPropertyName();
 
-				List<Object> startComponentValues = helper.determineMultiKey(start,
+				List<Object> startComponentValues = introspector.determineMultiKey(start,
 						componentGetters);
-				List<Object> endComponentValues = helper.determineMultiKey(end, componentGetters);
+				List<Object> endComponentValues = introspector.determineMultiKey(end, componentGetters);
 
 				this.findLastNonNullIndexForComponents(propertyName, startComponentValues);
 				this.findLastNonNullIndexForComponents(propertyName, endComponentValues);

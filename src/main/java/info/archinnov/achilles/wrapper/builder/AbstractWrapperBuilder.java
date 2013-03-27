@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.wrapper.AbstractWrapper;
 
 import java.lang.reflect.Method;
@@ -20,7 +20,7 @@ public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilde
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Method setter;
 	private PropertyMeta<K, V> propertyMeta;
-	private EntityHelper helper;
+	private EntityProxifier proxifier;
 	protected PersistenceContext<ID> context;
 
 	public T dirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
@@ -41,9 +41,9 @@ public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilde
 		return (T) this;
 	}
 
-	public T helper(EntityHelper helper)
+	public T proxifier(EntityProxifier proxifier)
 	{
-		this.helper = helper;
+		this.proxifier = proxifier;
 		return (T) this;
 	}
 
@@ -58,7 +58,7 @@ public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilde
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setProxifier(proxifier);
 		wrapper.setContext(context);
 	}
 }

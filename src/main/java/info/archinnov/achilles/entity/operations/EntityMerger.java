@@ -8,7 +8,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -40,7 +40,8 @@ import com.google.common.collect.Sets;
 public class EntityMerger
 {
 	private EntityPersister persister = new EntityPersister();
-	private EntityHelper helper = new EntityHelper();
+	private EntityIntrospector introspector = new EntityIntrospector();
+	private EntityProxifier proxifier = new EntityProxifier();
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
 
@@ -54,10 +55,10 @@ public class EntityMerger
 		Validator.validateNotNull(entityMeta, "entityMeta should not be null");
 
 		T proxy;
-		if (helper.isProxy(entity))
+		if (proxifier.isProxy(entity))
 		{
-			T realObject = helper.getRealObject(entity);
-			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) helper
+			T realObject = proxifier.getRealObject(entity);
+			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxifier
 					.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
@@ -117,7 +118,7 @@ public class EntityMerger
 				this.persister.persist(context);
 			}
 
-			proxy = helper.buildProxy(entity, context);
+			proxy = proxifier.buildProxy(entity, context);
 		}
 
 		return proxy;
@@ -127,12 +128,12 @@ public class EntityMerger
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		Object joinEntity = helper.getValueFromField(entity, propertyMeta.getGetter());
+		Object joinEntity = introspector.getValueFromField(entity, propertyMeta.getGetter());
 		if (joinEntity != null)
 		{
 			Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
 					joinProperties.getEntityMeta(), joinEntity));
-			helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
+			introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
 		}
 	}
 
@@ -140,20 +141,20 @@ public class EntityMerger
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		List<?> joinEntities = (List<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		List<?> joinEntities = (List<?>) introspector.getValueFromField(entity, propertyMeta.getGetter());
 		List<Object> mergedEntities = new ArrayList<Object>();
 		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
-		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
+		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
 	private <T, ID> void mergeJoinSetProperty(PersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		Set<?> joinEntities = (Set<?>) helper.getValueFromField(entity, propertyMeta.getGetter());
+		Set<?> joinEntities = (Set<?>) introspector.getValueFromField(entity, propertyMeta.getGetter());
 		Set<Object> mergedEntities = new HashSet<Object>();
 		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
-		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
+		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
 	private <ID> void mergeCollectionOfJoinEntities(PersistenceContext<ID> context,
@@ -175,7 +176,7 @@ public class EntityMerger
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		Map<?, ?> joinEntitiesMap = (Map<?, ?>) helper.getValueFromField(entity,
+		Map<?, ?> joinEntitiesMap = (Map<?, ?>) introspector.getValueFromField(entity,
 				propertyMeta.getGetter());
 		Map<Object, Object> mergedEntitiesMap = new HashMap<Object, Object>();
 		if (joinEntitiesMap != null)
@@ -187,7 +188,7 @@ public class EntityMerger
 				mergedEntitiesMap.put(joinEntityEntry.getKey(), mergedEntity);
 			}
 		}
-		helper.setValueToField(entity, propertyMeta.getSetter(), mergedEntitiesMap);
+		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntitiesMap);
 	}
 
 	public void setPersister(EntityPersister persister)

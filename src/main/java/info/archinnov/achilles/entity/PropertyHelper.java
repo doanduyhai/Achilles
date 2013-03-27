@@ -50,7 +50,7 @@ public class PropertyHelper
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
 	public static Set<Class<?>> allowedCounterTypes = new HashSet<Class<?>>();
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	static
 	{
@@ -159,8 +159,8 @@ public class PropertyHelper
 		for (Integer order : orderList)
 		{
 			Field multiKeyField = components.get(order);
-			componentGetters.add(entityHelper.findGetter(keyClass, multiKeyField));
-			componentSetters.add(entityHelper.findSetter(keyClass, multiKeyField));
+			componentGetters.add(entityIntrospector.findGetter(keyClass, multiKeyField));
+			componentSetters.add(entityIntrospector.findSetter(keyClass, multiKeyField));
 			componentClasses.add(multiKeyField.getType());
 		}
 
@@ -183,50 +183,32 @@ public class PropertyHelper
 		return multiKeyProperties;
 	}
 
-	public Class<?> inferValueClass(Type genericType)
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)
 	{
-		Class<?> valueClass;
+		Class<T> valueClass;
 		if (genericType instanceof ParameterizedType)
 		{
 			ParameterizedType pt = (ParameterizedType) genericType;
 			Type[] actualTypeArguments = pt.getActualTypeArguments();
 			if (actualTypeArguments.length > 0)
 			{
-				valueClass = (Class<?>) actualTypeArguments[actualTypeArguments.length - 1];
+				valueClass = (Class<T>) actualTypeArguments[actualTypeArguments.length - 1];
 			}
 			else
 			{
-				valueClass = String.class;
+				throw new BeanMappingException("The type '"
+						+ genericType.getClass().getCanonicalName() + "' of the entity '"
+						+ entityClass.getCanonicalName() + "' should be parameterized");
 			}
 		}
 		else
 		{
-			valueClass = Object.class;
+			throw new BeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+					+ "' of the entity '" + entityClass.getCanonicalName()
+					+ "' should be parameterized");
 		}
 		return valueClass;
-	}
-
-	public Class<?> inferKeyClass(Type genericType)
-	{
-		Class<?> keyClass;
-		if (genericType instanceof ParameterizedType)
-		{
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length > 1)
-			{
-				keyClass = (Class<?>) actualTypeArguments[0];
-			}
-			else
-			{
-				keyClass = null;
-			}
-		}
-		else
-		{
-			keyClass = null;
-		}
-		return keyClass;
 	}
 
 	public boolean isLazy(Field field)
@@ -333,7 +315,7 @@ public class PropertyHelper
 			{
 				Component<?> comp = components.get(i);
 				Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
-				entityHelper.setValueToField(key, componentSetters.get(i - 2), compValue);
+				entityIntrospector.setValueToField(key, componentSetters.get(i - 2), compValue);
 			}
 		}
 		catch (Exception e)
@@ -362,7 +344,7 @@ public class PropertyHelper
 			{
 				Component<?> comp = components.get(i);
 				Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
-				entityHelper.setValueToField(key, componentSetters.get(i), compValue);
+				entityIntrospector.setValueToField(key, componentSetters.get(i), compValue);
 			}
 
 		}

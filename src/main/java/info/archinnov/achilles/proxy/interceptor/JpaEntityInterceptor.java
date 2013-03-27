@@ -6,11 +6,11 @@ import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -48,7 +48,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
 	private EntityPersister persister = new EntityPersister();
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityProxifier proxifier = new EntityProxifier();
 
 	private T target;
 	private ID key;
@@ -125,7 +125,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				{
 					PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
-					result = entityHelper.buildProxy(rawValue, joinContext);
+					result = proxifier.buildProxy(rawValue, joinContext);
 				}
 				break;
 			case LIST:
@@ -139,7 +139,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 							.dirtyMap(dirtyMap) //
 							.setter(propertyMeta.getSetter()) //
 							.propertyMeta(propertyMeta) //
-							.helper(entityHelper) //
+							.proxifier(proxifier)//
 							.build();
 				}
 				break;
@@ -154,7 +154,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 							.dirtyMap(dirtyMap) //
 							.setter(propertyMeta.getSetter())//
 							.propertyMeta(propertyMeta) //
-							.helper(entityHelper) //
+							.proxifier(proxifier)//
 							.build();
 				}
 				break;
@@ -169,7 +169,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 							.dirtyMap(dirtyMap) //
 							.setter(propertyMeta.getSetter()) //
 							.propertyMeta(propertyMeta) //
-							.helper(entityHelper) //
+							.proxifier(proxifier)//
 							.build();
 				}
 				break;
@@ -259,7 +259,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.context(context) //
 				.compositeHelper(compositeHelper) //
 				.compositeKeyFactory(compositeKeyFactory) //
-				.entityHelper(entityHelper) //
+				.proxifier(proxifier)//
 				.iteratorFactory(iteratorFactory) //
 				.keyValueFactory(keyValueFactory) //
 				.loader(loader) //
@@ -276,7 +276,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.builder(key, entityDao, propertyMeta) //
 				.interceptor(this) //
 				.context(context) //
-				.entityHelper(entityHelper) //
+				.proxifier(proxifier)//
 				.compositeHelper(compositeHelper) //
 				.keyFactory(dynamicCompositeKeyFactory) //
 				.keyValueFactory(keyValueFactory) //
@@ -294,7 +294,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.loader(loader) //
 				.persister(persister) //
 				.interceptor(this) //
-				.entityHelper(entityHelper) //
+				.proxifier(proxifier) //
 				.compositeHelper(compositeHelper) //
 				.keyFactory(dynamicCompositeKeyFactory) //
 				.keyValueFactory(keyValueFactory) //

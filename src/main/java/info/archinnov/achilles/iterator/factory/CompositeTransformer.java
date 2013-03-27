@@ -1,10 +1,10 @@
 package info.archinnov.achilles.iterator.factory;
 
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.manager.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -21,7 +21,7 @@ public class CompositeTransformer
 {
 
 	private PropertyHelper helper = new PropertyHelper();
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityProxifier proxifier = new EntityProxifier();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)
@@ -105,7 +105,7 @@ public class CompositeTransformer
 		{
 			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					(EntityMeta<JOIN_ID>) propertyMeta.joinMeta(), (V) hColumn.getValue());
-			value = entityHelper.buildProxy((V) hColumn.getValue(), joinContext);
+			value = proxifier.buildProxy((V) hColumn.getValue(), joinContext);
 		}
 		else
 		{

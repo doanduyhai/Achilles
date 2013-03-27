@@ -43,7 +43,7 @@ public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> im
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
-					.helper(helper) //
+					.proxifier(proxifier) //
 					.build();
 
 		}
