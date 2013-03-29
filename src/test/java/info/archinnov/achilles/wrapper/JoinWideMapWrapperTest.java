@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -74,7 +74,7 @@ public class JoinWideMapWrapperTest
 	private CompositeHelper compositeHelper;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private AchillesInterceptor interceptor;
@@ -114,7 +114,7 @@ public class JoinWideMapWrapperTest
 		when(entityDao.getValue(id, comp)).thenReturn(joinId.toString());
 		when(loader.load(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
 		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-		when(entityHelper.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
+		when(entityIntrospector.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
 		UserBean expected = wrapper.get(key);
 
 		assertThat(expected).isSameAs(userBean);

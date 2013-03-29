@@ -1,21 +1,20 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.counterDaoTL;
-import static info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl.joinPropertyMetaToBeFilledTL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
-import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.entity.parser.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.BeanMappingException;
 
 import java.util.ArrayList;
@@ -25,10 +24,8 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
+import me.prettyprint.hector.api.HConsistencyLevel;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,9 +34,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * ThriftEntityManagerFactoryImplTest
@@ -48,11 +45,6 @@ import org.mockito.stubbing.Answer;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 public class ThriftEntityManagerFactoryImplTest
 {
 	@Rule
@@ -62,31 +54,7 @@ public class ThriftEntityManagerFactoryImplTest
 	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl();
 
 	@Mock
-	private Cluster cluster;
-
-	@Mock
-	private Keyspace keyspace;
-
-	@Mock
-	private List<String> entityPackages;
-
-	@Mock
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
-
-	@Mock
-	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-
-	@Captor
-	private ArgumentCaptor<Map<PropertyMeta<?, ?>, Class<?>>> mapCaptor;
-
-	@Mock
-	private EntityMeta entityMeta1;
-
-	@Mock
-	private EntityMeta entityMeta2;
-
-	@Mock
-	private PropertyMeta<Void, Long> longPropertyMeta;
+	private EntityParsingValidator validator;
 
 	@Mock
 	private EntityParser entityParser;
@@ -98,16 +66,27 @@ public class ThriftEntityManagerFactoryImplTest
 	private ColumnFamilyCreator columnFamilyCreator;
 
 	@Mock
-	private CounterDao counterDao;
+	private ArgumentExtractorForThriftEMF argumentExtractor;
 
-	@Before
-	public void setUp()
-	{
-		joinPropertyMetaToBeFilled.clear();
-		counterDaoTL.set(counterDao);
-		joinPropertyMetaToBeFilledTL.set(joinPropertyMetaToBeFilled);
-	}
+	@Mock
+	private List<String> entityPackages;
 
+	@Mock
+	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+
+	@Captor
+	private ArgumentCaptor<EntityParsingContext> contextCaptor;
+
+	@Mock
+	private EntityMeta<Object> entityMeta1;
+
+	@Mock
+	private EntityMeta<Object> entityMeta2;
+
+	@Mock
+	private PropertyMeta<Void, Long> longPropertyMeta;
+
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_bootstrap() throws Exception
 	{
@@ -115,61 +94,34 @@ public class ThriftEntityManagerFactoryImplTest
 		classes.add(Long.class);
 		classes.add(String.class);
 
-		when(entityExplorer.discoverEntities(entityPackages)).thenAnswer(
-				new Answer<List<Class<?>>>()
-				{
-					@Override
-					public List<Class<?>> answer(InvocationOnMock invocation) throws Throwable
-					{
-						joinPropertyMetaToBeFilledTL.get().put(longPropertyMeta, Long.class);
-						return classes;
-					}
-				});
-
-		Map<PropertyMeta<?, ?>, Class<?>> map = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		map.put(longPropertyMeta, Long.class);
-
-		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(entityMeta1);
-		when(entityParser.parseEntity(eq(keyspace), eq(String.class))).thenReturn(entityMeta2);
+		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
+		when(entityParser.parseEntity(contextCaptor.capture()))
+				.thenReturn(entityMeta1, entityMeta2);
 
 		factory.bootstrap();
 
+		verify(validator).validateAtLeastOneEntity(classes, entityPackages);
 		verify(entityMetaMap).put(Long.class, entityMeta1);
 		verify(entityMetaMap).put(String.class, entityMeta2);
+		verify(entityParser).fillJoinEntityMeta(contextCaptor.capture(), eq(entityMetaMap));
 		verify(columnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
 				eq(false));
-		verify(entityParser, never()).fillJoinEntityMeta(eq(keyspace), anyMap(), eq(entityMetaMap));
-	}
 
-	@Test
-	public void should_bootstrap_with_join_property() throws Exception
-	{
-		List<Class<?>> classes = new ArrayList<Class<?>>();
-		EntityParsingContext context = new EntityParsingContext();
-		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-		joinPropertyMetaToBeFilled.put(longPropertyMeta, Long.class);
-		classes.add(Long.class);
+		List<EntityParsingContext> contexts = contextCaptor.getAllValues();
 
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(classes);
-		when(entityParser.parseEntity(eq(keyspace), eq(Long.class))).thenReturn(entityMeta1);
-		context.setJoinPropertyMetaToBeFilled(joinPropertyMetaToBeFilled);
-		factory.discoverEntities(context);
-
-		verify(entityMetaMap).put(Long.class, entityMeta1);
-		verify(entityParser)
-				.fillJoinEntityMeta(keyspace, joinPropertyMetaToBeFilled, entityMetaMap);
+		assertThat((Class<Long>) contexts.get(0).getCurrentEntityClass()).isEqualTo(Long.class);
+		assertThat((Class<String>) contexts.get(1).getCurrentEntityClass()).isEqualTo(String.class);
 	}
 
 	@Test
 	public void should_exception_when_no_entity_found() throws Exception
 	{
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(new ArrayList<Class<?>>());
-
+		ArrayList<Class<?>> entities = new ArrayList<Class<?>>();
+		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
+		doThrow(new BeanMappingException()).when(validator).validateAtLeastOneEntity(entities,
+				entityPackages);
 		exception.expect(BeanMappingException.class);
-		exception
-				.expectMessage("No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages null");
-
-		factory.bootstrap();
+		factory.discoverEntities();
 	}
 
 	@Test
@@ -183,7 +135,7 @@ public class ThriftEntityManagerFactoryImplTest
 	@Test
 	public void should_create_entity_manager_with_parameters() throws Exception
 	{
-		EntityManager em = factory.createEntityManager(new HashMap());
+		EntityManager em = factory.createEntityManager(new HashMap<Integer, String>());
 
 		assertThat(em).isNotNull();
 	}
@@ -200,4 +152,32 @@ public class ThriftEntityManagerFactoryImplTest
 		factory.close();
 	}
 
+	@Test
+	public void should_init_consistency_levels() throws Exception
+	{
+		ConsistencyLevel read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL;
+		Map<String, HConsistencyLevel> readMap = ImmutableMap.of("cf1", HConsistencyLevel.TWO,
+				"cf2", HConsistencyLevel.THREE);
+		Map<String, HConsistencyLevel> writeMap = ImmutableMap.of("cf1",
+				HConsistencyLevel.EACH_QUORUM, "cf2", HConsistencyLevel.LOCAL_QUORUM);
+
+		Map<String, Object> configMap = new HashMap<String, Object>();
+		when(argumentExtractor.initDefaultReadConsistencyLevel(configMap)).thenReturn(read);
+		when(argumentExtractor.initDefaultWriteConsistencyLevel(configMap)).thenReturn(write);
+		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(readMap);
+		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(writeMap);
+
+		AchillesConfigurableConsistencyLevelPolicy actual = factory
+				.initConsistencyLevelPolicy(configMap);
+
+		assertThat(actual.getConsistencyLevelForRead("cf1")).isEqualTo(HConsistencyLevel.TWO);
+		assertThat(actual.getConsistencyLevelForRead("cf2")).isEqualTo(HConsistencyLevel.THREE);
+		assertThat(actual.getConsistencyLevelForWrite("cf1")).isEqualTo(
+				HConsistencyLevel.EACH_QUORUM);
+		assertThat(actual.getConsistencyLevelForWrite("cf2")).isEqualTo(
+				HConsistencyLevel.LOCAL_QUORUM);
+
+		assertThat(actual.getConsistencyLevelForRead("default")).isEqualTo(HConsistencyLevel.ONE);
+		assertThat(actual.getConsistencyLevelForWrite("default")).isEqualTo(HConsistencyLevel.ALL);
+	}
 }

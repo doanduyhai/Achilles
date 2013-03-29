@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
@@ -38,9 +38,9 @@ public class ListIteratorWrapperTest
 	private PropertyMeta<Void, Integer> propertyMeta;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
-	ListIteratorWrapper<Integer> wrapper;
+	private ListIteratorWrapper<Integer> wrapper;
 
 	@Before
 	public void setUp() throws Exception
@@ -55,7 +55,7 @@ public class ListIteratorWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setHelper(introspector);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 	}
@@ -71,7 +71,7 @@ public class ListIteratorWrapperTest
 	@Test
 	public void should_mark_dirty_on_set() throws Exception
 	{
-		when(helper.unproxy(1)).thenReturn(1);
+		when(introspector.unproxy(1)).thenReturn(1);
 		wrapper.next();
 		wrapper.set(1);
 

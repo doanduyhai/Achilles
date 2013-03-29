@@ -1,7 +1,7 @@
 package testBuilders;
 
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -35,7 +35,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class PropertyMetaTestBuilder<T, K, V>
 {
-	private EntityHelper entityHelper = new EntityHelper();
+	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	private Class<T> clazz;
 	private String field;
@@ -110,8 +110,8 @@ public class PropertyMetaTestBuilder<T, K, V>
 		if (buildAccessors)
 		{
 			Field declaredField = clazz.getDeclaredField(field);
-			propertyMeta.setGetter(entityHelper.findGetter(clazz, declaredField));
-			propertyMeta.setSetter(entityHelper.findSetter(clazz, declaredField));
+			propertyMeta.setGetter(entityIntrospector.findGetter(clazz, declaredField));
+			propertyMeta.setSetter(entityIntrospector.findSetter(clazz, declaredField));
 		}
 
 		if (joinMeta != null || !cascadeTypes.isEmpty())

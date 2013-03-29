@@ -5,7 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -45,7 +45,7 @@ public class CollectionWrapperTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Before
 	public void setUp() throws Exception
@@ -59,7 +59,7 @@ public class CollectionWrapperTest
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(helper.unproxy("a")).thenReturn("a");
+		when(introspector.unproxy("a")).thenReturn("a");
 		wrapper.add("a");
 
 		assertThat(target).hasSize(1);
@@ -73,7 +73,7 @@ public class CollectionWrapperTest
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(helper.unproxy("a")).thenReturn("a");
+		when(introspector.unproxy("a")).thenReturn("a");
 		when(dirtyMap.containsKey(setter)).thenReturn(true);
 		wrapper.add("a");
 
@@ -93,7 +93,7 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityHelper());
+		wrapper.setHelper(new EntityIntrospector());
 
 		wrapper.addAll(Arrays.asList("a", "b"));
 
@@ -166,7 +166,7 @@ public class CollectionWrapperTest
 	public void should_return_true_on_contains() throws Exception
 	{
 		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
-		when(helper.unproxy("a")).thenReturn("a");
+		when(introspector.unproxy("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
 
@@ -183,7 +183,7 @@ public class CollectionWrapperTest
 		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
 
 		List<String> check = Arrays.asList("a", "c");
-		when(helper.unproxy(check)).thenReturn(check);
+		when(introspector.unproxy(check)).thenReturn(check);
 		assertThat(wrapper.containsAll(check)).isTrue();
 	}
 
@@ -222,7 +222,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(helper.unproxy("a")).thenReturn("a");
+		when(introspector.unproxy("a")).thenReturn("a");
 		wrapper.remove("a");
 
 		assertThat(target).hasSize(1);
@@ -265,7 +265,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityHelper());
+		wrapper.setHelper(new EntityIntrospector());
 		wrapper.removeAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(1);
@@ -310,7 +310,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityHelper());
+		wrapper.setHelper(new EntityIntrospector());
 		wrapper.retainAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(2);
@@ -329,7 +329,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityHelper());
+		wrapper.setHelper(new EntityIntrospector());
 		wrapper.retainAll(Arrays.asList("a", "b", "c"));
 
 		assertThat(target).hasSize(3);
@@ -400,9 +400,9 @@ public class CollectionWrapperTest
 
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(helper.buildProxy("a", joinMeta)).thenReturn("a");
-		when(helper.buildProxy("b", joinMeta)).thenReturn("b");
-		when(helper.buildProxy("c", joinMeta)).thenReturn("c");
+		when(introspector.buildProxy("a", joinMeta)).thenReturn("a");
+		when(introspector.buildProxy("b", joinMeta)).thenReturn("b");
+		when(introspector.buildProxy("c", joinMeta)).thenReturn("c");
 
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
 	}
@@ -442,9 +442,9 @@ public class CollectionWrapperTest
 
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(helper.buildProxy("a", joinMeta)).thenReturn("a");
-		when(helper.buildProxy("b", joinMeta)).thenReturn("b");
-		when(helper.buildProxy("c", joinMeta)).thenReturn("c");
+		when(introspector.buildProxy("a", joinMeta)).thenReturn("a");
+		when(introspector.buildProxy("b", joinMeta)).thenReturn("b");
+		when(introspector.buildProxy("c", joinMeta)).thenReturn("c");
 
 		assertThat(wrapper.toArray(new String[]
 		{
@@ -511,7 +511,7 @@ public class CollectionWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setHelper(introspector);
 		return wrapper;
 	}
 

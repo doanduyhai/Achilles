@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.wrapper.MapEntryWrapper;
 
@@ -36,7 +36,7 @@ public class MapEntryWrapperBuilderTest
 	private Method setter;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
@@ -61,14 +61,14 @@ public class MapEntryWrapperBuilderTest
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
-				.helper(helper) //
+				.helper(introspector) //
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(mapEntry);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(helper);
+		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(introspector);
 
 	}
 }

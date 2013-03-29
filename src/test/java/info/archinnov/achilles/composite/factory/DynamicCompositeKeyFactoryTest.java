@@ -15,7 +15,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -61,7 +61,7 @@ public class DynamicCompositeKeyFactoryTest
 	private CompositeHelper helper;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private List<Method> componentGetters;
@@ -227,7 +227,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
-		when(entityHelper.determineMultiKey(key, multiKeyProperties.getComponentGetters()))
+		when(entityIntrospector.determineMultiKey(key, multiKeyProperties.getComponentGetters()))
 				.thenReturn(keyValues);
 
 		DynamicComposite comp = keyFactory.createForInsert(multiKeyPropertyMeta, key);
@@ -284,7 +284,7 @@ public class DynamicCompositeKeyFactoryTest
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyPropertyMeta.getPropertyName()).thenReturn("property");
 
-		when(entityHelper.determineMultiKey(tweetKey, componentGetters)).thenReturn(keyValues);
+		when(entityIntrospector.determineMultiKey(tweetKey, componentGetters)).thenReturn(keyValues);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(2);
 
 		DynamicComposite comp = keyFactory.createForQuery(multiKeyPropertyMeta, tweetKey,
@@ -343,8 +343,8 @@ public class DynamicCompositeKeyFactoryTest
 		List<Object> startCompValues = Arrays.asList((Object) "test", 1, 2L);
 		List<Object> endCompValues = Arrays.asList((Object) "toto", 3, 12L);
 
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(startCompValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endCompValues);
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(startCompValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endCompValues);
 		when(helper.findLastNonNullIndexForComponents("property", startCompValues)).thenReturn(2);
 		when(helper.findLastNonNullIndexForComponents("property", endCompValues)).thenReturn(2);
 

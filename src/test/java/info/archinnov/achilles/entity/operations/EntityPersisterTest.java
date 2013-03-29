@@ -28,7 +28,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -90,7 +90,10 @@ public class EntityPersisterTest
 	private EntityPersister persister;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
+
+	@Mock
+	private EntityProxifier proxifier;
 
 	@Mock
 	private EntityLoader loader;
@@ -175,8 +178,8 @@ public class EntityPersisterTest
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 
 		when(entityDao.buildMutator()).thenReturn(mutator);
-		when(helper.getKey(entity, idMeta)).thenReturn(id);
-		when(helper.findSerialVersionUID(CompleteBean.class)).thenReturn(1L);
+		when(introspector.getKey(entity, idMeta)).thenReturn(id);
+		when(introspector.findSerialVersionUID(CompleteBean.class)).thenReturn(1L);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -189,12 +192,12 @@ public class EntityPersisterTest
 		ArgumentCaptor<DynamicComposite> compositeCaptor = ArgumentCaptor
 				.forClass(DynamicComposite.class);
 
-		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(151L);
+		when(introspector.findSerialVersionUID(entity.getClass())).thenReturn(151L);
 		doNothing().when(entityDao).insertColumnBatch(eq(id), compositeCaptor.capture(), eq("151"),
 				eq(mutator));
 		persister.persist(entity, entityMeta);
 
-		verify(helper).findSerialVersionUID(entity.getClass());
+		verify(introspector).findSerialVersionUID(entity.getClass());
 		DynamicComposite captured = compositeCaptor.getValue();
 
 		assertThat(captured.getComponent(0).getValue(SerializerUtils.BYTE_SRZ)).isEqualTo(
@@ -210,7 +213,7 @@ public class EntityPersisterTest
 		Map<String, PropertyMeta<?, ?>> propertyMetaMap = new HashMap<String, PropertyMeta<?, ?>>();
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 
-		when(helper.findSerialVersionUID(entity.getClass())).thenReturn(null);
+		when(introspector.findSerialVersionUID(entity.getClass())).thenReturn(null);
 
 		persister.persist(entity, entityMeta);
 	}
@@ -227,7 +230,7 @@ public class EntityPersisterTest
 				composite);
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn("testValue");
+		when(introspector.getValueFromField(entity, anyMethod)).thenReturn("testValue");
 		when(propertyMeta.writeValueToString("testValue")).thenReturn("testValue");
 
 		persister.persist(entity, entityMeta);
@@ -243,7 +246,7 @@ public class EntityPersisterTest
 	{
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.type()).thenReturn(LAZY_LIST);
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
+		when(introspector.getValueFromField(entity, anyMethod)).thenReturn(Arrays.asList("foo", "bar"));
 		when(propertyMeta.getPropertyName()).thenReturn("friends");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -266,7 +269,7 @@ public class EntityPersisterTest
 	{
 		when(propertyMeta.getGetter()).thenReturn(anyMethod);
 		when(propertyMeta.type()).thenReturn(SET);
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(
+		when(introspector.getValueFromField(entity, anyMethod)).thenReturn(
 				Sets.newHashSet("George", "Paul"));
 		when(propertyMeta.getPropertyName()).thenReturn("followers");
 
@@ -297,7 +300,7 @@ public class EntityPersisterTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		when(helper.getValueFromField(entity, anyMethod)).thenReturn(map);
+		when(introspector.getValueFromField(entity, anyMethod)).thenReturn(map);
 		when(propertyMeta.getPropertyName()).thenReturn("preferences");
 
 		DynamicComposite composite = new DynamicComposite();
@@ -374,14 +377,14 @@ public class EntityPersisterTest
 
 		entityMeta.setPropertyMetas(map);
 
-		when(helper.getValueFromField(bean, getter)).thenReturn(150L);
+		when(introspector.getValueFromField(bean, getter)).thenReturn(150L);
 
-		when(helper.getKey(bean, idMeta)).thenReturn(11L);
-		when(helper.findSerialVersionUID(bean.getClass())).thenReturn(11L);
+		when(introspector.getKey(bean, idMeta)).thenReturn(11L);
+		when(introspector.findSerialVersionUID(bean.getClass())).thenReturn(11L);
 
 		persister.persist(bean, entityMeta, mutator);
 
-		verify(helper).getValueFromField(bean, getter);
+		verify(introspector).getValueFromField(bean, getter);
 		verify(counterDao).insertCounter(keyComp, comp, 150L);
 	}
 
@@ -401,13 +404,13 @@ public class EntityPersisterTest
 				joinProperties.getEntityMeta().getIdMeta());
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
-		when(helper.unproxy(userBean)).thenReturn(userBean);
+		when(introspector.unproxy(userBean)).thenReturn(userBean);
 		DynamicComposite composite = new DynamicComposite();
 		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
 				composite);
-		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+		when(introspector.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
 		persister.persist(entity, entityMeta);
 
@@ -435,7 +438,7 @@ public class EntityPersisterTest
 				joinProperties.getEntityMeta().getIdMeta());
 		when(propertyMeta.getGetter()).thenReturn(userGetter);
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
 		when(loader.load(UserBean.class, joinId, (EntityMeta<Long>) joinProperties.getEntityMeta()))
@@ -444,7 +447,7 @@ public class EntityPersisterTest
 		DynamicComposite composite = new DynamicComposite();
 		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
 				composite);
-		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
+		when(introspector.getValueFromField(entity, userGetter)).thenReturn(userBean);
 
 		persister.persist(entity, entityMeta);
 
@@ -469,14 +472,14 @@ public class EntityPersisterTest
 
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
 		DynamicComposite composite = new DynamicComposite();
 		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
 				composite);
-		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
-		when(helper.unproxy(userBean)).thenReturn(userBean);
+		when(introspector.getValueFromField(entity, userGetter)).thenReturn(userBean);
+		when(introspector.unproxy(userBean)).thenReturn(userBean);
 		persister.persistProperty(entity, id, entityDao, propertyMeta, mutator);
 
 		verify(entityDao, atLeastOnce()).insertColumnBatch(id, composite, joinId.toString(),
@@ -494,9 +497,9 @@ public class EntityPersisterTest
 				joinProperties.getEntityMeta().getIdMeta());
 		when(entityDao.buildMutator()).thenReturn(joinMutator);
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
-		when(helper.unproxy(userBean)).thenReturn(userBean);
+		when(introspector.unproxy(userBean)).thenReturn(userBean);
 		persister.cascadePersistOrEnsureExists(userBean, joinProperties);
 
 		verify(entityDao).executeMutator(joinMutator);
@@ -508,7 +511,7 @@ public class EntityPersisterTest
 		JoinProperties joinProperties = prepareJoinProperties();
 		joinProperties.getCascadeTypes().clear();
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 		when(loader.loadVersionSerialUID(joinId, entityDao)).thenReturn(123L);
 
@@ -523,7 +526,7 @@ public class EntityPersisterTest
 		joinProperties.getCascadeTypes().clear();
 		when(loader.loadVersionSerialUID(joinId, entityDao)).thenReturn(null);
 
-		when((Long) helper.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
+		when((Long) introspector.getKey(userBean, joinProperties.getEntityMeta().getIdMeta()))
 				.thenReturn(joinId);
 
 		exception.expect(AchillesException.class);
@@ -564,7 +567,7 @@ public class EntityPersisterTest
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 		persister.persist(new ColumnFamilyBean(), entityMeta);
 
-		verifyZeroInteractions(helper);
+		verifyZeroInteractions(introspector);
 
 	}
 
@@ -582,7 +585,7 @@ public class EntityPersisterTest
 
 		CompleteBean bean = CompleteBeanTestBuilder.builder().buid();
 
-		when(helper.getKey(bean, idMeta)).thenReturn(idValue);
+		when(introspector.getKey(bean, idMeta)).thenReturn(idValue);
 
 		persister.remove(bean, entityMeta);
 

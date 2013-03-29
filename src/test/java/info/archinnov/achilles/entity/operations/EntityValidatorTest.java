@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
 
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
@@ -38,7 +38,7 @@ public class EntityValidatorTest
 	private EntityValidator entityValidator;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
@@ -51,9 +51,9 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) introspector.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
+		when(introspector.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -62,7 +62,7 @@ public class EntityValidatorTest
 	public void should_validate_from_entity_meta() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
+		when(introspector.determinePrimaryKey(bean, entityMeta)).thenReturn(12L);
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
@@ -71,7 +71,7 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) introspector.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(null);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
@@ -82,9 +82,9 @@ public class EntityValidatorTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when((Class<CompleteBean>) helper.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) introspector.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(helper.determinePrimaryKey(bean, entityMeta)).thenReturn(null);
+		when(introspector.determinePrimaryKey(bean, entityMeta)).thenReturn(null);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}

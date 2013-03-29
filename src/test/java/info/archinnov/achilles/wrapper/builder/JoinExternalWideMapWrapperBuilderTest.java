@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -45,7 +45,7 @@ public class JoinExternalWideMapWrapperBuilderTest
 	private EntityLoader loader;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private CompositeHelper compositeHelper;
@@ -67,7 +67,7 @@ public class JoinExternalWideMapWrapperBuilderTest
 				.interceptor(interceptor) //
 				.compositeHelper(compositeHelper) //
 				.compositeKeyFactory(compositeKeyFactory) //
-				.entityHelper(entityHelper) //
+				.entityHelper(entityIntrospector) //
 				.iteratorFactory(iteratorFactory)//
 				.keyValueFactory(keyValueFactory) //
 				.loader(loader) //
@@ -82,7 +82,7 @@ public class JoinExternalWideMapWrapperBuilderTest
 		assertThat(Whitebox.getInternalState(wrapper, "compositeHelper")).isSameAs(compositeHelper);
 		assertThat(Whitebox.getInternalState(wrapper, "compositeKeyFactory")).isSameAs(
 				compositeKeyFactory);
-		assertThat(Whitebox.getInternalState(wrapper, "entityHelper")).isSameAs(entityHelper);
+		assertThat(Whitebox.getInternalState(wrapper, "entityHelper")).isSameAs(entityIntrospector);
 		assertThat(Whitebox.getInternalState(wrapper, "iteratorFactory")).isSameAs(iteratorFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "keyValueFactory")).isSameAs(keyValueFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "loader")).isSameAs(loader);

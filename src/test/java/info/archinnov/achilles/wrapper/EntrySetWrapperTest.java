@@ -6,7 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -49,7 +49,7 @@ public class EntrySetWrapperTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Before
 	public void setUp() throws Exception
@@ -90,7 +90,7 @@ public class EntrySetWrapperTest
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(helper.unproxy(any())).thenReturn(entry);
+		when(introspector.unproxy(any())).thenReturn(entry);
 
 		assertThat(wrapper.contains(entry)).isTrue();
 	}
@@ -121,8 +121,8 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry1 = iterator.next();
 		Entry<Integer, String> entry2 = iterator.next();
 
-		when(helper.unproxy(entry1)).thenReturn(entry1);
-		when(helper.unproxy(entry2)).thenReturn(entry2);
+		when(introspector.unproxy(entry1)).thenReturn(entry1);
+		when(introspector.unproxy(entry2)).thenReturn(entry2);
 
 		assertThat(wrapper.containsAll(Arrays.asList(entry1, entry2))).isTrue();
 	}
@@ -189,7 +189,7 @@ public class EntrySetWrapperTest
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(helper.unproxy(any())).thenReturn(entry);
+		when(introspector.unproxy(any())).thenReturn(entry);
 		wrapper.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -240,7 +240,7 @@ public class EntrySetWrapperTest
 		list.add(entry1);
 		list.add(entry2);
 
-		when(helper.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -288,7 +288,7 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry2 = iterator.next();
 		List<Entry<Integer, String>> list = Arrays.asList(entry1, entry2);
 
-		when(helper.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
@@ -305,7 +305,7 @@ public class EntrySetWrapperTest
 
 		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "FR");
 		List<Entry<Integer, String>> list = Arrays.asList(entry1);
-		when(helper.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);
@@ -410,7 +410,7 @@ public class EntrySetWrapperTest
 		joinProperties.setEntityMeta(joinMeta);
 
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(helper.buildProxy(entry, joinMeta)).thenReturn(entry);
+		when(introspector.buildProxy(entry, joinMeta)).thenReturn(entry);
 
 		Object[] array = wrapper.toArray(new Entry[]
 		{
@@ -470,7 +470,7 @@ public class EntrySetWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setHelper(introspector);
 		return wrapper;
 	}
 
@@ -481,7 +481,7 @@ public class EntrySetWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setHelper(introspector);
 		return wrapper;
 	}
 }

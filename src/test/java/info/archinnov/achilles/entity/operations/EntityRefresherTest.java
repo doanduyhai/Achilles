@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -42,7 +42,10 @@ public class EntityRefresherTest
 	private EntityRefresher entityRefresher;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
+
+	@Mock
+	private EntityProxifier proxifier;
 
 	@Mock
 	private EntityValidator entityValidator;
@@ -71,7 +74,8 @@ public class EntityRefresherTest
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(entityRefresher, "helper", helper);
+		Whitebox.setInternalState(entityRefresher, "introspector", introspector);
+		Whitebox.setInternalState(entityRefresher, "proxifier", proxifier);
 		Whitebox.setInternalState(entityRefresher, "entityValidator", entityValidator);
 		Whitebox.setInternalState(entityRefresher, "loader", loader);
 	}
@@ -81,14 +85,14 @@ public class EntityRefresherTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when(helper.isProxy(proxy)).thenReturn(true);
-		when(helper.getInterceptor(proxy)).thenReturn(jpaEntityInterceptor);
+		when(proxifier.isProxy(proxy)).thenReturn(true);
+		when(proxifier.getInterceptor(proxy)).thenReturn(jpaEntityInterceptor);
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(jpaEntityInterceptor.getLazyAlreadyLoaded()).thenReturn(lazyLoaded);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(helper.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
+		when(introspector.determinePrimaryKey(proxy, entityMeta)).thenReturn(12L);
 		when(loader.load(eq(CompleteBean.class), eq(12L), eq(entityMeta))).thenReturn(bean);
 
 		entityRefresher.refresh(proxy, entityMetaMap);

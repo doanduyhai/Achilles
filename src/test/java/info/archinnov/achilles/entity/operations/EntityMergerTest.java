@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -65,7 +65,10 @@ public class EntityMergerTest
 	private GenericDynamicCompositeDao<Long> dao;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
+
+	@Mock
+	private EntityProxifier proxifier;
 
 	@Mock
 	private Bean entity;
@@ -81,7 +84,7 @@ public class EntityMergerTest
 	{
 		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
 
-		when(helper.buildProxy(entity, entityMeta)).thenReturn(entity);
+		when(proxifier.buildProxy(entity, entityMeta)).thenReturn(entity);
 
 		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
 
@@ -93,9 +96,9 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_simple_dirty() throws Exception
 	{
-		when(helper.isProxy(entity)).thenReturn(true);
-		when(helper.getRealObject(entity)).thenReturn(entity);
-		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -128,9 +131,9 @@ public class EntityMergerTest
 	public void should_merge_proxy_with_multi_value_dirty() throws Exception
 	{
 
-		when(helper.isProxy(entity)).thenReturn(true);
-		when(helper.getRealObject(entity)).thenReturn(entity);
-		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -164,9 +167,9 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_no_dirty() throws Exception
 	{
-		when(helper.isProxy(entity)).thenReturn(true);
-		when(helper.getRealObject(entity)).thenReturn(entity);
-		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(dao.buildMutator()).thenReturn(mutator);
@@ -188,9 +191,9 @@ public class EntityMergerTest
 	@Test
 	public void should_merge_proxy_with_join_entity() throws Exception
 	{
-		when(helper.isProxy(entity)).thenReturn(true);
-		when(helper.getRealObject(entity)).thenReturn(entity);
-		when(helper.getInterceptor(entity)).thenReturn(interceptor);
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 
 		when(entityMeta.getEntityDao()).thenReturn(dao);
 		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
@@ -221,13 +224,13 @@ public class EntityMergerTest
 
 		UserBean userBean = new UserBean();
 
-		when(helper.getValueFromField(entity, userGetter)).thenReturn(userBean);
-		when(helper.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
+		when(introspector.getValueFromField(entity, userGetter)).thenReturn(userBean);
+		when(proxifier.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
 
 		merger.mergeEntity(entity, entityMeta);
 
 		verify(persister).persist(userBean, joinEntityMeta);
-		verify(helper).setValueToField(entity, userSetter, userBean);
+		verify(introspector).setValueToField(entity, userSetter, userBean);
 
 	}
 

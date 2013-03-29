@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -14,6 +13,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class JoinEntityHelperTest
 {
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Mock
 	private EntityMapper mapper;
@@ -60,12 +60,11 @@ public class JoinEntityHelperTest
 	@Captor
 	ArgumentCaptor<UserBean> userCaptor;
 
-	@SuppressWarnings("unchecked")
+	private List<Long> keys = Arrays.asList(11L);
+
 	@Test
 	public void should_load_join_entities() throws Exception
 	{
-		List<Long> keys = mock(List.class);
-
 		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
 
 		DynamicComposite start = new DynamicComposite();
@@ -83,21 +82,21 @@ public class JoinEntityHelperTest
 		rows.put(11L, columns1);
 		rows.put(12L, columns2);
 
-		when(joinMeta.getEntityDao()).thenReturn(dao);
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
 		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
-		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta);
+		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta,
+				dao);
 
 		verify(mapper).setEagerPropertiesToEntity(eq(11L), eq(columns1), eq(joinMeta),
 				userCaptor.capture());
 		verify(mapper).setEagerPropertiesToEntity(eq(12L), eq(columns2), eq(joinMeta),
 				userCaptor.capture());
 
-		verify(helper).setValueToField(any(UserBean.class), eq(idSetter), eq(11L));
-		verify(helper).setValueToField(any(UserBean.class), eq(idSetter), eq(12L));
+		verify(introspector).setValueToField(any(UserBean.class), eq(idSetter), eq(11L));
+		verify(introspector).setValueToField(any(UserBean.class), eq(idSetter), eq(12L));
 
 		assertThat(userCaptor.getAllValues()).hasSize(2);
 		UserBean user1 = userCaptor.getAllValues().get(0);
@@ -107,22 +106,20 @@ public class JoinEntityHelperTest
 		assertThat(actual.get(12L)).isSameAs(user2);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_empty_map_when_no_join_entity_found() throws Exception
 	{
-		List<Long> keys = mock(List.class);
 		Map<Long, List<Pair<DynamicComposite, String>>> rows = new HashMap<Long, List<Pair<DynamicComposite, String>>>();
 		List<Pair<DynamicComposite, String>> columns1 = new ArrayList<Pair<DynamicComposite, String>>();
 		rows.put(11L, columns1);
 
-		when(joinMeta.getEntityDao()).thenReturn(dao);
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
-		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta);
+		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta,
+				dao);
 
 		verifyZeroInteractions(mapper);
-		verifyZeroInteractions(helper);
+		verifyZeroInteractions(introspector);
 
 		assertThat(actual).isEmpty();
 

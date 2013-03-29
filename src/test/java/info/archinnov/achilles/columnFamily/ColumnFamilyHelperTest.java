@@ -5,6 +5,7 @@ import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.DYNAMIC_TY
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
 import static me.prettyprint.hector.api.ddl.ComparatorType.ASCIITYPE;
 import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
 import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
@@ -14,12 +15,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.InvalidColumnFamilyException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
@@ -33,6 +38,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -116,6 +123,50 @@ public class ColumnFamilyHelperTest
 				STRING_SRZ.getComparatorType().getTypeName());
 
 		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo("typeAlias");
+
+	}
+
+	@Test
+	public void should_build_composite_column_family_with_object_type() throws Exception
+	{
+		PropertyMeta<Integer, CompleteBean> wideMapMeta = new PropertyMeta<Integer, CompleteBean>();
+		wideMapMeta.setValueClass(CompleteBean.class);
+		wideMapMeta.setType(PropertyType.SIMPLE);
+
+		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
+				"typeAlias");
+
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCompositeCF("keyspace", wideMapMeta,
+				Long.class, "cf", "entity");
+
+		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
+				STRING_SRZ.getComparatorType().getTypeName());
+
+	}
+
+	@Test
+	public void should_build_composite_column_family_with_join_object_type() throws Exception
+	{
+		PropertyMeta<Integer, CompleteBean> wideMapMeta = new PropertyMeta<Integer, CompleteBean>();
+		wideMapMeta.setValueClass(CompleteBean.class);
+		wideMapMeta.setType(PropertyType.JOIN_SIMPLE);
+
+		PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder.valueClass(UUID.class)
+				.build();
+		EntityMeta<UUID> joinMeta = new EntityMeta<UUID>();
+		joinMeta.setIdMeta(joinIdMeta);
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinMeta);
+		wideMapMeta.setJoinProperties(joinProperties);
+
+		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
+				"typeAlias");
+
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCompositeCF("keyspace", wideMapMeta,
+				Long.class, "cf", "entity");
+
+		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
+				UUID_SRZ.getComparatorType().getTypeName());
 
 	}
 

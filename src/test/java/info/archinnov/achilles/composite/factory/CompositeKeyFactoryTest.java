@@ -9,7 +9,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
@@ -52,7 +52,7 @@ public class CompositeKeyFactoryTest {
     private CompositeHelper helper;
 
     @Mock
-    private EntityHelper entityHelper;
+    private EntityIntrospector entityIntrospector;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
@@ -93,7 +93,7 @@ public class CompositeKeyFactoryTest {
 
         when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
         when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-        when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+        when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
         Composite comp = factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
 
@@ -113,7 +113,7 @@ public class CompositeKeyFactoryTest {
 
         when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
         when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-        when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+        when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
         expectedEx.expect(AchillesException.class);
         expectedEx.expectMessage("There should be 3 values for the key of WideMap 'property'");
@@ -132,7 +132,7 @@ public class CompositeKeyFactoryTest {
 
         when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
         when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-        when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+        when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
         expectedEx.expect(AchillesException.class);
         expectedEx.expectMessage("The values for the for the key of WideMap 'property' should not be null");
@@ -167,7 +167,7 @@ public class CompositeKeyFactoryTest {
 
         when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
         when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-        when(entityHelper.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
+        when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(keyValues);
 
         when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
 
@@ -212,8 +212,8 @@ public class CompositeKeyFactoryTest {
         when(helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)) //
                 .thenReturn(new ComponentEquality[] { LESS_THAN_EQUAL, GREATER_THAN_EQUAL });
         when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-        when(entityHelper.determineMultiKey(tweetKey1, componentGetters)).thenReturn(keyValues1);
-        when(entityHelper.determineMultiKey(tweetKey2, componentGetters)).thenReturn(keyValues2);
+        when(entityIntrospector.determineMultiKey(tweetKey1, componentGetters)).thenReturn(keyValues1);
+        when(entityIntrospector.determineMultiKey(tweetKey2, componentGetters)).thenReturn(keyValues2);
 
         when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 

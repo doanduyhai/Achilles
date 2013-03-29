@@ -8,11 +8,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.Arrays;
@@ -55,13 +55,13 @@ public class DynamicCompositeTransformerTest
 	private PropertyHelper helper;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityProxifier proxifier;
 
 	@Before
 	public void setUp()
 	{
 		Whitebox.setInternalState(transformer, "helper", helper);
-		Whitebox.setInternalState(transformer, "entityHelper", entityHelper);
+		Whitebox.setInternalState(transformer, "prxifier", proxifier);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -145,7 +145,7 @@ public class DynamicCompositeTransformerTest
 
 		propertyMeta.setJoinProperties(joinProperties);
 
-		when(entityHelper.buildProxy("test1", entityMeta)).thenReturn("test1");
+		when(proxifier.buildProxy("test1", entityMeta)).thenReturn("test1");
 		assertThat(transformer.buildValueFromDynamicComposite(propertyMeta, hCol1)).isEqualTo(
 				"test1");
 	}

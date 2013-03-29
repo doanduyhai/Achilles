@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -80,7 +80,7 @@ public class JoinExternalWideMapWrapperTest
 	private EntityLoader loader;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private CompositeHelper compositeHelper;
@@ -134,7 +134,7 @@ public class JoinExternalWideMapWrapperTest
 		when(dao.getValue(id, comp)).thenReturn(joinId);
 		when(loader.load(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
 		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-		when(entityHelper.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
+		when(entityIntrospector.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
 
 		UserBean expected = wrapper.get(key);
 

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
@@ -45,7 +45,7 @@ public class MapWrapperTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private EntityHelper helper;
+	private EntityIntrospector introspector;
 
 	@Before
 	public void setUp() throws Exception
@@ -100,7 +100,7 @@ public class MapWrapperTest
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
 		Entry<Integer, String> entry = target.entrySet().iterator().next();
-		when(helper.unproxy((Object) entry)).thenReturn(entry);
+		when(introspector.unproxy((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -140,7 +140,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Integer> keySet = wrapper.keySet();
-		when(helper.unproxy(1)).thenReturn(1);
+		when(introspector.unproxy(1)).thenReturn(1);
 		keySet.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -190,7 +190,7 @@ public class MapWrapperTest
 	{
 		Map<Integer, String> target = prepareMap();
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
-		when(helper.unproxy(1)).thenReturn(1);
+		when(introspector.unproxy(1)).thenReturn(1);
 		wrapper.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -214,7 +214,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Collection<String> collectionWrapper = wrapper.values();
-		when(helper.unproxy("FR")).thenReturn("FR");
+		when(introspector.unproxy("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -248,7 +248,7 @@ public class MapWrapperTest
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(helper);
+		wrapper.setHelper(introspector);
 		return wrapper;
 	}
 }

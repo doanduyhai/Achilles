@@ -6,7 +6,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
@@ -51,7 +51,7 @@ public class CompositeHelperTest
 	private List<Method> componentGetters;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
@@ -147,9 +147,9 @@ public class CompositeHelperTest
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(
 				startComponentValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
@@ -166,9 +166,9 @@ public class CompositeHelperTest
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(
 				startComponentValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING);
 	}
@@ -185,9 +185,9 @@ public class CompositeHelperTest
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(
 				startComponentValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx
@@ -208,9 +208,9 @@ public class CompositeHelperTest
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(
 				startComponentValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 		expectedEx.expect(IllegalArgumentException.class);
 		expectedEx
 				.expectMessage("There should not be any null value between two non-null keys of WideMap 'any_property'");
@@ -230,9 +230,9 @@ public class CompositeHelperTest
 		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
-		when(entityHelper.determineMultiKey(start, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKey(start, componentGetters)).thenReturn(
 				startComponentValues);
-		when(entityHelper.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
+		when(entityIntrospector.determineMultiKey(end, componentGetters)).thenReturn(endComponentValues);
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx

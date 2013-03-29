@@ -152,15 +152,10 @@ public class PropertyHelperTest
 		helper.parseMultiKey(MultiKeyNotInstantiable.class);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked",
-			"unused"
-	})
 	@Test
 	public void should_infer_value_class_from_list() throws Exception
 	{
+		@SuppressWarnings("unused")
 		class Test
 		{
 			private List<String> friends;
@@ -168,20 +163,19 @@ public class PropertyHelperTest
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		Class<?> infered = helper.inferValueClass(type);
+		Class<String> infered = helper.inferValueClassForListOrSet(type, Test.class);
 
-		assertThat(infered).isEqualTo((Class) String.class);
+		assertThat(infered).isEqualTo(String.class);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked",
-			"unused"
-	})
 	@Test
-	public void should_infer_value_class_from_raw_list() throws Exception
+	public void should_exception_when_infering_value_type_from_raw_list() throws Exception
 	{
+		@SuppressWarnings(
+		{
+				"rawtypes",
+				"unused"
+		})
 		class Test
 		{
 			private List friends;
@@ -189,51 +183,12 @@ public class PropertyHelperTest
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		Class<?> infered = helper.inferValueClass(type);
+		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
+				+ "' of the entity 'null' should be parameterized");
 
-		assertThat(infered).isEqualTo((Class) Object.class);
-	}
+		helper.inferValueClassForListOrSet(type, Test.class);
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked",
-			"unused"
-	})
-	@Test
-	public void should_infer_simple_key_class() throws Exception
-	{
-		class Test
-		{
-			private Map<Integer, String> preferences;
-		}
-
-		Type type = Test.class.getDeclaredField("preferences").getGenericType();
-
-		Class<?> infered = helper.inferKeyClass(type);
-
-		assertThat(infered).isEqualTo((Class) Integer.class);
-	}
-
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked",
-			"unused"
-	})
-	@Test
-	public void should_infer_multi_key_class() throws Exception
-	{
-		class Test
-		{
-			private Map<TweetMultiKey, String> preferences;
-		}
-
-		Type type = Test.class.getDeclaredField("preferences").getGenericType();
-
-		Class<?> infered = helper.inferKeyClass(type);
-
-		assertThat(infered).isEqualTo((Class) TweetMultiKey.class);
 	}
 
 	@Test

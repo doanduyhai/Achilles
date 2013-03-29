@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.EntityHelper;
+import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -36,7 +36,7 @@ public class WideMapWrapperBuilderTest
 	private AchillesInterceptor interceptor;
 
 	@Mock
-	private EntityHelper entityHelper;
+	private EntityIntrospector entityIntrospector;
 
 	@Mock
 	private CompositeHelper compositeHelper;
@@ -57,7 +57,7 @@ public class WideMapWrapperBuilderTest
 				.builder(1, entityDao, propertyMeta) //
 				.interceptor(interceptor) //
 				.compositeHelper(compositeHelper) //
-				.entityHelper(entityHelper) //
+				.entityHelper(entityIntrospector) //
 				.iteratorFactory(iteratorFactory) //
 				.keyFactory(keyFactory) //
 				.build();
@@ -66,7 +66,7 @@ public class WideMapWrapperBuilderTest
 		assertThat(wrapper.getInterceptor()).isSameAs(interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "entityDao")).isSameAs(entityDao);
 		assertThat(Whitebox.getInternalState(wrapper, "compositeHelper")).isSameAs(compositeHelper);
-		assertThat(Whitebox.getInternalState(wrapper, "entityHelper")).isSameAs(entityHelper);
+		assertThat(Whitebox.getInternalState(wrapper, "entityHelper")).isSameAs(entityIntrospector);
 		assertThat(Whitebox.getInternalState(wrapper, "iteratorFactory")).isSameAs(iteratorFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "keyFactory")).isSameAs(keyFactory);
 	}
