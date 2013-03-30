@@ -82,11 +82,6 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		context.flush();
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Override
 	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
@@ -99,15 +94,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
-		return keyValueFactory.createJoinKeyValueListForComposite(context, propertyMeta,
-				(List) hColumns);
+		return keyValueFactory.createJoinKeyValueListForComposite(context, propertyMeta, hColumns);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Override
 	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
@@ -119,15 +108,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
-		return keyValueFactory.createJoinValueListForComposite(context, propertyMeta,
-				(List) hColumns);
+		return keyValueFactory.createJoinValueListForComposite(context, propertyMeta, hColumns);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Override
 	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
@@ -139,7 +122,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
-		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
+		return keyValueFactory.createKeyListForComposite(propertyMeta, hColumns);
 	}
 
 	@Override

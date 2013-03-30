@@ -21,11 +21,6 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"unchecked",
-		"rawtypes"
-})
 public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 {
 	protected ID id;
@@ -49,6 +44,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		return propertyMeta.castValue(value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
@@ -58,6 +54,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		context.flush();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
@@ -79,8 +76,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], count, ordering.isReverse());
 
-		return keyValueFactory.createKeyValueListForComposite(context, propertyMeta,
-				(List) hColumns);
+		return keyValueFactory.createKeyValueListForComposite(context, propertyMeta, hColumns);
 	}
 
 	@Override
@@ -94,7 +90,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], count, ordering.isReverse());
 
-		return keyValueFactory.createValueListForComposite(propertyMeta, (List) hColumns);
+		return keyValueFactory.createValueListForComposite(propertyMeta, hColumns);
 	}
 
 	@Override
@@ -108,7 +104,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
 				composites[1], count, ordering.isReverse());
 
-		return keyValueFactory.createKeyListForComposite(propertyMeta, (List) hColumns);
+		return keyValueFactory.createKeyListForComposite(propertyMeta, hColumns);
 	}
 
 	@Override

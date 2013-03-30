@@ -149,30 +149,30 @@ public class KeyValueFactory
 		return hColumn.getTtl();
 	}
 
-	public <K, V> List<V> createValueListForComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, ?>> hColumns)
+	public <K, V, W> List<V> createValueListForComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<Composite, W>> hColumns)
 	{
 		return Lists.transform(hColumns, compositeTransformer.buildValueTransformer(propertyMeta));
 	}
 
-	public <K, V> List<K> createKeyListForComposite(PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, ?>> hColumns)
+	public <K, V, W> List<K> createKeyListForComposite(PropertyMeta<K, V> propertyMeta,
+			List<HColumn<Composite, W>> hColumns)
 	{
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	public <ID, K, V> List<KeyValue<K, V>> createKeyValueListForComposite(
+	public <ID, K, V, W> List<KeyValue<K, V>> createKeyValueListForComposite(
 			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, ?>> hColumns)
+			List<HColumn<Composite, W>> hColumns)
 	{
 		return Lists.transform(hColumns,
 				compositeTransformer.buildKeyValueTransformer(context, propertyMeta));
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V> List<V> createJoinValueListForComposite(
+	public <ID, JOIN_ID, K, V, W> List<V> createJoinValueListForComposite(
 			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, ?>> hColumns)
+			List<HColumn<Composite, W>> hColumns)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
@@ -190,9 +190,9 @@ public class KeyValueFactory
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V> List<KeyValue<K, V>> createJoinKeyValueListForComposite(
+	public <ID, JOIN_ID, K, V, W> List<KeyValue<K, V>> createJoinKeyValueListForComposite(
 			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, ?>> hColumns)
+			List<HColumn<Composite, W>> hColumns)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<K> keys = Lists.transform(hColumns,
