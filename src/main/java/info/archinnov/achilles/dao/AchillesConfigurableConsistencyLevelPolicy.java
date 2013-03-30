@@ -1,7 +1,5 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.entity.manager.ThriftEntityManager.currentReadConsistencyLevel;
-import static info.archinnov.achilles.entity.manager.ThriftEntityManager.currentWriteConsistencyLevel;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.Map;
@@ -21,6 +19,8 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	static final ThreadLocal<HConsistencyLevel> defaultReadConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 	static final ThreadLocal<HConsistencyLevel> defaultWriteConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
+	public static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
+	public static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 
 	public AchillesConfigurableConsistencyLevelPolicy(ConsistencyLevel defaultReadLevel,
 			ConsistencyLevel defaultWriteLevel, Map<String, HConsistencyLevel> readConsistencyMap,

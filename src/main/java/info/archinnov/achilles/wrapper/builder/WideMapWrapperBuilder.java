@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -22,7 +22,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 	private ID id;
 	protected GenericDynamicCompositeDao<ID> entityDao;
 	private PropertyMeta<K, V> wideMapMeta;
-	private AchillesInterceptor interceptor;
+	private AchillesInterceptor<ID> interceptor;
 	private EntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
@@ -50,7 +50,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor interceptor)
+	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor<ID> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;

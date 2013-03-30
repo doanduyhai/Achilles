@@ -32,13 +32,14 @@ public class LazyLoadingIT
 		em.persist(bean);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_load_lazy_fields() throws Exception
 	{
 		bean = em.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
-		AchillesInterceptor interceptor = (AchillesInterceptor) proxy.getCallback(0);
+		AchillesInterceptor<Long> interceptor = (AchillesInterceptor<Long>) proxy.getCallback(0);
 		CompleteBean trueBean = (CompleteBean) interceptor.getTarget();
 
 		assertThat(trueBean.getLabel()).isNull();

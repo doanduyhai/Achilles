@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 /**

@@ -1,6 +1,8 @@
 package integration.tests;
 
 import static info.archinnov.achilles.common.CassandraDaoTest.getConsistencyPolicy;
+import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
+import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -9,6 +11,7 @@ import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
+import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.BeanWithLocalQuorumConsistency;
 import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForExternalWidemap;
 import integration.tests.entity.BeanWithReadOneWriteAllConsistencyForExternalWidemap;
@@ -48,9 +51,9 @@ public class ConsistencyLevelIT
 		bean.setId(id);
 		bean.setName("name");
 
-		expectedEx.expect(RuntimeException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
-				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+				.expectMessage("info.archinnov.achilles.exception.AchillesException: info.archinnov.achilles.exception.AchillesException: Error while executing the batch mutation : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		em.persist(bean);
 	}
@@ -124,9 +127,9 @@ public class ConsistencyLevelIT
 
 		bean = em.merge(bean);
 
-		expectedEx.expect(RuntimeException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
-				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+				.expectMessage("info.archinnov.achilles.exception.AchillesException: Error while executing the batch mutation : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		bean.getWideMap().insert(1, "one");
 	}
@@ -154,16 +157,16 @@ public class ConsistencyLevelIT
 	@After
 	public void cleanThreadLocals()
 	{
-		ThriftEntityManager.currentReadConsistencyLevel.remove();
-		ThriftEntityManager.currentWriteConsistencyLevel.remove();
+		currentReadConsistencyLevel.remove();
+		currentWriteConsistencyLevel.remove();
 		getConsistencyPolicy().reinitDefaultConsistencyLevel();
 	}
 
 	@AfterClass
 	public static void cleanUp()
 	{
-		ThriftEntityManager.currentReadConsistencyLevel.remove();
-		ThriftEntityManager.currentWriteConsistencyLevel.remove();
+		currentReadConsistencyLevel.remove();
+		currentWriteConsistencyLevel.remove();
 		getConsistencyPolicy().reinitDefaultConsistencyLevel();
 	}
 }

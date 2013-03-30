@@ -1,15 +1,17 @@
-package info.archinnov.achilles.entity.manager;
+package info.archinnov.achilles.entity.context;
 
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
@@ -34,16 +36,14 @@ public class PersistenceContext<ID>
 	private GenericCompositeDao<ID, ?> columnFamilyDao;
 
 	// Batch
-	private Mutator<ID> mutator;
-	private boolean pendingBatch = false;
-	private GenericDynamicCompositeDao<?> joinEntityDao;
-	private Mutator<?> joinMutator;
+	private AbstractBatchContext batchContext;
 
 	public PersistenceContext(EntityMeta<ID> entityMeta,
 			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap,
 			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap, //
 			CounterDao counterDao, //
 			AchillesConfigurableConsistencyLevelPolicy policy, //
+			AbstractBatchContext batchContext, //
 			Object entity)
 	{
 		this.entityMeta = entityMeta;
@@ -51,6 +51,7 @@ public class PersistenceContext<ID>
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.policy = policy;
+		this.batchContext = batchContext;
 		this.entity = entity;
 		this.entityClass = entity.getClass();
 
@@ -66,6 +67,7 @@ public class PersistenceContext<ID>
 			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap,
 			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao, //
 			AchillesConfigurableConsistencyLevelPolicy policy, //
+			AbstractBatchContext batchContext, //
 			Class<?> entityClass, ID primaryKey)
 	{
 		this.entityMeta = entityMeta;
@@ -73,6 +75,7 @@ public class PersistenceContext<ID>
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.policy = policy;
+		this.batchContext = batchContext;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
 
@@ -86,7 +89,7 @@ public class PersistenceContext<ID>
 			EntityMeta<JOIN_ID> joinMeta, Object joinEntity)
 	{
 		PersistenceContext<JOIN_ID> context = new PersistenceContext<JOIN_ID>(joinMeta,
-				entityDaosMap, columnFamilyDaosMap, counterDao, policy, joinEntity);
+				entityDaosMap, columnFamilyDaosMap, counterDao, policy, batchContext, joinEntity);
 		context.setPrimaryKey(introspector.getKey(joinEntity, joinMeta.getIdMeta()));
 		return context;
 	}
@@ -95,48 +98,7 @@ public class PersistenceContext<ID>
 			EntityMeta<JOIN_ID> joinMeta, JOIN_ID joinId)
 	{
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, policy, entityClass, joinId);
-	}
-
-	public void startBatch()
-	{
-		if (!pendingBatch)
-		{
-			this.mutator = this.getEntityDao().buildMutator();
-		}
-	}
-
-	public void endBatch()
-	{
-		if (!pendingBatch)
-		{
-			this.getEntityDao().executeMutator(mutator);
-			this.mutator = null;
-		}
-	}
-
-	public void startBatchForJoin(String joinColumnFamilyName)
-	{
-		this.joinEntityDao = this.findEntityDao(joinColumnFamilyName);
-		this.joinMutator = joinEntityDao.buildMutator();
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	public void endBatchForJoin()
-	{
-		this.joinEntityDao.executeMutator((Mutator) joinMutator);
-		this.joinMutator = null;
-		this.joinEntityDao = null;
-	}
-
-	public void joinBatch(Mutator<ID> extistingMutator)
-	{
-		this.mutator = extistingMutator;
-		this.pendingBatch = true;
+				counterDao, policy, batchContext, entityClass, joinId);
 	}
 
 	public EntityMeta<ID> getEntityMeta()
@@ -216,14 +178,39 @@ public class PersistenceContext<ID>
 		return policy;
 	}
 
-	public Mutator<ID> getMutator()
+	public Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
 	{
-		return mutator;
+		return batchContext.getColumnFamilyMutator(columnFamilyName);
 	}
 
-	public void setMutator(Mutator<ID> mutator)
+	public Mutator<ID> getEntityMutator(String columnFamilyName)
 	{
-		this.mutator = mutator;
+		return batchContext.getEntityMutator(columnFamilyName);
+	}
+
+	public Mutator<Composite> getCounterMutator()
+	{
+		return batchContext.getCounterMutator();
+	}
+
+	public boolean isBatchMode()
+	{
+		return batchContext.type() == BatchType.BATCH;
+	}
+
+	public String getColumnFamilyName()
+	{
+		return entityMeta.getColumnFamilyName();
+	}
+
+	public void flush()
+	{
+		batchContext.flush();
+	}
+
+	public void endBatch()
+	{
+		batchContext.endBatch();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -239,10 +226,5 @@ public class PersistenceContext<ID>
 		{
 			this.entityDao = (GenericDynamicCompositeDao<ID>) entityDaosMap.get(columnFamilyName);
 		}
-	}
-
-	public Mutator<?> getJoinMutator()
-	{
-		return joinMutator;
 	}
 }

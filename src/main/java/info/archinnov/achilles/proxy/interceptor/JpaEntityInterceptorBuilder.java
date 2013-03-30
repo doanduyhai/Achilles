@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.interceptor;
 
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;

@@ -10,6 +10,10 @@ public class AchillesException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
 
+	public AchillesException(Throwable throwable) {
+		super(throwable);
+	}
+
 	public AchillesException() {
 		super();
 	}

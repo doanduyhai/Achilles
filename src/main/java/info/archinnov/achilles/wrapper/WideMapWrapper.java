@@ -17,7 +17,6 @@ import java.util.List;
 import me.prettyprint.hector.api.beans.AbstractComposite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * WideMapWrapper
@@ -49,36 +48,20 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		return propertyMeta.getValueFromString(value);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		if (this.interceptor.isBatchMode())
-		{
-			entityDao.setValueBatch(id, buildComposite(key),
-					propertyMeta.writeValueToString(value), ttl,
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			entityDao
-					.setValue(id, buildComposite(key), propertyMeta.writeValueToString(value), ttl);
-		}
+		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
+				ttl, interceptor.getMutator());
+		context.flush();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
-		if (this.interceptor.isBatchMode())
-		{
-			entityDao.setValueBatch(id, buildComposite(key),
-					propertyMeta.writeValueToString(value), (Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			entityDao.setValue(id, buildComposite(key), propertyMeta.writeValueToString(value));
-		}
+		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
+				interceptor.getMutator());
+		context.flush();
 	}
 
 	@Override
@@ -162,7 +145,8 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	@Override
 	public void remove(K key)
 	{
-		entityDao.removeColumn(id, buildComposite(key));
+		entityDao.removeColumnBatch(id, buildComposite(key), interceptor.getMutator());
+		context.flush();
 	}
 
 	@Override
@@ -174,20 +158,23 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery(//
 				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
-		entityDao.removeColumnRange(id, queryComps[0], queryComps[1]);
+		entityDao
+				.removeColumnRangeBatch(id, queryComps[0], queryComps[1], interceptor.getMutator());
+		context.flush();
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		entityDao.removeColumnRange(id, null, null, false, count);
-
+		entityDao.removeColumnRangeBatch(id, null, null, false, count, interceptor.getMutator());
+		context.flush();
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		entityDao.removeColumnRange(id, null, null, true, count);
+		entityDao.removeColumnRangeBatch(id, null, null, true, count, interceptor.getMutator());
+		context.flush();
 	}
 
 	public void setId(ID id)

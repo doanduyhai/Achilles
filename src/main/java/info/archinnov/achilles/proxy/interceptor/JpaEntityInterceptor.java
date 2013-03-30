@@ -2,11 +2,9 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -38,7 +37,7 @@ import net.sf.cglib.proxy.MethodProxy;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor
+public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor<ID>
 {
 
 	private EntityLoader loader = new EntityLoader();
@@ -59,8 +58,6 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Set<Method> lazyAlreadyLoaded;
 	private PersistenceContext<ID> context;
-	private Mutator<ID> mutator;
-	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap;
 
 	@Override
 	public Object getTarget()
@@ -339,6 +336,30 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		return result;
 	}
 
+	@Override
+	public Mutator<ID> getMutator()
+	{
+		return context.getEntityMutator(context.getColumnFamilyName());
+	}
+
+	@Override
+	public Mutator<ID> getEntityMutator(String columnFamilyName)
+	{
+		return context.getEntityMutator(columnFamilyName);
+	}
+
+	@Override
+	public Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
+	{
+		return context.getColumnFamilyMutator(columnFamilyName);
+	}
+
+	@Override
+	public Mutator<Composite> getCounterMutator()
+	{
+		return context.getCounterMutator();
+	}
+
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
 		return dirtyMap;
@@ -398,62 +419,6 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	void setLoader(EntityLoader loader)
 	{
 		this.loader = loader;
-	}
-
-	@Override
-	public Mutator<ID> getMutator()
-	{
-		return mutator;
-	}
-
-	public void setMutator(Mutator<ID> mutator)
-	{
-		this.mutator = mutator;
-	}
-
-	public Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> getMutatorMap()
-	{
-		return mutatorMap;
-	}
-
-	@Override
-	public Mutator<?> getMutatorForProperty(String property)
-	{
-		Mutator<?> mutator = null;
-		if (mutatorMap != null)
-		{
-			Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = mutatorMap.get(property);
-			if (pair != null)
-			{
-				mutator = mutatorMap.get(property).left;
-			}
-		}
-		return mutator;
-	}
-
-	public AbstractDao<?, ?, ?> getDaoForProperty(String property)
-	{
-		AbstractDao<?, ?, ?> dao = null;
-		if (mutatorMap != null)
-		{
-			Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = mutatorMap.get(property);
-			if (pair != null)
-			{
-				dao = mutatorMap.get(property).right;
-			}
-		}
-		return dao;
-	}
-
-	public void setMutatorMap(Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap)
-	{
-		this.mutatorMap = mutatorMap;
-	}
-
-	@Override
-	public boolean isBatchMode()
-	{
-		return this.mutator != null;
 	}
 
 	public PersistenceContext<ID> getContext()

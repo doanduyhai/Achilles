@@ -55,7 +55,6 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, Long value)
 	{
@@ -63,15 +62,9 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		Composite keyComp = compositeKeyFactory.createKeyForCounter(fqcn, id, idMeta);
 		DynamicComposite comp = dynamicCompositeKeyFactory.createForInsert(propertyMeta, key);
 
-		if (this.interceptor.isBatchMode())
-		{
-			counterDao.insertCounter(keyComp, comp, value,
-					(Mutator<Composite>) interceptor.getMutator());
-		}
-		else
-		{
-			counterDao.insertCounter(keyComp, comp, value);
-		}
+		counterDao.insertCounter(keyComp, comp, value,
+				(Mutator<Composite>) interceptor.getCounterMutator());
+		context.flush();
 	}
 
 	@Override

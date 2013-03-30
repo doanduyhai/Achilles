@@ -43,7 +43,6 @@ import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
@@ -389,15 +388,15 @@ public class PropertyParser
 
 		if (isCustomConsistencyLevel)
 		{
-			Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> consistencyLevels = propertyHelper
+			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
 					.findConsistencyLevels(context.getCurrentField());
 
 			context.getConfigurableCLPolicy().setConsistencyLevelForRead(
-					consistencyLevels.right.left, externalTableName);
+					consistencyLevels.left.getHectorLevel(), externalTableName);
 			context.getConfigurableCLPolicy().setConsistencyLevelForWrite(
-					consistencyLevels.right.right, externalTableName);
+					consistencyLevels.right.getHectorLevel(), externalTableName);
 
-			propertyMeta.setConsistencyLevels(consistencyLevels.left);
+			propertyMeta.setConsistencyLevels(consistencyLevels);
 		}
 	}
 
@@ -422,7 +421,7 @@ public class PropertyParser
 	{
 
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-				.findConsistencyLevels(context.getCurrentField()).left;
+				.findConsistencyLevels(context.getCurrentField());
 
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 

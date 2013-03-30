@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -21,7 +21,6 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * JoinExternalWideMapWrapper
@@ -68,16 +67,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void insert(K key, V value, int ttl)
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-
-		if (this.interceptor.isBatchMode())
-		{
-			dao.setValueBatch(id, buildComposite(key), joinId, ttl,
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			dao.setValue(id, buildComposite(key), joinId, ttl);
-		}
+		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -85,15 +77,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void insert(K key, V value)
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-		if (this.interceptor.isBatchMode())
-		{
-			dao.setValueBatch(id, buildComposite(key), joinId,
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			dao.setValue(id, buildComposite(key), joinId);
-		}
+		dao.setValueBatch(id, buildComposite(key), joinId,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@SuppressWarnings(
@@ -177,8 +163,9 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	@Override
 	public void remove(K key)
 	{
-		dao.removeColumn(id, buildComposite(key));
-
+		dao.removeColumnBatch(id, buildComposite(key),
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
@@ -189,20 +176,25 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		Composite[] queryComps = compositeKeyFactory.createForQuery(//
 				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
-		dao.removeColumnRange(id, queryComps[0], queryComps[1]);
-
+		dao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		dao.removeColumnRange(id, null, null, false, count);
+		dao.removeColumnRangeBatch(id, null, null, false, count,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		dao.removeColumnRange(id, null, null, true, count);
+		dao.removeColumnRangeBatch(id, null, null, true, count,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -216,23 +208,18 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 			PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context
 					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
-			if (interceptor.isBatchMode())
-			{
-				Mutator<JOIN_ID> joinMutator = (Mutator<JOIN_ID>) interceptor
-						.getMutatorForProperty(propertyMeta.getPropertyName());
-				joinContext.joinBatch(joinMutator);
-				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
-			}
-			else
-			{
-				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
-			}
+			joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
 		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot persist null entity");
 		}
 		return joinId;
+	}
+
+	private String getExternalCFName()
+	{
+		return propertyMeta.getExternalWideMapProperties().getExternalColumnFamilyName();
 	}
 
 	public void setId(ID id)

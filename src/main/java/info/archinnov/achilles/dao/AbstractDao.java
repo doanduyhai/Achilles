@@ -3,6 +3,7 @@ package info.archinnov.achilles.dao;
 import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
 import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
@@ -358,7 +359,8 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	{
 		Long currentValue = this.getCounterValue(key, name);
 		long delta = value - currentValue;
-		mutator.incrementCounter(key, columnFamily, name, delta);
+		mutator.addCounter(key, columnFamily,
+				HFactory.createCounterColumn(name, delta, columnNameSerializer));
 	}
 
 	public void insertCounter(K key, N name, Long value)
@@ -449,7 +451,8 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		}
 		catch (Throwable throwable)
 		{
-			throw new RuntimeException(throwable);
+			throw new AchillesException("Error while executing the batch mutation : "
+					+ throwable.getMessage(), throwable);
 		}
 		finally
 		{

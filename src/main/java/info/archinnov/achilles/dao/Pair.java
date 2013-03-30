@@ -3,7 +3,6 @@ package info.archinnov.achilles.dao;
 import com.google.common.base.Objects;
 
 /**
- * Pair
  * 
  * Copy of original org.apache.cassandra.utils.Pair class
  * 

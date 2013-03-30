@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 
 import java.util.Iterator;
 

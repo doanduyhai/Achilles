@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.manager;
+package info.archinnov.achilles.entity.context;
 
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;

@@ -9,7 +9,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.MERGE;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -64,7 +64,6 @@ public class EntityMerger
 
 			if (dirtyMap.size() > 0)
 			{
-				context.startBatch();
 				for (Entry<Method, PropertyMeta<?, ?>> entry : dirtyMap.entrySet())
 				{
 					PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -74,7 +73,6 @@ public class EntityMerger
 					}
 					this.persister.persistProperty(context, propertyMeta);
 				}
-				context.endBatch();
 			}
 
 			dirtyMap.clear();
@@ -141,7 +139,8 @@ public class EntityMerger
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		List<?> joinEntities = (List<?>) introspector.getValueFromField(entity, propertyMeta.getGetter());
+		List<?> joinEntities = (List<?>) introspector.getValueFromField(entity,
+				propertyMeta.getGetter());
 		List<Object> mergedEntities = new ArrayList<Object>();
 		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
@@ -151,7 +150,8 @@ public class EntityMerger
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
-		Set<?> joinEntities = (Set<?>) introspector.getValueFromField(entity, propertyMeta.getGetter());
+		Set<?> joinEntities = (Set<?>) introspector.getValueFromField(entity,
+				propertyMeta.getGetter());
 		Set<Object> mergedEntities = new HashSet<Object>();
 		mergeCollectionOfJoinEntities(context, joinProperties, joinEntities, mergedEntities);
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);

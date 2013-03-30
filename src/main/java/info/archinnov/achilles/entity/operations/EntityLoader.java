@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.manager.ThriftEntityManager.currentReadConsistencyLevel;
+import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
@@ -10,7 +10,7 @@ import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -63,7 +63,8 @@ public class EntityLoader
 			if (entityMeta.isColumnFamilyDirectMapping())
 			{
 				entity = entityClass.newInstance();
-				introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
+				introspector
+						.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 			}
 			else
 			{
@@ -73,7 +74,8 @@ public class EntityLoader
 				{
 					entity = entityClass.newInstance();
 					mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
-					introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
+					introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(),
+							primaryKey);
 				}
 			}
 
@@ -257,19 +259,19 @@ public class EntityLoader
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
 				.joinIdMeta();
-	
+
 		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
 				EQUAL);
-	
+
 		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);
-	
+
 		if (stringJoinId != null)
 		{
 			JOIN_ID joinId = joinIdMeta.getValueFromString(stringJoinId);
 			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 			return this.load(joinContext);
-	
+
 		}
 		else
 		{

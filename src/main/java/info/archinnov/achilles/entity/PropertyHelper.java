@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 
@@ -362,78 +361,19 @@ public class PropertyHelper
 		return allowedTypes.contains(valueClass);
 	}
 
-	public <T> Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>> findConsistencyLevels(
-			Field field)
+	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field)
 	{
-		ConsistencyLevel achillesRead = ConsistencyLevel.ONE;
-		ConsistencyLevel achillesWrite = ConsistencyLevel.ONE;
-		HConsistencyLevel read = HConsistencyLevel.ONE;
-		HConsistencyLevel write = HConsistencyLevel.ONE;
+		ConsistencyLevel achillesRead = ConsistencyLevel.QUORUM;
+		ConsistencyLevel achillesWrite = ConsistencyLevel.QUORUM;
 
 		Consistency clevel = field.getAnnotation(Consistency.class);
 
 		if (clevel != null)
 		{
 			achillesRead = clevel.read();
-			switch (achillesRead)
-			{
-				case ANY:
-					read = HConsistencyLevel.ANY;
-					break;
-				case ONE:
-					read = HConsistencyLevel.ONE;
-					break;
-				case TWO:
-					read = HConsistencyLevel.TWO;
-					break;
-				case THREE:
-					read = HConsistencyLevel.THREE;
-					break;
-				case EACH_QUORUM:
-					read = HConsistencyLevel.EACH_QUORUM;
-					break;
-				case LOCAL_QUORUM:
-					read = HConsistencyLevel.LOCAL_QUORUM;
-					break;
-				case QUORUM:
-					read = HConsistencyLevel.QUORUM;
-					break;
-				case ALL:
-					read = HConsistencyLevel.ALL;
-					break;
-			}
 			achillesWrite = clevel.write();
-			switch (achillesWrite)
-			{
-				case ANY:
-					write = HConsistencyLevel.ANY;
-					break;
-				case ONE:
-					write = HConsistencyLevel.ONE;
-					break;
-				case TWO:
-					write = HConsistencyLevel.TWO;
-					break;
-				case THREE:
-					write = HConsistencyLevel.THREE;
-					break;
-				case EACH_QUORUM:
-					write = HConsistencyLevel.EACH_QUORUM;
-					break;
-				case LOCAL_QUORUM:
-					write = HConsistencyLevel.LOCAL_QUORUM;
-					break;
-				case QUORUM:
-					write = HConsistencyLevel.QUORUM;
-					break;
-				case ALL:
-					write = HConsistencyLevel.ALL;
-					break;
-			}
 		}
 
-		return new Pair<Pair<ConsistencyLevel, ConsistencyLevel>, Pair<HConsistencyLevel, HConsistencyLevel>>(
-				new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite),
-				new Pair<HConsistencyLevel, HConsistencyLevel>(read, write));
+		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}
 }

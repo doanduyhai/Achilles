@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import me.prettyprint.hector.api.beans.DynamicComposite;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * JoinWideMapWrapper
@@ -48,41 +47,24 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
-		if (this.interceptor.isBatchMode())
-		{
-			context.getEntityDao().setValueBatch(id, buildComposite(key),
-					joinIdMeta.writeValueToString(joinId), ttl,
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			context.getEntityDao().setValue(id, buildComposite(key),
-					joinIdMeta.writeValueToString(joinId), ttl);
-		}
+		context.getEntityDao().setValueBatch(id, buildComposite(key),
+				joinIdMeta.writeValueToString(joinId), ttl, interceptor.getMutator());
+		context.flush();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
-		if (this.interceptor.isBatchMode())
-		{
-			context.getEntityDao().setValueBatch(id, buildComposite(key),
-					joinIdMeta.writeValueToString(joinId), (Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			context.getEntityDao().setValue(id, buildComposite(key),
-					joinIdMeta.writeValueToString(joinId));
-		}
+		context.getEntityDao().setValueBatch(id, buildComposite(key),
+				joinIdMeta.writeValueToString(joinId), interceptor.getMutator());
+		context.flush();
 	}
 
 	@Override
@@ -113,18 +95,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 			PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context
 					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
-			if (interceptor.isBatchMode())
-			{
-				Mutator<JOIN_ID> joinMutator = (Mutator<JOIN_ID>) interceptor
-						.getMutatorForProperty(propertyMeta.getPropertyName());
-				joinContext.joinBatch(joinMutator);
-
-				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
-			}
-			else
-			{
-				joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
-			}
+			joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
 		}
 		else
 		{

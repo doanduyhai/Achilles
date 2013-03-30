@@ -57,7 +57,7 @@ public abstract class CassandraDaoTest
 
 	public static final Logger log = LoggerFactory.getLogger(CassandraDaoTest.class);
 
-	private static ThriftEntityManager em;
+	private static ThriftEntityManagerFactoryImpl emf;
 
 	static
 	{
@@ -106,9 +106,8 @@ public abstract class CassandraDaoTest
 				CLUSTER_PARAM, getCluster(), KEYSPACE_PARAM, getKeyspace(),
 				FORCE_CF_CREATION_PARAM, true);
 
-		ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl(configMap);
-		policy = Whitebox.getInternalState(factory, "consistencyPolicy");
-		em = (ThriftEntityManager) factory.createEntityManager();
+		emf = new ThriftEntityManagerFactoryImpl(configMap);
+		policy = Whitebox.getInternalState(emf, "consistencyPolicy");
 	}
 
 	private static File prepareEmbeddedCassandraConfig() throws IOException
@@ -141,7 +140,7 @@ public abstract class CassandraDaoTest
 
 	public static ThriftEntityManager getEm()
 	{
-		return em;
+		return (ThriftEntityManager) emf.createEntityManager();
 	}
 
 	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(

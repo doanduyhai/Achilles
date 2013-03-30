@@ -17,7 +17,9 @@
 		<level value="DEBUG" />
 	</logger>
 	
-	
+	<logger name="info.archinnov.achilles.common.CassandraDaoTest">
+		<level value="INFO" />
+	</logger>	
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->
 	<!-- ********************************************************* -->

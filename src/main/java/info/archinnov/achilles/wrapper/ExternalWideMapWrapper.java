@@ -14,7 +14,6 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
  * ExternalWideMapWrapper
@@ -53,34 +52,19 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	@Override
 	public void insert(K key, V value)
 	{
-		if (this.interceptor.isBatchMode())
-		{
-			dao.setValueBatch(id, buildComposite(key),
-					(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-			dao.setValue(id, buildComposite(key),
-					(V) propertyMeta.writeValueAsSupportedTypeOrString(value));
-		}
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
-		if (this.interceptor.isBatchMode())
-		{
-			dao.setValueBatch(id, buildComposite(key),
-					(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
-					(Mutator<ID>) interceptor.getMutator());
-		}
-		else
-		{
-
-			dao.setValue(id, buildComposite(key),
-					(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl);
-		}
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
@@ -146,7 +130,9 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	@Override
 	public void remove(K key)
 	{
-		dao.removeColumn(id, buildComposite(key));
+		dao.removeColumnBatch(id, buildComposite(key),
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
@@ -155,19 +141,30 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end,
 				bounds, OrderingMode.ASCENDING);
-		dao.removeColumnRange(id, composites[0], composites[1]);
+		dao.removeColumnRangeBatch(id, composites[0], composites[1],
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		dao.removeColumnRange(id, null, null, false, count);
+		dao.removeColumnRangeBatch(id, null, null, false, count,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		dao.removeColumnRange(id, null, null, true, count);
+		dao.removeColumnRangeBatch(id, null, null, true, count,
+				interceptor.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
+
+	private String getExternalCFName()
+	{
+		return propertyMeta.getExternalWideMapProperties().getExternalColumnFamilyName();
 	}
 
 	public void setId(ID id)

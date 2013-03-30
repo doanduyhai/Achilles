@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -24,7 +24,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private ID id;
 	private GenericCompositeDao<ID, JOIN_ID> dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
-	private AchillesInterceptor interceptor;
+	private AchillesInterceptor<ID> interceptor;
 	private EntityPersister persister;
 	private EntityLoader loader;
 	private EntityProxifier proxifier;
@@ -50,7 +50,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	}
 
 	public JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> interceptor(
-			AchillesInterceptor interceptor)
+			AchillesInterceptor<ID> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;

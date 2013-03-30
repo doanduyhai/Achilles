@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.manager.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
@@ -24,12 +24,12 @@ import net.sf.cglib.proxy.Factory;
 public class EntityProxifier
 {
 
-	public Class<?> deriveBaseClass(Object entity)
+	public <ID> Class<?> deriveBaseClass(Object entity)
 	{
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			AchillesInterceptor interceptor = this.getInterceptor(entity);
+			AchillesInterceptor<ID> interceptor = this.getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 

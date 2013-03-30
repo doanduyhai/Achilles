@@ -4,8 +4,12 @@ import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericCompositeDao;
 import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.entity.context.AbstractBatchContext;
+import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
+import info.archinnov.achilles.entity.context.BatchContext;
+import info.archinnov.achilles.entity.context.NoBatchContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.EntityBatcher;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
@@ -13,7 +17,7 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
@@ -53,18 +57,15 @@ public class ThriftEntityManager implements EntityManager
 	private final Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
 	private final CounterDao counterDao;
 	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private AbstractBatchContext batchContext;
 
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
 	private EntityMerger merger = new EntityMerger();
 	private EntityRefresher refresher = new EntityRefresher();
-	private EntityBatcher batcher = new EntityBatcher();
 	private EntityInitializer initializer = new EntityInitializer();
 	private EntityProxifier proxifier = new EntityProxifier();
 	private EntityValidator entityValidator = new EntityValidator();
-
-	public static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
-	public static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 
 	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
 			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap, //
@@ -77,6 +78,7 @@ public class ThriftEntityManager implements EntityManager
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.consistencyPolicy = consistencyPolicy;
+		this.batchContext = new NoBatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
 	}
 
 	/**
@@ -100,7 +102,17 @@ public class ThriftEntityManager implements EntityManager
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		this.persister.persist(context);
+		try
+		{
+			this.persister.persist(context);
+			flushPersistenceContext(context);
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
+
 	}
 
 	/**
@@ -131,7 +143,18 @@ public class ThriftEntityManager implements EntityManager
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		return this.merger.mergeEntity(context);
+		T merged = null;
+		try
+		{
+			merged = this.merger.mergeEntity(context);
+			flushPersistenceContext(context);
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
+		return merged;
 	}
 
 	/**
@@ -152,8 +175,16 @@ public class ThriftEntityManager implements EntityManager
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		this.persister.remove(context);
-
+		try
+		{
+			this.persister.remove(context);
+			flushPersistenceContext(context);
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
 	}
 
 	/**
@@ -180,7 +211,6 @@ public class ThriftEntityManager implements EntityManager
 			entity = proxifier.buildProxy(entity, context);
 		}
 		return entity;
-
 	}
 
 	/**
@@ -209,7 +239,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
 	@Override
 	public void setFlushMode(FlushModeType flushMode)
@@ -252,7 +282,15 @@ public class ThriftEntityManager implements EntityManager
 		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		refresher.refresh(context);
+		try
+		{
+			refresher.refresh(context);
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
 	}
 
 	/**
@@ -380,22 +418,19 @@ public class ThriftEntityManager implements EntityManager
 	/**
 	 * Start a batch session using a Hector mutator.
 	 * 
-	 * All insertions done on <strong>WideMap</strong> fields of the entity
-	 * 
-	 * will be batched through the mutator.
-	 * 
-	 * A new mutator is created for each join <strong>WideMap</strong> entity.
-	 * 
-	 * The batch does not affect dirty checking of other fields.
-	 * 
-	 * It only works on <strong>WideMap</strong> fields
+	 * Throw <strong>IllegalStateException</strong> if there is already a pending batch
 	 */
-	public <ID, T> void startBatch(T entity)
+	public void startBatch()
 	{
-		entityValidator.validateEntity(entity, entityMetaMap);
-		proxifier.ensureProxy(entity);
-		PersistenceContext<ID> context = initPersistenceContext(entity);
-		batcher.startBatchForEntity(entity, context);
+		if (batchContext.type() == BatchType.BATCH)
+		{
+			throw new IllegalStateException(
+					"There is already a pending batch for this Entity Manager");
+		}
+		else
+		{
+			batchContext = new BatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
+		}
 	}
 
 	/**
@@ -406,12 +441,28 @@ public class ThriftEntityManager implements EntityManager
 	 * Do nothing if no batch mutator was started
 	 * 
 	 */
-	public <T, ID> void endBatch(T entity)
+	public <T, ID> void endBatch()
 	{
-		entityValidator.validateEntity(entity, entityMetaMap);
-		proxifier.ensureProxy(entity);
-		PersistenceContext<ID> context = initPersistenceContext(entity);
-		batcher.endBatch(entity, context);
+		if (batchContext.type() == BatchType.NONE)
+		{
+			throw new IllegalStateException(
+					"There is no pending batch for this Entity Manager. Please start a batch first");
+		}
+		else
+		{
+			try
+			{
+				batchContext.endBatch();
+			}
+			catch (Throwable throwable)
+			{
+				throw new AchillesException(throwable);
+			}
+			finally
+			{
+				reinitBatchContext();
+			}
+		}
 	}
 
 	/**
@@ -425,7 +476,15 @@ public class ThriftEntityManager implements EntityManager
 		proxifier.ensureProxy(entity);
 		Object realObject = proxifier.getRealObject(entity);
 		EntityMeta<?> entityMeta = entityMetaMap.get(realObject.getClass());
-		initializer.initializeEntity(entity, entityMeta);
+		try
+		{
+			initializer.initializeEntity(entity, entityMeta);
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
 	}
 
 	/**
@@ -508,7 +567,7 @@ public class ThriftEntityManager implements EntityManager
 	{
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, entityClass, primaryKey);
+				counterDao, consistencyPolicy, batchContext, entityClass, primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -517,6 +576,25 @@ public class ThriftEntityManager implements EntityManager
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, entity);
+				counterDao, consistencyPolicy, batchContext, entity);
+	}
+
+	private void flushPersistenceContext(PersistenceContext<?> context)
+	{
+		try
+		{
+			context.flush();
+		}
+		catch (Throwable throwable)
+		{
+			reinitBatchContext();
+			throw new AchillesException(throwable);
+		}
+
+	}
+
+	private void reinitBatchContext()
+	{
+		batchContext = new NoBatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
 	}
 }
