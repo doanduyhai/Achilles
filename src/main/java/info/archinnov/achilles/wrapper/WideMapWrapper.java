@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -29,7 +29,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	protected ID id;
 	protected PropertyMeta<K, V> propertyMeta;
 	protected EntityProxifier proxifier;
-	protected GenericDynamicCompositeDao<ID> entityDao;
+	protected GenericEntityDao<ID> entityDao;
 	protected AbstractDao<K, ? extends AbstractComposite, V> dao;
 	protected CompositeHelper compositeHelper;
 	protected KeyValueFactory keyValueFactory;
@@ -52,7 +52,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	public void insert(K key, V value, int ttl)
 	{
 		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
-				ttl, interceptor.getMutator());
+				ttl, context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -60,7 +60,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	public void insert(K key, V value)
 	{
 		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
-				interceptor.getMutator());
+				context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -84,7 +84,6 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		}
 		else
 		{
-
 			return keyValueFactory.createKeyValueListForDynamicComposite(context, propertyMeta,
 					hColumns);
 		}
@@ -145,7 +144,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	@Override
 	public void remove(K key)
 	{
-		entityDao.removeColumnBatch(id, buildComposite(key), interceptor.getMutator());
+		entityDao.removeColumnBatch(id, buildComposite(key), context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -158,22 +157,24 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		DynamicComposite[] queryComps = keyFactory.createForQuery(//
 				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
-		entityDao
-				.removeColumnRangeBatch(id, queryComps[0], queryComps[1], interceptor.getMutator());
+		entityDao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
+				context.getCurrentEntityMutator());
 		context.flush();
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		entityDao.removeColumnRangeBatch(id, null, null, false, count, interceptor.getMutator());
+		entityDao.removeColumnRangeBatch(id, null, null, false, count,
+				context.getCurrentEntityMutator());
 		context.flush();
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		entityDao.removeColumnRangeBatch(id, null, null, true, count, interceptor.getMutator());
+		entityDao.removeColumnRangeBatch(id, null, null, true, count,
+				context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -212,7 +213,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		this.keyFactory = keyFactory;
 	}
 
-	public void setEntityDao(GenericDynamicCompositeDao<ID> entityDao)
+	public void setEntityDao(GenericEntityDao<ID> entityDao)
 	{
 		this.entityDao = entityDao;
 	}

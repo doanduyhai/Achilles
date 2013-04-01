@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -24,7 +24,7 @@ import me.prettyprint.hector.api.beans.HColumn;
 public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 {
 	protected ID id;
-	protected GenericCompositeDao<ID, V> dao;
+	protected GenericColumnFamilyDao<ID, V> dao;
 	protected PropertyMeta<K, V> propertyMeta;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
@@ -50,7 +50,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	{
 		dao.setValueBatch(id, buildComposite(key),
 				(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -60,7 +60,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	{
 		dao.setValueBatch(id, buildComposite(key),
 				(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -127,7 +127,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	public void remove(K key)
 	{
 		dao.removeColumnBatch(id, buildComposite(key),
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -138,7 +138,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end,
 				bounds, OrderingMode.ASCENDING);
 		dao.removeColumnRangeBatch(id, composites[0], composites[1],
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -146,7 +146,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	public void removeFirst(int count)
 	{
 		dao.removeColumnRangeBatch(id, null, null, false, count,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -154,7 +154,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 	public void removeLast(int count)
 	{
 		dao.removeColumnRangeBatch(id, null, null, true, count,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -168,7 +168,7 @@ public class ExternalWideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID,
 		this.id = id;
 	}
 
-	public void setDao(GenericCompositeDao<ID, V> dao)
+	public void setDao(GenericColumnFamilyDao<ID, V> dao)
 	{
 		this.dao = dao;
 	}

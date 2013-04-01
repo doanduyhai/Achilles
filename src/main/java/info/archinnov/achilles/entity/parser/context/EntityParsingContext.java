@@ -1,9 +1,9 @@
-package info.archinnov.achilles.entity.parser;
+package info.archinnov.achilles.entity.parser.context;
 
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -29,8 +29,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class EntityParsingContext
 {
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy;
 	private CounterDao counterDao;
 	private Cluster cluster;
@@ -52,8 +52,8 @@ public class EntityParsingContext
 
 	public EntityParsingContext(//
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap, //
-			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap, //
+			Map<String, GenericEntityDao<?>> entityDaosMap, //
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
 			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy, //
 			CounterDao counterDao, Cluster cluster, Keyspace keyspace, //
 			ObjectMapperFactory objectMapperFactory, Class<?> currentEntityClass)
@@ -71,7 +71,7 @@ public class EntityParsingContext
 
 	public EntityParsingContext(//
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap, //
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
 			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy, //
 			Cluster cluster, Keyspace keyspace)
 	{
@@ -225,22 +225,22 @@ public class EntityParsingContext
 		this.currentConsistencyLevels = currentConsistencyLevels;
 	}
 
-	public Map<String, GenericDynamicCompositeDao<?>> getEntityDaosMap()
+	public Map<String, GenericEntityDao<?>> getEntityDaosMap()
 	{
 		return entityDaosMap;
 	}
 
-	public void setEntityDaosMap(Map<String, GenericDynamicCompositeDao<?>> entityDaosMap)
+	public void setEntityDaosMap(Map<String, GenericEntityDao<?>> entityDaosMap)
 	{
 		this.entityDaosMap = entityDaosMap;
 	}
 
-	public Map<String, GenericCompositeDao<?, ?>> getColumnFamilyDaosMap()
+	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
 	{
 		return columnFamilyDaosMap;
 	}
 
-	public void setColumnFamilyDaosMap(Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap)
+	public void setColumnFamilyDaosMap(Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 	}

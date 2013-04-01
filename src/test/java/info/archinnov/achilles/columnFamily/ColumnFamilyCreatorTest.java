@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory;
-import info.archinnov.achilles.exception.InvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Method;
@@ -308,7 +308,7 @@ public class ColumnFamilyCreatorTest
 		prepareData();
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The required column family 'testCF' does not exist for entity 'TestBean'");
 
@@ -333,7 +333,7 @@ public class ColumnFamilyCreatorTest
 
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap'");
 
@@ -346,7 +346,7 @@ public class ColumnFamilyCreatorTest
 
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception.expectMessage("The required column family '" + COUNTER_CF + "' does not exist");
 
 		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), false, true);

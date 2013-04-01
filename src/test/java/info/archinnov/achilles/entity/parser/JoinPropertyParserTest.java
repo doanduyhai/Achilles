@@ -11,16 +11,18 @@ import static javax.persistence.CascadeType.REMOVE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.ColumnFamily;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.lang.reflect.Field;
@@ -64,8 +66,8 @@ public class JoinPropertyParserTest
 	private JoinPropertyParser parser = new JoinPropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private EntityParsingContext entityContext;
@@ -187,7 +189,7 @@ public class JoinPropertyParserTest
 
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("CascadeType.REMOVE is not supported for join columns");
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("user"));
 		parser.parseJoin(context);

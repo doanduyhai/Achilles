@@ -11,8 +11,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
@@ -75,7 +75,7 @@ public class JpaEntityInterceptorTest
 	private JpaEntityInterceptor<Long, CompleteBean> interceptor;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -408,7 +408,7 @@ public class JpaEntityInterceptorTest
 	{
 		CompleteBean bean = new CompleteBean();
 		Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+		GenericColumnFamilyDao<Long, String> externalWideMapDao = mock(GenericColumnFamilyDao.class);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
 				"geo_positions", externalWideMapDao, SerializerUtils.LONG_SRZ);
 
@@ -435,7 +435,7 @@ public class JpaEntityInterceptorTest
 		CompleteBean bean = new CompleteBean();
 		Method joinUsersGetter = CompleteBean.class.getDeclaredMethod("getJoinUsers");
 
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+		GenericColumnFamilyDao<Long, String> externalWideMapDao = mock(GenericColumnFamilyDao.class);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
 				"join_users", externalWideMapDao, SerializerUtils.LONG_SRZ);
 

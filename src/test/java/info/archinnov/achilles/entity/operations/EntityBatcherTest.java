@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -52,13 +52,13 @@ public class EntityBatcherTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
+	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> entityDao;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> joinEntityDao;
+	private GenericEntityDao<Long> joinEntityDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -116,11 +116,11 @@ public class EntityBatcherTest
 				.addPropertyMeta(userMeta) //
 				.build();
 
-		when((GenericDynamicCompositeDao<Long>) entityDaosMap.get("join_cf")).thenReturn(
+		when((GenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(
 				joinEntityDao);
 		when(joinEntityDao.buildMutator()).thenReturn(joinMutator);
 
-		when((GenericDynamicCompositeDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);

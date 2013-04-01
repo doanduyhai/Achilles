@@ -13,16 +13,18 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
@@ -78,8 +80,8 @@ public class PropertyParserTest
 	private PropertyParser parser = new PropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private EntityParsingContext entityContext;
@@ -342,7 +344,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Wrong counter type for the field 'counter'. Only java.lang.Long and primitive long are allowed for @Counter types");
 		PropertyParsingContext context = newContext(Test.class,
@@ -372,7 +374,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
 		PropertyParsingContext context = newContext(Test.class,
@@ -402,7 +404,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
 		PropertyParsingContext context = newContext(Test.class,
@@ -695,7 +697,7 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("external"));
 		entityContext.setColumnFamilyDirectMapping(true);
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Error for field 'external' of entity 'null'. Direct Column Family mapping cannot have external WideMap. It does not make sense");
 
@@ -838,7 +840,7 @@ public class PropertyParserTest
 
 		assertThat(externalProps.getExternalColumnFamilyName()).isEqualTo("externalTableName");
 		assertThat(externalProps.getIdSerializer()).isEqualTo(LONG_SRZ);
-		GenericCompositeDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
+		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
 				"externalTableName");
 		assertThat(externalWideMapDao.getColumnFamily()).isEqualTo("externalTableName");
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
@@ -859,7 +861,7 @@ public class PropertyParserTest
 		parser.fillExternalWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 		assertThat(propertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
 
-		GenericCompositeDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
+		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
 				"externalTableName");
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
 				STRING_SRZ);
@@ -889,7 +891,7 @@ public class PropertyParserTest
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("counters"));
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Counter value are already stored in external column families. There is no sense having a counter with external table");
 		parser.parse(context);
@@ -916,7 +918,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The class '" + Void.class.getCanonicalName()
 				+ "' is not allowed as WideMap key");
 		PropertyParsingContext context = newContext(Test.class,
@@ -1038,7 +1040,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 		PropertyParsingContext context = newContext(Test.class,
@@ -1063,7 +1065,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
@@ -1088,7 +1090,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
@@ -1118,7 +1120,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("Value of 'parser' should be Serializable");
 
 		PropertyParsingContext context = newContext(Test.class,
@@ -1147,7 +1149,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
 
 		PropertyParsingContext context = newContext(Test.class,
@@ -1176,7 +1178,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
 
 		PropertyParsingContext context = newContext(Test.class,
@@ -1205,7 +1207,7 @@ public class PropertyParserTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
 
 		PropertyParsingContext context = newContext(Test.class,

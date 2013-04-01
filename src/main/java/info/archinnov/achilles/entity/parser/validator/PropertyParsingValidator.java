@@ -2,10 +2,10 @@ package info.archinnov.achilles.entity.parser.validator;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.parser.PropertyParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -36,7 +36,7 @@ public class PropertyParsingValidator
 	{
 		if (context.isExternal() && context.isCounterType())
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"Error for field '"
 							+ context.getCurrentField().getName()
 							+ "' of entity '"
@@ -49,7 +49,7 @@ public class PropertyParsingValidator
 	{
 		if (context.isExternal() && context.isColumnFamilyDirectMapping())
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"Error for field '"
 							+ context.getCurrentField().getName()
 							+ "' of entity '"
@@ -63,7 +63,7 @@ public class PropertyParsingValidator
 		Type genericType = field.getGenericType();
 		if (!(genericType instanceof ParameterizedType))
 		{
-			throw new BeanMappingException("The Map type should be parameterized for the entity "
+			throw new AchillesBeanMappingException("The Map type should be parameterized for the entity "
 					+ entityClass.getCanonicalName());
 		}
 		else
@@ -72,7 +72,7 @@ public class PropertyParsingValidator
 			Type[] actualTypeArguments = pt.getActualTypeArguments();
 			if (actualTypeArguments.length <= 1)
 			{
-				throw new BeanMappingException(
+				throw new AchillesBeanMappingException(
 						"The Map type should be parameterized with <K,V> for the entity "
 								+ entityClass.getCanonicalName());
 			}
@@ -86,7 +86,7 @@ public class PropertyParsingValidator
 
 		if (!(genericType instanceof ParameterizedType))
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"The WideMap type should be parameterized for the entity "
 							+ entityClass.getCanonicalName());
 		}
@@ -96,7 +96,7 @@ public class PropertyParsingValidator
 			Type[] actualTypeArguments = pt.getActualTypeArguments();
 			if (actualTypeArguments.length <= 1)
 			{
-				throw new BeanMappingException(
+				throw new AchillesBeanMappingException(
 						"The WideMap type should be parameterized with <K,V> for the entity "
 								+ entityClass.getCanonicalName());
 			}
@@ -108,7 +108,7 @@ public class PropertyParsingValidator
 	{
 		if (consistencyLevels.left == ANY || consistencyLevels.right == ANY)
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"Counter field '"
 							+ context.getCurrentField().getName()
 							+ "' of entity '"
@@ -123,7 +123,7 @@ public class PropertyParsingValidator
 		if (!allowedTypes.contains(type) && !MultiKey.class.isAssignableFrom(type)
 				&& !type.isEnum())
 		{
-			throw new BeanMappingException(message);
+			throw new AchillesBeanMappingException(message);
 		}
 	}
 

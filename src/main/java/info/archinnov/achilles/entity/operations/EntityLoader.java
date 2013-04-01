@@ -1,12 +1,12 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
+import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
@@ -83,7 +83,8 @@ public class EntityLoader
 		catch (Exception e)
 		{
 			throw new AchillesException("Error when loading entity type '"
-					+ entityClass.getCanonicalName() + "' with key '" + primaryKey + "'", e);
+					+ entityClass.getCanonicalName() + "' with key '" + primaryKey + "'. Cause : "
+					+ e.getMessage(), e);
 		}
 		return entity;
 	}
@@ -131,7 +132,7 @@ public class EntityLoader
 		introspector.setValueToField(realObject, propertyMeta.getSetter(), value);
 	}
 
-	protected <ID, V> Long loadVersionSerialUID(ID key, GenericDynamicCompositeDao<ID> dao)
+	protected <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
 	{
 		DynamicComposite composite = new DynamicComposite();
 		composite.addComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
@@ -187,7 +188,7 @@ public class EntityLoader
 		}
 		catch (Throwable throwable)
 		{
-			throw new RuntimeException(throwable);
+			throw new AchillesException(throwable);
 		}
 		finally
 		{

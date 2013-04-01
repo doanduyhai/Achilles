@@ -48,7 +48,6 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 		}
 		else
 		{
-
 			return result;
 		}
 	}

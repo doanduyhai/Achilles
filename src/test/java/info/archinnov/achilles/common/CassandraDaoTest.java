@@ -4,10 +4,10 @@ import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftE
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.FORCE_CF_CREATION_PARAM;
 import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
 
@@ -143,17 +143,17 @@ public abstract class CassandraDaoTest
 		return (ThriftEntityManager) emf.createEntityManager();
 	}
 
-	public static <K> GenericDynamicCompositeDao<K> getDynamicCompositeDao(
+	public static <K> GenericEntityDao<K> getDynamicCompositeDao(
 			Serializer<K> keySerializer, String columnFamily)
 	{
-		return new GenericDynamicCompositeDao<K>(cluster, keyspace, keySerializer, columnFamily,
+		return new GenericEntityDao<K>(cluster, keyspace, keySerializer, columnFamily,
 				policy);
 	}
 
-	public static <K, V> GenericCompositeDao<K, V> getCompositeDao(Serializer<K> keySerializer,
+	public static <K, V> GenericColumnFamilyDao<K, V> getCompositeDao(Serializer<K> keySerializer,
 			Serializer<V> valueSerializer, String columnFamily)
 	{
-		return new GenericCompositeDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
+		return new GenericColumnFamilyDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
 				columnFamily, policy);
 	}
 

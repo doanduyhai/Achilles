@@ -28,6 +28,7 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,6 +48,12 @@ public class CounterIT
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 	private CompleteBean bean;
 	private ObjectMapper mapper = new ObjectMapper();
+
+	@Before
+	public void setUp()
+	{
+		counterDao.truncateCounters();
+	}
 
 	@Test
 	public void should_persist_counter() throws Exception
@@ -216,8 +223,7 @@ public class CounterIT
 		bean.getPopularTopics().insert("java", javaCount);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
-				"java");
+		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "java");
 
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(javaCount);
 
@@ -350,8 +356,7 @@ public class CounterIT
 		em.remove(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
-				"cassandra");
+		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "groovy");

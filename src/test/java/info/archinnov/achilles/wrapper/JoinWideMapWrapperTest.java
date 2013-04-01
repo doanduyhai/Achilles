@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -53,10 +53,10 @@ public class JoinWideMapWrapperTest
 	private JoinWideMapWrapper<Long, Integer, UserBean> wrapper;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> entityDao;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> joinDao;
+	private GenericEntityDao<Long> joinDao;
 
 	@Mock
 	private PropertyMeta<Integer, UserBean> propertyMeta;

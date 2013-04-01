@@ -13,18 +13,19 @@ import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
@@ -87,8 +88,8 @@ public class EntityParserTest
 	private EntityParser parser;
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
@@ -332,7 +333,7 @@ public class EntityParserTest
 		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
 				"external_users");
 		assertThat(entityContext.getColumnFamilyDaosMap()).isNotEmpty();
-		GenericCompositeDao<?, ?> dao = entityContext.getColumnFamilyDaosMap().values().iterator()
+		GenericColumnFamilyDao<?, ?> dao = entityContext.getColumnFamilyDaosMap().values().iterator()
 				.next();
 
 		assertThat(dao.getColumnFamily()).isEqualTo("external_users");
@@ -364,7 +365,7 @@ public class EntityParserTest
 	{
 		initEntityParsingContext(BeanWithNoId.class);
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
 				+ "' should have at least one field with javax.persistence.Id annotation");
 		parser.parseEntity(entityContext);
@@ -374,7 +375,7 @@ public class EntityParserTest
 	public void should_exception_when_id_type_not_serializable() throws Exception
 	{
 		initEntityParsingContext(BeanWithNotSerializableId.class);
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("Value of 'id' should be Serializable");
 		parser.parseEntity(entityContext);
 	}
@@ -383,7 +384,7 @@ public class EntityParserTest
 	public void should_exception_when_entity_has_no_column() throws Exception
 	{
 		initEntityParsingContext(BeanWithNoColumn.class);
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("The entity '"
 						+ BeanWithNoColumn.class.getCanonicalName()
@@ -395,7 +396,7 @@ public class EntityParserTest
 	public void should_exception_when_entity_has_duplicated_column_name() throws Exception
 	{
 		initEntityParsingContext(BeanWithDuplicatedColumnName.class);
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
 
@@ -406,7 +407,7 @@ public class EntityParserTest
 	public void should_exception_when_entity_has_duplicated_join_column_name() throws Exception
 	{
 		initEntityParsingContext(BeanWithDuplicatedJoinColumnName.class);
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The property 'name' is already used for the entity '"
 				+ BeanWithDuplicatedJoinColumnName.class.getCanonicalName() + "'");
 
@@ -463,7 +464,7 @@ public class EntityParserTest
 	{
 		initEntityParsingContext(ColumnFamilyBeanWithTwoColumns.class);
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
@@ -476,7 +477,7 @@ public class EntityParserTest
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
 		initEntityParsingContext(ColumnFamilyBeanWithWrongColumnType.class);
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
 				+ ColumnFamilyBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have one and only one @Column/@JoinColumn of type WideMap");
@@ -535,7 +536,7 @@ public class EntityParserTest
 		assertThat((EntityMeta<Long>) joinPropertyMeta.getJoinProperties().getEntityMeta())
 				.isSameAs(joinEntityMeta);
 
-		GenericCompositeDao<?, ?> externalWideMapDao = columnFamilyDaosMap.get("cfExternal");
+		GenericColumnFamilyDao<?, ?> externalWideMapDao = columnFamilyDaosMap.get("cfExternal");
 
 		assertThat(externalWideMapDao).isNotNull();
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "keyspace")).isSameAs(keyspace);
@@ -561,7 +562,7 @@ public class EntityParserTest
 		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 		entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The entity '"
 				+ BeanWithJoinColumnAsWideMap.class.getCanonicalName()
 				+ "' is a direct Column Family mapping and cannot be a join entity");
@@ -580,7 +581,7 @@ public class EntityParserTest
 		joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
 		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("Cannot find mapping for join entity '"
 				+ BeanWithJoinColumnAsWideMap.class.getCanonicalName() + "'");
 

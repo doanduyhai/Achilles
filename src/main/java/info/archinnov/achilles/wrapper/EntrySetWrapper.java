@@ -40,74 +40,48 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public void clear()
 	{
-		if (target != null)
-		{
-			this.target.clear();
-			this.markDirty();
-		}
+		this.target.clear();
+		this.markDirty();
 	}
 
 	@Override
 	public boolean contains(Object arg0)
 	{
-		boolean result = false;
-		if (target != null)
-		{
-			result = this.target.contains(proxifier.unproxy(arg0));
-		}
-		return result;
+		return this.target.contains(proxifier.unproxy(arg0));
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> arg0)
 	{
-		boolean result = false;
-		if (target != null)
-		{
-			result = this.target.containsAll(proxifier.unproxy(arg0));
-		}
-		return result;
+		return this.target.containsAll(proxifier.unproxy(arg0));
 	}
 
 	@Override
 	public boolean isEmpty()
 	{
-		boolean result = false;
-		if (target != null)
-		{
-			result = this.target.isEmpty();
-		}
-		return result;
+		return this.target.isEmpty();
 	}
 
 	@Override
 	public Iterator<Entry<K, V>> iterator()
 	{
-		Iterator<Entry<K, V>> result = null;
-		if (target != null)
-		{
-			result = EntryIteratorWrapperBuilder //
-					.builder(context, this.target.iterator()) //
-					.dirtyMap(dirtyMap) //
-					.setter(setter) //
-					.propertyMeta(propertyMeta) //
-					.proxifier(proxifier) //
-					.build();
-		}
-		return result;
+		return EntryIteratorWrapperBuilder //
+				.builder(context, this.target.iterator()) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.proxifier(proxifier) //
+				.build();
 	}
 
 	@Override
 	public boolean remove(Object arg0)
 	{
 		boolean result = false;
-		if (target != null)
+		result = this.target.remove(proxifier.unproxy(arg0));
+		if (result)
 		{
-			result = this.target.remove(proxifier.unproxy(arg0));
-			if (result)
-			{
-				this.markDirty();
-			}
+			this.markDirty();
 		}
 		return result;
 	}
@@ -116,13 +90,10 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	public boolean removeAll(Collection<?> arg0)
 	{
 		boolean result = false;
-		if (target != null)
+		result = this.target.removeAll(proxifier.unproxy(arg0));
+		if (result)
 		{
-			result = this.target.removeAll(proxifier.unproxy(arg0));
-			if (result)
-			{
-				this.markDirty();
-			}
+			this.markDirty();
 		}
 		return result;
 	}
@@ -131,13 +102,10 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	public boolean retainAll(Collection<?> arg0)
 	{
 		boolean result = false;
-		if (target != null)
+		result = this.target.retainAll(proxifier.unproxy(arg0));
+		if (result)
 		{
-			result = this.target.retainAll(proxifier.unproxy(arg0));
-			if (result)
-			{
-				this.markDirty();
-			}
+			this.markDirty();
 		}
 		return result;
 	}
@@ -145,42 +113,33 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public int size()
 	{
-		int result = 0;
-		if (target != null)
-		{
-			result = this.target.size();
-		}
-		return result;
+		return this.target.size();
 	}
 
 	@Override
 	public Object[] toArray()
 	{
 		Object[] result = null;
-		if (target != null)
+		if (isJoin())
 		{
-			if (isJoin())
+			Object[] array = new MapEntryWrapper[this.target.size()];
+			int i = 0;
+			for (Map.Entry<K, V> entry : this.target)
 			{
-				Object[] array = new MapEntryWrapper[this.target.size()];
-				int i = 0;
-				for (Map.Entry<K, V> entry : this.target)
-				{
-					array[i] = MapEntryWrapperBuilder //
-							.builder(context, entry) //
-							.dirtyMap(dirtyMap) //
-							.setter(setter) //
-							.propertyMeta(propertyMeta) //
-							.proxifier(proxifier) //
-							.build();
-					i++;
-				}
-
-				result = array;
+				array[i] = MapEntryWrapperBuilder //
+						.builder(context, entry) //
+						.dirtyMap(dirtyMap) //
+						.setter(setter) //
+						.propertyMeta(propertyMeta) //
+						.proxifier(proxifier) //
+						.build();
+				i++;
 			}
-			else
-			{
-				result = this.target.toArray();
-			}
+			result = array;
+		}
+		else
+		{
+			result = this.target.toArray();
 		}
 		return result;
 	}
@@ -190,28 +149,25 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	public <T> T[] toArray(T[] arg0)
 	{
 		T[] result = null;
-		if (target != null)
+		if (isJoin())
 		{
-			if (isJoin())
-			{
-				T[] array = this.target.toArray(arg0);
+			T[] array = this.target.toArray(arg0);
 
-				for (int i = 0; i < array.length; i++)
-				{
-					array[i] = (T) MapEntryWrapperBuilder //
-							.builder(context, (Entry<K, V>) array[i]) //
-							.dirtyMap(dirtyMap) //
-							.setter(setter) //
-							.propertyMeta(propertyMeta) //
-							.proxifier(proxifier) //
-							.build();
-				}
-				result = array;
-			}
-			else
+			for (int i = 0; i < array.length; i++)
 			{
-				result = this.target.toArray(arg0);
+				array[i] = (T) MapEntryWrapperBuilder //
+						.builder(context, (Entry<K, V>) array[i]) //
+						.dirtyMap(dirtyMap) //
+						.setter(setter) //
+						.propertyMeta(propertyMeta) //
+						.proxifier(proxifier) //
+						.build();
 			}
+			result = array;
+		}
+		else
+		{
+			result = this.target.toArray(arg0);
 		}
 		return result;
 	}

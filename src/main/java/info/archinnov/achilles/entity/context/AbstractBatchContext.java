@@ -3,10 +3,10 @@ package info.archinnov.achilles.entity.context;
 import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,14 +23,16 @@ import me.prettyprint.hector.api.mutation.Mutator;
  */
 public abstract class AbstractBatchContext
 {
-	protected final Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
-	protected final Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
+	protected final Map<String, GenericEntityDao<?>> entityDaosMap;
+	protected final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	protected final CounterDao counterDao;
 
 	protected final Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+	protected ConsistencyContext consistencyContext = new ConsistencyContext();
+	protected boolean hasCustomConsistencyLevels = false;
 
-	public AbstractBatchContext(Map<String, GenericDynamicCompositeDao<?>> entityDaosMap,
-			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao)
+	public AbstractBatchContext(Map<String, GenericEntityDao<?>> entityDaosMap,
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao)
 	{
 		this.entityDaosMap = entityDaosMap;
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
@@ -47,7 +49,7 @@ public abstract class AbstractBatchContext
 		}
 		else
 		{
-			GenericDynamicCompositeDao<ID> entityDao = (GenericDynamicCompositeDao<ID>) entityDaosMap
+			GenericEntityDao<ID> entityDao = (GenericEntityDao<ID>) entityDaosMap
 					.get(columnFamilyName);
 
 			if (entityDao != null)
@@ -70,7 +72,7 @@ public abstract class AbstractBatchContext
 		}
 		else
 		{
-			GenericCompositeDao<ID, ?> columnFamilyDao = (GenericCompositeDao<ID, ?>) columnFamilyDaosMap
+			GenericColumnFamilyDao<ID, ?> columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) columnFamilyDaosMap
 					.get(columnFamilyName);
 
 			if (columnFamilyDao != null)
@@ -113,9 +115,13 @@ public abstract class AbstractBatchContext
 				dao.executeMutator(mutator);
 			}
 		}
-		catch (Throwable throwable)
+		catch (RuntimeException rte)
 		{
-			throw new AchillesException(throwable);
+			throw rte;
+		}
+		catch (Error err)
+		{
+			throw err;
 		}
 		finally
 		{
@@ -123,11 +129,25 @@ public abstract class AbstractBatchContext
 		}
 	}
 
+	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
+	{
+		hasCustomConsistencyLevels = true;
+		consistencyContext.setWriteConsistencyLevel(writeLevel);
+	}
+
+	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
+	{
+		hasCustomConsistencyLevels = true;
+		consistencyContext.setReadConsistencyLevel(readLevel);
+	}
+
 	public abstract <ID> void flush();
 
 	public abstract <ID> void endBatch();
 
 	public abstract BatchType type();
+
+	public abstract void reinitConsistencyLevels();
 
 	public static enum BatchType
 	{

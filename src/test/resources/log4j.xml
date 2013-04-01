@@ -17,6 +17,10 @@
 		<level value="DEBUG" />
 	</logger>
 	
+	<logger name="org.apache.cassandra.service.StorageProxy">
+		<level value="WARN" />
+	</logger>
+
 	<logger name="info.archinnov.achilles.common.CassandraDaoTest">
 		<level value="INFO" />
 	</logger>	

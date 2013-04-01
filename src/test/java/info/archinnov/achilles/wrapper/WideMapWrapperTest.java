@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -52,7 +52,7 @@ public class WideMapWrapperTest
 	private WideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;

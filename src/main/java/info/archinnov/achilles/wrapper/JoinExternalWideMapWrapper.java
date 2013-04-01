@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -32,7 +32,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 {
 	private ID id;
 	private PropertyMeta<K, V> propertyMeta;
-	private GenericCompositeDao<ID, JOIN_ID> dao;
+	private GenericColumnFamilyDao<ID, JOIN_ID> dao;
 	private EntityPersister persister;
 	private EntityLoader loader;
 	private EntityProxifier proxifier;
@@ -68,7 +68,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -78,7 +78,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	{
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -132,8 +132,8 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		Composite[] composites = compositeKeyFactory.createForQuery(propertyMeta, start, end,
 				bounds, ordering);
 
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta
-				.joinMeta().getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
+				.getColumnFamilyName());
 
 		AchillesJoinSliceIterator<ID, Composite, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
 				.getJoinColumnsIterator(joinEntityDao, propertyMeta, id, composites[0],
@@ -147,7 +147,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void remove(K key)
 	{
 		dao.removeColumnBatch(id, buildComposite(key),
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -160,7 +160,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
 
 		dao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -168,7 +168,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void removeFirst(int count)
 	{
 		dao.removeColumnRangeBatch(id, null, null, false, count,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -176,7 +176,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 	public void removeLast(int count)
 	{
 		dao.removeColumnRangeBatch(id, null, null, true, count,
-				interceptor.getColumnFamilyMutator(getExternalCFName()));
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -250,7 +250,7 @@ public class JoinExternalWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideM
 		this.iteratorFactory = iteratorFactory;
 	}
 
-	public void setDao(GenericCompositeDao<ID, JOIN_ID> dao)
+	public void setDao(GenericColumnFamilyDao<ID, JOIN_ID> dao)
 	{
 		this.dao = dao;
 	}

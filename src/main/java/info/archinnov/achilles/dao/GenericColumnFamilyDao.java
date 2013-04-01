@@ -1,6 +1,7 @@
 package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -10,17 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GenericCompositeDao
+ * GenericColumnFamilyDao
  * 
  * @author DuyHai DOAN
  * 
  */
-public class GenericCompositeDao<K, V> extends AbstractDao<K, Composite, V>
+public class GenericColumnFamilyDao<K, V> extends AbstractDao<K, Composite, V>
 {
 
-	private static final Logger log = LoggerFactory.getLogger(GenericCompositeDao.class);
+	private static final Logger log = LoggerFactory.getLogger(GenericColumnFamilyDao.class);
 
-	public GenericCompositeDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
+	public GenericColumnFamilyDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
 			Serializer<V> valSrz, String cf,
 			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
@@ -33,7 +34,7 @@ public class GenericCompositeDao<K, V> extends AbstractDao<K, Composite, V>
 		valueSerializer = valSrz;
 		policy = consistencyPolicy;
 		log.debug(
-				"Initializing GenericCompositeDao for key serializer '{}', composite comparator and value serializer '{}'",
+				"Initializing GenericColumnFamilyDao for key serializer '{}', composite comparator and value serializer '{}'",
 				keySrz.getComparatorType().getTypeName(), valSrz.getComparatorType().getTypeName());
 	}
 }

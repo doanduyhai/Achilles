@@ -2,13 +2,15 @@ package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import info.archinnov.achilles.annotations.ColumnFamily;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -130,7 +132,7 @@ public class EntityParser
 				ExternalWideMapProperties<ID> externalWideMapProperties = (ExternalWideMapProperties<ID>) propertyMeta
 						.getExternalWideMapProperties();
 
-				GenericCompositeDao<ID, JOIN_ID> joinDao = new GenericCompositeDao<ID, JOIN_ID>(
+				GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
 						context.getCluster(), //
 						context.getKeyspace(), //
 						externalWideMapProperties.getIdSerializer(), //
@@ -193,7 +195,7 @@ public class EntityParser
 	private <ID, K, V> void buildDao(EntityParsingContext context, String columnFamilyName,
 			PropertyMeta<Void, ID> idMeta)
 	{
-		GenericDynamicCompositeDao<ID> entityDao = new GenericDynamicCompositeDao<ID>(
+		GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(
 				context.getCluster(), //
 				context.getKeyspace(), //
 				idMeta.getValueSerializer(), //

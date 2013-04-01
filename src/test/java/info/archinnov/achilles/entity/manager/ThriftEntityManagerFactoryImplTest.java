@@ -7,15 +7,15 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.entity.parser.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,9 +118,9 @@ public class ThriftEntityManagerFactoryImplTest
 	{
 		ArrayList<Class<?>> entities = new ArrayList<Class<?>>();
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		doThrow(new BeanMappingException()).when(validator).validateAtLeastOneEntity(entities,
+		doThrow(new AchillesBeanMappingException()).when(validator).validateAtLeastOneEntity(entities,
 				entityPackages);
-		exception.expect(BeanMappingException.class);
+		exception.expect(AchillesBeanMappingException.class);
 		factory.discoverEntities();
 	}
 

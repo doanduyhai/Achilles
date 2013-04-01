@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
@@ -38,7 +38,7 @@ public class JoinEntityLoader
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
 		if (joinIds.size() > 0)
@@ -61,7 +61,7 @@ public class JoinEntityLoader
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
 		if (joinIds.size() > 0)
@@ -84,7 +84,7 @@ public class JoinEntityLoader
 	{
 
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 
 		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);

@@ -11,7 +11,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -55,13 +55,13 @@ public class JoinCollectionAndMapIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(UUID_SRZ,
+	private GenericEntityDao<UUID> tweetDao = getDynamicCompositeDao(UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericDynamicCompositeDao<Long> userDao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> userDao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericDynamicCompositeDao<Long> beanDao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> beanDao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithJoinCollectionAndMap.class
 					.getCanonicalName()));
 

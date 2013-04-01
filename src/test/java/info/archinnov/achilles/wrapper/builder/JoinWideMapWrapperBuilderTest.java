@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -24,7 +24,7 @@ import org.powermock.reflect.Whitebox;
 public class JoinWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericDynamicCompositeDao<Integer> entityDao;
+	private GenericEntityDao<Integer> entityDao;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;

@@ -7,7 +7,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -41,7 +41,7 @@ import org.junit.Test;
  */
 public class DirtyCheckIT
 {
-	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();

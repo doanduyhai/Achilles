@@ -25,7 +25,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Field;
@@ -103,7 +103,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_incorrect_type() throws Exception
 	{
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("The class 'java.util.List' is not a valid key type for the MultiKey class '"
 						+ MultiKeyIncorrectType.class.getCanonicalName() + "'");
@@ -114,7 +114,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_wrong_key_order() throws Exception
 	{
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
 				+ MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
@@ -124,7 +124,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_has_no_annotation() throws Exception
 	{
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("No field with @Key annotation found in the class '"
 				+ MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
@@ -134,7 +134,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_has_duplicate_order() throws Exception
 	{
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 
 		expectedEx.expectMessage("The order '1' is duplicated in MultiKey '"
 				+ MultiKeyWithDuplicateOrder.class.getCanonicalName() + "'");
@@ -145,7 +145,7 @@ public class PropertyHelperTest
 	@Test
 	public void should_exception_when_multi_key_not_instantiable() throws Exception
 	{
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
 				+ "' should have a public default constructor");
 
@@ -183,7 +183,7 @@ public class PropertyHelperTest
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
 				+ "' of the entity 'null' should be parameterized");
 

@@ -2,8 +2,8 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -206,7 +204,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.getColumnFamilyName() : propertyMeta.getExternalWideMapProperties()
 				.getExternalColumnFamilyName();
 
-		GenericCompositeDao<ID, V> columnFamilyDao = (GenericCompositeDao<ID, V>) context
+		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
 				.findColumnFamilyDao(columnFamilyName);
 
 		return ExternalWideMapWrapperBuilder //
@@ -247,7 +245,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		String columnFamilyName = context.isDirectColumnFamilyMapping() ? context.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalWideMapProperties()
 				.getExternalColumnFamilyName();
-		GenericCompositeDao<ID, JOIN_ID> columnFamilyDao = (GenericCompositeDao<ID, JOIN_ID>) context
+		GenericColumnFamilyDao<ID, JOIN_ID> columnFamilyDao = (GenericColumnFamilyDao<ID, JOIN_ID>) context
 				.findColumnFamilyDao(columnFamilyName);
 
 		return JoinExternalWideMapWrapperBuilder //
@@ -266,7 +264,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 
 	private <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		GenericDynamicCompositeDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
+		GenericEntityDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
 				.getColumnFamilyName());
 
 		return WideMapWrapperBuilder //
@@ -283,7 +281,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 
 	private <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		GenericDynamicCompositeDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
+		GenericEntityDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
 				.getColumnFamilyName());
 
 		return JoinWideMapWrapperBuilder //
@@ -302,7 +300,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	@SuppressWarnings("unchecked")
 	private <K, V> Object buildColumnFamilyWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		GenericCompositeDao<ID, V> columnFamilyDao = (GenericCompositeDao<ID, V>) context
+		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
 				.findColumnFamilyDao(context.getEntityMeta().getColumnFamilyName());
 
 		return ExternalWideMapWrapperBuilder.builder(key, columnFamilyDao, propertyMeta) //
@@ -334,30 +332,6 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		this.dirtyMap.put(method, propertyMeta);
 		result = proxy.invoke(target, args);
 		return result;
-	}
-
-	@Override
-	public Mutator<ID> getMutator()
-	{
-		return context.getEntityMutator(context.getColumnFamilyName());
-	}
-
-	@Override
-	public Mutator<ID> getEntityMutator(String columnFamilyName)
-	{
-		return context.getEntityMutator(columnFamilyName);
-	}
-
-	@Override
-	public Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
-	{
-		return context.getColumnFamilyMutator(columnFamilyName);
-	}
-
-	@Override
-	public Mutator<Composite> getCounterMutator()
-	{
-		return context.getCounterMutator();
 	}
 
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()

@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -68,7 +68,7 @@ public class JoinEntityLoaderTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Captor
 	ArgumentCaptor<List<Long>> joinIdCaptor;

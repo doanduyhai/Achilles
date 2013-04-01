@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 
@@ -27,7 +27,7 @@ public class AbstractWideMapWrapperTest
 {
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	private AbstractWideMapWrapper<Long, String> wrapper;
 

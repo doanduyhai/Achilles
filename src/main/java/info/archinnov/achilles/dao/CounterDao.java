@@ -3,6 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;

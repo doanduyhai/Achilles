@@ -4,10 +4,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -52,10 +52,10 @@ public class PersistenceContextTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
+	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
 	private CounterDao counterDao;
@@ -64,10 +64,10 @@ public class PersistenceContextTest
 	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> entityDao;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericCompositeDao<Long, String> columFamilyDao;
+	private GenericColumnFamilyDao<Long, String> columFamilyDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -97,13 +97,13 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
-		when((GenericCompositeDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
+		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
 				columFamilyDao);
 
 		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
 				columnFamilyDaosMap, counterDao, policy, entity);
 
-		assertThat((GenericCompositeDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
+		assertThat((GenericColumnFamilyDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
 				columFamilyDao);
 	}
 
@@ -211,7 +211,7 @@ public class PersistenceContextTest
 		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
 				columnFamilyDaosMap, counterDao, policy, entity);
 
-		when((GenericDynamicCompositeDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		context.startBatchForJoin("cf");
@@ -264,10 +264,10 @@ public class PersistenceContextTest
 		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
 				columnFamilyDaosMap, counterDao, policy, entity);
 
-		when((GenericCompositeDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
+		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
 				columFamilyDao);
 
-		assertThat((GenericCompositeDao) context.findColumnFamilyDao("cf"))
+		assertThat((GenericColumnFamilyDao) context.findColumnFamilyDao("cf"))
 				.isSameAs(columFamilyDao);
 	}
 
@@ -291,7 +291,7 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		when((GenericDynamicCompositeDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -311,7 +311,7 @@ public class PersistenceContextTest
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
 		when(joinMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		when((GenericDynamicCompositeDao<Long>) entityDaosMap.get("cf2")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) entityDaosMap.get("cf2")).thenReturn(entityDao);
 
 	}
 }

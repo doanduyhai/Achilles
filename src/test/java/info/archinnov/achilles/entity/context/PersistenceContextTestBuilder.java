@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.context;
 
 import static org.mockito.Mockito.mock;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 
 import java.util.HashMap;
@@ -23,20 +23,20 @@ import org.powermock.reflect.Whitebox;
 public class PersistenceContextTestBuilder<ID>
 {
 	private EntityMeta<ID> entityMeta;
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private CounterDao counterDao;
 	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	private Object entity;
 	private Class<?> entityClass;
 	private ID primaryKey;
-	private GenericDynamicCompositeDao<ID> entityDao;
-	private GenericCompositeDao<ID, ?> columnFamilyDao;
+	private GenericEntityDao<ID> entityDao;
+	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
 
 	private Mutator<ID> mutator;
 	private boolean pendingBatch = false;
-	private GenericDynamicCompositeDao<?> joinEntityDao;
+	private GenericEntityDao<?> joinEntityDao;
 	private Mutator<?> joinMutator;
 
 	public static <ID, T> PersistenceContextTestBuilder<ID> context(EntityMeta<ID> entityMeta,//
@@ -81,14 +81,14 @@ public class PersistenceContextTestBuilder<ID>
 	}
 
 	public PersistenceContextTestBuilder<ID> entityDaosMap(
-			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap)
+			Map<String, GenericEntityDao<?>> entityDaosMap)
 	{
 		this.entityDaosMap = entityDaosMap;
 		return this;
 	}
 
 	public PersistenceContextTestBuilder<ID> columnFamilyDaosMap(
-			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap)
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		return this;
@@ -100,14 +100,14 @@ public class PersistenceContextTestBuilder<ID>
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> entityDao(GenericDynamicCompositeDao<ID> entityDao)
+	public PersistenceContextTestBuilder<ID> entityDao(GenericEntityDao<ID> entityDao)
 	{
 		this.entityDao = entityDao;
 		return this;
 	}
 
 	public PersistenceContextTestBuilder<ID> columnFamilyDao(
-			GenericCompositeDao<ID, ?> columnFamilyDao)
+			GenericColumnFamilyDao<ID, ?> columnFamilyDao)
 	{
 		this.columnFamilyDao = columnFamilyDao;
 		return this;
@@ -126,7 +126,7 @@ public class PersistenceContextTestBuilder<ID>
 	}
 
 	public PersistenceContextTestBuilder<ID> joinEntityDao(
-			GenericDynamicCompositeDao<?> joinEntityDao)
+			GenericEntityDao<?> joinEntityDao)
 	{
 		this.joinEntityDao = joinEntityDao;
 		return this;

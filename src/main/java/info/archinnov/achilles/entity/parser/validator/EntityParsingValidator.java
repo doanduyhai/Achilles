@@ -3,8 +3,8 @@ package info.archinnov.achilles.entity.parser.validator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.parser.EntityParsingContext;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class EntityParsingValidator
 	{
 		if (idMeta == null)
 		{
-			throw new BeanMappingException("The entity '" + entityClass.getCanonicalName()
+			throw new AchillesBeanMappingException("The entity '" + entityClass.getCanonicalName()
 					+ "' should have at least one field with javax.persistence.Id annotation");
 		}
 	}
@@ -32,7 +32,7 @@ public class EntityParsingValidator
 	{
 		if (context.getPropertyMetas().isEmpty())
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"The entity '"
 							+ context.getCurrentEntityClass().getCanonicalName()
 							+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
@@ -46,7 +46,7 @@ public class EntityParsingValidator
 		{
 			if (propertyMetas != null && propertyMetas.size() > 1)
 			{
-				throw new BeanMappingException("The ColumnFamily entity '"
+				throw new AchillesBeanMappingException("The ColumnFamily entity '"
 						+ context.getCurrentEntityClass().getCanonicalName()
 						+ "' should not have more than one property annotated with @Column");
 			}
@@ -56,7 +56,7 @@ public class EntityParsingValidator
 			if (type != PropertyType.EXTERNAL_WIDE_MAP
 					&& type != PropertyType.EXTERNAL_JOIN_WIDE_MAP)
 			{
-				throw new BeanMappingException("The ColumnFamily entity '"
+				throw new AchillesBeanMappingException("The ColumnFamily entity '"
 						+ context.getCurrentEntityClass().getCanonicalName()
 						+ "' should have one and only one @Column/@JoinColumn of type WideMap");
 			}
@@ -67,7 +67,7 @@ public class EntityParsingValidator
 	{
 		if (joinEntityMeta.isColumnFamilyDirectMapping())
 		{
-			throw new BeanMappingException("The entity '" + joinEntityMeta.getClassName()
+			throw new AchillesBeanMappingException("The entity '" + joinEntityMeta.getClassName()
 					+ "' is a direct Column Family mapping and cannot be a join entity");
 		}
 	}
@@ -78,7 +78,7 @@ public class EntityParsingValidator
 
 		if (!entityMetaMap.containsKey(joinEntityClass))
 		{
-			throw new BeanMappingException("Cannot find mapping for join entity '"
+			throw new AchillesBeanMappingException("Cannot find mapping for join entity '"
 					+ joinEntityClass.getCanonicalName() + "'");
 		}
 	}
@@ -87,7 +87,7 @@ public class EntityParsingValidator
 	{
 		if (entities.isEmpty())
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
 							+ StringUtils.join(entityPackages, ","));
 		}

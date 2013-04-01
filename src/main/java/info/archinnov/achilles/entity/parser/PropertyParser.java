@@ -15,8 +15,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.PropertyHelper;
@@ -25,6 +25,8 @@ import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
@@ -274,7 +276,7 @@ public class PropertyParser
 			PropertyMeta<Void, ID> idMeta, PropertyMeta<?, V> propertyMeta, String externalTableName)
 	{
 		propertyMeta.setType(EXTERNAL_WIDE_MAP);
-		GenericCompositeDao<ID, ?> dao;
+		GenericColumnFamilyDao<ID, ?> dao;
 		Cluster cluster = context.getCluster();
 		Keyspace keyspace = context.getKeyspace();
 		AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = context
@@ -286,14 +288,14 @@ public class PropertyParser
 		{
 			if (isSupportedType(valueClass))
 			{
-				dao = new GenericCompositeDao<ID, V>(cluster, keyspace, //
+				dao = new GenericColumnFamilyDao<ID, V>(cluster, keyspace, //
 						idMeta.getValueSerializer(), //
 						propertyMeta.getValueSerializer(), //
 						externalTableName, configurableCLPolicy);
 			}
 			else
 			{
-				dao = new GenericCompositeDao<ID, String>(cluster, keyspace, //
+				dao = new GenericColumnFamilyDao<ID, String>(cluster, keyspace, //
 						idMeta.getValueSerializer(), //
 						STRING_SRZ, externalTableName, configurableCLPolicy);
 			}

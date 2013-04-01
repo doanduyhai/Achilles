@@ -5,7 +5,7 @@ import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicComposit
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -25,7 +25,7 @@ import org.junit.Test;
 public class UnproxyingIT
 {
 
-	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();

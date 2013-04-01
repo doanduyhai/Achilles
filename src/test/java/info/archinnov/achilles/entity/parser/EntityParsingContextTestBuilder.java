@@ -1,12 +1,13 @@
 package info.archinnov.achilles.entity.parser;
 
 import static org.mockito.Mockito.mock;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
@@ -27,8 +28,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class EntityParsingContextTestBuilder
 {
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 	private Map<PropertyMeta<?, ?>, String> externalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
 	private Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
@@ -84,14 +85,14 @@ public class EntityParsingContextTestBuilder
 	}
 
 	public EntityParsingContextTestBuilder entityDaosMap(
-			Map<String, GenericDynamicCompositeDao<?>> entityDaosMap)
+			Map<String, GenericEntityDao<?>> entityDaosMap)
 	{
 		this.entityDaosMap = entityDaosMap;
 		return this;
 	}
 
 	public EntityParsingContextTestBuilder columnFamilyDaosMap(
-			Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap)
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		return this;

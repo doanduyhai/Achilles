@@ -24,28 +24,22 @@ public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> im
 	@Override
 	public boolean hasNext()
 	{
-		boolean result = false;
-		if (target != null)
-		{
-			result = this.target.hasNext();
-		}
-		return result;
+		return this.target.hasNext();
 	}
 
 	@Override
 	public Entry<K, V> next()
 	{
 		Entry<K, V> result = null;
-		if (target != null)
+		Entry<K, V> entry = this.target.next();
+		if (entry != null)
 		{
-			Entry<K, V> entry = this.target.next();
 			result = builder(context, entry) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //
 					.proxifier(proxifier) //
 					.build();
-
 		}
 		return result;
 	}
@@ -53,11 +47,8 @@ public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> im
 	@Override
 	public void remove()
 	{
-		if (target != null)
-		{
-			this.target.remove();
-			this.markDirty();
-		}
+		this.target.remove();
+		this.markDirty();
 	}
 
 }

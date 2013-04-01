@@ -10,7 +10,8 @@ package info.archinnov.achilles.iterator;
  */
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 
 import java.util.Iterator;
 
@@ -19,19 +20,12 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
-		Iterator<HColumn<N, V>>
+public class AchillesSliceIterator<K, N extends AbstractComposite, V> extends
+		AbstractAchillesSliceIterator<N> implements Iterator<HColumn<N, V>>
 {
 
 	private SliceQuery<K, N, V> query;
 	private Iterator<HColumn<N, V>> iterator;
-	private N start;
-	private ColumnSliceFinish<N> finish;
-	private boolean reversed;
-	private int count = DEFAULT_LENGTH;
-	private int columns = 0;
-	private AchillesConfigurableConsistencyLevelPolicy policy;
-	private String columnFamily;
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
@@ -44,7 +38,6 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 	{
 		this(policy, cf, query, start, new ColumnSliceFinish<N>()
 		{
-
 			@Override
 			public N function()
 			{
@@ -63,13 +56,8 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed,
 			int count)
 	{
-		this.policy = policy;
-		this.columnFamily = cf;
+		super(policy, cf, start, finish, reversed, count);
 		this.query = query;
-		this.start = start;
-		this.finish = finish;
-		this.reversed = reversed;
-		this.count = count;
 		this.query.setRange(this.start, this.finish.function(), this.reversed, this.count);
 	}
 
@@ -78,9 +66,7 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 	{
 		if (iterator == null)
 		{
-			policy.loadConsistencyLevelForRead(columnFamily);
-			iterator = query.execute().get().getColumns().iterator();
-			policy.reinitDefaultConsistencyLevel();
+			iterator = fetchData();
 		}
 		else if (!iterator.hasNext() && columns == count)
 		{ // only need to do another query if maximum columns were retrieved
@@ -96,9 +82,8 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 			}
 
 			query.setRange(start, finish.function(), reversed, count);
-			policy.loadConsistencyLevelForRead(columnFamily);
-			iterator = query.execute().get().getColumns().iterator();
-			policy.reinitDefaultConsistencyLevel();
+
+			iterator = fetchData();
 			columns = 0;
 		}
 
@@ -121,8 +106,15 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> implements
 		iterator.remove();
 	}
 
-	public interface ColumnSliceFinish<N>
+	private Iterator<HColumn<N, V>> fetchData()
 	{
-		N function();
+		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<N, V>>>()
+		{
+			@Override
+			public Iterator<HColumn<N, V>> execute()
+			{
+				return query.execute().get().getColumns().iterator();
+			}
+		});
 	}
 }

@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -109,7 +109,7 @@ public class EntityProxifierTest
 
 		PersistenceContext<Long> context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, primaryKey)
-				.entityDao(mock(GenericDynamicCompositeDao.class)).build();
+				.entityDao(mock(GenericEntityDao.class)).build();
 
 		CompleteBean proxy = proxifier.buildProxy(entity, context);
 
@@ -128,7 +128,7 @@ public class EntityProxifierTest
 	{
 		PersistenceContext<Long> context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, 11L)
-				.entityDao(mock(GenericDynamicCompositeDao.class)).build();
+				.entityDao(mock(GenericEntityDao.class)).build();
 
 		assertThat(proxifier.buildProxy(null, context)).isNull();
 	}

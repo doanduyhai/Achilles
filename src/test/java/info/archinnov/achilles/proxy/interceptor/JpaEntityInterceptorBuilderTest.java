@@ -2,8 +2,8 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -38,10 +38,10 @@ public class JpaEntityInterceptorBuilderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	@Mock
-	private GenericCompositeDao<Long, String> columnFamilyDao;
+	private GenericColumnFamilyDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -108,7 +108,7 @@ public class JpaEntityInterceptorBuilderTest
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getColumnFamilyDao()).thenReturn((GenericCompositeDao) columnFamilyDao);
+		when(entityMeta.getColumnFamilyDao()).thenReturn((GenericColumnFamilyDao) columnFamilyDao);
 
 		Method idGetter = ColumnFamilyBean.class.getDeclaredMethod("getId");
 		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);

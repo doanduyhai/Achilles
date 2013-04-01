@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
+import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
 import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.ALL;
@@ -9,6 +9,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -31,6 +32,7 @@ import javax.persistence.CascadeType;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.Validate;
 
@@ -112,14 +114,15 @@ public class EntityPersister
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
 
+		Mutator<ID> entityMutator = context.getEntityMutator(entityMeta.getColumnFamilyName());
 		if (context.isDirectColumnFamilyMapping())
 		{
-			context.getColumnFamilyDao().removeRow(primaryKey);
+			context.getColumnFamilyDao().removeRowBatch(primaryKey, entityMutator);
 		}
 		else
 		{
 
-			context.getEntityDao().removeRow(primaryKey);
+			context.getEntityDao().removeRowBatch(primaryKey, entityMutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -127,10 +130,13 @@ public class EntityPersister
 				{
 					ExternalWideMapProperties<ID> externalProperties = (ExternalWideMapProperties<ID>) propertyMeta
 							.getExternalWideMapProperties();
-					context.findColumnFamilyDao(externalProperties.getExternalColumnFamilyName())
-							.removeRow(primaryKey);
+					String externalColumnFamilyName = externalProperties
+							.getExternalColumnFamilyName();
+					GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = context
+							.findColumnFamilyDao(externalColumnFamilyName);
+					findColumnFamilyDao.removeRowBatch(primaryKey,
+							context.getColumnFamilyMutator(externalColumnFamilyName));
 				}
-
 				if (propertyMeta.isCounter())
 				{
 					if (propertyMeta.isWideMap())
@@ -436,7 +442,7 @@ public class EntityPersister
 		}
 		try
 		{
-			dao.insertCounter(keyComp, comp, (Long) counterValue, context.getCounterMutator());
+			dao.insertCounterBatch(keyComp, comp, (Long) counterValue, context.getCounterMutator());
 		}
 		catch (Throwable throwable)
 		{
@@ -460,7 +466,7 @@ public class EntityPersister
 		DynamicComposite com = dynamicCompositeKeyFactory
 				.createForBatchInsertSingleValue(propertyMeta);
 
-		context.getCounterDao().removeCounter(keyComp, com);
+		context.getCounterDao().removeCounterBatch(keyComp, com, context.getCounterMutator());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -469,6 +475,6 @@ public class EntityPersister
 	{
 		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(),
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
-		context.getCounterDao().removeCounterRow(keyComp);
+		context.getCounterDao().removeCounterRowBatch(keyComp, context.getCounterMutator());
 	}
 }

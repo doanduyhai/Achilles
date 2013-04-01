@@ -18,17 +18,17 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 /**
- * GenericDynamicCompositeDaoTest
+ * GenericEntityDaoTest
  * 
  * @author DuyHai DOAN
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GenericDynamicCompositeDaoTest
+public class GenericEntityDaoTest
 {
 
 	@InjectMocks
-	private GenericDynamicCompositeDao<Long> dao = new GenericDynamicCompositeDao<Long>();
+	private GenericEntityDao<Long> dao = new GenericEntityDao<Long>();
 
 	@Mock
 	private ExecutingKeyspace keyspace;

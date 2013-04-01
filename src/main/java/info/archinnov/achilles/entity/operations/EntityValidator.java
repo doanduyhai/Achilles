@@ -1,6 +1,9 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.context.AbstractBatchContext;
+import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -55,6 +58,21 @@ public class EntityValidator
 			throw new IllegalArgumentException(
 					"This operation is not allowed for an entity directly mapped to a native column family");
 		}
+	}
 
+	public <ID> void validateNoPendingBatch(PersistenceContext<ID> context)
+	{
+		Validator
+				.validateFalse(
+						context.isBatchMode(),
+						"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+	}
+
+	public <ID> void validateNoPendingBatch(AbstractBatchContext context)
+	{
+		Validator
+				.validateFalse(
+						context.type() == BatchType.BATCH,
+						"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels batch start with 'startBatch(readLevel,writeLevel)'");
 	}
 }

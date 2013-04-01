@@ -2,7 +2,7 @@ package info.archinnov.achilles.validation;
 
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +71,7 @@ public class ValidatorTest
 		Validator.validateSize(new HashMap<String, String>(), 2, "arg");
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_no_default_constructor() throws Exception
 	{
 		Validator.validateNoargsConstructor(TestNoArgConstructor.class);
@@ -95,38 +95,38 @@ public class ValidatorTest
 		Validator.validateInstantiable(NormalClass.class);
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_private_class() throws Exception
 	{
 		Validator.validateInstantiable(PrivateEntity.class);
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_interface() throws Exception
 	{
 		Validator.validateInstantiable(TestInterface.class);
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_abstract_class() throws Exception
 	{
 		Validator.validateInstantiable(AbstractClass.class);
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_primitive() throws Exception
 	{
 		Validator.validateInstantiable(Long.class);
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_array_type() throws Exception
 	{
 		String[] array = new String[2];
 		Validator.validateInstantiable(array.getClass());
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_type_not_allowed() throws Exception
 	{
 		Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
@@ -155,7 +155,7 @@ public class ValidatorTest
 		Validator.validateSerializable(UUID.class, "");
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_not_serializable() throws Exception
 	{
 		Validator.validateSerializable(Validator.class, "");

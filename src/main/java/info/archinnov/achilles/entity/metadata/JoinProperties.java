@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -49,7 +49,7 @@ public class JoinProperties
 	{
 		if (cascadeTypesCollection.contains(CascadeType.REMOVE))
 		{
-			throw new BeanMappingException("CascadeType.REMOVE is not supported for join columns");
+			throw new AchillesBeanMappingException("CascadeType.REMOVE is not supported for join columns");
 		}
 		this.cascadeTypes.addAll(cascadeTypesCollection);
 	}

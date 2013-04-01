@@ -62,8 +62,8 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		Composite keyComp = compositeKeyFactory.createKeyForCounter(fqcn, id, idMeta);
 		DynamicComposite comp = dynamicCompositeKeyFactory.createForInsert(propertyMeta, key);
 
-		counterDao.insertCounter(keyComp, comp, value,
-				(Mutator<Composite>) interceptor.getCounterMutator());
+		counterDao.insertCounterBatch(keyComp, comp, value,
+				(Mutator<Composite>) context.getCounterMutator());
 		context.flush();
 	}
 

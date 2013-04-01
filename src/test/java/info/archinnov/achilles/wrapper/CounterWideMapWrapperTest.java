@@ -133,7 +133,7 @@ public class CounterWideMapWrapperTest
 		when((Mutator<Composite>) interceptor.getMutator()).thenReturn(counterMutator);
 		wrapper.insert(key, 150L);
 
-		verify(counterDao).insertCounter(keyComp, comp, 150L, counterMutator);
+		verify(counterDao).insertCounterBatch(keyComp, comp, 150L, counterMutator);
 	}
 
 	@Test

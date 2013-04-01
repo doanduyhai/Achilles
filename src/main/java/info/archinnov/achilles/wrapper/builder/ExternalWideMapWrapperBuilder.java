@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -19,7 +19,7 @@ import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
 public class ExternalWideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
-	private GenericCompositeDao<ID, V> dao;
+	private GenericColumnFamilyDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
 	private AchillesInterceptor<ID> interceptor;
 	private CompositeHelper compositeHelper;
@@ -28,7 +28,7 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 	private CompositeKeyFactory compositeKeyFactory;
 	private PersistenceContext<ID> context;
 
-	public ExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, V> dao,
+	public ExternalWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.id = id;
@@ -37,7 +37,7 @@ public class ExternalWideMapWrapperBuilder<ID, K, V>
 	}
 
 	public static <ID, K, V> ExternalWideMapWrapperBuilder<ID, K, V> builder(ID id,
-			GenericCompositeDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
+			GenericColumnFamilyDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
 	{
 		return new ExternalWideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}

@@ -10,7 +10,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -126,7 +127,7 @@ public class PropertyHelper
 				int order = keyAnnotation.order();
 				if (orders.contains(order))
 				{
-					throw new BeanMappingException("The order '" + order
+					throw new AchillesBeanMappingException("The order '" + order
 							+ "' is duplicated in MultiKey '" + keyClass.getCanonicalName() + "'");
 				}
 				else
@@ -196,14 +197,14 @@ public class PropertyHelper
 			}
 			else
 			{
-				throw new BeanMappingException("The type '"
+				throw new AchillesBeanMappingException("The type '"
 						+ genericType.getClass().getCanonicalName() + "' of the entity '"
 						+ entityClass.getCanonicalName() + "' should be parameterized");
 			}
 		}
 		else
 		{
-			throw new BeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+			throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
 					+ "' of the entity '" + entityClass.getCanonicalName()
 					+ "' should be parameterized");
 		}
@@ -319,8 +320,7 @@ public class PropertyHelper
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage(), e);
+			throw new AchillesException(e);
 		}
 
 		return key;
@@ -349,8 +349,7 @@ public class PropertyHelper
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage(), e);
+			throw new AchillesException(e);
 		}
 
 		return key;

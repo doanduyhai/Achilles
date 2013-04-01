@@ -15,9 +15,11 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.context.AbstractBatchContext;
+import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -44,6 +46,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.internal.util.reflection.Whitebox;
 
 /**
  * BatchModeIT
@@ -57,19 +60,17 @@ public class BatchModeIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericDynamicCompositeDao<UUID> tweetDao = getDynamicCompositeDao(
-			SerializerUtils.UUID_SRZ,
+	private GenericEntityDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericDynamicCompositeDao<Long> userDao = getDynamicCompositeDao(
-			SerializerUtils.LONG_SRZ,
+	private GenericEntityDao<Long> userDao = getDynamicCompositeDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericDynamicCompositeDao<Long> completeBeanDao = getDynamicCompositeDao(
+	private GenericEntityDao<Long> completeBeanDao = getDynamicCompositeDao(
 			SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
-	private GenericCompositeDao<Long, String> externalWideMapDao = getCompositeDao(LONG_SRZ,
+	private GenericColumnFamilyDao<Long, String> externalWideMapDao = getCompositeDao(LONG_SRZ,
 			STRING_SRZ, "ExternalWideMap");
 
 	private CounterDao counterDao = getCounterDao();
@@ -142,6 +143,7 @@ public class BatchModeIT
 		assertThat(foundOwnTweet1.getContent()).isEqualTo(ownTweet1.getContent());
 		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet2.getId());
 		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet2.getContent());
+		assertThatBatchContextHasBeenReset();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -219,6 +221,7 @@ public class BatchModeIT
 		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
 		assertThat(counterDao.getCounterValue(counterKey, javaCounterName)).isEqualTo(100L);
 		assertThat(counterDao.getCounterValue(counterKey, scalaCounterName)).isEqualTo(35L);
+		assertThatBatchContextHasBeenReset();
 	}
 
 	@Test
@@ -250,6 +253,7 @@ public class BatchModeIT
 
 		assertThat(foundRetweet1.getContent()).isEqualTo("reTweet1");
 		assertThat(foundRetweet2.getContent()).isEqualTo("reTweet2");
+		assertThatBatchContextHasBeenReset();
 	}
 
 	@Test
@@ -290,6 +294,7 @@ public class BatchModeIT
 		assertThat(foundTweet2.getContent()).isEqualTo("tweet2");
 		assertThat(foundUser.getFirstname()).isEqualTo("fn");
 		assertThat(foundUser.getLastname()).isEqualTo("ln");
+		assertThatBatchContextHasBeenReset();
 	}
 
 	@Test
@@ -309,7 +314,7 @@ public class BatchModeIT
 		}
 		catch (AchillesException e)
 		{
-			// Exception because user entity not saved before hand
+			assertThatBatchContextHasBeenReset();
 		}
 
 		// em should drop batch context and revert to normal mode
@@ -327,6 +332,12 @@ public class BatchModeIT
 		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo("firstname");
 		assertThat(foundTweet.getCreator().getLastname()).isEqualTo("lastname");
 
+	}
+
+	private void assertThatBatchContextHasBeenReset()
+	{
+		assertThat(((AbstractBatchContext) Whitebox.getInternalState(em, "batchContext")).type())
+				.isEqualTo(BatchType.NONE);
 	}
 
 	private UUID readUUID(String value) throws Exception

@@ -5,6 +5,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,24 +25,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GenericDynamicCompositeDao
+ * GenericEntityDao
  * 
  * @author DuyHai DOAN
  * 
  */
-public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposite, String>
+public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, String>
 {
-	private static final Logger log = LoggerFactory.getLogger(GenericDynamicCompositeDao.class);
+	private static final Logger log = LoggerFactory.getLogger(GenericEntityDao.class);
 
 	private DynamicComposite startCompositeForEagerFetch;
 	private DynamicComposite endCompositeForEagerFetch;
 
-	protected GenericDynamicCompositeDao() {
+	protected GenericEntityDao() {
 		this.initComposites();
 	}
 
-	public GenericDynamicCompositeDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
-			String cf, AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	public GenericEntityDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz, String cf,
+			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
 		super(cluster, keyspace);
 		this.initComposites();
@@ -50,7 +52,7 @@ public class GenericDynamicCompositeDao<K> extends AbstractDao<K, DynamicComposi
 		valueSerializer = STRING_SRZ;
 		policy = consistencyPolicy;
 		log.debug(
-				"Initializing GenericDynamicCompositeDao for key serializer '{}', dynamic composite comparator and value serializer 'BytesType'",
+				"Initializing GenericEntityDao for key serializer '{}', dynamic composite comparator and value serializer 'BytesType'",
 				keySrz.getComparatorType().getTypeName());
 
 	}

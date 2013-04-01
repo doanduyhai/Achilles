@@ -6,7 +6,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -34,7 +34,7 @@ import org.junit.Test;
 public class ObjectAsWideMapValueIT
 {
 
-	private GenericDynamicCompositeDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();

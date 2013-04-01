@@ -18,7 +18,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.InvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -200,7 +200,7 @@ public class ColumnFamilyHelperTest
 
 		when(cfDef.getKeyValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType' should be 'org.apache.cassandra.db.marshal.CompositeType'");
 
@@ -214,7 +214,7 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn("wrong_alias");
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' key type alias 'wrong_alias' should be '"
 						+ COUNTER_KEY_ALIAS + "'");
@@ -231,7 +231,7 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(ASCIITYPE);
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType' should be 'DynamicCompositeType'");
 
@@ -248,7 +248,7 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getComparatorType()).thenReturn(DYNAMICCOMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("wrong_alias");
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' comparator type alias 'wrong_alias' should be '"
 						+ DYNAMIC_TYPE_ALIASES + "'");
@@ -267,7 +267,7 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getComparatorTypeAlias()).thenReturn(DYNAMIC_TYPE_ALIASES);
 		when(cfDef.getDefaultValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' validation class 'org.apache.cassandra.db.marshal.AsciiType' should be '"
 						+ COUNTERTYPE.getClassName() + "'");
@@ -280,7 +280,7 @@ public class ColumnFamilyHelperTest
 	{
 		String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
 		ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
@@ -338,7 +338,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' key class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
 
@@ -353,7 +353,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(null);
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
 
@@ -368,7 +368,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
 
@@ -392,7 +392,7 @@ public class ColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'CounterColumnType'");
 
@@ -419,7 +419,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
-		exception.expect(InvalidColumnFamilyException.class);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
 

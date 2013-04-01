@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -53,7 +53,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
 		context.getEntityDao().setValueBatch(id, buildComposite(key),
-				joinIdMeta.writeValueToString(joinId), ttl, interceptor.getMutator());
+				joinIdMeta.writeValueToString(joinId), ttl, context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -63,7 +63,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 		Object joinId = persistOrEnsureJoinEntityExists(value);
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
 		context.getEntityDao().setValueBatch(id, buildComposite(key),
-				joinIdMeta.writeValueToString(joinId), interceptor.getMutator());
+				joinIdMeta.writeValueToString(joinId), context.getCurrentEntityMutator());
 		context.flush();
 	}
 
@@ -73,8 +73,8 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends WideMapWrapper<ID, K,
 	{
 		DynamicComposite[] queryComps = keyFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta
-				.joinMeta().getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
+				.getColumnFamilyName());
 
 		AchillesJoinSliceIterator<ID, DynamicComposite, String, JOIN_ID, K, V> joinColumnSliceIterator = context
 				.getEntityDao().getJoinColumnsIterator(joinEntityDao, propertyMeta, id,

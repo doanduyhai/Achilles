@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -22,7 +22,7 @@ import info.archinnov.achilles.wrapper.JoinExternalWideMapWrapper;
 public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 {
 	private ID id;
-	private GenericCompositeDao<ID, JOIN_ID> dao;
+	private GenericColumnFamilyDao<ID, JOIN_ID> dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
 	private AchillesInterceptor<ID> interceptor;
 	private EntityPersister persister;
@@ -34,7 +34,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private IteratorFactory iteratorFactory;
 	private PersistenceContext<ID> context;
 
-	public JoinExternalWideMapWrapperBuilder(ID id, GenericCompositeDao<ID, JOIN_ID> dao,
+	public JoinExternalWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, JOIN_ID> dao,
 			PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
 		this.dao = dao;
@@ -43,7 +43,7 @@ public class JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	}
 
 	public static <ID, JOIN_ID, K, V> JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V> builder(
-			ID id, GenericCompositeDao<ID, JOIN_ID> dao, PropertyMeta<K, V> joinExternalWideMapMeta)
+			ID id, GenericColumnFamilyDao<ID, JOIN_ID> dao, PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
 		return new JoinExternalWideMapWrapperBuilder<ID, JOIN_ID, K, V>(id, dao,
 				joinExternalWideMapMeta);

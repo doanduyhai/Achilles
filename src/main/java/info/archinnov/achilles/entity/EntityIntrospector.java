@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.parser.PropertyFilter;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -82,7 +82,7 @@ public class EntityIntrospector
 				getterMethod = beanClass.getMethod(getter);
 				if (getterMethod.getReturnType() != field.getType())
 				{
-					throw new BeanMappingException("The getter for field '" + fieldName
+					throw new AchillesBeanMappingException("The getter for field '" + fieldName
 							+ "' does not return correct type");
 				}
 			}
@@ -93,7 +93,7 @@ public class EntityIntrospector
 		}
 		if (getterMethod == null)
 		{
-			throw new BeanMappingException("The getter for field '" + fieldName
+			throw new AchillesBeanMappingException("The getter for field '" + fieldName
 					+ "' does not exist");
 		}
 		return getterMethod;
@@ -113,7 +113,7 @@ public class EntityIntrospector
 
 			if (!setterMethod.getReturnType().toString().equals("void"))
 			{
-				throw new BeanMappingException("The setter for field '" + fieldName
+				throw new AchillesBeanMappingException("The setter for field '" + fieldName
 						+ "' does not return correct type or does not have the correct parameter");
 			}
 
@@ -122,7 +122,7 @@ public class EntityIntrospector
 		}
 		catch (NoSuchMethodException e)
 		{
-			throw new BeanMappingException("The setter for field '" + fieldName
+			throw new AchillesBeanMappingException("The setter for field '" + fieldName
 					+ "' does not exist or is incorrect");
 		}
 	}
@@ -217,13 +217,13 @@ public class EntityIntrospector
 		}
 		catch (NoSuchFieldException e)
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"The 'serialVersionUID' property should be declared for entity '"
 							+ entity.getCanonicalName() + "'", e);
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"The 'serialVersionUID' property should be publicly accessible for entity '"
 							+ entity.getCanonicalName() + "'", e);
 		}

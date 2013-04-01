@@ -1,9 +1,9 @@
-package info.archinnov.achilles.entity.parser;
+package info.archinnov.achilles.entity.parser.context;
 
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -131,12 +131,12 @@ public class PropertyParsingContext
 		return context.getConfigurableCLPolicy();
 	}
 
-	public Map<String, GenericDynamicCompositeDao<?>> getEntityDaosMap()
+	public Map<String, GenericEntityDao<?>> getEntityDaosMap()
 	{
 		return context.getEntityDaosMap();
 	}
 
-	public Map<String, GenericCompositeDao<?, ?>> getColumnFamilyDaosMap()
+	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
 	{
 		return context.getColumnFamilyDaosMap();
 	}

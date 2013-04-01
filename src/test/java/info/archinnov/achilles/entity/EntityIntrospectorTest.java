@@ -7,12 +7,12 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,7 +70,7 @@ public class EntityIntrospectorTest
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> dao;
+	private GenericEntityDao<Long> dao;
 
 	private final EntityIntrospector helper = new EntityIntrospector();
 
@@ -126,7 +126,7 @@ public class EntityIntrospectorTest
 			String name;
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not exist");
 
 		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
@@ -146,7 +146,7 @@ public class EntityIntrospectorTest
 			}
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist");
 
 		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
@@ -166,7 +166,7 @@ public class EntityIntrospectorTest
 			}
 
 		}
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not return correct type");
 
 		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
@@ -191,7 +191,7 @@ public class EntityIntrospectorTest
 			}
 
 		}
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("The setter for field 'name' does not return correct type or does not have the correct parameter");
 
@@ -216,7 +216,7 @@ public class EntityIntrospectorTest
 
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist or is incorrect");
 
 		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
@@ -449,7 +449,7 @@ public class EntityIntrospectorTest
 			private static final long fieldName = 1542L;
 		}
 
-		expectedEx.expect(BeanMappingException.class);
+		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("The 'serialVersionUID' property should be declared for entity 'null'");
 

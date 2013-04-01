@@ -1,4 +1,4 @@
-package info.archinnov.achilles.dao;
+package info.archinnov.achilles.consistency;
 
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
@@ -126,4 +126,13 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 		this.setConsistencyLevelForCfOperation(consistencyLevel, columnFamily, OperationType.WRITE);
 	}
 
+	public ConsistencyLevel getCurrentReadLevel()
+	{
+		return currentReadConsistencyLevel.get();
+	}
+
+	public void setCurrentReadLevel(ConsistencyLevel readLevel)
+	{
+		currentReadConsistencyLevel.set(readLevel);
+	}
 }

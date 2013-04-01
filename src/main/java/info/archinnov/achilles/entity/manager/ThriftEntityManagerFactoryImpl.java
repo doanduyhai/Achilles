@@ -1,15 +1,15 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.entity.parser.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
@@ -58,8 +58,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap = new HashMap<String, GenericDynamicCompositeDao<?>>();
-	private Map<String, GenericCompositeDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericCompositeDao<?, ?>>();
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 
 	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
 

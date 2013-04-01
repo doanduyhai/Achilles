@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -20,14 +20,14 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> extends WideMapWrapper
 	private EntityLoader loader;
 
 	public JoinWideMapWrapperBuilder(PersistenceContext<ID> context, ID id,
-			GenericDynamicCompositeDao<ID> dao, PropertyMeta<K, V> joinWideMapMeta)
+			GenericEntityDao<ID> dao, PropertyMeta<K, V> joinWideMapMeta)
 	{
 		super(id, dao, joinWideMapMeta);
 		super.context = context;
 	}
 
 	public static <ID, JOIN_ID, K, V> JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> builder(
-			PersistenceContext<ID> context, ID id, GenericDynamicCompositeDao<ID> dao,
+			PersistenceContext<ID> context, ID id, GenericEntityDao<ID> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		return new JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>(context, id, dao, wideMapMeta);

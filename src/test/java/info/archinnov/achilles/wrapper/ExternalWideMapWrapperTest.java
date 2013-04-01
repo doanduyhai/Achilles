@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -47,7 +47,7 @@ public class ExternalWideMapWrapperTest
 	private ExternalWideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericCompositeDao<Long, String> dao;
+	private GenericColumnFamilyDao<Long, String> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;

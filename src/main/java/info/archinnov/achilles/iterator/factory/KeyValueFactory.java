@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -259,7 +259,7 @@ public class KeyValueFactory
 	private <JOIN_ID, V, ID, K> Map<JOIN_ID, V> loadJoinEntities(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds)
 	{
-		GenericDynamicCompositeDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 
 		Map<JOIN_ID, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),

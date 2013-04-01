@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -73,7 +73,7 @@ public class ThriftEntityManagerTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
-	private Map<String, GenericDynamicCompositeDao<?>> entityDaosMap;
+	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
 	private EntityPersister persister;
@@ -104,10 +104,10 @@ public class ThriftEntityManagerTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> entityDao;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> joinEntityDao;
+	private GenericEntityDao<Long> joinEntityDao;
 
 	@Mock
 	private Mutator<Long> mutator;

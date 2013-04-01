@@ -10,6 +10,8 @@ import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

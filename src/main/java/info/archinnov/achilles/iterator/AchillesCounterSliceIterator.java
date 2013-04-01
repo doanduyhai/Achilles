@@ -10,7 +10,8 @@ package info.archinnov.achilles.iterator;
  */
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 
 import java.util.Iterator;
 
@@ -19,19 +20,12 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.query.SliceCounterQuery;
 
-public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implements
-		Iterator<HCounterColumn<N>>
+public class AchillesCounterSliceIterator<K, N extends AbstractComposite> extends
+		AbstractAchillesSliceIterator<N> implements Iterator<HCounterColumn<N>>
 {
 
 	private SliceCounterQuery<K, N> query;
 	private Iterator<HCounterColumn<N>> iterator;
-	private N start;
-	private ColumnSliceFinish<N> finish;
-	private boolean reversed;
-	private int count = DEFAULT_LENGTH;
-	private int columns = 0;
-	private AchillesConfigurableConsistencyLevelPolicy policy;
-	private String columnFamily;
 
 	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
 			String cf, SliceCounterQuery<K, N> query, N start, final N finish, boolean reversed)
@@ -65,13 +59,8 @@ public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implem
 			String cf, SliceCounterQuery<K, N> query, N start, ColumnSliceFinish<N> finish,
 			boolean reversed, int count)
 	{
-		this.policy = policy;
-		this.columnFamily = cf;
+		super(policy, cf, start, finish, reversed, count);
 		this.query = query;
-		this.start = start;
-		this.finish = finish;
-		this.reversed = reversed;
-		this.count = count;
 		this.query.setRange(this.start, this.finish.function(), this.reversed, this.count);
 	}
 
@@ -80,9 +69,7 @@ public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implem
 	{
 		if (iterator == null)
 		{
-			policy.loadConsistencyLevelForRead(columnFamily);
-			iterator = query.execute().get().getColumns().iterator();
-			policy.reinitDefaultConsistencyLevel();
+			iterator = fetchData();
 		}
 		else if (!iterator.hasNext() && columns == count)
 		{ // only need to do another query if maximum columns were retrieved
@@ -98,9 +85,7 @@ public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implem
 			}
 
 			query.setRange(start, finish.function(), reversed, count);
-			policy.loadConsistencyLevelForRead(columnFamily);
-			iterator = query.execute().get().getColumns().iterator();
-			policy.reinitDefaultConsistencyLevel();
+			iterator = fetchData();
 			columns = 0;
 		}
 
@@ -124,8 +109,16 @@ public class AchillesCounterSliceIterator<K, N extends AbstractComposite> implem
 				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
 	}
 
-	public interface ColumnSliceFinish<N>
+	private Iterator<HCounterColumn<N>> fetchData()
 	{
-		N function();
+		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HCounterColumn<N>>>()
+		{
+			@Override
+			public Iterator<HCounterColumn<N>> execute()
+			{
+				return query.execute().get().getColumns().iterator();
+			}
+		});
 	}
+
 }

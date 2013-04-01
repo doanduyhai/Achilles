@@ -9,7 +9,7 @@ import static me.prettyprint.hector.api.ddl.ComparatorType.DYNAMICCOMPOSITETYPE;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.InvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -170,7 +170,7 @@ public class ColumnFamilyHelper
 		if (!StringUtils.equals(cfDef.getKeyValidationClass(), entityMeta.getIdSerializer()
 				.getComparatorType().getClassName()))
 		{
-			throw new InvalidColumnFamilyException("The column family '"
+			throw new AchillesInvalidColumnFamilyException("The column family '"
 					+ entityMeta.getColumnFamilyName() + "' key class '"
 					+ cfDef.getKeyValidationClass()
 					+ "' does not correspond to the entity id class '"
@@ -193,7 +193,7 @@ public class ColumnFamilyHelper
 					|| !StringUtils.equals(cfDef.getComparatorType().getTypeName(),
 							COMPARATOR_TYPE_AND_ALIAS))
 			{
-				throw new InvalidColumnFamilyException("The column family '"
+				throw new AchillesInvalidColumnFamilyException("The column family '"
 						+ entityMeta.getColumnFamilyName() + "' comparator type should be '"
 						+ COMPARATOR_TYPE_AND_ALIAS + "'");
 			}
@@ -212,7 +212,7 @@ public class ColumnFamilyHelper
 				|| !StringUtils
 						.equals(cfDef.getComparatorType().getTypeName(), comparatorTypeAlias))
 		{
-			throw new InvalidColumnFamilyException("The column family '" + externalColumnFamilyName
+			throw new AchillesInvalidColumnFamilyException("The column family '" + externalColumnFamilyName
 					+ "' comparator type should be '" + comparatorTypeAlias + "'");
 		}
 	}
@@ -224,35 +224,35 @@ public class ColumnFamilyHelper
 
 		if (!StringUtils.equals(cfDef.getKeyValidationClass(), COMPOSITETYPE.getClassName()))
 		{
-			throw new InvalidColumnFamilyException("The column family '" + COUNTER_CF
+			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
 					+ "' key class '" + cfDef.getKeyValidationClass() + "' should be '"
 					+ COMPOSITETYPE.getClassName() + "'");
 		}
 
 		if (!StringUtils.equals(cfDef.getKeyValidationAlias(), COUNTER_KEY_ALIAS))
 		{
-			throw new InvalidColumnFamilyException("The column family '" + COUNTER_CF
+			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
 					+ "' key type alias '" + cfDef.getKeyValidationAlias() + "' should be '"
 					+ COUNTER_KEY_ALIAS + "'");
 		}
 
 		if (cfDef.getComparatorType() != DYNAMICCOMPOSITETYPE)
 		{
-			throw new InvalidColumnFamilyException("The column family '" + COUNTER_CF
+			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
 					+ "' comparator type '" + cfDef.getComparatorType().getTypeName()
 					+ "' should be '" + DYNAMICCOMPOSITETYPE.getTypeName() + "'");
 		}
 
 		if (!StringUtils.equals(cfDef.getComparatorTypeAlias(), DYNAMIC_TYPE_ALIASES))
 		{
-			throw new InvalidColumnFamilyException("The column family '" + COUNTER_CF
+			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
 					+ "' comparator type alias '" + cfDef.getComparatorTypeAlias()
 					+ "' should be '" + DYNAMIC_TYPE_ALIASES + "'");
 		}
 
 		if (!StringUtils.equals(cfDef.getDefaultValidationClass(), COUNTERTYPE.getClassName()))
 		{
-			throw new InvalidColumnFamilyException("The column family '" + COUNTER_CF
+			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
 					+ "' validation class '" + cfDef.getDefaultValidationClass() + "' should be '"
 					+ COUNTERTYPE.getClassName() + "'");
 		}
@@ -275,7 +275,7 @@ public class ColumnFamilyHelper
 		}
 		else
 		{
-			throw new InvalidColumnFamilyException(
+			throw new AchillesInvalidColumnFamilyException(
 					"The column family name '"
 							+ cfName
 							+ "' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");

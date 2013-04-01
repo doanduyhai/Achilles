@@ -2,7 +2,7 @@ package info.archinnov.achilles.validation;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -49,7 +49,7 @@ public class Validator
 	{
 		if (arg == null || arg.isEmpty())
 		{
-			throw new BeanMappingException(message);
+			throw new AchillesBeanMappingException(message);
 		}
 	}
 
@@ -79,7 +79,7 @@ public class Validator
 
 		if (!Serializable.class.isAssignableFrom(clazz))
 		{
-			throw new BeanMappingException(message);
+			throw new AchillesBeanMappingException(message);
 		}
 	}
 
@@ -96,7 +96,7 @@ public class Validator
 					return;
 				}
 			}
-			throw new BeanMappingException("The class '" + clazz.getCanonicalName()
+			throw new AchillesBeanMappingException("The class '" + clazz.getCanonicalName()
 					+ "' should have a public default constructor");
 		}
 	}
@@ -122,19 +122,19 @@ public class Validator
 		}
 		catch (InstantiationException e)
 		{
-			throw new BeanMappingException(
+			throw new AchillesBeanMappingException(
 					"Cannot instantiate the class '"
 							+ canonicalName
 							+ "'. Please ensure the class is not an abstract class, an interface, an array class, a primitive type, or void and have a nullary (default) constructor and is declared public");
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new BeanMappingException("Cannot instantiate the class '" + canonicalName
+			throw new AchillesBeanMappingException("Cannot instantiate the class '" + canonicalName
 					+ "'. Please ensure the class has a public nullary (default) constructor");
 		}
 		catch (SecurityException e)
 		{
-			throw new BeanMappingException("Cannot instantiate the class '" + canonicalName + "'");
+			throw new AchillesBeanMappingException("Cannot instantiate the class '" + canonicalName + "'");
 		}
 	}
 
@@ -150,7 +150,7 @@ public class Validator
 	{
 		if (!condition)
 		{
-			throw new BeanMappingException(message);
+			throw new AchillesBeanMappingException(message);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class Validator
 	{
 		if (condition)
 		{
-			throw new BeanMappingException(message);
+			throw new AchillesBeanMappingException(message);
 		}
 	}
 }

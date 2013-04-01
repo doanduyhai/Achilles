@@ -1,4 +1,4 @@
-package info.archinnov.achilles.dao;
+package info.archinnov.achilles.consistency;
 
 import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.*;
 import static info.archinnov.achilles.entity.manager.ThriftEntityManager.*;

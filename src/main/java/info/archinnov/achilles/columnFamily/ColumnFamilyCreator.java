@@ -4,7 +4,7 @@ import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.InvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -146,7 +146,7 @@ public class ColumnFamilyCreator
 			}
 			else
 			{
-				throw new InvalidColumnFamilyException("The required column family '"
+				throw new AchillesInvalidColumnFamilyException("The required column family '"
 						+ externalColumnFamilyName + "' does not exist for field '"
 						+ propertyMeta.getPropertyName() + "'");
 			}
@@ -173,7 +173,7 @@ public class ColumnFamilyCreator
 			}
 			else
 			{
-				throw new InvalidColumnFamilyException("The required column family '"
+				throw new AchillesInvalidColumnFamilyException("The required column family '"
 						+ entityMeta.getColumnFamilyName() + "' does not exist for entity '"
 						+ entityMeta.getClassName() + "'");
 			}
@@ -197,7 +197,7 @@ public class ColumnFamilyCreator
 			}
 			else
 			{
-				throw new InvalidColumnFamilyException("The required column family '" + COUNTER_CF
+				throw new AchillesInvalidColumnFamilyException("The required column family '" + COUNTER_CF
 						+ "' does not exist");
 			}
 		}

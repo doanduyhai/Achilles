@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity;
 
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
@@ -26,7 +26,7 @@ public class JoinEntityHelper
 	private EntityIntrospector introspector = new EntityIntrospector();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
-			EntityMeta<ID> entityMeta, GenericDynamicCompositeDao<ID> joinEntityDao)
+			EntityMeta<ID> entityMeta, GenericEntityDao<ID> joinEntityDao)
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotEmpty(keys, "List of join primary keys '" + keys

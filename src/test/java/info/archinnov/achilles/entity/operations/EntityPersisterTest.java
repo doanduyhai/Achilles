@@ -25,8 +25,8 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericCompositeDao;
-import info.archinnov.achilles.dao.GenericDynamicCompositeDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -39,7 +39,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.BeanMappingException;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Method;
@@ -99,10 +99,10 @@ public class EntityPersisterTest
 	private EntityLoader loader;
 
 	@Mock
-	private GenericDynamicCompositeDao<Long> entityDao;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericCompositeDao<Long, String> columnFamilyDao;
+	private GenericColumnFamilyDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private CounterDao counterDao;
@@ -206,7 +206,7 @@ public class EntityPersisterTest
 				PropertyType.SERIAL_VERSION_UID.name());
 	}
 
-	@Test(expected = BeanMappingException.class)
+	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_serialVersionUID_not_found_while_persisting_entity()
 			throws Exception
 	{
@@ -603,7 +603,7 @@ public class EntityPersisterTest
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
 		propertyMeta.setType(EXTERNAL_WIDE_MAP);
 		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>();
-		GenericCompositeDao<Long, String> externalWideMapDao = mock(GenericCompositeDao.class);
+		GenericColumnFamilyDao<Long, String> externalWideMapDao = mock(GenericColumnFamilyDao.class);
 
 		externalWideMapProperties.setExternalWideMapDao(externalWideMapDao);
 		propertyMeta.setExternalWideMapProperties(externalWideMapProperties);

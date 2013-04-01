@@ -36,7 +36,6 @@ public class IteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> impleme
 		}
 		else
 		{
-
 			return value;
 		}
 	}

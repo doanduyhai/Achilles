@@ -82,7 +82,6 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	{
 		this.target.remove();
 		this.markDirty();
-
 	}
 
 	@Override
@@ -90,7 +89,6 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	{
 		this.target.set(proxifier.unproxy(e));
 		this.markDirty();
-
 	}
 
 }
