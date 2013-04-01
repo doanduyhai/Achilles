@@ -52,14 +52,6 @@ public abstract class AbstractAchillesSliceIterator<N>
 			{
 				result = context.execute();
 			}
-			catch (RuntimeException rte)
-			{
-				throw rte;
-			}
-			catch (Error err)
-			{
-				throw err;
-			}
 			finally
 			{
 				policy.setCurrentReadLevel(currentReadLevel);

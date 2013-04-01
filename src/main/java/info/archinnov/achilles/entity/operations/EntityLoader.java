@@ -186,10 +186,6 @@ public class EntityLoader
 		{
 			counter = counterDao.getCounterValue(keyComp, comp);
 		}
-		catch (Throwable throwable)
-		{
-			throw new AchillesException(throwable);
-		}
 		finally
 		{
 			if (resetConsistencyLevel)

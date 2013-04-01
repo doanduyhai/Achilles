@@ -104,7 +104,7 @@ public class EntityMapperTest
 	{
 		joinPropertyMetaToBeFilled.clear();
 
-		Whitebox.setInternalState(mapper, "helper", introspector);
+		Whitebox.setInternalState(mapper, "introspector", introspector);
 		idMeta = PropertyMetaTestBuilder //
 				.of(CompleteBean.class, Void.class, Long.class) //
 				.field("id")//
@@ -136,8 +136,8 @@ public class EntityMapperTest
 				.accesors() //
 				.build();
 
-		doNothing().when(introspector).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
-				simpleCaptor.capture());
+		doNothing().when(introspector).setValueToField(eq(entity),
+				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
 
 		mapper.setSimplePropertyToEntity("name", namePropertyMeta, entity);
 
@@ -155,8 +155,8 @@ public class EntityMapperTest
 				.accesors() //
 				.build();
 
-		doNothing().when(introspector).setValueToField(eq(entity), eq(listPropertyMeta.getSetter()),
-				listCaptor.capture());
+		doNothing().when(introspector).setValueToField(eq(entity),
+				eq(listPropertyMeta.getSetter()), listCaptor.capture());
 
 		mapper.setListPropertyToEntity(Arrays.asList("foo", "bar"), listPropertyMeta, entity);
 
@@ -408,12 +408,12 @@ public class EntityMapperTest
 
 		doNothing().when(introspector).setValueToField(eq(entity), eq(idMeta.getSetter()),
 				idCaptor.capture());
-		doNothing().when(introspector).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
-				simpleCaptor.capture());
+		doNothing().when(introspector).setValueToField(eq(entity),
+				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
 		doNothing().when(introspector).setValueToField(eq(entity), eq(setPropertyMeta.getSetter()),
 				setCaptor.capture());
-		doNothing().when(introspector).setValueToField(eq(entity), eq(listPropertyMeta.getSetter()),
-				listCaptor.capture());
+		doNothing().when(introspector).setValueToField(eq(entity),
+				eq(listPropertyMeta.getSetter()), listCaptor.capture());
 		doNothing().when(introspector).setValueToField(eq(entity), eq(mapPropertyMeta.getSetter()),
 				mapCaptor.capture());
 

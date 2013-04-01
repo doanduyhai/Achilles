@@ -1,10 +1,9 @@
 package info.archinnov.achilles.consistency;
 
-import static info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy.*;
-import static info.archinnov.achilles.entity.manager.ThriftEntityManager.*;
 import static me.prettyprint.cassandra.service.OperationType.*;
 import static me.prettyprint.hector.api.HConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -21,7 +20,6 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-
 public class AchillesConfigurableConsistencyLevelPolicyTest
 {
 
@@ -135,7 +133,7 @@ public class AchillesConfigurableConsistencyLevelPolicyTest
 		policy.setConsistencyLevelForRead(QUORUM, "cf3");
 		policy.setConsistencyLevelForWrite(THREE, "cf3");
 
-		policy.reinitDefaultConsistencyLevel();
+		policy.reinitDefaultConsistencyLevels();
 
 		assertThat(defaultReadConsistencyLevelTL.get()).isNull();
 		assertThat(defaultWriteConsistencyLevelTL.get()).isNull();
@@ -149,6 +147,20 @@ public class AchillesConfigurableConsistencyLevelPolicyTest
 
 		assertThat(policy.getConsistencyLevelForRead("cf4")).isEqualTo(QUORUM);
 		assertThat(policy.getConsistencyLevelForWrite("cf4")).isEqualTo(THREE);
+	}
+
+	@Test
+	public void should_get_current_read_level() throws Exception
+	{
+		currentReadConsistencyLevel.set(ConsistencyLevel.LOCAL_QUORUM);
+		assertThat(policy.getCurrentReadLevel()).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
+	}
+
+	@Test
+	public void should_set_current_read_level() throws Exception
+	{
+		policy.setCurrentReadLevel(ConsistencyLevel.LOCAL_QUORUM);
+		assertThat(currentReadConsistencyLevel.get()).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@AfterClass

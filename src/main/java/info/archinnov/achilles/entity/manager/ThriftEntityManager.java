@@ -756,14 +756,6 @@ public class ThriftEntityManager implements EntityManager
 		{
 			return context.execute();
 		}
-		catch (RuntimeException e)
-		{
-			throw e;
-		}
-		catch (Error err)
-		{
-			throw err;
-		}
 		finally
 		{
 			reinitBatchContext();

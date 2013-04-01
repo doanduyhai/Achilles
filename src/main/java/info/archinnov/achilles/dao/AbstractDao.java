@@ -65,14 +65,6 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		{
 			return context.execute();
 		}
-		catch (RuntimeException rte)
-		{
-			throw rte;
-		}
-		catch (Error err)
-		{
-			throw err;
-		}
 		finally
 		{
 			this.policy.reinitDefaultConsistencyLevel();

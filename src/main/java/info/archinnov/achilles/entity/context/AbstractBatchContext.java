@@ -115,14 +115,6 @@ public abstract class AbstractBatchContext
 				dao.executeMutator(mutator);
 			}
 		}
-		catch (RuntimeException rte)
-		{
-			throw rte;
-		}
-		catch (Error err)
-		{
-			throw err;
-		}
 		finally
 		{
 			mutatorMap.clear();

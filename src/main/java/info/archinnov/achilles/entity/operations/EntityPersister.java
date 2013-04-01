@@ -444,10 +444,6 @@ public class EntityPersister
 		{
 			dao.insertCounterBatch(keyComp, comp, (Long) counterValue, context.getCounterMutator());
 		}
-		catch (Throwable throwable)
-		{
-			throw new AchillesException(throwable);
-		}
 		finally
 		{
 			if (resetConsistencyLevel)

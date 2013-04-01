@@ -31,14 +31,6 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 		{
 			return executionContext.execute();
 		}
-		catch (RuntimeException rte)
-		{
-			throw rte;
-		}
-		catch (Error err)
-		{
-			throw err;
-		}
 		finally
 		{
 			context.reinitConsistencyLevels();
