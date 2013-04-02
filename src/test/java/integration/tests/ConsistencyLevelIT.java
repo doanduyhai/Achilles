@@ -1,10 +1,8 @@
 package integration.tests;
 
-import static info.archinnov.achilles.common.CassandraDaoTest.getConsistencyPolicy;
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -24,6 +22,7 @@ import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
+import integration.tests.utils.CassandraLogAsserter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -56,9 +56,18 @@ public class ConsistencyLevelIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
+	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
+	private Cluster cluster = CassandraDaoTest.getCluster();
+
+	private String keyspaceName = CassandraDaoTest.getKeyspace().getKeyspaceName();
+
 	private Long id = RandomUtils.nextLong();
+
+	private AchillesConfigurableConsistencyLevelPolicy policy = CassandraDaoTest
+			.getConsistencyPolicy();
 
 	@Test
 	public void should_throw_exception_when_persisting_with_local_quorum_consistency()
@@ -208,47 +217,82 @@ public class ConsistencyLevelIT
 	public void should_persist_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zerferg")
+				.buid();
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		try
+		{
+			em.persist(entity, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
 
-		em.persist(entity, ConsistencyLevel.EACH_QUORUM);
 		assertThatConsistencyLevelsAreReinitialized();
+
+		logAsserter.prepareLogLevel();
+		em.persist(entity, ConsistencyLevel.ALL);
+		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		assertThat(found.getName()).isEqualTo("name zerferg");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
 	}
 
 	@Test
 	public void should_merge_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zeruioze")
+				.buid();
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-
-		em.merge(entity, ConsistencyLevel.EACH_QUORUM);
+		try
+		{
+			em.merge(entity, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
 		assertThatConsistencyLevelsAreReinitialized();
+
+		logAsserter.prepareLogLevel();
+		em.merge(entity, ConsistencyLevel.ALL);
+		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		assertThat(found.getName()).isEqualTo("name zeruioze");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
 	}
 
 	@Test
 	public void should_find_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name rtprt")
+				.buid();
 		em.persist(entity);
 
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Error when loading entity type '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' with key '"
-						+ entity.getId()
-						+ "'. Cause : InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
+		try
+		{
+			em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (AchillesException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"Error when loading entity type '"
+									+ CompleteBean.class.getCanonicalName()
+									+ "' with key '"
+									+ entity.getId()
+									+ "'. Cause : InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		CompleteBean found = em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.ALL);
+		assertThat(found.getName()).isEqualTo("name rtprt");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -258,16 +302,24 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
 
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Error when loading entity type '"
-						+ entity.getClass().getCanonicalName()
-						+ "' with key '"
-						+ entity.getId()
-						+ "'. Cause : InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		em.refresh(entity, ConsistencyLevel.EACH_QUORUM);
+		try
+		{
+			em.refresh(entity, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (AchillesException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"Error when loading entity type '"
+									+ entity.getClass().getCanonicalName()
+									+ "' with key '"
+									+ entity.getId()
+									+ "'. Cause : InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		em.refresh(entity, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -277,37 +329,44 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-
-		em.remove(entity, ConsistencyLevel.EACH_QUORUM);
+		try
+		{
+			em.remove(entity, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		em.remove(entity, ConsistencyLevel.ALL);
+		assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
 	}
 
 	@Test
 	public void should_reinit_consistency_level_after_exception() throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name qzerferf")
+				.buid();
 		try
 		{
 			em.merge(entity, ConsistencyLevel.EACH_QUORUM);
 		}
-		catch (Exception e)
+		catch (HInvalidRequestException e)
 		{
-			// Should reset current consistency level to null
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 		}
-
-		BeanWithLocalQuorumConsistency bean = new BeanWithLocalQuorumConsistency();
-		bean.setId(id);
-		bean.setName("name");
-
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-
-		em.persist(bean);
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		em.merge(entity, ConsistencyLevel.ALL);
+		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		assertThat(found.getName()).isEqualTo("name qzerferf");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -315,14 +374,26 @@ public class ConsistencyLevelIT
 	{
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
+		WideMap<UUID, String> tweets = entity.getTweets();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		try
+		{
+			tweets.insert(uuid, "new tweet", ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-
-		entity.getTweets().insert(TimeUUIDUtils.getUniqueTimeUUIDinMillis(), "new tweet",
-				ConsistencyLevel.EACH_QUORUM);
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		tweets.insert(uuid, "new tweet 5431", ConsistencyLevel.ALL);
+		KeyValue<UUID, String> found = tweets.findFirst();
+		assertThat(found.getKey()).isEqualTo(uuid);
+		assertThat(found.getValue()).isEqualTo("new tweet 5431");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -331,15 +402,25 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
 		WideMap<UUID, String> tweets = entity.getTweets();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		tweets.insert(uuid, "new tweet");
+		try
+		{
+			tweets.findFirst(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 
-		tweets.insert(TimeUUIDUtils.getUniqueTimeUUIDinMillis(), "new tweet");
-
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		tweets.findFirst(ConsistencyLevel.EACH_QUORUM);
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		KeyValue<UUID, String> found = tweets.findFirst(ConsistencyLevel.ALL);
+		assertThat(found.getKey()).isEqualTo(uuid);
+		assertThat(found.getValue()).isEqualTo("new tweet");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -348,15 +429,27 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
 		WideMap<UUID, String> tweets = entity.getTweets();
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 
-		tweets.insert(TimeUUIDUtils.getUniqueTimeUUIDinMillis(), "new tweet");
+		tweets.insert(uuid, "new tweet erjkesdf");
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		try
+		{
+			tweets.findFirstValue(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 
-		tweets.findFirstValue(ConsistencyLevel.EACH_QUORUM);
 		assertThatConsistencyLevelsAreReinitialized();
+
+		logAsserter.prepareLogLevel();
+		String found = tweets.findFirstValue(ConsistencyLevel.ALL);
+		assertThat(found).isEqualTo("new tweet erjkesdf");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -366,14 +459,25 @@ public class ConsistencyLevelIT
 		entity = em.merge(entity);
 		WideMap<UUID, String> tweets = entity.getTweets();
 
-		tweets.insert(TimeUUIDUtils.getUniqueTimeUUIDinMillis(), "new tweet");
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		tweets.insert(uuid, "new tweet");
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		try
+		{
+			tweets.findFirstKey(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 
-		tweets.findFirstValue(ConsistencyLevel.EACH_QUORUM);
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		UUID found = tweets.findFirstKey(ConsistencyLevel.ALL);
+		assertThat(found).isEqualTo(uuid);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -383,13 +487,26 @@ public class ConsistencyLevelIT
 		entity = em.merge(entity);
 		WideMap<UUID, String> tweets = entity.getTweets();
 
-		tweets.insert(TimeUUIDUtils.getUniqueTimeUUIDinMillis(), "new tweet");
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		tweets.insert(uuid, "new tweet etef");
 
-		tweets.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
+		try
+		{
+			tweets.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
+		}
+		catch (AchillesException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
+
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		KeyValue<UUID, String> found = tweets.iterator().next();
+		assertThat(found.getKey()).isEqualTo(uuid);
+		assertThat(found.getValue()).isEqualTo("new tweet etef");
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -400,12 +517,22 @@ public class ConsistencyLevelIT
 		WideMap<String, Long> popularTopics = entity.getPopularTopics();
 
 		popularTopics.insert("java", 110L);
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		popularTopics.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
+		try
+		{
+			popularTopics.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
+		}
+		catch (AchillesException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
 		assertThatConsistencyLevelsAreReinitialized();
+		logAsserter.prepareLogLevel();
+		KeyValue<String, Long> found = popularTopics.iterator(ConsistencyLevel.ALL).next();
+		assertThat(found.getKey()).isEqualTo("java");
+		assertThat(found.getValue()).isEqualTo(110L);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -418,9 +545,9 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Tweet> tweets = user.getTweets();
 		tweets.insert(1, tweet);
 
-		expectedEx.expect(HInvalidRequestException.class);
+		expectedEx.expect(AchillesException.class);
 		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
 		tweets.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
 		assertThatConsistencyLevelsAreReinitialized();
@@ -475,23 +602,23 @@ public class ConsistencyLevelIT
 
 	private void assertThatConsistencyLevelsAreReinitialized()
 	{
-		assertThat(currentReadConsistencyLevel.get()).isNull();
-		assertThat(currentWriteConsistencyLevel.get()).isNull();
+		assertThat(policy.getCurrentReadLevel()).isNull();
+		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
 	@After
 	public void cleanThreadLocals()
 	{
-		currentReadConsistencyLevel.remove();
-		currentWriteConsistencyLevel.remove();
-		getConsistencyPolicy().reinitDefaultConsistencyLevel();
+		policy.reinitCurrentConsistencyLevels();
+		policy.reinitDefaultConsistencyLevels();
+		cluster.truncate(keyspaceName, "CompleteBean");
+		cluster.truncate(keyspaceName, "Tweet");
 	}
 
 	@AfterClass
 	public static void cleanUp()
 	{
-		currentReadConsistencyLevel.remove();
-		currentWriteConsistencyLevel.remove();
-		getConsistencyPolicy().reinitDefaultConsistencyLevel();
+		CassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
+		CassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
 	}
 }

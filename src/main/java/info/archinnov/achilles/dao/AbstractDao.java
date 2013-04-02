@@ -67,7 +67,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		}
 		finally
 		{
-			this.policy.reinitDefaultConsistencyLevel();
+			this.policy.reinitDefaultConsistencyLevels();
 		}
 	}
 

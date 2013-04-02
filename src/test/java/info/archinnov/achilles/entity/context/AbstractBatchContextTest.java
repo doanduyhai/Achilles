@@ -23,7 +23,7 @@ public class AbstractBatchContextTest
 {
 
 	@InjectMocks
-	private BatchContext context;
+	private FlushContext context;
 
 	@Mock
 	private Map<String, GenericEntityDao<?>> entityDaosMap;

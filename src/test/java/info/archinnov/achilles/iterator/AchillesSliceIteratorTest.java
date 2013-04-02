@@ -132,7 +132,7 @@ public class AchillesSliceIteratorTest
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
-		verify(policy).reinitDefaultConsistencyLevel();
+		verify(policy).reinitDefaultConsistencyLevels();
 
 	}
 
@@ -190,7 +190,7 @@ public class AchillesSliceIteratorTest
 		verify(query).setRange(name2, end, false, count);
 
 		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
-		verify(policy, times(2)).reinitDefaultConsistencyLevel();
+		verify(policy, times(2)).reinitDefaultConsistencyLevels();
 
 	}
 }

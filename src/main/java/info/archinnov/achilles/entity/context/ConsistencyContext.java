@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.context;
 
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -13,21 +12,27 @@ import info.archinnov.achilles.validation.Validator;
  */
 public class ConsistencyContext
 {
+	private final AchillesConfigurableConsistencyLevelPolicy policy;
+
+	public ConsistencyContext(AchillesConfigurableConsistencyLevelPolicy policy) {
+		this.policy = policy;
+	}
+
 	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
 	{
 		Validator.validateNotNull(writeLevel, "Consistency level should not be null");
-		currentWriteConsistencyLevel.set(writeLevel);
+		policy.setCurrentWriteLevel(writeLevel);
 	}
 
 	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
 	{
 		Validator.validateNotNull(readLevel, "Consistency level should not be null");
-		currentReadConsistencyLevel.set(readLevel);
+		policy.setCurrentReadLevel(readLevel);
 	}
 
 	public void reinitConsistencyLevels()
 	{
-		currentReadConsistencyLevel.remove();
-		currentWriteConsistencyLevel.remove();
+		policy.reinitCurrentConsistencyLevels();
+		policy.reinitDefaultConsistencyLevels();
 	}
 }

@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentWriteConsistencyLevel;
 import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static javax.persistence.CascadeType.ALL;
@@ -8,6 +7,7 @@ import static javax.persistence.CascadeType.PERSIST;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
@@ -434,10 +434,11 @@ public class EntityPersister
 			Object counterValue)
 	{
 		CounterDao dao = context.getCounterDao();
+		AchillesConfigurableConsistencyLevelPolicy policy = context.getPolicy();
 		boolean resetConsistencyLevel = false;
-		if (currentWriteConsistencyLevel.get() == null)
+		if (policy.getCurrentWriteLevel() == null)
 		{
-			currentWriteConsistencyLevel.set(propertyMeta.getWriteConsistencyLevel());
+			policy.setCurrentWriteLevel(propertyMeta.getWriteConsistencyLevel());
 			resetConsistencyLevel = true;
 		}
 		try
@@ -448,7 +449,7 @@ public class EntityPersister
 		{
 			if (resetConsistencyLevel)
 			{
-				currentWriteConsistencyLevel.remove();
+				policy.removeCurrentWriteLevel();
 			}
 		}
 	}

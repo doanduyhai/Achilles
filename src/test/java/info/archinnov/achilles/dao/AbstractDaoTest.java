@@ -55,7 +55,7 @@ public class AbstractDaoTest
 		dynamicComposite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
 		abstractDao.getValue(123L, dynamicComposite);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
-		verify(policy).reinitDefaultConsistencyLevel();
+		verify(policy).reinitDefaultConsistencyLevels();
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class AbstractDaoTest
 		catch (RuntimeException e)
 		{
 			verify(policy).loadConsistencyLevelForRead("xxx");
-			verify(policy).reinitDefaultConsistencyLevel();
+			verify(policy).reinitDefaultConsistencyLevels();
 		}
 
 	}

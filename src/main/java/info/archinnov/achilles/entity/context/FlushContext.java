@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -21,22 +22,93 @@ import me.prettyprint.hector.api.mutation.Mutator;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractBatchContext
+public class FlushContext
 {
-	protected final Map<String, GenericEntityDao<?>> entityDaosMap;
-	protected final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	protected final CounterDao counterDao;
+	private final Map<String, GenericEntityDao<?>> entityDaosMap;
+	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	private final CounterDao counterDao;
 
-	protected final Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
-	protected ConsistencyContext consistencyContext = new ConsistencyContext();
+	private final Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+	private final ConsistencyContext consistencyContext;
 	protected boolean hasCustomConsistencyLevels = false;
+	private BatchType type = BatchType.NONE;
 
-	public AbstractBatchContext(Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao)
+	public FlushContext(Map<String, GenericEntityDao<?>> entityDaosMap,
+			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao,
+			AchillesConfigurableConsistencyLevelPolicy policy)
 	{
 		this.entityDaosMap = entityDaosMap;
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
+		this.consistencyContext = new ConsistencyContext(policy);
+	}
+
+	public void startBatch()
+	{
+		type = BatchType.BATCH;
+	}
+
+	public void flush()
+	{
+		if (type == BatchType.NONE)
+		{
+			doFlush();
+		}
+	}
+
+	public void endBatch()
+	{
+		if (type == BatchType.BATCH)
+		{
+			doFlush();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	protected <ID> void doFlush()
+	{
+		try
+		{
+			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : mutatorMap
+					.entrySet())
+			{
+				AbstractDao<ID, ?, ?> dao = (AbstractDao<ID, ?, ?>) entry.getValue().right;
+				Mutator<ID> mutator = (Mutator<ID>) entry.getValue().left;
+				dao.executeMutator(mutator);
+			}
+		}
+		finally
+		{
+			cleanUp();
+		}
+	}
+
+	public void cleanUp()
+	{
+		consistencyContext.reinitConsistencyLevels();
+		hasCustomConsistencyLevels = false;
+		mutatorMap.clear();
+		type = BatchType.NONE;
+	}
+
+	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
+	{
+		hasCustomConsistencyLevels = true;
+		consistencyContext.setWriteConsistencyLevel(writeLevel);
+	}
+
+	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
+	{
+		hasCustomConsistencyLevels = true;
+		consistencyContext.setReadConsistencyLevel(readLevel);
+	}
+
+	public void reinitConsistencyLevels()
+	{
+		if (!hasCustomConsistencyLevels)
+		{
+			consistencyContext.reinitConsistencyLevels();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -102,44 +174,10 @@ public abstract class AbstractBatchContext
 		return mutator;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <ID> void doFlush()
+	public BatchType type()
 	{
-		try
-		{
-			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : mutatorMap
-					.entrySet())
-			{
-				AbstractDao<ID, ?, ?> dao = (AbstractDao<ID, ?, ?>) entry.getValue().right;
-				Mutator<ID> mutator = (Mutator<ID>) entry.getValue().left;
-				dao.executeMutator(mutator);
-			}
-		}
-		finally
-		{
-			mutatorMap.clear();
-		}
+		return type;
 	}
-
-	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
-	{
-		hasCustomConsistencyLevels = true;
-		consistencyContext.setWriteConsistencyLevel(writeLevel);
-	}
-
-	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
-	{
-		hasCustomConsistencyLevels = true;
-		consistencyContext.setReadConsistencyLevel(readLevel);
-	}
-
-	public abstract <ID> void flush();
-
-	public abstract <ID> void endBatch();
-
-	public abstract BatchType type();
-
-	public abstract void reinitConsistencyLevels();
 
 	public static enum BatchType
 	{

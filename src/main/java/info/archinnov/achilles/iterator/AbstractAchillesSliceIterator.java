@@ -4,6 +4,7 @@ import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.exception.AchillesException;
 
 /**
  * AbstractAchillesSliceIterator
@@ -51,10 +52,13 @@ public abstract class AbstractAchillesSliceIterator<N>
 			try
 			{
 				result = context.execute();
-			}
-			finally
-			{
 				policy.setCurrentReadLevel(currentReadLevel);
+			}
+			catch (Throwable throwable)
+			{
+				policy.reinitCurrentConsistencyLevels();
+				policy.reinitDefaultConsistencyLevels();
+				throw new AchillesException(throwable);
 			}
 		}
 		else

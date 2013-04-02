@@ -1,11 +1,10 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.currentReadConsistencyLevel;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
@@ -166,31 +165,31 @@ public class EntityLoader
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		DynamicComposite comp = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
 
-		Long counter = loadCounterWithConsistencyLevel(propertyMeta, keyComp, comp,
-				context.getCounterDao());
+		Long counter = loadCounterWithConsistencyLevel(context, propertyMeta, keyComp, comp);
 
 		return counter;
 	}
 
-	private Long loadCounterWithConsistencyLevel(PropertyMeta<?, ?> propertyMeta,
-			Composite keyComp, DynamicComposite comp, CounterDao counterDao)
+	private <ID> Long loadCounterWithConsistencyLevel(PersistenceContext<ID> context,
+			PropertyMeta<?, ?> propertyMeta, Composite keyComp, DynamicComposite comp)
 	{
 		boolean resetConsistencyLevel = false;
-		if (currentReadConsistencyLevel.get() == null)
+		AchillesConfigurableConsistencyLevelPolicy policy = context.getPolicy();
+		if (policy.getCurrentReadLevel() == null)
 		{
-			currentReadConsistencyLevel.set(propertyMeta.getReadConsistencyLevel());
+			policy.setCurrentReadLevel(propertyMeta.getReadConsistencyLevel());
 			resetConsistencyLevel = true;
 		}
 		Long counter;
 		try
 		{
-			counter = counterDao.getCounterValue(keyComp, comp);
+			counter = context.getCounterDao().getCounterValue(keyComp, comp);
 		}
 		finally
 		{
 			if (resetConsistencyLevel)
 			{
-				currentReadConsistencyLevel.remove();
+				policy.removeCurrentReadLevel();
 			}
 		}
 		return counter;

@@ -5,7 +5,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
+import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -36,15 +36,15 @@ public class PersistenceContext<ID>
 	private GenericEntityDao<ID> entityDao;
 	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
 
-	// Batch
-	private AbstractBatchContext batchContext;
+	// Flush
+	private FlushContext flushContext;
 
 	public PersistenceContext(EntityMeta<ID> entityMeta,
 			Map<String, GenericEntityDao<?>> entityDaosMap,
 			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
 			CounterDao counterDao, //
 			AchillesConfigurableConsistencyLevelPolicy policy, //
-			AbstractBatchContext batchContext, //
+			FlushContext flushContext, //
 			Object entity)
 	{
 		this.entityMeta = entityMeta;
@@ -52,7 +52,7 @@ public class PersistenceContext<ID>
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.policy = policy;
-		this.batchContext = batchContext;
+		this.flushContext = flushContext;
 		this.entity = entity;
 		this.entityClass = entity.getClass();
 
@@ -68,7 +68,7 @@ public class PersistenceContext<ID>
 			Map<String, GenericEntityDao<?>> entityDaosMap,
 			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao, //
 			AchillesConfigurableConsistencyLevelPolicy policy, //
-			AbstractBatchContext batchContext, //
+			FlushContext flushContext, //
 			Class<?> entityClass, ID primaryKey)
 	{
 		this.entityMeta = entityMeta;
@@ -76,7 +76,7 @@ public class PersistenceContext<ID>
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.policy = policy;
-		this.batchContext = batchContext;
+		this.flushContext = flushContext;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
 
@@ -90,7 +90,7 @@ public class PersistenceContext<ID>
 			EntityMeta<JOIN_ID> joinMeta, Object joinEntity)
 	{
 		PersistenceContext<JOIN_ID> context = new PersistenceContext<JOIN_ID>(joinMeta,
-				entityDaosMap, columnFamilyDaosMap, counterDao, policy, batchContext, joinEntity);
+				entityDaosMap, columnFamilyDaosMap, counterDao, policy, flushContext, joinEntity);
 		context.setPrimaryKey(introspector.getKey(joinEntity, joinMeta.getIdMeta()));
 		return context;
 	}
@@ -99,7 +99,7 @@ public class PersistenceContext<ID>
 			EntityMeta<JOIN_ID> joinMeta, JOIN_ID joinId)
 	{
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, policy, batchContext, entityClass, joinId);
+				counterDao, policy, flushContext, entityClass, joinId);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -127,57 +127,62 @@ public class PersistenceContext<ID>
 
 	public Mutator<ID> getCurrentColumnFamilyMutator()
 	{
-		return batchContext.getColumnFamilyMutator(entityMeta.getColumnFamilyName());
+		return flushContext.getColumnFamilyMutator(entityMeta.getColumnFamilyName());
 	}
 
 	public Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
 	{
-		return batchContext.getColumnFamilyMutator(columnFamilyName);
+		return flushContext.getColumnFamilyMutator(columnFamilyName);
 	}
 
 	public Mutator<ID> getCurrentEntityMutator()
 	{
-		return batchContext.getEntityMutator(entityMeta.getColumnFamilyName());
+		return flushContext.getEntityMutator(entityMeta.getColumnFamilyName());
 	}
 
 	public Mutator<ID> getEntityMutator(String columnFamilyName)
 	{
-		return batchContext.getEntityMutator(columnFamilyName);
+		return flushContext.getEntityMutator(columnFamilyName);
 	}
 
 	public Mutator<Composite> getCounterMutator()
 	{
-		return batchContext.getCounterMutator();
+		return flushContext.getCounterMutator();
 	}
 
 	public boolean isBatchMode()
 	{
-		return batchContext.type() == BatchType.BATCH;
+		return flushContext.type() == BatchType.BATCH;
 	}
 
 	public void flush()
 	{
-		batchContext.flush();
+		flushContext.flush();
 	}
 
 	public void endBatch()
 	{
-		batchContext.endBatch();
+		flushContext.endBatch();
 	}
 
 	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
 	{
-		batchContext.setReadConsistencyLevel(readLevel);
+		flushContext.setReadConsistencyLevel(readLevel);
 	}
 
 	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
 	{
-		batchContext.setWriteConsistencyLevel(writeLevel);
+		flushContext.setWriteConsistencyLevel(writeLevel);
 	}
 
 	public void reinitConsistencyLevels()
 	{
-		batchContext.reinitConsistencyLevels();
+		flushContext.reinitConsistencyLevels();
+	}
+
+	public void cleanUpFlushContext()
+	{
+		flushContext.cleanUp();
 	}
 
 	public EntityMeta<ID> getEntityMeta()

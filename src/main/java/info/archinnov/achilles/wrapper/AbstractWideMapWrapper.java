@@ -33,7 +33,7 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 		}
 		finally
 		{
-			context.reinitConsistencyLevels();
+			context.cleanUpFlushContext();
 		}
 	}
 

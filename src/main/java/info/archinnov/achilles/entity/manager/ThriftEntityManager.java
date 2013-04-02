@@ -4,10 +4,8 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.AbstractBatchContext;
-import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
-import info.archinnov.achilles.entity.context.BatchContext;
-import info.archinnov.achilles.entity.context.NoBatchContext;
+import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -58,7 +56,7 @@ public class ThriftEntityManager implements EntityManager
 	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private final CounterDao counterDao;
 	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
-	private AbstractBatchContext batchContext;
+	private FlushContext flushContext;
 
 	private EntityPersister persister = new EntityPersister();
 	private EntityLoader loader = new EntityLoader();
@@ -79,7 +77,8 @@ public class ThriftEntityManager implements EntityManager
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.consistencyPolicy = consistencyPolicy;
-		this.batchContext = new NoBatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
+		this.flushContext = new FlushContext(entityDaosMap, columnFamilyDaosMap, counterDao,
+				consistencyPolicy);
 	}
 
 	/**
@@ -128,8 +127,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public void persist(Object entity, ConsistencyLevel writeLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setWriteConsistencyLevel(writeLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setWriteConsistencyLevel(writeLevel);
 		persist(entity);
 	}
 
@@ -201,8 +200,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> T merge(T entity, ConsistencyLevel writeLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setWriteConsistencyLevel(writeLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setWriteConsistencyLevel(writeLevel);
 		return merge(entity);
 	}
 
@@ -253,8 +252,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public void remove(Object entity, ConsistencyLevel writeLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setWriteConsistencyLevel(writeLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setWriteConsistencyLevel(writeLevel);
 		remove(entity);
 	}
 
@@ -305,8 +304,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey, ConsistencyLevel readLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setReadConsistencyLevel(readLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setReadConsistencyLevel(readLevel);
 		return find(entityClass, primaryKey);
 	}
 
@@ -340,8 +339,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T> T getReference(Class<T> entityClass, Object primaryKey, ConsistencyLevel readLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setReadConsistencyLevel(readLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setReadConsistencyLevel(readLevel);
 		return find(entityClass, primaryKey);
 	}
 
@@ -384,8 +383,8 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public void refresh(Object entity, ConsistencyLevel readLevel)
 	{
-		entityValidator.validateNoPendingBatch(batchContext);
-		batchContext.setReadConsistencyLevel(readLevel);
+		entityValidator.validateNoPendingBatch(flushContext);
+		flushContext.setReadConsistencyLevel(readLevel);
 		refresh(entity);
 	}
 
@@ -396,14 +395,14 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public void startBatch()
 	{
-		if (batchContext.type() == BatchType.BATCH)
+		if (flushContext.type() == BatchType.BATCH)
 		{
 			throw new IllegalStateException(
 					"There is already a pending batch for this Entity Manager");
 		}
 		else
 		{
-			batchContext = new BatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
+			flushContext.startBatch();
 		}
 	}
 
@@ -412,11 +411,11 @@ public class ThriftEntityManager implements EntityManager
 		startBatch();
 		if (readLevel != null)
 		{
-			batchContext.setReadConsistencyLevel(readLevel);
+			flushContext.setReadConsistencyLevel(readLevel);
 		}
 		if (writeLevel != null)
 		{
-			batchContext.setWriteConsistencyLevel(writeLevel);
+			flushContext.setWriteConsistencyLevel(writeLevel);
 		}
 	}
 
@@ -430,23 +429,14 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public <T, ID> void endBatch()
 	{
-		if (batchContext.type() == BatchType.NONE)
+		if (flushContext.type() == BatchType.NONE)
 		{
 			throw new IllegalStateException(
 					"There is no pending batch for this Entity Manager. Please start a batch first");
 		}
 		else
 		{
-			alwaysReinitBatch(new SafeExecutionContext<Void>()
-			{
-
-				@Override
-				public Void execute()
-				{
-					batchContext.endBatch();
-					return null;
-				}
-			});
+			flushContext.endBatch();
 		}
 	}
 
@@ -708,7 +698,7 @@ public class ThriftEntityManager implements EntityManager
 	{
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, batchContext, entityClass, primaryKey);
+				counterDao, consistencyPolicy, flushContext, entityClass, primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -717,7 +707,7 @@ public class ThriftEntityManager implements EntityManager
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, batchContext, entity);
+				counterDao, consistencyPolicy, flushContext, entity);
 	}
 
 	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)
@@ -736,35 +726,17 @@ public class ThriftEntityManager implements EntityManager
 		}
 		catch (RuntimeException e)
 		{
-			reinitBatchContext();
+			flushContext.cleanUp();
 			throw e;
 		}
 		catch (Error err)
 		{
-			reinitBatchContext();
+			flushContext.cleanUp();
 			throw err;
 		}
 		finally
 		{
-			batchContext.reinitConsistencyLevels();
+			flushContext.reinitConsistencyLevels();
 		}
-	}
-
-	private <T> T alwaysReinitBatch(SafeExecutionContext<T> context)
-	{
-		try
-		{
-			return context.execute();
-		}
-		finally
-		{
-			reinitBatchContext();
-			batchContext.reinitConsistencyLevels();
-		}
-	}
-
-	private void reinitBatchContext()
-	{
-		batchContext = new NoBatchContext(entityDaosMap, columnFamilyDaosMap, counterDao);
 	}
 }

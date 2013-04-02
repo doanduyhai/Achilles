@@ -8,18 +8,23 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.AbstractBatchContext;
-import info.archinnov.achilles.entity.context.AbstractBatchContext.BatchType;
+import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -31,6 +36,7 @@ import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
+import integration.tests.utils.CassandraLogAsserter;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +48,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,6 +84,11 @@ public class BatchModeIT
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
+	private AchillesConfigurableConsistencyLevelPolicy policy = CassandraDaoTest
+			.getConsistencyPolicy();
+
+	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+
 	private Tweet ownTweet1;
 	private Tweet ownTweet2;
 
@@ -90,10 +102,8 @@ public class BatchModeIT
 	public void setUp()
 	{
 		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
-
 		ownTweet1 = TweetTestBuilder.tweet().randomId().content("myTweet1").buid();
 		ownTweet2 = TweetTestBuilder.tweet().randomId().content("myTweet2").buid();
-
 	}
 
 	@Test
@@ -295,6 +305,7 @@ public class BatchModeIT
 		assertThat(foundUser.getFirstname()).isEqualTo("fn");
 		assertThat(foundUser.getLastname()).isEqualTo("ln");
 		assertThatBatchContextHasBeenReset();
+		assertThatConsistencyLevelHasBeenReset();
 	}
 
 	@Test
@@ -315,9 +326,10 @@ public class BatchModeIT
 		catch (AchillesException e)
 		{
 			assertThatBatchContextHasBeenReset();
+			assertThatConsistencyLevelHasBeenReset();
 		}
 
-		// em should drop batch context and revert to normal mode
+		// em should reinit batch context
 		em.persist(user);
 
 		User foundUser = em.find(User.class, user.getId());
@@ -334,10 +346,70 @@ public class BatchModeIT
 
 	}
 
+	@Test
+	public void should_batch_with_custom_consistency_level() throws Exception
+	{
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
+		Tweet tweet3 = TweetTestBuilder.tweet().randomId().content("simple_tweet3").buid();
+
+		em.persist(tweet1);
+
+		em.startBatch(ONE, ALL);
+
+		logAsserter.prepareLogLevel();
+
+		Tweet foundTweet1 = em.find(Tweet.class, tweet1.getId());
+
+		assertThat(foundTweet1.getContent()).isEqualTo(tweet1.getContent());
+
+		em.persist(tweet2);
+		em.persist(tweet3);
+
+		em.endBatch();
+
+		logAsserter.assertConsistencyLevels(ONE, ALL);
+		assertThatBatchContextHasBeenReset();
+		assertThatConsistencyLevelHasBeenReset();
+	}
+
+	@Test
+	public void should_reinit_batch_context_and_consistency_after_exception() throws Exception
+	{
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
+
+		em.persist(tweet1);
+
+		em.startBatch(EACH_QUORUM, EACH_QUORUM);
+		em.persist(tweet2);
+
+		try
+		{
+			em.endBatch();
+		}
+		catch (Exception e)
+		{
+			assertThatBatchContextHasBeenReset();
+			assertThatConsistencyLevelHasBeenReset();
+		}
+
+		logAsserter.prepareLogLevel();
+		em.persist(tweet2);
+
+		logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
+	}
+
 	private void assertThatBatchContextHasBeenReset()
 	{
-		assertThat(((AbstractBatchContext) Whitebox.getInternalState(em, "batchContext")).type())
+		assertThat(((FlushContext) Whitebox.getInternalState(em, "flushContext")).type())
 				.isEqualTo(BatchType.NONE);
+	}
+
+	private void assertThatConsistencyLevelHasBeenReset()
+	{
+		assertThat(policy.getCurrentReadLevel()).isNull();
+		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
 	private UUID readUUID(String value) throws Exception
@@ -376,5 +448,12 @@ public class BatchModeIT
 		tweetDao.truncate();
 		userDao.truncate();
 		completeBeanDao.truncate();
+	}
+
+	@AfterClass
+	public static void cleanUp()
+	{
+		CassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
+		CassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
 	}
 }

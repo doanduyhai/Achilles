@@ -19,8 +19,8 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	static final ThreadLocal<HConsistencyLevel> defaultReadConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 	static final ThreadLocal<HConsistencyLevel> defaultWriteConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
-	public static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
-	public static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
+	static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
+	static final ThreadLocal<ConsistencyLevel> currentWriteConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
 
 	public AchillesConfigurableConsistencyLevelPolicy(ConsistencyLevel defaultReadLevel,
 			ConsistencyLevel defaultWriteLevel, Map<String, HConsistencyLevel> readConsistencyMap,
@@ -100,10 +100,16 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 		}
 	}
 
-	public void reinitDefaultConsistencyLevel()
+	public void reinitDefaultConsistencyLevels()
 	{
 		defaultReadConsistencyLevelTL.remove();
 		defaultWriteConsistencyLevelTL.remove();
+	}
+
+	public void reinitCurrentConsistencyLevels()
+	{
+		currentReadConsistencyLevel.remove();
+		currentWriteConsistencyLevel.remove();
 	}
 
 	public HConsistencyLevel getConsistencyLevelForRead(String columnFamily)
@@ -134,5 +140,25 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 	public void setCurrentReadLevel(ConsistencyLevel readLevel)
 	{
 		currentReadConsistencyLevel.set(readLevel);
+	}
+
+	public void removeCurrentReadLevel()
+	{
+		currentReadConsistencyLevel.remove();
+	}
+
+	public ConsistencyLevel getCurrentWriteLevel()
+	{
+		return currentWriteConsistencyLevel.get();
+	}
+
+	public void setCurrentWriteLevel(ConsistencyLevel writeLevel)
+	{
+		currentWriteConsistencyLevel.set(writeLevel);
+	}
+
+	public void removeCurrentWriteLevel()
+	{
+		currentWriteConsistencyLevel.remove();
 	}
 }
