@@ -1,9 +1,12 @@
 package info.archinnov.achilles.iterator;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,6 +108,8 @@ public class AchillesCounterSliceIteratorTest
 		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
+		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
+
 		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(policy, columnFamily,
 				query, start, end, false, 10);
 
@@ -128,8 +133,9 @@ public class AchillesCounterSliceIteratorTest
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
+		verify(policy, atLeastOnce()).setCurrentReadLevel(LOCAL_QUORUM);
+		verify(policy, atLeastOnce()).setCurrentReadLevel(ONE);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
-		verify(policy).reinitDefaultConsistencyLevels();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -160,6 +166,8 @@ public class AchillesCounterSliceIteratorTest
 				false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
+		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
+
 		iterator = new AchillesCounterSliceIterator<Long, DynamicComposite>(policy, columnFamily,
 				query, start, end, false, count);
 
@@ -184,8 +192,10 @@ public class AchillesCounterSliceIteratorTest
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(query).setRange(name2, end, false, count);
+
+		verify(policy, times(2)).setCurrentReadLevel(LOCAL_QUORUM);
+		verify(policy, times(2)).setCurrentReadLevel(ONE);
 		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
-		verify(policy, times(2)).reinitDefaultConsistencyLevels();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

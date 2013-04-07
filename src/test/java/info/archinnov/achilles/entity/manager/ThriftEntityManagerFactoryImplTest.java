@@ -34,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
@@ -98,6 +99,7 @@ public class ThriftEntityManagerFactoryImplTest
 		when(entityParser.parseEntity(contextCaptor.capture()))
 				.thenReturn(entityMeta1, entityMeta2);
 
+		Whitebox.setInternalState(factory, "entityMetaMap", entityMetaMap);
 		factory.bootstrap();
 
 		verify(validator).validateAtLeastOneEntity(classes, entityPackages);
@@ -118,8 +120,8 @@ public class ThriftEntityManagerFactoryImplTest
 	{
 		ArrayList<Class<?>> entities = new ArrayList<Class<?>>();
 		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		doThrow(new AchillesBeanMappingException()).when(validator).validateAtLeastOneEntity(entities,
-				entityPackages);
+		doThrow(new AchillesBeanMappingException()).when(validator).validateAtLeastOneEntity(
+				entities, entityPackages);
 		exception.expect(AchillesBeanMappingException.class);
 		factory.discoverEntities();
 	}

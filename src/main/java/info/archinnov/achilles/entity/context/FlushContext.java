@@ -28,7 +28,7 @@ public class FlushContext
 	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private final CounterDao counterDao;
 
-	private final Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
 	private final ConsistencyContext consistencyContext;
 	protected boolean hasCustomConsistencyLevels = false;
 	private BatchType type = BatchType.NONE;

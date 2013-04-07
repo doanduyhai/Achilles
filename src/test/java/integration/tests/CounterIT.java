@@ -114,6 +114,8 @@ public class CounterIT
 
 		em.remove(bean);
 
+		Thread.sleep(1000);
+
 		actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(0);
@@ -355,8 +357,11 @@ public class CounterIT
 
 		em.remove(bean);
 
+		Thread.sleep(5000);
+
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
+
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "groovy");

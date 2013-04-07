@@ -2,12 +2,17 @@ package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.MERGE;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -16,15 +21,17 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import me.prettyprint.hector.api.mutation.Mutator;
-import net.sf.cglib.proxy.Callback;
-import net.sf.cglib.proxy.Factory;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -32,6 +39,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityMergerTest
@@ -50,16 +59,13 @@ public class EntityMergerTest
 	private EntityPersister persister;
 
 	@Mock
-	private JpaEntityInterceptor<Object, Bean> interceptor;
+	private JpaEntityInterceptor<Object, CompleteBean> interceptor;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
 	private PropertyMeta<?, String> propertyMeta;
-
-	@Mock
-	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
 	private GenericEntityDao<Long> dao;
@@ -71,148 +77,221 @@ public class EntityMergerTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private Bean entity;
-
-	@Captor
-	ArgumentCaptor<Mutator<Long>> mutatorCaptor;
+	private CounterDao counterDao;
 
 	@Mock
-	private Mutator<Long> mutator;
+	private AchillesConfigurableConsistencyLevelPolicy policy;
 
-	@Test
-	public void should_persist_if_not_proxy() throws Exception
+	@Captor
+	ArgumentCaptor<PersistenceContext<Long>> contextCaptor;
+
+	@Captor
+	ArgumentCaptor<List<UserBean>> listUserBeanCaptor;
+
+	@Captor
+	ArgumentCaptor<Set<UserBean>> setUserBeanCaptor;
+
+	@Captor
+	ArgumentCaptor<Map<Integer, UserBean>> mapUserBeanCaptor;
+
+	private PersistenceContext<Long> context;
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+
+	@SuppressWarnings("rawtypes")
+	@Before
+	public void setUp()
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).name("name").buid();
+		context = PersistenceContextTestBuilder
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity).build();
 
-		when(proxifier.buildProxy(entity, entityMeta)).thenReturn(entity);
-
-		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
-
-		assertThat(mergedEntity).isSameAs(entity);
-
-		verify(persister).persist(entity, entityMeta);
-	}
-
-	@Test
-	public void should_merge_proxy_with_simple_dirty() throws Exception
-	{
 		when(proxifier.isProxy(entity)).thenReturn(true);
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
-
-		when(entityMeta.getEntityDao()).thenReturn(dao);
-		when(dao.buildMutator()).thenReturn(mutator);
-
-		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
-		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
-		dirty.put(ageSetter, propertyMeta);
-
+		when((JpaEntityInterceptor) proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(dirtyMap.size()).thenReturn(1);
-		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
-		when(interceptor.getKey()).thenReturn(1L);
-		when(interceptor.getTarget()).thenReturn(entity);
-		when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
-
-		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
-
-		assertThat(mergedEntity).isSameAs(entity);
-
-		verify(persister).persistProperty(eq(entity), eq(1L), eq(dao), eq(propertyMeta),
-				mutatorCaptor.capture());
-		assertThat(mutatorCaptor.getValue()).isSameAs(mutator);
-
-		verify(dao).executeMutator(mutator);
-		verify(dirtyMap).clear();
+		dirtyMap.clear();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_merge_proxy_with_multi_value_dirty() throws Exception
 	{
 
-		when(proxifier.isProxy(entity)).thenReturn(true);
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
 
-		when(entityMeta.getEntityDao()).thenReturn(dao);
-		when(dao.buildMutator()).thenReturn(mutator);
+		PropertyMeta<Void, String> friendsMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, String.class) //
+				.field("friends") //
+				.accesors() //
+				.type(PropertyType.LIST) //
+				.build();
 
-		Method ageSetter = CompleteBean.class.getDeclaredMethod("setAge", Long.class);
-		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
-		dirty.put(ageSetter, propertyMeta);
+		dirtyMap.put(friendsMeta.getGetter(), friendsMeta);
 
-		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
-		when(dirtyMap.size()).thenReturn(1);
-		when(interceptor.getKey()).thenReturn(1L);
-		when(interceptor.getTarget()).thenReturn(entity);
-		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SET);
-
-		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
+		CompleteBean mergedEntity = merger.mergeEntity(context);
 
 		assertThat(mergedEntity).isSameAs(entity);
 
-		verify(persister).removePropertyBatch(eq(1L), eq(dao), eq(propertyMeta),
-				mutatorCaptor.capture());
-		verify(persister).persistProperty(eq(entity), eq(1L), eq(dao), eq(propertyMeta),
-				mutatorCaptor.capture());
-
-		assertThat(mutatorCaptor.getAllValues()).containsExactly(mutator, mutator);
-		verify(dao).executeMutator(mutator);
-
-		verify(dirtyMap).clear();
+		verify(persister).removePropertyBatch(context, friendsMeta);
+		verify(persister).persistProperty(context, friendsMeta);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
 	public void should_merge_proxy_with_no_dirty() throws Exception
 	{
-		when(proxifier.isProxy(entity)).thenReturn(true);
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
 
-		when(entityMeta.getEntityDao()).thenReturn(dao);
-		when(dao.buildMutator()).thenReturn(mutator);
-
-		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
-
-		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
-
-		CompleteBean mergedEntity = merger.mergeEntity(entity, entityMeta);
+		CompleteBean mergedEntity = merger.mergeEntity(context);
 
 		assertThat(mergedEntity).isSameAs(entity);
-
 		verifyZeroInteractions(persister);
-		verifyZeroInteractions(mutator);
-		verify(dirtyMap).clear();
+		assertThat(dirtyMap).isEmpty();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_merge_proxy_with_join_entity() throws Exception
 	{
-		when(proxifier.isProxy(entity)).thenReturn(true);
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		PropertyMeta<Void, UserBean> joinPropertyMeta = prepareJoinPropertyMeta();
+		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
 
-		when(entityMeta.getEntityDao()).thenReturn(dao);
-		Map<Method, PropertyMeta<?, ?>> dirty = new HashMap<Method, PropertyMeta<?, ?>>();
+		UserBean userBean = new UserBean();
+		userBean.setUserId(10L);
 
-		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(dirtyMap.entrySet()).thenReturn(dirty.entrySet());
+		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
+				userBean);
+		when(proxifier.isProxy(userBean)).thenReturn(false);
+		when(proxifier.buildProxy(eq(userBean), any(PersistenceContext.class)))
+				.thenReturn(userBean);
+
+		CompleteBean actual = merger.mergeEntity(context);
+
+		assertThat(actual).isSameAs(entity);
+		verify(persister).persist(contextCaptor.capture());
+		verify(introspector).setValueToField(entity, joinPropertyMeta.getSetter(), userBean);
+		verify(interceptor).setTarget(entity);
+		PersistenceContext<Long> joinContext = contextCaptor.getValue();
+		assertThat(joinContext.getEntity()).isSameAs(userBean);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_merge_proxy_with_list_of_join_entity() throws Exception
+	{
+		PropertyMeta<Void, UserBean> joinPropertyMeta = prepareJoinPropertyMeta();
+		joinPropertyMeta.setType(PropertyType.JOIN_LIST);
+
+		UserBean userBean = new UserBean();
+		userBean.setUserId(10L);
+
+		List<UserBean> userBeans = Arrays.asList(userBean);
+		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
+				userBeans);
+		when(proxifier.isProxy(userBean)).thenReturn(false);
+		when(proxifier.buildProxy(eq(userBean), any(PersistenceContext.class)))
+				.thenReturn(userBean);
+
+		CompleteBean actual = merger.mergeEntity(context);
+
+		assertThat(actual).isSameAs(entity);
+		verify(persister).persist(contextCaptor.capture());
+		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+				listUserBeanCaptor.capture());
+		verify(interceptor).setTarget(entity);
+		PersistenceContext<Long> joinContext = contextCaptor.getValue();
+		assertThat(joinContext.getEntity()).isSameAs(userBean);
+		assertThat(listUserBeanCaptor.getValue()).containsExactly(userBean);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_merge_proxy_with_set_of_join_entity() throws Exception
+	{
+		PropertyMeta<Void, UserBean> joinPropertyMeta = prepareJoinPropertyMeta();
+		joinPropertyMeta.setType(PropertyType.JOIN_SET);
+
+		UserBean userBean = new UserBean();
+		userBean.setUserId(10L);
+
+		Set<UserBean> userBeans = new HashSet<UserBean>();
+		userBeans.add(userBean);
+
+		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
+				userBeans);
+		when(proxifier.isProxy(userBean)).thenReturn(false);
+		when(proxifier.buildProxy(eq(userBean), any(PersistenceContext.class)))
+				.thenReturn(userBean);
+
+		CompleteBean actual = merger.mergeEntity(context);
+
+		assertThat(actual).isSameAs(entity);
+		verify(persister).persist(contextCaptor.capture());
+		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+				setUserBeanCaptor.capture());
+		verify(interceptor).setTarget(entity);
+		PersistenceContext<Long> joinContext = contextCaptor.getValue();
+		assertThat(joinContext.getEntity()).isSameAs(userBean);
+		assertThat(setUserBeanCaptor.getValue()).containsExactly(userBean);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_merge_proxy_with_map_of_join_entity() throws Exception
+	{
+		PropertyMeta<Void, UserBean> joinPropertyMeta = prepareJoinPropertyMeta();
+		joinPropertyMeta.setType(PropertyType.JOIN_SET);
+
+		UserBean userBean = new UserBean();
+		userBean.setUserId(10L);
+
+		Set<UserBean> userBeans = new HashSet<UserBean>();
+		userBeans.add(userBean);
+
+		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
+				userBeans);
+		when(proxifier.isProxy(userBean)).thenReturn(false);
+		when(proxifier.buildProxy(eq(userBean), any(PersistenceContext.class)))
+				.thenReturn(userBean);
+
+		CompleteBean actual = merger.mergeEntity(context);
+
+		assertThat(actual).isSameAs(entity);
+		verify(persister).persist(contextCaptor.capture());
+		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+				setUserBeanCaptor.capture());
+		verify(interceptor).setTarget(entity);
+		PersistenceContext<Long> joinContext = contextCaptor.getValue();
+		assertThat(joinContext.getEntity()).isSameAs(userBean);
+		assertThat(setUserBeanCaptor.getValue()).containsExactly(userBean);
+	}
+
+	// /////////////////////
+	private PropertyMeta<Void, UserBean> prepareJoinPropertyMeta() throws Exception,
+			NoSuchMethodException
+	{
+		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+				.of(UserBean.class, Void.class, Long.class) //
+				.field("userId") //
+				.type(PropertyType.SIMPLE)//
+				.accesors() //
+				.build();
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
+		joinEntityMeta.setIdMeta(joinIdMeta);
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 		joinProperties.addCascadeType(MERGE);
 
-		Method userGetter = Bean.class.getMethod("getUser");
-		Method userSetter = Bean.class.getMethod("setUser", UserBean.class);
+		Method userGetter = CompleteBean.class.getMethod("getUser");
+		Method userSetter = CompleteBean.class.getMethod("setUser", UserBean.class);
 
 		PropertyMeta<Void, UserBean> joinPropertyMeta = new PropertyMeta<Void, UserBean>();
-		joinPropertyMeta.setType(PropertyType.JOIN_SIMPLE);
 		joinPropertyMeta.setSingleKey(true);
-
 		joinPropertyMeta.setJoinProperties(joinProperties);
 		joinPropertyMeta.setGetter(userGetter);
 		joinPropertyMeta.setSetter(userSetter);
@@ -222,60 +301,6 @@ public class EntityMergerTest
 
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);
 
-		UserBean userBean = new UserBean();
-
-		when(introspector.getValueFromField(entity, userGetter)).thenReturn(userBean);
-		when(proxifier.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
-
-		merger.mergeEntity(entity, entityMeta);
-
-		verify(persister).persist(userBean, joinEntityMeta);
-		verify(introspector).setValueToField(entity, userSetter, userBean);
-
-	}
-
-	class Bean extends CompleteBean implements Factory
-	{
-		public static final long serialVersionUID = 1L;
-
-		@Override
-		public Object newInstance(Callback callback)
-		{
-			return null;
-		}
-
-		@Override
-		public Object newInstance(Callback[] callbacks)
-		{
-			return null;
-		}
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public Object newInstance(Class[] types, Object[] args, Callback[] callbacks)
-		{
-			return null;
-		}
-
-		@Override
-		public Callback getCallback(int index)
-		{
-			return null;
-		}
-
-		@Override
-		public void setCallback(int index, Callback callback)
-		{}
-
-		@Override
-		public void setCallbacks(Callback[] callbacks)
-		{}
-
-		@Override
-		public Callback[] getCallbacks()
-		{
-			return null;
-		}
-
+		return joinPropertyMeta;
 	}
 }

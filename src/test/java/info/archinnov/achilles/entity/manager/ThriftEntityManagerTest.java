@@ -1,7 +1,10 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -10,11 +13,12 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
-import info.archinnov.achilles.entity.operations.EntityBatcher;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
@@ -88,9 +92,6 @@ public class ThriftEntityManagerTest
 	private EntityRefresher refresher;
 
 	@Mock
-	private EntityBatcher batcher;
-
-	@Mock
 	private EntityInitializer initializer;
 
 	@Mock
@@ -115,6 +116,9 @@ public class ThriftEntityManagerTest
 	@Mock
 	private Mutator<Long> joinMutator;
 
+	@Mock
+	private FlushContext flushContext;
+
 	@Captor
 	ArgumentCaptor<Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>> mutatorMapCaptor;
 
@@ -133,9 +137,9 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "loader", loader);
 		Whitebox.setInternalState(em, "merger", merger);
 		Whitebox.setInternalState(em, "refresher", refresher);
-		Whitebox.setInternalState(em, "batcher", batcher);
 		Whitebox.setInternalState(em, "initializer", initializer);
 		Whitebox.setInternalState(em, "proxifier", proxifier);
+		Whitebox.setInternalState(em, "flushContext", flushContext);
 		Whitebox.setInternalState(em, "entityValidator", entityValidator);
 		Whitebox.setInternalState(em, "entityMetaMap", entityMetaMap);
 
@@ -268,44 +272,64 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_start_batch() throws Exception
 	{
-
-		em.startBatch(entity);
-
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(proxifier).ensureProxy(entity);
-
-		verify(batcher).startBatchForEntity(eq(entity), contextCaptor.capture());
-
-		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);
-		assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(entityMeta);
-
+		when(flushContext.type()).thenReturn(BatchType.NONE);
+		em.startBatch();
+		verify(flushContext).startBatch();
 	}
 
 	@Test
-	public void should_exception_when_trying_to_batch_transient_entity() throws Exception
+	public void should_exception_when_trying_to_start_already_pending_batch() throws Exception
 	{
-		CompleteBean completeBean = new CompleteBean();
-
-		doThrow(new IllegalStateException("test")).when(proxifier).ensureProxy(completeBean);
+		when(flushContext.type()).thenReturn(BatchType.BATCH);
 
 		exception.expect(IllegalStateException.class);
-		exception.expectMessage("test");
+		exception.expectMessage("There is already a pending batch for this Entity Manager");
 
-		em.startBatch(completeBean);
+		em.startBatch();
+	}
+
+	@Test
+	public void should_start_batch_with_consistency_level() throws Exception
+	{
+		when(flushContext.type()).thenReturn(BatchType.NONE);
+		em.startBatch(EACH_QUORUM, LOCAL_QUORUM);
+		verify(flushContext).startBatch();
+		verify(flushContext).setReadConsistencyLevel(EACH_QUORUM);
+		verify(flushContext).setWriteConsistencyLevel(LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception
 	{
+		when(flushContext.type()).thenReturn(BatchType.BATCH);
+		em.endBatch();
+		verify(flushContext).endBatch();
+	}
 
-		em.endBatch(entity);
+	@Test
+	public void should_exception_when_ending_no_pending_batch() throws Exception
+	{
+		when(flushContext.type()).thenReturn(BatchType.NONE);
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("There is no pending batch for this Entity Manager. Please start a batch first");
+		em.endBatch();
+	}
 
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(proxifier).ensureProxy(entity);
-		verify(batcher).endBatch(eq(entity), contextCaptor.capture());
-		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);
-		assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(entityMeta);
+	@Test
+	public void should_reinit_flush_context_on_error() throws Exception
+	{
+		doThrow(new RuntimeException()).when(persister).persist(any(PersistenceContext.class));
 
+		try
+		{
+			em.persist(entity);
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+			verify(flushContext).reinitConsistencyLevels();
+		}
 	}
 
 	@Test

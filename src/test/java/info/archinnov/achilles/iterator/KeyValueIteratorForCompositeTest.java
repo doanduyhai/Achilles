@@ -36,7 +36,7 @@ public class KeyValueIteratorForCompositeTest
 {
 
 	@InjectMocks
-	private KeyValueIteratorForComposite<CorrectMultiKey, String> iterator;
+	private KeyValueIteratorForComposite<Long, CorrectMultiKey, String> iterator;
 
 	@Mock
 	private AchillesSliceIterator<CorrectMultiKey, Composite, String> achillesSliceIterator;

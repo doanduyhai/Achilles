@@ -1,14 +1,19 @@
 package info.archinnov.achilles.iterator;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.Iterator;
 import java.util.List;
@@ -108,6 +113,8 @@ public class AchillesSliceIteratorTest
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
+		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
+
 		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(policy, columnFamily,
 				query, start, end, false, 10);
 
@@ -131,8 +138,9 @@ public class AchillesSliceIteratorTest
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
+		verify(policy, atLeastOnce()).setCurrentReadLevel(LOCAL_QUORUM);
+		verify(policy, atLeastOnce()).setCurrentReadLevel(ONE);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
-		verify(policy).reinitDefaultConsistencyLevels();
 
 	}
 
@@ -189,8 +197,8 @@ public class AchillesSliceIteratorTest
 
 		verify(query).setRange(name2, end, false, count);
 
-		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
-		verify(policy, times(2)).reinitDefaultConsistencyLevels();
+		verify(policy).getCurrentReadLevel();
+		verify(policy, never()).setCurrentReadLevel(any(ConsistencyLevel.class));
 
 	}
 }

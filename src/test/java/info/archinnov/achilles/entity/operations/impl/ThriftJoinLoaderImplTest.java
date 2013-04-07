@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.operations;
+package info.archinnov.achilles.entity.operations.impl;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
@@ -6,12 +6,19 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
+import integration.tests.entity.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,16 +26,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * JoinEntityLoaderTest
@@ -37,11 +47,11 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class JoinEntityLoaderTest
+public class ThriftJoinLoaderImplTest
 {
 
 	@InjectMocks
-	private JoinEntityLoader loader;
+	private ThriftJoinLoaderImpl loader;
 
 	@Mock
 	private JoinEntityHelper joinHelper;
@@ -50,42 +60,49 @@ public class JoinEntityLoaderTest
 	private DynamicCompositeKeyFactory keyFactory;
 
 	@Mock
-	private PropertyMeta<?, String> propertyMeta;
+	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private PropertyMeta<Void, UserBean> listMeta;
+	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private PropertyMeta<Void, UserBean> setMeta;
+	private CounterDao counterDao;
 
 	@Mock
-	private PropertyMeta<Integer, UserBean> mapMeta;
+	private Mutator<Long> mutator;
 
 	@Mock
-	private EntityMeta<Long> joinMeta;
+	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	@Mock
-	private PropertyMeta<Void, Long> joinIdMeta;
+	private FlushContext flushContext;
 
-	@Mock
-	private GenericEntityDao<Long> dao;
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	@Captor
-	ArgumentCaptor<List<Long>> joinIdCaptor;
+	private PersistenceContext<Long> context;
 
-	@Mock
-	private UserBean user1, user2;
-
-	private Long key = 11L;
+	@SuppressWarnings("rawtypes")
+	@Before
+	public void setUp()
+	{
+		context = PersistenceContextTestBuilder
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity) //
+				.flushContext(flushContext) //
+				.entityDao(entityDao) //
+				.build();
+		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when((Mutator) flushContext.getEntityMutator("cf")).thenReturn(mutator);
+	}
 
 	@Test
 	public void should_load_join_list() throws Exception
 	{
-		prepareTest(listMeta);
-
-		List<UserBean> actual = loader.loadJoinListProperty(key, dao, listMeta);
-
-		assertThat(actual).containsExactly(user1, user2);
+		PropertyMeta<Void, User> propertyMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, String.class) //
+				.field("name") //
+				.accesors() //
+				.build();
 
 	}
 

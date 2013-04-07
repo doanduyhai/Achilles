@@ -8,11 +8,12 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
+import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
@@ -38,9 +39,10 @@ public class EntityLoader
 
 	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
 	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
-	private EntityMapper mapper = new EntityMapper();
 	private EntityIntrospector introspector = new EntityIntrospector();
-	private JoinEntityLoader joinLoader = new JoinEntityLoader();
+	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
+
+	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID> T load(PersistenceContext<ID> context)
@@ -67,15 +69,7 @@ public class EntityLoader
 			}
 			else
 			{
-				List<Pair<DynamicComposite, String>> columns = context.getEntityDao()
-						.eagerFetchEntity(primaryKey);
-				if (columns.size() > 0)
-				{
-					entity = entityClass.newInstance();
-					mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
-					introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(),
-							primaryKey);
-				}
+				entity = loaderImpl.load(context);
 			}
 
 		}
@@ -117,13 +111,13 @@ public class EntityLoader
 				value = loadJoinSimple(context, propertyMeta);
 				break;
 			case JOIN_LIST:
-				value = joinLoader.loadJoinListProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinListProperty(context, propertyMeta);
 				break;
 			case JOIN_SET:
-				value = joinLoader.loadJoinSetProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinSetProperty(context, propertyMeta);
 				break;
 			case JOIN_MAP:
-				value = joinLoader.loadJoinMapProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinMapProperty(context, propertyMeta);
 				break;
 			default:
 				return;

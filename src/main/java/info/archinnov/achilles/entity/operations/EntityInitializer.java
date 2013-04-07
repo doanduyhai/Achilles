@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.exception.AchillesException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +29,11 @@ public class EntityInitializer
 				{
 					propertyMeta.getGetter().invoke(entity);
 				}
-				catch (Exception e)
+				catch (Throwable e)
 				{
 					log.error("Cannot initialize property '" + propertyMeta.getPropertyName()
 							+ "' for entity '" + entity + "'", e);
+					throw new AchillesException(e);
 				}
 			}
 		}

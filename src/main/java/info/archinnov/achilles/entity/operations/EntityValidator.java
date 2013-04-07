@@ -55,8 +55,9 @@ public class EntityValidator
 
 		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			throw new IllegalArgumentException(
-					"This operation is not allowed for an entity directly mapped to a native column family");
+			throw new IllegalArgumentException("This operation is not allowed for the entity '"
+					+ entity.getClass().getCanonicalName()
+					+ "' directly mapped to a native column family");
 		}
 	}
 

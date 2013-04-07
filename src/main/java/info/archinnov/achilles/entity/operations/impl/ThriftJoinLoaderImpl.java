@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.operations;
+package info.archinnov.achilles.entity.operations.impl;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
@@ -27,13 +27,13 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
  * @author DuyHai DOAN
  * 
  */
-public class JoinEntityLoader
+public class ThriftJoinLoaderImpl
 {
 	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, V> List<V> loadJoinListProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
@@ -56,7 +56,7 @@ public class JoinEntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
@@ -79,7 +79,7 @@ public class JoinEntityLoader
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
 

@@ -129,7 +129,7 @@ public class EntityMerger
 		Object joinEntity = introspector.getValueFromField(entity, propertyMeta.getGetter());
 		if (joinEntity != null)
 		{
-			Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+			Object mergedEntity = mergeEntity(context.newPersistenceContext(
 					joinProperties.getEntityMeta(), joinEntity));
 			introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
 		}
@@ -165,7 +165,7 @@ public class EntityMerger
 		{
 			for (Object joinEntity : joinEntities)
 			{
-				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+				Object mergedEntity = mergeEntity(context.newPersistenceContext(
 						joinProperties.getEntityMeta(), joinEntity));
 				mergedEntities.add(mergedEntity);
 			}

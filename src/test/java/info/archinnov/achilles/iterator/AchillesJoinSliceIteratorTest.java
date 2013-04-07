@@ -1,14 +1,17 @@
 package info.archinnov.achilles.iterator;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
@@ -69,6 +72,9 @@ public class AchillesJoinSliceIteratorTest
 	@Mock
 	private JoinEntityHelper joinHelper;
 
+	@Mock
+	private GenericEntityDao<Long> joinEntityDao;
+
 	private UserBean user1 = new UserBean();
 	private UserBean user2 = new UserBean();
 	private UserBean user3 = new UserBean();
@@ -76,7 +82,7 @@ public class AchillesJoinSliceIteratorTest
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean> iterator;
+	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean> iterator;
 
 	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;
@@ -98,14 +104,11 @@ public class AchillesJoinSliceIteratorTest
 		when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
 		when(propertyMeta.getValueSerializer()).thenReturn((Serializer) OBJECT_SRZ);
 
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinEntityMeta);
-
 		user1.setName("user1");
 		user2.setName("user2");
 		user3.setName("user3");
 
-		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
 
 		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
 		joinIdMeta.setValueClass(Long.class);
@@ -147,16 +150,18 @@ public class AchillesJoinSliceIteratorTest
 		entitiesMap.put(joinId2, user2);
 		entitiesMap.put(joinId3, user3);
 
+		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
+
 		when(
 				joinHelper.loadJoinEntities(UserBean.class,
-						Arrays.asList(joinId1, joinId2, joinId3), joinEntityMeta)).thenReturn(
-				entitiesMap);
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
-				policy, columnFamily, propertyMeta, query, start, end, false, 10);
+						Arrays.asList(joinId1, joinId2, joinId3), joinEntityMeta, joinEntityDao))
+				.thenReturn(entitiesMap);
 
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean>(
+				policy, joinEntityDao, columnFamily, propertyMeta, query, start, end, false, 10);
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
-		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
+		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
@@ -179,8 +184,9 @@ public class AchillesJoinSliceIteratorTest
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
+		verify(policy, atLeastOnce()).setCurrentReadLevel(LOCAL_QUORUM);
+		verify(policy, atLeastOnce()).setCurrentReadLevel(ONE);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
-		verify(policy).reinitDefaultConsistencyLevels();
 
 	}
 
@@ -220,14 +226,17 @@ public class AchillesJoinSliceIteratorTest
 		entitiesMap.put(joinId2, user2);
 		entitiesMap.put(joinId3, user3);
 
+		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
+
 		when(
 				joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
-						joinEntityMeta)).thenReturn(entitiesMap);
-		when(joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta))
-				.thenReturn(entitiesMap);
+						joinEntityMeta, joinEntityDao)).thenReturn(entitiesMap);
+		when(
+				joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta,
+						joinEntityDao)).thenReturn(entitiesMap);
 
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, UserBean>(
-				policy, columnFamily, propertyMeta, query, start, end, false, count);
+		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean>(
+				policy, joinEntityDao, columnFamily, propertyMeta, query, start, end, false, count);
 
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 
@@ -253,6 +262,7 @@ public class AchillesJoinSliceIteratorTest
 
 		verify(query).setRange(name2, end, false, count);
 		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
-		verify(policy, times(2)).reinitDefaultConsistencyLevels();
+		verify(policy, times(2)).setCurrentReadLevel(LOCAL_QUORUM);
+		verify(policy, times(2)).setCurrentReadLevel(ONE);
 	}
 }

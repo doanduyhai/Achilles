@@ -10,8 +10,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.prettyprint.hector.api.mutation.Mutator;
-
 import org.powermock.reflect.Whitebox;
 
 /**
@@ -34,10 +32,7 @@ public class PersistenceContextTestBuilder<ID>
 	private GenericEntityDao<ID> entityDao;
 	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
 
-	private Mutator<ID> mutator;
-	private boolean pendingBatch = false;
-	private GenericEntityDao<?> joinEntityDao;
-	private Mutator<?> joinMutator;
+	private FlushContext flushContext;
 
 	public static <ID, T> PersistenceContextTestBuilder<ID> context(EntityMeta<ID> entityMeta,//
 			CounterDao counterDao, //
@@ -67,16 +62,18 @@ public class PersistenceContextTestBuilder<ID>
 
 	public PersistenceContext<ID> build()
 	{
-		PersistenceContext<ID> context = new PersistenceContext<ID>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, entityClass, primaryKey);
+		PersistenceContext<ID> context = new PersistenceContext<ID>(//
+				entityMeta, //
+				entityDaosMap, //
+				columnFamilyDaosMap, //
+				counterDao, //
+				policy, //
+				flushContext, //
+				entityClass, primaryKey);
 
 		context.setEntity(entity);
 		Whitebox.setInternalState(context, "entityDao", entityDao);
 		Whitebox.setInternalState(context, "columnFamilyDao", columnFamilyDao);
-		context.setMutator(mutator);
-		Whitebox.setInternalState(context, "pendingBatch", pendingBatch);
-		Whitebox.setInternalState(context, "joinEntityDao", joinEntityDao);
-		Whitebox.setInternalState(context, "joinMutator", joinMutator);
 		return context;
 	}
 
@@ -113,28 +110,9 @@ public class PersistenceContextTestBuilder<ID>
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> mutator(Mutator<ID> mutator)
+	public PersistenceContextTestBuilder<ID> flushContext(FlushContext flushContext)
 	{
-		this.mutator = mutator;
-		return this;
-	}
-
-	public PersistenceContextTestBuilder<ID> pendingBatch(boolean pendingBatch)
-	{
-		this.pendingBatch = pendingBatch;
-		return this;
-	}
-
-	public PersistenceContextTestBuilder<ID> joinEntityDao(
-			GenericEntityDao<?> joinEntityDao)
-	{
-		this.joinEntityDao = joinEntityDao;
-		return this;
-	}
-
-	public PersistenceContextTestBuilder<ID> joinMutator(Mutator<?> joinMutator)
-	{
-		this.joinMutator = joinMutator;
+		this.flushContext = flushContext;
 		return this;
 	}
 

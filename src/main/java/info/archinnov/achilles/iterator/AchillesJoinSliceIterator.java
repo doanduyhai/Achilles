@@ -39,7 +39,8 @@ public class AchillesJoinSliceIterator<K, N extends AbstractComposite, V, JOIN_I
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 	private GenericEntityDao<JOIN_ID> joinEntityDao;
 
-	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, //
+	public AchillesJoinSliceIterator( //
+			AchillesConfigurableConsistencyLevelPolicy policy, //
 			GenericEntityDao<JOIN_ID> joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
 			SliceQuery<K, N, V> query, N start, //

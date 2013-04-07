@@ -361,6 +361,9 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 	public void removeCounterBatch(K key, N name, Mutator<K> mutator)
 	{
 		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
+		// Long currentValue = this.getCounterValue(key, name);
+		// mutator.addCounter(key, columnFamily,
+		// HFactory.createCounterColumn(name, currentValue * -1L, columnNameSerializer));
 	}
 
 	public void removeCounterRow(K key)
@@ -376,7 +379,9 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		while (iterator.hasNext())
 		{
 			HCounterColumn<N> counterCol = iterator.next();
-			mutator.deleteCounter(key, columnFamily, counterCol.getName(), columnNameSerializer);
+			mutator.addCounter(key, columnFamily,
+					HFactory.createCounterColumn(counterCol.getName(), 0L, columnNameSerializer));
+			// mutator.deleteCounter(key, columnFamily, counterCol.getName(), columnNameSerializer);
 		}
 		this.executeMutator(mutator);
 	}
@@ -393,6 +398,9 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		while (iterator.hasNext())
 		{
 			HCounterColumn<N> counterCol = iterator.next();
+			// Long currentValue = this.getCounterValue(key, counterCol.getName());
+			// mutator.addCounter(key, columnFamily, HFactory.createCounterColumn(
+			// counterCol.getName(), currentValue * -1L, columnNameSerializer));
 			mutator.deleteCounter(key, columnFamily, counterCol.getName(), columnNameSerializer);
 		}
 	}
