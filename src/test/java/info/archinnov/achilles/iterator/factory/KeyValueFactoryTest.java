@@ -5,7 +5,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -81,13 +83,27 @@ public class KeyValueFactoryTest
 	@Mock
 	private DynamicCompositeTransformer dynamicCompositeTransformer;
 
+	@Mock
+	private PersistenceContext<Long> context, joinContext1, joinContext2;
+
+	@Mock
+	private GenericEntityDao<Long> joinEntityDao;
+
 	@Captor
 	private ArgumentCaptor<List<Long>> joinIdsCaptor;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
+	private Long joinId1 = 11L, joinId2 = 12L;
+	private Integer key1 = 11, key2 = 12, ttl1 = 456, ttl2 = 789;
+	private UserBean bean1 = new UserBean(), bean2 = new UserBean();
+	private EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+	private PropertyMeta<Integer, UserBean> propertyMeta;
+	private Map<Long, UserBean> map = new HashMap<Long, UserBean>();
+
+	@SuppressWarnings("rawtypes")
 	@Before
-	public void setUp()
+	public void setUp() throws Exception
 	{
 		Whitebox.setInternalState(factory, "proxifier", proxifier);
 		Whitebox.setInternalState(factory, "joinHelper", joinHelper);
@@ -96,6 +112,23 @@ public class KeyValueFactoryTest
 				dynamicCompositeTransformer);
 
 		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when((GenericEntityDao) context.findEntityDao("join_cf")).thenReturn(joinEntityDao);
+
+		joinMeta.setColumnFamilyName("join_cf");
+		propertyMeta = noClass(Integer.class, UserBean.class) //
+				.joinMeta(joinMeta)//
+				.build();
+
+		map.clear();
+		map.put(joinId1, bean1);
+		map.put(joinId2, bean2);
+
+		when(joinHelper.loadJoinEntities(eq(UserBean.class), //
+				joinIdsCaptor.capture(), eq(joinMeta), eq(joinEntityDao))).thenReturn(map);
+		when(context.newPersistenceContext(joinMeta, bean1)).thenReturn(joinContext1);
+		when(context.newPersistenceContext(joinMeta, bean2)).thenReturn(joinContext2);
+		when(proxifier.buildProxy(bean1, joinContext1)).thenReturn(bean1);
+		when(proxifier.buildProxy(bean2, joinContext2)).thenReturn(bean2);
 	}
 
 	@Test
@@ -105,10 +138,11 @@ public class KeyValueFactoryTest
 		HColumn<DynamicComposite, String> hColumn = HColumnTestBuilder.dynamic(dynComp, "test");
 
 		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "test");
-		when(dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(wideMapMeta, hColumn))
-				.thenReturn(keyValue);
-		KeyValue<Integer, String> built = factory.createKeyValueForDynamicComposite(wideMapMeta,
-				hColumn);
+		when(
+				dynamicCompositeTransformer.buildKeyValueFromDynamicComposite(context, wideMapMeta,
+						hColumn)).thenReturn(keyValue);
+		KeyValue<Integer, String> built = factory.createKeyValueForDynamicComposite(context,
+				wideMapMeta, hColumn);
 
 		assertThat(built).isSameAs(keyValue);
 	}
@@ -134,9 +168,10 @@ public class KeyValueFactoryTest
 		DynamicComposite dynComp = CompositeTestBuilder.builder().buildDynamic();
 		HColumn<DynamicComposite, String> hColumn = HColumnTestBuilder.dynamic(dynComp, value);
 
-		when(dynamicCompositeTransformer.buildValueFromDynamicComposite(wideMapMeta, hColumn))
-				.thenReturn(value);
-		String built = factory.createValueForDynamicComposite(wideMapMeta, hColumn);
+		when(
+				dynamicCompositeTransformer.buildValueFromDynamicComposite(context, wideMapMeta,
+						hColumn)).thenReturn(value);
+		String built = factory.createValueForDynamicComposite(context, wideMapMeta, hColumn);
 
 		assertThat(built).isEqualTo(value);
 	}
@@ -171,12 +206,6 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_join_value_list_for_dynamic_composite() throws Exception
 	{
-		Long joinId1 = 11L, joinId2 = 12L;
-		UserBean bean1 = new UserBean(), bean2 = new UserBean();
-
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, UserBean> propertyMeta = noClass(Integer.class, UserBean.class)
-				.joinMeta(joinMeta).build();
 
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().buildDynamic();
@@ -187,7 +216,6 @@ public class KeyValueFactoryTest
 
 		Function<HColumn<DynamicComposite, String>, Object> rawValueFn = new Function<HColumn<DynamicComposite, String>, Object>()
 		{
-
 			@Override
 			public Object apply(HColumn<DynamicComposite, String> hCol)
 			{
@@ -205,16 +233,8 @@ public class KeyValueFactoryTest
 
 		when(dynamicCompositeTransformer.buildRawValueTransformer(propertyMeta)).thenReturn(
 				rawValueFn);
-		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
-		map.put(joinId1, bean1);
-		map.put(joinId2, bean2);
-
-		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
-				.thenReturn(map);
-		when(proxifier.buildProxy(bean1, joinMeta)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinMeta)).thenReturn(bean2);
-		List<UserBean> builtList = factory.createJoinValueListForDynamicComposite(propertyMeta,
-				Arrays.asList(hCol1, hCol2));
+		List<UserBean> builtList = factory.createJoinValueListForDynamicComposite(context,
+				propertyMeta, Arrays.asList(hCol1, hCol2));
 
 		assertThat(builtList).containsExactly(bean1, bean2);
 		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
@@ -275,11 +295,11 @@ public class KeyValueFactoryTest
 			}
 		};
 
-		when(dynamicCompositeTransformer.buildKeyValueTransformer(wideMapMeta))
+		when(dynamicCompositeTransformer.buildKeyValueTransformer(context, wideMapMeta))
 				.thenReturn(function);
 
 		List<KeyValue<Integer, String>> builtList = factory.createKeyValueListForDynamicComposite(
-				wideMapMeta, Arrays.asList(hCol1, hCol2));
+				context, wideMapMeta, Arrays.asList(hCol1, hCol2));
 
 		assertThat(builtList).hasSize(2);
 
@@ -300,14 +320,6 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_join_key_value_list_for_dynamic_composite() throws Exception
 	{
-		Integer key1 = 11, key2 = 12, ttl1 = 456, ttl2 = 789;
-		Long joinId1 = 11L, joinId2 = 12L;
-		UserBean bean1 = new UserBean(), bean2 = new UserBean();
-
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, UserBean> propertyMeta = noClass(Integer.class, UserBean.class)
-				.joinMeta(joinMeta).build();
-
 		DynamicComposite dynComp1 = CompositeTestBuilder.builder().values(0, 1, key1)
 				.buildDynamic();
 		DynamicComposite dynComp2 = CompositeTestBuilder.builder().values(0, 1, key2)
@@ -357,17 +369,8 @@ public class KeyValueFactoryTest
 				rawValueFn);
 		when(dynamicCompositeTransformer.buildTtlTransformer()).thenReturn(ttlFn);
 
-		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
-		map.put(joinId1, bean1);
-		map.put(joinId2, bean2);
-
-		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
-				.thenReturn(map);
-		when(proxifier.buildProxy(bean1, joinMeta)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinMeta)).thenReturn(bean2);
-
 		List<KeyValue<Integer, UserBean>> builtList = factory
-				.createJoinKeyValueListForDynamicComposite(propertyMeta,
+				.createJoinKeyValueListForDynamicComposite(context, propertyMeta,
 						Arrays.asList(hCol1, hCol2));
 
 		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
@@ -391,9 +394,10 @@ public class KeyValueFactoryTest
 		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, "test");
 
 		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "test");
-		when(compositeTransformer.buildKeyValueFromComposite(wideMapMeta, hColumn)).thenReturn(
-				keyValue);
-		KeyValue<Integer, String> built = factory.createKeyValueForComposite(wideMapMeta, hColumn);
+		when(compositeTransformer.buildKeyValueFromComposite(context, wideMapMeta, hColumn))
+				.thenReturn(keyValue);
+		KeyValue<Integer, String> built = factory.createKeyValueForComposite(context, wideMapMeta,
+				hColumn);
 
 		assertThat(built).isSameAs(keyValue);
 	}
@@ -418,8 +422,9 @@ public class KeyValueFactoryTest
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
 		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, value);
 
-		when(compositeTransformer.buildValueFromComposite(wideMapMeta, hColumn)).thenReturn(value);
-		String built = factory.createValueForComposite(wideMapMeta, hColumn);
+		when(compositeTransformer.buildValueFromComposite(context, wideMapMeta, hColumn))
+				.thenReturn(value);
+		String built = factory.createValueForComposite(context, wideMapMeta, hColumn);
 
 		assertThat(built).isSameAs(value);
 	}
@@ -450,7 +455,7 @@ public class KeyValueFactoryTest
 				(Function) function);
 
 		List<String> builtList = factory.createValueListForComposite(wideMapMeta,
-				Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
+				Arrays.asList((HColumn<Composite, String>) hCol1, hCol2));
 
 		assertThat(builtList).containsExactly("test1", "test2");
 	}
@@ -463,13 +468,6 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_join_value_list_for_composite() throws Exception
 	{
-		Long joinId1 = 11L, joinId2 = 12L;
-		UserBean bean1 = new UserBean(), bean2 = new UserBean();
-
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, UserBean> propertyMeta = noClass(Integer.class, UserBean.class)
-				.joinMeta(joinMeta).build();
-
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
 		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(comp1, joinId1);
@@ -485,16 +483,8 @@ public class KeyValueFactoryTest
 		};
 
 		when(compositeTransformer.buildRawValueTransformer()).thenReturn((Function) rawValueFn);
-		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
-		map.put(joinId1, bean1);
-		map.put(joinId2, bean2);
-
-		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
-				.thenReturn(map);
-		when(proxifier.buildProxy(bean1, joinMeta)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinMeta)).thenReturn(bean2);
-		List<UserBean> builtList = factory.createJoinValueListForComposite(propertyMeta,
-				Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
+		List<UserBean> builtList = factory.createJoinValueListForComposite(context, propertyMeta,
+				Arrays.asList((HColumn<Composite, Long>) hCol1, hCol2));
 
 		assertThat(builtList).containsExactly(bean1, bean2);
 		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
@@ -525,7 +515,7 @@ public class KeyValueFactoryTest
 		when(compositeTransformer.buildKeyTransformer(wideMapMeta)).thenReturn((Function) function);
 
 		List<Integer> builtList = factory.createKeyListForComposite(wideMapMeta,
-				Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
+				Arrays.asList((HColumn<Composite, String>) hCol1, hCol2));
 
 		assertThat(builtList).containsExactly(11, 12);
 	}
@@ -556,11 +546,11 @@ public class KeyValueFactoryTest
 			}
 		};
 
-		when(compositeTransformer.buildKeyValueTransformer(wideMapMeta)).thenReturn(
+		when(compositeTransformer.buildKeyValueTransformer(context, wideMapMeta)).thenReturn(
 				(Function) function);
 
-		List<KeyValue<Integer, String>> builtList = factory.createKeyValueListForComposite(
-				wideMapMeta, Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
+		List<KeyValue<Integer, String>> builtList = factory.createKeyValueListForComposite(context,
+				wideMapMeta, Arrays.asList((HColumn<Composite, String>) hCol1, hCol2));
 
 		assertThat(builtList).hasSize(2);
 
@@ -581,14 +571,6 @@ public class KeyValueFactoryTest
 	@Test
 	public void should_create_join_keyvalue_list_for_composite() throws Exception
 	{
-		Integer key1 = 11, key2 = 12, ttl1 = 456, ttl2 = 789;
-		Long joinId1 = 11L, joinId2 = 12L;
-		UserBean bean1 = new UserBean(), bean2 = new UserBean();
-
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		PropertyMeta<Integer, UserBean> propertyMeta = noClass(Integer.class, UserBean.class)
-				.joinMeta(joinMeta).build();
-
 		Composite comp1 = CompositeTestBuilder.builder().values(key1).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(key2).buildSimple();
 		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(comp1, joinId1, ttl1);
@@ -626,16 +608,8 @@ public class KeyValueFactoryTest
 		when(compositeTransformer.buildRawValueTransformer()).thenReturn((Function) rawValueFn);
 		when(compositeTransformer.buildTtlTransformer()).thenReturn((Function) ttlFn);
 
-		Map<Long, UserBean> map = new HashMap<Long, UserBean>();
-		map.put(joinId1, bean1);
-		map.put(joinId2, bean2);
-
-		when(joinHelper.loadJoinEntities(eq(UserBean.class), joinIdsCaptor.capture(), eq(joinMeta)))
-				.thenReturn(map);
-		when(proxifier.buildProxy(bean1, joinMeta)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinMeta)).thenReturn(bean2);
 		List<KeyValue<Integer, UserBean>> builtList = factory.createJoinKeyValueListForComposite(
-				propertyMeta, Arrays.asList((HColumn<Composite, ?>) hCol1, hCol2));
+				context, propertyMeta, Arrays.asList((HColumn<Composite, Long>) hCol1, hCol2));
 
 		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
 

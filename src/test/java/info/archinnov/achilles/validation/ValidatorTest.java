@@ -1,15 +1,13 @@
 package info.archinnov.achilles.validation;
 
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -124,15 +122,6 @@ public class ValidatorTest
 	{
 		String[] array = new String[2];
 		Validator.validateInstantiable(array.getClass());
-	}
-
-	@Test(expected = AchillesBeanMappingException.class)
-	public void should_exception_when_type_not_allowed() throws Exception
-	{
-		Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-		allowedTypes.add(String.class);
-		allowedTypes.add(Long.class);
-		Validator.validateAllowedTypes(Integer.class, allowedTypes, "");
 	}
 
 	@Test

@@ -1,8 +1,8 @@
 package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -53,6 +53,9 @@ public class KeyValueIteratorForCompositeTest
 	@Mock
 	private KeyValueFactory factory;
 
+	@Mock
+	private PersistenceContext<Long> context;
+
 	@Before
 	public void setUp()
 	{
@@ -84,7 +87,8 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createKeyValueForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
+		when(factory.createKeyValueForComposite(context, multiKeyWideMapMeta, hColumn)).thenReturn(
+				keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 
@@ -122,7 +126,8 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createValueForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(value);
+		when(factory.createValueForComposite(context, multiKeyWideMapMeta, hColumn)).thenReturn(
+				value);
 
 		String result = iterator.nextValue();
 

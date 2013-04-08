@@ -4,9 +4,7 @@ import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.DESCENDING;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
@@ -18,7 +16,6 @@ import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.CounterKeyValueIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +74,6 @@ public class CounterWideMapWrapperTest
 	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory;
 
 	@Mock
-	private AchillesInterceptor interceptor;
-
-	@Mock
 	private Mutator<Composite> counterMutator;
 
 	@Mock
@@ -117,20 +111,16 @@ public class CounterWideMapWrapperTest
 	public void should_insert() throws Exception
 	{
 		when(dynamicCompositeKeyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-		when(interceptor.isBatchMode()).thenReturn(false);
 
 		wrapper.insert(key, 150L);
 
 		verify(counterDao).insertCounter(keyComp, comp, 150L);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_insert_batch() throws Exception
 	{
 		when(dynamicCompositeKeyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-		when(interceptor.isBatchMode()).thenReturn(true);
-		when((Mutator<Composite>) interceptor.getMutator()).thenReturn(counterMutator);
 		wrapper.insert(key, 150L);
 
 		verify(counterDao).insertCounterBatch(keyComp, comp, 150L, counterMutator);

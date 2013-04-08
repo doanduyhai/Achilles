@@ -50,20 +50,26 @@ public class JpaEntityInterceptorBuilder<ID, T>
 
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
-		Validator.validateNotNull(this.target, "Target object for interceptor should not be null");
+		Validator.validateNotNull(this.target, "Target object for interceptor of '"
+				+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		Validator.validateNotNull(entityMeta.getGetterMetas(),
-				"Getters metadata for interceptor should not be null");
+				"Getters metadata for interceptor of '"
+						+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		Validator.validateNotNull(entityMeta.getSetterMetas(),
-				"Setters metadata for interceptor should not be null");
+				"Setters metadata for interceptor of '"
+						+ context.getEntityClass().getCanonicalName() + "'should not be null");
 		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			Validator.validateNotNull(context.getColumnFamilyDao(), "Dao for entity meta");
+			Validator.validateNotNull(context.getColumnFamilyDao(), "Column Family Dao for '"
+					+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		}
 		else
 		{
-			Validator.validateNotNull(context.getEntityDao(), "Dao for entity meta");
+			Validator.validateNotNull(context.getEntityDao(), "Entity dao for '"
+					+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		}
-		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata");
+		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '"
+				+ context.getEntityClass().getCanonicalName() + "' should not be null");
 
 		interceptor.setTarget(target);
 		interceptor.setContext(context);

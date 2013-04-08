@@ -1,15 +1,14 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,7 +44,9 @@ public class CollectionWrapperTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private EntityProxifier proxifier;
+
+	private PersistenceContext<Long> context;
 
 	@Before
 	public void setUp() throws Exception
@@ -58,8 +59,8 @@ public class CollectionWrapperTest
 	public void should_mark_dirty_on_element_add() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(introspector.unproxy("a")).thenReturn("a");
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		when(proxifier.unproxy("a")).thenReturn("a");
 		wrapper.add("a");
 
 		assertThat(target).hasSize(1);
@@ -72,8 +73,8 @@ public class CollectionWrapperTest
 	public void should_not_mark_dirty_on_element_add() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(introspector.unproxy("a")).thenReturn("a");
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		when(proxifier.unproxy("a")).thenReturn("a");
 		when(dirtyMap.containsKey(setter)).thenReturn(true);
 		wrapper.add("a");
 
@@ -83,7 +84,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_false_when_adding_to_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.add("a")).isFalse();
 	}
 
@@ -92,8 +93,8 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityIntrospector());
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new EntityProxifier());
 
 		wrapper.addAll(Arrays.asList("a", "b"));
 
@@ -107,7 +108,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_false_when_adding_all_to_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.addAll(Arrays.asList("a", "b"))).isFalse();
 	}
 
@@ -116,7 +117,7 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		wrapper.addAll(new ArrayList<String>());
 
 		assertThat(target).hasSize(0);
@@ -130,7 +131,7 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		wrapper.clear();
 
 		assertThat(target).hasSize(0);
@@ -141,7 +142,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_do_nothing_when_clearing_on_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		wrapper.setDirtyMap(dirtyMap);
 
 		wrapper.clear();
@@ -154,7 +155,7 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		wrapper.clear();
 
 		assertThat(target).hasSize(0);
@@ -165,53 +166,53 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_true_on_contains() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
-		when(introspector.unproxy("a")).thenReturn("a");
+		ListWrapper<Long, String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
+		when(proxifier.unproxy("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
 
 	@Test
 	public void should_return_false_on_contains_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.contains("a")).isFalse();
 	}
 
 	@Test
 	public void should_return_true_on_contains_all() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
+		ListWrapper<Long, String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
 
 		List<String> check = Arrays.asList("a", "c");
-		when(introspector.unproxy(check)).thenReturn(check);
+		when(proxifier.unproxy(check)).thenReturn(check);
 		assertThat(wrapper.containsAll(check)).isTrue();
 	}
 
 	@Test
 	public void should_return_false_on_contains_all_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.containsAll(Arrays.asList("a", "c"))).isFalse();
 	}
 
 	@Test
 	public void should_return_true_on_empty_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapper(new ArrayList<String>());
+		ListWrapper<Long, String> wrapper = prepareListWrapper(new ArrayList<String>());
 		assertThat(wrapper.isEmpty()).isTrue();
 	}
 
 	@Test
 	public void should_return_true_on_empty_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.isEmpty()).isTrue();
 	}
 
 	@Test
 	public void should_retyrb_null_on_iterator_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.iterator()).isNull();
 	}
 
@@ -221,8 +222,8 @@ public class CollectionWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(introspector.unproxy("a")).thenReturn("a");
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		when(proxifier.unproxy("a")).thenReturn("a");
 		wrapper.remove("a");
 
 		assertThat(target).hasSize(1);
@@ -238,7 +239,7 @@ public class CollectionWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		wrapper.remove("c");
 
 		assertThat(target).hasSize(2);
@@ -251,7 +252,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_false_on_remove_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.remove("a")).isFalse();
 		verifyZeroInteractions(dirtyMap);
 	}
@@ -264,8 +265,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityIntrospector());
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new EntityProxifier());
 		wrapper.removeAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(1);
@@ -282,7 +283,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		wrapper.removeAll(Arrays.asList("d", "e"));
 
 		assertThat(target).hasSize(3);
@@ -296,7 +297,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_false_on_remove_all_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.removeAll(Arrays.asList("a", "b"))).isFalse();
 		verifyZeroInteractions(dirtyMap);
 	}
@@ -309,8 +310,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityIntrospector());
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new EntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(2);
@@ -328,8 +329,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setHelper(new EntityIntrospector());
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new EntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "b", "c"));
 
 		assertThat(target).hasSize(3);
@@ -343,7 +344,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_false_on_retain_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.retainAll(Arrays.asList("a", "b"))).isFalse();
 		verifyZeroInteractions(dirtyMap);
 	}
@@ -355,7 +356,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 
 		Iterator<String> iteratorWrapper = wrapper.iterator();
 
@@ -374,14 +375,14 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 		assertThat(wrapper.size()).isEqualTo(3);
 	}
 
 	@Test
 	public void should_return_zero_size_when_null_target() throws Exception
 	{
-		ListWrapper<String> wrapper = prepareListWrapperWithNull();
+		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
 		assertThat(wrapper.size()).isEqualTo(0);
 	}
 
@@ -392,17 +393,21 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
+		PersistenceContext<Long> context = PersistenceContextTestBuilder //
+				.mockAll(joinMeta, CompleteBean.class, 123L) //
+				.build();
+
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(introspector.buildProxy("a", joinMeta)).thenReturn("a");
-		when(introspector.buildProxy("b", joinMeta)).thenReturn("b");
-		when(introspector.buildProxy("c", joinMeta)).thenReturn("c");
+		when(proxifier.buildProxy("a", context)).thenReturn("a");
+		when(proxifier.buildProxy("b", context)).thenReturn("b");
+		when(proxifier.buildProxy("c", context)).thenReturn("c");
 
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
 	}
@@ -414,7 +419,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
@@ -434,7 +439,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
 		JoinProperties joinProperties = new JoinProperties();
@@ -442,9 +447,9 @@ public class CollectionWrapperTest
 
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(introspector.buildProxy("a", joinMeta)).thenReturn("a");
-		when(introspector.buildProxy("b", joinMeta)).thenReturn("b");
-		when(introspector.buildProxy("c", joinMeta)).thenReturn("c");
+		when(proxifier.buildProxy("a", joinMeta)).thenReturn("a");
+		when(proxifier.buildProxy("b", joinMeta)).thenReturn("b");
+		when(proxifier.buildProxy("c", joinMeta)).thenReturn("c");
 
 		assertThat(wrapper.toArray(new String[]
 		{
@@ -460,7 +465,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> wrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 		assertThat(wrapper.toArray(new String[]
@@ -505,18 +510,18 @@ public class CollectionWrapperTest
 		assertThat(wrapper.joinMeta()).isNull();
 	}
 
-	private ListWrapper<String> prepareListWrapper(List<String> target)
+	private ListWrapper<Long, String> prepareListWrapper(List<String> target)
 	{
-		ListWrapper<String> wrapper = new ListWrapper<String>(target);
+		ListWrapper<Long, String> wrapper = new ListWrapper<Long, String>(target);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(introspector);
+		wrapper.setProxifier(proxifier);
 		return wrapper;
 	}
 
-	private ListWrapper<String> prepareListWrapperWithNull()
+	private ListWrapper<Long, String> prepareListWrapperWithNull()
 	{
-		return new ListWrapper<String>(null);
+		return new ListWrapper<Long, String>(null);
 	}
 }

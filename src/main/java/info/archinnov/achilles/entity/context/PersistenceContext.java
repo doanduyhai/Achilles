@@ -89,10 +89,8 @@ public class PersistenceContext<ID>
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(
 			EntityMeta<JOIN_ID> joinMeta, Object joinEntity)
 	{
-		PersistenceContext<JOIN_ID> context = new PersistenceContext<JOIN_ID>(joinMeta,
-				entityDaosMap, columnFamilyDaosMap, counterDao, policy, flushContext, joinEntity);
-		context.setPrimaryKey(introspector.getKey(joinEntity, joinMeta.getIdMeta()));
-		return context;
+		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
+				counterDao, policy, flushContext, joinEntity);
 	}
 
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(Class<?> entityClass,

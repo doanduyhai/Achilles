@@ -1,14 +1,11 @@
 package info.archinnov.achilles.iterator.factory;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -23,13 +20,11 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
@@ -57,12 +52,11 @@ public class DynamicCompositeTransformerTest
 	@Mock
 	private EntityProxifier proxifier;
 
-	@Before
-	public void setUp()
-	{
-		Whitebox.setInternalState(transformer, "helper", helper);
-		Whitebox.setInternalState(transformer, "prxifier", proxifier);
-	}
+	@Mock
+	private PersistenceContext<Long> context;
+
+	@Mock
+	private PersistenceContext<Long> joinContext;
 
 	@SuppressWarnings("unchecked")
 	@Test
@@ -130,24 +124,25 @@ public class DynamicCompositeTransformerTest
 	public void should_build_join_value_transformer() throws Exception
 	{
 		DynamicComposite comp1 = CompositeTestBuilder.builder().buildDynamic();
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "test1");
+		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(comp1, "user");
+
+		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder//
+				.valueClass(Long.class) //
+				.type(SIMPLE)//
+				.build();
+
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.valueClass(String.class).type(JOIN_SIMPLE).build();
-
-		PropertyMeta<Void, String> joinIdMeta = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
-
-		EntityMeta<String> entityMeta = new EntityMeta<String>();
-		entityMeta.setIdMeta(joinIdMeta);
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(entityMeta);
-
-		propertyMeta.setJoinProperties(joinProperties);
-
-		when(proxifier.buildProxy("test1", entityMeta)).thenReturn("test1");
-		assertThat(transformer.buildValueFromDynamicComposite(propertyMeta, hCol1)).isEqualTo(
-				"test1");
+				.valueClass(String.class)//
+				.type(JOIN_SIMPLE)//
+				.joinMeta(joinMeta) //
+				.build();
+		when(context.newPersistenceContext(joinMeta, hCol1.getValue())).thenReturn(joinContext);
+		when(proxifier.buildProxy("user", joinContext)).thenReturn("user");
+		assertThat(transformer.buildValueFromDynamicComposite(context, propertyMeta, hCol1))
+				.isEqualTo("user");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -224,7 +219,7 @@ public class DynamicCompositeTransformerTest
 				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
 
 		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildKeyValueTransformer(propertyMeta));
+				transformer.buildKeyValueTransformer(context, propertyMeta));
 
 		assertThat(keyValues).hasSize(2);
 

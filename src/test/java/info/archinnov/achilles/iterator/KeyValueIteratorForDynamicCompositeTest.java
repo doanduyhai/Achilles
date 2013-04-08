@@ -1,8 +1,8 @@
 package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -35,7 +35,7 @@ public class KeyValueIteratorForDynamicCompositeTest
 {
 
 	@InjectMocks
-	private KeyValueIteratorForDynamicComposite<TweetMultiKey, String> iterator;
+	private KeyValueIteratorForDynamicComposite<Long, TweetMultiKey, String> iterator;
 
 	@Mock
 	private AchillesSliceIterator<?, DynamicComposite, String> achillesSliceIterator;
@@ -51,6 +51,9 @@ public class KeyValueIteratorForDynamicCompositeTest
 
 	@Mock
 	private MultiKeyProperties multiKeyProperties;
+
+	@Mock
+	private PersistenceContext<Long> context;
 
 	@Before
 	public void setUp()
@@ -75,8 +78,8 @@ public class KeyValueIteratorForDynamicCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createKeyValueForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(
-				keyValue);
+		when(factory.createKeyValueForDynamicComposite(context, multiKeyWideMapMeta, column))
+				.thenReturn(keyValue);
 
 		KeyValue<TweetMultiKey, String> expected = iterator.next();
 
@@ -122,7 +125,8 @@ public class KeyValueIteratorForDynamicCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createValueForDynamicComposite(multiKeyWideMapMeta, column)).thenReturn(value);
+		when(factory.createValueForDynamicComposite(context, multiKeyWideMapMeta, column))
+				.thenReturn(value);
 
 		String expected = iterator.nextValue();
 

@@ -40,6 +40,15 @@ public class IteratorFactory
 				propertyMeta);
 	}
 
+	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForComposite(
+			PersistenceContext<ID> context,
+			AchillesJoinSliceIterator<ID, Composite, ?, JOIN_ID, K, V> joinColumnSliceIterator,
+			PropertyMeta<K, V> propertyMeta)
+	{
+		return new KeyValueIteratorForComposite<ID, K, V>(context, joinColumnSliceIterator,
+				propertyMeta);
+	}
+
 	@SuppressWarnings(
 	{
 			"unchecked",
@@ -52,15 +61,6 @@ public class IteratorFactory
 	{
 		return new KeyValueIteratorForDynamicComposite<ID, K, V>(context,
 				(AchillesJoinSliceIterator) joinColumnSliceIterator, propertyMeta);
-	}
-
-	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createKeyValueJoinIteratorForComposite(
-			PersistenceContext<ID> context,
-			AchillesJoinSliceIterator<ID, Composite, ?, JOIN_ID, K, V> joinColumnSliceIterator,
-			PropertyMeta<K, V> propertyMeta)
-	{
-		return new KeyValueIteratorForComposite<ID, K, V>(context, joinColumnSliceIterator,
-				propertyMeta);
 	}
 
 	public <K> KeyValueIterator<K, Long> createCounterKeyValueIteratorForDynamicComposite(

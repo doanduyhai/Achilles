@@ -4,13 +4,18 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.Arrays;
 import java.util.List;
 
 import mapping.entity.TweetMultiKey;
+import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -43,6 +48,15 @@ public class CompositeTransformerTest
 
 	@Mock
 	private PropertyHelper helper;
+
+	@Mock
+	private EntityProxifier proxifier;
+
+	@Mock
+	private PersistenceContext<Long> context;
+
+	@Mock
+	private PersistenceContext<Long> joinContext;
 
 	@Before
 	public void setUp()
@@ -126,6 +140,28 @@ public class CompositeTransformerTest
 		assertThat(rawValues).containsExactly("test1", "test2");
 	}
 
+	@Test
+	public void should_build_join_value_from_composite() throws Exception
+	{
+		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, UserBean.class) //
+				.field("user") //
+				.joinMeta(joinMeta) //
+				.type(PropertyType.JOIN_SIMPLE) //
+				.build();
+
+		UserBean user = new UserBean();
+		Composite comp = new Composite();
+		HColumn<Composite, UserBean> hColumn = HColumnTestBuilder.simple(comp, user);
+
+		when(context.newPersistenceContext(joinMeta, hColumn.getValue())).thenReturn(joinContext);
+		when(proxifier.buildProxy(hColumn.getValue(), joinContext)).thenReturn(user);
+		UserBean actual = transformer.buildValueFromComposite(context, propertyMeta, hColumn);
+
+		assertThat(actual).isSameAs(user);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_ttl_transformer() throws Exception
@@ -154,7 +190,7 @@ public class CompositeTransformerTest
 				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
 
 		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildKeyValueTransformer(propertyMeta));
+				transformer.buildKeyValueTransformer(context, propertyMeta));
 
 		assertThat(keyValues).hasSize(2);
 

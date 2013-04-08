@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-
 /**
  * AbstractWideMapWrapperTest
  * 
@@ -29,14 +28,14 @@ public class AbstractWideMapWrapperTest
 	@Mock
 	private GenericEntityDao<Long> dao;
 
-	private AbstractWideMapWrapper<Long, String> wrapper;
+	private AbstractWideMapWrapper<Long, Long, String> wrapper;
 
 	private ThreadLocal<VariableCapture> variableCapture = new ThreadLocal<VariableCapture>();
 
 	@Before
 	public void setUp()
 	{
-		wrapper = new AbstractWideMapWrapper<Long, String>()
+		wrapper = new AbstractWideMapWrapper<Long, Long, String>()
 		{
 
 			@Override
@@ -85,7 +84,7 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public KeyValueIterator<Long, String> iterator(Long start, Long end, int count, 
+			public KeyValueIterator<Long, String> iterator(Long start, Long end, int count,
 					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
@@ -131,7 +130,7 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<KeyValue<Long, String>> find(Long start, Long end, int count, 
+			public List<KeyValue<Long, String>> find(Long start, Long end, int count,
 					BoundingMode bounds, OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
@@ -176,8 +175,8 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<String> findValues(Long start, Long end, int count, 
-					BoundingMode bounds, OrderingMode ordering)
+			public List<String> findValues(Long start, Long end, int count, BoundingMode bounds,
+					OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = null;
@@ -193,8 +192,8 @@ public class AbstractWideMapWrapperTest
 			}
 
 			@Override
-			public List<Long> findKeys(Long start, Long end, int count, 
-					BoundingMode bounds, OrderingMode ordering)
+			public List<Long> findKeys(Long start, Long end, int count, BoundingMode bounds,
+					OrderingMode ordering)
 			{
 				VariableCapture capture = new VariableCapture();
 				capture.start = null;

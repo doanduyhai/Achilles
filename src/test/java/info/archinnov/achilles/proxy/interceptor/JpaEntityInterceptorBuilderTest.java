@@ -2,8 +2,12 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -19,6 +23,7 @@ import java.util.Set;
 import mapping.entity.ColumnFamilyBean;
 import mapping.entity.CompleteBean;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -58,14 +63,35 @@ public class JpaEntityInterceptorBuilderTest
 	@Mock
 	private Set<Method> lazyLoaded;
 
+	private PersistenceContext<Long> context;
+
+	@Mock
+	private CounterDao counterDao;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	@Mock
+	private GenericEntityDao<Long> entityDao;
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+
+	@Before
+	public void setUp()
+	{
+		context = PersistenceContextTestBuilder //
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.entity(entity) //
+				.entityDao(entityDao) //
+				.columnFamilyDao(columnFamilyDao) //
+				.build();
+	}
+
 	@Test
 	public void should_build_entity() throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
-
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getEntityDao()).thenReturn(dao);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
 		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
@@ -75,9 +101,9 @@ public class JpaEntityInterceptorBuilderTest
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
 		JpaEntityInterceptor<Long, CompleteBean> interceptor = JpaEntityInterceptorBuilder.builder(
-				entityMeta, entity).build();
+				context, entity).build();
 
-		assertThat(interceptor.getKey()).isEqualTo(1L);
+		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
 		assertThat(interceptor.getTarget()).isEqualTo(entity);
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
@@ -85,9 +111,7 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNull();
-		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNotNull();
-		assertThat(interceptor.getDirectColumnFamilyMapping()).isFalse();
+		assertThat(context.isDirectColumnFamilyMapping()).isFalse();
 
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
@@ -95,20 +119,14 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Test
 	public void should_build_column_family() throws Exception
 	{
-		ColumnFamilyBean entity = new ColumnFamilyBean();
-		entity.setId(1545L);
+		ColumnFamilyBean bean = new ColumnFamilyBean();
+		bean.setId(1545L);
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getColumnFamilyDao()).thenReturn((GenericColumnFamilyDao) columnFamilyDao);
 
 		Method idGetter = ColumnFamilyBean.class.getDeclaredMethod("getId");
 		Method idSetter = ColumnFamilyBean.class.getDeclaredMethod("setId", Long.class);
@@ -123,19 +141,17 @@ public class JpaEntityInterceptorBuilderTest
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
 
 		JpaEntityInterceptor<Long, ColumnFamilyBean> interceptor = JpaEntityInterceptorBuilder
-				.builder(entityMeta, entity).build();
+				.builder(context, bean).build();
 
-		assertThat(interceptor.getKey()).isEqualTo(1545L);
-		assertThat(interceptor.getTarget()).isEqualTo(entity);
+		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+		assertThat(interceptor.getTarget()).isEqualTo(bean);
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
 
 		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
 		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(Whitebox.getInternalState(interceptor, "columnFamilyDao")).isNotNull();
-		assertThat(Whitebox.getInternalState(interceptor, "entityDao")).isNull();
-		assertThat(interceptor.getDirectColumnFamilyMapping()).isTrue();
+		assertThat(context.isDirectColumnFamilyMapping()).isTrue();
 
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
