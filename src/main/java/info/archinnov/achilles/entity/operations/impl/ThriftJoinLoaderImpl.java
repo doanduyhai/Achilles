@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
@@ -12,6 +11,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,16 +41,7 @@ public class ThriftJoinLoaderImpl
 		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
-		if (joinIds.size() > 0)
-		{
-			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
-
-			for (JOIN_ID joinId : joinIds)
-			{
-				joinEntities.add(entitiesMap.get(joinId));
-			}
-		}
+		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
 		return joinEntities;
 	}
@@ -64,16 +55,7 @@ public class ThriftJoinLoaderImpl
 		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
-		if (joinIds.size() > 0)
-		{
-			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
-
-			for (JOIN_ID joinId : joinIds)
-			{
-				joinEntities.add(entitiesMap.get(joinId));
-			}
-		}
+		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
 		return joinEntities;
 	}
@@ -142,5 +124,21 @@ public class ThriftJoinLoaderImpl
 			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
 		}
 		return joinIds;
+	}
+
+	private <V, JOIN_ID> void fillCollectionWithJoinEntities(PropertyMeta<?, V> propertyMeta,
+			EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds,
+			GenericEntityDao<JOIN_ID> joinEntityDao, Collection<V> joinEntities)
+	{
+		if (joinIds.size() > 0)
+		{
+			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
+					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
+
+			for (JOIN_ID joinId : joinIds)
+			{
+				joinEntities.add(entitiesMap.get(joinId));
+			}
+		}
 	}
 }
