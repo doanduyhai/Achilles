@@ -1,9 +1,7 @@
 package integration.tests;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
-import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.*;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -112,9 +110,10 @@ public class CounterIT
 
 		assertThat(actual).isEqualTo(version);
 
-		em.remove(bean);
-
+		// Pause required to let Cassandra remove counter columns
 		Thread.sleep(1000);
+
+		em.remove(bean);
 
 		actual = counterDao.getCounterValue(keyComp, comp);
 
@@ -355,9 +354,10 @@ public class CounterIT
 		popularTopics.insert("scala", scalaCount);
 		popularTopics.insert("spring", springCount);
 
-		em.remove(bean);
+		// Pause required to let Cassandra remove counter columns
+		Thread.sleep(1000);
 
-		Thread.sleep(5000);
+		em.remove(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
