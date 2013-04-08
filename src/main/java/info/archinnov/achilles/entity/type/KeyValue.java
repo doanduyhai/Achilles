@@ -2,6 +2,10 @@ package info.archinnov.achilles.entity.type;
 
 import java.io.Serializable;
 
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.annotate.JsonTypeInfo.As;
+import org.codehaus.jackson.annotate.JsonTypeInfo.Id;
+
 /**
  * KeyValue
  * 
@@ -10,11 +14,15 @@ import java.io.Serializable;
  * @author DuyHai DOAN
  * 
  */
+
 public class KeyValue<K, V> implements Serializable
 {
 	public static final long serialVersionUID = 1L;
 
+	@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY)
 	private K key;
+
+	@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY)
 	private V value;
 	private int ttl;
 
