@@ -1,10 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -175,7 +172,7 @@ public class PropertyMeta<K, V>
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error("Error while trying to deserialize the JSON : " + (String) object, e);
 			return null;
 		}
 	}
@@ -186,11 +183,10 @@ public class PropertyMeta<K, V>
 		try
 		{
 			return this.objectMapper.readValue((String) object, KeyValue.class);
-
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error("Error while trying to deserialize the JSON : " + (String) object, e);
 			return null;
 		}
 	}
@@ -210,7 +206,7 @@ public class PropertyMeta<K, V>
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error("Error while trying to serialize to JSON the object : " + value, e);
 			return null;
 		}
 	}
@@ -230,7 +226,7 @@ public class PropertyMeta<K, V>
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error("Error while trying to serialize to JSON the object : " + value, e);
 			return null;
 		}
 	}
@@ -255,7 +251,8 @@ public class PropertyMeta<K, V>
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error("Error while trying to cast the object " + object + " to type '"
+					+ this.valueClass.getCanonicalName() + "'", e);
 			return null;
 		}
 	}
