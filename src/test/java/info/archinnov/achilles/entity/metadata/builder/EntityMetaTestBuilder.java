@@ -9,8 +9,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.prettyprint.hector.api.Serializer;
-
 /**
  * EntityMetaTestBuilder
  * 
@@ -24,7 +22,6 @@ public class EntityMetaTestBuilder<ID>
 	private String classname;
 	private String columnFamilyName;
 	private Long serialVersionUID;
-	private Serializer<ID> idSerializer;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 	private Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
 	private Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();

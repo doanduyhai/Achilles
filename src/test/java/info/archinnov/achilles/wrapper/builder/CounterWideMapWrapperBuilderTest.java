@@ -33,7 +33,7 @@ public class CounterWideMapWrapperBuilderTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private AchillesInterceptor interceptor;
+	private AchillesInterceptor<Long> interceptor;
 
 	@Mock
 	private CompositeHelper compositeHelper;

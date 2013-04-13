@@ -1,8 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.wrapper.ValueCollectionWrapper;
 
 import java.lang.reflect.Method;
@@ -34,7 +35,10 @@ public class KeySetWrapperBuilderTest
 	private Method setter;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private EntityProxifier proxifier;
+
+	@Mock
+	private PersistenceContext<Long> context;
 
 	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
@@ -58,19 +62,20 @@ public class KeySetWrapperBuilderTest
 		targetMap.put(2, "Paris");
 		targetMap.put(3, "75014");
 
-		ValueCollectionWrapper<String> wrapper = ValueCollectionWrapperBuilder
-				.builder(targetMap.values()) //
+		ValueCollectionWrapper<Long, String> wrapper = ValueCollectionWrapperBuilder
+				.builder(context, targetMap.values()) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta((PropertyMeta) propertyMeta) //
-				.helper(introspector) //
+				.proxifier(proxifier) //
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(targetMap.values());
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "helper")).isSameAs(introspector);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

@@ -1,14 +1,11 @@
 package info.archinnov.achilles.wrapper;
 
-import info.archinnov.achilles.wrapper.KeySetWrapper;
-
 import java.util.Arrays;
 import java.util.HashSet;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * KeySetWrapperTest
@@ -23,7 +20,8 @@ public class KeySetWrapperTest
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_on_add() throws Exception
 	{
-		KeySetWrapper<Integer> wrapper = new KeySetWrapper<Integer>(new HashSet<Integer>());
+		KeySetWrapper<Long, Integer> wrapper = new KeySetWrapper<Long, Integer>(
+				new HashSet<Integer>());
 
 		wrapper.add(5);
 	}
@@ -31,7 +29,8 @@ public class KeySetWrapperTest
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_on_add_all() throws Exception
 	{
-		KeySetWrapper<Integer> wrapper = new KeySetWrapper<Integer>(new HashSet<Integer>());
+		KeySetWrapper<Long, Integer> wrapper = new KeySetWrapper<Long, Integer>(
+				new HashSet<Integer>());
 
 		wrapper.addAll(Arrays.asList(5, 7));
 	}

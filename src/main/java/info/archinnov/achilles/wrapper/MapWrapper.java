@@ -22,14 +22,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	private final Map<K, V> target;
 
 	public MapWrapper(Map<K, V> target) {
-		if (target == null)
-		{
-			this.target = new HashMap<K, V>();
-		}
-		else
-		{
-			this.target = target;
-		}
+		this.target = target;
 	}
 
 	@Override

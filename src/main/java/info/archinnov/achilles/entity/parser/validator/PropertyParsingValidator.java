@@ -63,8 +63,9 @@ public class PropertyParsingValidator
 		Type genericType = field.getGenericType();
 		if (!(genericType instanceof ParameterizedType))
 		{
-			throw new AchillesBeanMappingException("The Map type should be parameterized for the entity "
-					+ entityClass.getCanonicalName());
+			throw new AchillesBeanMappingException(
+					"The Map type should be parameterized for the entity '"
+							+ entityClass.getCanonicalName() + "'");
 		}
 		else
 		{
@@ -73,8 +74,8 @@ public class PropertyParsingValidator
 			if (actualTypeArguments.length <= 1)
 			{
 				throw new AchillesBeanMappingException(
-						"The Map type should be parameterized with <K,V> for the entity "
-								+ entityClass.getCanonicalName());
+						"The Map type should be parameterized with <K,V> for the entity '"
+								+ entityClass.getCanonicalName() + "'");
 			}
 		}
 	}
@@ -87,8 +88,8 @@ public class PropertyParsingValidator
 		if (!(genericType instanceof ParameterizedType))
 		{
 			throw new AchillesBeanMappingException(
-					"The WideMap type should be parameterized for the entity "
-							+ entityClass.getCanonicalName());
+					"The WideMap type should be parameterized for the entity '"
+							+ entityClass.getCanonicalName() + "'");
 		}
 		else
 		{
@@ -97,8 +98,8 @@ public class PropertyParsingValidator
 			if (actualTypeArguments.length <= 1)
 			{
 				throw new AchillesBeanMappingException(
-						"The WideMap type should be parameterized with <K,V> for the entity "
-								+ entityClass.getCanonicalName());
+						"The WideMap type should be parameterized with <K,V> for the entity '"
+								+ entityClass.getCanonicalName() + "'");
 			}
 		}
 	}

@@ -2,7 +2,6 @@ package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.lang.reflect.Method;
@@ -47,26 +46,10 @@ public class EntryIteratorWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+		EntryIteratorWrapper<Long, Integer, String> wrapper = new EntryIteratorWrapper<Long, Integer, String>(
 				map.entrySet().iterator());
 
 		assertThat(wrapper.hasNext()).isTrue();
-	}
-
-	@Test
-	public void should_return_false_on_hasNext_when_null_target() throws Exception
-	{
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
-				null);
-		assertThat(wrapper.hasNext()).isFalse();
-	}
-
-	@Test
-	public void should_return_null_on_next_when_null_target() throws Exception
-	{
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
-				null);
-		assertThat(wrapper.next()).isNull();
 	}
 
 	@Test
@@ -78,7 +61,7 @@ public class EntryIteratorWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
+		EntryIteratorWrapper<Long, Integer, String> wrapper = new EntryIteratorWrapper<Long, Integer, String>(
 				map.entrySet().iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
@@ -88,16 +71,6 @@ public class EntryIteratorWrapperTest
 		wrapper.remove();
 
 		verify(dirtyMap).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_not_mark_dirty_on_element_remove_when_null_target() throws Exception
-	{
-		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
-				null);
-		wrapper.remove();
-
-		verifyZeroInteractions(dirtyMap);
 	}
 
 }

@@ -1,16 +1,17 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.wrapper.EntryIteratorWrapper;
-import info.archinnov.achilles.wrapper.builder.EntryIteratorWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mapping.entity.CompleteBean;
 
@@ -18,8 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-
 
 /**
  * EntryIteratorWrapperBuilderTest
@@ -38,6 +39,12 @@ public class EntryIteratorWrapperBuilderTest
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
 
+	@Mock
+	private EntityProxifier proxifier;
+
+	@Mock
+	private PersistenceContext<Long> context;
+
 	@Before
 	public void setUp() throws Exception
 	{
@@ -52,15 +59,20 @@ public class EntryIteratorWrapperBuilderTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper<Integer, String> iteratorWrapper = EntryIteratorWrapperBuilder
-				.builder(map.entrySet().iterator()).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).build();
+		Iterator<Entry<Integer, String>> target = map.entrySet().iterator();
+		EntryIteratorWrapper<Long, Integer, String> wrapper = EntryIteratorWrapperBuilder
+				.builder(context, target) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.proxifier(proxifier) //
+				.build();
 
-		assertThat(iteratorWrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(target);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
-		iteratorWrapper.next();
-		iteratorWrapper.remove();
-
-		verify(dirtyMap).put(setter, propertyMeta);
 	}
 }

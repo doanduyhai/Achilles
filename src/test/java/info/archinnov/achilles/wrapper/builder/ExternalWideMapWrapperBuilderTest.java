@@ -33,7 +33,7 @@ public class ExternalWideMapWrapperBuilderTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private AchillesInterceptor interceptor;
+	private AchillesInterceptor<Long> interceptor;
 
 	@Mock
 	private CompositeHelper compositeHelper;

@@ -2,13 +2,10 @@ package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import info.archinnov.achilles.wrapper.SetWrapper;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
-
 
 /**
  * SetWrapperTest
@@ -24,7 +21,7 @@ public class SetWrapperTest
 	{
 		Set<String> target = new HashSet<String>();
 
-		SetWrapper<String> setWrapper = new SetWrapper<String>(target);
+		SetWrapper<Long, String> setWrapper = new SetWrapper<Long, String>(target);
 		assertThat(setWrapper.getTarget()).isSameAs(target);
 	}
 

@@ -1,10 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class ListWrapperTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private EntityProxifier proxifier;
 
 	@Before
 	public void setUp() throws Exception
@@ -53,8 +52,8 @@ public class ListWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(introspector.unproxy("a")).thenReturn("a");
+		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
+		when(proxifier.unproxy("a")).thenReturn("a");
 		listWrapper.add(0, "a");
 
 		assertThat(target).hasSize(1);
@@ -69,8 +68,8 @@ public class ListWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		listWrapper.setHelper(new EntityIntrospector());
+		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
+		listWrapper.setProxifier(new EntityProxifier());
 		listWrapper.addAll(1, Arrays.asList("b", "c"));
 
 		assertThat(target).hasSize(3);
@@ -87,7 +86,7 @@ public class ListWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
 		listWrapper.remove(1);
 
 		assertThat(target).hasSize(1);
@@ -104,8 +103,8 @@ public class ListWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(introspector.unproxy("d")).thenReturn("d");
+		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
+		when(proxifier.unproxy("d")).thenReturn("d");
 		listWrapper.set(1, "d");
 
 		assertThat(target).hasSize(3);
@@ -123,7 +122,7 @@ public class ListWrapperTest
 		ListIterator<String> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
 		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
-		when(introspector.unproxy("c")).thenReturn("c");
+		when(proxifier.unproxy("c")).thenReturn("c");
 		listIteratorWrapper.add("c");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -139,7 +138,7 @@ public class ListWrapperTest
 		List<String> subListWrapper = prepareListWrapper(target).subList(0, 1);
 
 		assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
-		when(introspector.unproxy("d")).thenReturn("d");
+		when(proxifier.unproxy("d")).thenReturn("d");
 		subListWrapper.add("d");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -149,18 +148,18 @@ public class ListWrapperTest
 	public void should_get_target() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
+		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
 
 		assertThat(listWrapper.getTarget()).isSameAs(target);
 	}
 
-	private ListWrapper<String> prepareListWrapper(List<String> target)
+	private ListWrapper<Long, String> prepareListWrapper(List<String> target)
 	{
-		ListWrapper<String> listWrapper = new ListWrapper<String>(target);
+		ListWrapper<Long, String> listWrapper = new ListWrapper<Long, String>(target);
 		listWrapper.setDirtyMap(dirtyMap);
 		listWrapper.setSetter(setter);
 		listWrapper.setPropertyMeta(propertyMeta);
-		listWrapper.setHelper(introspector);
+		listWrapper.setProxifier(proxifier);
 		return listWrapper;
 	}
 }

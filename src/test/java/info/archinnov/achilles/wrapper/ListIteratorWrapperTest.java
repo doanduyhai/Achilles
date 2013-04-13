@@ -1,10 +1,9 @@
 package info.archinnov.achilles.wrapper;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,9 +37,9 @@ public class ListIteratorWrapperTest
 	private PropertyMeta<Void, Integer> propertyMeta;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private EntityProxifier proxifier;
 
-	private ListIteratorWrapper<Integer> wrapper;
+	private ListIteratorWrapper<Long, Integer> wrapper;
 
 	@Before
 	public void setUp() throws Exception
@@ -51,11 +50,11 @@ public class ListIteratorWrapperTest
 		list.add(1);
 		list.add(2);
 
-		wrapper = new ListIteratorWrapper<Integer>(list.listIterator());
+		wrapper = new ListIteratorWrapper<Long, Integer>(list.listIterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(introspector);
+		wrapper.setProxifier(proxifier);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 	}
@@ -71,7 +70,7 @@ public class ListIteratorWrapperTest
 	@Test
 	public void should_mark_dirty_on_set() throws Exception
 	{
-		when(introspector.unproxy(1)).thenReturn(1);
+		when(proxifier.unproxy(1)).thenReturn(1);
 		wrapper.next();
 		wrapper.set(1);
 

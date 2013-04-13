@@ -1,7 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
@@ -49,7 +48,7 @@ public class IteratorWrapperTest
 		list.add(1);
 		list.add(2);
 
-		IteratorWrapper<Integer> wrapper = new IteratorWrapper<Integer>(list.iterator());
+		IteratorWrapper<Long, Integer> wrapper = new IteratorWrapper<Long, Integer>(list.iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

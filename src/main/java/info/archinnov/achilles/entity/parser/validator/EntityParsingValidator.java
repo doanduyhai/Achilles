@@ -88,8 +88,8 @@ public class EntityParsingValidator
 		if (entities.isEmpty())
 		{
 			throw new AchillesBeanMappingException(
-					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages "
-							+ StringUtils.join(entityPackages, ","));
+					"No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages '"
+							+ StringUtils.join(entityPackages, ",") + "'");
 		}
 	}
 }

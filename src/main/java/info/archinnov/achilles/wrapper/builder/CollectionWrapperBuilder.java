@@ -1,5 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.wrapper.CollectionWrapper;
 
 import java.util.Collection;
@@ -15,12 +16,14 @@ public class CollectionWrapperBuilder<ID, V> extends
 {
 	private Collection<V> target;
 
-	public static <ID, V> CollectionWrapperBuilder<ID, V> builder(Collection<V> target)
+	public static <ID, V> CollectionWrapperBuilder<ID, V> builder(PersistenceContext<ID> context,
+			Collection<V> target)
 	{
-		return new CollectionWrapperBuilder<ID, V>(target);
+		return new CollectionWrapperBuilder<ID, V>(context, target);
 	}
 
-	public CollectionWrapperBuilder(Collection<V> target) {
+	public CollectionWrapperBuilder(PersistenceContext<ID> context, Collection<V> target) {
+		super.context = context;
 		this.target = target;
 	}
 

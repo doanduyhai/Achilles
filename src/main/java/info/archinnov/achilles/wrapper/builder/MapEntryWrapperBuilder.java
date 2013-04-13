@@ -17,6 +17,7 @@ public class MapEntryWrapperBuilder<ID, K, V> extends
 	private final Map.Entry<K, V> target;
 
 	public MapEntryWrapperBuilder(PersistenceContext<ID> context, Map.Entry<K, V> target) {
+		super.context = context;
 		this.target = target;
 	}
 

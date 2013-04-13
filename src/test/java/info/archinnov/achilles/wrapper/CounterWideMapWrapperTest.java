@@ -8,6 +8,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
 import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
 import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -79,6 +80,9 @@ public class CounterWideMapWrapperTest
 	@Mock
 	private AchillesCounterSliceIterator<Composite, DynamicComposite> achillesCounterSliceIterator;
 
+	@Mock
+	private PersistenceContext<Long> context;
+
 	private Long id = 12L;
 	private Integer key = 11;
 	private String fqcn = "fqcn";
@@ -89,6 +93,7 @@ public class CounterWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
+		wrapper.setContext(context);
 		wrapper.setId(id);
 		wrapper.setFqcn(fqcn);
 		when(compositeKeyFactory.createKeyForCounter(fqcn, id, idMeta)).thenReturn(keyComp);
@@ -111,19 +116,11 @@ public class CounterWideMapWrapperTest
 	public void should_insert() throws Exception
 	{
 		when(dynamicCompositeKeyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-
-		wrapper.insert(key, 150L);
-
-		verify(counterDao).insertCounter(keyComp, comp, 150L);
-	}
-
-	@Test
-	public void should_insert_batch() throws Exception
-	{
-		when(dynamicCompositeKeyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
+		when(context.getCounterMutator()).thenReturn(counterMutator);
 		wrapper.insert(key, 150L);
 
 		verify(counterDao).insertCounterBatch(keyComp, comp, 150L, counterMutator);
+		verify(context).flush();
 	}
 
 	@Test

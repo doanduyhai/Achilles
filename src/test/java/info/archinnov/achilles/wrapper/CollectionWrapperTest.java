@@ -1,11 +1,15 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
@@ -13,7 +17,6 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * CollectionWrapperTest
@@ -44,15 +49,45 @@ public class CollectionWrapperTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
+	private PropertyMeta<Void, CompleteBean> joinPropertyMeta;
+
+	@Mock
 	private EntityProxifier proxifier;
 
+	@Mock
+	private CounterDao counterDao;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	@Mock
+	private GenericEntityDao<Long> entityDao;
+
+	private EntityMeta<Long> entityMeta;
+
 	private PersistenceContext<Long> context;
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Before
 	public void setUp() throws Exception
 	{
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
+
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, Long.class) //
+				.field("id") //
+				.type(PropertyType.SIMPLE) //
+				.accesors() //
+				.build();
+
+		entityMeta = new EntityMeta<Long>();
+		entityMeta.setIdMeta(idMeta);
+		context = PersistenceContextTestBuilder //
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.entity(entity) //
+				.build();
 	}
 
 	@Test
@@ -82,13 +117,6 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_return_false_when_adding_to_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.add("a")).isFalse();
-	}
-
-	@Test
 	public void should_mark_dirty_on_add_all() throws Exception
 	{
 
@@ -103,13 +131,6 @@ public class CollectionWrapperTest
 		assertThat(target.get(1)).isEqualTo("b");
 
 		verify(dirtyMap).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_return_false_when_adding_all_to_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.addAll(Arrays.asList("a", "b"))).isFalse();
 	}
 
 	@Test
@@ -140,17 +161,6 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_do_nothing_when_clearing_on_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		wrapper.setDirtyMap(dirtyMap);
-
-		wrapper.clear();
-
-		verifyZeroInteractions(dirtyMap);
-	}
-
-	@Test
 	public void should_not_mark_dirty_on_clear_when_empty() throws Exception
 	{
 
@@ -172,13 +182,6 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_return_false_on_contains_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.contains("a")).isFalse();
-	}
-
-	@Test
 	public void should_return_true_on_contains_all() throws Exception
 	{
 		ListWrapper<Long, String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
@@ -189,31 +192,10 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_return_false_on_contains_all_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.containsAll(Arrays.asList("a", "c"))).isFalse();
-	}
-
-	@Test
 	public void should_return_true_on_empty_target() throws Exception
 	{
 		ListWrapper<Long, String> wrapper = prepareListWrapper(new ArrayList<String>());
 		assertThat(wrapper.isEmpty()).isTrue();
-	}
-
-	@Test
-	public void should_return_true_on_empty_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.isEmpty()).isTrue();
-	}
-
-	@Test
-	public void should_retyrb_null_on_iterator_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.iterator()).isNull();
 	}
 
 	@Test
@@ -247,14 +229,6 @@ public class CollectionWrapperTest
 		assertThat(target.get(1)).isEqualTo("b");
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_return_false_on_remove_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.remove("a")).isFalse();
-		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -292,14 +266,6 @@ public class CollectionWrapperTest
 		assertThat(target.get(2)).isEqualTo("c");
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_return_false_on_remove_all_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.removeAll(Arrays.asList("a", "b"))).isFalse();
-		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -342,14 +308,6 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_return_false_on_retain_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.retainAll(Arrays.asList("a", "b"))).isFalse();
-		verifyZeroInteractions(dirtyMap);
-	}
-
-	@Test
 	public void should_mark_dirty_on_iterator_remove() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
@@ -379,37 +337,27 @@ public class CollectionWrapperTest
 		assertThat(wrapper.size()).isEqualTo(3);
 	}
 
-	@Test
-	public void should_return_zero_size_when_null_target() throws Exception
-	{
-		ListWrapper<Long, String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.size()).isEqualTo(0);
-	}
-
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_for_join() throws Exception
 	{
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ArrayList<CompleteBean> target = new ArrayList<CompleteBean>();
+		CompleteBean bean1 = CompleteBeanTestBuilder.builder().randomId().buid();
+		CompleteBean bean2 = CompleteBeanTestBuilder.builder().randomId().buid();
+		CompleteBean bean3 = CompleteBeanTestBuilder.builder().randomId().buid();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
+		target.add(bean1);
+		target.add(bean2);
+		target.add(bean3);
+		ListWrapper<Long, CompleteBean> wrapper = prepareJoinListWrapper(target);
 
-		PersistenceContext<Long> context = PersistenceContextTestBuilder //
-				.mockAll(joinMeta, CompleteBean.class, 123L) //
-				.build();
+		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
+		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(bean1), any(PersistenceContext.class))).thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(PersistenceContext.class))).thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(PersistenceContext.class))).thenReturn(bean3);
 
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(proxifier.buildProxy("a", context)).thenReturn("a");
-		when(proxifier.buildProxy("b", context)).thenReturn("b");
-		when(proxifier.buildProxy("c", context)).thenReturn("c");
-
-		assertThat(wrapper.toArray()).contains("a", "b", "c");
+		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 	}
 
 	@Test
@@ -425,37 +373,33 @@ public class CollectionWrapperTest
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
 	}
 
-	@Test
-	public void should_return_null_array_when_null_target() throws Exception
-	{
-		Collection<String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.toArray()).isNull();
-	}
-
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_with_argument_for_join() throws Exception
 	{
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ArrayList<CompleteBean> target = new ArrayList<CompleteBean>();
+		CompleteBean bean1 = CompleteBeanTestBuilder.builder().randomId().buid();
+		CompleteBean bean2 = CompleteBeanTestBuilder.builder().randomId().buid();
+		CompleteBean bean3 = CompleteBeanTestBuilder.builder().randomId().buid();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
+		target.add(bean1);
+		target.add(bean2);
+		target.add(bean3);
+		ListWrapper<Long, CompleteBean> wrapper = prepareJoinListWrapper(target);
 
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(proxifier.buildProxy("a", joinMeta)).thenReturn("a");
-		when(proxifier.buildProxy("b", joinMeta)).thenReturn("b");
-		when(proxifier.buildProxy("c", joinMeta)).thenReturn("c");
+		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
+		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(bean1), any(PersistenceContext.class))).thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(PersistenceContext.class))).thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(PersistenceContext.class))).thenReturn(bean3);
 
-		assertThat(wrapper.toArray(new String[]
+		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
+
+		assertThat(wrapper.toArray(new CompleteBean[]
 		{
-				"a",
-				"c"
-		})).contains("a", "c");
+				bean1,
+				bean2
+		})).contains(bean1, bean2);
 	}
 
 	@Test
@@ -476,38 +420,12 @@ public class CollectionWrapperTest
 	}
 
 	@Test
-	public void should_return_null_array_with_argument_when_null_target() throws Exception
-	{
-		Collection<String> wrapper = prepareListWrapperWithNull();
-		assertThat(wrapper.toArray(new String[]
-		{
-				"a",
-				"c"
-		})).isNull();
-	}
-
-	@Test
 	public void should_return_target() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
-		CollectionWrapper<String> wrapper = new CollectionWrapper<String>(target);
+		CollectionWrapper<Long, String> wrapper = new CollectionWrapper<Long, String>(target);
 		assertThat(wrapper.getTarget()).isSameAs(target);
-	}
-
-	@Test
-	public void should_return_null_target() throws Exception
-	{
-		CollectionWrapper<String> wrapper = new CollectionWrapper<String>(null);
-		assertThat(wrapper.getTarget()).isNull();
-	}
-
-	@Test
-	public void should_return_null_when_no_join_meta() throws Exception
-	{
-		CollectionWrapper<String> wrapper = prepareListWrapper(null);
-		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
-		assertThat(wrapper.joinMeta()).isNull();
 	}
 
 	private ListWrapper<Long, String> prepareListWrapper(List<String> target)
@@ -517,11 +435,19 @@ public class CollectionWrapperTest
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setProxifier(proxifier);
+		wrapper.setContext(context);
 		return wrapper;
 	}
 
-	private ListWrapper<Long, String> prepareListWrapperWithNull()
+	private ListWrapper<Long, CompleteBean> prepareJoinListWrapper(List<CompleteBean> target)
 	{
-		return new ListWrapper<Long, String>(null);
+		ListWrapper<Long, CompleteBean> wrapper = new ListWrapper<Long, CompleteBean>(target);
+		wrapper.setDirtyMap(dirtyMap);
+		wrapper.setSetter(setter);
+		wrapper.setPropertyMeta(joinPropertyMeta);
+		wrapper.setProxifier(proxifier);
+		wrapper.setContext(context);
+		return wrapper;
 	}
+
 }

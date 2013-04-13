@@ -1,16 +1,18 @@
 package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -31,6 +33,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.PropertyMetaTestBuilder;
+
 /**
  * EntrySetWrapperTest
  * 
@@ -49,12 +53,44 @@ public class EntrySetWrapperTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private PropertyMeta<Integer, CompleteBean> joinPropertyMeta;
+
+	@Mock
+	private EntityProxifier proxifier;
+
+	@Mock
+	private CounterDao counterDao;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	@Mock
+	private GenericEntityDao<Long> entityDao;
+
+	private EntityMeta<Long> entityMeta;
+
+	private PersistenceContext<Long> context;
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Before
 	public void setUp() throws Exception
 	{
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, Long.class) //
+				.field("id") //
+				.type(PropertyType.SIMPLE) //
+				.accesors() //
+				.build();
+
+		entityMeta = new EntityMeta<Long>();
+		entityMeta.setIdMeta(idMeta);
+		context = PersistenceContextTestBuilder //
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.entity(entity) //
+				.build();
 	}
 
 	@Test
@@ -65,19 +101,11 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.clear();
 
 		verify(dirtyMap).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_not_mark_dirty_on_clear_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		wrapper.clear();
-		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -88,22 +116,11 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(introspector.unproxy(any())).thenReturn(entry);
+		when(proxifier.unproxy(any())).thenReturn(entry);
 
 		assertThat(wrapper.contains(entry)).isTrue();
-	}
-
-	@Test
-	public void should_return_false_on_contains_when_null_target() throws Exception
-	{
-		Map<Integer, String> map = new HashMap<Integer, String>();
-		map.put(1, "FR");
-		Entry<Integer, String> entry = map.entrySet().iterator().next();
-
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.contains(entry)).isFalse();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -115,48 +132,23 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
 
 		Entry<Integer, String> entry1 = iterator.next();
 		Entry<Integer, String> entry2 = iterator.next();
 
-		when(introspector.unproxy(entry1)).thenReturn(entry1);
-		when(introspector.unproxy(entry2)).thenReturn(entry2);
+		when(proxifier.unproxy(entry1)).thenReturn(entry1);
+		when(proxifier.unproxy(entry2)).thenReturn(entry2);
 
 		assertThat(wrapper.containsAll(Arrays.asList(entry1, entry2))).isTrue();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_return_false_on_containsAll_when_null_target() throws Exception
-	{
-		Map<Integer, String> map = new HashMap<Integer, String>();
-		map.put(1, "FR");
-		map.put(2, "Paris");
-		map.put(3, "75014");
-
-		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
-
-		Entry<Integer, String> entry1 = iterator.next();
-		Entry<Integer, String> entry2 = iterator.next();
-
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.containsAll(Arrays.asList(entry1, entry2))).isFalse();
 	}
 
 	@Test
 	public void should_return_true_on_isEmpty() throws Exception
 	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(new HashMap<Integer, String>());
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(new HashMap<Integer, String>());
 		assertThat(wrapper.isEmpty()).isTrue();
-	}
-
-	@Test
-	public void should_return_false_on_isEmpty_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.isEmpty()).isFalse();
 	}
 
 	@Test
@@ -167,16 +159,9 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		assertThat(wrapper.iterator()).isNotNull();
-	}
-
-	@Test
-	public void should_return_null_on_iterator_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.iterator()).isNull();
 	}
 
 	@Test
@@ -187,9 +172,9 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(introspector.unproxy(any())).thenReturn(entry);
+		when(proxifier.unproxy(any())).thenReturn(entry);
 		wrapper.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -203,23 +188,11 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		wrapper.remove(entry);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_not_mark_dirty_on_remove_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
-		wrapper.remove(entry);
-
-		wrapper.remove(entry);
-
-		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -230,7 +203,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
 
@@ -240,7 +213,7 @@ public class EntrySetWrapperTest
 		list.add(entry1);
 		list.add(entry2);
 
-		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -256,7 +229,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(5, "csdf");
@@ -264,14 +237,6 @@ public class EntrySetWrapperTest
 		wrapper.removeAll(Arrays.asList(entry1, entry2));
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
-	}
-
-	@Test
-	public void should_not_mark_dirty_on_removaAll_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		wrapper.removeAll(null);
-		verifyZeroInteractions(dirtyMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -288,9 +253,9 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry2 = iterator.next();
 		List<Entry<Integer, String>> list = Arrays.asList(entry1, entry2);
 
-		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -305,8 +270,8 @@ public class EntrySetWrapperTest
 
 		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "FR");
 		List<Entry<Integer, String>> list = Arrays.asList(entry1);
-		when(introspector.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);
 
@@ -314,27 +279,12 @@ public class EntrySetWrapperTest
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_retain_all_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		wrapper.retainAll(null);
-		verifyZeroInteractions(dirtyMap);
-	}
-
-	@Test
 	public void should_get_size() throws Exception
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		assertThat(wrapper.size()).isEqualTo(1);
-	}
-
-	@Test
-	public void should_get_size_zero_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.size()).isEqualTo(0);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -343,7 +293,7 @@ public class EntrySetWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.SET);
 
 		Object[] array = wrapper.toArray();
@@ -358,20 +308,13 @@ public class EntrySetWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
 		Object[] array = wrapper.toArray();
 
 		assertThat(array).hasSize(1);
 		assertThat(array[0]).isInstanceOf(MapEntryWrapper.class);
-	}
-
-	@Test
-	public void should_return_null_array_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.toArray()).isNull();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -382,7 +325,7 @@ public class EntrySetWrapperTest
 		map.put(1, "FR");
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.SET);
 
 		Object[] array = wrapper.toArray(new Entry[]
@@ -398,19 +341,15 @@ public class EntrySetWrapperTest
 	@Test
 	public void should_return_array_with_argument_when_join_entity() throws Exception
 	{
-		Map<Integer, String> map = new HashMap<Integer, String>();
-		map.put(1, "FR");
-		Entry<Integer, String> entry = map.entrySet().iterator().next();
+		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
+		map.put(1, entity);
+		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
+		EntrySetWrapper<Long, Integer, CompleteBean> wrapper = prepareJoinWrapper(map);
+		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-
-		when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
-		when(introspector.buildProxy(entry, joinMeta)).thenReturn(entry);
+		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class))).thenReturn(entity);
 
 		Object[] array = wrapper.toArray(new Entry[]
 		{
@@ -418,16 +357,7 @@ public class EntrySetWrapperTest
 		});
 
 		assertThat(array).hasSize(1);
-		assertThat(((Entry<Integer, String>) array[0]).getValue()).isEqualTo("FR");
-	}
-
-	@Test
-	public void should_return_null_on_array_with_argument_when_null_target() throws Exception
-	{
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapperNullTarget();
-		assertThat(wrapper.toArray(null)).isNull();
-
-		verifyZeroInteractions(dirtyMap);
+		assertThat(((Entry<Integer, CompleteBean>) array[0]).getValue()).isEqualTo(entity);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -438,7 +368,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 
@@ -454,7 +384,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(5, "csdf");
@@ -462,26 +392,28 @@ public class EntrySetWrapperTest
 		wrapper.addAll(Arrays.asList(entry1, entry2));
 	}
 
-	private EntrySetWrapper<Integer, String> prepareWrapper(Map<Integer, String> map)
+	private EntrySetWrapper<Long, Integer, String> prepareWrapper(Map<Integer, String> map)
 	{
-		EntrySetWrapper<Integer, String> wrapper = new EntrySetWrapper<Integer, String>(
+		EntrySetWrapper<Long, Integer, String> wrapper = new EntrySetWrapper<Long, Integer, String>(
 				map.entrySet());
-
+		wrapper.setContext(context);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(introspector);
+		wrapper.setProxifier(proxifier);
 		return wrapper;
 	}
 
-	private EntrySetWrapper<Integer, String> prepareWrapperNullTarget()
+	private EntrySetWrapper<Long, Integer, CompleteBean> prepareJoinWrapper(
+			Map<Integer, CompleteBean> map)
 	{
-		EntrySetWrapper<Integer, String> wrapper = new EntrySetWrapper<Integer, String>(null);
-
+		EntrySetWrapper<Long, Integer, CompleteBean> wrapper = new EntrySetWrapper<Long, Integer, CompleteBean>(
+				map.entrySet());
+		wrapper.setContext(context);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
-		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setHelper(introspector);
+		wrapper.setPropertyMeta(joinPropertyMeta);
+		wrapper.setProxifier(proxifier);
 		return wrapper;
 	}
 }
