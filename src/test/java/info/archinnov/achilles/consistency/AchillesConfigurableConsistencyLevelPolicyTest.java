@@ -1,9 +1,9 @@
 package info.archinnov.achilles.consistency;
 
+import static info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy.*;
 import static me.prettyprint.cassandra.service.OperationType.*;
 import static me.prettyprint.hector.api.HConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
