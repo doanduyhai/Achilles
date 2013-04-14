@@ -7,7 +7,6 @@ import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
@@ -23,6 +22,8 @@ import java.util.Map.Entry;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+
+import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -46,7 +47,8 @@ public class EntityParser
 		Class<?> entityClass = context.getCurrentEntityClass();
 		validateEntityAndGetObjectMapper(context);
 
-		String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
+		String columnFamilyName = introspector.inferColumnFamilyName(entityClass,
+				entityClass.getName());
 		Long serialVersionUID = introspector.findSerialVersionUID(entityClass);
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
 				.findConsistencyLevels(entityClass);
@@ -82,10 +84,10 @@ public class EntityParser
 		validator.validateHasIdMeta(entityClass, idMeta);
 
 		// Deferred external wide map fields parsing
-		processExternalWideMap(context, idMeta);
+		processWideMap(context, idMeta);
 
 		// Deferred external join wide map fields parsing
-		processExternalJoinWideMap(context, columnFamilyName, idMeta);
+		processJoinWideMap(context, columnFamilyName, idMeta);
 
 		// Deferred counter property meta completion
 		completeCounterPropertyMeta(context, idMeta);
@@ -127,21 +129,18 @@ public class EntityParser
 			validator.validateJoinEntityNotDirectCFMapping(joinEntityMeta);
 
 			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
-			if (propertyMeta.type().isExternal())
+			if (propertyMeta.type().isWideMap())
 			{
-				ExternalWideMapProperties<ID> externalWideMapProperties = (ExternalWideMapProperties<ID>) propertyMeta
-						.getExternalWideMapProperties();
 
 				GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
 						context.getCluster(), //
 						context.getKeyspace(), //
-						externalWideMapProperties.getIdSerializer(), //
+						(Serializer<ID>) propertyMeta.getIdSerializer(), //
 						joinEntityMeta.getIdSerializer(), //
-						externalWideMapProperties.getExternalColumnFamilyName(),//
+						propertyMeta.getExternalCFName(),//
 						context.getConfigurableCLPolicy());
 
-				context.getColumnFamilyDaosMap().put(
-						externalWideMapProperties.getExternalColumnFamilyName(), joinDao);
+				context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
 			}
 		}
 	}
@@ -159,27 +158,22 @@ public class EntityParser
 		context.setCurrentObjectMapper(objectMapper);
 	}
 
-	private void processExternalWideMap(EntityParsingContext context, PropertyMeta<Void, ?> idMeta)
+	private void processWideMap(EntityParsingContext context, PropertyMeta<Void, ?> idMeta)
 	{
-		for (Entry<PropertyMeta<?, ?>, String> entry : context.getExternalWideMaps().entrySet())
+		for (Entry<PropertyMeta<?, ?>, String> entry : context.getWideMaps().entrySet())
 		{
 			PropertyMeta<?, ?> externalWideMapMeta = entry.getKey();
-			String externalTableName = entry.getValue();
-			parser.fillExternalWideMap(context, idMeta, externalWideMapMeta, externalTableName);
+			parser.fillWideMap(context, idMeta, externalWideMapMeta, entry.getValue());
 		}
 	}
 
-	private void processExternalJoinWideMap(EntityParsingContext context, String columnFamilyName,
+	private void processJoinWideMap(EntityParsingContext context, String columnFamilyName,
 			PropertyMeta<Void, ?> idMeta)
 	{
-		for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinExternalWideMaps().entrySet())
+		for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinWideMaps().entrySet())
 		{
 			PropertyMeta<?, ?> joinExternalWideMapMeta = entry.getKey();
-			String externalTableName;
-
-			externalTableName = entry.getValue();
-			joinParser.fillExternalJoinWideMap(context, idMeta, joinExternalWideMapMeta,
-					externalTableName);
+			joinParser.fillJoinWideMap(context, idMeta, joinExternalWideMapMeta, entry.getValue());
 		}
 	}
 
@@ -195,13 +189,12 @@ public class EntityParser
 	private <ID, K, V> void buildDao(EntityParsingContext context, String columnFamilyName,
 			PropertyMeta<Void, ID> idMeta)
 	{
-		GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(
-				context.getCluster(), //
+		GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(context.getCluster(), //
 				context.getKeyspace(), //
 				idMeta.getValueSerializer(), //
 				columnFamilyName, //
 				context.getConfigurableCLPolicy());
-	
+
 		context.getEntityDaosMap().put(columnFamilyName, entityDao);
 	}
 

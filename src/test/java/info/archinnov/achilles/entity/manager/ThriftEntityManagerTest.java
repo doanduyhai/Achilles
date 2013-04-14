@@ -1,15 +1,10 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
@@ -120,7 +115,7 @@ public class ThriftEntityManagerTest
 	private FlushContext flushContext;
 
 	@Captor
-	ArgumentCaptor<Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>> mutatorMapCaptor;
+	ArgumentCaptor<Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>>> mutatorMapCaptor;
 
 	@Captor
 	ArgumentCaptor<PersistenceContext<Long>> contextCaptor;

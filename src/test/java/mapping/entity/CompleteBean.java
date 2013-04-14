@@ -53,6 +53,9 @@ public class CompleteBean implements Serializable
 	private Map<Integer, String> preferences;
 
 	@Column
+	private Map<Integer, UserBean> usersMap;
+
+	@Column
 	private WideMap<UUID, String> tweets;
 
 	@Column
@@ -210,6 +213,16 @@ public class CompleteBean implements Serializable
 	public void setPopularTopics(WideMap<String, Long> popularTopics)
 	{
 		this.popularTopics = popularTopics;
+	}
+
+	public Map<Integer, UserBean> getUsersMap()
+	{
+		return usersMap;
+	}
+
+	public void setUsersMap(Map<Integer, UserBean> usersMap)
+	{
+		this.usersMap = usersMap;
 	}
 
 	public static class UserTweetKey implements MultiKey

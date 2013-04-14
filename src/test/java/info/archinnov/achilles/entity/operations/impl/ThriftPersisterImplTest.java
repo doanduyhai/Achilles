@@ -1,19 +1,11 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -45,7 +37,6 @@ import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -100,10 +91,7 @@ public class ThriftPersisterImplTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory;
-
-	@Mock
-	private CompositeKeyFactory compositeKeyFactory;
+	private CompositeFactory compositeFactory;
 
 	@Mock
 	private CounterDao counterDao;
@@ -130,7 +118,7 @@ public class ThriftPersisterImplTest
 	private FlushContext flushContext;
 
 	@Captor
-	ArgumentCaptor<DynamicComposite> compositeCaptor;
+	ArgumentCaptor<Composite> compositeCaptor;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -175,7 +163,7 @@ public class ThriftPersisterImplTest
 		verify(entityDao).insertColumnBatch(eq(entity.getId()), compositeCaptor.capture(),
 				eq("151"), eq(mutator));
 
-		DynamicComposite captured = compositeCaptor.getValue();
+		Composite captured = compositeCaptor.getValue();
 
 		assertThat(captured.getComponent(0).getValue(SerializerUtils.BYTE_SRZ)).isEqualTo(
 				PropertyType.SERIAL_VERSION_UID.flag());
@@ -205,9 +193,8 @@ public class ThriftPersisterImplTest
 				.accesors() //
 				.build();
 
-		DynamicComposite comp = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
-				comp);
+		Composite comp = new Composite();
+		when(compositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
 
 		when(introspector.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(
 				"testValue");
@@ -239,11 +226,10 @@ public class ThriftPersisterImplTest
 				.build();
 
 		Composite keyComp = new Composite();
-		DynamicComposite comp = new DynamicComposite();
-		when(compositeKeyFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta))
-				.thenReturn(keyComp);
-		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
-				comp);
+		Composite comp = new Composite();
+		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
+				keyComp);
+		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
 
 		when(introspector.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(
 				counterValue);
@@ -265,12 +251,10 @@ public class ThriftPersisterImplTest
 				.accesors() //
 				.build();
 
-		DynamicComposite comp1 = new DynamicComposite();
-		DynamicComposite comp2 = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 0))
-				.thenReturn(comp1);
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 1))
-				.thenReturn(comp2);
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
 
 		thriftPersister.batchPersistList(Arrays.asList("foo", "bar"), context, propertyMeta);
 
@@ -289,14 +273,12 @@ public class ThriftPersisterImplTest
 				.accesors() //
 				.build();
 
-		DynamicComposite comp1 = new DynamicComposite();
-		DynamicComposite comp2 = new DynamicComposite();
-		when(
-				dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta,
-						"John".hashCode())).thenReturn(comp1);
-		when(
-				dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta,
-						"Helen".hashCode())).thenReturn(comp2);
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, "John".hashCode()))
+				.thenReturn(comp1);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, "Helen".hashCode()))
+				.thenReturn(comp2);
 
 		Set<String> followers = ImmutableSet.of("John", "Helen");
 		thriftPersister.batchPersistSet(followers, context, propertyMeta);
@@ -322,22 +304,19 @@ public class ThriftPersisterImplTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		DynamicComposite comp1 = new DynamicComposite();
-		DynamicComposite comp2 = new DynamicComposite();
-		DynamicComposite comp3 = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 1))
-				.thenReturn(comp1);
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 2))
-				.thenReturn(comp2);
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 3))
-				.thenReturn(comp3);
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		Composite comp3 = new Composite();
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(comp3);
 
 		thriftPersister.batchPersistMap(map, context, propertyMeta);
 
 		ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor.forClass(String.class);
 
-		verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()),
-				any(DynamicComposite.class), keyValueHolderCaptor.capture(), eq(mutator));
+		verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()), any(Composite.class),
+				keyValueHolderCaptor.capture(), eq(mutator));
 
 		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
 
@@ -388,9 +367,8 @@ public class ThriftPersisterImplTest
 		user.setUserId(joinId);
 
 		when(introspector.getKey(user, joinIdMeta)).thenReturn(joinId);
-		DynamicComposite comp = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
-				comp);
+		Composite comp = new Composite();
+		when(compositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
 
 		when(proxifier.unproxy(user)).thenReturn(user);
 
@@ -434,12 +412,10 @@ public class ThriftPersisterImplTest
 		user1.setUserId(joinId1);
 		user2.setUserId(joinId2);
 
-		DynamicComposite comp1 = new DynamicComposite();
-		DynamicComposite comp2 = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 0))
-				.thenReturn(comp1);
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 1))
-				.thenReturn(comp2);
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
 		when(introspector.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
 		when(introspector.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
 
@@ -498,13 +474,11 @@ public class ThriftPersisterImplTest
 		KeyValue<Integer, String> kv1 = new KeyValue<Integer, String>(1, joinId1.toString());
 		KeyValue<Integer, String> kv2 = new KeyValue<Integer, String>(2, joinId2.toString());
 
-		DynamicComposite comp1 = new DynamicComposite();
-		DynamicComposite comp2 = new DynamicComposite();
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
 
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 1))
-				.thenReturn(comp1);
-		when(dynamicCompositeKeyFactory.createForBatchInsertMultiValue(propertyMeta, 2))
-				.thenReturn(comp2);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
+		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
 		when(introspector.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
 		when(introspector.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
 
@@ -550,11 +524,12 @@ public class ThriftPersisterImplTest
 		PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, String.class) //
 				.field("geoPositions")//
-				.type(PropertyType.EXTERNAL_WIDE_MAP) //
+				.type(PropertyType.WIDE_MAP) //
 				.externalCf("external_cf") //
 				.idSerializer(SerializerUtils.LONG_SRZ) //
 				.accesors() //
 				.build();
+
 		Map<String, PropertyMeta<UUID, String>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
@@ -593,11 +568,10 @@ public class ThriftPersisterImplTest
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 
 		Composite keyComp = new Composite();
-		DynamicComposite comp = new DynamicComposite();
-		when(compositeKeyFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta))
-				.thenReturn(keyComp);
-		when(dynamicCompositeKeyFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(
-				comp);
+		Composite comp = new Composite();
+		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
+				keyComp);
+		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
 		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
@@ -633,8 +607,8 @@ public class ThriftPersisterImplTest
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 
 		Composite keyComp = new Composite();
-		when(compositeKeyFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta))
-				.thenReturn(keyComp);
+		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
+				keyComp);
 		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
@@ -653,11 +627,11 @@ public class ThriftPersisterImplTest
 				.accesors() //
 				.build();
 
-		DynamicComposite start = new DynamicComposite(), end = new DynamicComposite();
-		when(dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL))
+		Composite start = new Composite(), end = new Composite();
+		when(compositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL))
 				.thenReturn(start);
 		when(
-				dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
+				compositeFactory.createBaseForQuery(propertyMeta,
 						ComponentEquality.GREATER_THAN_EQUAL)).thenReturn(end);
 
 		thriftPersister.removePropertyBatch(context, propertyMeta);

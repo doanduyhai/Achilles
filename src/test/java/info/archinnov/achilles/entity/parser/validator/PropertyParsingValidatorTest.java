@@ -62,25 +62,6 @@ public class PropertyParsingValidatorTest
 		validator.validateNoDuplicate(context);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_exception_when_counter_is_external() throws Exception
-	{
-		Field field = CompleteBean.class.getDeclaredField("serialVersionUID");
-		when(context.isExternal()).thenReturn(true);
-		when(context.isCounterType()).thenReturn(true);
-		when(context.getCurrentField()).thenReturn(field);
-		when((Class<CompleteBean>) context.getCurrentEntityClass()).thenReturn(CompleteBean.class);
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("Error for field 'serialVersionUID' of entity '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "'. Counter value are already stored in external column families. There is no sense having a counter with external table");
-
-		validator.validateCounterNotExternal(context);
-	}
-
 	@Test
 	public void should_exception_when_map_not_parameterized() throws Exception
 	{

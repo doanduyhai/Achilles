@@ -15,31 +15,33 @@ import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 
 import java.util.Iterator;
 
-import me.prettyprint.hector.api.beans.AbstractComposite;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public class AchillesSliceIterator<K, N extends AbstractComposite, V> extends
-		AbstractAchillesSliceIterator<N> implements Iterator<HColumn<N, V>>
+public class AchillesSliceIterator<K, V> extends AbstractAchillesSliceIterator implements
+		Iterator<HColumn<Composite, V>>
 {
 
-	private SliceQuery<K, N, V> query;
-	private Iterator<HColumn<N, V>> iterator;
+	private SliceQuery<K, Composite, V> query;
+	private Iterator<HColumn<Composite, V>> iterator;
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
-			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed)
+			SliceQuery<K, Composite, V> query, Composite start, final Composite finish,
+			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
-			SliceQuery<K, N, V> query, N start, final N finish, boolean reversed, int count)
+			SliceQuery<K, Composite, V> query, Composite start, final Composite finish,
+			boolean reversed, int count)
 	{
-		this(policy, cf, query, start, new ColumnSliceFinish<N>()
+		this(policy, cf, query, start, new ColumnSliceFinish()
 		{
 			@Override
-			public N function()
+			public Composite function()
 			{
 				return finish;
 			}
@@ -47,14 +49,15 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> extends
 	}
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
-			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed)
+			SliceQuery<K, Composite, V> query, Composite start, ColumnSliceFinish finish,
+			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
-			SliceQuery<K, N, V> query, N start, ColumnSliceFinish<N> finish, boolean reversed,
-			int count)
+			SliceQuery<K, Composite, V> query, Composite start, ColumnSliceFinish finish,
+			boolean reversed, int count)
 	{
 		super(policy, cf, start, finish, reversed, count);
 		this.query = query;
@@ -91,9 +94,9 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> extends
 	}
 
 	@Override
-	public HColumn<N, V> next()
+	public HColumn<Composite, V> next()
 	{
-		HColumn<N, V> column = iterator.next();
+		HColumn<Composite, V> column = iterator.next();
 		start = column.getName();
 		columns++;
 
@@ -106,12 +109,12 @@ public class AchillesSliceIterator<K, N extends AbstractComposite, V> extends
 		iterator.remove();
 	}
 
-	private Iterator<HColumn<N, V>> fetchData()
+	private Iterator<HColumn<Composite, V>> fetchData()
 	{
-		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<N, V>>>()
+		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, V>>>()
 		{
 			@Override
-			public Iterator<HColumn<N, V>> execute()
+			public Iterator<HColumn<Composite, V>> execute()
 			{
 				return query.execute().get().getColumns().iterator();
 			}

@@ -1,33 +1,27 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.helper.CompositeHelper;
-import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
-import info.archinnov.achilles.iterator.KeyValueIteratorForDynamicComposite;
+import info.archinnov.achilles.iterator.KeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
 
@@ -39,129 +33,90 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * WideMapWrapperTest
+ * ExternalWideMapWrapperTest
  * 
  * @author DuyHai DOAN
  * 
  */
+
 @RunWith(MockitoJUnitRunner.class)
 public class WideMapWrapperTest
 {
-
 	@InjectMocks
 	private WideMapWrapper<Long, Integer, String> wrapper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private PersistenceContext<Long> context;
 
 	@Mock
-	private PropertyMeta<Integer, String> propertyMeta;
+	private GenericColumnFamilyDao<Long, String> dao;
 
 	@Mock
-	private PropertyMeta<Integer, UserBean> joinWideMapMeta;
-
-	@Mock
-	private DynamicCompositeKeyFactory keyFactory;
-
-	@Mock
-	private KeyValueFactory keyValueFactory;
-
-	@Mock
-	protected IteratorFactory iteratorFactory;
+	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
 	private CompositeHelper compositeHelper;
 
 	@Mock
-	private EntityIntrospector entityIntrospector;
+	private KeyValueFactory keyValueFactory;
 
 	@Mock
-	private AchillesInterceptor interceptor;
+	private IteratorFactory iteratorFactory;
+
+	@Mock
+	private CompositeFactory compositeFactory;
+
+	private Long id;
+
+	private Composite comp = new Composite();
+
+	@Mock
+	private AchillesInterceptor<Long> interceptor;
 
 	@Mock
 	private Mutator<Long> mutator;
 
-	private Long id = 1L;
-
-	@Mock
-	private AchillesSliceIterator<Long, DynamicComposite, String> achillesSliceIterator;
-
-	@Mock
-	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Integer, String> achillesJoinSliceIterator;
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp()
 	{
-		wrapper.setId(id);
+		when(wideMapMeta.getExternalCFName()).thenReturn("external_cf");
+		when((Serializer<Long>) wideMapMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when(wideMapMeta.getKeySerializer()).thenReturn(INT_SRZ);
+		when(compositeFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
+		when(context.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
 
-		when(propertyMeta.getPropertyName()).thenReturn("name");
-		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		when(propertyMeta.getKeySerializer()).thenReturn((Serializer) INT_SRZ);
 	}
 
 	@Test
 	public void should_get_value() throws Exception
 	{
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 1)).thenReturn(composite);
+		Composite comp = new Composite();
+		when(compositeFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
+		when(dao.getValue(id, comp)).thenReturn("test");
+		when(wideMapMeta.castValue("test")).thenReturn("test");
 
-		wrapper.get(1);
+		Object expected = wrapper.get(12);
 
-		verify(dao).getValue(id, composite);
-
+		assertThat(expected).isEqualTo("test");
 	}
 
 	@Test
 	public void should_insert_value() throws Exception
 	{
-
-		String value = "test";
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 1)).thenReturn(composite);
-		when(propertyMeta.writeValueToString(value)).thenReturn(value);
-		when(interceptor.isBatchMode()).thenReturn(false);
-		wrapper.insert(1, value);
-
-		verify(dao).setValue(id, composite, value);
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_insert_value_with_batch() throws Exception
-	{
-
-		String value = "test";
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 1)).thenReturn(composite);
-		when(propertyMeta.writeValueToString(value)).thenReturn(value);
-		when(interceptor.isBatchMode()).thenReturn(true);
-		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
-		wrapper.insert(1, value);
-
-		verify(dao).setValueBatch(id, composite, value, mutator);
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		wrapper.insert(12, "test");
+		verify(dao).setValueBatch(id, comp, "test", mutator);
+		verify(context).flush();
 	}
 
 	@Test
 	public void should_insert_value_with_ttl() throws Exception
 	{
-		String value = "test";
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 1)).thenReturn(composite);
-		when(propertyMeta.writeValueToString(value)).thenReturn(value);
-		when(interceptor.isBatchMode()).thenReturn(false);
-		wrapper.insert(1, value, 12);
-
-		verify(dao).setValue(id, composite, value, 12);
-
+		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
+		wrapper.insert(12, "test", 452);
+		verify(dao).setValueBatch(id, comp, "test", 452, mutator);
+		verify(context).flush();
 	}
 
 	@SuppressWarnings(
@@ -170,265 +125,164 @@ public class WideMapWrapperTest
 			"rawtypes"
 	})
 	@Test
-	public void should_insert_value_with_ttl_and_batch() throws Exception
+	public void should_find_keyvalues_range() throws Exception
 	{
-		String value = "test";
-		DynamicComposite composite = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 1)).thenReturn(composite);
-		when(propertyMeta.writeValueToString(value)).thenReturn(value);
-		when(interceptor.isBatchMode()).thenReturn(true);
-		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
-		wrapper.insert(1, value, 12);
-
-		verify(dao).setValueBatch(id, composite, value, 12, mutator);
-
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_find_keyvalue_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
-		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-
-		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
-		when(keyValueFactory.createKeyValueListForDynamicComposite(propertyMeta, hColumns))
-				.thenReturn(result);
-		List<KeyValue<Integer, String>> expected = wrapper.find(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(result);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_find_join_keyvalue_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
-		when(propertyMeta.isJoin()).thenReturn(true);
-
-		List<KeyValue<Integer, String>> result = new ArrayList<KeyValue<Integer, String>>();
-		when(keyValueFactory.createJoinKeyValueListForDynamicComposite(propertyMeta, hColumns))
-				.thenReturn(result);
-		List<KeyValue<Integer, String>> expected = wrapper.find(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(result);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_find_values_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-
-		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
-		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-
-		List<String> result = new ArrayList<String>();
-		when(keyValueFactory.createValueListForDynamicComposite(propertyMeta, hColumns))
-				.thenReturn(result);
-
-		List<String> expected = wrapper.findValues(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(result);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_find_join_values_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-
-		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
-		when(propertyMeta.isJoin()).thenReturn(true);
-
-		List<String> result = new ArrayList<String>();
-		when(keyValueFactory.createJoinValueListForDynamicComposite(propertyMeta, hColumns))
-				.thenReturn(result);
-
-		List<String> expected = wrapper.findValues(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(result);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_find_keys_asc_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-		List<HColumn<DynamicComposite, String>> hColumns = mock(List.class);
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-
-		when(dao.findRawColumnsRange(id, start, end, 10, false)).thenReturn(hColumns);
-		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-
-		List<Integer> result = new ArrayList<Integer>();
-		when(keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns)).thenReturn(
-				result);
-
-		List<Integer> expected = wrapper.findKeys(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(result);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_return_iterator_inclusive_start_exclusive_end() throws Exception
-	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 2, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-
-		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		when(dao.getColumnsIterator(id, start, end, false, 10)).thenReturn(achillesSliceIterator);
-
-		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		List<KeyValue<Integer, String>> keyValues = mock(List.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
 
 		when(
-				iteratorFactory.createKeyValueIteratorForDynamicComposite(achillesSliceIterator,
-						propertyMeta)).thenReturn(iterator);
+				compositeFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS,
+						OrderingMode.ASCENDING)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
 
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 2, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
+		when(keyValueFactory.createKeyValueList(context, wideMapMeta, (List) hColumns)).thenReturn(
+				keyValues).thenReturn(keyValues);
 
-		assertThat(expected).isSameAs(iterator);
+		List<KeyValue<Integer, String>> expected = wrapper.find(12, 15, 10);
+		assertThat(expected).isSameAs(keyValues);
+	}
 
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_values_range() throws Exception
+	{
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		List<String> keyValues = mock(List.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS,
+						OrderingMode.ASCENDING)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
+		when(keyValueFactory.createValueList(wideMapMeta, (List) hColumns)).thenReturn(keyValues)
+				.thenReturn(keyValues);
+
+		List<String> expected = wrapper.findValues(12, 15, 10);
+		assertThat(expected).isSameAs(keyValues);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_keys_range() throws Exception
+	{
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		List<Integer> keyValues = mock(List.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(wideMapMeta, 12, 15, BoundingMode.INCLUSIVE_BOUNDS,
+						OrderingMode.ASCENDING)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+
+		when(dao.findRawColumnsRange(id, startComp, endComp, 10, false)).thenReturn(hColumns);
+		when(keyValueFactory.createKeyList(wideMapMeta, (List) hColumns)).thenReturn(keyValues)
+				.thenReturn(keyValues);
+
+		List<Integer> expected = wrapper.findKeys(12, 15, 10);
+		assertThat(expected).isSameAs(keyValues);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_return_join_iterator_inclusive_start_exclusive_end() throws Exception
+	public void should_get_iterator() throws Exception
 	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
-
-		when(keyFactory.createForQuery(propertyMeta, 1, 3, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
-				{
-						start,
-						end
-				});
-
-		when(propertyMeta.isJoin()).thenReturn(true);
-		when(dao.getJoinColumnsIterator(propertyMeta, id, start, end, false, 10)).thenReturn(
-				achillesJoinSliceIterator);
-
-		KeyValueIteratorForDynamicComposite<Integer, String> iterator = mock(KeyValueIteratorForDynamicComposite.class);
+		KeyValueIteratorImpl<Long, Integer, String> keyValues = mock(KeyValueIteratorImpl.class);
+		AchillesSliceIterator<Long, String> iterator = mock(AchillesSliceIterator.class);
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
 
 		when(
-				iteratorFactory.createKeyValueJoinIteratorForDynamicComposite(
-						achillesJoinSliceIterator, propertyMeta)).thenReturn(iterator);
+				compositeFactory.createForQuery(wideMapMeta, 12, 15,
+						BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING)) //
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+		when(dao.getColumnsIterator(id, startComp, endComp, false, 10)).thenReturn(iterator);
+		when(iteratorFactory.createKeyValueIterator(context, iterator, wideMapMeta)).thenReturn(
+				keyValues);
+		KeyValueIterator<Integer, String> expected = wrapper.iterator(12, 15, 10,
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
-		KeyValueIterator<Integer, String> expected = wrapper.iterator(1, 3, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, 
-				OrderingMode.ASCENDING);
-
-		assertThat(expected).isSameAs(iterator);
-
+		assertThat(expected).isSameAs(keyValues);
 	}
 
 	@Test
 	public void should_remove() throws Exception
 	{
-		DynamicComposite comp = new DynamicComposite();
-		when(keyFactory.createForInsert(propertyMeta, 5)).thenReturn(comp);
+		Composite comp = new Composite();
+		when(compositeFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
 
-		wrapper.remove(5);
+		wrapper.remove(12);
 
-		verify(dao).removeColumn(id, comp);
+		verify(dao).removeColumnBatch(id, comp, mutator);
+		verify(context).flush();
 	}
 
 	@Test
 	public void should_remove_range() throws Exception
 	{
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
+		Composite startComp = new Composite();
+		Composite endComp = new Composite();
 
-		when(keyFactory.createForQuery(propertyMeta, 5, 10, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING)).thenReturn(
-				new DynamicComposite[]
+		when(
+				compositeFactory.createForQuery(wideMapMeta, 12, 15,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)) //
+				.thenReturn(new Composite[]
 				{
-						start,
-						end
+						startComp,
+						endComp
 				});
-		wrapper.remove(5, 10);
 
-		verify(dao).removeColumnRange(id, start, end);
+		wrapper.remove(12, 15, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
+
+		verify(dao).removeColumnRangeBatch(id, startComp, endComp, mutator);
+		verify(context).flush();
 	}
 
 	@Test
 	public void should_remove_first() throws Exception
 	{
-		wrapper.removeFirst(12);
+		wrapper.removeFirst(3);
 
-		verify(dao).removeColumnRange(id, null, null, false, 12);
+		verify(dao).removeColumnRangeBatch(id, null, null, false, 3, mutator);
+		verify(context).flush();
 	}
 
 	@Test
 	public void should_remove_last() throws Exception
 	{
-		wrapper.removeLast(15);
+		wrapper.removeLast(7);
 
-		verify(dao).removeColumnRange(id, null, null, true, 15);
+		verify(dao).removeColumnRangeBatch(id, null, null, true, 7, mutator);
+		verify(context).flush();
 	}
 }

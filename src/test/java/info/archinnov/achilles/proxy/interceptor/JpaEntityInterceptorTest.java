@@ -1,6 +1,7 @@
 package info.archinnov.achilles.proxy.interceptor;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
@@ -11,19 +12,15 @@ import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
-import info.archinnov.achilles.wrapper.ExternalWideMapWrapper;
-import info.archinnov.achilles.wrapper.JoinExternalWideMapWrapper;
+import info.archinnov.achilles.wrapper.WideMapWrapper;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 import info.archinnov.achilles.wrapper.ListWrapper;
 import info.archinnov.achilles.wrapper.MapWrapper;
 import info.archinnov.achilles.wrapper.SetWrapper;
-import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -416,7 +413,8 @@ public class JpaEntityInterceptorTest
 		Object wideMapWrapper = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(wideMapWrapper).isInstanceOf(WideMapWrapper.class);
-		assertThat(((WideMapWrapper) wideMapWrapper).getInterceptor()).isSameAs(interceptor);
+		assertThat(((WideMapWrapper) wideMapWrapper).getInterceptor())
+				.isSameAs(interceptor);
 	}
 
 	@Test
@@ -450,8 +448,8 @@ public class JpaEntityInterceptorTest
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(ExternalWideMapWrapper.class);
-		assertThat(((ExternalWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
+		assertThat(name).isInstanceOf(WideMapWrapper.class);
+		assertThat(((WideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test
@@ -471,51 +469,49 @@ public class JpaEntityInterceptorTest
 	}
 
 	@Test
-	public void should_create_external_wide_map_wrapper() throws Throwable
+	public void should_create_wide_map_wrapper() throws Throwable
 	{
 		CompleteBean bean = new CompleteBean();
 		Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
 		GenericColumnFamilyDao<Long, String> externalWideMapDao = mock(GenericColumnFamilyDao.class);
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"geo_positions", SerializerUtils.LONG_SRZ);
 
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.type()).thenReturn(EXTERNAL_WIDE_MAP);
-		when(propertyMeta.getExternalWideMapProperties()).thenReturn(externalWideMapProperties);
+		when(propertyMeta.type()).thenReturn(WIDE_MAP);
+		when(propertyMeta.getExternalCFName()).thenReturn("geo_positions");
+		when(propertyMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+
 		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("geo_positions"))
 				.thenReturn(externalWideMapDao);
 
 		Object externalWideMap = this.interceptor.intercept(bean, externalWideMapGetter,
 				(Object[]) null, proxy);
 
-		assertThat(externalWideMap).isInstanceOf(ExternalWideMapWrapper.class);
+		assertThat(externalWideMap).isInstanceOf(WideMapWrapper.class);
 		Object dao = Whitebox.getInternalState(externalWideMap, "dao");
 
 		assertThat(dao).isNotNull();
 		assertThat(dao).isSameAs(externalWideMapDao);
-		assertThat(((ExternalWideMapWrapper) externalWideMap).getInterceptor()).isSameAs(
+		assertThat(((WideMapWrapper) externalWideMap).getInterceptor()).isSameAs(
 				interceptor);
 	}
 
 	@Test
-	public void should_create_external_join_wide_map_wrapper() throws Throwable
+	public void should_create_join_wide_map_wrapper() throws Throwable
 	{
 		CompleteBean bean = new CompleteBean();
 		Method joinUsersGetter = CompleteBean.class.getDeclaredMethod("getJoinUsers");
 
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"join_users", SerializerUtils.LONG_SRZ);
-
 		when(getterMetas.containsKey(joinUsersGetter)).thenReturn(true);
 		when(getterMetas.get(joinUsersGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.type()).thenReturn(EXTERNAL_JOIN_WIDE_MAP);
-		when(propertyMeta.getExternalWideMapProperties()).thenReturn(externalWideMapProperties);
+		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
+		when(propertyMeta.getExternalCFName()).thenReturn("join_users");
+		when(propertyMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 
 		Object name = this.interceptor.intercept(bean, joinUsersGetter, (Object[]) null, proxy);
 
-		assertThat(name).isInstanceOf(JoinExternalWideMapWrapper.class);
-		assertThat(((JoinExternalWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
+		assertThat(name).isInstanceOf(JoinWideMapWrapper.class);
+		assertThat(((JoinWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 /**
  * JoinEntityLoader
@@ -29,7 +29,7 @@ import me.prettyprint.hector.api.beans.DynamicComposite;
  */
 public class ThriftJoinLoaderImpl
 {
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private CompositeFactory compositeFactory = new CompositeFactory();
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
 	@SuppressWarnings("unchecked")
@@ -69,9 +69,9 @@ public class ThriftJoinLoaderImpl
 		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 
-		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
+		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 
 		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
@@ -84,7 +84,7 @@ public class ThriftJoinLoaderImpl
 
 		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
 
-		for (Pair<DynamicComposite, String> pair : columns)
+		for (Pair<Composite, String> pair : columns)
 		{
 			KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
 
@@ -111,15 +111,15 @@ public class ThriftJoinLoaderImpl
 	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite start = keyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		DynamicComposite end = keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
+		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
 
 		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
-		for (Pair<DynamicComposite, String> pair : columns)
+		for (Pair<Composite, String> pair : columns)
 		{
 			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
 		}

@@ -1,18 +1,10 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.COUNTER_KEY_ALIAS;
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.DYNAMIC_TYPE_ALIASES;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
-import static me.prettyprint.hector.api.ddl.ComparatorType.ASCIITYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.DYNAMICCOMPOSITETYPE;
+import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -37,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -80,7 +71,7 @@ public class ColumnFamilyHelperTest
 			"unchecked",
 			"rawtypes"
 	})
-	public void should_build_dynamic_composite_column_family() throws Exception
+	public void should_build_entity_column_family() throws Exception
 	{
 		PropertyMeta<?, Long> propertyMeta = mock(PropertyMeta.class);
 		when((Serializer) propertyMeta.getValueSerializer()).thenReturn(STRING_SRZ);
@@ -93,13 +84,12 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
 		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDynamicCompositeCF(entityMeta,
-				"keyspace");
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildEntityCF(entityMeta, "keyspace");
 
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
 		assertThat(cfDef.getName()).isEqualTo("myCF");
-		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.DYNAMICCOMPOSITETYPE);
+		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
 				LONG_SRZ.getComparatorType().getTypeName());
 	}
@@ -113,8 +103,8 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCompositeCF("keyspace", wideMapMeta,
-				Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
@@ -136,8 +126,8 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCompositeCF("keyspace", wideMapMeta,
-				Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				STRING_SRZ.getComparatorType().getTypeName());
@@ -162,8 +152,8 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCompositeCF("keyspace", wideMapMeta,
-				Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				UUID_SRZ.getComparatorType().getTypeName());
@@ -178,8 +168,8 @@ public class ColumnFamilyHelperTest
 
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(COMPOSITETYPE.getTypeName());
 		assertThat(cfDef.getKeyValidationAlias()).isEqualTo(COUNTER_KEY_ALIAS);
-		assertThat(cfDef.getComparatorType()).isEqualTo(DYNAMICCOMPOSITETYPE);
-		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(DYNAMIC_TYPE_ALIASES);
+		assertThat(cfDef.getComparatorType()).isEqualTo(COMPOSITETYPE);
+		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(SIMPLE_COUNTER_TYPE_ALIAS);
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(COUNTERTYPE.getClassName());
 
 	}
@@ -233,7 +223,7 @@ public class ColumnFamilyHelperTest
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
-				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType' should be 'DynamicCompositeType'");
+				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType' should be 'CompositeType'");
 
 		columnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -245,13 +235,13 @@ public class ColumnFamilyHelperTest
 
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
-		when(cfDef.getComparatorType()).thenReturn(DYNAMICCOMPOSITETYPE);
+		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("wrong_alias");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'achillesCounterCF' comparator type alias 'wrong_alias' should be '"
-						+ DYNAMIC_TYPE_ALIASES + "'");
+						+ SIMPLE_COUNTER_TYPE_ALIAS + "'");
 
 		columnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -263,8 +253,8 @@ public class ColumnFamilyHelperTest
 
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
-		when(cfDef.getComparatorType()).thenReturn(DYNAMICCOMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(DYNAMIC_TYPE_ALIASES);
+		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn(SIMPLE_COUNTER_TYPE_ALIAS);
 		when(cfDef.getDefaultValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
@@ -293,10 +283,8 @@ public class ColumnFamilyHelperTest
 
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
-		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
-
-		Whitebox.setInternalState(columnFamilyHelper, "COMPARATOR_TYPE_AND_ALIAS",
-				ComparatorType.ASCIITYPE.getTypeName());
+		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn(ENTITY_TYPE_ALIAS);
 		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
@@ -305,8 +293,8 @@ public class ColumnFamilyHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
-		when(cfDef.getComparatorType()).thenReturn(DYNAMICCOMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(DYNAMIC_TYPE_ALIASES);
+		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn(SIMPLE_COUNTER_TYPE_ALIAS);
 		when(cfDef.getDefaultValidationClass()).thenReturn(COUNTERTYPE.getClassName());
 
 		columnFamilyHelper.validateCounterCF(cfDef);
@@ -354,8 +342,8 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getComparatorType()).thenReturn(null);
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
+		exception.expectMessage("The column family 'cf' comparator type should be '"
+				+ COMPOSITETYPE.getTypeName() + "'");
 
 		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
@@ -369,8 +357,8 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
+		exception.expectMessage("The column family 'cf' comparator type should be '"
+				+ COMPOSITETYPE.getTypeName() + "'");
 
 		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
@@ -417,11 +405,12 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
+		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn("abc");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type should be 'DynamicCompositeType(f=>org.apache.cassandra.db.marshal.FloatType,d=>org.apache.cassandra.db.marshal.DateType,e=>org.apache.cassandra.db.marshal.DecimalType,b=>org.apache.cassandra.db.marshal.BytesType,c=>org.apache.cassandra.db.marshal.BooleanType,a=>org.apache.cassandra.db.marshal.AsciiType,l=>org.apache.cassandra.db.marshal.LongType,j=>org.apache.cassandra.db.marshal.Int32Type,i=>org.apache.cassandra.db.marshal.IntegerType,u=>org.apache.cassandra.db.marshal.UUIDType,t=>org.apache.cassandra.db.marshal.TimeUUIDType,s=>org.apache.cassandra.db.marshal.UTF8Type,z=>org.apache.cassandra.db.marshal.DoubleType,x=>org.apache.cassandra.db.marshal.LexicalUUIDType)'");
+		exception.expectMessage("The column family 'cf' comparator type alias should be '"
+				+ ENTITY_TYPE_ALIAS + "'");
 
 		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}

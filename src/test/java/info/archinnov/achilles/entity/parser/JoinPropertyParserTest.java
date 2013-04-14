@@ -1,13 +1,8 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static javax.persistence.CascadeType.MERGE;
-import static javax.persistence.CascadeType.PERSIST;
-import static javax.persistence.CascadeType.REFRESH;
-import static javax.persistence.CascadeType.REMOVE;
+import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.ColumnFamily;
 import info.archinnov.achilles.annotations.Consistency;
@@ -15,12 +10,12 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -42,6 +37,7 @@ import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
+import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,7 +68,7 @@ public class JoinPropertyParserTest
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private EntityParsingContext entityContext;
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
-			ONE, ALL, readConsistencyMap, writeConsistencyMap);
+			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
 
 	@Mock
 	private Cluster cluster;
@@ -160,7 +156,7 @@ public class JoinPropertyParserTest
 
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).isEmpty();
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		assertThat(context.getJoinWideMaps()).isEmpty();
 	}
 
 	@Test
@@ -228,7 +224,7 @@ public class JoinPropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_LIST);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		assertThat(context.getJoinWideMaps()).isEmpty();
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
 				.isEqualTo(UserBean.class);
 	}
@@ -265,7 +261,7 @@ public class JoinPropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SET);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		assertThat(context.getJoinWideMaps()).isEmpty();
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
 				.isEqualTo(UserBean.class);
 	}
@@ -302,7 +298,7 @@ public class JoinPropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_MAP);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, REFRESH);
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		assertThat(context.getJoinWideMaps()).isEmpty();
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
 				.isEqualTo(UserBean.class);
 	}
@@ -319,7 +315,7 @@ public class JoinPropertyParserTest
 					PERSIST,
 					MERGE
 			})
-			@JoinColumn
+			@JoinColumn(table = "join_users_xxx")
 			private WideMap<UUID, UserBean> users;
 
 			public WideMap<UUID, UserBean> getUsers()
@@ -340,7 +336,7 @@ public class JoinPropertyParserTest
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		assertThat(context.getJoinWideMaps().get(meta)).isEqualTo("join_users_xxx");
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
 				.isEqualTo(UserBean.class);
 	}
@@ -367,7 +363,7 @@ public class JoinPropertyParserTest
 		PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser
 				.parseJoin(context);
 
-		Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = context.getJoinExternalWideMaps();
+		Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = context.getJoinWideMaps();
 		assertThat(
 				(PropertyMeta<Integer, UserBean>) joinExternalWideMaps.keySet().iterator().next())
 				.isSameAs(meta);
@@ -381,7 +377,7 @@ public class JoinPropertyParserTest
 		{
 			@ManyToMany
 			@JoinColumn(table = "tablename")
-			@Consistency(read = QUORUM, write = ALL)
+			@Consistency(read = QUORUM, write = ConsistencyLevel.ALL)
 			private WideMap<Integer, UserBean> users;
 
 			public WideMap<Integer, UserBean> getUsers()
@@ -393,7 +389,7 @@ public class JoinPropertyParserTest
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<?, ?> propertyMeta = parser.parseJoin(context);
 		assertThat(propertyMeta.getReadConsistencyLevel()).isEqualTo(QUORUM);
-		assertThat(propertyMeta.getWriteConsistencyLevel()).isEqualTo(ALL);
+		assertThat(propertyMeta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -407,17 +403,11 @@ public class JoinPropertyParserTest
 
 		initEntityParsingContext();
 
-		parser.fillExternalJoinWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
+		parser.fillJoinWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
-		assertThat(propertyMeta.type()).isEqualTo(PropertyType.EXTERNAL_JOIN_WIDE_MAP);
-
-		assertThat(propertyMeta.getExternalWideMapProperties()).isNotNull();
-		ExternalWideMapProperties<Long> externalWideMapProperties = (ExternalWideMapProperties<Long>) propertyMeta
-				.getExternalWideMapProperties();
+		assertThat(propertyMeta.getExternalCFName()).isEqualTo("externalTableName");
+		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(entityContext.getColumnFamilyDaosMap()).isEmpty();
-		assertThat(externalWideMapProperties.getIdSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(externalWideMapProperties.getExternalColumnFamilyName()).isEqualTo(
-				"externalTableName");
 
 		assertThat(
 				(PropertyMeta<Integer, UserBean>) entityContext.getPropertyMetas().values()

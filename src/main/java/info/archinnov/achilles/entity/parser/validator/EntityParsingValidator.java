@@ -53,8 +53,7 @@ public class EntityParsingValidator
 
 			PropertyType type = propertyMetas.entrySet().iterator().next().getValue().type();
 
-			if (type != PropertyType.EXTERNAL_WIDE_MAP
-					&& type != PropertyType.EXTERNAL_JOIN_WIDE_MAP)
+			if (type != PropertyType.WIDE_MAP && type != PropertyType.JOIN_WIDE_MAP)
 			{
 				throw new AchillesBeanMappingException("The ColumnFamily entity '"
 						+ context.getCurrentEntityClass().getCanonicalName()

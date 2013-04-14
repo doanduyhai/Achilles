@@ -54,10 +54,10 @@ public class CompleteBean implements Serializable
 	@Column
 	private Map<Integer, String> preferences;
 
-	@Column
+	@Column(table = "complete_bean_tweets")
 	private WideMap<UUID, String> tweets;
 
-	@Column
+	@Column(table = "complete_bean_user_tweets")
 	private WideMap<UserTweetKey, String> userTweets;
 
 	@ManyToOne(cascade = CascadeType.ALL)
@@ -75,7 +75,7 @@ public class CompleteBean implements Serializable
 	private long version;
 
 	@Counter
-	@Column
+	@Column(table = "complete_bean_popular_topics")
 	private WideMap<String, Long> popularTopics;
 
 	public Long getId()

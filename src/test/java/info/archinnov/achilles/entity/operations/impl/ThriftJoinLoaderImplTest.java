@@ -4,7 +4,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -27,7 +27,7 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -61,7 +61,7 @@ public class ThriftJoinLoaderImplTest
 	private JoinEntityHelper joinHelper;
 
 	@Mock
-	private DynamicCompositeKeyFactory keyFactory;
+	private CompositeFactory compositeFactory;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -136,15 +136,15 @@ public class ThriftJoinLoaderImplTest
 		propertyMeta.setJoinProperties(joinProperties);
 		propertyMeta.setValueClass(UserBean.class);
 
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
+		Composite start = new Composite();
+		Composite end = new Composite();
 
-		when(keyFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
-		columns.add(new Pair<DynamicComposite, String>(start, "11"));
-		columns.add(new Pair<DynamicComposite, String>(end, "12"));
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+		columns.add(new Pair<Composite, String>(start, "11"));
+		columns.add(new Pair<Composite, String>(end, "12"));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -181,15 +181,15 @@ public class ThriftJoinLoaderImplTest
 		propertyMeta.setJoinProperties(joinProperties);
 		propertyMeta.setValueClass(UserBean.class);
 
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
+		Composite start = new Composite();
+		Composite end = new Composite();
 
-		when(keyFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
-		columns.add(new Pair<DynamicComposite, String>(start, "11"));
-		columns.add(new Pair<DynamicComposite, String>(end, "12"));
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+		columns.add(new Pair<Composite, String>(start, "11"));
+		columns.add(new Pair<Composite, String>(end, "12"));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -228,17 +228,17 @@ public class ThriftJoinLoaderImplTest
 		propertyMeta.setValueClass(UserBean.class);
 		propertyMeta.setObjectMapper(objectMapper);
 
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
+		Composite start = new Composite();
+		Composite end = new Composite();
 
-		when(keyFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(keyFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
-		columns.add(new Pair<DynamicComposite, String>(start,
-				writeString(new KeyValue<Integer, String>(11, "11"))));
-		columns.add(new Pair<DynamicComposite, String>(end,
-				writeString(new KeyValue<Integer, String>(12, "12"))));
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+		columns.add(new Pair<Composite, String>(start, writeString(new KeyValue<Integer, String>(
+				11, "11"))));
+		columns.add(new Pair<Composite, String>(end, writeString(new KeyValue<Integer, String>(12,
+				"12"))));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 

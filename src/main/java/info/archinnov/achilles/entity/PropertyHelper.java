@@ -10,8 +10,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -204,9 +204,9 @@ public class PropertyHelper
 		}
 		else
 		{
-			throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
-					+ "' of the entity '" + entityClass.getCanonicalName()
-					+ "' should be parameterized");
+			throw new AchillesBeanMappingException("The type '"
+					+ genericType.getClass().getCanonicalName() + "' of the entity '"
+					+ entityClass.getCanonicalName() + "' should be parameterized");
 		}
 		return valueClass;
 	}
@@ -296,34 +296,6 @@ public class PropertyHelper
 		}
 
 		return comparatorTypesAlias;
-	}
-
-	public <K, V> K buildMultiKeyForDynamicComposite(PropertyMeta<K, V> propertyMeta,
-			List<Component<?>> components)
-	{
-		K key;
-
-		MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-		Class<K> multiKeyClass = propertyMeta.getKeyClass();
-		List<Method> componentSetters = multiKeyProperties.getComponentSetters();
-		List<Serializer<?>> serializers = multiKeyProperties.getComponentSerializers();
-		try
-		{
-			key = multiKeyClass.newInstance();
-
-			for (int i = 2; i < components.size(); i++)
-			{
-				Component<?> comp = components.get(i);
-				Object compValue = serializers.get(i - 2).fromByteBuffer(comp.getBytes());
-				entityIntrospector.setValueToField(key, componentSetters.get(i - 2), compValue);
-			}
-		}
-		catch (Exception e)
-		{
-			throw new AchillesException(e);
-		}
-
-		return key;
 	}
 
 	public <K, V> K buildMultiKeyForComposite(PropertyMeta<K, V> propertyMeta,

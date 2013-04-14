@@ -1,10 +1,8 @@
 package info.archinnov.achilles.wrapper;
 
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -14,12 +12,11 @@ import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
 import java.util.List;
 
-import me.prettyprint.hector.api.beans.AbstractComposite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 /**
- * WideMapWrapper
+ * ExternalWideMapWrapper
  * 
  * @author DuyHai DOAN
  * 
@@ -27,40 +24,43 @@ import me.prettyprint.hector.api.beans.HColumn;
 public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 {
 	protected ID id;
+	protected GenericColumnFamilyDao<ID, V> dao;
 	protected PropertyMeta<K, V> propertyMeta;
-	protected EntityProxifier proxifier;
-	protected GenericEntityDao<ID> entityDao;
-	protected AbstractDao<K, ? extends AbstractComposite, V> dao;
-	protected CompositeHelper compositeHelper;
-	protected KeyValueFactory keyValueFactory;
-	protected IteratorFactory iteratorFactory;
-	protected DynamicCompositeKeyFactory keyFactory;
+	private CompositeHelper compositeHelper;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private CompositeFactory compositeFactory;
 
-	protected DynamicComposite buildComposite(K key)
+	protected Composite buildComposite(K key)
 	{
-		return keyFactory.createForInsert(propertyMeta, key);
+		Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
+		return comp;
 	}
 
 	@Override
 	public V get(K key)
 	{
-		Object value = entityDao.getValue(id, buildComposite(key));
-		return propertyMeta.getValueFromString(value);
+		Object value = dao.getValue(id, buildComposite(key));
+		return propertyMeta.castValue(value);
 	}
 
-	@Override
-	public void insert(K key, V value, int ttl)
-	{
-		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
-				ttl, context.getCurrentEntityMutator());
-		context.flush();
-	}
-
+	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
-		entityDao.setValueBatch(id, buildComposite(key), propertyMeta.writeValueToString(value),
-				context.getCurrentEntityMutator());
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value, int ttl)
+	{
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -68,62 +68,43 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
 	{
-
 		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, end, bounds, ordering);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end,
+				bounds, ordering);
 
-		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
 
-		if (propertyMeta.isJoin())
-		{
-			return keyValueFactory.createJoinKeyValueListForDynamicComposite(context, propertyMeta,
-					hColumns);
-		}
-		else
-		{
-			return keyValueFactory.createKeyValueListForDynamicComposite(context, propertyMeta,
-					hColumns);
-		}
+		return keyValueFactory.createKeyValueList(context, propertyMeta, hColumns);
 	}
 
 	@Override
 	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-
 		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, end, bounds, ordering);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end,
+				bounds, ordering);
 
-		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
-		if (propertyMeta.isJoin())
-		{
-			return keyValueFactory.createJoinValueListForDynamicComposite(context, propertyMeta,
-					hColumns);
-		}
-		else
-		{
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
 
-			return keyValueFactory.createValueListForDynamicComposite(propertyMeta, hColumns);
-		}
+		return keyValueFactory.createValueList(propertyMeta, hColumns);
 	}
 
 	@Override
 	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-
 		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, end, bounds, ordering);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end,
+				bounds, ordering);
 
-		List<HColumn<DynamicComposite, String>> hColumns = entityDao.findRawColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
-		return keyValueFactory.createKeyListForDynamicComposite(propertyMeta, hColumns);
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
+
+		return keyValueFactory.createKeyList(propertyMeta, hColumns);
 	}
 
 	@Override
@@ -131,51 +112,54 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 			OrderingMode ordering)
 	{
 
-		DynamicComposite[] queryComps = keyFactory.createForQuery( //
-				propertyMeta, start, end, bounds, ordering);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end,
+				bounds, ordering);
 
-		AchillesSliceIterator<ID, DynamicComposite, String> columnSliceIterator = entityDao
-				.getColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(), count);
+		AchillesSliceIterator<ID, V> columnSliceIterator = dao.getColumnsIterator(id,
+				composites[0], composites[1], ordering.isReverse(), count);
 
-		return iteratorFactory.createKeyValueIteratorForDynamicComposite(context,
-				columnSliceIterator, propertyMeta);
+		return iteratorFactory.createKeyValueIterator(context, columnSliceIterator, propertyMeta);
+
 	}
 
 	@Override
 	public void remove(K key)
 	{
-		entityDao.removeColumnBatch(id, buildComposite(key), context.getCurrentEntityMutator());
+		dao.removeColumnBatch(id, buildComposite(key),
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
 	@Override
 	public void remove(K start, K end, BoundingMode bounds)
 	{
-
 		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
-
-		DynamicComposite[] queryComps = keyFactory.createForQuery(//
-				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
-
-		entityDao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
-				context.getCurrentEntityMutator());
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end,
+				bounds, OrderingMode.ASCENDING);
+		dao.removeColumnRangeBatch(id, composites[0], composites[1],
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		entityDao.removeColumnRangeBatch(id, null, null, false, count,
-				context.getCurrentEntityMutator());
+		dao.removeColumnRangeBatch(id, null, null, false, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		entityDao.removeColumnRangeBatch(id, null, null, true, count,
-				context.getCurrentEntityMutator());
+		dao.removeColumnRangeBatch(id, null, null, true, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
 		context.flush();
+	}
+
+	private String getExternalCFName()
+	{
+		return propertyMeta.getExternalCFName();
 	}
 
 	public void setId(ID id)
@@ -183,14 +167,14 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		this.id = id;
 	}
 
+	public void setDao(GenericColumnFamilyDao<ID, V> dao)
+	{
+		this.dao = dao;
+	}
+
 	public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
 	{
 		this.propertyMeta = wideMapMeta;
-	}
-
-	public void setEntityProxifier(EntityProxifier proxifier)
-	{
-		this.proxifier = proxifier;
 	}
 
 	public void setCompositeHelper(CompositeHelper compositeHelper)
@@ -208,13 +192,8 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		this.iteratorFactory = iteratorFactory;
 	}
 
-	public void setKeyFactory(DynamicCompositeKeyFactory keyFactory)
+	public void setCompositeKeyFactory(CompositeFactory compositeFactory)
 	{
-		this.keyFactory = keyFactory;
-	}
-
-	public void setEntityDao(GenericEntityDao<ID> entityDao)
-	{
-		this.entityDao = entityDao;
+		this.compositeFactory = compositeFactory;
 	}
 }

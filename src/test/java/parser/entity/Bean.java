@@ -1,8 +1,6 @@
 package parser.entity;
 
-import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.MERGE;
-import static javax.persistence.CascadeType.PERSIST;
+import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -60,7 +58,7 @@ public class Bean implements Serializable
 			PERSIST,
 			MERGE
 	})
-	@JoinColumn(name = "linked_users")
+	@JoinColumn(name = "linked_users", table = "linked_users")
 	private WideMap<String, UserBean> users;
 
 	public Long getId()

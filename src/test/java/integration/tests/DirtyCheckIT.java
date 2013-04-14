@@ -1,10 +1,9 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -26,7 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
@@ -41,7 +40,7 @@ import org.junit.Test;
  */
 public class DirtyCheckIT
 {
-	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
@@ -66,11 +65,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat(columns.get(2).right).isEqualTo("qux");
@@ -83,11 +82,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat(columns.get(1).right).isEqualTo("qux");
@@ -101,11 +100,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 		assertThat(columns.get(2).right).isEqualTo("qux");
@@ -119,11 +118,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(0);
 	}
@@ -135,11 +134,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -152,11 +151,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("foo");
@@ -169,11 +168,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -186,11 +185,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("foo");
@@ -203,11 +202,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -220,11 +219,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(1).right).isEqualTo("qux");
@@ -240,11 +239,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -260,11 +259,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -280,11 +279,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForList();
-		DynamicComposite endComp = endComptForList();
+		Composite startComp = startCompForList();
+		Composite endComp = endComptForList();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).right).isEqualTo("qux");
@@ -298,11 +297,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 
@@ -319,11 +318,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -345,11 +344,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 		assertThat(
@@ -368,11 +367,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -391,11 +390,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(
@@ -411,11 +410,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -437,11 +436,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -460,11 +459,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -483,12 +482,12 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
+		Composite startComp = startCompForMap();
 
-		DynamicComposite endComp = endCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(
@@ -504,11 +503,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -530,11 +529,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -558,11 +557,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(
@@ -589,11 +588,11 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite startComp = startCompForMap();
-		DynamicComposite endComp = endCompForMap();
+		Composite startComp = startCompForMap();
+		Composite endComp = endCompForMap();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(
@@ -608,9 +607,10 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite compo = new DynamicComposite();
+		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "name", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedName = dao.getValue(bean.getId(), compo);
 
@@ -624,9 +624,10 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite compo = new DynamicComposite();
+		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
@@ -642,9 +643,10 @@ public class DirtyCheckIT
 
 		em.merge(bean);
 
-		DynamicComposite compo = new DynamicComposite();
+		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
+		compo.addComponent(2, 0, EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
@@ -675,36 +677,36 @@ public class DirtyCheckIT
 
 	}
 
-	private DynamicComposite endComptForList()
+	private Composite endComptForList()
 	{
-		DynamicComposite endComp = new DynamicComposite();
+		Composite endComp = new Composite();
 		endComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
 		endComp.addComponent(1, "friends", EQUAL);
 		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
 		return endComp;
 	}
 
-	private DynamicComposite startCompForList()
+	private Composite startCompForList()
 	{
-		DynamicComposite startComp = new DynamicComposite();
+		Composite startComp = new Composite();
 		startComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
 		startComp.addComponent(1, "friends", EQUAL);
 		startComp.addComponent(2, 0, EQUAL);
 		return startComp;
 	}
 
-	private DynamicComposite endCompForMap()
+	private Composite endCompForMap()
 	{
-		DynamicComposite endComp = new DynamicComposite();
+		Composite endComp = new Composite();
 		endComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
 		endComp.addComponent(1, "preferences", EQUAL);
 		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
 		return endComp;
 	}
 
-	private DynamicComposite startCompForMap()
+	private Composite startCompForMap()
 	{
-		DynamicComposite startComp = new DynamicComposite();
+		Composite startComp = new Composite();
 		startComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
 		startComp.addComponent(1, "preferences", EQUAL);
 		startComp.addComponent(2, 0, EQUAL);

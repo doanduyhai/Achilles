@@ -32,14 +32,14 @@ import parser.entity.CorrectMultiKey;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class KeyValueIteratorForCompositeTest
+public class KeyValueIteratorImplTest
 {
 
 	@InjectMocks
-	private KeyValueIteratorForComposite<Long, CorrectMultiKey, String> iterator;
+	private KeyValueIteratorImpl<Long, CorrectMultiKey, String> iterator;
 
 	@Mock
-	private AchillesSliceIterator<CorrectMultiKey, Composite, String> achillesSliceIterator;
+	private AchillesSliceIterator<CorrectMultiKey, String> achillesSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -87,8 +87,7 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createKeyValueForComposite(context, multiKeyWideMapMeta, hColumn)).thenReturn(
-				keyValue);
+		when(factory.createKeyValue(context, multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
 		KeyValue<CorrectMultiKey, String> result = iterator.next();
 
@@ -107,7 +106,7 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createKeyForComposite(multiKeyWideMapMeta, hColumn)).thenReturn(key);
+		when(factory.createKey(multiKeyWideMapMeta, hColumn)).thenReturn(key);
 
 		CorrectMultiKey result = iterator.nextKey();
 
@@ -126,8 +125,7 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createValueForComposite(context, multiKeyWideMapMeta, hColumn)).thenReturn(
-				value);
+		when(factory.createValue(context, multiKeyWideMapMeta, hColumn)).thenReturn(value);
 
 		String result = iterator.nextValue();
 
@@ -146,7 +144,7 @@ public class KeyValueIteratorForCompositeTest
 		when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
 		when(multiKeyProperties.getComponentSetters()).thenReturn(componentSetters);
 
-		when(factory.createTtlForComposite(hColumn)).thenReturn(ttl);
+		when(factory.createTtl(hColumn)).thenReturn(ttl);
 
 		Integer result = iterator.nextTtl();
 

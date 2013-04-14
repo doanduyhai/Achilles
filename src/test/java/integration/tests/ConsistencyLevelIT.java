@@ -576,8 +576,6 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
-		// System.setOut(new PrintStream(myOut));
-
 		em.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
 
 		em.persist(entity);
@@ -596,7 +594,6 @@ public class ConsistencyLevelIT
 		em.endBatch();
 		final String standardOutput = myOut.toString();
 
-		// System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
 		System.out.println(" : " + standardOutput);
 	}
 

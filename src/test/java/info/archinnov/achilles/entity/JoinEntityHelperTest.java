@@ -1,11 +1,8 @@
 package info.archinnov.achilles.entity;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -19,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import mapping.entity.UserBean;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,18 +64,18 @@ public class JoinEntityHelperTest
 	{
 		Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
 
-		DynamicComposite start = new DynamicComposite();
-		DynamicComposite end = new DynamicComposite();
+		Composite start = new Composite();
+		Composite end = new Composite();
 
-		List<Pair<DynamicComposite, String>> columns1 = new ArrayList<Pair<DynamicComposite, String>>();
-		columns1.add(new Pair<DynamicComposite, String>(start, "foo"));
-		columns1.add(new Pair<DynamicComposite, String>(end, "bar"));
+		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
+		columns1.add(new Pair<Composite, String>(start, "foo"));
+		columns1.add(new Pair<Composite, String>(end, "bar"));
 
-		List<Pair<DynamicComposite, String>> columns2 = new ArrayList<Pair<DynamicComposite, String>>();
-		columns2.add(new Pair<DynamicComposite, String>(start, "john"));
-		columns2.add(new Pair<DynamicComposite, String>(end, "helen"));
+		List<Pair<Composite, String>> columns2 = new ArrayList<Pair<Composite, String>>();
+		columns2.add(new Pair<Composite, String>(start, "john"));
+		columns2.add(new Pair<Composite, String>(end, "helen"));
 
-		Map<Long, List<Pair<DynamicComposite, String>>> rows = new HashMap<Long, List<Pair<DynamicComposite, String>>>();
+		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
 		rows.put(11L, columns1);
 		rows.put(12L, columns2);
 
@@ -109,8 +106,8 @@ public class JoinEntityHelperTest
 	@Test
 	public void should_return_empty_map_when_no_join_entity_found() throws Exception
 	{
-		Map<Long, List<Pair<DynamicComposite, String>>> rows = new HashMap<Long, List<Pair<DynamicComposite, String>>>();
-		List<Pair<DynamicComposite, String>> columns1 = new ArrayList<Pair<DynamicComposite, String>>();
+		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
+		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
 		rows.put(11L, columns1);
 
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);

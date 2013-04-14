@@ -23,13 +23,11 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.WIDE_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.WIDE_MAP_COUNTER.isLazy()).isTrue();
-		assertThat(PropertyType.EXTERNAL_WIDE_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_SIMPLE.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_LIST.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_SET.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_WIDE_MAP.isLazy()).isTrue();
-		assertThat(PropertyType.EXTERNAL_JOIN_WIDE_MAP.isLazy()).isTrue();
 
 		assertThat(PropertyType.SERIAL_VERSION_UID.isLazy()).isFalse();
 		assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
@@ -51,37 +49,12 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_MAP.isJoinColumn()).isFalse();
 		assertThat(PropertyType.WIDE_MAP.isJoinColumn()).isFalse();
 		assertThat(PropertyType.WIDE_MAP_COUNTER.isJoinColumn()).isFalse();
-		assertThat(PropertyType.EXTERNAL_WIDE_MAP.isJoinColumn()).isFalse();
 
 		assertThat(PropertyType.JOIN_SIMPLE.isJoinColumn()).isTrue();
 		assertThat(PropertyType.JOIN_LIST.isJoinColumn()).isTrue();
 		assertThat(PropertyType.JOIN_SET.isJoinColumn()).isTrue();
 		assertThat(PropertyType.JOIN_MAP.isJoinColumn()).isTrue();
 		assertThat(PropertyType.JOIN_WIDE_MAP.isJoinColumn()).isTrue();
-		assertThat(PropertyType.EXTERNAL_JOIN_WIDE_MAP.isJoinColumn()).isTrue();
-	}
-
-	@Test
-	public void should_test_is_external() throws Exception
-	{
-		assertThat(PropertyType.SERIAL_VERSION_UID.isExternal()).isFalse();
-		assertThat(PropertyType.SIMPLE.isExternal()).isFalse();
-		assertThat(PropertyType.LIST.isExternal()).isFalse();
-		assertThat(PropertyType.MAP.isExternal()).isFalse();
-		assertThat(PropertyType.COUNTER.isExternal()).isFalse();
-		assertThat(PropertyType.LAZY_SIMPLE.isExternal()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isExternal()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isExternal()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isExternal()).isFalse();
-		assertThat(PropertyType.WIDE_MAP.isExternal()).isFalse();
-		assertThat(PropertyType.WIDE_MAP_COUNTER.isExternal()).isFalse();
-		assertThat(PropertyType.EXTERNAL_WIDE_MAP.isExternal()).isTrue();
-		assertThat(PropertyType.JOIN_SIMPLE.isExternal()).isFalse();
-		assertThat(PropertyType.JOIN_LIST.isExternal()).isFalse();
-		assertThat(PropertyType.JOIN_SET.isExternal()).isFalse();
-		assertThat(PropertyType.JOIN_MAP.isExternal()).isFalse();
-		assertThat(PropertyType.JOIN_WIDE_MAP.isExternal()).isFalse();
-		assertThat(PropertyType.EXTERNAL_JOIN_WIDE_MAP.isExternal()).isTrue();
 	}
 
 	@Test
@@ -98,12 +71,10 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_MAP.isWideMap()).isFalse();
 		assertThat(PropertyType.WIDE_MAP.isWideMap()).isTrue();
 		assertThat(PropertyType.WIDE_MAP_COUNTER.isWideMap()).isTrue();
-		assertThat(PropertyType.EXTERNAL_WIDE_MAP.isWideMap()).isTrue();
 		assertThat(PropertyType.JOIN_SIMPLE.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_LIST.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_SET.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_MAP.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_WIDE_MAP.isWideMap()).isTrue();
-		assertThat(PropertyType.EXTERNAL_JOIN_WIDE_MAP.isWideMap()).isTrue();
 	}
 }

@@ -1,14 +1,13 @@
 package integration.tests;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.*;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
@@ -23,7 +22,6 @@ import java.util.UUID;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -43,6 +41,8 @@ public class CounterIT
 	public ExpectedException exception = ExpectedException.none();
 
 	private CounterDao counterDao = CassandraDaoTest.getCounterDao();
+	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = CassandraDaoTest
+			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 	private CompleteBean bean;
 	private ObjectMapper mapper = new ObjectMapper();
@@ -61,7 +61,7 @@ public class CounterIT
 
 		em.persist(bean);
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "version");
+		Composite comp = createCounterName("version");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(2L);
@@ -78,7 +78,7 @@ public class CounterIT
 		em.merge(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "version");
+		Composite comp = createCounterName("version");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(251L);
@@ -105,7 +105,7 @@ public class CounterIT
 		bean = em.merge(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "version");
+		Composite comp = createCounterName("version");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(version);
@@ -130,7 +130,7 @@ public class CounterIT
 		assertThat(bean.getVersion()).isEqualTo(version);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "version");
+		Composite comp = createCounterName("version");
 
 		counterDao.insertCounter(keyComp, comp, newVersion);
 		em.refresh(bean);
@@ -150,7 +150,7 @@ public class CounterIT
 		em.persist(bean);
 
 		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "favoriteCount");
+		Composite comp = createCounterName("favoriteCount");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(favoriteCount);
@@ -168,7 +168,7 @@ public class CounterIT
 		em.merge(bean);
 
 		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "favoriteCount");
+		Composite comp = createCounterName("favoriteCount");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(favoriteCount);
@@ -202,7 +202,7 @@ public class CounterIT
 		bean = em.merge(bean);
 
 		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		DynamicComposite comp = createCounterName(COUNTER, "favoriteCount");
+		Composite comp = createCounterName("favoriteCount");
 
 		counterDao.insertCounter(keyComp, comp, newFavoriteCount);
 
@@ -223,14 +223,13 @@ public class CounterIT
 		bean.getPopularTopics().insert("cassandra", cassandraCount);
 		bean.getPopularTopics().insert("java", javaCount);
 
-		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "java");
+		Composite comp = createWideMapCounterName("java");
 
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(javaCount);
+		assertThat(popularTopicsDao.getCounterValue(bean.getId(), comp)).isEqualTo(javaCount);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
+		comp = createWideMapCounterName("cassandra");
 
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(cassandraCount);
+		assertThat(popularTopicsDao.getCounterValue(bean.getId(), comp)).isEqualTo(cassandraCount);
 	}
 
 	@Test
@@ -360,23 +359,23 @@ public class CounterIT
 		em.remove(bean);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		DynamicComposite comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "cassandra");
+		Composite comp = createWideMapCounterName("cassandra");
 
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "groovy");
+		comp = createWideMapCounterName("groovy");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "hibernate");
+		comp = createWideMapCounterName("hibernate");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "java");
+		comp = createWideMapCounterName("java");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "scala");
+		comp = createWideMapCounterName("scala");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
-		comp = createCounterName(WIDE_MAP_COUNTER, "popularTopics", "spring");
+		comp = createWideMapCounterName("spring");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 	}
@@ -405,20 +404,17 @@ public class CounterIT
 		return comp;
 	}
 
-	private DynamicComposite createCounterName(PropertyType type, String propertyName)
+	private Composite createCounterName(String propertyName)
 	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+		Composite composite = new Composite();
+		composite.addComponent(0, propertyName, ComponentEquality.EQUAL);
 		return composite;
 	}
 
-	private DynamicComposite createCounterName(PropertyType type, String propertyName, String key)
+	private Composite createWideMapCounterName(String key)
 	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
-		composite.addComponent(2, key, ComponentEquality.EQUAL);
+		Composite composite = new Composite();
+		composite.addComponent(0, key, ComponentEquality.EQUAL);
 		return composite;
 	}
 }

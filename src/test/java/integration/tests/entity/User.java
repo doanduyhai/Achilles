@@ -11,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 
-
 /**
  * User
  * 
@@ -34,11 +33,11 @@ public class User implements Serializable
 	private String lastname;
 
 	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinColumn
+	@JoinColumn(table = "user_tweets")
 	private WideMap<Integer, Tweet> tweets;
 
 	@ManyToMany(cascade = CascadeType.MERGE)
-	@JoinColumn
+	@JoinColumn(table = "user_timeline")
 	private WideMap<Long, Tweet> timeline;
 
 	@ManyToMany(cascade = CascadeType.PERSIST)

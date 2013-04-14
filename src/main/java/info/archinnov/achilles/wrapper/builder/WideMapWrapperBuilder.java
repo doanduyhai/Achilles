@@ -1,10 +1,9 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -12,7 +11,7 @@ import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 /**
- * WideMapWrapperBuilder
+ * ExternalWideMapWrapperBuilder
  * 
  * @author DuyHai DOAN
  * 
@@ -20,34 +19,27 @@ import info.archinnov.achilles.wrapper.WideMapWrapper;
 public class WideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
-	protected GenericEntityDao<ID> entityDao;
+	private GenericColumnFamilyDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
 	private AchillesInterceptor<ID> interceptor;
-	private EntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
-	private DynamicCompositeKeyFactory keyFactory;
-	protected PersistenceContext<ID> context;
+	private CompositeFactory compositeFactory;
+	private PersistenceContext<ID> context;
 
-	public WideMapWrapperBuilder(ID id, GenericEntityDao<ID> dao,
+	public WideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
-		this.entityDao = dao;
 		this.id = id;
+		this.dao = dao;
 		this.wideMapMeta = wideMapMeta;
 	}
 
 	public static <ID, K, V> WideMapWrapperBuilder<ID, K, V> builder(ID id,
-			GenericEntityDao<ID> dao, PropertyMeta<K, V> wideMapMeta)
+			GenericColumnFamilyDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
 	{
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
-	}
-
-	public WideMapWrapperBuilder<ID, K, V> context(PersistenceContext<ID> context)
-	{
-		this.context = context;
-		return this;
 	}
 
 	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor<ID> interceptor)
@@ -56,9 +48,9 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> proxifier(EntityProxifier proxifier)
+	public WideMapWrapperBuilder<ID, K, V> context(PersistenceContext<ID> context)
 	{
-		this.proxifier = proxifier;
+		this.context = context;
 		return this;
 	}
 
@@ -80,31 +72,26 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> keyFactory(DynamicCompositeKeyFactory keyFactory)
+	public WideMapWrapperBuilder<ID, K, V> compositeFactory(
+			CompositeFactory compositeFactory)
 	{
-		this.keyFactory = keyFactory;
+		this.compositeFactory = compositeFactory;
 		return this;
 	}
 
 	public WideMapWrapper<ID, K, V> build()
 	{
 		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
-		build(wrapper);
-		return wrapper;
-	}
-
-	protected void build(WideMapWrapper<ID, K, V> wrapper)
-	{
 		wrapper.setId(id);
-		wrapper.setEntityDao(entityDao);
+		wrapper.setDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);
 		wrapper.setInterceptor(interceptor);
-		wrapper.setEntityProxifier(proxifier);
 		wrapper.setCompositeHelper(compositeHelper);
+		wrapper.setCompositeKeyFactory(compositeFactory);
 		wrapper.setIteratorFactory(iteratorFactory);
-		wrapper.setKeyFactory(keyFactory);
 		wrapper.setKeyValueFactory(keyValueFactory);
 		wrapper.setContext(context);
+		return wrapper;
 	}
 
 }

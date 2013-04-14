@@ -26,7 +26,7 @@ public class BeanWithObjectAsWideMapValue implements Serializable
 	@Column
 	private String name;
 
-	@Column
+	@Column(table = "bean_with_widemap_object")
 	private WideMap<Integer, Holder> holders;
 
 	public Long getId()

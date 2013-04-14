@@ -1,18 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.PropertyHelper.allowedCounterTypes;
-import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
-import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
+import static info.archinnov.achilles.entity.PropertyHelper.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
@@ -21,7 +10,6 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -71,7 +59,7 @@ public class PropertyParser
 				.getCurrentField()));
 
 		this.validator.validateNoDuplicate(context);
-		this.validator.validateCounterNotExternal(context);
+		// this.validator.validateCounterNotExternal(context);
 		this.validator.validateDirectCFMappingNoExternalWideMap(context);
 
 		Class<?> fieldType = field.getType();
@@ -266,16 +254,15 @@ public class PropertyParser
 			context.getCounterMetas().add(propertyMeta);
 		}
 
-		saveExternalWideMapForDeferredBinding(context, propertyMeta);
+		saveWideMapForDeferredBinding(context, propertyMeta);
 		fillWideMapCustomConsistencyLevels(context, propertyMeta);
 
 		return propertyMeta;
 	}
 
-	public <ID, V> void fillExternalWideMap(EntityParsingContext context,
-			PropertyMeta<Void, ID> idMeta, PropertyMeta<?, V> propertyMeta, String externalTableName)
+	public <ID, V> void fillWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
+			PropertyMeta<?, V> propertyMeta, String externalTableName)
 	{
-		propertyMeta.setType(EXTERNAL_WIDE_MAP);
 		GenericColumnFamilyDao<ID, ?> dao;
 		Cluster cluster = context.getCluster();
 		Keyspace keyspace = context.getKeyspace();
@@ -301,8 +288,7 @@ public class PropertyParser
 			}
 			context.getColumnFamilyDaosMap().put(externalTableName, dao);
 		}
-		propertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
-				externalTableName, idMeta.getValueSerializer()));
+		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
 	}
 
 	private void inferPropertyNameAndExternalTableName(PropertyParsingContext context)
@@ -360,25 +346,46 @@ public class PropertyParser
 		return multiKeyProperties;
 	}
 
-	private String saveExternalWideMapForDeferredBinding(PropertyParsingContext context,
+	private void saveWideMapForDeferredBinding(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		String externalTableName = context.isColumnFamilyDirectMapping() ? context
-				.getCurrentColumnFamilyName() : context.getCurrentExternalTableName();
+		String externalTableName;
 
-		if (StringUtils.isNotBlank(externalTableName) || context.isColumnFamilyDirectMapping())
+		if (context.isColumnFamilyDirectMapping())
 		{
-			if (context.isJoinColumn())
-			{
-				context.getJoinExternalWideMaps().put(propertyMeta, externalTableName);
-			}
-			else
-			{
-				context.getExternalWideMaps().put(propertyMeta, externalTableName);
-			}
+			externalTableName = context.getCurrentColumnFamilyName();
+			Validator
+					.validateBeanMappingTrue(
+							StringUtils.isBlank(context.getCurrentExternalTableName()),
+							"External Column Family should be defined for counter WideMap property '"
+									+ propertyMeta.getPropertyName()
+									+ "' of entity '"
+									+ context.getCurrentEntityClass().getCanonicalName()
+									+ "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
+		}
+		else
+		{
+			externalTableName = context.getCurrentExternalTableName();
+			Validator
+					.validateBeanMappingFalse(
+							StringUtils.isBlank(externalTableName),
+							"External Column Family should be defined for WideMap property '"
+									+ propertyMeta.getPropertyName()
+									+ "' of entity '"
+									+ context.getCurrentEntityClass().getCanonicalName()
+									+ "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
+
+		}
+		propertyMeta.setExternalCfName(externalTableName);
+		if (context.isJoinColumn())
+		{
+			context.getJoinWideMaps().put(propertyMeta, externalTableName);
+		}
+		else
+		{
+			context.getWideMaps().put(propertyMeta, externalTableName);
 		}
 
-		return externalTableName;
 	}
 
 	private void fillWideMapCustomConsistencyLevels(PropertyParsingContext context,

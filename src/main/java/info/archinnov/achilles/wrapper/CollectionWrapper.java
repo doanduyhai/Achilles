@@ -23,7 +23,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 	public boolean add(V arg0)
 	{
 		this.markDirty();
-		return target.add(proxifier.unproxy(arg0));
+		boolean result = target.add(proxifier.unproxy(arg0));
+
+		return result;
 	}
 
 	@Override

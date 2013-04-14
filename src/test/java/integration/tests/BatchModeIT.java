@@ -1,20 +1,10 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCounterDao;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
+import static info.archinnov.achilles.common.CassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
@@ -26,7 +16,6 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.FlushContext;
 import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.serializer.SerializerUtils;
@@ -43,10 +32,8 @@ import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,17 +54,22 @@ public class BatchModeIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericEntityDao<UUID> tweetDao = getDynamicCompositeDao(SerializerUtils.UUID_SRZ,
+	private GenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> userDao = getDynamicCompositeDao(SerializerUtils.LONG_SRZ,
+	private GenericEntityDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> completeBeanDao = getDynamicCompositeDao(
-			SerializerUtils.LONG_SRZ,
+	private GenericColumnFamilyDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
+			SerializerUtils.UUID_SRZ, "user_tweets");
+
+	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = CassandraDaoTest
+			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
+
+	private GenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
-	private GenericColumnFamilyDao<Long, String> externalWideMapDao = getCompositeDao(LONG_SRZ,
+	private GenericColumnFamilyDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
 			STRING_SRZ, "ExternalWideMap");
 
 	private CounterDao counterDao = getCounterDao();
@@ -96,8 +88,6 @@ public class BatchModeIT
 
 	private Long userId = RandomUtils.nextLong();
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-
 	@Before
 	public void setUp()
 	{
@@ -115,18 +105,16 @@ public class BatchModeIT
 
 		user = em.merge(user);
 
-		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, JOIN_WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "tweets", ComponentEquality.EQUAL);
+		Composite startComp = new Composite();
+		startComp.addComponent(0, 1, ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = new DynamicComposite();
-		endComp.addComponent(0, JOIN_WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		endComp.addComponent(1, "tweets", ComponentEquality.GREATER_THAN_EQUAL);
+		Composite endComp = new Composite();
+		endComp.addComponent(0, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
 		user.getTweets().insert(1, ownTweet1);
 		user.getTweets().insert(2, ownTweet2);
 
-		List<Pair<DynamicComposite, String>> columns = userDao.findColumnsRange(user.getId(),
+		List<Pair<Composite, UUID>> columns = userTweetsDao.findColumnsRange(user.getId(),
 				startComp, endComp, false, 20);
 
 		Tweet foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
@@ -139,12 +127,12 @@ public class BatchModeIT
 		// End batch
 		em.endBatch();
 
-		columns = userDao.findColumnsRange(user.getId(), startComp, endComp, false, 20);
+		columns = userTweetsDao.findColumnsRange(user.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 
-		assertThat(readUUID(columns.get(0).right)).isEqualTo(ownTweet1.getId());
-		assertThat(readUUID(columns.get(1).right)).isEqualTo(ownTweet2.getId());
+		assertThat(columns.get(0).right).isEqualTo(ownTweet1.getId());
+		assertThat(columns.get(1).right).isEqualTo(ownTweet2.getId());
 
 		foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
 		foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
@@ -180,9 +168,10 @@ public class BatchModeIT
 		entity.getPopularTopics().insert("scala", 35L);
 		em.merge(entity);
 
-		DynamicComposite labelComposite = new DynamicComposite();
+		Composite labelComposite = new Composite();
 		labelComposite.addComponent(0, LAZY_SIMPLE.flag(), EQUAL);
 		labelComposite.addComponent(1, "label", EQUAL);
+		labelComposite.addComponent(2, 0, EQUAL);
 
 		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isNull();
 
@@ -200,16 +189,15 @@ public class BatchModeIT
 		assertThat(foundTweet).isNull();
 
 		Composite counterKey = createCounterKey(CompleteBean.class, entity.getId());
-		DynamicComposite versionCounterName = createCounterName(COUNTER, "version");
+		Composite versionCounterName = createCounterName("version");
 
-		DynamicComposite javaCounterName = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
-				"java");
-		DynamicComposite scalaCounterName = createCounterName(WIDE_MAP_COUNTER, "popularTopics",
-				"scala");
+		Composite javaCounterName = createWideMapCounterName("java");
+		Composite scalaCounterName = createWideMapCounterName("scala");
 
 		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(0L);
-		assertThat(counterDao.getCounterValue(counterKey, javaCounterName)).isEqualTo(0L);
-		assertThat(counterDao.getCounterValue(counterKey, scalaCounterName)).isEqualTo(0L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(0L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName))
+				.isEqualTo(0L);
 
 		// Flush
 		em.endBatch();
@@ -229,8 +217,10 @@ public class BatchModeIT
 		assertThat(foundTweet.getContent()).isEqualTo("welcomeTweet");
 
 		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
-		assertThat(counterDao.getCounterValue(counterKey, javaCounterName)).isEqualTo(100L);
-		assertThat(counterDao.getCounterValue(counterKey, scalaCounterName)).isEqualTo(35L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(
+				100L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName)).isEqualTo(
+				35L);
 		assertThatBatchContextHasBeenReset();
 	}
 
@@ -412,11 +402,6 @@ public class BatchModeIT
 		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
-	private UUID readUUID(String value) throws Exception
-	{
-		return this.objectMapper.readValue(value, UUID.class);
-	}
-
 	private <T> Composite createCounterKey(Class<T> clazz, Long id)
 	{
 		Composite comp = new Composite();
@@ -425,20 +410,17 @@ public class BatchModeIT
 		return comp;
 	}
 
-	private DynamicComposite createCounterName(PropertyType type, String propertyName)
+	private Composite createCounterName(String propertyName)
 	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
+		Composite composite = new Composite();
+		composite.addComponent(0, propertyName, ComponentEquality.EQUAL);
 		return composite;
 	}
 
-	private DynamicComposite createCounterName(PropertyType type, String propertyName, String key)
+	private Composite createWideMapCounterName(String key)
 	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, type.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, propertyName, ComponentEquality.EQUAL);
-		composite.addComponent(2, key, ComponentEquality.EQUAL);
+		Composite composite = new Composite();
+		composite.addComponent(0, key, ComponentEquality.EQUAL);
 		return composite;
 	}
 

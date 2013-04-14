@@ -1,8 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
@@ -18,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
@@ -34,8 +33,8 @@ import org.junit.Test;
 public class ObjectAsWideMapValueIT
 {
 
-	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(BeanWithObjectAsWideMapValue.class.getName()));
+	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
+			normalizerAndValidateColumnFamilyName("bean_with_widemap_object"));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
@@ -64,14 +63,14 @@ public class ObjectAsWideMapValueIT
 
 		insert3Holders();
 
-		DynamicComposite startComp = buildComposite();
-		startComp.addComponent(2, 11, ComponentEquality.EQUAL);
+		Composite startComp = new Composite();
+		startComp.addComponent(0, 11, ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = buildComposite();
-		endComp.addComponent(2, 13, ComponentEquality.GREATER_THAN_EQUAL);
+		Composite endComp = new Composite();
+		endComp.addComponent(0, 13, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat((readHolder(columns.get(0).right)).getName()).isEqualTo("value1");
@@ -92,14 +91,6 @@ public class ObjectAsWideMapValueIT
 		assertThat(iter.next().getValue().getName()).isEqualTo("value4");
 		assertThat(iter.next().getValue().getName()).isEqualTo("value5");
 
-	}
-
-	private DynamicComposite buildComposite()
-	{
-		DynamicComposite startComp = new DynamicComposite();
-		startComp.addComponent(0, WIDE_MAP.flag(), ComponentEquality.EQUAL);
-		startComp.addComponent(1, "holders", ComponentEquality.EQUAL);
-		return startComp;
 	}
 
 	private void insert3Holders()

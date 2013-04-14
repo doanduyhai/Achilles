@@ -6,7 +6,6 @@ import java.util.List;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -27,7 +26,7 @@ public class CompositeTestBuilder
 		return new CompositeTestBuilder();
 	}
 
-	public Composite buildSimpleForQuery()
+	public Composite buildForQuery()
 	{
 		Composite built = new Composite();
 		if (!CollectionUtils.isEmpty(values))
@@ -53,43 +52,6 @@ public class CompositeTestBuilder
 	public Composite buildSimple()
 	{
 		Composite built = new Composite();
-		if (!CollectionUtils.isEmpty(values))
-		{
-			for (int i = 0; i < values.size(); i++)
-			{
-				Object value = values.get(i);
-				built.setComponent(i, value, SerializerTypeInferer.getSerializer(value));
-			}
-		}
-		return built;
-	}
-
-	public DynamicComposite buildDynamicForQuery()
-	{
-		DynamicComposite built = new DynamicComposite();
-		if (!CollectionUtils.isEmpty(values))
-		{
-			for (int i = 0; i < values.size(); i++)
-			{
-				ComponentEquality eq;
-				if (i != values.size() - 1)
-				{
-					eq = ComponentEquality.EQUAL;
-				}
-				else
-				{
-					eq = equality;
-
-				}
-				built.addComponent(i, values.get(i), eq);
-			}
-		}
-		return built;
-	}
-
-	public DynamicComposite buildDynamic()
-	{
-		DynamicComposite built = new DynamicComposite();
 		if (!CollectionUtils.isEmpty(values))
 		{
 			for (int i = 0; i < values.size(); i++)

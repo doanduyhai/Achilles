@@ -1,14 +1,8 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_WIDE_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP_COUNTER;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Counter;
@@ -17,7 +11,6 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -47,7 +40,6 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -611,7 +603,7 @@ public class PropertyParserTest
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Column
+			@Column(table = "xxx")
 			private WideMap<UUID, String> tweets;
 
 			public WideMap<UUID, String> getTweets()
@@ -629,6 +621,7 @@ public class PropertyParserTest
 		PropertyMeta<?, ?> meta = parser.parse(context);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
+		assertThat(meta.getExternalCFName()).isEqualTo("xxx");
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
 		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
@@ -640,13 +633,39 @@ public class PropertyParserTest
 	}
 
 	@Test
+	public void should_exception_when_no_external_cf_defined_for_widemap() throws Exception
+	{
+		@SuppressWarnings("unused")
+		class Test
+		{
+			@Column
+			private WideMap<UUID, String> wideMap;
+
+			public WideMap<UUID, String> getWideMap()
+			{
+				return wideMap;
+			}
+		}
+
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("wideMap"));
+
+		expectedEx.expect(AchillesBeanMappingException.class);
+		expectedEx
+				.expectMessage("External Column Family should be defined for WideMap property 'wideMap' of entity '"
+						+ Test.class.getCanonicalName()
+						+ "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
+		parser.parse(context);
+	}
+
+	@Test
 	public void should_parse_counter_widemap() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
 		{
 			@Counter
-			@Column
+			@Column(table = "counter_xxx")
 			private WideMap<UUID, Long> counters;
 
 			public WideMap<UUID, Long> getCounters()
@@ -665,12 +684,40 @@ public class PropertyParserTest
 
 		assertThat(meta.type()).isEqualTo(WIDE_MAP_COUNTER);
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
+		assertThat(meta.getExternalCFName()).isEqualTo("counter_xxx");
 		assertThat((Class<Long>) meta.getValueClass()).isEqualTo(Long.class);
 		assertThat((Serializer<Long>) meta.getValueSerializer()).isEqualTo(LONG_SRZ);
 		assertThat((Class<UUID>) meta.getKeyClass()).isEqualTo(UUID.class);
 		assertThat((Serializer<UUID>) meta.getKeySerializer()).isEqualTo(UUID_SRZ);
 
 		assertThat((PropertyMeta<UUID, Long>) context.getCounterMetas().get(0)).isSameAs(meta);
+	}
+
+	@Test
+	public void should_exception_when_no_external_cf_defined_for_counter_widemap() throws Exception
+	{
+		@SuppressWarnings("unused")
+		class Test
+		{
+			@Counter
+			@Column
+			private WideMap<UUID, Long> counterWideMap;
+
+			public WideMap<UUID, Long> getCounterWideMap()
+			{
+				return counterWideMap;
+			}
+		}
+
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("counterWideMap"));
+
+		expectedEx.expect(AchillesBeanMappingException.class);
+		expectedEx
+				.expectMessage("External Column Family should be defined for WideMap property 'counterWideMap' of entity '"
+						+ Test.class.getCanonicalName()
+						+ "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
+		parser.parse(context);
 	}
 
 	@Test
@@ -705,7 +752,7 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_fill_external_widemap_hashmap() throws Exception
+	public void should_fill_widemap_hashmap() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -727,14 +774,14 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("tweets"));
 		parser.parse(context);
 
-		PropertyMeta<?, ?> propertyMeta = context.getExternalWideMaps().keySet().iterator().next();
-		assertThat(context.getJoinExternalWideMaps()).isEmpty();
+		PropertyMeta<?, ?> propertyMeta = context.getWideMaps().keySet().iterator().next();
+		assertThat(context.getJoinWideMaps()).isEmpty();
 		assertThat(propertyMeta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(propertyMeta.getPropertyName()).isEqualTo("tweets");
 	}
 
 	@Test
-	public void should_fill_join_external_widemap_hashmap() throws Exception
+	public void should_fill_join_widemap_hashmap() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -754,16 +801,14 @@ public class PropertyParserTest
 
 		parser.parse(context);
 
-		PropertyMeta<?, ?> propertyMeta = context.getJoinExternalWideMaps().keySet().iterator()
-				.next();
-		assertThat(context.getExternalWideMaps()).isEmpty();
+		PropertyMeta<?, ?> propertyMeta = context.getJoinWideMaps().keySet().iterator().next();
+		assertThat(context.getWideMaps()).isEmpty();
 		assertThat(propertyMeta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(propertyMeta.getPropertyName()).isEqualTo("beans");
 	}
 
-	@Ignore
 	@Test
-	public void should_fill_external_widemap_hashmap_when_direct_cf_mapping() throws Exception
+	public void should_fill_widemap_hashmap_when_direct_cf_mapping() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -784,8 +829,8 @@ public class PropertyParserTest
 
 		parser.parse(context);
 
-		Entry<PropertyMeta<?, ?>, String> entry = context.getExternalWideMaps().entrySet()
-				.iterator().next();
+		Entry<PropertyMeta<?, ?>, String> entry = context.getWideMaps().entrySet().iterator()
+				.next();
 
 		PropertyMeta<?, ?> propertyMeta = entry.getKey();
 		assertThat(propertyMeta.type()).isEqualTo(PropertyType.WIDE_MAP);
@@ -794,7 +839,7 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_set_external_widemap_consistency_level() throws Exception
+	public void should_set_widemap_consistency_level() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -822,80 +867,45 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_parse_external_widemap() throws Exception
+	public void should_parse_widemap() throws Exception
 	{
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-		PropertyMeta<Long, UUID> propertyMeta = PropertyMetaTestBuilder.noClass(Long.class,
-				UUID.class).build();
+		PropertyMeta<Long, UUID> propertyMeta = PropertyMetaTestBuilder//
+				.noClass(Long.class, UUID.class) //
+				.type(WIDE_MAP) //
+				.build();
 
 		initEntityParsingContext();
 
-		parser.fillExternalWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
+		parser.fillWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
-		assertThat(propertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
-		assertThat(propertyMeta.getExternalWideMapProperties()).isNotNull();
-
-		ExternalWideMapProperties<Long> externalProps = (ExternalWideMapProperties<Long>) propertyMeta
-				.getExternalWideMapProperties();
-
-		assertThat(externalProps.getExternalColumnFamilyName()).isEqualTo("externalTableName");
-		assertThat(externalProps.getIdSerializer()).isEqualTo(LONG_SRZ);
-		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
-				"externalTableName");
+		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
+		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap()
+				.get("externalTableName");
 		assertThat(externalWideMapDao.getColumnFamily()).isEqualTo("externalTableName");
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
 				UUID_SRZ);
 	}
 
 	@Test
-	public void should_parse_external_widemap_with_non_primitive_value() throws Exception
+	public void should_parse_widemap_with_non_primitive_value() throws Exception
 	{
 
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 
-		PropertyMeta<Long, CompleteBean> propertyMeta = PropertyMetaTestBuilder.noClass(Long.class,
-				CompleteBean.class).build();
+		PropertyMeta<Long, CompleteBean> propertyMeta = PropertyMetaTestBuilder//
+				.noClass(Long.class, CompleteBean.class)//
+				.type(WIDE_MAP) //
+				.build();
 
 		initEntityParsingContext();
 
-		parser.fillExternalWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
-		assertThat(propertyMeta.type()).isEqualTo(EXTERNAL_WIDE_MAP);
+		parser.fillWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
-		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap().get(
-				"externalTableName");
+		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap()
+				.get("externalTableName");
 		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
 				STRING_SRZ);
-	}
-
-	@Test
-	public void should_exception_when_counter_widemap_is_external() throws Exception
-	{
-		@SuppressWarnings("unused")
-		class Test
-		{
-			@Counter
-			@Column(table = "tablename")
-			private WideMap<UUID, Long> counters;
-
-			public WideMap<UUID, Long> getCounters()
-			{
-				return counters;
-			}
-
-			public void setCounters(WideMap<UUID, Long> counters)
-			{
-				this.counters = counters;
-			}
-		}
-
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("counters"));
-
-		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("Counter value are already stored in external column families. There is no sense having a counter with external table");
-		parser.parse(context);
-
 	}
 
 	@Test
@@ -933,7 +943,7 @@ public class PropertyParserTest
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Column
+			@Column(table = "tweets_xxx")
 			private WideMap<CorrectMultiKey, String> tweets;
 
 			public WideMap<CorrectMultiKey, String> getTweets()
@@ -984,7 +994,7 @@ public class PropertyParserTest
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Column
+			@Column(table = "tweets_xxx")
 			private WideMap<CorrectMultiKeyUnorderedKeys, String> tweets;
 
 			public WideMap<CorrectMultiKeyUnorderedKeys, String> getTweets()

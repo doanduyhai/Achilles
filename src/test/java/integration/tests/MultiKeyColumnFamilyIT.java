@@ -35,7 +35,7 @@ import org.junit.Test;
 public class MultiKeyColumnFamilyIT
 {
 
-	private GenericColumnFamilyDao<Long, String> dao = CassandraDaoTest.getCompositeDao(LONG_SRZ,
+	private GenericColumnFamilyDao<Long, String> dao = CassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
 			STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(MultiKeyColumnFamilyBean.class.getName()));
 

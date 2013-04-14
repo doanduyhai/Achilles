@@ -2,7 +2,6 @@ package info.archinnov.achilles.columnFamily;
 
 import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
@@ -81,13 +80,13 @@ public class ColumnFamilyCreator
 
 				PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
 						.next();
-				cfDef = this.columnFamilyHelper.buildCompositeCF(this.keyspace.getKeyspaceName(),
+				cfDef = columnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
 						propertyMeta, entityMeta.getIdMeta().getValueClass(), columnFamilyName,
 						entityMeta.getClassName());
 			}
 			else
 			{
-				cfDef = this.columnFamilyHelper.buildDynamicCompositeCF(entityMeta,
+				cfDef = this.columnFamilyHelper.buildEntityCF(entityMeta,
 						this.keyspace.getKeyspaceName());
 
 			}
@@ -108,13 +107,11 @@ public class ColumnFamilyCreator
 			{
 				PropertyMeta<?, ?> propertyMeta = entryMeta.getValue();
 
-				ExternalWideMapProperties<?> externalWideMapProperties = propertyMeta
-						.getExternalWideMapProperties();
-				if (externalWideMapProperties != null)
+				if (propertyMeta.type().isWideMap())
 				{
-					this.validateOrCreateCFForExternalWideMap(propertyMeta, entityMeta.getIdMeta()
-							.getValueClass(), forceColumnFamilyCreation, externalWideMapProperties
-							.getExternalColumnFamilyName(), entityMeta.getClassName());
+					validateOrCreateCFForWideMap(propertyMeta, entityMeta.getIdMeta()
+							.getValueClass(), forceColumnFamilyCreation,
+							propertyMeta.getExternalCFName(), entityMeta.getClassName());
 				}
 			}
 
@@ -127,12 +124,12 @@ public class ColumnFamilyCreator
 		}
 	}
 
-	private <ID> void validateOrCreateCFForExternalWideMap(PropertyMeta<?, ?> propertyMeta,
+	private <ID> void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
 			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
 			String entityName)
 	{
 
-		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(externalColumnFamilyName);
+		ColumnFamilyDefinition cfDef = discoverColumnFamily(externalColumnFamilyName);
 		if (cfDef == null)
 		{
 			if (forceColumnFamilyCreation)
@@ -140,7 +137,7 @@ public class ColumnFamilyCreator
 				log.debug("Force creation of column family for propertyMeta {}",
 						propertyMeta.getPropertyName());
 
-				cfDef = this.columnFamilyHelper.buildCompositeCF(this.keyspace.getKeyspaceName(),
+				cfDef = columnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
 						propertyMeta, keyClass, externalColumnFamilyName, entityName);
 				this.addColumnFamily(cfDef);
 			}
@@ -197,8 +194,8 @@ public class ColumnFamilyCreator
 			}
 			else
 			{
-				throw new AchillesInvalidColumnFamilyException("The required column family '" + COUNTER_CF
-						+ "' does not exist");
+				throw new AchillesInvalidColumnFamilyException("The required column family '"
+						+ COUNTER_CF + "' does not exist");
 			}
 		}
 		else
@@ -210,7 +207,7 @@ public class ColumnFamilyCreator
 
 	private void createCounterColumnFamily()
 	{
-		log.debug("Creating counter column family");
+		log.debug("Creating generic counter column family");
 		if (!cfs.contains(COUNTER_CF))
 		{
 			ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCounterCF(this.keyspace
@@ -218,5 +215,4 @@ public class ColumnFamilyCreator
 			this.addColumnFamily(cfDef);
 		}
 	}
-
 }

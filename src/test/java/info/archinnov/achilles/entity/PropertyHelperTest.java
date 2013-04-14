@@ -1,12 +1,7 @@
 package info.archinnov.achilles.entity;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
@@ -20,7 +15,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -35,7 +29,6 @@ import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.junit.Rule;
@@ -336,37 +329,6 @@ public class PropertyHelperTest
 		assertThat(multiKey.getRetweetCount()).isEqualTo(11);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_build_multikey_for_dynamic_composite() throws Exception
-	{
-		Method authorSetter = TweetMultiKey.class.getDeclaredMethod("setAuthor", String.class);
-		Method idSetter = TweetMultiKey.class.getDeclaredMethod("setId", UUID.class);
-		Method retweetCountSetter = TweetMultiKey.class.getDeclaredMethod("setRetweetCount",
-				int.class);
-
-		UUID uuid1 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-		HColumn<DynamicComposite, Object> hCol1 = buildDynamicHColumn(
-				buildDynamicComposite("author1", uuid1, 11), "val1");
-
-		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
-		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
-
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(
-				Arrays.asList((Serializer<?>) STRING_SRZ, UUID_SRZ, INT_SRZ));
-		when(multiKeyProperties.getComponentSetters()).thenReturn(
-				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
-
-		TweetMultiKey multiKey = helper.buildMultiKeyForDynamicComposite(multiKeyWideMeta, hCol1
-				.getName().getComponents());
-
-		assertThat(multiKey.getAuthor()).isEqualTo("author1");
-		assertThat(multiKey.getId()).isEqualTo(uuid1);
-		assertThat(multiKey.getRetweetCount()).isEqualTo(11);
-
-	}
-
 	@Test
 	public void should_find_any_any_consistency_level() throws Exception
 	{
@@ -399,6 +361,12 @@ public class PropertyHelperTest
 		assertThat(levels.right).isEqualTo(ConsistencyLevel.QUORUM);
 	}
 
+	@Test
+	public void should_return_true_when_type_supported() throws Exception
+	{
+		assertThat(PropertyHelper.isSupportedType(Long.class)).isTrue();
+	}
+
 	private Composite buildComposite(String author, UUID uuid, int retweetCount)
 	{
 		Composite composite = new Composite();
@@ -413,31 +381,6 @@ public class PropertyHelperTest
 	{
 		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(COMPOSITE_SRZ,
 				STRING_SRZ);
-
-		hColumn.setName(comp);
-		hColumn.setValue(value);
-		return hColumn;
-	}
-
-	private DynamicComposite buildDynamicComposite(String author, UUID uuid, int retweetCount)
-	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.setComponent(0, PropertyType.WIDE_MAP.flag(), BYTE_SRZ, BYTE_SRZ
-				.getComparatorType().getTypeName());
-		composite.setComponent(1, "multiKey1", STRING_SRZ, STRING_SRZ.getComparatorType()
-				.getTypeName());
-		composite.setComponent(2, author, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
-		composite.setComponent(3, uuid, UUID_SRZ, UUID_SRZ.getComparatorType().getTypeName());
-		composite.setComponent(4, retweetCount, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
-
-		return composite;
-	}
-
-	private HColumn<DynamicComposite, Object> buildDynamicHColumn(DynamicComposite comp,
-			String value)
-	{
-		HColumn<DynamicComposite, Object> hColumn = new HColumnImpl<DynamicComposite, Object>(
-				SerializerUtils.DYNA_COMP_SRZ, SerializerUtils.OBJECT_SRZ);
 
 		hColumn.setName(comp);
 		hColumn.setValue(value);

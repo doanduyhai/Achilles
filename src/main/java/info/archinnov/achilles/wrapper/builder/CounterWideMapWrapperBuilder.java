@@ -1,8 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -22,29 +21,28 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	private ID id;
 	private String fqcn;
 	private PropertyMeta<Void, ID> idMeta;
-	private CounterDao counterDao;
+	private GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
 	private PropertyMeta<K, Long> propertyMeta;
 
 	private AchillesInterceptor<ID> interceptor;
 	protected CompositeHelper compositeHelper;
 	protected KeyValueFactory keyValueFactory;
 	protected IteratorFactory iteratorFactory;
-	protected CompositeKeyFactory compositeKeyFactory;
-	protected DynamicCompositeKeyFactory dynamicCompositeKeyFactory;
+	protected CompositeFactory compositeFactory;
 	protected PersistenceContext<ID> context;
 
-	public CounterWideMapWrapperBuilder(ID id, CounterDao counterDao,
+	public CounterWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, Long> wideMapCounterDao,
 			PropertyMeta<K, Long> propertyMeta)
 	{
 		this.id = id;
-		this.counterDao = counterDao;
+		this.wideMapCounterDao = wideMapCounterDao;
 		this.propertyMeta = propertyMeta;
 	}
 
-	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id, CounterDao counterDao,
-			PropertyMeta<K, Long> propertyMeta)
+	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id,
+			GenericColumnFamilyDao<ID, Long> wideMapCounterDao, PropertyMeta<K, Long> propertyMeta)
 	{
-		return new CounterWideMapWrapperBuilder<ID, K>(id, counterDao, propertyMeta);
+		return new CounterWideMapWrapperBuilder<ID, K>(id, wideMapCounterDao, propertyMeta);
 	}
 
 	public CounterWideMapWrapperBuilder<ID, K> fqcn(String fqcn)
@@ -89,17 +87,9 @@ public class CounterWideMapWrapperBuilder<ID, K>
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> compositeKeyFactory(
-			CompositeKeyFactory compositeKeyFactory)
+	public CounterWideMapWrapperBuilder<ID, K> compositeFactory(CompositeFactory compositeFactory)
 	{
-		this.compositeKeyFactory = compositeKeyFactory;
-		return this;
-	}
-
-	public CounterWideMapWrapperBuilder<ID, K> dynamicCompositeKeyFactory(
-			DynamicCompositeKeyFactory dynamicCompositeKeyFactory)
-	{
-		this.dynamicCompositeKeyFactory = dynamicCompositeKeyFactory;
+		this.compositeFactory = compositeFactory;
 		return this;
 	}
 
@@ -109,13 +99,12 @@ public class CounterWideMapWrapperBuilder<ID, K>
 		wrapper.setId(id);
 		wrapper.setFqcn(fqcn);
 		wrapper.setIdMeta(idMeta);
-		wrapper.setCounterDao(counterDao);
+		wrapper.setWideMapCounterDao(wideMapCounterDao);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setInterceptor(interceptor);
 		wrapper.setCompositeHelper(compositeHelper);
 		wrapper.setIteratorFactory(iteratorFactory);
-		wrapper.setCompositeKeyFactory(compositeKeyFactory);
-		wrapper.setDynamicCompositeKeyFactory(dynamicCompositeKeyFactory);
+		wrapper.setCompositeKeyFactory(compositeFactory);
 		wrapper.setKeyValueFactory(keyValueFactory);
 		wrapper.setContext(context);
 

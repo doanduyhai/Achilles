@@ -1,13 +1,9 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -90,10 +86,7 @@ public class EntityLoaderTest
 	private CounterDao counterDao;
 
 	@Mock
-	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory;
-
-	@Mock
-	private CompositeKeyFactory compositeKeyFactory;
+	private CompositeFactory compositeFactory;
 
 	@Mock
 	private EntityIntrospector introspector;

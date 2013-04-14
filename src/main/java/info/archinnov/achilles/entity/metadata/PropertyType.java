@@ -23,13 +23,11 @@ public enum PropertyType
 	LAZY_MAP(70), //
 	WIDE_MAP(70), //
 	WIDE_MAP_COUNTER(70), //
-	EXTERNAL_WIDE_MAP(70), //
 	JOIN_SIMPLE(70), //
 	JOIN_LIST(70), //
 	JOIN_SET(70), //
 	JOIN_MAP(70), //
-	JOIN_WIDE_MAP(70), //
-	EXTERNAL_JOIN_WIDE_MAP(70);
+	JOIN_WIDE_MAP(70);
 
 	private final int flag;
 
@@ -53,14 +51,12 @@ public enum PropertyType
 				|| this == LAZY_SET //
 				|| this == LAZY_MAP //
 				|| this == WIDE_MAP //
-				|| this == EXTERNAL_WIDE_MAP //
 				|| this == WIDE_MAP_COUNTER //
 				|| this == JOIN_SIMPLE //
 				|| this == JOIN_LIST //
 				|| this == JOIN_SET //
 				|| this == JOIN_MAP //
-				|| this == JOIN_WIDE_MAP //
-		|| this == EXTERNAL_JOIN_WIDE_MAP);
+		|| this == JOIN_WIDE_MAP);
 	}
 
 	public boolean isJoinColumn()
@@ -69,22 +65,13 @@ public enum PropertyType
 				|| this == JOIN_LIST //
 				|| this == JOIN_SET //
 				|| this == JOIN_MAP //
-				|| this == JOIN_WIDE_MAP //
-		|| this == EXTERNAL_JOIN_WIDE_MAP);
-	}
-
-	public boolean isExternal()
-	{
-		return (this == EXTERNAL_WIDE_MAP //
-		|| this == EXTERNAL_JOIN_WIDE_MAP);
+		|| this == JOIN_WIDE_MAP);
 	}
 
 	public boolean isWideMap()
 	{
 		return (this == WIDE_MAP //
 				|| this == WIDE_MAP_COUNTER //
-				|| this == EXTERNAL_WIDE_MAP //
-				|| this == JOIN_WIDE_MAP //
-		|| this == EXTERNAL_JOIN_WIDE_MAP);
+		|| this == JOIN_WIDE_MAP);
 	}
 }

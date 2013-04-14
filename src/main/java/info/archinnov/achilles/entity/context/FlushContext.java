@@ -28,7 +28,7 @@ public class FlushContext
 	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private final CounterDao counterDao;
 
-	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
 	private final ConsistencyContext consistencyContext;
 	protected boolean hasCustomConsistencyLevels = false;
 	private BatchType type = BatchType.NONE;
@@ -69,10 +69,9 @@ public class FlushContext
 	{
 		try
 		{
-			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> entry : mutatorMap
-					.entrySet())
+			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?>>> entry : mutatorMap.entrySet())
 			{
-				AbstractDao<ID, ?, ?> dao = (AbstractDao<ID, ?, ?>) entry.getValue().right;
+				AbstractDao<ID, ?> dao = (AbstractDao<ID, ?>) entry.getValue().right;
 				Mutator<ID> mutator = (Mutator<ID>) entry.getValue().left;
 				dao.executeMutator(mutator);
 			}
@@ -127,8 +126,8 @@ public class FlushContext
 			if (entityDao != null)
 			{
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
-						mutator, entityDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
+						entityDao));
 			}
 		}
 		return mutator;
@@ -150,8 +149,8 @@ public class FlushContext
 			if (columnFamilyDao != null)
 			{
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(
-						mutator, columnFamilyDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
+						columnFamilyDao));
 			}
 		}
 		return mutator;
@@ -168,8 +167,8 @@ public class FlushContext
 		else
 		{
 			mutator = counterDao.buildMutator();
-			mutatorMap.put(COUNTER_CF, new Pair<Mutator<?>, AbstractDao<?, ?, ?>>(mutator,
-					counterDao));
+			mutatorMap
+					.put(COUNTER_CF, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator, counterDao));
 		}
 		return mutator;
 	}

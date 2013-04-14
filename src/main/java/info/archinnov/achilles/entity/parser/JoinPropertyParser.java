@@ -1,13 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EXTERNAL_JOIN_WIDE_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_WIDE_MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
@@ -74,15 +68,12 @@ public class JoinPropertyParser
 		return joinPropertyMeta;
 	}
 
-	public <ID> void fillExternalJoinWideMap(EntityParsingContext context,
-			PropertyMeta<Void, ID> idMeta, PropertyMeta<?, ?> joinPropertyMeta,
-			String externalTableName)
+	public <ID> void fillJoinWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
+			PropertyMeta<?, ?> joinPropertyMeta, String externalTableName)
 	{
-		joinPropertyMeta.setType(EXTERNAL_JOIN_WIDE_MAP);
-
-		joinPropertyMeta.setExternalWideMapProperties(new ExternalWideMapProperties<ID>(
-				ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(externalTableName), idMeta
-						.getValueSerializer()));
+		joinPropertyMeta.setExternalCfName(ColumnFamilyHelper
+				.normalizerAndValidateColumnFamilyName(externalTableName));
+		joinPropertyMeta.setIdSerializer(idMeta.getValueSerializer());
 		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
 		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
 				joinPropertyMeta.getValueClass());

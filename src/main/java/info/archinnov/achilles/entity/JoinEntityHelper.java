@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 /**
  * JoinEntityHelper
@@ -35,9 +35,9 @@ public class JoinEntityHelper
 				+ "' should not be null");
 
 		Map<ID, T> entitiesByKey = new HashMap<ID, T>();
-		Map<ID, List<Pair<DynamicComposite, String>>> rows = joinEntityDao.eagerFetchEntities(keys);
+		Map<ID, List<Pair<Composite, String>>> rows = joinEntityDao.eagerFetchEntities(keys);
 
-		for (Entry<ID, List<Pair<DynamicComposite, String>>> entry : rows.entrySet())
+		for (Entry<ID, List<Pair<Composite, String>>> entry : rows.entrySet())
 		{
 			T entity;
 			try
@@ -45,7 +45,7 @@ public class JoinEntityHelper
 				entity = entityClass.newInstance();
 
 				ID key = entry.getKey();
-				List<Pair<DynamicComposite, String>> columns = entry.getValue();
+				List<Pair<Composite, String>> columns = entry.getValue();
 				if (columns.size() > 0)
 				{
 					mapper.setEagerPropertiesToEntity(key, columns, entityMeta, entity);

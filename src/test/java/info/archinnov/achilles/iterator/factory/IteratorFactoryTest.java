@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
-import info.archinnov.achilles.iterator.KeyValueIteratorForComposite;
+import info.archinnov.achilles.iterator.KeyValueIteratorImpl;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -15,7 +15,6 @@ import java.util.List;
 
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.junit.Test;
@@ -35,19 +34,19 @@ public class IteratorFactoryTest
 	private IteratorFactory factory = new IteratorFactory();
 
 	@Mock
-	private AchillesSliceIterator<?, Composite, String> columnSliceComposite;
+	private AchillesSliceIterator<?, String> columnSliceComposite;
 
 	@Mock
-	private AchillesSliceIterator<?, DynamicComposite, String> columnSliceDynamicComposite;
+	private AchillesSliceIterator<?, String> columnSliceDynamicComposite;
 
 	@Mock
-	private AchillesJoinSliceIterator<Long, Composite, String, Long, Integer, UserBean> joinColumnSliceComposite;
+	private AchillesJoinSliceIterator<Long, String, Long, Integer, UserBean> joinColumnSliceComposite;
 
 	@Mock
-	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean> joinColumnSliceDynamicComposite;
+	private AchillesJoinSliceIterator<Long, String, Long, Integer, UserBean> joinColumnSliceDynamicComposite;
 
 	@Mock
-	private Iterator<HCounterColumn<DynamicComposite>> counterSliceIterator;
+	private Iterator<HCounterColumn<Composite>> counterSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -73,10 +72,10 @@ public class IteratorFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(columnSliceComposite.hasNext()).thenReturn(true, false, true);
 
-		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIteratorForComposite(
-				context, columnSliceComposite, wideMapMeta);
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIterator(context,
+				columnSliceComposite, wideMapMeta);
 
-		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorForComposite.class);
+		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorImpl.class);
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThat(iterator.hasNext()).isTrue();
@@ -85,9 +84,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_dynamic_composite_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, String> iterator = factory
-				.createKeyValueIteratorForDynamicComposite(context, columnSliceDynamicComposite,
-						wideMapMeta);
+		KeyValueIterator<Integer, String> iterator = factory.createKeyValueIterator(context,
+				columnSliceDynamicComposite, wideMapMeta);
 
 		when(columnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);
 
@@ -102,11 +100,10 @@ public class IteratorFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(joinColumnSliceComposite.hasNext()).thenReturn(true, false, true);
 
-		KeyValueIterator<Integer, UserBean> iterator = factory
-				.createKeyValueJoinIteratorForComposite(context, joinColumnSliceComposite,
-						joinWideMapMeta);
+		KeyValueIterator<Integer, UserBean> iterator = factory.createKeyValueJoinIterator(context,
+				joinColumnSliceComposite, joinWideMapMeta);
 
-		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorForComposite.class);
+		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorImpl.class);
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.hasNext()).isFalse();
 		assertThat(iterator.hasNext()).isTrue();
@@ -115,9 +112,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_join_dynamic_composite_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, UserBean> iterator = factory
-				.createKeyValueJoinIteratorForDynamicComposite(context,
-						joinColumnSliceDynamicComposite, joinWideMapMeta);
+		KeyValueIterator<Integer, UserBean> iterator = factory.createKeyValueJoinIterator(context,
+				joinColumnSliceDynamicComposite, joinWideMapMeta);
 
 		when(joinColumnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);
 
@@ -129,9 +125,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_counter_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, Long> iterator = factory
-				.createCounterKeyValueIteratorForDynamicComposite(counterSliceIterator,
-						counterWideMapMeta);
+		KeyValueIterator<Integer, Long> iterator = factory.createCounterKeyValueIterator(
+				counterSliceIterator, counterWideMapMeta);
 
 		when(counterSliceIterator.hasNext()).thenReturn(true, false, true);
 

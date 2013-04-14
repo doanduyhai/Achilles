@@ -1,16 +1,12 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -30,7 +26,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -50,12 +46,12 @@ public class JPAOperationsIT
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private GenericEntityDao<Long> dao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
 
-	private DynamicCompositeKeyFactory keyFactory = new DynamicCompositeKeyFactory();
+	private CompositeFactory compositeFactory = new CompositeFactory();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -68,30 +64,30 @@ public class JPAOperationsIT
 
 		em.persist(bean);
 
-		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
+		Composite startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
 
-		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
+		Composite endCompositeForEagerFetch = new Composite();
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
 				ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(8);
 
-		Pair<DynamicComposite, String> serialVersionUID = columns.get(0);
+		Pair<Composite, String> serialVersionUID = columns.get(0);
 
-		Pair<DynamicComposite, String> age = columns.get(1);
+		Pair<Composite, String> age = columns.get(1);
 
-		Pair<DynamicComposite, String> name = columns.get(2);
+		Pair<Composite, String> name = columns.get(2);
 
-		Pair<DynamicComposite, String> George = columns.get(3);
-		Pair<DynamicComposite, String> Paul = columns.get(4);
+		Pair<Composite, String> George = columns.get(3);
+		Pair<Composite, String> Paul = columns.get(4);
 
-		Pair<DynamicComposite, String> FR = columns.get(5);
-		Pair<DynamicComposite, String> Paris = columns.get(6);
-		Pair<DynamicComposite, String> _75014 = columns.get(7);
+		Pair<Composite, String> FR = columns.get(5);
+		Pair<Composite, String> Paris = columns.get(6);
+		Pair<Composite, String> _75014 = columns.get(7);
 
 		assertThat(serialVersionUID.left.get(1, STRING_SRZ)).isEqualTo(SERIAL_VERSION_UID.name());
 		assertThat(Long.parseLong(serialVersionUID.right)).isEqualTo(151L);
@@ -122,11 +118,11 @@ public class JPAOperationsIT
 		assertThat(zipCode.getKey()).isEqualTo(3);
 		assertThat(zipCode.getValue()).isEqualTo("75014");
 
-		startCompositeForEagerFetch = new DynamicComposite();
+		startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new DynamicComposite();
+		endCompositeForEagerFetch = new Composite();
 		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.GREATER_THAN_EQUAL);
 
@@ -134,8 +130,8 @@ public class JPAOperationsIT
 				endCompositeForEagerFetch, false, 20);
 		assertThat(columns).hasSize(2);
 
-		Pair<DynamicComposite, String> foo = columns.get(0);
-		Pair<DynamicComposite, String> bar = columns.get(1);
+		Pair<Composite, String> foo = columns.get(0);
+		Pair<Composite, String> bar = columns.get(1);
 
 		assertThat(foo.left.get(1, STRING_SRZ)).isEqualTo("friends");
 		assertThat(foo.right).isEqualTo("foo");
@@ -193,7 +189,7 @@ public class JPAOperationsIT
 
 		em.persist(bean);
 
-		DynamicComposite composite = new DynamicComposite();
+		Composite composite = new Composite();
 		composite.addComponent(0, SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
 
@@ -282,55 +278,42 @@ public class JPAOperationsIT
 		assertThat(merged.getPreferences()).hasSize(2);
 		assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
 
-		DynamicComposite startCompositeForEagerFetch = new DynamicComposite();
-		startCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
-				ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
+		Composite composite = new Composite();
+		composite.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
+		composite.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		DynamicComposite endCompositeForEagerFetch = new DynamicComposite();
-		endCompositeForEagerFetch.addComponent(0, PropertyType.SIMPLE.flag(),
-				ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
+		assertThat(readLong(dao.getValue(bean.getId(), composite))).isEqualTo(100L);
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(),
-				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
-
-		assertThat(columns).hasSize(1);
-
-		Pair<DynamicComposite, String> age = columns.get(0);
-
-		assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
-		assertThat(readLong(age.right)).isEqualTo(100L);
-
-		startCompositeForEagerFetch = new DynamicComposite();
+		Composite startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
 				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new DynamicComposite();
+		Composite endCompositeForEagerFetch = new Composite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
 				ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
-				endCompositeForEagerFetch, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(),
+				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(3);
 
-		Pair<DynamicComposite, String> eve = columns.get(2);
+		Pair<Composite, String> eve = columns.get(2);
 
 		assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
 		assertThat(eve.right).isEqualTo("eve");
 
-		startCompositeForEagerFetch = new DynamicComposite();
+		startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
 				ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new DynamicComposite();
+		endCompositeForEagerFetch = new Composite();
 		endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
 		endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
@@ -340,7 +323,7 @@ public class JPAOperationsIT
 
 		assertThat(columns).hasSize(2);
 
-		Pair<DynamicComposite, String> FR = columns.get(0);
+		Pair<Composite, String> FR = columns.get(0);
 
 		assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
 		KeyValue<Integer, String> mapValue = readKeyValue(FR.right);
@@ -388,8 +371,8 @@ public class JPAOperationsIT
 
 		assertThat(foundBean).isNull();
 
-		List<Pair<DynamicComposite, String>> columns = dao.findColumnsRange(bean.getId(), null,
-				null, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), null, null,
+				false, 20);
 
 		assertThat(columns).hasSize(0);
 
@@ -468,14 +451,14 @@ public class JPAOperationsIT
 
 		nameMeta.setPropertyName("name");
 
-		DynamicComposite nameComposite = keyFactory.createForBatchInsertSingleValue(nameMeta);
+		Composite nameComposite = compositeFactory.createForBatchInsertSingleValue(nameMeta);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
 		listLazyMeta.setType(LAZY_LIST);
 		listLazyMeta.setPropertyName("friends");
 
-		DynamicComposite friend3Composite = keyFactory.createForBatchInsertMultiValue(listLazyMeta,
+		Composite friend3Composite = compositeFactory.createForBatchInsertMultiValue(listLazyMeta,
 				2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 

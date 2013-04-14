@@ -1,13 +1,10 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CounterDao extends AbstractDao<Composite, DynamicComposite, Long>
+public class CounterDao extends AbstractDao<Composite, Long>
 {
 	private static final Logger log = LoggerFactory.getLogger(CounterDao.class);
 	public static final String COUNTER_CF = "achillesCounterCF";
@@ -31,7 +28,7 @@ public class CounterDao extends AbstractDao<Composite, DynamicComposite, Long>
 
 		keySerializer = COMPOSITE_SRZ;
 		columnFamily = COUNTER_CF;
-		columnNameSerializer = DYNA_COMP_SRZ;
+		columnNameSerializer = COMPOSITE_SRZ;
 		valueSerializer = LONG_SRZ;
 		policy = consistencyPolicy;
 		log.debug("Initializing CounterDao with Composite key serializer, DynamicComposite comparator and Long value serializer ");

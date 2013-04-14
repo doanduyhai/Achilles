@@ -1,13 +1,9 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
@@ -24,7 +20,7 @@ import java.util.Map;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.SliceQuery;
@@ -55,19 +51,19 @@ public class AchillesJoinSliceIteratorTest
 	private PropertyMeta<Integer, UserBean> propertyMeta;
 
 	@Mock
-	private SliceQuery<Long, DynamicComposite, String> query;
+	private SliceQuery<Long, Composite, Long> query;
 
 	@Mock
-	private QueryResult<ColumnSlice<DynamicComposite, String>> queryResult;
+	private QueryResult<ColumnSlice<Composite, Long>> queryResult;
 
 	@Mock
-	private ColumnSlice<DynamicComposite, String> columnSlice;
+	private ColumnSlice<Composite, Long> columnSlice;
 
 	@Mock
-	private List<HColumn<DynamicComposite, String>> hColumns;
+	private List<HColumn<Composite, Long>> hColumns;
 
 	@Mock
-	private Iterator<HColumn<DynamicComposite, String>> columnsIterator;
+	private Iterator<HColumn<Composite, Long>> columnsIterator;
 
 	@Mock
 	private JoinEntityHelper joinHelper;
@@ -82,7 +78,7 @@ public class AchillesJoinSliceIteratorTest
 
 	private EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 
-	private AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean> iterator;
+	private AchillesJoinSliceIterator<Long, Long, Long, Integer, UserBean> iterator;
 
 	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;
@@ -123,27 +119,26 @@ public class AchillesJoinSliceIteratorTest
 
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
 				.valueClass(Long.class) //
+				.type(PropertyType.SIMPLE) //
 				.build();
 
 		joinEntityMeta.setIdMeta(idMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);
 
-		DynamicComposite start = new DynamicComposite(), //
-		end = new DynamicComposite(), //
-		name1 = CompositeTestBuilder.builder().values("name1").buildDynamic(), //
-		name2 = CompositeTestBuilder.builder().values("name2").buildDynamic(), //
-		name3 = CompositeTestBuilder.builder().values("name3").buildDynamic();
+		Composite start = new Composite(), //
+		end = new Composite(), //
+		name1 = CompositeTestBuilder.builder().values("name1").buildSimple(), //
+		name2 = CompositeTestBuilder.builder().values("name2").buildSimple(), //
+		name3 = CompositeTestBuilder.builder().values("name3").buildSimple();
 
 		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L;
 		Integer ttl = 10;
 
-		HColumnTestBuilder.dynamic(name1, joinId1.toString(), ttl);
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(name1,
-				joinId1.toString(), ttl);
-		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(name2,
-				joinId2.toString(), ttl);
-		HColumn<DynamicComposite, String> hCol3 = HColumnTestBuilder.dynamic(name3,
-				joinId3.toString(), ttl);
+		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(name1, joinId1, ttl);
+		HColumn<Composite, Long> hCol2 = HColumnTestBuilder.simple(name2, joinId2, ttl);
+		HColumn<Composite, Long> hCol3 = HColumnTestBuilder.simple(name3, joinId3, ttl);
 
 		Map<Long, UserBean> entitiesMap = new HashMap<Long, UserBean>();
 		entitiesMap.put(joinId1, user1);
@@ -152,34 +147,33 @@ public class AchillesJoinSliceIteratorTest
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
-		when(
-				joinHelper.loadJoinEntities(UserBean.class,
-						Arrays.asList(joinId1, joinId2, joinId3), joinEntityMeta, joinEntityDao))
+		List<Long> keys = Arrays.asList(joinId1, joinId2, joinId3);
+		when(joinHelper.loadJoinEntities(UserBean.class, keys, joinEntityMeta, joinEntityDao))
 				.thenReturn(entitiesMap);
 
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean>(
-				policy, joinEntityDao, columnFamily, propertyMeta, query, start, end, false, 10);
+		iterator = new AchillesJoinSliceIterator<Long, Long, Long, Integer, UserBean>(policy,
+				joinEntityDao, columnFamily, propertyMeta, query, start, end, false, 10);
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h1 = iterator.next();
+		HColumn<Composite, UserBean> h1 = iterator.next();
 
-		assertThat(h1.getName()).isEqualTo(name1);
+		assertThat(h1.getName().get(0, STRING_SRZ)).isEqualTo("name1");
 		assertThat(h1.getValue().getName()).isEqualTo(user1.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h2 = iterator.next();
+		HColumn<Composite, UserBean> h2 = iterator.next();
 
-		assertThat(h2.getName()).isEqualTo(name2);
+		assertThat(h2.getName().get(0, STRING_SRZ)).isEqualTo("name2");
 		assertThat(h2.getValue().getName()).isEqualTo(user2.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h3 = iterator.next();
+		HColumn<Composite, UserBean> h3 = iterator.next();
 
-		assertThat(h3.getName()).isEqualTo(name3);
+		assertThat(h3.getName().get(0, STRING_SRZ)).isEqualTo("name3");
 		assertThat(h3.getValue().getName()).isEqualTo(user3.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
@@ -196,27 +190,27 @@ public class AchillesJoinSliceIteratorTest
 	{
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
 				.valueClass(Long.class) //
+				.type(PropertyType.SIMPLE) //
 				.build();
 
 		joinEntityMeta.setIdMeta(idMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);
 
-		DynamicComposite start = new DynamicComposite(), //
-		end = new DynamicComposite(), //
-		name1 = CompositeTestBuilder.builder().values("name1").buildDynamic(), //
-		name2 = CompositeTestBuilder.builder().values("name2").buildDynamic(), //
-		name3 = CompositeTestBuilder.builder().values("name3").buildDynamic();
+		Composite start = new Composite(), //
+		end = new Composite(), //
+		name1 = CompositeTestBuilder.builder().values("name1").buildSimple(), //
+		name2 = CompositeTestBuilder.builder().values("name2").buildSimple(), //
+		name3 = CompositeTestBuilder.builder().values("name3").buildSimple();
 		int count = 2;
 
 		Long joinId1 = 11L, joinId2 = 12L, joinId3 = 13L;
 		Integer ttl = 10;
 
-		HColumn<DynamicComposite, String> hCol1 = HColumnTestBuilder.dynamic(name1,
-				joinId1.toString(), ttl);
-		HColumn<DynamicComposite, String> hCol2 = HColumnTestBuilder.dynamic(name2,
-				joinId2.toString(), ttl);
-		HColumn<DynamicComposite, String> hCol3 = HColumnTestBuilder.dynamic(name3,
-				joinId3.toString(), ttl);
+		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(name1, joinId1, ttl);
+		HColumn<Composite, Long> hCol2 = HColumnTestBuilder.simple(name2, joinId2, ttl);
+		HColumn<Composite, Long> hCol3 = HColumnTestBuilder.simple(name3, joinId3, ttl);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, false, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
@@ -227,7 +221,6 @@ public class AchillesJoinSliceIteratorTest
 		entitiesMap.put(joinId3, user3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
-
 		when(
 				joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
 						joinEntityMeta, joinEntityDao)).thenReturn(entitiesMap);
@@ -235,32 +228,31 @@ public class AchillesJoinSliceIteratorTest
 				joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta,
 						joinEntityDao)).thenReturn(entitiesMap);
 
-		iterator = new AchillesJoinSliceIterator<Long, DynamicComposite, String, Long, Integer, UserBean>(
-				policy, joinEntityDao, columnFamily, propertyMeta, query, start, end, false, count);
+		iterator = new AchillesJoinSliceIterator<Long, Long, Long, Integer, UserBean>(policy,
+				joinEntityDao, columnFamily, propertyMeta, query, start, end, false, count);
 
 		Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h1 = iterator.next();
+		HColumn<Composite, UserBean> h1 = iterator.next();
 
-		assertThat(h1.getName()).isEqualTo(name1);
+		assertThat(h1.getName().get(0, STRING_SRZ)).isEqualTo("name1");
 		assertThat(h1.getValue().getName()).isEqualTo(user1.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h2 = iterator.next();
+		HColumn<Composite, UserBean> h2 = iterator.next();
 
-		assertThat(h2.getName()).isEqualTo(name2);
+		assertThat(h2.getName().get(0, STRING_SRZ)).isEqualTo("name2");
 		assertThat(h2.getValue().getName()).isEqualTo(user2.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, UserBean> h3 = iterator.next();
+		HColumn<Composite, UserBean> h3 = iterator.next();
 
-		assertThat(h3.getName()).isEqualTo(name3);
+		assertThat(h3.getName().get(0, STRING_SRZ)).isEqualTo("name3");
 		assertThat(h3.getValue().getName()).isEqualTo(user3.getName());
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
-		verify(query).setRange(name2, end, false, count);
 		verify(policy, times(2)).loadConsistencyLevelForRead(columnFamily);
 		verify(policy, times(2)).setCurrentReadLevel(LOCAL_QUORUM);
 		verify(policy, times(2)).setCurrentReadLevel(ONE);

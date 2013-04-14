@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class EntityMapper
 
 	@SuppressWarnings("unchecked")
 	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,
-			List<Pair<DynamicComposite, String>> columns, EntityMeta<ID> entityMeta, T entity)
+			List<Pair<Composite, String>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
 
 		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
@@ -49,7 +49,7 @@ public class EntityMapper
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
-		for (Pair<DynamicComposite, String> pair : columns)
+		for (Pair<Composite, String> pair : columns)
 		{
 			String propertyName = pair.left.get(1, STRING_SRZ);
 

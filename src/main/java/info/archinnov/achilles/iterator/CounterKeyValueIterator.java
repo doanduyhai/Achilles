@@ -8,7 +8,7 @@ import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
 /**
@@ -21,10 +21,10 @@ public class CounterKeyValueIterator<K> implements KeyValueIterator<K, Long>
 {
 	private KeyValueFactory factory = new KeyValueFactory();
 
-	private Iterator<HCounterColumn<DynamicComposite>> achillesSliceIterator;
+	private Iterator<HCounterColumn<Composite>> achillesSliceIterator;
 	private PropertyMeta<K, Long> propertyMeta;
 
-	public CounterKeyValueIterator(Iterator<HCounterColumn<DynamicComposite>> columnSliceIterator,
+	public CounterKeyValueIterator(Iterator<HCounterColumn<Composite>> columnSliceIterator,
 			PropertyMeta<K, Long> wideMapMeta)
 	{
 		this.achillesSliceIterator = columnSliceIterator;
@@ -43,9 +43,9 @@ public class CounterKeyValueIterator<K> implements KeyValueIterator<K, Long>
 		KeyValue<K, Long> keyValue = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HCounterColumn<DynamicComposite> column = this.achillesSliceIterator.next();
+			HCounterColumn<Composite> column = this.achillesSliceIterator.next();
 
-			keyValue = factory.createCounterKeyValueForDynamicComposite(propertyMeta, column);
+			keyValue = factory.createCounterKeyValue(propertyMeta, column);
 		}
 		else
 		{
@@ -60,8 +60,8 @@ public class CounterKeyValueIterator<K> implements KeyValueIterator<K, Long>
 		K key = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HCounterColumn<DynamicComposite> column = this.achillesSliceIterator.next();
-			key = factory.createCounterKeyForDynamicComposite(propertyMeta, column);
+			HCounterColumn<Composite> column = this.achillesSliceIterator.next();
+			key = factory.createCounterKey(propertyMeta, column);
 		}
 		else
 		{
@@ -76,8 +76,8 @@ public class CounterKeyValueIterator<K> implements KeyValueIterator<K, Long>
 		Long value = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HCounterColumn<DynamicComposite> column = this.achillesSliceIterator.next();
-			value = factory.createCounterValueForDynamicComposite(propertyMeta, column);
+			HCounterColumn<Composite> column = this.achillesSliceIterator.next();
+			value = factory.createCounterValue(propertyMeta, column);
 		}
 		else
 		{

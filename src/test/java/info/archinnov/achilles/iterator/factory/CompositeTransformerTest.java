@@ -157,7 +157,7 @@ public class CompositeTransformerTest
 
 		when(context.newPersistenceContext(joinMeta, hColumn.getValue())).thenReturn(joinContext);
 		when(proxifier.buildProxy(hColumn.getValue(), joinContext)).thenReturn(user);
-		UserBean actual = transformer.buildValueFromComposite(context, propertyMeta, hColumn);
+		UserBean actual = transformer.buildValue(context, propertyMeta, hColumn);
 
 		assertThat(actual).isSameAs(user);
 	}

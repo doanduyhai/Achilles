@@ -1,17 +1,14 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.BYTE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -29,7 +26,6 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 /**
@@ -43,17 +39,17 @@ public class ThriftPersisterImpl
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private EntityProxifier proxifier = new EntityProxifier();
 
-	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
+	private CompositeFactory compositeFactory = new CompositeFactory();
 
 	public <T, ID> void batchPersistVersionSerialUID(PersistenceContext<ID> context)
 	{
 
-		DynamicComposite composite = new DynamicComposite();
+		Composite composite = new Composite();
 		composite.setComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), BYTE_SRZ, BYTE_SRZ
 				.getComparatorType().getTypeName());
 		composite.setComponent(1, PropertyType.SERIAL_VERSION_UID.name(), STRING_SRZ, STRING_SRZ
 				.getComparatorType().getTypeName());
+		composite.setComponent(2, 0, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
 		Long serialVersionUID = introspector.findSerialVersionUID(context.getEntityClass());
 
 		if (serialVersionUID != null)
@@ -72,8 +68,7 @@ public class ThriftPersisterImpl
 	public <ID> void batchPersistSimpleProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		DynamicComposite name = dynamicCompositeKeyFactory
-				.createForBatchInsertSingleValue(propertyMeta);
+		Composite name = compositeFactory.createForBatchInsertSingleValue(propertyMeta);
 		String value = propertyMeta.writeValueToString(introspector.getValueFromField(
 				context.getEntity(), propertyMeta.getGetter()));
 		if (value != null)
@@ -90,10 +85,9 @@ public class ThriftPersisterImpl
 		String fqcn = propertyMeta.fqcn();
 		PropertyMeta<Void, ID> idMeta = (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta();
 
-		Composite keyComp = compositeKeyFactory.createKeyForCounter(fqcn, context.getPrimaryKey(),
+		Composite keyComp = compositeFactory.createKeyForCounter(fqcn, context.getPrimaryKey(),
 				idMeta);
-		DynamicComposite comp = dynamicCompositeKeyFactory
-				.createForBatchInsertSingleValue(propertyMeta);
+		Composite comp = compositeFactory.createForBatchInsertSingleCounter(propertyMeta);
 		Object counterValue = introspector.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 
@@ -109,8 +103,7 @@ public class ThriftPersisterImpl
 		int count = 0;
 		for (V value : list)
 		{
-			DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
-					propertyMeta, count);
+			Composite name = compositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
 
 			String stringValue = propertyMeta.writeValueToString(value);
 			if (stringValue != null)
@@ -127,8 +120,8 @@ public class ThriftPersisterImpl
 	{
 		for (V value : set)
 		{
-			DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
-					propertyMeta, value.hashCode());
+			Composite name = compositeFactory.createForBatchInsertMultiValue(propertyMeta,
+					value.hashCode());
 
 			String stringValue = propertyMeta.writeValueToString(value);
 			if (stringValue != null)
@@ -144,8 +137,8 @@ public class ThriftPersisterImpl
 	{
 		for (Entry<K, V> entry : map.entrySet())
 		{
-			DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
-					propertyMeta, entry.getKey().hashCode());
+			Composite name = compositeFactory.createForBatchInsertMultiValue(propertyMeta, entry
+					.getKey().hashCode());
 
 			String value = propertyMeta.writeValueToString(new KeyValue<K, V>(entry.getKey(), entry
 					.getValue()));
@@ -167,8 +160,7 @@ public class ThriftPersisterImpl
 				+ "' should not be null");
 		String joinIdString = idMeta.writeValueToString(joinId);
 
-		DynamicComposite joinComposite = dynamicCompositeKeyFactory
-				.createForBatchInsertSingleValue(propertyMeta);
+		Composite joinComposite = compositeFactory.createForBatchInsertSingleValue(propertyMeta);
 		context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinComposite,
 				joinIdString, context.getEntityMutator(context.getColumnFamilyName()));
 
@@ -189,8 +181,7 @@ public class ThriftPersisterImpl
 		int count = 0;
 		for (V joinEntity : joinCollection)
 		{
-			DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
-					propertyMeta, count);
+			Composite name = compositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
 
 			Object joinEntityId = introspector
 					.getValueFromField(joinEntity, joinIdMeta.getGetter());
@@ -223,8 +214,8 @@ public class ThriftPersisterImpl
 
 		for (Entry<K, V> entry : joinMap.entrySet())
 		{
-			DynamicComposite name = dynamicCompositeKeyFactory.createForBatchInsertMultiValue(
-					propertyMeta, entry.getKey().hashCode());
+			Composite name = compositeFactory.createForBatchInsertMultiValue(propertyMeta, entry
+					.getKey().hashCode());
 
 			V joinEntity = entry.getValue();
 			Object joinEntityId = introspector.getValueFromField(joinEntity, idMeta.getGetter());
@@ -261,45 +252,48 @@ public class ThriftPersisterImpl
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				if (propertyMeta.isExternal())
+				if (propertyMeta.isWideMap())
 				{
-					ExternalWideMapProperties<ID> externalProperties = (ExternalWideMapProperties<ID>) propertyMeta
-							.getExternalWideMapProperties();
-					String externalColumnFamilyName = externalProperties
-							.getExternalColumnFamilyName();
-					GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = context
-							.findColumnFamilyDao(externalColumnFamilyName);
-					findColumnFamilyDao.removeRowBatch(primaryKey,
-							context.getColumnFamilyMutator(externalColumnFamilyName));
-				}
-				if (propertyMeta.isCounter())
-				{
-					if (propertyMeta.isWideMap())
+
+					if (propertyMeta.isCounter())
 					{
 						removeCounterWideMap(context, (PropertyMeta<Void, Long>) propertyMeta);
 					}
 					else
 					{
-						removeSimpleCounter(context, (PropertyMeta<Void, Long>) propertyMeta);
+						removeWideMap(context, primaryKey, propertyMeta);
 					}
+				}
+				if (propertyMeta.isCounter())
+				{
+					removeSimpleCounter(context, (PropertyMeta<Void, Long>) propertyMeta);
 				}
 			}
 		}
 	}
 
+	private <ID> void removeWideMap(PersistenceContext<ID> context, ID primaryKey,
+			PropertyMeta<?, ?> propertyMeta)
+	{
+		String externalColumnFamilyName = propertyMeta.getExternalCFName();
+		GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = context
+				.findColumnFamilyDao(externalColumnFamilyName);
+		findColumnFamilyDao.removeRowBatch(primaryKey,
+				context.getColumnFamilyMutator(externalColumnFamilyName));
+	}
+
 	public <ID, V> void removePropertyBatch(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
-				ComponentEquality.EQUAL);
-		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
-				GREATER_THAN_EQUAL);
+		Composite start = compositeFactory
+				.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL);
+		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		context.getEntityDao().removeColumnRangeBatch(context.getPrimaryKey(), start, end,
 				context.getEntityMutator(context.getColumnFamilyName()));
 	}
 
 	private <ID> void insertCounterWithConsistencyLevel(PersistenceContext<ID> context,
-			PropertyMeta<Void, Long> propertyMeta, Composite keyComp, DynamicComposite comp,
+			PropertyMeta<Void, Long> propertyMeta, Composite keyComp, Composite comp,
 			Object counterValue)
 	{
 		CounterDao dao = context.getCounterDao();
@@ -327,10 +321,9 @@ public class ThriftPersisterImpl
 	private <ID> void removeSimpleCounter(PersistenceContext<ID> context,
 			PropertyMeta<Void, Long> propertyMeta)
 	{
-		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(),
+		Composite keyComp = compositeFactory.createKeyForCounter(propertyMeta.fqcn(),
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
-		DynamicComposite com = dynamicCompositeKeyFactory
-				.createForBatchInsertSingleValue(propertyMeta);
+		Composite com = compositeFactory.createForBatchInsertSingleCounter(propertyMeta);
 
 		context.getCounterDao().removeCounterBatch(keyComp, com, context.getCounterMutator());
 	}
@@ -339,7 +332,7 @@ public class ThriftPersisterImpl
 	private <ID> void removeCounterWideMap(PersistenceContext<ID> context,
 			PropertyMeta<Void, Long> propertyMeta)
 	{
-		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(),
+		Composite keyComp = compositeFactory.createKeyForCounter(propertyMeta.fqcn(),
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		context.getCounterDao().removeCounterRowBatch(keyComp, context.getCounterMutator());
 	}

@@ -1,36 +1,72 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.helper.CompositeHelper;
+import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 
 /**
- * JoinWideMapWrapperBuilder
+ * JoinExternalWideMapWrapperBuilder
  * 
  * @author DuyHai DOAN
  * 
  */
-public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> extends WideMapWrapperBuilder<ID, K, V>
+public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 {
-
+	private ID id;
+	private GenericColumnFamilyDao<ID, JOIN_ID> dao;
+	private PropertyMeta<K, V> joinExternalWideMapMeta;
+	private AchillesInterceptor<ID> interceptor;
 	private EntityPersister persister;
 	private EntityLoader loader;
+	private EntityProxifier proxifier;
+	private CompositeHelper compositeHelper;
+	private CompositeFactory compositeFactory;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private PersistenceContext<ID> context;
 
-	public JoinWideMapWrapperBuilder(PersistenceContext<ID> context, ID id,
-			GenericEntityDao<ID> dao, PropertyMeta<K, V> joinWideMapMeta)
+	public JoinWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, JOIN_ID> dao,
+			PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
-		super(id, dao, joinWideMapMeta);
-		super.context = context;
+		this.dao = dao;
+		this.id = id;
+		this.joinExternalWideMapMeta = joinExternalWideMapMeta;
 	}
 
 	public static <ID, JOIN_ID, K, V> JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> builder(
-			PersistenceContext<ID> context, ID id, GenericEntityDao<ID> dao,
-			PropertyMeta<K, V> wideMapMeta)
+			ID id, GenericColumnFamilyDao<ID, JOIN_ID> dao, PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
-		return new JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>(context, id, dao, wideMapMeta);
+		return new JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>(id, dao,
+				joinExternalWideMapMeta);
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> interceptor(
+			AchillesInterceptor<ID> interceptor)
+	{
+		this.interceptor = interceptor;
+		return this;
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> context(
+			PersistenceContext<ID> context)
+	{
+		this.context = context;
+		return this;
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> proxifier(EntityProxifier proxifier)
+	{
+		this.proxifier = proxifier;
+		return this;
 	}
 
 	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> persister(EntityPersister persister)
@@ -45,12 +81,50 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> extends WideMapWrapper
 		return this;
 	}
 
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> compositeHelper(
+			CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+		return this;
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> compositeFactory(
+			CompositeFactory compositeFactory)
+	{
+		this.compositeFactory = compositeFactory;
+		return this;
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> keyValueFactory(
+			KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+		return this;
+	}
+
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> iteratorFactory(
+			IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+		return this;
+	}
+
 	public JoinWideMapWrapper<ID, JOIN_ID, K, V> build()
 	{
 		JoinWideMapWrapper<ID, JOIN_ID, K, V> wrapper = new JoinWideMapWrapper<ID, JOIN_ID, K, V>();
-		build(wrapper);
+
+		wrapper.setId(id);
+		wrapper.setDao(dao);
+		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);
+		wrapper.setInterceptor(interceptor);
+		wrapper.setEntityProxifier(proxifier);
+		wrapper.setCompositeHelper(compositeHelper);
+		wrapper.setCompositeKeyFactory(compositeFactory);
+		wrapper.setIteratorFactory(iteratorFactory);
+		wrapper.setKeyValueFactory(keyValueFactory);
 		wrapper.setLoader(loader);
 		wrapper.setPersister(persister);
+		wrapper.setContext(context);
 		return wrapper;
 	}
 

@@ -5,6 +5,7 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
+import me.prettyprint.hector.api.beans.Composite;
 
 /**
  * AbstractAchillesSliceIterator
@@ -12,7 +13,7 @@ import info.archinnov.achilles.exception.AchillesException;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractAchillesSliceIterator<N>
+public abstract class AbstractAchillesSliceIterator
 {
 	protected boolean reversed;
 	protected int count = DEFAULT_LENGTH;
@@ -21,11 +22,12 @@ public abstract class AbstractAchillesSliceIterator<N>
 	protected String columnFamily;
 	protected ConsistencyLevel readConsistencyLevelAtInitialization;
 
-	protected N start;
-	protected ColumnSliceFinish<N> finish;
+	protected Composite start;
+	protected ColumnSliceFinish finish;
 
 	protected AbstractAchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
-			String columnFamily, N start, ColumnSliceFinish<N> finish, boolean reversed, int count)
+			String columnFamily, Composite start, ColumnSliceFinish finish, boolean reversed,
+			int count)
 	{
 		this.policy = policy;
 		this.columnFamily = columnFamily;
@@ -36,9 +38,9 @@ public abstract class AbstractAchillesSliceIterator<N>
 		this.readConsistencyLevelAtInitialization = policy.getCurrentReadLevel();
 	}
 
-	public interface ColumnSliceFinish<N>
+	public interface ColumnSliceFinish
 	{
-		N function();
+		Composite function();
 	}
 
 	protected <T> T executeWithInitialConsistencyLevel(SafeExecutionContext<T> context)

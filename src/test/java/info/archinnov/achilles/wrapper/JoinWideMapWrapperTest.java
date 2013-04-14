@@ -1,28 +1,46 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.PERSIST;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.helper.CompositeHelper;
+import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
+import info.archinnov.achilles.iterator.factory.IteratorFactory;
+import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
@@ -36,33 +54,30 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import testBuilders.PropertyMetaTestBuilder;
 
-/**
- * JoinWideMapWrapperTest
- * 
+/*
  * @author DuyHai DOAN
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JoinWideMapWrapperTest
 {
-
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@InjectMocks
-	private JoinWideMapWrapper<Long, Integer, UserBean> wrapper;
+	private JoinWideMapWrapper<Long, Long, Integer, CompleteBean> wrapper;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private GenericColumnFamilyDao<Long, Long> dao;
 
 	@Mock
 	private GenericEntityDao<Long> joinDao;
 
 	@Mock
-	private PropertyMeta<Integer, UserBean> propertyMeta;
+	private PropertyMeta<Integer, CompleteBean> propertyMeta;
 
 	@Mock
-	private DynamicCompositeKeyFactory keyFactory;
+	private CompositeFactory compositeFactory;
 
 	@Mock
 	private EntityPersister persister;
@@ -71,13 +86,19 @@ public class JoinWideMapWrapperTest
 	private EntityLoader loader;
 
 	@Mock
+	private EntityProxifier proxifier;
+
+	@Mock
 	private CompositeHelper compositeHelper;
 
 	@Mock
-	private EntityIntrospector entityIntrospector;
+	private KeyValueFactory keyValueFactory;
 
 	@Mock
-	private AchillesInterceptor interceptor;
+	private IteratorFactory iteratorFactory;
+
+	@Mock
+	private AchillesInterceptor<Long> interceptor;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -85,67 +106,80 @@ public class JoinWideMapWrapperTest
 	@Mock
 	private Mutator<Long> joinMutator;
 
+	@Mock
+	private CounterDao counterDao;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	@Mock
+	private GenericEntityDao<Long> entityDao;
+
+	@Mock
+	private FlushContext flushContext;
+
+	private EntityMeta<Long> entityMeta;
+
+	private EntityMeta<Long> joinMeta;
+
+	private PersistenceContext<Long> context;
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+
 	private Long id = 7425L;
 
+	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+
+	@SuppressWarnings("unchecked")
 	@Before
-	public void setUp()
+	public void setUp() throws Exception
 	{
 		wrapper.setId(id);
+
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, Long.class) //
+				.field("id") //
+				.type(PropertyType.SIMPLE) //
+				.accesors() //
+				.build();
+
+		entityMeta = new EntityMeta<Long>();
+		entityMeta.setIdMeta(idMeta);
+
+		joinMeta = new EntityMeta<Long>();
+		joinMeta.setIdMeta(idMeta);
+		joinMeta.setColumnFamilyName("join_cf");
+
+		entityDaosMap.clear();
+		context = PersistenceContextTestBuilder //
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.entity(entity) //
+				.entityDaosMap(entityDaosMap) //
+				.flushContext(flushContext) //
+				.build();
+		wrapper.setContext(context);
+		when(propertyMeta.getExternalCFName()).thenReturn("external_cf");
+		when((Serializer<Long>) propertyMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_value() throws Exception
 	{
-		Long joinId = 1235L;
 		int key = 4567;
-		UserBean userBean = new UserBean();
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 
-		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).build();
-		joinEntityMeta.setIdMeta(joinIdMeta);
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(entityMeta);
+		when((Class<CompleteBean>) propertyMeta.getValueClass()).thenReturn(CompleteBean.class);
 
-		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
+		when(dao.getValue(id, comp)).thenReturn(entity.getId());
+		when(loader.load(any(PersistenceContext.class))).thenReturn(entity);
+		when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class))).thenReturn(entity);
 
-		when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
-		when(keyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-		when(entityDao.getValue(id, comp)).thenReturn(joinId.toString());
-		when(loader.load(UserBean.class, joinId, joinEntityMeta)).thenReturn(userBean);
-		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-		when(entityIntrospector.buildProxy(userBean, joinEntityMeta)).thenReturn(userBean);
-		UserBean expected = wrapper.get(key);
+		CompleteBean actual = wrapper.get(key);
 
-		assertThat(expected).isSameAs(userBean);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_insert_value_and_entity_when_insertable() throws Exception
-	{
-
-		JoinProperties joinProperties = prepareJoinProperties();
-		joinProperties.addCascadeType(PERSIST);
-		PropertyMeta<Void, Long> joinIdMeta = mock(PropertyMeta.class);
-
-		int key = 4567;
-		UserBean userBean = new UserBean();
-		Long userId = 475L;
-		userBean.setUserId(userId);
-		DynamicComposite comp = new DynamicComposite();
-
-		when(keyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(joinDao.buildMutator()).thenReturn(joinMutator);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
-		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
-		when(joinIdMeta.writeValueToString(userId)).thenReturn(userId.toString());
-		when(interceptor.isBatchMode()).thenReturn(false);
-
-		wrapper.insert(key, userBean);
-
-		verify(entityDao).setValue(id, comp, userId.toString());
+		assertThat(actual).isSameAs(entity);
 	}
 
 	@SuppressWarnings(
@@ -154,33 +188,28 @@ public class JoinWideMapWrapperTest
 			"rawtypes"
 	})
 	@Test
-	public void should_insert_value_in_batch_mode_and_entity_when_insertable() throws Exception
+	public void should_insert_value_and_entity_when_insertable() throws Exception
 	{
 
 		JoinProperties joinProperties = prepareJoinProperties();
 		joinProperties.addCascadeType(PERSIST);
-		PropertyMeta<Void, Long> joinIdMeta = mock(PropertyMeta.class);
 
-		int key = 4567;
-		UserBean userBean = new UserBean();
-		Long userId = 475L;
-		userBean.setUserId(userId);
-		DynamicComposite comp = new DynamicComposite();
+		Integer key = 4567;
+		Composite comp = new Composite();
 
-		when(keyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(propertyMeta.getPropertyName()).thenReturn("joinProperty");
-		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
-				.thenReturn(userId);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(
+				persister.cascadePersistOrEnsureExists(any(PersistenceContext.class), eq(entity),
+						eq(joinProperties))).thenReturn(entity.getId());
 
-		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
-		when(joinIdMeta.writeValueToString(userId)).thenReturn(userId.toString());
-		when(interceptor.isBatchMode()).thenReturn(true);
-		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
-		wrapper.insert(key, userBean);
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+		wrapper.insert(key, entity);
 
-		verify(entityDao).setValueBatch(id, comp, userId.toString(), mutator);
+		verify(dao).setValueBatch(id, comp, entity.getId(), mutator);
+		verify(flushContext).flush();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -190,30 +219,36 @@ public class JoinWideMapWrapperTest
 		wrapper.insert(key, null);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
 	@Test
 	public void should_insert_value_and_entity_with_ttl() throws Exception
 	{
 		JoinProperties joinProperties = prepareJoinProperties();
 		joinProperties.addCascadeType(ALL);
-		PropertyMeta<Void, Long> joinIdMeta = mock(PropertyMeta.class);
 
 		int key = 4567;
-		UserBean userBean = new UserBean();
-		Long userId = 475L;
-		userBean.setUserId(userId);
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 
-		when(keyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
 		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(joinDao.buildMutator()).thenReturn(joinMutator);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties)).thenReturn(userId);
-		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
-		when(joinIdMeta.writeValueToString(userId)).thenReturn(userId.toString());
-		when(interceptor.isBatchMode()).thenReturn(false);
-		wrapper.insert(key, userBean, 150);
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(entityMeta);
 
-		verify(entityDao).setValue(id, comp, userId.toString(), 150);
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when(
+				persister.cascadePersistOrEnsureExists(any(PersistenceContext.class), eq(entity),
+						eq(joinProperties))).thenReturn(entity.getId());
+
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when(joinDao.buildMutator()).thenReturn(joinMutator);
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+
+		wrapper.insert(key, entity, 150);
+
+		verify(dao).setValueBatch(id, comp, entity.getId(), 150, mutator);
+		verify(flushContext).flush();
 	}
 
 	@SuppressWarnings(
@@ -222,38 +257,201 @@ public class JoinWideMapWrapperTest
 			"rawtypes"
 	})
 	@Test
-	public void should_insert_value_in_batch_mode_and_entity_with_ttl() throws Exception
+	public void should_find_keyvalue_range() throws Exception
 	{
-		JoinProperties joinProperties = prepareJoinProperties();
-		joinProperties.addCascadeType(ALL);
-		PropertyMeta<Void, Long> joinIdMeta = mock(PropertyMeta.class);
+		int start = 7, end = 5, count = 10;
 
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(propertyMeta, start, end,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING))
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		when(
+				dao.findRawColumnsRange(id, startComp, endComp, count,
+						OrderingMode.DESCENDING.isReverse())).thenReturn((List) hColumns);
+		List<KeyValue<Integer, CompleteBean>> values = mock(List.class);
+		when(keyValueFactory.createJoinKeyValueList(context, propertyMeta, hColumns)).thenReturn(
+				values);
+
+		List<KeyValue<Integer, CompleteBean>> expected = wrapper.find(start, end, count,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		assertThat(expected).isSameAs(values);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_values_range() throws Exception
+	{
+		int start = 7, end = 5, count = 10;
+
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(propertyMeta, start, end,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING))
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		when(
+				dao.findRawColumnsRange(id, startComp, endComp, count,
+						OrderingMode.DESCENDING.isReverse())).thenReturn((List) hColumns);
+		List<CompleteBean> values = mock(List.class);
+		when(keyValueFactory.createJoinValueList(context, propertyMeta, hColumns)).thenReturn(
+				values);
+
+		List<CompleteBean> expected = wrapper.findValues(start, end, count,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		assertThat(expected).isSameAs(values);
+	}
+
+	@SuppressWarnings(
+	{
+			"unchecked",
+			"rawtypes"
+	})
+	@Test
+	public void should_find_keys_range() throws Exception
+	{
+		int start = 7, end = 5, count = 10;
+
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(propertyMeta, start, end,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING))
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+		List<HColumn<Composite, String>> hColumns = mock(List.class);
+		when(
+				dao.findRawColumnsRange(id, startComp, endComp, count,
+						OrderingMode.DESCENDING.isReverse())).thenReturn((List) hColumns);
+		List<Integer> values = mock(List.class);
+		when(keyValueFactory.createKeyList(propertyMeta, hColumns)).thenReturn(values);
+
+		List<Integer> expected = wrapper.findKeys(start, end, count,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		assertThat(expected).isSameAs(values);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_get_iterator() throws Exception
+	{
+		int start = 7, end = 5, count = 10;
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(propertyMeta, start, end,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING))
+				.thenReturn(new Composite[]
+				{
+						startComp,
+						endComp
+				});
+
+		AchillesJoinSliceIterator<Long, Long, Long, Integer, CompleteBean> iterator = mock(AchillesJoinSliceIterator.class);
+
+		when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(joinMeta);
+		entityDaosMap.put("join_cf", joinDao);
+		when(
+				dao.getJoinColumnsIterator(joinDao, propertyMeta, id, startComp, endComp,
+						OrderingMode.DESCENDING.isReverse(), count)).thenReturn(iterator);
+
+		KeyValueIterator<Integer, CompleteBean> keyValueIterator = mock(KeyValueIterator.class);
+		when(iteratorFactory.createKeyValueJoinIterator(context, iterator, propertyMeta))
+				.thenReturn(keyValueIterator);
+
+		KeyValueIterator<Integer, CompleteBean> expected = wrapper.iterator(start, end, count,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+
+		assertThat(expected).isSameAs(keyValueIterator);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void should_remove() throws Exception
+	{
 		int key = 4567;
-		UserBean userBean = new UserBean();
-		Long userId = 475L;
-		userBean.setUserId(userId);
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 
-		when(keyFactory.createForInsert(propertyMeta, key)).thenReturn(comp);
-		when(propertyMeta.getJoinProperties()).thenReturn((JoinProperties) joinProperties);
-		when(propertyMeta.getPropertyName()).thenReturn("joinProperty");
-		when(interceptor.getMutatorForProperty("joinProperty")).thenReturn((Mutator) joinMutator);
-		when(persister.cascadePersistOrEnsureExists(userBean, joinProperties, joinMutator))
-				.thenReturn(userId);
-		when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
-		when(joinIdMeta.writeValueToString(userId)).thenReturn(userId.toString());
-		when(interceptor.isBatchMode()).thenReturn(true);
-		when(interceptor.getMutator()).thenReturn((Mutator) mutator);
-		wrapper.insert(key, userBean, 150);
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
 
-		verify(entityDao).setValueBatch(id, comp, userId.toString(), 150, mutator);
+		wrapper.remove(key);
+
+		verify(dao).removeColumnBatch(id, comp, mutator);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void should_remove_range() throws Exception
+	{
+
+		int start = 7, end = 5;
+
+		Composite startComp = new Composite(), endComp = new Composite();
+
+		when(
+				compositeFactory.createForQuery(propertyMeta, start, end,
+						BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING)).thenReturn(
+				new Composite[]
+				{
+						startComp,
+						endComp
+				});
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+
+		wrapper.remove(start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
+
+		verify(compositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+		verify(dao).removeColumnRangeBatch(id, startComp, endComp, mutator);
+
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void should_remove_first() throws Exception
+	{
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+		wrapper.removeFirst(15);
+		verify(dao).removeColumnRangeBatch(id, null, null, false, 15, mutator);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void should_remove_last() throws Exception
+	{
+		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+		wrapper.removeLast(9);
+		verify(dao).removeColumnRangeBatch(id, null, null, true, 9, mutator);
 	}
 
 	private JoinProperties prepareJoinProperties() throws Exception
 	{
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
 		joinEntityMeta.setClassName("canonicalClassName");
-		joinEntityMeta.setEntityDao(joinDao);
 
 		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();

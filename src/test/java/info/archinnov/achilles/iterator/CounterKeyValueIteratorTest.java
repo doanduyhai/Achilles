@@ -1,9 +1,7 @@
 package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -11,7 +9,7 @@ import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.junit.Before;
@@ -41,7 +39,7 @@ public class CounterKeyValueIteratorTest
 	private CounterKeyValueIterator<Integer> iterator;
 
 	@Mock
-	private Iterator<HCounterColumn<DynamicComposite>> achillesSliceIterator;
+	private Iterator<HCounterColumn<Composite>> achillesSliceIterator;
 
 	@Mock
 	private KeyValueFactory factory;
@@ -70,10 +68,9 @@ public class CounterKeyValueIteratorTest
 	{
 		KeyValue<Integer, Long> keyValue = new KeyValue<Integer, Long>();
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
-		HCounterColumn<DynamicComposite> hColumn = mock(HCounterColumn.class);
+		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		when(factory.createCounterKeyValueForDynamicComposite(propertyMeta, hColumn)).thenReturn(
-				keyValue);
+		when(factory.createCounterKeyValue(propertyMeta, hColumn)).thenReturn(keyValue);
 
 		assertThat(iterator.next()).isSameAs(keyValue);
 	}
@@ -87,12 +84,12 @@ public class CounterKeyValueIteratorTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_gitve_next_key() throws Exception
+	public void should_give_next_key() throws Exception
 	{
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
-		HCounterColumn<DynamicComposite> hColumn = mock(HCounterColumn.class);
+		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		when(factory.createCounterKeyForDynamicComposite(propertyMeta, hColumn)).thenReturn(12);
+		when(factory.createCounterKey(propertyMeta, hColumn)).thenReturn(12);
 
 		assertThat(iterator.nextKey()).isEqualTo(12);
 	}
@@ -109,9 +106,9 @@ public class CounterKeyValueIteratorTest
 	public void should_gitve_next_value() throws Exception
 	{
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
-		HCounterColumn<DynamicComposite> hColumn = mock(HCounterColumn.class);
+		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		when(factory.createCounterValueForDynamicComposite(propertyMeta, hColumn)).thenReturn(12L);
+		when(factory.createCounterValue(propertyMeta, hColumn)).thenReturn(12L);
 
 		assertThat(iterator.nextValue()).isEqualTo(12L);
 	}

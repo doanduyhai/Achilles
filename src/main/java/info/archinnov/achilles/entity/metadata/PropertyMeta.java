@@ -40,7 +40,8 @@ public class PropertyMeta<K, V>
 	private CounterProperties counterProperties;
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
-	private ExternalWideMapProperties<?> externalWideMapProperties;
+	private String externalCfName;
+	private Serializer<?> idSerializer;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	private boolean singleKey;
@@ -239,7 +240,7 @@ public class PropertyMeta<K, V>
 			{
 				return this.valueClass.cast(object);
 			}
-			else if (isSupportedType(valueClass))
+			else if (isSupportedType(valueClass) || type == MAP || type == LAZY_MAP)
 			{
 				return this.valueClass.cast(object);
 			}
@@ -292,16 +293,6 @@ public class PropertyMeta<K, V>
 		this.joinProperties = joinProperties;
 	}
 
-	public ExternalWideMapProperties<?> getExternalWideMapProperties()
-	{
-		return externalWideMapProperties;
-	}
-
-	public void setExternalWideMapProperties(ExternalWideMapProperties<?> externalWideMapProperties)
-	{
-		this.externalWideMapProperties = externalWideMapProperties;
-	}
-
 	public boolean isSingleKey()
 	{
 		return singleKey;
@@ -325,11 +316,6 @@ public class PropertyMeta<K, V>
 	public void setCounterProperties(CounterProperties counterProperties)
 	{
 		this.counterProperties = counterProperties;
-	}
-
-	public boolean isExternal()
-	{
-		return this.type.isExternal();
 	}
 
 	public boolean isJoinColumn()
@@ -367,4 +353,23 @@ public class PropertyMeta<K, V>
 		this.consistencyLevels = consistencyLevels;
 	}
 
+	public String getExternalCFName()
+	{
+		return externalCfName;
+	}
+
+	public void setExternalCfName(String externalCfName)
+	{
+		this.externalCfName = externalCfName;
+	}
+
+	public Serializer<?> getIdSerializer()
+	{
+		return idSerializer;
+	}
+
+	public void setIdSerializer(Serializer<?> idSerializer)
+	{
+		this.idSerializer = idSerializer;
+	}
 }

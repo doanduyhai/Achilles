@@ -8,7 +8,7 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,10 +50,10 @@ public class AbstractDaoTest
 	public void should_reinit_consistency_level() throws Exception
 	{
 
-		DynamicComposite dynamicComposite = new DynamicComposite();
-		dynamicComposite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
-		dynamicComposite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
-		abstractDao.getValue(123L, dynamicComposite);
+		Composite composite = new Composite();
+		composite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
+		composite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
+		abstractDao.getValue(123L, composite);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
 		verify(policy).reinitDefaultConsistencyLevels();
 	}
@@ -64,10 +64,10 @@ public class AbstractDaoTest
 		Whitebox.setInternalState(abstractDao, "columnFamily", "xxx");
 		try
 		{
-			DynamicComposite dynamicComposite = new DynamicComposite();
-			dynamicComposite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
-			dynamicComposite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
-			abstractDao.getValue(123L, dynamicComposite);
+			Composite composite = new Composite();
+			composite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
+			composite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
+			abstractDao.getValue(123L, composite);
 		}
 		catch (RuntimeException e)
 		{

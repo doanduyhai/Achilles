@@ -1,10 +1,7 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 
 import java.util.ArrayList;
@@ -16,7 +13,7 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.Row;
 import me.prettyprint.hector.api.beans.Rows;
@@ -30,12 +27,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, String>
+public class GenericEntityDao<K> extends AbstractDao<K, String>
 {
 	private static final Logger log = LoggerFactory.getLogger(GenericEntityDao.class);
 
-	private DynamicComposite startCompositeForEagerFetch;
-	private DynamicComposite endCompositeForEagerFetch;
+	private Composite startCompositeForEagerFetch;
+	private Composite endCompositeForEagerFetch;
 
 	protected GenericEntityDao() {
 		this.initComposites();
@@ -48,16 +45,16 @@ public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, String
 		this.initComposites();
 		keySerializer = keySrz;
 		columnFamily = cf;
-		columnNameSerializer = DYNA_COMP_SRZ;
+		columnNameSerializer = COMPOSITE_SRZ;
 		valueSerializer = STRING_SRZ;
 		policy = consistencyPolicy;
 		log.debug(
-				"Initializing GenericEntityDao for key serializer '{}', dynamic composite comparator and value serializer 'BytesType'",
+				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer 'BytesType'",
 				keySrz.getComparatorType().getTypeName());
 
 	}
 
-	public List<Pair<DynamicComposite, String>> eagerFetchEntity(K key)
+	public List<Pair<Composite, String>> eagerFetchEntity(K key)
 	{
 		log.trace("Eager fetching properties for column family {} ", columnFamily);
 
@@ -65,22 +62,22 @@ public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, String
 				false, Integer.MAX_VALUE);
 	}
 
-	public Map<K, List<Pair<DynamicComposite, String>>> eagerFetchEntities(List<K> keys)
+	public Map<K, List<Pair<Composite, String>>> eagerFetchEntities(List<K> keys)
 	{
 		log.trace("Eager fetching properties for multiple entities in column family {} ",
 				columnFamily);
 
-		Map<K, List<Pair<DynamicComposite, String>>> map = new HashMap<K, List<Pair<DynamicComposite, String>>>();
+		Map<K, List<Pair<Composite, String>>> map = new HashMap<K, List<Pair<Composite, String>>>();
 
-		Rows<K, DynamicComposite, String> rows = this.multiGetSliceRange(keys,
+		Rows<K, Composite, String> rows = this.multiGetSliceRange(keys,
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, Integer.MAX_VALUE);
 
-		for (Row<K, DynamicComposite, String> row : rows)
+		for (Row<K, Composite, String> row : rows)
 		{
-			List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
-			for (HColumn<DynamicComposite, String> column : row.getColumnSlice().getColumns())
+			List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+			for (HColumn<Composite, String> column : row.getColumnSlice().getColumns())
 			{
-				columns.add(new Pair<DynamicComposite, String>(column.getName(), column.getValue()));
+				columns.add(new Pair<Composite, String>(column.getName(), column.getValue()));
 			}
 
 			map.put(row.getKey(), columns);
@@ -91,10 +88,10 @@ public class GenericEntityDao<K> extends AbstractDao<K, DynamicComposite, String
 
 	private void initComposites()
 	{
-		startCompositeForEagerFetch = new DynamicComposite();
+		startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
 
-		endCompositeForEagerFetch = new DynamicComposite();
+		endCompositeForEagerFetch = new Composite();
 		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
 				ComponentEquality.GREATER_THAN_EQUAL);
 	}

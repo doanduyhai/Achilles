@@ -5,15 +5,12 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,6 +35,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * ColumnFamilyHelperTest
@@ -142,11 +141,11 @@ public class ColumnFamilyCreatorTest
 	{
 		prepareData();
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
 
-		verify(columnFamilyHelper).buildDynamicCompositeCF(meta, "keyspace");
+		verify(columnFamilyHelper).buildEntityCF(meta, "keyspace");
 		verify(cluster).addColumnFamily(cfDef, true);
 
 	}
@@ -161,7 +160,7 @@ public class ColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		meta.setClassName("entity");
 		when(
-				columnFamilyHelper.buildCompositeCF("keyspace", simplePropertyMeta, Long.class,
+				columnFamilyHelper.buildDirectMappingCF("keyspace", simplePropertyMeta, Long.class,
 						"testCF", "entity")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
@@ -182,7 +181,6 @@ public class ColumnFamilyCreatorTest
 		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), true, true);
 
 		verify(cluster).addColumnFamily(cfDef, true);
-
 	}
 
 	@Test
@@ -201,11 +199,13 @@ public class ColumnFamilyCreatorTest
 	@Test
 	public void should_validate_column_family_for_external_wide_map() throws Exception
 	{
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
+		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class) //
+				.field("externalWideMap") //
+				.externalCf("externalCF") //
+				.idSerializer(LONG_SRZ)//
+				.type(PropertyType.WIDE_MAP) //
+				.build();
 
 		prepareData(externalWideMapMeta);
 		idMeta.setValueClass(Long.class);
@@ -249,7 +249,7 @@ public class ColumnFamilyCreatorTest
 		cfDef.setName("testCF2");
 
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
-		when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
@@ -265,7 +265,7 @@ public class ColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
 		when(cfDef.getName()).thenReturn("mocked_cfDef");
-		when(columnFamilyHelper.buildDynamicCompositeCF(meta, "keyspace")).thenReturn(cfDef);
+		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
@@ -277,11 +277,13 @@ public class ColumnFamilyCreatorTest
 	public void should_validate_then_create_column_family_for_external_wide_map_when_null()
 			throws Exception
 	{
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
+		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class) //
+				.field("externalWideMap") //
+				.externalCf("externalCF") //
+				.idSerializer(LONG_SRZ)//
+				.type(PropertyType.WIDE_MAP) //
+				.build();
 
 		prepareData(externalWideMapMeta);
 		idMeta.setValueClass(Long.class);
@@ -293,8 +295,8 @@ public class ColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
 		externalCFDef.setName("externalCF");
 		when(
-				columnFamilyHelper.buildCompositeCF("keyspace", externalWideMapMeta, Long.class,
-						"externalCF", meta.getClassName())).thenReturn(externalCFDef);
+				columnFamilyHelper.buildDirectMappingCF("keyspace", externalWideMapMeta,
+						Long.class, "externalCF", meta.getClassName())).thenReturn(externalCFDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
@@ -319,11 +321,13 @@ public class ColumnFamilyCreatorTest
 	public void should_exception_because_column_family_not_found_for_external_wide_map()
 			throws Exception
 	{
-		PropertyMeta<Integer, String> externalWideMapMeta = new PropertyMeta<Integer, String>();
-		ExternalWideMapProperties<Long> externalWideMapProperties = new ExternalWideMapProperties<Long>(
-				"externalCF", SerializerUtils.LONG_SRZ);
-		externalWideMapMeta.setExternalWideMapProperties(externalWideMapProperties);
-		externalWideMapMeta.setPropertyName("externalWideMap");
+		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class) //
+				.field("externalWideMap") //
+				.externalCf("externalCF") //
+				.idSerializer(LONG_SRZ)//
+				.type(PropertyType.WIDE_MAP) //
+				.build();
 
 		prepareData(externalWideMapMeta);
 		idMeta.setValueClass(Long.class);

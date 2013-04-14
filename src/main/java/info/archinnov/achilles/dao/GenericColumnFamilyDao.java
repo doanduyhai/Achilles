@@ -5,7 +5,6 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.Composite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +15,15 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class GenericColumnFamilyDao<K, V> extends AbstractDao<K, Composite, V>
+public class GenericColumnFamilyDao<K, V> extends AbstractDao<K, V>
 {
 
 	private static final Logger log = LoggerFactory.getLogger(GenericColumnFamilyDao.class);
 
-	public GenericColumnFamilyDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
-			Serializer<V> valSrz, String cf,
+	public GenericColumnFamilyDao(Cluster cluster, Keyspace keyspace, //
+			Serializer<K> keySrz, //
+			Serializer<V> valSrz, //
+			String cf, //
 			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
 	{
 

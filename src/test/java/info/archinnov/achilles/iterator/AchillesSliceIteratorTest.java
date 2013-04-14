@@ -1,16 +1,10 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -21,9 +15,8 @@ import java.util.List;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.SliceQuery;
 
@@ -32,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.HColumnTestBuilder;
 
 /**
  * AchillesSliceIteratorTest
@@ -48,21 +43,21 @@ public class AchillesSliceIteratorTest
 	private PropertyMeta<Integer, UserBean> propertyMeta;
 
 	@Mock
-	private SliceQuery<Long, DynamicComposite, String> query;
+	private SliceQuery<Long, Composite, String> query;
 
 	@Mock
-	private QueryResult<ColumnSlice<DynamicComposite, String>> queryResult;
+	private QueryResult<ColumnSlice<Composite, String>> queryResult;
 
 	@Mock
-	private ColumnSlice<DynamicComposite, String> columnSlice;
+	private ColumnSlice<Composite, String> columnSlice;
 
 	@Mock
-	private List<HColumn<DynamicComposite, String>> hColumns;
+	private List<HColumn<Composite, String>> hColumns;
 
 	@Mock
-	private Iterator<HColumn<DynamicComposite, String>> columnsIterator;
+	private Iterator<HColumn<Composite, String>> columnsIterator;
 
-	private AchillesSliceIterator<Long, DynamicComposite, String> iterator;
+	private AchillesSliceIterator<Long, String> iterator;
 
 	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;
@@ -90,50 +85,47 @@ public class AchillesSliceIteratorTest
 	@Test
 	public void should_return_3_values() throws Exception
 	{
-		DynamicComposite start = new DynamicComposite(), //
-		end = new DynamicComposite(), //
-		name1 = new DynamicComposite(), //
-		name2 = new DynamicComposite(), //
-		name3 = new DynamicComposite();
+		Composite start = new Composite(), //
+		end = new Composite(), //
+		name1 = new Composite(), //
+		name2 = new Composite(), //
+		name3 = new Composite();
 
 		name1.addComponent("name1", STRING_SRZ);
 		name2.addComponent("name2", STRING_SRZ);
 		name3.addComponent("name3", STRING_SRZ);
 
 		String val1 = "val1", val2 = "val2", val3 = "val3";
-		long ttl = 10L;
+		int ttl = 10;
 
-		HColumn<DynamicComposite, String> hCol1 = HFactory.createColumn(name1, val1, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
-		HColumn<DynamicComposite, String> hCol2 = HFactory.createColumn(name2, val2, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
-		HColumn<DynamicComposite, String> hCol3 = HFactory.createColumn(name3, val3, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1, val1, ttl);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2, val2, ttl);
+		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3, val3, ttl);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
-		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(policy, columnFamily,
-				query, start, end, false, 10);
+		iterator = new AchillesSliceIterator<Long, String>(policy, columnFamily, query, start, end,
+				false, 10);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h1 = iterator.next();
+		HColumn<Composite, String> h1 = iterator.next();
 
-		assertThat(h1.getName()).isEqualTo(name1);
+		assertThat(h1.getNameBytes()).isEqualTo(name1.serialize());
 		assertThat(h1.getValue()).isEqualTo(val1);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h2 = iterator.next();
+		HColumn<Composite, String> h2 = iterator.next();
 
-		assertThat(h2.getName()).isEqualTo(name2);
+		assertThat(h2.getNameBytes()).isEqualTo(name2.serialize());
 		assertThat(h2.getValue()).isEqualTo(val2);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h3 = iterator.next();
+		HColumn<Composite, String> h3 = iterator.next();
 
-		assertThat(h3.getName()).isEqualTo(name3);
+		assertThat(h3.getNameBytes()).isEqualTo(name3.serialize());
 		assertThat(h3.getValue()).isEqualTo(val3);
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
@@ -148,11 +140,11 @@ public class AchillesSliceIteratorTest
 	@Test
 	public void should_reload_when_reaching_end_of_batch() throws Exception
 	{
-		DynamicComposite start = new DynamicComposite(), //
-		end = new DynamicComposite(), //
-		name1 = new DynamicComposite(), //
-		name2 = new DynamicComposite(), //
-		name3 = new DynamicComposite();
+		Composite start = new Composite(), //
+		end = new Composite(), //
+		name1 = new Composite(), //
+		name2 = new Composite(), //
+		name3 = new Composite();
 		int count = 2;
 
 		name1.addComponent("name1", STRING_SRZ);
@@ -160,42 +152,37 @@ public class AchillesSliceIteratorTest
 		name3.addComponent("name3", STRING_SRZ);
 
 		String val1 = "val1", val2 = "val2", val3 = "val3";
-		long ttl = 10L;
+		int ttl = 10;
 
-		HColumn<DynamicComposite, String> hCol1 = HFactory.createColumn(name1, val1, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
-		HColumn<DynamicComposite, String> hCol2 = HFactory.createColumn(name2, val2, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
-		HColumn<DynamicComposite, String> hCol3 = HFactory.createColumn(name3, val3, ttl,
-				DYNA_COMP_SRZ, STRING_SRZ);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1, val1, ttl);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2, val2, ttl);
+		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3, val3, ttl);
 
 		when(columnsIterator.hasNext()).thenReturn(true, true, true, false, true, false, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new AchillesSliceIterator<Long, DynamicComposite, String>(policy, columnFamily,
-				query, start, end, false, count);
+		iterator = new AchillesSliceIterator<Long, String>(policy, columnFamily, query, start, end,
+				false, count);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h1 = iterator.next();
+		HColumn<Composite, String> h1 = iterator.next();
 
-		assertThat(h1.getName()).isEqualTo(name1);
+		assertThat(h1.getNameBytes()).isEqualTo(name1.serialize());
 		assertThat(h1.getValue()).isEqualTo(val1);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h2 = iterator.next();
+		HColumn<Composite, String> h2 = iterator.next();
 
-		assertThat(h2.getName()).isEqualTo(name2);
+		assertThat(h2.getNameBytes()).isEqualTo(name2.serialize());
 		assertThat(h2.getValue()).isEqualTo(val2);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
-		HColumn<DynamicComposite, String> h3 = iterator.next();
+		HColumn<Composite, String> h3 = iterator.next();
 
-		assertThat(h3.getName()).isEqualTo(name3);
+		assertThat(h3.getNameBytes()).isEqualTo(name3.serialize());
 		assertThat(h3.getValue()).isEqualTo(val3);
 
 		assertThat(iterator.hasNext()).isEqualTo(false);
-
-		verify(query).setRange(name2, end, false, count);
 
 		verify(policy).getCurrentReadLevel();
 		verify(policy, never()).setCurrentReadLevel(any(ConsistencyLevel.class));

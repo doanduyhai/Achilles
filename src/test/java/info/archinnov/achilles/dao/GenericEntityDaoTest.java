@@ -1,13 +1,12 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.END_EAGER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.START_EAGER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Test;
@@ -48,7 +47,7 @@ public class GenericEntityDaoTest
 	public void should_build_start_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = Whitebox.getInternalState(dao, "startCompositeForEagerFetch");
+		Composite comp = Whitebox.getInternalState(dao, "startCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
@@ -58,7 +57,7 @@ public class GenericEntityDaoTest
 	public void should_build_end_composite_for_eager_fetch() throws Exception
 	{
 
-		DynamicComposite comp = Whitebox.getInternalState(dao, "endCompositeForEagerFetch");
+		Composite comp = Whitebox.getInternalState(dao, "endCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(

@@ -41,12 +41,12 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CompositeKeyFactoryTest {
+public class CompositeFactoryTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @InjectMocks
-    private CompositeKeyFactory factory;
+    private CompositeFactory factory;
 
     @Mock
     private CompositeHelper helper;

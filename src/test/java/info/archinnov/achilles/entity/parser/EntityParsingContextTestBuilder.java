@@ -158,8 +158,8 @@ public class EntityParsingContextTestBuilder
 				keyspace, objectMapperFactory, currentEntityClass);
 
 		context.setPropertyMetas(propertyMetas);
-		context.setExternalWideMaps(externalWideMaps);
-		context.setJoinExternalWideMaps(joinExternalWideMaps);
+		context.setWideMaps(externalWideMaps);
+		context.setJoinWideMaps(joinExternalWideMaps);
 		context.setCurrentObjectMapper(currentObjectMapper);
 		context.setCurrentConsistencyLevels(currentConsistencyLevels);
 		context.setColumnFamilyDirectMapping(columnFamilyDirectMapping);

@@ -17,7 +17,7 @@ import me.prettyprint.cassandra.service.KeyIterator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.AbstractComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.beans.Rows;
@@ -36,13 +36,13 @@ import com.google.common.collect.Lists;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractDao<K, N extends AbstractComposite, V>
+public abstract class AbstractDao<K, V>
 {
 
 	protected Keyspace keyspace;
 	protected Cluster cluster;
 	protected Serializer<K> keySerializer;
-	protected Serializer<N> columnNameSerializer;
+	protected Serializer<Composite> columnNameSerializer;
 	protected Serializer<V> valueSerializer;
 	protected String columnFamily;
 	protected AchillesConfigurableConsistencyLevelPolicy policy;
@@ -70,47 +70,47 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		}
 	}
 
-	protected Function<HColumn<N, V>, V> hColumnToValue = new Function<HColumn<N, V>, V>()
+	protected Function<HColumn<Composite, V>, V> hColumnToValue = new Function<HColumn<Composite, V>, V>()
 	{
 		@Override
-		public V apply(HColumn<N, V> hColumn)
+		public V apply(HColumn<Composite, V> hColumn)
 		{
 			return hColumn.getValue();
 		}
 	};
 
-	protected Function<HColumn<N, V>, Pair<N, V>> hColumnToPair = new Function<HColumn<N, V>, Pair<N, V>>()
+	protected Function<HColumn<Composite, V>, Pair<Composite, V>> hColumnToPair = new Function<HColumn<Composite, V>, Pair<Composite, V>>()
 	{
 		@Override
-		public Pair<N, V> apply(HColumn<N, V> hColumn)
+		public Pair<Composite, V> apply(HColumn<Composite, V> hColumn)
 		{
-			return new Pair<N, V>(hColumn.getName(), hColumn.getValue());
+			return new Pair<Composite, V>(hColumn.getName(), hColumn.getValue());
 		}
 	};
 
-	protected Function<HColumn<N, V>, N> hColumnToName = new Function<HColumn<N, V>, N>()
+	protected Function<HColumn<Composite, V>, Composite> hColumnToName = new Function<HColumn<Composite, V>, Composite>()
 	{
 		@Override
-		public N apply(HColumn<N, V> hColumn)
+		public Composite apply(HColumn<Composite, V> hColumn)
 		{
 			return hColumn.getName();
 		}
 	};
 
-	public void insertColumnBatch(K key, N name, V value, Mutator<K> mutator)
+	public void insertColumnBatch(K key, Composite name, V value, Mutator<K> mutator)
 	{
 		mutator.addInsertion(key, columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
 	}
 
-	public V getValue(final K key, final N name)
+	public V getValue(final K key, final Composite name)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		V result = null;
-		HColumn<N, V> column = reinitConsistencyLevels(new SafeExecutionContext<HColumn<N, V>>()
+		HColumn<Composite, V> column = reinitConsistencyLevels(new SafeExecutionContext<HColumn<Composite, V>>()
 		{
 			@Override
-			public HColumn<N, V> execute()
+			public HColumn<Composite, V> execute()
 			{
 				return HFactory
 						.createColumnQuery(keyspace, keySerializer, columnNameSerializer,
@@ -126,27 +126,27 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		return result;
 	}
 
-	public void setValue(K key, N name, V value)
+	public void setValue(K key, Composite name, V value)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		this.setValueBatch(key, name, value, mutator);
 		this.executeMutator(mutator);
 	}
 
-	public void setValueBatch(K key, N name, V value, Mutator<K> mutator)
+	public void setValueBatch(K key, Composite name, V value, Mutator<K> mutator)
 	{
 		mutator.addInsertion(key, columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
 	}
 
-	public void setValue(K key, N name, V value, int ttl)
+	public void setValue(K key, Composite name, V value, int ttl)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		this.setValueBatch(key, name, value, ttl, mutator);
 		this.executeMutator(mutator);
 	}
 
-	public void setValueBatch(K key, N name, V value, int ttl, Mutator<K> mutator)
+	public void setValueBatch(K key, Composite name, V value, int ttl, Mutator<K> mutator)
 	{
 		mutator.addInsertion(
 				key,
@@ -155,63 +155,63 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 						ttl));
 	}
 
-	public void removeColumn(K key, N name)
+	public void removeColumn(K key, Composite name)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		this.removeColumnBatch(key, name, mutator);
 		this.executeMutator(mutator);
 	}
 
-	public void removeColumnBatch(K key, N name, Mutator<K> mutator)
+	public void removeColumnBatch(K key, Composite name, Mutator<K> mutator)
 	{
 		mutator.addDeletion(key, columnFamily, name, columnNameSerializer);
 	}
 
-	public void removeColumnRange(K key, N start, N end)
+	public void removeColumnRange(K key, Composite start, Composite end)
 	{
 		this.removeColumnRange(key, start, end, false, Integer.MAX_VALUE);
 	}
 
-	public void removeColumnRange(K key, N start, N end, boolean reverse, int count)
+	public void removeColumnRange(K key, Composite start, Composite end, boolean reverse, int count)
 	{
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
 				.setRange(start, end, reverse, count).execute().get().getColumns();
 
-		for (HColumn<N, V> column : columns)
+		for (HColumn<Composite, V> column : columns)
 		{
 			mutator.addDeletion(key, columnFamily, column.getName(), columnNameSerializer);
 		}
 		this.executeMutator(mutator);
 	}
 
-	public void removeColumnRangeBatch(K key, N start, N end, Mutator<K> mutator)
+	public void removeColumnRangeBatch(K key, Composite start, Composite end, Mutator<K> mutator)
 	{
 		this.removeColumnRangeBatch(key, start, end, false, Integer.MAX_VALUE, mutator);
 	}
 
-	public void removeColumnRangeBatch(K key, N start, N end, boolean reverse, int count,
-			Mutator<K> mutator)
+	public void removeColumnRangeBatch(K key, Composite start, Composite end, boolean reverse,
+			int count, Mutator<K> mutator)
 	{
-		List<HColumn<N, V>> columns = createSliceQuery(keyspace, keySerializer,
+		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace, keySerializer,
 				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
 				.setRange(start, end, reverse, count).execute().get().getColumns();
 
-		for (HColumn<N, V> column : columns)
+		for (HColumn<Composite, V> column : columns)
 		{
 			mutator.addDeletion(key, columnFamily, column.getName(), columnNameSerializer);
 		}
 	}
 
-	public List<V> findValuesRange(final K key, final N start, final N end, final boolean reverse,
-			final int count)
+	public List<V> findValuesRange(final K key, final Composite start, final Composite end,
+			final boolean reverse, final int count)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<N, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<N, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
-			public List<HColumn<N, V>> execute()
+			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 						valueSerializer).setColumnFamily(columnFamily).setKey(key)
@@ -221,14 +221,14 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		return Lists.transform(columns, hColumnToValue);
 	}
 
-	public List<Pair<N, V>> findColumnsRange(final K key, final N startName, final N endName,
-			final boolean reverse, final int count)
+	public List<Pair<Composite, V>> findColumnsRange(final K key, final Composite startName,
+			final Composite endName, final boolean reverse, final int count)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<N, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<N, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
-			public List<HColumn<N, V>> execute()
+			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 						valueSerializer).setColumnFamily(columnFamily).setKey(key)
@@ -238,14 +238,14 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		return Lists.transform(columns, hColumnToPair);
 	}
 
-	public List<HColumn<N, V>> findRawColumnsRange(final K key, final N startName, final N endName,
-			final int count, final boolean reverse)
+	public List<HColumn<Composite, V>> findRawColumnsRange(final K key, final Composite startName,
+			final Composite endName, final int count, final boolean reverse)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<N, V>>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
-			public List<HColumn<N, V>> execute()
+			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, keySerializer, columnNameSerializer,
 						valueSerializer).setColumnFamily(columnFamily).setKey(key)
@@ -254,14 +254,15 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		});
 	}
 
-	public List<HCounterColumn<N>> findCounterColumnsRange(final K key, final N startName,
-			final N endName, final int count, final boolean reverse)
+	public List<HCounterColumn<Composite>> findCounterColumnsRange(final K key,
+			final Composite startName, final Composite endName, final int count,
+			final boolean reverse)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<List<HCounterColumn<N>>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<List<HCounterColumn<Composite>>>()
 		{
 			@Override
-			public List<HCounterColumn<N>> execute()
+			public List<HCounterColumn<Composite>> execute()
 			{
 				return HFactory
 						.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
@@ -271,46 +272,46 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		});
 	}
 
-	public AchillesSliceIterator<K, N, V> getColumnsIterator(K key, N startName, N endName,
-			boolean reverse, int length)
+	public AchillesSliceIterator<K, V> getColumnsIterator(K key, Composite startName,
+			Composite endName, boolean reverse, int length)
 	{
-		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
-				valueSerializer).setColumnFamily(columnFamily).setKey(key);
+		SliceQuery<K, Composite, V> query = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesSliceIterator<K, N, V>(policy, columnFamily, query, startName, endName,
+		return new AchillesSliceIterator<K, V>(policy, columnFamily, query, startName, endName,
 				reverse, length);
 	}
 
-	public AchillesCounterSliceIterator<K, N> getCounterColumnsIterator(K key, N startName,
-			N endName, boolean reverse, int length)
+	public AchillesCounterSliceIterator<K> getCounterColumnsIterator(K key, Composite startName,
+			Composite endName, boolean reverse, int length)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		SliceCounterQuery<K, N> query = createCounterSliceQuery(keyspace, keySerializer,
+		SliceCounterQuery<K, Composite> query = createCounterSliceQuery(keyspace, keySerializer,
 				columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesCounterSliceIterator<K, N>(policy, columnFamily, query, startName,
-				endName, reverse, length);
+		return new AchillesCounterSliceIterator<K>(policy, columnFamily, query, startName, endName,
+				reverse, length);
 	}
 
-	public <JOIN_ID, KEY, VALUE> AchillesJoinSliceIterator<K, N, V, JOIN_ID, KEY, VALUE> getJoinColumnsIterator(
+	public <JOIN_ID, KEY, VALUE> AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> getJoinColumnsIterator(
 			GenericEntityDao<JOIN_ID> joinEntityDao, PropertyMeta<KEY, VALUE> propertyMeta, K key,
-			N startName, N endName, boolean reversed, int count)
+			Composite startName, Composite endName, boolean reversed, int count)
 	{
-		SliceQuery<K, N, V> query = createSliceQuery(keyspace, keySerializer, columnNameSerializer,
-				valueSerializer).setColumnFamily(columnFamily).setKey(key);
+		SliceQuery<K, Composite, V> query = createSliceQuery(keyspace, keySerializer,
+				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesJoinSliceIterator<K, N, V, JOIN_ID, KEY, VALUE>(policy, joinEntityDao,
+		return new AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE>(policy, joinEntityDao,
 				columnFamily, propertyMeta, query, startName, endName, reversed, count);
 	}
 
-	public Rows<K, N, V> multiGetSliceRange(final List<K> keys, final N startName, final N endName,
-			final boolean reverse, final int size)
+	public Rows<K, Composite, V> multiGetSliceRange(final List<K> keys, final Composite startName,
+			final Composite endName, final boolean reverse, final int size)
 	{
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<Rows<K, N, V>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<Rows<K, Composite, V>>()
 		{
 			@Override
-			public Rows<K, N, V> execute()
+			public Rows<K, Composite, V> execute()
 			{
 				return HFactory
 						.createMultigetSliceQuery(keyspace, keySerializer, columnNameSerializer,
@@ -332,7 +333,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		mutator.addDeletion(key, columnFamily);
 	}
 
-	public void insertCounterBatch(K key, N name, Long value, Mutator<K> mutator)
+	public void insertCounterBatch(K key, Composite name, Long value, Mutator<K> mutator)
 	{
 		Long currentValue = this.getCounterValue(key, name);
 		long delta = value - currentValue;
@@ -340,7 +341,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 				HFactory.createCounterColumn(name, delta, columnNameSerializer));
 	}
 
-	public void insertCounter(K key, N name, Long value)
+	public void insertCounter(K key, Composite name, Long value)
 	{
 		Mutator<K> mutator = buildMutator();
 		Long currentValue = this.getCounterValue(key, name);
@@ -350,31 +351,31 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		this.executeMutator(mutator);
 	}
 
-	public void removeCounter(K key, N name)
+	public void removeCounter(K key, Composite name)
 	{
 		Mutator<K> mutator = buildMutator();
 		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
 		this.executeMutator(mutator);
 	}
 
-	public void removeCounterBatch(K key, N name, Mutator<K> mutator)
+	public void removeCounterBatch(K key, Composite name, Mutator<K> mutator)
 	{
 		mutator.deleteCounter(key, columnFamily, name, columnNameSerializer);
 	}
 
 	public void removeCounterRow(K key)
 	{
-		SliceCounterQuery<K, N> query = HFactory
+		SliceCounterQuery<K, Composite> query = HFactory
 				.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
 				.setColumnFamily(columnFamily).setKey(key);
 
-		AchillesCounterSliceIterator<K, N> iterator = new AchillesCounterSliceIterator<K, N>(
-				policy, columnFamily, query, (N) null, (N) null, false, DEFAULT_LENGTH);
+		AchillesCounterSliceIterator<K> iterator = new AchillesCounterSliceIterator<K>(policy,
+				columnFamily, query, (Composite) null, (Composite) null, false, DEFAULT_LENGTH);
 
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		while (iterator.hasNext())
 		{
-			HCounterColumn<N> counterCol = iterator.next();
+			HCounterColumn<Composite> counterCol = iterator.next();
 			mutator.deleteCounter(key, columnFamily, counterCol.getName(), columnNameSerializer);
 		}
 		this.executeMutator(mutator);
@@ -382,16 +383,16 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 
 	public void removeCounterRowBatch(K key, Mutator<K> mutator)
 	{
-		SliceCounterQuery<K, N> query = HFactory
+		SliceCounterQuery<K, Composite> query = HFactory
 				.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
 				.setColumnFamily(columnFamily).setKey(key);
 
-		AchillesCounterSliceIterator<K, N> iterator = new AchillesCounterSliceIterator<K, N>(
-				policy, columnFamily, query, (N) null, (N) null, false, DEFAULT_LENGTH);
+		AchillesCounterSliceIterator<K> iterator = new AchillesCounterSliceIterator<K>(policy,
+				columnFamily, query, (Composite) null, (Composite) null, false, DEFAULT_LENGTH);
 
 		while (iterator.hasNext())
 		{
-			HCounterColumn<N> counterCol = iterator.next();
+			HCounterColumn<Composite> counterCol = iterator.next();
 			mutator.deleteCounter(key, columnFamily, counterCol.getName(), columnNameSerializer);
 		}
 	}
@@ -412,11 +413,11 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 		cluster.truncate(keyspace.getKeyspaceName(), CounterDao.COUNTER_CF);
 	}
 
-	public long getCounterValue(K key, N name)
+	public long getCounterValue(K key, Composite name)
 	{
-		final CounterQuery<K, N> counter = new ThriftCounterColumnQuery<K, N>(keyspace,
-				keySerializer, columnNameSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setName(name);
+		final CounterQuery<K, Composite> counter = new ThriftCounterColumnQuery<K, Composite>(
+				keyspace, keySerializer, columnNameSerializer).setColumnFamily(columnFamily)
+				.setKey(key).setName(name);
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
@@ -425,7 +426,7 @@ public abstract class AbstractDao<K, N extends AbstractComposite, V>
 			public Long execute()
 			{
 				long counterValue = 0;
-				HCounterColumn<N> column = counter.execute().get();
+				HCounterColumn<Composite> column = counter.execute().get();
 				if (column != null)
 				{
 					counterValue = column.getValue();

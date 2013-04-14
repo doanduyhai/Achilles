@@ -40,8 +40,8 @@ public class EntityParsingContext
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 	private List<PropertyMeta<?, ?>> counterMetas = new ArrayList<PropertyMeta<?, ?>>();
-	private Map<PropertyMeta<?, ?>, String> externalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
-	private Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
+	private Map<PropertyMeta<?, ?>, String> wideMaps = new HashMap<PropertyMeta<?, ?>, String>();
+	private Map<PropertyMeta<?, ?>, String> joinWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
 	private Class<?> currentEntityClass;
 	private ObjectMapper currentObjectMapper;
 	private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
@@ -159,24 +159,24 @@ public class EntityParsingContext
 		return propertyMetas;
 	}
 
-	public Map<PropertyMeta<?, ?>, String> getExternalWideMaps()
+	public Map<PropertyMeta<?, ?>, String> getWideMaps()
 	{
-		return externalWideMaps;
+		return wideMaps;
 	}
 
-	public void setExternalWideMaps(Map<PropertyMeta<?, ?>, String> externalWideMaps)
+	public void setWideMaps(Map<PropertyMeta<?, ?>, String> externalWideMaps)
 	{
-		this.externalWideMaps = externalWideMaps;
+		this.wideMaps = externalWideMaps;
 	}
 
-	public Map<PropertyMeta<?, ?>, String> getJoinExternalWideMaps()
+	public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
 	{
-		return joinExternalWideMaps;
+		return joinWideMaps;
 	}
 
-	public void setJoinExternalWideMaps(Map<PropertyMeta<?, ?>, String> joinExternalWideMaps)
+	public void setJoinWideMaps(Map<PropertyMeta<?, ?>, String> joinExternalWideMaps)
 	{
-		this.joinExternalWideMaps = joinExternalWideMaps;
+		this.joinWideMaps = joinExternalWideMaps;
 	}
 
 	public void setPropertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)

@@ -1,7 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getColumnFamilyDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
@@ -36,7 +36,7 @@ import org.junit.Test;
 public class ColumnFamilyWithJoinEntityIT
 {
 
-	private GenericColumnFamilyDao<Long, Long> dao = getCompositeDao(LONG_SRZ, LONG_SRZ,
+	private GenericColumnFamilyDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithJoinEntity.class.getName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();

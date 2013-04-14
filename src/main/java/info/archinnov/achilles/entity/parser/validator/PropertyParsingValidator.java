@@ -32,19 +32,6 @@ public class PropertyParsingValidator
 
 	}
 
-	public void validateCounterNotExternal(PropertyParsingContext context)
-	{
-		if (context.isExternal() && context.isCounterType())
-		{
-			throw new AchillesBeanMappingException(
-					"Error for field '"
-							+ context.getCurrentField().getName()
-							+ "' of entity '"
-							+ context.getCurrentEntityClass().getCanonicalName()
-							+ "'. Counter value are already stored in external column families. There is no sense having a counter with external table");
-		}
-	}
-
 	public void validateDirectCFMappingNoExternalWideMap(PropertyParsingContext context)
 	{
 		if (context.isExternal() && context.isColumnFamilyDirectMapping())

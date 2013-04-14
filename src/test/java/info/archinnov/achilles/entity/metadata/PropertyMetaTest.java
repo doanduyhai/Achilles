@@ -233,6 +233,36 @@ public class PropertyMetaTest
 	}
 
 	@Test
+	public void should_cast_value_as_map_value() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.MAP) //
+				.build();
+
+		Object userBean = new UserBean();
+
+		Object cast = propertyMeta.castValue(userBean);
+
+		assertThat(cast).isSameAs(userBean);
+	}
+
+	@Test
+	public void should_cast_value_as_lazy_map_value() throws Exception
+	{
+		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+				.noClass(Integer.class, UserBean.class) //
+				.type(PropertyType.LAZY_MAP) //
+				.build();
+
+		Object userBean = new UserBean();
+
+		Object cast = propertyMeta.castValue(userBean);
+
+		assertThat(cast).isSameAs(userBean);
+	}
+
+	@Test
 	public void should_cast_value_as_string() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
@@ -341,17 +371,6 @@ public class PropertyMetaTest
 				.build();
 
 		assertThat(propertyMeta.isJoin()).isTrue();
-	}
-
-	@Test
-	public void should_return_true_for_isExternal() throws Exception
-	{
-		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.EXTERNAL_WIDE_MAP) //
-				.build();
-
-		assertThat(propertyMeta.isExternal()).isTrue();
 	}
 
 	@Test

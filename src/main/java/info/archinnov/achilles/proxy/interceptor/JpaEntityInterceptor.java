@@ -1,9 +1,7 @@
 package info.archinnov.achilles.proxy.interceptor;
 
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
+import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -13,13 +11,11 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.wrapper.builder.CounterWideMapWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.ExternalWideMapWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.JoinExternalWideMapWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.SetWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -42,8 +38,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	private CompositeHelper compositeHelper = new CompositeHelper();
 	private KeyValueFactory keyValueFactory = new KeyValueFactory();
 	private IteratorFactory iteratorFactory = new IteratorFactory();
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
-	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
+	private CompositeFactory compositeFactory = new CompositeFactory();
 	private EntityPersister persister = new EntityPersister();
 	private EntityProxifier proxifier = new EntityProxifier();
 
@@ -178,17 +173,11 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
-			case EXTERNAL_WIDE_MAP:
-				result = buildExternalWideMapWrapper(propertyMeta);
-				break;
 			case WIDE_MAP_COUNTER:
 				result = buildCounterWideMapWrapper(propertyMeta);
 				break;
 			case JOIN_WIDE_MAP:
 				result = buildJoinWideMapWrapper(propertyMeta);
-				break;
-			case EXTERNAL_JOIN_WIDE_MAP:
-				result = buildExternalJoinWideMapWrapper(propertyMeta);
 				break;
 			default:
 				result = rawValue;
@@ -198,23 +187,22 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K, V> Object buildExternalWideMapWrapper(PropertyMeta<K, V> propertyMeta)
+	private <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 		String columnFamilyName = context.isDirectColumnFamilyMapping() ? context.getEntityMeta()
-				.getColumnFamilyName() : propertyMeta.getExternalWideMapProperties()
-				.getExternalColumnFamilyName();
+				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 
 		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
 				.findColumnFamilyDao(columnFamilyName);
 
-		return ExternalWideMapWrapperBuilder //
+		return WideMapWrapperBuilder //
 				.builder(key, columnFamilyDao, propertyMeta) //
 				.context(context) //
 				.interceptor(this) //
 				.compositeHelper(compositeHelper) //
 				.keyValueFactory(keyValueFactory)//
 				.iteratorFactory(iteratorFactory)//
-				.compositeKeyFactory(compositeKeyFactory) //
+				.compositeFactory(compositeFactory) //
 				.build();
 	}
 
@@ -225,8 +213,11 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	})
 	private <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Long> propertyMeta)
 	{
+		GenericColumnFamilyDao<ID, Long> counterWideMapDao = context
+				.findColumnFamilyDao(propertyMeta.getExternalCFName());
+
 		return CounterWideMapWrapperBuilder //
-				.builder(key, context.getCounterDao(), propertyMeta)//
+				.builder(key, counterWideMapDao, propertyMeta)//
 				.interceptor(this) //
 				.context(context) //
 				.fqcn(propertyMeta.fqcn()) //
@@ -234,66 +225,29 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.compositeHelper(compositeHelper) //
 				.keyValueFactory(keyValueFactory) //
 				.iteratorFactory(iteratorFactory) //
-				.compositeKeyFactory(compositeKeyFactory) //
-				.dynamicCompositeKeyFactory(dynamicCompositeKeyFactory) //
+				.compositeFactory(compositeFactory) //
 				.build();
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K, JOIN_ID, V> Object buildExternalJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
+	private <K, JOIN_ID, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 		String columnFamilyName = context.isDirectColumnFamilyMapping() ? context.getEntityMeta()
-				.getColumnFamilyName() : propertyMeta.getExternalWideMapProperties()
-				.getExternalColumnFamilyName();
+				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 		GenericColumnFamilyDao<ID, JOIN_ID> columnFamilyDao = (GenericColumnFamilyDao<ID, JOIN_ID>) context
 				.findColumnFamilyDao(columnFamilyName);
 
-		return JoinExternalWideMapWrapperBuilder //
+		return JoinWideMapWrapperBuilder //
 				.builder(key, columnFamilyDao, propertyMeta) //
 				.interceptor(this) //
 				.context(context) //
 				.compositeHelper(compositeHelper) //
-				.compositeKeyFactory(compositeKeyFactory) //
+				.compositeFactory(compositeFactory) //
 				.proxifier(proxifier)//
 				.iteratorFactory(iteratorFactory) //
 				.keyValueFactory(keyValueFactory) //
 				.loader(loader) //
 				.persister(persister) //
-				.build();
-	}
-
-	private <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
-	{
-		GenericEntityDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
-				.getColumnFamilyName());
-
-		return WideMapWrapperBuilder //
-				.builder(key, entityDao, propertyMeta) //
-				.interceptor(this) //
-				.context(context) //
-				.proxifier(proxifier)//
-				.compositeHelper(compositeHelper) //
-				.keyFactory(dynamicCompositeKeyFactory) //
-				.keyValueFactory(keyValueFactory) //
-				.iteratorFactory(iteratorFactory) //
-				.build();
-	}
-
-	private <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
-	{
-		GenericEntityDao<ID> entityDao = context.findEntityDao(context.getEntityMeta()
-				.getColumnFamilyName());
-
-		return JoinWideMapWrapperBuilder //
-				.builder(context, key, entityDao, propertyMeta) //
-				.loader(loader) //
-				.persister(persister) //
-				.interceptor(this) //
-				.proxifier(proxifier) //
-				.compositeHelper(compositeHelper) //
-				.keyFactory(dynamicCompositeKeyFactory) //
-				.keyValueFactory(keyValueFactory) //
-				.iteratorFactory(iteratorFactory) //
 				.build();
 	}
 
@@ -303,13 +257,13 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
 				.findColumnFamilyDao(context.getEntityMeta().getColumnFamilyName());
 
-		return ExternalWideMapWrapperBuilder.builder(key, columnFamilyDao, propertyMeta) //
+		return WideMapWrapperBuilder.builder(key, columnFamilyDao, propertyMeta) //
 				.interceptor(this) //
 				.context(context) //
 				.compositeHelper(compositeHelper) //
 				.keyValueFactory(keyValueFactory)//
 				.iteratorFactory(iteratorFactory)//
-				.compositeKeyFactory(compositeKeyFactory) //
+				.compositeFactory(compositeFactory) //
 				.build();
 	}
 

@@ -1,10 +1,6 @@
 package info.archinnov.achilles.entity;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -26,7 +22,7 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -387,23 +383,21 @@ public class EntityMapperTest
 				.addPropertyMeta(mapPropertyMeta) //
 				.build();
 
-		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
-		columns.add(new Pair<DynamicComposite, String>(buildSimplePropertyComposite("name"), "name"));
+		columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
 
-		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"), "foo"));
-		columns.add(new Pair<DynamicComposite, String>(buildListPropertyComposite("friends"), "bar"));
+		columns.add(new Pair<Composite, String>(buildListPropertyComposite("friends"), "foo"));
+		columns.add(new Pair<Composite, String>(buildListPropertyComposite("friends"), "bar"));
 
-		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
-				"George"));
-		columns.add(new Pair<DynamicComposite, String>(buildSetPropertyComposite("followers"),
-				"Paul"));
+		columns.add(new Pair<Composite, String>(buildSetPropertyComposite("followers"), "George"));
+		columns.add(new Pair<Composite, String>(buildSetPropertyComposite("followers"), "Paul"));
 
-		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+		columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
 				writeToString(new KeyValue<Integer, String>(1, "FR"))));
-		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+		columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
 				writeToString(new KeyValue<Integer, String>(2, "Paris"))));
-		columns.add(new Pair<DynamicComposite, String>(buildMapPropertyComposite("preferences"),
+		columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
 				writeToString(new KeyValue<Integer, String>(3, "75014"))));
 
 		doNothing().when(introspector).setValueToField(eq(entity), eq(idMeta.getSetter()),
@@ -438,10 +432,10 @@ public class EntityMapperTest
 	public void should_exception_when_serialVersionUID_changes() throws Exception
 	{
 		CompleteBean entity = new CompleteBean();
-		List<Pair<DynamicComposite, String>> columns = new ArrayList<Pair<DynamicComposite, String>>();
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
-		columns.add(new Pair<DynamicComposite, String>(
-				buildSimplePropertyComposite(SERIAL_VERSION_UID.name()), "123"));
+		columns.add(new Pair<Composite, String>(buildSimplePropertyComposite(SERIAL_VERSION_UID
+				.name()), "123"));
 
 		expectedException.expect(IllegalStateException.class);
 		expectedException
@@ -455,33 +449,33 @@ public class EntityMapperTest
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 	}
 
-	private DynamicComposite buildSimplePropertyComposite(String propertyName)
+	private Composite buildSimplePropertyComposite(String propertyName)
 	{
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 		comp.add(0, SIMPLE.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private DynamicComposite buildListPropertyComposite(String propertyName)
+	private Composite buildListPropertyComposite(String propertyName)
 	{
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 		comp.add(0, LIST.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private DynamicComposite buildSetPropertyComposite(String propertyName)
+	private Composite buildSetPropertyComposite(String propertyName)
 	{
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 		comp.add(0, SET.flag());
 		comp.add(1, propertyName);
 		return comp;
 	}
 
-	private DynamicComposite buildMapPropertyComposite(String propertyName)
+	private Composite buildMapPropertyComposite(String propertyName)
 	{
-		DynamicComposite comp = new DynamicComposite();
+		Composite comp = new Composite();
 		comp.add(0, MAP.flag());
 		comp.add(1, propertyName);
 		return comp;

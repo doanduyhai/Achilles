@@ -39,7 +39,7 @@ public class ColumnFamilyWithObjectIT
 			"unchecked",
 			"rawtypes"
 	})
-	private GenericColumnFamilyDao<Long, String> dao = CassandraDaoTest.getCompositeDao(LONG_SRZ,
+	private GenericColumnFamilyDao<Long, String> dao = CassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
 			(Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithObject.class.getName()));
 

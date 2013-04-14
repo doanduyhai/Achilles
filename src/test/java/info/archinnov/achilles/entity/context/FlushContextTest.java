@@ -2,8 +2,7 @@ package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -65,7 +64,7 @@ public class FlushContextTest
 	@Mock
 	private ConsistencyContext consistencyContext;
 
-	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?, ?>>>();
+	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
 
 	@Before
 	public void setUp()
@@ -90,7 +89,7 @@ public class FlushContextTest
 	@Test
 	public void should_flush() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.flush();
@@ -104,7 +103,7 @@ public class FlushContextTest
 	public void should_end_batch() throws Exception
 	{
 		Whitebox.setInternalState(context, "type", BatchType.BATCH);
-		Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.endBatch();
@@ -139,7 +138,7 @@ public class FlushContextTest
 	@Test
 	public void should_get_existing_entity_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Long> actual = context.getEntityMutator("cf");
@@ -161,7 +160,7 @@ public class FlushContextTest
 	@Test
 	public void should_get_existing_cf_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Long> actual = context.getColumnFamilyMutator("cf");
@@ -184,7 +183,7 @@ public class FlushContextTest
 	@Test
 	public void should_get_existing_counter_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?, ?>> pair = new Pair(counterMutator, counterDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(counterMutator, counterDao);
 		mutatorMap.put(CounterDao.COUNTER_CF, pair);
 
 		Mutator<Composite> actual = context.getCounterMutator();

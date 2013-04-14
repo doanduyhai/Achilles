@@ -56,14 +56,14 @@ public class PropertyParsingContext
 		return context.getCurrentObjectMapper();
 	}
 
-	public Map<PropertyMeta<?, ?>, String> getExternalWideMaps()
+	public Map<PropertyMeta<?, ?>, String> getWideMaps()
 	{
-		return context.getExternalWideMaps();
+		return context.getWideMaps();
 	}
 
-	public Map<PropertyMeta<?, ?>, String> getJoinExternalWideMaps()
+	public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
 	{
-		return context.getJoinExternalWideMaps();
+		return context.getJoinWideMaps();
 	}
 
 	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()

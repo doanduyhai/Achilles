@@ -1,32 +1,14 @@
 package info.archinnov.achilles.entity.operations;
 
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-import info.archinnov.achilles.composite.factory.CompositeKeyFactory;
-import info.archinnov.achilles.composite.factory.DynamicCompositeKeyFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
-import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * EntityLoader
@@ -37,11 +19,8 @@ import org.apache.commons.lang.StringUtils;
 public class EntityLoader
 {
 
-	private CompositeKeyFactory compositeKeyFactory = new CompositeKeyFactory();
-	private DynamicCompositeKeyFactory dynamicCompositeKeyFactory = new DynamicCompositeKeyFactory();
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
-
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@SuppressWarnings("unchecked")
@@ -90,25 +69,25 @@ public class EntityLoader
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				value = loadSimpleProperty(context, propertyMeta);
+				value = loaderImpl.loadSimpleProperty(context, propertyMeta);
 				break;
 			case COUNTER:
-				value = loadSimpleCounterProperty(context, propertyMeta);
+				value = loaderImpl.loadSimpleCounterProperty(context, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				value = loadListProperty(context, propertyMeta);
+				value = loaderImpl.loadListProperty(context, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				value = loadSetProperty(context, propertyMeta);
+				value = loaderImpl.loadSetProperty(context, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				value = loadMapProperty(context, propertyMeta);
+				value = loaderImpl.loadMapProperty(context, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				value = loadJoinSimple(context, propertyMeta);
+				value = loaderImpl.loadJoinSimple(context, propertyMeta, this);
 				break;
 			case JOIN_LIST:
 				value = joinLoaderImpl.loadJoinListProperty(context, propertyMeta);
@@ -127,157 +106,6 @@ public class EntityLoader
 
 	protected <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
 	{
-		DynamicComposite composite = new DynamicComposite();
-		composite.addComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
-		composite.addComponent(1, PropertyType.SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
-
-		String serialVersionUIDString = dao.getValue(key, composite);
-		if (StringUtils.isNotBlank(serialVersionUIDString))
-		{
-			return Long.parseLong(serialVersionUIDString);
-		}
-		else
-		{
-			return null;
-		}
+		return loaderImpl.loadVersionSerialUID(key, dao);
 	}
-
-	private <ID, V> V loadSimpleProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta)
-	{
-		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
-				EQUAL);
-		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
-				context.getPrimaryKey(), composite));
-	}
-
-	@SuppressWarnings("unchecked")
-	private <ID> Long loadSimpleCounterProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		Composite keyComp = compositeKeyFactory.createKeyForCounter(propertyMeta.fqcn(),
-				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
-		DynamicComposite comp = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
-
-		Long counter = loadCounterWithConsistencyLevel(context, propertyMeta, keyComp, comp);
-
-		return counter;
-	}
-
-	private <ID> Long loadCounterWithConsistencyLevel(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Composite keyComp, DynamicComposite comp)
-	{
-		boolean resetConsistencyLevel = false;
-		AchillesConfigurableConsistencyLevelPolicy policy = context.getPolicy();
-		if (policy.getCurrentReadLevel() == null)
-		{
-			policy.setCurrentReadLevel(propertyMeta.getReadConsistencyLevel());
-			resetConsistencyLevel = true;
-		}
-		Long counter;
-		try
-		{
-			counter = context.getCounterDao().getCounterValue(keyComp, comp);
-		}
-		finally
-		{
-			if (resetConsistencyLevel)
-			{
-				policy.removeCurrentReadLevel();
-			}
-		}
-		return counter;
-	}
-
-	private <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta)
-	{
-		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
-		List<V> list = null;
-		if (columns.size() > 0)
-		{
-			list = propertyMeta.newListInstance();
-			for (Pair<DynamicComposite, String> pair : columns)
-			{
-				list.add(propertyMeta.getValueFromString(pair.right));
-			}
-		}
-		return list;
-	}
-
-	private <ID, V> Set<V> loadSetProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta)
-	{
-
-		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
-		Set<V> set = null;
-		if (columns.size() > 0)
-		{
-			set = propertyMeta.newSetInstance();
-			for (Pair<DynamicComposite, String> pair : columns)
-			{
-				set.add(propertyMeta.getValueFromString(pair.right));
-			}
-		}
-		return set;
-	}
-
-	private <ID, K, V> Map<K, V> loadMapProperty(PersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta)
-	{
-		List<Pair<DynamicComposite, String>> columns = fetchColumns(context, propertyMeta);
-		Class<K> keyClass = propertyMeta.getKeyClass();
-		Map<K, V> map = null;
-		if (columns.size() > 0)
-		{
-			map = propertyMeta.newMapInstance();
-			for (Pair<DynamicComposite, String> pair : columns)
-			{
-				KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
-
-				map.put(keyClass.cast(holder.getKey()),
-						propertyMeta.getValueFromString(holder.getValue()));
-			}
-		}
-		return map;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <ID, JOIN_ID, V> V loadJoinSimple(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta)
-	{
-		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
-				.joinIdMeta();
-
-		DynamicComposite composite = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
-				EQUAL);
-
-		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);
-
-		if (stringJoinId != null)
-		{
-			JOIN_ID joinId = joinIdMeta.getValueFromString(stringJoinId);
-			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
-					propertyMeta.getValueClass(), joinMeta, joinId);
-			return this.load(joinContext);
-
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	private <ID, V> List<Pair<DynamicComposite, String>> fetchColumns(
-			PersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
-	{
-		DynamicComposite start = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta, EQUAL);
-		DynamicComposite end = dynamicCompositeKeyFactory.createBaseForQuery(propertyMeta,
-				GREATER_THAN_EQUAL);
-		List<Pair<DynamicComposite, String>> columns = context.getEntityDao().findColumnsRange(
-				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
-		return columns;
-	}
-
 }

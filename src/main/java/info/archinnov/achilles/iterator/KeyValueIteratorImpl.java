@@ -18,16 +18,16 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<K, V>
+public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 {
 	private KeyValueFactory factory = new KeyValueFactory();
 	protected Iterator<HColumn<Composite, V>> achillesSliceIterator;
 	private PropertyMeta<K, V> propertyMeta;
 	private PersistenceContext<ID> context;
 
-	protected KeyValueIteratorForComposite() {}
+	protected KeyValueIteratorImpl() {}
 
-	public KeyValueIteratorForComposite(PersistenceContext<ID> context,
+	public KeyValueIteratorImpl(PersistenceContext<ID> context,
 			Iterator<HColumn<Composite, V>> columnSliceIterator, PropertyMeta<K, V> propertyMeta)
 	{
 		this.context = context;
@@ -48,7 +48,7 @@ public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			keyValue = factory.createKeyValueForComposite(context, propertyMeta, column);
+			keyValue = factory.createKeyValue(context, propertyMeta, column);
 		}
 		else
 		{
@@ -64,7 +64,7 @@ public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			key = factory.createKeyForComposite(propertyMeta, column);
+			key = factory.createKey(propertyMeta, column);
 		}
 		else
 		{
@@ -80,7 +80,7 @@ public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			value = factory.createValueForComposite(context, propertyMeta, column);
+			value = factory.createValue(context, propertyMeta, column);
 		}
 		else
 		{
@@ -96,7 +96,7 @@ public class KeyValueIteratorForComposite<ID, K, V> implements KeyValueIterator<
 		if (this.achillesSliceIterator.hasNext())
 		{
 			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
-			ttl = factory.createTtlForComposite(column);
+			ttl = factory.createTtl(column);
 		}
 		else
 		{

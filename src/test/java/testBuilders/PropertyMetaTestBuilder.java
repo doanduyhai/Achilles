@@ -4,7 +4,6 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.ExternalWideMapProperties;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -90,11 +89,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 		this.valueClass = valueClass;
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	public PropertyMeta<K, V> build() throws Exception
 	{
 		PropertyMeta<K, V> propertyMeta = new PropertyMeta<K, V>();
@@ -142,13 +137,15 @@ public class PropertyMetaTestBuilder<T, K, V>
 			propertyMeta.setSingleKey(true);
 		}
 
-		if (externalColumnFamilyName != null || idSerializer != null)
+		if (externalColumnFamilyName != null)
 		{
-			ExternalWideMapProperties<?> externalWideMapProperties = new ExternalWideMapProperties(
-					externalColumnFamilyName, idSerializer);
-
-			propertyMeta.setExternalWideMapProperties(externalWideMapProperties);
+			propertyMeta.setExternalCfName(externalColumnFamilyName);
 		}
+		if (idSerializer != null)
+		{
+			propertyMeta.setIdSerializer(idSerializer);
+		}
+
 		if (counterIdMeta != null || fqcn != null)
 		{
 			CounterProperties counterProperties = new CounterProperties(fqcn, counterIdMeta);

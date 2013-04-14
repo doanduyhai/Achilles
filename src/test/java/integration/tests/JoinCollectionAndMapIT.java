@@ -1,14 +1,10 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SET;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.UUID_SRZ;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -30,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -55,13 +51,13 @@ public class JoinCollectionAndMapIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericEntityDao<UUID> tweetDao = getDynamicCompositeDao(UUID_SRZ,
+	private GenericEntityDao<UUID> tweetDao = getEntityDao(UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> userDao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> userDao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> beanDao = getDynamicCompositeDao(LONG_SRZ,
+	private GenericEntityDao<Long> beanDao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(BeanWithJoinCollectionAndMap.class
 					.getCanonicalName()));
 
@@ -116,39 +112,36 @@ public class JoinCollectionAndMapIT
 
 		em.persist(bean);
 
-		DynamicComposite startFriendsComp = CompositeTestBuilder.builder()
-				.values(JOIN_SET.flag(), "friends").equality(EQUAL).buildDynamicForQuery();
-		DynamicComposite endFriendsComp = CompositeTestBuilder.builder()
-				.values(JOIN_SET.flag(), "friends").equality(GREATER_THAN_EQUAL)
-				.buildDynamicForQuery();
+		Composite startFriendsComp = CompositeTestBuilder.builder()
+				.values(JOIN_SET.flag(), "friends").equality(EQUAL).buildForQuery();
+		Composite endFriendsComp = CompositeTestBuilder.builder()
+				.values(JOIN_SET.flag(), "friends").equality(GREATER_THAN_EQUAL).buildForQuery();
 
-		List<Pair<DynamicComposite, String>> friendsColumns = beanDao.findColumnsRange(beanId,
+		List<Pair<Composite, String>> friendsColumns = beanDao.findColumnsRange(beanId,
 				startFriendsComp, endFriendsComp, false, 20);
 
 		assertThat(friendsColumns).hasSize(2);
 		assertThat(readLong(friendsColumns.get(0).right)).isIn(friend1.getId(), friend2.getId());
 		assertThat(readLong(friendsColumns.get(1).right)).isIn(friend1.getId(), friend2.getId());
 
-		DynamicComposite startTweetsComp = CompositeTestBuilder.builder()
-				.values(JOIN_LIST.flag(), "tweets").equality(EQUAL).buildDynamicForQuery();
-		DynamicComposite endTweetsComp = CompositeTestBuilder.builder()
-				.values(JOIN_LIST.flag(), "tweets").equality(GREATER_THAN_EQUAL)
-				.buildDynamicForQuery();
+		Composite startTweetsComp = CompositeTestBuilder.builder()
+				.values(JOIN_LIST.flag(), "tweets").equality(EQUAL).buildForQuery();
+		Composite endTweetsComp = CompositeTestBuilder.builder().values(JOIN_LIST.flag(), "tweets")
+				.equality(GREATER_THAN_EQUAL).buildForQuery();
 
-		List<Pair<DynamicComposite, String>> tweetsColumns = beanDao.findColumnsRange(beanId,
+		List<Pair<Composite, String>> tweetsColumns = beanDao.findColumnsRange(beanId,
 				startTweetsComp, endTweetsComp, false, 20);
 
 		assertThat(tweetsColumns).hasSize(2);
 		assertThat(readUUID(tweetsColumns.get(0).right)).isEqualTo(tweet1.getId());
 		assertThat(readUUID(tweetsColumns.get(1).right)).isEqualTo(tweet2.getId());
 
-		DynamicComposite startTimelineComp = CompositeTestBuilder.builder()
-				.values(JOIN_MAP.flag(), "timeline").equality(EQUAL).buildDynamicForQuery();
-		DynamicComposite endTimelineComp = CompositeTestBuilder.builder()
-				.values(JOIN_MAP.flag(), "timeline").equality(GREATER_THAN_EQUAL)
-				.buildDynamicForQuery();
+		Composite startTimelineComp = CompositeTestBuilder.builder()
+				.values(JOIN_MAP.flag(), "timeline").equality(EQUAL).buildForQuery();
+		Composite endTimelineComp = CompositeTestBuilder.builder()
+				.values(JOIN_MAP.flag(), "timeline").equality(GREATER_THAN_EQUAL).buildForQuery();
 
-		List<Pair<DynamicComposite, String>> timelineColumns = beanDao.findColumnsRange(beanId,
+		List<Pair<Composite, String>> timelineColumns = beanDao.findColumnsRange(beanId,
 				startTimelineComp, endTimelineComp, false, 20);
 
 		assertThat(timelineColumns).hasSize(3);
@@ -197,26 +190,24 @@ public class JoinCollectionAndMapIT
 
 		bean = em.merge(bean);
 
-		DynamicComposite startTweetsComp = CompositeTestBuilder.builder()
-				.values(JOIN_LIST.flag(), "tweets").equality(EQUAL).buildDynamicForQuery();
-		DynamicComposite endTweetsComp = CompositeTestBuilder.builder()
-				.values(JOIN_LIST.flag(), "tweets").equality(GREATER_THAN_EQUAL)
-				.buildDynamicForQuery();
+		Composite startTweetsComp = CompositeTestBuilder.builder()
+				.values(JOIN_LIST.flag(), "tweets").equality(EQUAL).buildForQuery();
+		Composite endTweetsComp = CompositeTestBuilder.builder().values(JOIN_LIST.flag(), "tweets")
+				.equality(GREATER_THAN_EQUAL).buildForQuery();
 
-		List<Pair<DynamicComposite, String>> tweetsColumns = beanDao.findColumnsRange(beanId,
+		List<Pair<Composite, String>> tweetsColumns = beanDao.findColumnsRange(beanId,
 				startTweetsComp, endTweetsComp, false, 20);
 
 		assertThat(tweetsColumns).hasSize(2);
 		assertThat(readUUID(tweetsColumns.get(0).right)).isEqualTo(tweet1.getId());
 		assertThat(readUUID(tweetsColumns.get(1).right)).isEqualTo(tweet2.getId());
 
-		DynamicComposite startTimelineComp = CompositeTestBuilder.builder()
-				.values(JOIN_MAP.flag(), "timeline").equality(EQUAL).buildDynamicForQuery();
-		DynamicComposite endTimelineComp = CompositeTestBuilder.builder()
-				.values(JOIN_MAP.flag(), "timeline").equality(GREATER_THAN_EQUAL)
-				.buildDynamicForQuery();
+		Composite startTimelineComp = CompositeTestBuilder.builder()
+				.values(JOIN_MAP.flag(), "timeline").equality(EQUAL).buildForQuery();
+		Composite endTimelineComp = CompositeTestBuilder.builder()
+				.values(JOIN_MAP.flag(), "timeline").equality(GREATER_THAN_EQUAL).buildForQuery();
 
-		List<Pair<DynamicComposite, String>> timelineColumns = beanDao.findColumnsRange(beanId,
+		List<Pair<Composite, String>> timelineColumns = beanDao.findColumnsRange(beanId,
 				startTimelineComp, endTimelineComp, false, 20);
 
 		assertThat(timelineColumns).hasSize(1);

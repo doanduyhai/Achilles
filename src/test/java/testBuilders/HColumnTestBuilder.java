@@ -1,12 +1,9 @@
 package testBuilders;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.DYNA_COMP_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.DynamicComposite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.factory.HFactory;
@@ -33,19 +30,8 @@ public class HColumnTestBuilder
 				(Serializer<V>) SerializerTypeInferer.getSerializer(value));
 	}
 
-	public static HColumn<DynamicComposite, String> dynamic(DynamicComposite name, String value)
+	public static HCounterColumn<Composite> counter(Composite name, Long value)
 	{
-		return HFactory.createColumn(name, value, DYNA_COMP_SRZ, STRING_SRZ);
-	}
-
-	public static HColumn<DynamicComposite, String> dynamic(DynamicComposite name, String value,
-			int ttl)
-	{
-		return HFactory.createColumn(name, value, ttl, DYNA_COMP_SRZ, STRING_SRZ);
-	}
-
-	public static HCounterColumn<DynamicComposite> counter(DynamicComposite name, Long value)
-	{
-		return HFactory.createCounterColumn(name, value, DYNA_COMP_SRZ);
+		return HFactory.createCounterColumn(name, value, COMPOSITE_SRZ);
 	}
 }

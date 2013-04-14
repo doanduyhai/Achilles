@@ -1,7 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getCompositeDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getColumnFamilyDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -37,7 +37,7 @@ import org.junit.Test;
  */
 public class MultiKeyExternalWideMapIT
 {
-	private GenericColumnFamilyDao<Long, String> multiKeyExternalWideMapDao = getCompositeDao(
+	private GenericColumnFamilyDao<Long, String> multiKeyExternalWideMapDao = getColumnFamilyDao(
 			LONG_SRZ, STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();

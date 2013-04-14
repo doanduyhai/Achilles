@@ -1,7 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getDynamicCompositeDao;
+import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.DynamicComposite;
+import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -42,8 +42,7 @@ public class JoinColumnIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericEntityDao<UUID> tweetDao = getDynamicCompositeDao(
-			SerializerUtils.UUID_SRZ,
+	private GenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
 	private ThriftEntityManager em = CassandraDaoTest.getEm();
@@ -71,18 +70,18 @@ public class JoinColumnIT
 
 		em.persist(tweet);
 
-		DynamicComposite startComp = new DynamicComposite();
+		Composite startComp = new Composite();
 		startComp.addComponent(0, JOIN_SIMPLE.flag(), ComponentEquality.EQUAL);
 
-		DynamicComposite endComp = new DynamicComposite();
+		Composite endComp = new Composite();
 		endComp.addComponent(0, JOIN_SIMPLE.flag(), ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<DynamicComposite, String>> columns = tweetDao.findColumnsRange(tweet.getId(),
-				startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = tweetDao.findColumnsRange(tweet.getId(), startComp,
+				endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 
-		Pair<DynamicComposite, String> creator = columns.get(0);
+		Pair<Composite, String> creator = columns.get(0);
 		assertThat(readLong(creator.right)).isEqualTo(creatorId);
 
 	}
