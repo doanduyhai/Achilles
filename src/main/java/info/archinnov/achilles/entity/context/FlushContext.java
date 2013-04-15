@@ -16,6 +16,9 @@ import java.util.Map.Entry;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * BatchContext
  * 
@@ -24,6 +27,8 @@ import me.prettyprint.hector.api.mutation.Mutator;
  */
 public class FlushContext
 {
+	private static final Logger log = LoggerFactory.getLogger(FlushContext.class);
+
 	private final Map<String, GenericEntityDao<?>> entityDaosMap;
 	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private final CounterDao counterDao;
@@ -45,6 +50,7 @@ public class FlushContext
 
 	public void startBatch()
 	{
+		log.debug("Start batch");
 		type = BatchType.BATCH;
 	}
 
@@ -52,12 +58,14 @@ public class FlushContext
 	{
 		if (type == BatchType.NONE)
 		{
+			log.debug("Flush immediatly all pending mutations");
 			doFlush();
 		}
 	}
 
 	public void endBatch()
 	{
+		log.debug("End batch and flush pending mutation");
 		if (type == BatchType.BATCH)
 		{
 			doFlush();
@@ -67,6 +75,7 @@ public class FlushContext
 	@SuppressWarnings("unchecked")
 	protected <ID> void doFlush()
 	{
+		log.debug("Execute mutations flush");
 		try
 		{
 			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?>>> entry : mutatorMap.entrySet())
@@ -84,6 +93,7 @@ public class FlushContext
 
 	public void cleanUp()
 	{
+		log.debug("Cleaning up flush context");
 		consistencyContext.reinitConsistencyLevels();
 		hasCustomConsistencyLevels = false;
 		mutatorMap.clear();

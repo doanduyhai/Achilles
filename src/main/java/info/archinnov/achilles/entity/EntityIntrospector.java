@@ -7,8 +7,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -29,13 +29,14 @@ import org.slf4j.LoggerFactory;
  */
 public class EntityIntrospector
 {
-
 	private static final Logger log = LoggerFactory.getLogger(EntityIntrospector.class);
 
 	private PropertyFilter filter = new PropertyFilter();
 
 	protected String[] deriveGetterName(Field field)
 	{
+		log.debug("Derive getter name for field {} from class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
 
 		String camelCase = field.getName().substring(0, 1).toUpperCase()
 				+ field.getName().substring(1);
@@ -60,15 +61,18 @@ public class EntityIntrospector
 		return getters;
 	}
 
-	protected String deriveSetterName(String fieldName)
+	protected String deriveSetterName(Field field)
 	{
+		log.debug("Derive setter name for field {} from class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
 
+		String fieldName = field.getName();
 		return "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 	}
 
 	public Method findGetter(Class<?> beanClass, Field field)
 	{
-		log.trace("Find getter for field {} in bean {}", field.getName(),
+		log.debug("Find getter for field {} in class {}", field.getName(),
 				beanClass.getCanonicalName());
 
 		Method getterMethod = null;
@@ -101,14 +105,14 @@ public class EntityIntrospector
 
 	public Method findSetter(Class<?> beanClass, Field field)
 	{
-		log.trace("Find setter for field {} in bean {}", field.getName(),
+		log.debug("Find setter for field {} in class {}", field.getName(),
 				beanClass.getCanonicalName());
 
 		String fieldName = field.getName();
 
 		try
 		{
-			String setter = this.deriveSetterName(fieldName);
+			String setter = this.deriveSetterName(field);
 			Method setterMethod = beanClass.getMethod(setter, field.getType());
 
 			if (!setterMethod.getReturnType().toString().equals("void"))
@@ -129,6 +133,8 @@ public class EntityIntrospector
 
 	public Method[] findAccessors(Class<?> beanClass, Field field)
 	{
+		log.debug("Find accessors for field {} in class {}", field.getName(),
+				beanClass.getCanonicalName());
 
 		Method[] accessors = new Method[2];
 
@@ -147,6 +153,11 @@ public class EntityIntrospector
 
 	public Object getValueFromField(Object target, Method getter)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Get value with getter {} from instance {} of class {}", getter.getName(),
+					target, getter.getDeclaringClass().getCanonicalName());
+		}
 
 		Object value = null;
 
@@ -168,6 +179,12 @@ public class EntityIntrospector
 
 	public void setValueToField(Object target, Method setter, Object... args)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set value with setter {} to instance {} of class {} with {}",
+					setter.getName(), target, setter.getDeclaringClass().getCanonicalName(), args);
+		}
+
 		if (target != null)
 		{
 
@@ -185,6 +202,11 @@ public class EntityIntrospector
 
 	public <ID> ID getKey(Object entity, PropertyMeta<Void, ID> idMeta)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(),
+					entity, idMeta.getGetter().getDeclaringClass().getCanonicalName());
+		}
 
 		if (entity != null)
 		{
@@ -204,8 +226,10 @@ public class EntityIntrospector
 
 	public Long findSerialVersionUID(Class<?> entity)
 	{
-
-		log.trace("Find SerialVersionUID for entity {}", entity.getCanonicalName());
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find SerialVersionUID for entity {}", entity);
+		}
 
 		Long serialVersionUID = null;
 		try
@@ -232,7 +256,7 @@ public class EntityIntrospector
 
 	public String inferColumnFamilyName(Class<?> entity, String canonicalName)
 	{
-		log.debug("Infer column family name for entity {}", entity.getCanonicalName());
+		log.debug("Infer column family name for entity {}", canonicalName);
 		String columnFamilyName = null;
 		Table table = entity.getAnnotation(javax.persistence.Table.class);
 		if (table != null)
@@ -259,6 +283,8 @@ public class EntityIntrospector
 
 	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity)
 	{
+		log.debug("Find consistency levels for entity class {}", entity.getCanonicalName());
+
 		ConsistencyLevel achillesRead = ConsistencyLevel.QUORUM;
 		ConsistencyLevel achillesWrite = ConsistencyLevel.QUORUM;
 
@@ -275,6 +301,8 @@ public class EntityIntrospector
 
 	public List<Field> getInheritedPrivateFields(Class<?> type)
 	{
+		log.debug("Find private fields from hierarchy for entity class {}", type.getCanonicalName());
+
 		List<Field> result = new ArrayList<Field>();
 
 		Class<?> i = type;
@@ -295,6 +323,9 @@ public class EntityIntrospector
 
 	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation)
 	{
+		log.debug("Find private fields from hierarchy with annotation {} for entity class {}",
+				annotation.getCanonicalName(), type.getCanonicalName());
+
 		Class<?> i = type;
 		while (i != null && i != Object.class)
 		{
@@ -312,6 +343,10 @@ public class EntityIntrospector
 
 	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation, String name)
 	{
+		log.debug(
+				"Find private field with name {} having annotation {} from hierarchy for entity class {}",
+				name, annotation.getCanonicalName(), type.getCanonicalName());
+
 		Class<?> i = type;
 		while (i != null && i != Object.class)
 		{
@@ -329,6 +364,8 @@ public class EntityIntrospector
 
 	public List<Object> determineMultiKey(Object entity, List<Method> componentGetters)
 	{
+		log.debug("Determine multi-key components for entity {} ", entity);
+
 		List<Object> multiKeyValues = new ArrayList<Object>();
 
 		if (entity != null)

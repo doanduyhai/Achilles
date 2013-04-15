@@ -97,9 +97,9 @@ public class CompositeTransformerTest
 		TweetMultiKey multiKey1 = new TweetMultiKey();
 		TweetMultiKey multiKey2 = new TweetMultiKey();
 
-		when(helper.buildMultiKeyForComposite(propertyMeta, hCol1.getName().getComponents()))
+		when(helper.buildMultiKeyFromComposite(propertyMeta, hCol1.getName().getComponents()))
 				.thenReturn(multiKey1);
-		when(helper.buildMultiKeyForComposite(propertyMeta, hCol2.getName().getComponents()))
+		when(helper.buildMultiKeyFromComposite(propertyMeta, hCol2.getName().getComponents()))
 				.thenReturn(multiKey2);
 		List<TweetMultiKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildKeyTransformer(propertyMeta));

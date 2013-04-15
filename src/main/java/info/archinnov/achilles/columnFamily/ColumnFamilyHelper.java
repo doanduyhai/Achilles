@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ColumnFamilyHelper
 {
-
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
 
 	public static final String ENTITY_TYPE_ALIAS = "(BytesType,UTF8Type,Int32Type)";
@@ -168,7 +167,6 @@ public class ColumnFamilyHelper
 
 	public void validateCFWithEntityMeta(ColumnFamilyDefinition cfDef, EntityMeta<?> entityMeta)
 	{
-
 		log.trace("Validating column family row key definition for entityMeta {}",
 				entityMeta.getClassName());
 
@@ -215,8 +213,9 @@ public class ColumnFamilyHelper
 	public void validateCFWithPropertyMeta(ColumnFamilyDefinition cfDef,
 			PropertyMeta<?, ?> propertyMeta, String externalColumnFamilyName)
 	{
-		log.trace("Validating column family composite comparator definition for propertyMeta {}",
-				propertyMeta.getPropertyName());
+		log.trace(
+				"Validating column family composite comparator definition for propertyMeta {} and column family {}",
+				propertyMeta.getPropertyName(), externalColumnFamilyName);
 
 		String comparatorTypeAlias = helper.determineCompatatorTypeAliasForCompositeCF(
 				propertyMeta, false);
@@ -232,7 +231,6 @@ public class ColumnFamilyHelper
 
 	public void validateCounterCF(ColumnFamilyDefinition cfDef)
 	{
-
 		log.trace("Validating counter column family row key definition ");
 
 		if (!StringUtils.equals(cfDef.getKeyValidationClass(), COMPOSITETYPE.getClassName()))

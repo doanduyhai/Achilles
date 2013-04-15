@@ -13,6 +13,10 @@ import java.util.Map.Entry;
 
 import me.prettyprint.hector.api.beans.Composite;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JoinEntityHelper
  * 
@@ -21,6 +25,7 @@ import me.prettyprint.hector.api.beans.Composite;
  */
 public class JoinEntityHelper
 {
+	private static final Logger log = LoggerFactory.getLogger(JoinEntityHelper.class);
 
 	private EntityMapper mapper = new EntityMapper();
 	private EntityIntrospector introspector = new EntityIntrospector();
@@ -28,6 +33,12 @@ public class JoinEntityHelper
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
 			EntityMeta<ID> entityMeta, GenericEntityDao<ID> joinEntityDao)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Load join entities of class {} with primary keys {}",
+					entityClass.getCanonicalName(), StringUtils.join(keys, ","));
+		}
+
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotEmpty(keys, "List of join primary keys '" + keys
 				+ "' should not be empty");

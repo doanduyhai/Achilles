@@ -85,13 +85,21 @@ public class EntityProxifier
 
 	public <T> T unproxy(T proxy)
 	{
-		if (this.isProxy(proxy))
+		if (proxy != null)
 		{
-			return this.getRealObject(proxy);
+
+			if (this.isProxy(proxy))
+			{
+				return this.getRealObject(proxy);
+			}
+			else
+			{
+				return proxy;
+			}
 		}
 		else
 		{
-			return proxy;
+			return null;
 		}
 	}
 

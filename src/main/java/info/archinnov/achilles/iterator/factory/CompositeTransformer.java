@@ -147,7 +147,7 @@ public class CompositeTransformer
 		}
 		else
 		{
-			key = helper.buildMultiKeyForComposite(propertyMeta, hColumn.getName().getComponents());
+			key = helper.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
 		}
 		return key;
 	}
@@ -183,7 +183,7 @@ public class CompositeTransformer
 		}
 		else
 		{
-			key = helper.buildMultiKeyForComposite(propertyMeta, hColumn.getName().getComponents());
+			key = helper.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
 		}
 		return key;
 	}

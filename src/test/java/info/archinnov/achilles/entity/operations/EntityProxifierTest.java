@@ -1,8 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
@@ -206,6 +205,12 @@ public class EntityProxifierTest
 		CompleteBean actual = proxifier.unproxy(proxy);
 
 		assertThat(actual).isSameAs(realObject);
+	}
+
+	@Test
+	public void should_return_null_when_unproxying_null() throws Exception
+	{
+		assertThat(proxifier.unproxy((Object) null)).isNull();
 	}
 
 	@Test

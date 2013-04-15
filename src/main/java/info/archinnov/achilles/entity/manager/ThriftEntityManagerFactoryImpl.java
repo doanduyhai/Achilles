@@ -209,7 +209,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 	protected boolean discoverEntities() throws ClassNotFoundException, IOException
 	{
-		log.info("Start discovery of entities searching in packages '{}'",
+		log.info("Start discovery of entities, searching in packages '{}'",
 				StringUtils.join(entityPackages, ","));
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 
@@ -248,6 +248,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	@Override
 	public EntityManager createEntityManager()
 	{
+		log.info("Create new Thrift-based Entity Manager ");
+
 		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
 				Collections.unmodifiableMap(entityDaosMap), //
 				Collections.unmodifiableMap(columnFamilyDaosMap), //
@@ -262,6 +264,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	@Override
 	public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map)
 	{
+		log.info("Create new Thrift-based Entity Manager ");
+
 		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
 				Collections.unmodifiableMap(entityDaosMap), //
 				Collections.unmodifiableMap(columnFamilyDaosMap), //
@@ -289,6 +293,8 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	protected AchillesConfigurableConsistencyLevelPolicy initConsistencyLevelPolicy(
 			Map<String, Object> configurationMap)
 	{
+		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
+
 		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
 				.initDefaultReadConsistencyLevel(configurationMap);
 		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor

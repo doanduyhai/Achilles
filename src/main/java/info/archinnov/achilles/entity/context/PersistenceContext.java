@@ -15,6 +15,9 @@ import java.util.Map;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * PersistenceContext
  * 
@@ -23,6 +26,8 @@ import me.prettyprint.hector.api.mutation.Mutator;
  */
 public class PersistenceContext<ID>
 {
+	private static final Logger log = LoggerFactory.getLogger(PersistenceContext.class);
+
 	private final EntityIntrospector introspector = new EntityIntrospector();
 	private final EntityMeta<ID> entityMeta;
 	private final Map<String, GenericEntityDao<?>> entityDaosMap;
@@ -47,6 +52,12 @@ public class PersistenceContext<ID>
 			FlushContext flushContext, //
 			Object entity)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Create new persistence context for instance {} of class {}", entity,
+					entityMeta.getClassName());
+		}
+
 		this.entityMeta = entityMeta;
 		this.entityDaosMap = entityDaosMap;
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
@@ -71,6 +82,12 @@ public class PersistenceContext<ID>
 			FlushContext flushContext, //
 			Class<?> entityClass, ID primaryKey)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Create new persistence context for instance {} of class {}", entity,
+					entityMeta.getClassName());
+		}
+
 		this.entityMeta = entityMeta;
 		this.entityDaosMap = entityDaosMap;
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
@@ -89,6 +106,11 @@ public class PersistenceContext<ID>
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(
 			EntityMeta<JOIN_ID> joinMeta, Object joinEntity)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
+					joinMeta.getClassName());
+		}
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, policy, flushContext, joinEntity);
 	}
@@ -96,6 +118,12 @@ public class PersistenceContext<ID>
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(Class<?> entityClass,
 			EntityMeta<JOIN_ID> joinMeta, JOIN_ID joinId)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
+					joinMeta.getClassName());
+		}
+
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, policy, flushContext, entityClass, joinId);
 	}

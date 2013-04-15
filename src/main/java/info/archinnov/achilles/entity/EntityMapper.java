@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class EntityMapper
 {
 
-	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityMapper.class);
 
 	private EntityIntrospector introspector = new EntityIntrospector();
 
@@ -38,8 +37,10 @@ public class EntityMapper
 	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,
 			List<Pair<Composite, String>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
-
-		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
+		}
 
 		Map<String, List<V>> listProperties = new HashMap<String, List<V>>();
 		Map<String, Set<V>> setProperties = new HashMap<String, Set<V>>();
@@ -163,7 +164,11 @@ public class EntityMapper
 
 	public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> idMeta, T entity)
 	{
-		log.trace("Set primary key to entity {} ", entity);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set primary key value {} to entity {} ", key, entity);
+		}
+
 		try
 		{
 			introspector.setValueToField(entity, idMeta.getSetter(), key);
@@ -177,7 +182,12 @@ public class EntityMapper
 	public <T, ID> void setSimplePropertyToEntity(String value, PropertyMeta<?, ?> propertyMeta,
 			T entity)
 	{
-		log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(), entity);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(),
+					entity);
+		}
+
 		try
 		{
 			introspector.setValueToField(entity, propertyMeta.getSetter(),
@@ -191,7 +201,11 @@ public class EntityMapper
 
 	public <T, ID> void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
 	{
-		log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
+		}
+
 		try
 		{
 			introspector.setValueToField(entity, listMeta.getSetter(), list);
@@ -204,7 +218,11 @@ public class EntityMapper
 
 	public <T, ID> void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
 	{
-		log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
+		}
+
 		try
 		{
 			introspector.setValueToField(entity, setMeta.getSetter(), set);
@@ -217,7 +235,11 @@ public class EntityMapper
 
 	public <T, ID> void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
 	{
-		log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
+		}
+
 		try
 		{
 			introspector.setValueToField(entity, mapMeta.getSetter(), map);

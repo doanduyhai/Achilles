@@ -49,8 +49,9 @@ public class GenericEntityDao<K> extends AbstractDao<K, String>
 		valueSerializer = STRING_SRZ;
 		policy = consistencyPolicy;
 		log.debug(
-				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer 'BytesType'",
-				keySrz.getComparatorType().getTypeName());
+				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
+				keySrz.getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
+						.getTypeName());
 
 	}
 

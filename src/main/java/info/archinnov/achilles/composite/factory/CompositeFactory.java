@@ -5,7 +5,6 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.validation.Validator;
@@ -42,6 +41,7 @@ public class CompositeFactory
 
 		if (propertyMeta.isSingleKey())
 		{
+			log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
 			Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '"
 					+ propertyName + "' should not be null");
 
@@ -51,6 +51,7 @@ public class CompositeFactory
 		}
 		else
 		{
+			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
 			List<Object> keyValues = entityIntrospector.determineMultiKey(keyValue,
@@ -88,6 +89,8 @@ public class CompositeFactory
 
 		if (propertyMeta.isSingleKey())
 		{
+			log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
+
 			if (keyValue == null)
 			{
 				composite = null;
@@ -99,6 +102,8 @@ public class CompositeFactory
 		}
 		else
 		{
+			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
+
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
 			List<Object> keyValues = entityIntrospector.determineMultiKey(keyValue,
@@ -134,6 +139,10 @@ public class CompositeFactory
 	public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,
 			WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
 	{
+		log.trace(
+				"Creating query composite for propertyMeta {} with start {}, end {}, bounding mode {} and orderging {}",
+				propertyMeta.getPropertyName(), start, end, bounds.name(), ordering.name());
+
 		Composite[] queryComp = new Composite[2];
 
 		ComponentEquality[] equalities = helper.determineEquality(bounds, ordering);
@@ -149,6 +158,9 @@ public class CompositeFactory
 
 	public <ID> Composite createKeyForCounter(String fqcn, ID key, PropertyMeta<Void, ID> idMeta)
 	{
+		log.trace("Creating composite counter row key for entity class {} and primary key {}",
+				fqcn, key);
+
 		Composite comp = new Composite();
 		comp.setComponent(0, fqcn, STRING_SRZ);
 		comp.setComponent(1, idMeta.writeValueToString(key), STRING_SRZ);
@@ -178,8 +190,8 @@ public class CompositeFactory
 	public <K, V> Composite createBaseForQuery(PropertyMeta<K, V> propertyMeta,
 			ComponentEquality equality)
 	{
-		log.trace("Creating base composite for propertyMeta {} query",
-				propertyMeta.getPropertyName());
+		log.trace("Creating base composite for propertyMeta {} query and equality {}",
+				propertyMeta.getPropertyName(), equality.name());
 
 		Composite composite = new Composite();
 		composite.addComponent(0, propertyMeta.type().flag(), ComponentEquality.EQUAL);
@@ -189,7 +201,7 @@ public class CompositeFactory
 
 	public <K, V> Composite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
 	{
-		log.trace("Creating base composite for propertyMeta {} for batch insert",
+		log.trace("Creating base composite for propertyMeta {} for single value batch insert",
 				propertyMeta.getPropertyName());
 
 		Composite composite = new Composite();
@@ -203,7 +215,8 @@ public class CompositeFactory
 
 	public <K, V> Composite createForBatchInsertSingleCounter(PropertyMeta<K, V> propertyMeta)
 	{
-		log.trace("Creating base composite for propertyMeta {} for batch insert",
+		log.trace(
+				"Creating base composite for propertyMeta {} for single counter value batch insert",
 				propertyMeta.getPropertyName());
 
 		Composite composite = new Composite();
@@ -215,8 +228,9 @@ public class CompositeFactory
 	public <K, V> Composite createForBatchInsertMultiValue(PropertyMeta<K, V> propertyMeta,
 			int hashOrPosition)
 	{
-		log.trace("Creating base composite for propertyMeta {} for batch insert",
-				propertyMeta.getPropertyName());
+		log.trace(
+				"Creating base composite for propertyMeta {} for multi value batch insert with hash or position {}",
+				propertyMeta.getPropertyName(), hashOrPosition);
 
 		Composite composite = new Composite();
 		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ, BYTE_SRZ
@@ -228,58 +242,4 @@ public class CompositeFactory
 		return composite;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <K, V, T> Composite createForInsert(PropertyMeta<K, V> propertyMeta, T key)
-	{
-
-		log.trace("Creating composite for propertyMeta {} for insert",
-				propertyMeta.getPropertyName());
-
-		Composite composite = new Composite();
-		PropertyType type = propertyMeta.type();
-		String propertyName = propertyMeta.getPropertyName();
-		Serializer<T> keySerializer = (Serializer<T>) propertyMeta.getKeySerializer();
-
-		if (propertyMeta.isSingleKey())
-		{
-			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
-					.getTypeName());
-			composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType()
-					.getTypeName());
-			composite.setComponent(2, key, keySerializer, keySerializer.getComparatorType()
-					.getTypeName());
-		}
-		else
-		{
-			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityIntrospector.determineMultiKey(key,
-					multiKeyProperties.getComponentGetters());
-
-			int srzCount = componentSerializers.size();
-			int valueCount = keyValues.size();
-
-			Validator.validateTrue(srzCount == valueCount, "There should be " + srzCount
-					+ " values for the key of WideMap '" + propertyName + "'");
-
-			for (Object keyValue : keyValues)
-			{
-				Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '"
-						+ propertyName + "' should not be null");
-			}
-
-			composite.setComponent(0, type.flag(), BYTE_SRZ, BYTE_SRZ.getComparatorType()
-					.getTypeName());
-			composite.setComponent(1, propertyName, STRING_SRZ, STRING_SRZ.getComparatorType()
-					.getTypeName());
-
-			for (int i = 0; i < srzCount; i++)
-			{
-				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
-				composite.setComponent(i + 2, keyValues.get(i), srz, srz.getComparatorType()
-						.getTypeName());
-			}
-		}
-		return composite;
-	}
 }

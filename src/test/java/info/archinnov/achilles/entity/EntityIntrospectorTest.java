@@ -2,9 +2,7 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -110,11 +108,10 @@ public class EntityIntrospectorTest
 	{
 		class Test
 		{
-
 			boolean a;
 		}
 
-		assertThat(helper.deriveSetterName("a")).isEqualTo("setA");
+		assertThat(helper.deriveSetterName(Test.class.getDeclaredField("a"))).isEqualTo("setA");
 	}
 
 	@Test

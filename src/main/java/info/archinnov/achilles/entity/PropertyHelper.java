@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Key;
@@ -151,6 +152,8 @@ public class PropertyHelper
 
 		int check = (keyCount * (keyCount + 1)) / 2;
 
+		log.debug("Validate key ordering multikey class {} ", keyClass.getCanonicalName());
+
 		Validator.validateBeanMappingTrue(keySum == check,
 				"The key orders is wrong for MultiKey class '" + keyClass.getCanonicalName() + "'");
 
@@ -186,6 +189,9 @@ public class PropertyHelper
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)
 	{
+		log.debug("Infer parameterized value class for collection type {} of entity class {} ",
+				genericType.toString(), entityClass.getCanonicalName());
+
 		Class<T> valueClass;
 		if (genericType instanceof ParameterizedType)
 		{
@@ -213,6 +219,9 @@ public class PropertyHelper
 
 	public boolean isLazy(Field field)
 	{
+		log.debug("Check @Lazy annotation on field {} of class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
+
 		boolean lazy = false;
 		if (field.getAnnotation(Lazy.class) != null)
 		{
@@ -223,6 +232,9 @@ public class PropertyHelper
 
 	public boolean hasCounterAnnotation(Field field)
 	{
+		log.debug("Check @Counter annotation on field {} of class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
+
 		boolean counter = false;
 		if (field.getAnnotation(Counter.class) != null)
 		{
@@ -233,6 +245,9 @@ public class PropertyHelper
 
 	public boolean hasConsistencyAnnotation(Field field)
 	{
+		log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
+
 		boolean consistency = false;
 		if (field.getAnnotation(Consistency.class) != null)
 		{
@@ -245,7 +260,7 @@ public class PropertyHelper
 			boolean forCreation)
 	{
 		log.debug(
-				"Determine the Comparator type alias for composite-base column family using propertyMeta of {} ",
+				"Determine the Comparator type alias for composite-base column family using propertyMeta of field {} ",
 				propertyMeta.getPropertyName());
 
 		Class<?> nameClass = propertyMeta.getKeyClass();
@@ -298,11 +313,16 @@ public class PropertyHelper
 		return comparatorTypesAlias;
 	}
 
-	public <K, V> K buildMultiKeyForComposite(PropertyMeta<K, V> propertyMeta,
+	public <K, V> K buildMultiKeyFromComposite(PropertyMeta<K, V> propertyMeta,
 			List<Component<?>> components)
 	{
-		K key;
+		if (log.isTraceEnabled())
+		{
+			log.trace("Build multi-key instance of field {} from composite components {}",
+					propertyMeta.getPropertyName(), format(components));
+		}
 
+		K key;
 		MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 		Class<K> multiKeyClass = propertyMeta.getKeyClass();
 		List<Method> componentSetters = multiKeyProperties.getComponentSetters();
@@ -334,6 +354,9 @@ public class PropertyHelper
 
 	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field)
 	{
+		log.debug("Find consistency configuration for field {} of class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
+
 		ConsistencyLevel achillesRead = ConsistencyLevel.QUORUM;
 		ConsistencyLevel achillesWrite = ConsistencyLevel.QUORUM;
 
@@ -344,7 +367,6 @@ public class PropertyHelper
 			achillesRead = clevel.read();
 			achillesWrite = clevel.write();
 		}
-
 		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}
 }

@@ -321,7 +321,7 @@ public class PropertyHelperTest
 		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
-		TweetMultiKey multiKey = helper.buildMultiKeyForComposite(multiKeyWideMeta, hCol1.getName()
+		TweetMultiKey multiKey = helper.buildMultiKeyFromComposite(multiKeyWideMeta, hCol1.getName()
 				.getComponents());
 
 		assertThat(multiKey.getAuthor()).isEqualTo("author1");
