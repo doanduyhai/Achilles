@@ -53,13 +53,13 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 			case READ:
 				result = defaultReadConsistencyLevelTL.get() != null ? defaultReadConsistencyLevelTL
 						.get() : super.get(op);
-				log.debug("Set default read consistency level to {} in the thread {}",
+				log.trace("Set default read consistency level to {} in the thread {}",
 						result.name(), Thread.currentThread());
 				break;
 			case WRITE:
 				result = defaultWriteConsistencyLevelTL.get() != null ? defaultWriteConsistencyLevelTL
 						.get() : super.get(op);
-				log.debug("Set default write consistency level to {} in the thread {}",
+				log.trace("Set default write consistency level to {} in the thread {}",
 						result.name(), Thread.currentThread());
 				break;
 			default:
@@ -78,14 +78,14 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 			case READ:
 				result = defaultReadConsistencyLevelTL.get() != null ? defaultReadConsistencyLevelTL
 						.get() : super.get(OperationType.READ, columnFamily);
-				log.debug(
+				log.trace(
 						"Set default read consistency of column family {} level to {} in the thread {}",
 						result.name(), columnFamily, Thread.currentThread());
 				break;
 			case WRITE:
 				result = defaultWriteConsistencyLevelTL.get() != null ? defaultWriteConsistencyLevelTL
 						.get() : super.get(OperationType.WRITE, columnFamily);
-				log.debug(
+				log.trace(
 						"Set default write consistency of column family {} level to {} in the thread {}",
 						result.name(), columnFamily, Thread.currentThread());
 				break;
@@ -137,15 +137,15 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public void reinitDefaultConsistencyLevels()
 	{
-		log.debug("Reinit defaut read/write consistency levels in the thread {}", Thread
-				.currentThread().getId());
+		log.trace("Reinit defaut read/write consistency levels in the thread {}",
+				Thread.currentThread());
 		defaultReadConsistencyLevelTL.remove();
 		defaultWriteConsistencyLevelTL.remove();
 	}
 
 	public void reinitCurrentConsistencyLevels()
 	{
-		log.debug("Reinit current read/write consistency levels in the thread {}", Thread
+		log.trace("Reinit current read/write consistency levels in the thread {}", Thread
 				.currentThread().getId());
 		currentReadConsistencyLevel.remove();
 		currentWriteConsistencyLevel.remove();
@@ -173,42 +173,42 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public ConsistencyLevel getCurrentReadLevel()
 	{
-		log.debug("Current read consistency level is {} in the thread {}",
-				currentReadConsistencyLevel.get().name(), Thread.currentThread());
+		log.trace("Current read consistency level is {} in the thread {}",
+				currentReadConsistencyLevel.get(), Thread.currentThread());
 		return currentReadConsistencyLevel.get();
 	}
 
 	public void setCurrentReadLevel(ConsistencyLevel readLevel)
 	{
-		log.debug("Set current read consistency level to {} in the thread {}", readLevel, Thread
+		log.trace("Set current read consistency level to {} in the thread {}", readLevel, Thread
 				.currentThread().getId());
 		currentReadConsistencyLevel.set(readLevel);
 	}
 
 	public void removeCurrentReadLevel()
 	{
-		log.debug("Remove current read consistency level  in the thread {}", Thread.currentThread()
+		log.trace("Remove current read consistency level  in the thread {}", Thread.currentThread()
 				.getId());
 		currentReadConsistencyLevel.remove();
 	}
 
 	public ConsistencyLevel getCurrentWriteLevel()
 	{
-		log.debug("Current write consistency level is {} in the thread {}",
-				currentReadConsistencyLevel.get().name(), Thread.currentThread());
+		log.trace("Current write consistency level is {} in the thread {}",
+				currentReadConsistencyLevel.get(), Thread.currentThread());
 		return currentWriteConsistencyLevel.get();
 	}
 
 	public void setCurrentWriteLevel(ConsistencyLevel writeLevel)
 	{
-		log.debug("Set current write consistency level to {} in the thread {}", writeLevel, Thread
+		log.trace("Set current write consistency level to {} in the thread {}", writeLevel, Thread
 				.currentThread().getId());
 		currentWriteConsistencyLevel.set(writeLevel);
 	}
 
 	public void removeCurrentWriteLevel()
 	{
-		log.debug("Remove current write consistency level  in the thread {}", Thread
+		log.trace("Remove current write consistency level  in the thread {}", Thread
 				.currentThread().getId());
 		currentWriteConsistencyLevel.remove();
 	}

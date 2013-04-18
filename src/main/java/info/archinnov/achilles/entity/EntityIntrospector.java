@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity;
 
+import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
 import info.archinnov.achilles.dao.Pair;
@@ -20,6 +21,8 @@ import javax.persistence.Table;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * EntityHelper
@@ -58,6 +61,10 @@ public class EntityIntrospector
 				"get" + camelCase
 			};
 		}
+		if (log.isTraceEnabled())
+		{
+			log.trace("Derived getters : {}", StringUtils.join(getters, ","));
+		}
 		return getters;
 	}
 
@@ -67,7 +74,12 @@ public class EntityIntrospector
 				.getDeclaringClass().getCanonicalName());
 
 		String fieldName = field.getName();
-		return "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+		String setter = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Derived setter : {}", setter);
+		}
+		return setter;
 	}
 
 	public Method findGetter(Class<?> beanClass, Field field)
@@ -100,6 +112,11 @@ public class EntityIntrospector
 			throw new AchillesBeanMappingException("The getter for field '" + fieldName
 					+ "' does not exist");
 		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Derived getter method : {}", getterMethod.getName());
+		}
 		return getterMethod;
 	}
 
@@ -121,6 +138,10 @@ public class EntityIntrospector
 						+ "' does not return correct type or does not have the correct parameter");
 			}
 
+			if (log.isTraceEnabled())
+			{
+				log.trace("Derived setter method : {}", setterMethod.getName());
+			}
 			return setterMethod;
 
 		}
@@ -174,6 +195,11 @@ public class EntityIntrospector
 						+ target + "'", e);
 			}
 		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found value : {}", value);
+		}
 		return value;
 	}
 
@@ -187,7 +213,6 @@ public class EntityIntrospector
 
 		if (target != null)
 		{
-
 			try
 			{
 				setter.invoke(target, args);
@@ -251,6 +276,11 @@ public class EntityIntrospector
 					"The 'serialVersionUID' property should be publicly accessible for entity '"
 							+ entity.getCanonicalName() + "'", e);
 		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found serialVersionUID : {}", serialVersionUID);
+		}
 		return serialVersionUID;
 	}
 
@@ -278,6 +308,10 @@ public class EntityIntrospector
 					.normalizerAndValidateColumnFamilyName(canonicalName);
 		}
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Inferred columnFamilyName : {}", columnFamilyName);
+		}
 		return columnFamilyName;
 	}
 
@@ -296,14 +330,20 @@ public class EntityIntrospector
 			achillesWrite = clevel.write();
 		}
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found consistency levels : {}/{}", achillesRead, achillesWrite);
+		}
+
 		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}
 
 	public List<Field> getInheritedPrivateFields(Class<?> type)
 	{
-		log.debug("Find private fields from hierarchy for entity class {}", type.getCanonicalName());
+		log.debug("Find inherited private fields from hierarchy for entity class {}",
+				type.getCanonicalName());
 
-		List<Field> result = new ArrayList<Field>();
+		List<Field> fields = new ArrayList<Field>();
 
 		Class<?> i = type;
 		while (i != null && i != Object.class)
@@ -312,18 +352,22 @@ public class EntityIntrospector
 			{
 				if (filter.matches(declaredField))
 				{
-					result.add(declaredField);
+					fields.add(declaredField);
 				}
 			}
 			i = i.getSuperclass();
 		}
-
-		return result;
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found inherited private fields : {}",
+					Lists.transform(fields, fieldToStringFn));
+		}
+		return fields;
 	}
 
 	public Field getInheritedPrivateFields(Class<?> type, Class<?> annotation)
 	{
-		log.debug("Find private fields from hierarchy with annotation {} for entity class {}",
+		log.debug("Find private field from hierarchy with annotation {} for entity class {}",
 				annotation.getCanonicalName(), type.getCanonicalName());
 
 		Class<?> i = type;
@@ -333,6 +377,10 @@ public class EntityIntrospector
 			{
 				if (filter.matches(declaredField, annotation))
 				{
+					if (log.isTraceEnabled())
+					{
+						log.trace("Found inherited private field : {}", declaredField);
+					}
 					return declaredField;
 				}
 			}
@@ -354,6 +402,10 @@ public class EntityIntrospector
 			{
 				if (filter.matches(declaredField, annotation, name))
 				{
+					if (log.isTraceEnabled())
+					{
+						log.trace("Found inherited private field : {}", declaredField);
+					}
 					return declaredField;
 				}
 			}
@@ -362,7 +414,7 @@ public class EntityIntrospector
 		return null;
 	}
 
-	public List<Object> determineMultiKey(Object entity, List<Method> componentGetters)
+	public List<Object> determineMultiKeyValues(Object entity, List<Method> componentGetters)
 	{
 		log.debug("Determine multi-key components for entity {} ", entity);
 
@@ -370,7 +422,6 @@ public class EntityIntrospector
 
 		if (entity != null)
 		{
-
 			for (Method getter : componentGetters)
 			{
 
@@ -386,6 +437,10 @@ public class EntityIntrospector
 				}
 				multiKeyValues.add(key);
 			}
+		}
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found multi key values : {}", multiKeyValues);
 		}
 		return multiKeyValues;
 	}

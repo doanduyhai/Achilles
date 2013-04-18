@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
@@ -22,6 +23,8 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ThriftLoaderImpl
@@ -31,6 +34,8 @@ import org.apache.commons.lang.StringUtils;
  */
 public class ThriftLoaderImpl
 {
+	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
+
 	private EntityMapper mapper = new EntityMapper();
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private CompositeFactory compositeFactory = new CompositeFactory();
@@ -38,6 +43,11 @@ public class ThriftLoaderImpl
 	@SuppressWarnings("unchecked")
 	public <T, ID> T load(PersistenceContext<ID> context) throws Exception
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
+					.getCanonicalName(), context.getPrimaryKey());
+		}
 		Class<T> entityClass = (Class<T>) context.getEntityClass();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
@@ -46,6 +56,11 @@ public class ThriftLoaderImpl
 		T entity = null;
 		if (columns.size() > 0)
 		{
+			if (log.isTraceEnabled())
+			{
+				log.trace("Mapping data from Cassandra columns to entity");
+			}
+
 			entity = entityClass.newInstance();
 			mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
 			introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
@@ -64,10 +79,20 @@ public class ThriftLoaderImpl
 		String serialVersionUIDString = dao.getValue(key, composite);
 		if (StringUtils.isNotBlank(serialVersionUIDString))
 		{
+			if (log.isTraceEnabled())
+			{
+				log.trace("Serial version UID {} found for column family {} and primary key {}",
+						serialVersionUIDString, dao.getColumnFamily(), key);
+			}
 			return Long.parseLong(serialVersionUIDString);
 		}
 		else
 		{
+			if (log.isTraceEnabled())
+			{
+				log.trace("No serial version UID found for column family {} and primary key {}",
+						dao.getColumnFamily(), key);
+			}
 			return null;
 		}
 	}
@@ -76,6 +101,14 @@ public class ThriftLoaderImpl
 			PropertyMeta<?, V> propertyMeta)
 	{
 		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading simple property {} of class {} from column family {} with primary key {} and composite column name {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey(),
+					format(composite));
+		}
 		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
 				context.getPrimaryKey(), composite));
 	}
@@ -87,7 +120,13 @@ public class ThriftLoaderImpl
 		Composite keyComp = compositeFactory.createKeyForCounter(propertyMeta.fqcn(),
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		Composite comp = compositeFactory.createBaseForCounterGet(propertyMeta);
-
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading counter property {} of class {} from column family {} with primary key {} and composite column name {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), format(keyComp), format(comp));
+		}
 		return loadCounterWithConsistencyLevel(context, propertyMeta, keyComp, comp);
 	}
 
@@ -104,12 +143,24 @@ public class ThriftLoaderImpl
 		Long counter;
 		try
 		{
+			if (log.isTraceEnabled())
+			{
+				log.trace(
+						"Loading counter property {} of class {} from column family {} with primary key {} and composite column name {} and consistency level {}",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+								.getEntityMeta().getColumnFamilyName(), format(keyComp),
+						format(comp), propertyMeta.getReadConsistencyLevel().name());
+			}
 			counter = context.getCounterDao().getCounterValue(keyComp, comp);
 		}
 		finally
 		{
 			if (resetConsistencyLevel)
 			{
+				if (log.isTraceEnabled())
+				{
+					log.trace("Resetting to default consistency level");
+				}
 				policy.removeCurrentReadLevel();
 			}
 		}
@@ -119,6 +170,13 @@ public class ThriftLoaderImpl
 	public <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading list property {} of class {} from column family {} with primary key {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+		}
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		List<V> list = null;
 		if (columns.size() > 0)
@@ -135,7 +193,13 @@ public class ThriftLoaderImpl
 	public <ID, V> Set<V> loadSetProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading set property {} of class {} from column family {} with primary key {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+		}
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<V> set = null;
 		if (columns.size() > 0)
@@ -152,6 +216,13 @@ public class ThriftLoaderImpl
 	public <ID, K, V> Map<K, V> loadMapProperty(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading map property {} of class {} from column family {} with primary key {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+		}
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Class<K> keyClass = propertyMeta.getKeyClass();
 		Map<K, V> map = null;
@@ -171,8 +242,14 @@ public class ThriftLoaderImpl
 	private <ID, V> List<Pair<Composite, String>> fetchColumns(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Fetching columns from Cassandra with column names {} / {}", format(start),
+					format(end));
+		}
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 		return columns;
@@ -188,6 +265,14 @@ public class ThriftLoaderImpl
 
 		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Loading join primary key for property {} of class {} from column family {} with primary key {} and column name {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey(),
+					format(composite));
+		}
 		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);
 
 		if (stringJoinId != null)

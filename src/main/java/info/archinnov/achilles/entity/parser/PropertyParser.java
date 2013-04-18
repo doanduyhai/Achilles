@@ -36,6 +36,8 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PropertyParser
@@ -45,6 +47,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class PropertyParser
 {
+	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
 	private PropertyHelper propertyHelper = new PropertyHelper();
 	private EntityIntrospector entityIntrospector = new EntityIntrospector();
@@ -52,15 +55,17 @@ public class PropertyParser
 
 	public PropertyMeta<?, ?> parse(PropertyParsingContext context)
 	{
+		log.debug("Parsing property {} of entity class {}", context.getCurrentPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName());
+
 		Field field = context.getCurrentField();
-		this.inferPropertyNameAndExternalTableName(context);
+		inferPropertyNameAndExternalTableName(context);
 		context.setCounterType(propertyHelper.hasCounterAnnotation(field));
 		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context
 				.getCurrentField()));
 
-		this.validator.validateNoDuplicate(context);
-		// this.validator.validateCounterNotExternal(context);
-		this.validator.validateDirectCFMappingNoExternalWideMap(context);
+		validator.validateNoDuplicate(context);
+		validator.validateDirectCFMappingNoExternalWideMap(context);
 
 		Class<?> fieldType = field.getType();
 		PropertyMeta<?, ?> propertyMeta;
@@ -97,6 +102,8 @@ public class PropertyParser
 
 	public PropertyMeta<Void, ?> parseSimpleProperty(PropertyParsingContext context)
 	{
+		log.debug("Parsing property {} as simple property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
@@ -120,6 +127,7 @@ public class PropertyParser
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.accessors(accessors) //
 				.counterProperties(counterProperties) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
@@ -134,12 +142,20 @@ public class PropertyParser
 			}
 		}
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built simple property meta for property {} of entity class {} : {}",
+					propertyMeta.getPropertyName(), context.getCurrentEntityClass()
+							.getCanonicalName(), propertyMeta);
+		}
 		return propertyMeta;
-
 	}
 
 	public <V> PropertyMeta<Void, V> parseListProperty(PropertyParsingContext context)
 	{
+
+		log.debug("Parsing property {} as list property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
@@ -153,17 +169,30 @@ public class PropertyParser
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-		return factory(valueClass) //
+		PropertyMeta<Void, V> listMeta = factory(valueClass) //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.accessors(accessors).build();
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built list property meta for property {} of entity class {} : {}",
+					listMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+					listMeta);
+		}
+
+		return listMeta;
 
 	}
 
 	public <V> PropertyMeta<Void, V> parseSetProperty(PropertyParsingContext context)
 	{
+		log.debug("Parsing property {} as set property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
@@ -176,24 +205,39 @@ public class PropertyParser
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-		return factory(valueClass) //
+		PropertyMeta<Void, V> setMeta = factory(valueClass) //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors).build();
+				.accessors(accessors)//
+				.build();
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built set property meta for property {} of  entity class {} : {}",
+					setMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+					setMeta);
+		}
+
+		return setMeta;
 	}
 
-	public PropertyMeta<?, ?> parseMapProperty(PropertyParsingContext context)
+	@SuppressWarnings("unchecked")
+	public <K, V> PropertyMeta<K, V> parseMapProperty(PropertyParsingContext context)
 	{
+		log.debug("Parsing property {} as map property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
 		validator.validateMapGenerics(field, entityClass);
 
 		Pair<Class<?>, Class<?>> types = determineMapGenericTypes(field);
-		Class<?> keyClass = types.left;
-		Class<?> valueClass = types.right;
+		Class<K> keyClass = (Class<K>) types.left;
+		Class<V> valueClass = (Class<V>) types.right;
 
 		Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
 				+ "' should be Serializable");
@@ -203,17 +247,30 @@ public class PropertyParser
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-		return factory(keyClass, valueClass) //
+		PropertyMeta<K, V> mapMeta = factory(keyClass, valueClass) //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.accessors(accessors).build();
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built map property meta for property {} of entity class {} : {}",
+					mapMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+					mapMeta);
+		}
+
+		return mapMeta;
 
 	}
 
 	public PropertyMeta<?, ?> parseWideMapProperty(PropertyParsingContext context)
 	{
+		log.debug("Parsing property {} as wide map property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 		validator.validateWideMapGenerics(context);
 
 		Class<?> entityClass = context.getCurrentEntityClass();
@@ -227,7 +284,7 @@ public class PropertyParser
 		Class<?> valueClass = types.right;
 
 		// Multi or Single Key
-		multiKeyProperties = parseWideMapKey(multiKeyProperties, keyClass);
+		multiKeyProperties = parseWideMapMultiKey(multiKeyProperties, keyClass);
 
 		if (context.isCounterType())
 		{
@@ -243,6 +300,7 @@ public class PropertyParser
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.accessors(accessors) //
 				.multiKeyProperties(multiKeyProperties) //
 				.counterProperties(counterProperties) //
@@ -257,12 +315,22 @@ public class PropertyParser
 		saveWideMapForDeferredBinding(context, propertyMeta);
 		fillWideMapCustomConsistencyLevels(context, propertyMeta);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built wide map property meta for property {} of entity class {} : {}",
+					propertyMeta.getPropertyName(), context.getCurrentEntityClass()
+							.getCanonicalName(), propertyMeta);
+		}
 		return propertyMeta;
 	}
 
 	public <ID, V> void fillWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
 			PropertyMeta<?, V> propertyMeta, String externalTableName)
 	{
+		log.debug("Filling wide map meta {} of entity class {} with id meta {} info",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				idMeta.getPropertyName());
+
 		GenericColumnFamilyDao<ID, ?> dao;
 		Cluster cluster = context.getCluster();
 		Keyspace keyspace = context.getKeyspace();
@@ -289,10 +357,22 @@ public class PropertyParser
 			context.getColumnFamilyDaosMap().put(externalTableName, dao);
 		}
 		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Complete wide map property {} of entity class {} : {}", propertyMeta
+					.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+					propertyMeta);
+		}
 	}
 
 	private void inferPropertyNameAndExternalTableName(PropertyParsingContext context)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Infering property name and column family name for property {}",
+					context.getCurrentPropertyName());
+		}
 		String propertyName, externalTableName = null;
 		Field field = context.getCurrentField();
 		if (context.isJoinColumn())
@@ -314,10 +394,16 @@ public class PropertyParser
 
 		context.setCurrentPropertyName(propertyName);
 		context.setCurrentExternalTableName(externalTableName);
+
 	}
 
 	private Pair<Class<?>, Class<?>> determineMapGenericTypes(Field field)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
+					field.getName(), field.getDeclaringClass().getCanonicalName());
+		}
 		Type genericType = field.getGenericType();
 		ParameterizedType pt = (ParameterizedType) genericType;
 		Type[] actualTypeArguments = pt.getActualTypeArguments();
@@ -326,9 +412,14 @@ public class PropertyParser
 				(Class<?>) actualTypeArguments[1]);
 	}
 
-	private MultiKeyProperties parseWideMapKey(MultiKeyProperties multiKeyProperties,
+	private MultiKeyProperties parseWideMapMultiKey(MultiKeyProperties multiKeyProperties,
 			Class<?> keyClass)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
+		}
+
 		if (MultiKey.class.isAssignableFrom(keyClass))
 		{
 			multiKeyProperties = propertyHelper.parseMultiKey(keyClass);
@@ -343,12 +434,22 @@ public class PropertyParser
 									+ keyClass.getCanonicalName()
 									+ "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
 		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built multi key properties", multiKeyProperties);
+		}
 		return multiKeyProperties;
 	}
 
 	private void saveWideMapForDeferredBinding(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
+		}
+
 		String externalTableName;
 
 		if (context.isColumnFamilyDirectMapping())
@@ -391,6 +492,10 @@ public class PropertyParser
 	private void fillWideMapCustomConsistencyLevels(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
+		}
 		boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(context
 				.getCurrentField());
 		String externalTableName = context.getCurrentExternalTableName();
@@ -406,12 +511,21 @@ public class PropertyParser
 					consistencyLevels.right.getHectorLevel(), externalTableName);
 
 			propertyMeta.setConsistencyLevels(consistencyLevels);
+
+			if (log.isTraceEnabled())
+			{
+				log.trace("Found custom consistency levels : {}", consistencyLevels);
+			}
 		}
 	}
 
 	private <T> CounterProperties buildCounterProperties(Class<T> valueClass,
 			PropertyParsingContext context)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
+		}
 		CounterProperties counterProperties;
 		PropertyParsingValidator
 				.validateAllowedTypes(
@@ -422,6 +536,11 @@ public class PropertyParser
 								+ "'. Only java.lang.Long and primitive long are allowed for @Counter types");
 		counterProperties = new CounterProperties(context.getCurrentEntityClass()
 				.getCanonicalName());
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built counter properties : {}", counterProperties);
+		}
 		return counterProperties;
 	}
 
@@ -429,11 +548,19 @@ public class PropertyParser
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
+		}
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
 				.findConsistencyLevels(context.getCurrentField());
 
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found custom consistency levels : {}", consistencyLevels);
+		}
 		propertyMeta.setConsistencyLevels(consistencyLevels);
 	}
 

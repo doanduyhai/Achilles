@@ -77,9 +77,9 @@ public class CompositeHelper
 						.getComponentGetters();
 				String propertyName = wideMapMeta.getPropertyName();
 
-				List<Object> startComponentValues = introspector.determineMultiKey(start,
+				List<Object> startComponentValues = introspector.determineMultiKeyValues(start,
 						componentGetters);
-				List<Object> endComponentValues = introspector.determineMultiKey(end, componentGetters);
+				List<Object> endComponentValues = introspector.determineMultiKeyValues(end, componentGetters);
 
 				this.findLastNonNullIndexForComponents(propertyName, startComponentValues);
 				this.findLastNonNullIndexForComponents(propertyName, endComponentValues);

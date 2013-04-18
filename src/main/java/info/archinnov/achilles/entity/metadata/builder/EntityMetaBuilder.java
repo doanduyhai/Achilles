@@ -15,6 +15,9 @@ import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityMetaBuilder
  * 
@@ -23,6 +26,7 @@ import me.prettyprint.hector.api.Serializer;
  */
 public class EntityMetaBuilder<ID>
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
 	private PropertyMeta<Void, ID> idMeta;
 	private String className;
@@ -44,6 +48,7 @@ public class EntityMetaBuilder<ID>
 
 	public EntityMeta<ID> build()
 	{
+		log.debug("Build entityMeta for entity class {}", className);
 
 		Validator.validateNotNull(keyspace, "keyspace should not be null");
 		Validator.validateNotNull(idMeta, "idMeta should not be null");

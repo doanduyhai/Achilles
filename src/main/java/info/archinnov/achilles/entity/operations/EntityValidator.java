@@ -9,6 +9,9 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityValidator
  * 
@@ -17,6 +20,8 @@ import java.util.Map;
  */
 public class EntityValidator
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
+
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private EntityProxifier proxifier = new EntityProxifier();
 
@@ -33,6 +38,8 @@ public class EntityValidator
 
 	public void validateEntity(Object entity, EntityMeta<?> entityMeta)
 	{
+		log.debug("Validate entity {}", entity);
+
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed by Achilles");
 
@@ -48,6 +55,8 @@ public class EntityValidator
 	public <T, ID> void validateNotCFDirectMapping(Object entity,
 			Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
+		log.debug("Validate entity {} is not a direct column family mapping", entity);
+
 		Validator.validateNotNull(entity, "Entity should not be null");
 
 		Class<T> baseClass = (Class<T>) proxifier.deriveBaseClass(entity);
@@ -63,6 +72,7 @@ public class EntityValidator
 
 	public <ID> void validateNoPendingBatch(PersistenceContext<ID> context)
 	{
+		log.debug("Validate no pending batch");
 		Validator
 				.validateFalse(
 						context.isBatchMode(),
@@ -71,6 +81,8 @@ public class EntityValidator
 
 	public <ID> void validateNoPendingBatch(FlushContext flushContext)
 	{
+		log.debug("Validate no pending batch");
+
 		Validator
 				.validateFalse(
 						flushContext.type() == BatchType.BATCH,

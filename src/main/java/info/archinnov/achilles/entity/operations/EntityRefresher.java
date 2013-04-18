@@ -3,6 +3,9 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityRefresher
  * 
@@ -11,6 +14,7 @@ import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
  */
 public class EntityRefresher
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
 
 	private EntityProxifier proxifier = new EntityProxifier();
 	private EntityLoader loader = new EntityLoader();
@@ -18,6 +22,8 @@ public class EntityRefresher
 	@SuppressWarnings("unchecked")
 	public <ID, T> void refresh(PersistenceContext<ID> context)
 	{
+		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
 
 		Object entity = context.getEntity();
 

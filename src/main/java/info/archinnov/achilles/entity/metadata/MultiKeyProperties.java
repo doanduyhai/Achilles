@@ -1,9 +1,15 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.helper.LoggerHelper.*;
+
 import java.lang.reflect.Method;
 import java.util.List;
 
 import me.prettyprint.hector.api.Serializer;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * MultiKeyProperties
@@ -57,4 +63,14 @@ public class MultiKeyProperties
 	{
 		this.componentSetters = componentSetters;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "MultiKeyProperties [componentClasses="
+				+ StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ",")
+				+ ", componentSerializers="
+				+ StringUtils.join(Lists.transform(componentSerializers, srzToStringFn), ",") + "]";
+	}
+
 }

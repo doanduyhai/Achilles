@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.PERSIST;
+import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -19,6 +18,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * EntityPersister
@@ -28,6 +29,7 @@ import org.apache.commons.lang.Validate;
  */
 public class EntityPersister
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
 
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private EntityLoader loader = new EntityLoader();
@@ -35,10 +37,13 @@ public class EntityPersister
 
 	public <ID> void persist(PersistenceContext<ID> context)
 	{
+
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
 		if (!entityMeta.isColumnFamilyDirectMapping())
 		{
+			log.debug("Persisting transient entity {}", context.getEntity());
+
 			persisterImpl.batchPersistVersionSerialUID(context);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
@@ -52,6 +57,8 @@ public class EntityPersister
 	public <ID, V> void persistProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
+				context.getEntity());
 
 		switch (propertyMeta.type())
 		{
@@ -91,12 +98,19 @@ public class EntityPersister
 
 	public <ID> void remove(PersistenceContext<ID> context)
 	{
+		log.debug("Removing entity of class {} and primary key {} ", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
+
 		persisterImpl.remove(context);
 	}
 
 	public <ID, V> void removePropertyBatch(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+		log.debug("Removing property {} from entity of class {} and primary key {} ",
+				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
+
 		persisterImpl.removePropertyBatch(context, propertyMeta);
 	}
 
@@ -104,6 +118,7 @@ public class EntityPersister
 	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(PersistenceContext<ID> context,
 			V joinEntity, JoinProperties joinProperties)
 	{
+
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();
 		JOIN_ID joinId = introspector.getKey(joinEntity, joinMeta.getIdMeta());
 		Validate.notNull(joinId, "key value for entity '" + joinMeta.getClassName()
@@ -112,10 +127,16 @@ public class EntityPersister
 		Set<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
 		if (cascadeTypes.contains(ALL) || cascadeTypes.contains(PERSIST))
 		{
+			log.debug("Cascade-persisting entity of class {} and primary key {} ", context
+					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+
 			persist(context);
 		}
 		else
 		{
+			log.debug("Consistency check for join entity of class {} and primary key {} ", context
+					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+
 			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
 					context.findEntityDao(joinMeta.getColumnFamilyName()));
 			Validator
@@ -136,7 +157,6 @@ public class EntityPersister
 	private <ID, V> void batchPersistListProperty(PersistenceContext<ID> context,
 			PropertyMeta<Void, V> propertyMeta)
 	{
-
 		List<V> list = (List<V>) introspector.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (list != null)
@@ -192,8 +212,7 @@ public class EntityPersister
 				context.getEntity(), propertyMeta.getGetter());
 		if (joinCollection != null)
 		{
-			persisterImpl.batchPersistJoinCollection(context, propertyMeta, joinCollection,
-					this);
+			persisterImpl.batchPersistJoinCollection(context, propertyMeta, joinCollection, this);
 		}
 	}
 
@@ -201,7 +220,6 @@ public class EntityPersister
 	private <ID, K, V, JOIN_ID> void batchPersistJoinMapProperty(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
-
 		Map<K, V> joinMap = (Map<K, V>) introspector.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 

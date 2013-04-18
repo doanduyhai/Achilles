@@ -15,6 +15,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JoinPropertyParser
  * 
@@ -23,18 +26,24 @@ import javax.persistence.OneToOne;
  */
 public class JoinPropertyParser
 {
+	private static final Logger log = LoggerFactory.getLogger(JoinPropertyParser.class);
+
 	private PropertyFilter filter = new PropertyFilter();
 	private PropertyParser parser = new PropertyParser();
 
 	public PropertyMeta<?, ?> parseJoin(PropertyParsingContext context)
 	{
+
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
 		PropertyMeta<?, ?> joinPropertyMeta = this.parser.parse(context);
 
-		JoinProperties joinProperties = findCascadeType(entityClass.getCanonicalName(), field);
-		joinPropertyMeta.setJoinProperties(joinProperties);
+		log.debug("Parsing join property meta {} for entity {}",
+				joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass()
+						.getCanonicalName());
+
+		joinPropertyMeta.setJoinProperties(findCascadeType(entityClass.getCanonicalName(), field));
 
 		// Override each type by their JOIN type counterpart
 		switch (joinPropertyMeta.type())
@@ -71,16 +80,33 @@ public class JoinPropertyParser
 	public <ID> void fillJoinWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
 			PropertyMeta<?, ?> joinPropertyMeta, String externalTableName)
 	{
+		log.debug("Filling join wide map meta {} of entity class {} with id meta {} info",
+				joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass()
+						.getCanonicalName(), idMeta.getPropertyName());
+
 		joinPropertyMeta.setExternalCfName(ColumnFamilyHelper
 				.normalizerAndValidateColumnFamilyName(externalTableName));
 		joinPropertyMeta.setIdSerializer(idMeta.getValueSerializer());
 		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
 		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
 				joinPropertyMeta.getValueClass());
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Complete join wide map property {} of entity class {} : {}",
+					joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass()
+							.getCanonicalName(), joinPropertyMeta);
+		}
 	}
 
 	private JoinProperties findCascadeType(String entityFQN, Field field)
 	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find cascade type for property {} of entity class {}", field.getName(),
+					field.getDeclaringClass().getCanonicalName());
+		}
+
 		JoinProperties joinProperties = new JoinProperties();
 
 		if (filter.hasAnnotation(field, OneToOne.class))
@@ -102,6 +128,12 @@ public class JoinPropertyParser
 		{
 			ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
 			joinProperties.addCascadeType(Arrays.asList(manyToMany.cascade()));
+		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built join properties for property {} of entity class {}", joinProperties,
+					field.getName(), field.getDeclaringClass().getCanonicalName());
 		}
 		return joinProperties;
 	}

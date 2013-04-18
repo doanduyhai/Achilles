@@ -14,6 +14,8 @@ import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * PropertyMetaFactory
@@ -23,8 +25,11 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class PropertyMetaFactory<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(PropertyMetaFactory.class);
+
 	private PropertyType type;
 	private String propertyName;
+	private String entityClassName;
 	private Class<K> keyClass;
 	private Class<V> valueClass;
 	private Method[] accessors;
@@ -56,6 +61,12 @@ public class PropertyMetaFactory<K, V>
 		return this;
 	}
 
+	public PropertyMetaFactory<K, V> entityClassName(String entityClassName)
+	{
+		this.entityClassName = entityClassName;
+		return this;
+	}
+
 	public PropertyMetaFactory<K, V> objectMapper(ObjectMapper objectMapper)
 	{
 		this.objectMapper = objectMapper;
@@ -69,6 +80,9 @@ public class PropertyMetaFactory<K, V>
 	})
 	public PropertyMeta<K, V> build()
 	{
+		log.debug("Build propertyMeta for property {} of entity class {}", propertyName,
+				entityClassName);
+
 		PropertyMeta<K, V> meta = null;
 		boolean singleKey = multiKeyProperties == null ? true : false;
 		switch (type)
@@ -99,6 +113,7 @@ public class PropertyMetaFactory<K, V>
 		meta.setObjectMapper(objectMapper);
 		meta.setType(type);
 		meta.setPropertyName(propertyName);
+		meta.setEntityClassName(entityClassName);
 		meta.setKeyClass(keyClass);
 		if (keyClass != Void.class)
 		{

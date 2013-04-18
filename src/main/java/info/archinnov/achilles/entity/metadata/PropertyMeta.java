@@ -31,6 +31,7 @@ public class PropertyMeta<K, V>
 	private ObjectMapper objectMapper;
 	private PropertyType type;
 	private String propertyName;
+	private String entityClassName;
 	private Class<K> keyClass;
 	private Serializer<K> keySerializer;
 	private Class<V> valueClass;
@@ -371,5 +372,32 @@ public class PropertyMeta<K, V>
 	public void setIdSerializer(Serializer<?> idSerializer)
 	{
 		this.idSerializer = idSerializer;
+	}
+
+	public String getEntityClassName()
+	{
+		return entityClassName;
+	}
+
+	public void setEntityClassName(String entityClassName)
+	{
+		this.entityClassName = entityClassName;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "PropertyMeta [type=" + type + ", propertyName=" + propertyName
+				+ ", entityClassName=" + entityClassName + ", keyClass="
+				+ keyClass.getCanonicalName() + ", keySerializer=" + keySerializer != null ? keySerializer
+				.getComparatorType().getTypeName() : "null" + ", valueClass="
+				+ valueClass.getCanonicalName() + ", valueSerializer="
+				+ valueSerializer.getComparatorType().getTypeName() + ", counterProperties="
+				+ counterProperties + ", joinProperties=" + joinProperties
+				+ ", multiKeyProperties=" + multiKeyProperties + ", externalCfName="
+				+ externalCfName + ", idSerializer=" + idSerializer != null ? idSerializer
+				.getComparatorType().getTypeName() : "null" + ", consistencyLevels=["
+				+ consistencyLevels.left.name() + "," + consistencyLevels.right.name()
+				+ "], singleKey=" + singleKey + "]";
 	}
 }

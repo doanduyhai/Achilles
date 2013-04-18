@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.metadata;
 
-
 /**
  * CounterProperties
  * 
@@ -39,5 +38,11 @@ public class CounterProperties
 	public void setIdMeta(PropertyMeta<Void, ?> idMeta)
 	{
 		this.idMeta = idMeta;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CounterProperties [fqcn=" + fqcn + ", idMeta=" + idMeta + "]";
 	}
 }

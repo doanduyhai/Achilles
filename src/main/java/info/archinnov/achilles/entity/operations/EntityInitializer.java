@@ -20,6 +20,8 @@ public class EntityInitializer
 
 	public <T> void initializeEntity(T entity, EntityMeta<?> entityMeta)
 	{
+		log.debug("Initializing lazy fields for entity {} of class {}", entity,
+				entityMeta.getClassName());
 		for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
 		{
 			PropertyType type = propertyMeta.type();

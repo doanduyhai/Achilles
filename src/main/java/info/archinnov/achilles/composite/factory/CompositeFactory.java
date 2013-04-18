@@ -54,7 +54,7 @@ public class CompositeFactory
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityIntrospector.determineMultiKey(keyValue,
+			List<Object> keyValues = entityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
@@ -106,7 +106,7 @@ public class CompositeFactory
 
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityIntrospector.determineMultiKey(keyValue,
+			List<Object> keyValues = entityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();

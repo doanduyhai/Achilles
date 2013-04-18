@@ -26,6 +26,8 @@ import javax.persistence.JoinColumn;
 import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * EntityParser
@@ -35,6 +37,8 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class EntityParser
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
+
 	private EntityParsingValidator validator = new EntityParsingValidator();
 	private PropertyParser parser = new PropertyParser();
 	private JoinPropertyParser joinParser = new JoinPropertyParser();
@@ -44,6 +48,8 @@ public class EntityParser
 	@SuppressWarnings("unchecked")
 	public <ID> EntityMeta<ID> parseEntity(EntityParsingContext context)
 	{
+		log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
+
 		Class<?> entityClass = context.getCurrentEntityClass();
 		validateEntityAndGetObjectMapper(context);
 
@@ -77,7 +83,6 @@ public class EntityParser
 				propertyContext.setJoinColumn(true);
 				joinParser.parseJoin(propertyContext);
 			}
-
 		}
 
 		// First validate id meta
@@ -109,6 +114,11 @@ public class EntityParser
 		buildDao(context, columnFamilyName, idMeta);
 		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass()
+					.getCanonicalName(), entityMeta);
+		}
 		return entityMeta;
 	}
 
@@ -116,6 +126,8 @@ public class EntityParser
 	public <ID, JOIN_ID> void fillJoinEntityMeta(EntityParsingContext context,
 			Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
+		log.debug("Fill in join entity meta into property meta of join type");
+
 		// Retrieve EntityMeta objects for join columns after entities parsing
 		for (Entry<PropertyMeta<?, ?>, Class<?>> entry : context.getJoinPropertyMetaToBeFilled()
 				.entrySet())
@@ -140,21 +152,36 @@ public class EntityParser
 						propertyMeta.getExternalCFName(),//
 						context.getConfigurableCLPolicy());
 
+				log.debug("Building join dao for column family {}",
+						propertyMeta.getExternalCFName());
+
 				context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
+			}
+
+			if (log.isTraceEnabled())
+			{
+				log.trace("Join property meta built for entity class {} : {}", context
+						.getCurrentEntityClass().getCanonicalName(), propertyMeta);
 			}
 		}
 	}
 
 	private void validateEntityAndGetObjectMapper(EntityParsingContext context)
 	{
+
 		Class<?> entityClass = context.getCurrentEntityClass();
+		log.debug("Validate entity {}", entityClass.getCanonicalName());
+
 		Validator.validateSerializable(entityClass, "The entity '" + entityClass.getCanonicalName()
 				+ "' should implements java.io.Serializable");
 		Validator.validateInstantiable(entityClass);
+
 		ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
 		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '"
 				+ entityClass.getCanonicalName() + "'");
 
+		log.debug("Set default object mapper {} for entity {}", objectMapper.getClass()
+				.getCanonicalName(), entityClass.getCanonicalName());
 		context.setCurrentObjectMapper(objectMapper);
 	}
 
@@ -163,6 +190,10 @@ public class EntityParser
 		for (Entry<PropertyMeta<?, ?>, String> entry : context.getWideMaps().entrySet())
 		{
 			PropertyMeta<?, ?> externalWideMapMeta = entry.getKey();
+
+			log.debug("Fill wide map meta {} of entity class {}", externalWideMapMeta
+					.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 			parser.fillWideMap(context, idMeta, externalWideMapMeta, entry.getValue());
 		}
 	}
@@ -172,7 +203,12 @@ public class EntityParser
 	{
 		for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinWideMaps().entrySet())
 		{
+
 			PropertyMeta<?, ?> joinExternalWideMapMeta = entry.getKey();
+
+			log.debug("Fill join wide map meta {} of entity class {}", joinExternalWideMapMeta
+					.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 			joinParser.fillJoinWideMap(context, idMeta, joinExternalWideMapMeta, entry.getValue());
 		}
 	}
@@ -182,6 +218,11 @@ public class EntityParser
 	{
 		for (PropertyMeta<?, ?> counterMeta : context.getCounterMetas())
 		{
+
+			log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta
+					.getPropertyName(), counterMeta.getPropertyName(), context
+					.getCurrentEntityClass().getCanonicalName());
+
 			counterMeta.getCounterProperties().setIdMeta(idMeta);
 		}
 	}
@@ -195,12 +236,17 @@ public class EntityParser
 				columnFamilyName, //
 				context.getConfigurableCLPolicy());
 
+		log.debug("Build entity dao for column family {}", columnFamilyName);
+
 		context.getEntityDaosMap().put(columnFamilyName, entityDao);
 	}
 
 	private void saveConsistencyLevel(EntityParsingContext context, String columnFamilyName,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
+		log.debug("Set default read/write consistency levels {} / {} for column family {}",
+				consistencyLevels.left.name(), consistencyLevels.right.name(), columnFamilyName);
+
 		context.getConfigurableCLPolicy().setConsistencyLevelForRead(
 				consistencyLevels.left.getHectorLevel(), columnFamilyName);
 		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(

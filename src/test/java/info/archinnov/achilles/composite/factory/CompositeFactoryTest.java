@@ -96,7 +96,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		Composite comp = factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
@@ -119,7 +119,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		expectedEx.expect(AchillesException.class);
@@ -141,7 +141,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		expectedEx.expect(AchillesException.class);
@@ -182,7 +182,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKey(tweetMultiKey, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
@@ -244,9 +244,9 @@ public class CompositeFactoryTest
 						GREATER_THAN_EQUAL
 				});
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKey(tweetKey1, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetKey1, componentGetters)).thenReturn(
 				keyValues1);
-		when(entityIntrospector.determineMultiKey(tweetKey2, componentGetters)).thenReturn(
+		when(entityIntrospector.determineMultiKeyValues(tweetKey2, componentGetters)).thenReturn(
 				keyValues2);
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);

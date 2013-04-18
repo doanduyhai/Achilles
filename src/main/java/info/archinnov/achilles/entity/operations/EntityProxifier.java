@@ -15,6 +15,9 @@ import java.util.Set;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityProxifier
  * 
@@ -23,9 +26,12 @@ import net.sf.cglib.proxy.Factory;
  */
 public class EntityProxifier
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
 	public <ID> Class<?> deriveBaseClass(Object entity)
 	{
+		log.debug("Deriving base class for entity {} ", entity);
+
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
@@ -39,10 +45,13 @@ public class EntityProxifier
 	@SuppressWarnings("unchecked")
 	public <T, ID> T buildProxy(T entity, PersistenceContext<ID> context)
 	{
+
 		if (entity == null)
 		{
 			return null;
 		}
+
+		log.debug("Build Cglib proxy for entity {} ", entity);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
@@ -55,6 +64,8 @@ public class EntityProxifier
 	@SuppressWarnings("unchecked")
 	public <T, ID> T getRealObject(T proxy)
 	{
+		log.debug("Get real entity from proxy {} ", proxy);
+
 		Factory factory = (Factory) proxy;
 		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
 				.getCallback(0);
@@ -69,6 +80,8 @@ public class EntityProxifier
 	@SuppressWarnings("unchecked")
 	public <T, ID> JpaEntityInterceptor<ID, T> getInterceptor(T proxy)
 	{
+		log.debug("Get JPA interceptor from proxy {} ", proxy);
+
 		Factory factory = (Factory) proxy;
 		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
 				.getCallback(0);
@@ -85,6 +98,8 @@ public class EntityProxifier
 
 	public <T> T unproxy(T proxy)
 	{
+		log.debug("Unproxying object {} ", proxy);
+
 		if (proxy != null)
 		{
 
@@ -116,7 +131,6 @@ public class EntityProxifier
 
 	public <T> Collection<T> unproxy(Collection<T> proxies)
 	{
-
 		Collection<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{

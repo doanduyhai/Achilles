@@ -21,6 +21,9 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.beans.Composite;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JoinEntityLoader
  * 
@@ -29,6 +32,8 @@ import me.prettyprint.hector.api.beans.Composite;
  */
 public class ThriftJoinLoaderImpl
 {
+	private static final Logger log = LoggerFactory.getLogger(ThriftJoinLoaderImpl.class);
+
 	private CompositeFactory compositeFactory = new CompositeFactory();
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
@@ -36,8 +41,15 @@ public class ThriftJoinLoaderImpl
 	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
+					.getValueClass().getCanonicalName(), joinIds);
+		}
+
 		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
@@ -95,6 +107,12 @@ public class ThriftJoinLoaderImpl
 
 		if (joinIds.size() > 0)
 		{
+			if (log.isTraceEnabled())
+			{
+				log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
+						.getValueClass().getCanonicalName(), joinIds);
+			}
+
 			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
 
@@ -111,6 +129,13 @@ public class ThriftJoinLoaderImpl
 	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Fetching join keys for property {} of class {} ",
+					propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName());
+		}
+
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(

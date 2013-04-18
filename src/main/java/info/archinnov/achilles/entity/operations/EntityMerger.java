@@ -1,13 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static javax.persistence.CascadeType.ALL;
-import static javax.persistence.CascadeType.MERGE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,6 +23,9 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Sets;
 
 /**
@@ -39,6 +36,8 @@ import com.google.common.collect.Sets;
  */
 public class EntityMerger
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
+
 	private EntityPersister persister = new EntityPersister();
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private EntityProxifier proxifier = new EntityProxifier();
@@ -48,6 +47,9 @@ public class EntityMerger
 	@SuppressWarnings("unchecked")
 	public <T, ID> T mergeEntity(PersistenceContext<ID> context)
 	{
+		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
+
 		T entity = (T) context.getEntity();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
@@ -57,6 +59,8 @@ public class EntityMerger
 		T proxy;
 		if (proxifier.isProxy(entity))
 		{
+			log.debug("Checking for dirty fields before merging");
+
 			T realObject = proxifier.getRealObject(entity);
 			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxifier
 					.getInterceptor(entity);
@@ -69,6 +73,8 @@ public class EntityMerger
 					PropertyMeta<?, ?> propertyMeta = entry.getValue();
 					if (multiValueTypes.contains(propertyMeta.type()))
 					{
+						log.debug("Removing dirty collection/map {} before merging",
+								propertyMeta.getPropertyName());
 						this.persister.removePropertyBatch(context, propertyMeta);
 					}
 					this.persister.persistProperty(context, propertyMeta);
@@ -86,6 +92,9 @@ public class EntityMerger
 							.getCascadeTypes();
 					if (cascadeTypes.contains(MERGE) || cascadeTypes.contains(ALL))
 					{
+						log.debug("Cascade-merging join property {}",
+								propertyMeta.getPropertyName());
+
 						switch (propertyMeta.type())
 						{
 							case JOIN_SIMPLE:
@@ -111,6 +120,8 @@ public class EntityMerger
 		}
 		else
 		{
+			log.debug("Persisting transient entity");
+
 			if (!context.isDirectColumnFamilyMapping())
 			{
 				this.persister.persist(context);
@@ -125,10 +136,13 @@ public class EntityMerger
 	private <T, ID> void mergeJoinProperty(PersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
+
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		Object joinEntity = introspector.getValueFromField(entity, propertyMeta.getGetter());
+
 		if (joinEntity != null)
 		{
+			log.debug("Merging join entity {} ", joinEntity);
 			Object mergedEntity = mergeEntity(context.newPersistenceContext(
 					joinProperties.getEntityMeta(), joinEntity));
 			introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
@@ -163,6 +177,7 @@ public class EntityMerger
 	{
 		if (joinEntities != null)
 		{
+			log.debug("Merging join collection of entity {} ", joinEntities);
 			for (Object joinEntity : joinEntities)
 			{
 				Object mergedEntity = mergeEntity(context.newPersistenceContext(
@@ -181,6 +196,7 @@ public class EntityMerger
 		Map<Object, Object> mergedEntitiesMap = new HashMap<Object, Object>();
 		if (joinEntitiesMap != null)
 		{
+			log.debug("Merging join map of entity {} ", joinEntitiesMap);
 			for (Entry<?, ?> joinEntityEntry : joinEntitiesMap.entrySet())
 			{
 				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(

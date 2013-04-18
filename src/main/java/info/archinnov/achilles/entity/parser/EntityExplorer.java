@@ -13,6 +13,10 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityExplorer
  * 
@@ -21,11 +25,15 @@ import java.util.zip.ZipInputStream;
  */
 public class EntityExplorer
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityExplorer.class);
 
 	@SuppressWarnings("unchecked")
 	public List<Class<?>> discoverEntities(List<String> packageNames)
 			throws ClassNotFoundException, IOException
 	{
+		log.debug("Discovery of Achilles entity classes in packages {}",
+				StringUtils.join(packageNames, ","));
+
 		List<Class<?>> candidates = new ArrayList<Class<?>>();
 		for (String packageName : packageNames)
 		{
@@ -67,6 +75,7 @@ public class EntityExplorer
 				}
 			}
 		}
+
 		return classList;
 	}
 
@@ -114,6 +123,9 @@ public class EntityExplorer
 				classes.add(className);
 			}
 		}
+
+		log.debug("Candidate entity classes found : {}", StringUtils.join(classes, ","));
+
 		return classes;
 	}
 

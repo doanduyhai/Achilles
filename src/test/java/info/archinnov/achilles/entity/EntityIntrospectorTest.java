@@ -495,7 +495,7 @@ public class EntityIntrospectorTest
 		multiKey.setAuthor("author");
 		multiKey.setRetweetCount(12);
 
-		List<Object> multiKeyList = helper.determineMultiKey(multiKey,
+		List<Object> multiKeyList = helper.determineMultiKeyValues(multiKey,
 				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
 		assertThat(multiKeyList).hasSize(3);
@@ -517,7 +517,7 @@ public class EntityIntrospectorTest
 		multiKey.setId(uuid);
 		multiKey.setRetweetCount(12);
 
-		List<Object> multiKeyList = helper.determineMultiKey(multiKey,
+		List<Object> multiKeyList = helper.determineMultiKeyValues(multiKey,
 				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
 		assertThat(multiKeyList).hasSize(3);
@@ -529,7 +529,7 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_return_empty_multikey_when_null_entity() throws Exception
 	{
-		assertThat(helper.determineMultiKey(null, new ArrayList<Method>())).isEmpty();
+		assertThat(helper.determineMultiKeyValues(null, new ArrayList<Method>())).isEmpty();
 	}
 
 	@Test

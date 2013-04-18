@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * JoinProperties
  * 
@@ -49,8 +51,16 @@ public class JoinProperties
 	{
 		if (cascadeTypesCollection.contains(CascadeType.REMOVE))
 		{
-			throw new AchillesBeanMappingException("CascadeType.REMOVE is not supported for join columns");
+			throw new AchillesBeanMappingException(
+					"CascadeType.REMOVE is not supported for join columns");
 		}
 		this.cascadeTypes.addAll(cascadeTypesCollection);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "JoinProperties [entityMeta=" + entityMeta.getClassName() + ", cascadeTypes="
+				+ StringUtils.join(cascadeTypes, ",") + "]";
 	}
 }

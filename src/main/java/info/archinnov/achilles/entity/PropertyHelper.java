@@ -183,6 +183,10 @@ public class PropertyHelper
 		multiKeyProperties.setComponentGetters(componentGetters);
 		multiKeyProperties.setComponentSetters(componentSetters);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built multi key properties : {}", multiKeyProperties);
+		}
 		return multiKeyProperties;
 	}
 
@@ -214,6 +218,12 @@ public class PropertyHelper
 					+ genericType.getClass().getCanonicalName() + "' of the entity '"
 					+ entityClass.getCanonicalName() + "' should be parameterized");
 		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Inferred value class : {}", valueClass);
+		}
+
 		return valueClass;
 	}
 
@@ -310,6 +320,11 @@ public class PropertyHelper
 			}
 		}
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Comparator type alias : {}", comparatorTypesAlias);
+		}
+
 		return comparatorTypesAlias;
 	}
 
@@ -344,6 +359,11 @@ public class PropertyHelper
 			throw new AchillesException(e);
 		}
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built multi key : {}", key);
+		}
+
 		return key;
 	}
 
@@ -366,6 +386,11 @@ public class PropertyHelper
 		{
 			achillesRead = clevel.read();
 			achillesWrite = clevel.write();
+		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Found consistency levels : {} / {}", achillesRead, achillesWrite);
 		}
 		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}

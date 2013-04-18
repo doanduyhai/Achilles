@@ -8,6 +8,8 @@ import java.util.Map;
 
 import me.prettyprint.hector.api.Serializer;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * EntityMeta
  * 
@@ -129,4 +131,15 @@ public class EntityMeta<ID>
 		this.consistencyLevels = consistencyLevels;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "EntityMeta [className=" + className + ", columnFamilyName=" + columnFamilyName
+				+ ", serialVersionUID=" + serialVersionUID + ", idSerializer="
+				+ idSerializer.getComparatorType().getTypeName() + ", propertyMetas="
+				+ StringUtils.join(propertyMetas.keySet(), ",") + ", idMeta=" + idMeta
+				+ ", columnFamilyDirectMapping=" + columnFamilyDirectMapping
+				+ ",  consistencyLevels=[" + consistencyLevels.left.name() + ","
+				+ consistencyLevels.right.name() + "]]";
+	}
 }

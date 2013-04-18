@@ -10,6 +10,9 @@ import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntityLoader
  * 
@@ -18,6 +21,7 @@ import info.archinnov.achilles.validation.Validator;
  */
 public class EntityLoader
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityLoader.class);
 
 	private EntityIntrospector introspector = new EntityIntrospector();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
@@ -26,6 +30,9 @@ public class EntityLoader
 	@SuppressWarnings("unchecked")
 	public <T, ID> T load(PersistenceContext<ID> context)
 	{
+		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
+
 		Class<T> entityClass = (Class<T>) context.getEntityClass();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
@@ -42,6 +49,8 @@ public class EntityLoader
 
 			if (entityMeta.isColumnFamilyDirectMapping())
 			{
+				log.debug("Entity is a direct column family mapping, just set the primary key");
+
 				entity = entityClass.newInstance();
 				introspector
 						.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
@@ -64,6 +73,9 @@ public class EntityLoader
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
 			PersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
 	{
+		log.debug("Loading eager properties into entity of class {} with primary key {}", context
+				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+
 		Object value = null;
 		switch (propertyMeta.type())
 		{
@@ -106,6 +118,8 @@ public class EntityLoader
 
 	protected <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
 	{
+		log.debug("Loading serialVersionUID for entity  with primary key {} from column family {}",
+				key, dao.getColumnFamily());
 		return loaderImpl.loadVersionSerialUID(key, dao);
 	}
 }
