@@ -1,5 +1,7 @@
 package info.archinnov.achilles.helper;
 
+import info.archinnov.achilles.serializer.SerializerUtils;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +10,7 @@ import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
 
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Function;
@@ -64,14 +67,23 @@ public class LoggerHelper
 			for (int i = 0; i < componentNb; i++)
 			{
 				Component<?> component = components.get(i);
-				if (i == componentNb - 1)
+				String componentValue;
+				if (component.getSerializer() == SerializerUtils.BYTE_SRZ)
 				{
-					componentsText.add(component.getValue(component.getSerializer()).toString()
-							+ "(" + component.getEquality().name() + ")");
+					componentValue = ByteBufferUtil.getArray(component.getBytes())[0] + "";
 				}
 				else
 				{
-					componentsText.add(component.getValue(component.getSerializer()).toString());
+					componentValue = component.getValue(component.getSerializer()).toString();
+				}
+
+				if (i == componentNb - 1)
+				{
+					componentsText.add(componentValue + "(" + component.getEquality().name() + ")");
+				}
+				else
+				{
+					componentsText.add(componentValue);
 				}
 			}
 			formatted = '[' + StringUtils.join(componentsText, ':') + ']';;

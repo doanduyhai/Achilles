@@ -1,5 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -17,6 +18,9 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * CounterWideMapWrapper
  * 
@@ -25,6 +29,8 @@ import me.prettyprint.hector.api.mutation.Mutator;
  */
 public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Long>
 {
+
+	private static final Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
 
 	protected ID id;
 	protected String fqcn;
@@ -40,6 +46,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	@Override
 	public Long get(K key)
 	{
+		log.trace("Get counter value having key {}", key);
 		Composite comp = compositeFactory.createForQuery(propertyMeta, key, EQUAL);
 		return wideMapCounterDao.getCounterValue(id, comp);
 
@@ -54,7 +61,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	@Override
 	public void insert(K key, Long value)
 	{
-
+		log.trace("Insert counter value {} with key {}", value, key);
 		Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
 
 		wideMapCounterDao.insertCounterBatch(id, comp, value,
@@ -70,6 +77,11 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 
 		Composite[] queryComps = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
 				ordering);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find key/value pairs in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
 
 		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
 				queryComps[0], queryComps[1], count, ordering.isReverse());
@@ -87,6 +99,11 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		Composite[] queryComps = compositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find value in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
 		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
 				queryComps[0], queryComps[1], count, ordering.isReverse());
 
@@ -100,6 +117,12 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		Composite[] queryComps = compositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find keys in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
+
 		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
 				queryComps[0], queryComps[1], count, ordering.isReverse());
 		return keyValueFactory.createCounterKeyList(propertyMeta, hColumns);
@@ -112,6 +135,13 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		Composite[] queryComps = compositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Iterate in range {} / {} with bounding {} and ordering {} and batch of {} elements",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name(),
+					count);
+		}
 		AchillesCounterSliceIterator<ID> columnSliceIterator = wideMapCounterDao
 				.getCounterColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(),
 						count);

@@ -3,6 +3,9 @@ package info.archinnov.achilles.wrapper;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * MapEntryWrapper
  * 
@@ -11,6 +14,7 @@ import java.util.Map.Entry;
  */
 public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map.Entry<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(MapEntryWrapper.class);
 
 	private final Map.Entry<K, V> target;
 
@@ -41,6 +45,8 @@ public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public V setValue(V value)
 	{
+		log.trace("Mark map entry property {} of entity class {} dirty upon element set",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		V result = this.target.setValue(proxifier.unproxy(value));
 		this.markDirty();
 		return result;

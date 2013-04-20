@@ -426,7 +426,6 @@ public class JoinPropertyParserTest
 				entityDaosMap, //
 				columnFamilyDaosMap, //
 				configurableCLPolicy, //
-				counterDao, //
 				cluster, keyspace, //
 				objectMapperFactory, entityClass);
 
@@ -443,7 +442,6 @@ public class JoinPropertyParserTest
 				entityDaosMap, //
 				columnFamilyDaosMap, //
 				configurableCLPolicy, //
-				counterDao, //
 				cluster, keyspace, //
 				objectMapperFactory, CompleteBean.class);
 	}

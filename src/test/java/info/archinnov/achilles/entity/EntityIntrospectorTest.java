@@ -37,6 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.BeanWithColumnFamilyName;
 import parser.entity.ChildBean;
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityHelperTest
@@ -70,7 +71,7 @@ public class EntityIntrospectorTest
 	@Mock
 	private GenericEntityDao<Long> dao;
 
-	private final EntityIntrospector helper = new EntityIntrospector();
+	private final EntityIntrospector introspector = new EntityIntrospector();
 
 	@Test
 	public void should_derive_getter() throws Exception
@@ -82,7 +83,7 @@ public class EntityIntrospectorTest
 			Boolean old;
 		}
 
-		String[] getterNames = helper.deriveGetterName(Test.class.getDeclaredField("old"));
+		String[] getterNames = introspector.deriveGetterName(Test.class.getDeclaredField("old"));
 		assertThat(getterNames).hasSize(1);
 		assertThat(getterNames[0]).isEqualTo("getOld");
 	}
@@ -97,7 +98,7 @@ public class EntityIntrospectorTest
 			boolean old;
 		}
 
-		String[] getterNames = helper.deriveGetterName(Test.class.getDeclaredField("old"));
+		String[] getterNames = introspector.deriveGetterName(Test.class.getDeclaredField("old"));
 		assertThat(getterNames).hasSize(2);
 		assertThat(getterNames[0]).isEqualTo("isOld");
 		assertThat(getterNames[1]).isEqualTo("getOld");
@@ -111,7 +112,8 @@ public class EntityIntrospectorTest
 			boolean a;
 		}
 
-		assertThat(helper.deriveSetterName(Test.class.getDeclaredField("a"))).isEqualTo("setA");
+		assertThat(introspector.deriveSetterName(Test.class.getDeclaredField("a"))).isEqualTo(
+				"setA");
 	}
 
 	@Test
@@ -126,7 +128,7 @@ public class EntityIntrospectorTest
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not exist");
 
-		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -146,7 +148,7 @@ public class EntityIntrospectorTest
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist");
 
-		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -166,7 +168,7 @@ public class EntityIntrospectorTest
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The getter for field 'name' does not return correct type");
 
-		helper.findGetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -192,7 +194,7 @@ public class EntityIntrospectorTest
 		expectedEx
 				.expectMessage("The setter for field 'name' does not return correct type or does not have the correct parameter");
 
-		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -216,7 +218,7 @@ public class EntityIntrospectorTest
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The setter for field 'name' does not exist or is incorrect");
 
-		helper.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -237,7 +239,8 @@ public class EntityIntrospectorTest
 			}
 		}
 
-		Method[] accessors = helper.findAccessors(Test.class, Test.class.getDeclaredField("old"));
+		Method[] accessors = introspector.findAccessors(Test.class,
+				Test.class.getDeclaredField("old"));
 
 		assertThat(accessors[0].getName()).isEqualTo("isOld");
 	}
@@ -260,7 +263,8 @@ public class EntityIntrospectorTest
 			}
 		}
 
-		Method[] accessors = helper.findAccessors(Test.class, Test.class.getDeclaredField("old"));
+		Method[] accessors = introspector.findAccessors(Test.class,
+				Test.class.getDeclaredField("old"));
 
 		assertThat(accessors[0].getName()).isEqualTo("getOld");
 	}
@@ -269,7 +273,7 @@ public class EntityIntrospectorTest
 	public void should_find_accessors() throws Exception
 	{
 
-		Method[] accessors = helper.findAccessors(Bean.class,
+		Method[] accessors = introspector.findAccessors(Bean.class,
 				Bean.class.getDeclaredField("complicatedAttributeName"));
 
 		assertThat(accessors).hasSize(2);
@@ -281,7 +285,7 @@ public class EntityIntrospectorTest
 	public void should_find_accessors_from_collection_types() throws Exception
 	{
 
-		Method[] accessors = helper.findAccessors(ComplexBean.class,
+		Method[] accessors = introspector.findAccessors(ComplexBean.class,
 				ComplexBean.class.getDeclaredField("friends"));
 
 		assertThat(accessors).hasSize(2);
@@ -292,7 +296,7 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_find_accessors_from_widemap_type() throws Exception
 	{
-		Method[] accessors = helper.findAccessors(CompleteBean.class,
+		Method[] accessors = introspector.findAccessors(CompleteBean.class,
 				CompleteBean.class.getDeclaredField("tweets"));
 
 		assertThat(accessors).hasSize(2);
@@ -307,7 +311,7 @@ public class EntityIntrospectorTest
 		bean.setComplicatedAttributeName("test");
 		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
 
-		String value = (String) helper.getValueFromField(bean, getter);
+		String value = (String) introspector.getValueFromField(bean, getter);
 		assertThat(value).isEqualTo("test");
 	}
 
@@ -315,7 +319,7 @@ public class EntityIntrospectorTest
 	public void should_get_value_from_null_field() throws Exception
 	{
 		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
-		assertThat(helper.getValueFromField(null, getter)).isNull();
+		assertThat(introspector.getValueFromField(null, getter)).isNull();
 	}
 
 	@Test
@@ -324,7 +328,7 @@ public class EntityIntrospectorTest
 		Bean bean = new Bean();
 		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
 
-		helper.setValueToField(bean, setter, "fecezzef");
+		introspector.setValueToField(bean, setter, "fecezzef");
 
 		assertThat(bean.getComplicatedAttributeName()).isEqualTo("fecezzef");
 	}
@@ -333,7 +337,7 @@ public class EntityIntrospectorTest
 	public void should_not_set_value_when_null_field() throws Exception
 	{
 		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
-		helper.setValueToField(null, setter, "fecezzef");
+		introspector.setValueToField(null, setter, "fecezzef");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -344,7 +348,7 @@ public class EntityIntrospectorTest
 		bean.setFriends(Arrays.asList("foo", "bar"));
 		Method getter = ComplexBean.class.getDeclaredMethod("getFriends");
 
-		List<String> value = (List<String>) helper.getValueFromField(bean, getter);
+		List<String> value = (List<String>) introspector.getValueFromField(bean, getter);
 		assertThat(value).containsExactly("foo", "bar");
 	}
 
@@ -354,26 +358,30 @@ public class EntityIntrospectorTest
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
 
-		Method[] accessors = helper.findAccessors(Bean.class,
+		Method[] accessors = introspector.findAccessors(Bean.class,
 				Bean.class.getDeclaredField("complicatedAttributeName"));
 		PropertyMeta<Void, String> idMeta = factory(Void.class, String.class).type(SIMPLE)
 				.propertyName("complicatedAttributeName").accessors(accessors).build();
 
-		String key = helper.getKey(bean, idMeta);
+		String key = introspector.getKey(bean, idMeta);
 		assertThat(key).isEqualTo("test");
 	}
 
 	@Test
 	public void should_return_null_key_when_null_entity() throws Exception
 	{
-		PropertyMeta<Void, String> idMeta = new PropertyMeta<Void, String>();
-		assertThat(helper.getKey(null, idMeta)).isNull();
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, Long.class) //
+				.field("id") //
+				.accesors() //
+				.build();
+		assertThat(introspector.getKey(null, idMeta)).isNull();
 	}
 
 	@Test
 	public void should_get_inherited_fields() throws Exception
 	{
-		List<Field> fields = helper.getInheritedPrivateFields(ChildBean.class);
+		List<Field> fields = introspector.getInheritedPrivateFields(ChildBean.class);
 
 		assertThat(fields).hasSize(4);
 		assertThat(fields.get(0).getName()).isEqualTo("nickname");
@@ -390,7 +398,7 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_get_inherited_field_by_annotation() throws Exception
 	{
-		Field id = helper.getInheritedPrivateFields(ChildBean.class, Id.class);
+		Field id = introspector.getInheritedPrivateFields(ChildBean.class, Id.class);
 
 		assertThat(id.getName()).isEqualTo("id");
 		assertThat(id.getType()).isEqualTo((Class) Long.class);
@@ -399,8 +407,9 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_not_get_inherited_field_by_annotation_when_no_match() throws Exception
 	{
-		assertThat(helper.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class))
-				.isNull();
+		assertThat(
+				introspector.getInheritedPrivateFields(ChildBean.class,
+						javax.persistence.Basic.class)).isNull();
 	}
 
 	@SuppressWarnings(
@@ -411,7 +420,8 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_get_inherited_field_by_annotation_and_name() throws Exception
 	{
-		Field address = helper.getInheritedPrivateFields(ChildBean.class, Column.class, "address");
+		Field address = introspector.getInheritedPrivateFields(ChildBean.class, Column.class,
+				"address");
 
 		assertThat(address.getName()).isEqualTo("address");
 		assertThat(address.getType()).isEqualTo((Class) String.class);
@@ -422,8 +432,8 @@ public class EntityIntrospectorTest
 			throws Exception
 	{
 		assertThat(
-				helper.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class,
-						"address")).isNull();
+				introspector.getInheritedPrivateFields(ChildBean.class,
+						javax.persistence.Basic.class, "address")).isNull();
 	}
 
 	@Test
@@ -434,7 +444,7 @@ public class EntityIntrospectorTest
 			private static final long serialVersionUID = 1542L;
 		}
 
-		Long serialUID = helper.findSerialVersionUID(Test.class);
+		Long serialUID = introspector.findSerialVersionUID(Test.class);
 		assertThat(serialUID).isEqualTo(1542L);
 	}
 
@@ -450,13 +460,13 @@ public class EntityIntrospectorTest
 		expectedEx
 				.expectMessage("The 'serialVersionUID' property should be declared for entity 'null'");
 
-		helper.findSerialVersionUID(Test.class);
+		introspector.findSerialVersionUID(Test.class);
 	}
 
 	@Test
 	public void should_infer_column_family_from_annotation() throws Exception
 	{
-		String cfName = helper.inferColumnFamilyName(BeanWithColumnFamilyName.class,
+		String cfName = introspector.inferColumnFamilyName(BeanWithColumnFamilyName.class,
 				"canonicalName");
 		assertThat(cfName).isEqualTo("myOwnCF");
 	}
@@ -464,7 +474,7 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_infer_column_family_from_default_name() throws Exception
 	{
-		String cfName = helper.inferColumnFamilyName(CompleteBean.class, "canonicalName");
+		String cfName = introspector.inferColumnFamilyName(CompleteBean.class, "canonicalName");
 		assertThat(cfName).isEqualTo("canonicalName");
 	}
 
@@ -477,7 +487,7 @@ public class EntityIntrospectorTest
 		{
 
 		}
-		String cfName = helper.inferColumnFamilyName(Test.class, "canonicalName");
+		String cfName = introspector.inferColumnFamilyName(Test.class, "canonicalName");
 		assertThat(cfName).isEqualTo("canonicalName");
 	}
 
@@ -495,7 +505,7 @@ public class EntityIntrospectorTest
 		multiKey.setAuthor("author");
 		multiKey.setRetweetCount(12);
 
-		List<Object> multiKeyList = helper.determineMultiKeyValues(multiKey,
+		List<Object> multiKeyList = introspector.determineMultiKeyValues(multiKey,
 				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
 		assertThat(multiKeyList).hasSize(3);
@@ -517,7 +527,7 @@ public class EntityIntrospectorTest
 		multiKey.setId(uuid);
 		multiKey.setRetweetCount(12);
 
-		List<Object> multiKeyList = helper.determineMultiKeyValues(multiKey,
+		List<Object> multiKeyList = introspector.determineMultiKeyValues(multiKey,
 				Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
 		assertThat(multiKeyList).hasSize(3);
@@ -529,7 +539,7 @@ public class EntityIntrospectorTest
 	@Test
 	public void should_return_empty_multikey_when_null_entity() throws Exception
 	{
-		assertThat(helper.determineMultiKeyValues(null, new ArrayList<Method>())).isEmpty();
+		assertThat(introspector.determineMultiKeyValues(null, new ArrayList<Method>())).isEmpty();
 	}
 
 	@Test
@@ -539,7 +549,8 @@ public class EntityIntrospectorTest
 		class Test
 		{}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = helper.findConsistencyLevels(Test.class);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
+				.findConsistencyLevels(Test.class);
 
 		assertThat(levels.left).isEqualTo(ANY);
 		assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
@@ -551,7 +562,8 @@ public class EntityIntrospectorTest
 		class Test
 		{}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = helper.findConsistencyLevels(Test.class);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
+				.findConsistencyLevels(Test.class);
 
 		assertThat(levels.left).isEqualTo(QUORUM);
 		assertThat(levels.right).isEqualTo(QUORUM);

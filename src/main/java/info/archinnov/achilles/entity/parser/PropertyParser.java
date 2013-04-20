@@ -142,12 +142,9 @@ public class PropertyParser
 			}
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built simple property meta for property {} of entity class {} : {}",
-					propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-							.getCanonicalName(), propertyMeta);
-		}
+		log.trace("Built simple property meta for property {} of entity class {} : {}",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				propertyMeta);
 		return propertyMeta;
 	}
 
@@ -177,12 +174,9 @@ public class PropertyParser
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.accessors(accessors).build();
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built list property meta for property {} of entity class {} : {}",
-					listMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-					listMeta);
-		}
+		log.trace("Built list property meta for property {} of entity class {} : {}",
+				listMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				listMeta);
 
 		return listMeta;
 
@@ -214,12 +208,9 @@ public class PropertyParser
 				.accessors(accessors)//
 				.build();
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built set property meta for property {} of  entity class {} : {}",
-					setMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-					setMeta);
-		}
+		log.trace("Built set property meta for property {} of  entity class {} : {}",
+				setMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				setMeta);
 
 		return setMeta;
 	}
@@ -255,12 +246,9 @@ public class PropertyParser
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.accessors(accessors).build();
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built map property meta for property {} of entity class {} : {}",
-					mapMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-					mapMeta);
-		}
+		log.trace("Built map property meta for property {} of entity class {} : {}",
+				mapMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				mapMeta);
 
 		return mapMeta;
 
@@ -315,12 +303,9 @@ public class PropertyParser
 		saveWideMapForDeferredBinding(context, propertyMeta);
 		fillWideMapCustomConsistencyLevels(context, propertyMeta);
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built wide map property meta for property {} of entity class {} : {}",
-					propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-							.getCanonicalName(), propertyMeta);
-		}
+		log.trace("Built wide map property meta for property {} of entity class {} : {}",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				propertyMeta);
 		return propertyMeta;
 	}
 
@@ -358,21 +343,16 @@ public class PropertyParser
 		}
 		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Complete wide map property {} of entity class {} : {}", propertyMeta
-					.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-					propertyMeta);
-		}
+		log.trace("Complete wide map property {} of entity class {} : {}",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				propertyMeta);
 	}
 
 	private void inferPropertyNameAndExternalTableName(PropertyParsingContext context)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Infering property name and column family name for property {}",
-					context.getCurrentPropertyName());
-		}
+		log.trace("Infering property name and column family name for property {}",
+				context.getCurrentPropertyName());
+
 		String propertyName, externalTableName = null;
 		Field field = context.getCurrentField();
 		if (context.isJoinColumn())
@@ -399,11 +379,9 @@ public class PropertyParser
 
 	private Pair<Class<?>, Class<?>> determineMapGenericTypes(Field field)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
-					field.getName(), field.getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
+				field.getName(), field.getDeclaringClass().getCanonicalName());
+
 		Type genericType = field.getGenericType();
 		ParameterizedType pt = (ParameterizedType) genericType;
 		Type[] actualTypeArguments = pt.getActualTypeArguments();
@@ -415,10 +393,7 @@ public class PropertyParser
 	private MultiKeyProperties parseWideMapMultiKey(MultiKeyProperties multiKeyProperties,
 			Class<?> keyClass)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
-		}
+		log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
 
 		if (MultiKey.class.isAssignableFrom(keyClass))
 		{
@@ -435,20 +410,14 @@ public class PropertyParser
 									+ "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built multi key properties", multiKeyProperties);
-		}
+		log.trace("Built multi key properties", multiKeyProperties);
 		return multiKeyProperties;
 	}
 
 	private void saveWideMapForDeferredBinding(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
-		}
+		log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
 
 		String externalTableName;
 
@@ -492,10 +461,7 @@ public class PropertyParser
 	private void fillWideMapCustomConsistencyLevels(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
-		}
+		log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
 		boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(context
 				.getCurrentField());
 		String externalTableName = context.getCurrentExternalTableName();
@@ -512,20 +478,14 @@ public class PropertyParser
 
 			propertyMeta.setConsistencyLevels(consistencyLevels);
 
-			if (log.isTraceEnabled())
-			{
-				log.trace("Found custom consistency levels : {}", consistencyLevels);
-			}
+			log.trace("Found custom consistency levels : {}", consistencyLevels);
 		}
 	}
 
 	private <T> CounterProperties buildCounterProperties(Class<T> valueClass,
 			PropertyParsingContext context)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
-		}
+		log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
 		CounterProperties counterProperties;
 		PropertyParsingValidator
 				.validateAllowedTypes(
@@ -537,10 +497,7 @@ public class PropertyParser
 		counterProperties = new CounterProperties(context.getCurrentEntityClass()
 				.getCanonicalName());
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built counter properties : {}", counterProperties);
-		}
+		log.trace("Built counter properties : {}", counterProperties);
 		return counterProperties;
 	}
 
@@ -548,19 +505,13 @@ public class PropertyParser
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
-		}
+		log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
 				.findConsistencyLevels(context.getCurrentField());
 
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Found custom consistency levels : {}", consistencyLevels);
-		}
+		log.trace("Found custom consistency levels : {}", consistencyLevels);
 		propertyMeta.setConsistencyLevels(consistencyLevels);
 	}
 

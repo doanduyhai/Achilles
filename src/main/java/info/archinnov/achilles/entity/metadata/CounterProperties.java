@@ -25,11 +25,6 @@ public class CounterProperties
 		return fqcn;
 	}
 
-	public void setFqcn(String fqcn)
-	{
-		this.fqcn = fqcn;
-	}
-
 	public PropertyMeta<Void, ?> getIdMeta()
 	{
 		return idMeta;

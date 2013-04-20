@@ -13,7 +13,7 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
-import info.archinnov.achilles.iterator.CounterKeyValueIterator;
+import info.archinnov.achilles.iterator.CounterKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
@@ -221,7 +221,7 @@ public class CounterWideMapWrapperTest
 		when(
 				wideMapCounterDao.getCounterColumnsIterator(id, start, end, DESCENDING.isReverse(),
 						100)).thenReturn(achillesCounterSliceIterator);
-		CounterKeyValueIterator<Integer> expected = mock(CounterKeyValueIterator.class);
+		CounterKeyValueIteratorImpl<Integer> expected = mock(CounterKeyValueIteratorImpl.class);
 
 		when(
 				iteratorFactory.createCounterKeyValueIterator(achillesCounterSliceIterator,

@@ -38,6 +38,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 
 	private Class<T> clazz;
 	private String field;
+	private String entityClassName;
 	private PropertyType type;
 	private Class<K> keyClass;
 	private Class<V> valueClass;
@@ -94,6 +95,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 	{
 		PropertyMeta<K, V> propertyMeta = new PropertyMeta<K, V>();
 		propertyMeta.setType(type);
+		propertyMeta.setEntityClassName(entityClassName);
 		propertyMeta.setPropertyName(field);
 		propertyMeta.setKeyClass(keyClass);
 		propertyMeta.setValueClass(valueClass);
@@ -161,6 +163,12 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> field(String field)
 	{
 		this.field = field;
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> entityClassName(String entityClassName)
+	{
+		this.entityClassName = entityClassName;
 		return this;
 	}
 

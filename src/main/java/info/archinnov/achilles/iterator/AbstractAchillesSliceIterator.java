@@ -5,7 +5,14 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
+
+import java.util.Iterator;
+
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AbstractAchillesSliceIterator
@@ -13,15 +20,17 @@ import me.prettyprint.hector.api.beans.Composite;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractAchillesSliceIterator
+public abstract class AbstractAchillesSliceIterator<HCOLUMN> implements Iterator<HCOLUMN>
 {
+	private static final Logger log = LoggerFactory.getLogger(AbstractAchillesSliceIterator.class);
+
 	protected boolean reversed;
 	protected int count = DEFAULT_LENGTH;
 	protected int columns = 0;
 	protected AchillesConfigurableConsistencyLevelPolicy policy;
 	protected String columnFamily;
 	protected ConsistencyLevel readConsistencyLevelAtInitialization;
-
+	protected Iterator<HCOLUMN> iterator;
 	protected Composite start;
 	protected ColumnSliceFinish finish;
 
@@ -43,11 +52,71 @@ public abstract class AbstractAchillesSliceIterator
 		Composite function();
 	}
 
+	@Override
+	public boolean hasNext()
+	{
+		if (iterator == null)
+		{
+			iterator = fetchData();
+		}
+		else if (!iterator.hasNext() && columns == count)
+		{ // only need to do another query if maximum columns were retrieved
+
+			log.trace("Reload another batch of {} elements for {}", count, type());
+			// Exclude start from the query because is has been already fetched
+			if (reversed)
+			{
+				start.setEquality(ComponentEquality.LESS_THAN_EQUAL);
+			}
+			else
+			{
+				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
+			}
+			changeQueryRange();
+			iterator = fetchData();
+			columns = 0;
+		}
+
+		return iterator.hasNext();
+	}
+
+	@Override
+	public HCOLUMN next()
+	{
+		log.trace("Fetching next column from {}", count, type());
+		HCOLUMN column = iterator.next();
+		resetStartColumn(column);
+		columns++;
+		return column;
+	}
+
+	@Override
+	public void remove()
+	{
+		iterator.remove();
+	}
+
+	protected abstract Iterator<HCOLUMN> fetchData();
+
+	protected abstract void changeQueryRange();
+
+	protected abstract void resetStartColumn(HCOLUMN column);
+
+	public abstract IteratorType type();
+
 	protected <T> T executeWithInitialConsistencyLevel(SafeExecutionContext<T> context)
 	{
+		log.trace(
+				"Fetching next {} elements with consistency level {} from {}",
+				count,
+				readConsistencyLevelAtInitialization != null ? readConsistencyLevelAtInitialization
+						.name() : "QUORUM", type());
+
 		T result = null;
 		if (readConsistencyLevelAtInitialization != null)
 		{
+			log.trace("Save current consistency level {} by {}", policy.getCurrentReadLevel(),
+					type());
 			ConsistencyLevel currentReadLevel = policy.getCurrentReadLevel();
 			policy.setCurrentReadLevel(readConsistencyLevelAtInitialization);
 			policy.loadConsistencyLevelForRead(columnFamily);
@@ -55,11 +124,15 @@ public abstract class AbstractAchillesSliceIterator
 			{
 				result = context.execute();
 				policy.setCurrentReadLevel(currentReadLevel);
+				log.trace("Restore current consistency level {} by {}", currentReadLevel, type());
 			}
 			catch (Throwable throwable)
 			{
 				policy.reinitCurrentConsistencyLevels();
 				policy.reinitDefaultConsistencyLevels();
+				log.trace(
+						"Exception occurred while fetching next {} elements with consistency level {} in {}. Reset consistency levels",
+						count, readConsistencyLevelAtInitialization.name(), type());
 				throw new AchillesException(throwable);
 			}
 		}
@@ -69,5 +142,18 @@ public abstract class AbstractAchillesSliceIterator
 		}
 		return result;
 
+	}
+
+	public enum IteratorType
+	{
+		ACHILLES_SLICE_ITERATOR,
+		ACHILLES_COUNTER_SLICE_ITERATOR,
+		ACHILLES_JOIN_SLICE_ITERATOR;
+
+		@Override
+		public String toString()
+		{
+			return this.name();
+		}
 	}
 }

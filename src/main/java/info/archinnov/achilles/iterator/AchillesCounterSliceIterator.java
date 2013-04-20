@@ -10,22 +10,25 @@ package info.archinnov.achilles.iterator;
  */
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_COUNTER_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 
 import java.util.Iterator;
 
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import me.prettyprint.hector.api.query.SliceCounterQuery;
 
-public class AchillesCounterSliceIterator<K> extends AbstractAchillesSliceIterator implements
-		Iterator<HCounterColumn<Composite>>
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class AchillesCounterSliceIterator<K> extends
+		AbstractAchillesSliceIterator<HCounterColumn<Composite>>
 {
+	private static final Logger log = LoggerFactory.getLogger(AchillesCounterSliceIterator.class);
 
 	private SliceCounterQuery<K, Composite> query;
-	private Iterator<HCounterColumn<Composite>> iterator;
 
 	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
 			String cf, SliceCounterQuery<K, Composite> query, Composite start,
@@ -66,60 +69,41 @@ public class AchillesCounterSliceIterator<K> extends AbstractAchillesSliceIterat
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		if (iterator == null)
-		{
-			iterator = fetchData();
-		}
-		else if (!iterator.hasNext() && columns == count)
-		{ // only need to do another query if maximum columns were retrieved
-
-			// Exclude start from the query because is has been already fetched
-			if (reversed)
-			{
-				start.setEquality(ComponentEquality.LESS_THAN_EQUAL);
-			}
-			else
-			{
-				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
-			}
-
-			query.setRange(start, finish.function(), reversed, count);
-			iterator = fetchData();
-			columns = 0;
-		}
-
-		return iterator.hasNext();
-	}
-
-	@Override
-	public HCounterColumn<Composite> next()
-	{
-		HCounterColumn<Composite> column = iterator.next();
-		start = column.getName();
-		columns++;
-
-		return column;
-	}
-
-	@Override
 	public void remove()
 	{
 		throw new UnsupportedOperationException(
 				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
 	}
 
-	private Iterator<HCounterColumn<Composite>> fetchData()
+	@Override
+	protected Iterator<HCounterColumn<Composite>> fetchData()
 	{
 		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HCounterColumn<Composite>>>()
 		{
 			@Override
 			public Iterator<HCounterColumn<Composite>> execute()
 			{
+				log.trace("Fetching next {} counter columns", count);
 				return query.execute().get().getColumns().iterator();
 			}
 		});
 	}
 
+	@Override
+	protected void changeQueryRange()
+	{
+		query.setRange(start, finish.function(), reversed, count);
+	}
+
+	@Override
+	protected void resetStartColumn(HCounterColumn<Composite> column)
+	{
+		start = column.getName();
+	}
+
+	@Override
+	public IteratorType type()
+	{
+		return ACHILLES_COUNTER_SLICE_ITERATOR;
+	}
 }

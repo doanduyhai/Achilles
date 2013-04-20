@@ -1,5 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
@@ -16,9 +17,14 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+
 import java.util.List;
+
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JoinExternalWideMapWrapper
@@ -26,194 +32,276 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<ID, K, V> {
-    private ID id;
-    private PropertyMeta<K, V> propertyMeta;
-    private GenericColumnFamilyDao<ID, JOIN_ID> dao;
-    private EntityPersister persister;
-    private EntityLoader loader;
-    private EntityProxifier proxifier;
-    private CompositeHelper compositeHelper;
-    private CompositeFactory compositeFactory;
-    private KeyValueFactory keyValueFactory;
-    private IteratorFactory iteratorFactory;
+public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
+{
 
-    private Composite buildComposite(K key) {
-        return compositeFactory.createBaseComposite(propertyMeta, key);
-    }
+	private static final Logger log = LoggerFactory.getLogger(JoinWideMapWrapper.class);
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public V get(K key) {
-        V result = null;
-        JOIN_ID joinId = dao.getValue(id, buildComposite(key));
-        if (joinId != null) {
-            EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+	private ID id;
+	private PropertyMeta<K, V> propertyMeta;
+	private GenericColumnFamilyDao<ID, JOIN_ID> dao;
+	private EntityPersister persister;
+	private EntityLoader loader;
+	private EntityProxifier proxifier;
+	private CompositeHelper compositeHelper;
+	private CompositeFactory compositeFactory;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
 
-            PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(propertyMeta.getValueClass(),
-                    joinMeta, joinId);
+	private Composite buildComposite(K key)
+	{
+		return compositeFactory.createBaseComposite(propertyMeta, key);
+	}
 
-            result = loader.load(joinContext);
-            result = proxifier.buildProxy(result, joinContext);
-        }
-        return result;
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public V get(K key)
+	{
+		log.trace("Get join value having key {}", key);
+		V result = null;
+		JOIN_ID joinId = dao.getValue(id, buildComposite(key));
+		if (joinId != null)
+		{
+			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value, int ttl) {
-        JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-        dao.setValueBatch(id, buildComposite(key), joinId, ttl, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+					propertyMeta.getValueClass(), joinMeta, joinId);
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value) {
-        JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
-        dao.setValueBatch(id, buildComposite(key), joinId, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+			result = loader.load(joinContext);
+			result = proxifier.buildProxy(result, joinContext);
+		}
+		return result;
+	}
 
-    @Override
-    public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value, int ttl)
+	{
+		log.trace("Insert join value {} with key {} and ttl {}", value, key, ttl);
 
-        Composite[] queryComps = compositeFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value)
+	{
+		log.trace("Insert join value {} with key {}", value, key);
 
-        return keyValueFactory.createJoinKeyValueList(context, propertyMeta, hColumns);
-    }
+		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		dao.setValueBatch(id, buildComposite(key), joinId,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    @Override
-    public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+	@Override
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
 
-        Composite[] queryComps = compositeFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+		Composite[] queryComps = compositeFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
 
-        return keyValueFactory.createJoinValueList(context, propertyMeta, hColumns);
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Find key/join value pairs in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
 
-    @Override
-    public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-        Composite[] queryComps = compositeFactory.createForQuery( //
-                propertyMeta, start, end, bounds, ordering);
+		return keyValueFactory.createJoinKeyValueList(context, propertyMeta, hColumns);
+	}
 
-        List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0], queryComps[1], count,
-                ordering.isReverse());
+	@Override
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        return keyValueFactory.createKeyList(propertyMeta, hColumns);
-    }
+		Composite[] queryComps = compositeFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find join values in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-    @Override
-    public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+		return keyValueFactory.createJoinValueList(context, propertyMeta, hColumns);
+	}
 
-        GenericEntityDao<JOIN_ID> joinEntityDao = context
-                .findEntityDao(propertyMeta.joinMeta().getColumnFamilyName());
+	@Override
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao.getJoinColumnsIterator(
-                joinEntityDao, propertyMeta, id, composites[0], composites[1], ordering.isReverse(), count);
+		Composite[] queryComps = compositeFactory.createForQuery( //
+				propertyMeta, start, end, bounds, ordering);
 
-        return iteratorFactory.createKeyValueJoinIterator(context, joinColumnSliceIterator, propertyMeta);
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find keys in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
+		}
 
-    @Override
-    public void remove(K key) {
-        dao.removeColumnBatch(id, buildComposite(key), context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+				queryComps[1], count, ordering.isReverse());
 
-    @Override
-    public void remove(K start, K end, BoundingMode bounds) {
-        compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+		return keyValueFactory.createKeyList(propertyMeta, hColumns);
+	}
 
-        Composite[] queryComps = compositeFactory.createForQuery(//
-                propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
+	@Override
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				ordering);
 
-        dao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
-                context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Iterate in range {} / {} with bounding {} and ordering {} and batch of {} elements",
+					format(composites[0]), format(composites[1]), bounds.name(), ordering.name(),
+					count);
+		}
 
-    @Override
-    public void removeFirst(int count) {
-        dao.removeColumnRangeBatch(id, null, null, false, count, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
+				.getColumnFamilyName());
 
-    @Override
-    public void removeLast(int count) {
-        dao.removeColumnRangeBatch(id, null, null, true, count, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
+				.getJoinColumnsIterator(joinEntityDao, propertyMeta, id, composites[0],
+						composites[1], ordering.isReverse(), count);
 
-    @SuppressWarnings("unchecked")
-    private Object persistOrEnsureJoinEntityExists(V value) {
-        Object joinId = null;
-        JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		return iteratorFactory.createJoinKeyValueIterator(context, joinColumnSliceIterator,
+				propertyMeta);
+	}
 
-        if (value != null) {
-            PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context.newPersistenceContext(
-                    propertyMeta.joinMeta(), value);
+	@Override
+	public void remove(K key)
+	{
+		log.trace("Remove join value having key {}", key);
 
-            joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
-        } else {
-            throw new IllegalArgumentException("Cannot persist null entity");
-        }
-        return joinId;
-    }
+		dao.removeColumnBatch(id, buildComposite(key),
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    private String getExternalCFName() {
-        return propertyMeta.getExternalCFName();
-    }
+	@Override
+	public void remove(K start, K end, BoundingMode bounds)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
 
-    public void setId(ID id) {
-        this.id = id;
-    }
+		Composite[] queryComps = compositeFactory.createForQuery(//
+				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Remove join values in range {} / {} with bounding {} and ordering {}",
+					format(queryComps[0]), format(queryComps[1]), bounds.name(),
+					OrderingMode.ASCENDING.name());
+		}
+		dao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    public void setExternalWideMapMeta(PropertyMeta<K, V> externalWideMapMeta) {
-        this.propertyMeta = externalWideMapMeta;
-    }
+	@Override
+	public void removeFirst(int count)
+	{
+		log.trace("Remove first {} join values", count);
+		dao.removeColumnRangeBatch(id, null, null, false, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    public void setEntityProxifier(EntityProxifier proxifier) {
-        this.proxifier = proxifier;
-    }
+	@Override
+	public void removeLast(int count)
+	{
+		log.trace("Remove last {} join values", count);
+		dao.removeColumnRangeBatch(id, null, null, true, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    public void setPersister(EntityPersister persister) {
-        this.persister = persister;
-    }
+	@SuppressWarnings("unchecked")
+	private Object persistOrEnsureJoinEntityExists(V value)
+	{
+		Object joinId = null;
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 
-    public void setLoader(EntityLoader loader) {
-        this.loader = loader;
-    }
+		if (value != null)
+		{
+			PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context
+					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
-    public void setCompositeHelper(CompositeHelper compositeHelper) {
-        this.compositeHelper = compositeHelper;
-    }
+			joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot persist null entity");
+		}
+		return joinId;
+	}
 
-    public void setCompositeKeyFactory(CompositeFactory compositeFactory) {
-        this.compositeFactory = compositeFactory;
-    }
+	private String getExternalCFName()
+	{
+		return propertyMeta.getExternalCFName();
+	}
 
-    public void setKeyValueFactory(KeyValueFactory keyValueFactory) {
-        this.keyValueFactory = keyValueFactory;
-    }
+	public void setId(ID id)
+	{
+		this.id = id;
+	}
 
-    public void setIteratorFactory(IteratorFactory iteratorFactory) {
-        this.iteratorFactory = iteratorFactory;
-    }
+	public void setExternalWideMapMeta(PropertyMeta<K, V> externalWideMapMeta)
+	{
+		this.propertyMeta = externalWideMapMeta;
+	}
 
-    public void setDao(GenericColumnFamilyDao<ID, JOIN_ID> dao) {
-        this.dao = dao;
-    }
+	public void setEntityProxifier(EntityProxifier proxifier)
+	{
+		this.proxifier = proxifier;
+	}
+
+	public void setPersister(EntityPersister persister)
+	{
+		this.persister = persister;
+	}
+
+	public void setLoader(EntityLoader loader)
+	{
+		this.loader = loader;
+	}
+
+	public void setCompositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+	}
+
+	public void setCompositeKeyFactory(CompositeFactory compositeFactory)
+	{
+		this.compositeFactory = compositeFactory;
+	}
+
+	public void setKeyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+	}
+
+	public void setIteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+	}
+
+	public void setDao(GenericColumnFamilyDao<ID, JOIN_ID> dao)
+	{
+		this.dao = dao;
+	}
 }

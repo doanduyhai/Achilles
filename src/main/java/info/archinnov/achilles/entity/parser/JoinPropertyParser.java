@@ -91,21 +91,15 @@ public class JoinPropertyParser
 		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
 				joinPropertyMeta.getValueClass());
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Complete join wide map property {} of entity class {} : {}",
-					joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass()
-							.getCanonicalName(), joinPropertyMeta);
-		}
+		log.trace("Complete join wide map property {} of entity class {} : {}", joinPropertyMeta
+				.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				joinPropertyMeta);
 	}
 
 	private JoinProperties findCascadeType(String entityFQN, Field field)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Find cascade type for property {} of entity class {}", field.getName(),
-					field.getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Find cascade type for property {} of entity class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
 
 		JoinProperties joinProperties = new JoinProperties();
 
@@ -130,11 +124,8 @@ public class JoinPropertyParser
 			joinProperties.addCascadeType(Arrays.asList(manyToMany.cascade()));
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Built join properties for property {} of entity class {}", joinProperties,
-					field.getName(), field.getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Built join properties for property {} of entity class {}", joinProperties,
+				field.getName(), field.getDeclaringClass().getCanonicalName());
 		return joinProperties;
 	}
 }

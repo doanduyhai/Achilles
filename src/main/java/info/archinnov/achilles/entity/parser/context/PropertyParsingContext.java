@@ -1,9 +1,6 @@
 package info.archinnov.achilles.entity.parser.context;
 
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -11,8 +8,6 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-
-import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -39,16 +34,6 @@ public class PropertyParsingContext
 	{
 		this.context = context;
 		this.currentField = currentField;
-	}
-
-	public Keyspace getKeyspace()
-	{
-		return context.getKeyspace();
-	}
-
-	public CounterDao getCounterDao()
-	{
-		return context.getCounterDao();
 	}
 
 	public ObjectMapper getCurrentObjectMapper()
@@ -131,16 +116,6 @@ public class PropertyParsingContext
 		return context.getConfigurableCLPolicy();
 	}
 
-	public Map<String, GenericEntityDao<?>> getEntityDaosMap()
-	{
-		return context.getEntityDaosMap();
-	}
-
-	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
-	{
-		return context.getColumnFamilyDaosMap();
-	}
-
 	public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled()
 	{
 		return context.getJoinPropertyMetaToBeFilled();
@@ -149,11 +124,6 @@ public class PropertyParsingContext
 	public String getCurrentColumnFamilyName()
 	{
 		return context.getCurrentColumnFamilyName();
-	}
-
-	public void doesHaveCounter()
-	{
-		context.setHasCounter(true);
 	}
 
 	public boolean isExternal()

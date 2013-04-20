@@ -26,7 +26,7 @@
 	</logger>	
 	
 	<logger name="info.archinnov.achilles">
-		<level value="DEBUG" />
+		<level value="TRACE" />
 	</logger>	
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->

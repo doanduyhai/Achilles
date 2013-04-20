@@ -13,6 +13,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * PropertyParsingValidator
  * 
@@ -21,10 +24,13 @@ import java.util.Set;
  */
 public class PropertyParsingValidator
 {
+	private static final Logger log = LoggerFactory.getLogger(PropertyParsingValidator.class);
 
 	public void validateNoDuplicate(PropertyParsingContext context)
 	{
 		String propertyName = context.getCurrentPropertyName();
+		log.debug("Validate that property name {} is unique for the entity class {}", propertyName,
+				context.getCurrentEntityClass().getCanonicalName());
 
 		Validator.validateBeanMappingFalse(context.getPropertyMetas().containsKey(propertyName),
 				"The property '" + propertyName + "' is already used for the entity '"
@@ -34,6 +40,11 @@ public class PropertyParsingValidator
 
 	public void validateDirectCFMappingNoExternalWideMap(PropertyParsingContext context)
 	{
+		log.debug(
+				"Validate that the wide map property {} for direct column family mapping {} has no external column family",
+				context.getCurrentPropertyName(), context.getCurrentEntityClass()
+						.getCanonicalName());
+
 		if (context.isExternal() && context.isColumnFamilyDirectMapping())
 		{
 			throw new AchillesBeanMappingException(
@@ -47,6 +58,9 @@ public class PropertyParsingValidator
 
 	public void validateMapGenerics(Field field, Class<?> entityClass)
 	{
+		log.debug("Validate parameterized types for property {} of entity class {}",
+				field.getName(), entityClass.getCanonicalName());
+
 		Type genericType = field.getGenericType();
 		if (!(genericType instanceof ParameterizedType))
 		{
@@ -69,6 +83,9 @@ public class PropertyParsingValidator
 
 	public void validateWideMapGenerics(PropertyParsingContext context)
 	{
+		log.debug("Validate parameterized types for property {} of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
 		Type genericType = context.getCurrentField().getGenericType();
 		Class<?> entityClass = context.getCurrentEntityClass();
 
@@ -94,6 +111,11 @@ public class PropertyParsingValidator
 	public void validateConsistencyLevelForCounter(PropertyParsingContext context,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
+		log.debug(
+				"Validate that counter property {} of entity class {} does not have ANY consistency level",
+				context.getCurrentPropertyName(), context.getCurrentEntityClass()
+						.getCanonicalName());
+
 		if (consistencyLevels.left == ANY || consistencyLevels.right == ANY)
 		{
 			throw new AchillesBeanMappingException(

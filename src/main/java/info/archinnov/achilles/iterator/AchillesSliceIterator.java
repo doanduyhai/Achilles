@@ -10,22 +10,20 @@ package info.archinnov.achilles.iterator;
  */
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 
 import java.util.Iterator;
 
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public class AchillesSliceIterator<K, V> extends AbstractAchillesSliceIterator implements
-		Iterator<HColumn<Composite, V>>
+public class AchillesSliceIterator<K, V> extends
+		AbstractAchillesSliceIterator<HColumn<Composite, V>>
 {
-
 	private SliceQuery<K, Composite, V> query;
-	private Iterator<HColumn<Composite, V>> iterator;
 
 	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, Composite, V> query, Composite start, final Composite finish,
@@ -65,51 +63,7 @@ public class AchillesSliceIterator<K, V> extends AbstractAchillesSliceIterator i
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		if (iterator == null)
-		{
-			iterator = fetchData();
-		}
-		else if (!iterator.hasNext() && columns == count)
-		{ // only need to do another query if maximum columns were retrieved
-
-			// Exclude start from the query because is has been already fetched
-			if (reversed)
-			{
-				start.setEquality(ComponentEquality.LESS_THAN_EQUAL);
-			}
-			else
-			{
-				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
-			}
-
-			query.setRange(start, finish.function(), reversed, count);
-
-			iterator = fetchData();
-			columns = 0;
-		}
-
-		return iterator.hasNext();
-	}
-
-	@Override
-	public HColumn<Composite, V> next()
-	{
-		HColumn<Composite, V> column = iterator.next();
-		start = column.getName();
-		columns++;
-
-		return column;
-	}
-
-	@Override
-	public void remove()
-	{
-		iterator.remove();
-	}
-
-	private Iterator<HColumn<Composite, V>> fetchData()
+	protected Iterator<HColumn<Composite, V>> fetchData()
 	{
 		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, V>>>()
 		{
@@ -119,5 +73,23 @@ public class AchillesSliceIterator<K, V> extends AbstractAchillesSliceIterator i
 				return query.execute().get().getColumns().iterator();
 			}
 		});
+	}
+
+	@Override
+	protected void changeQueryRange()
+	{
+		query.setRange(start, finish.function(), reversed, count);
+	}
+
+	@Override
+	protected void resetStartColumn(HColumn<Composite, V> column)
+	{
+		start = column.getName();
+	}
+
+	@Override
+	public IteratorType type()
+	{
+		return ACHILLES_SLICE_ITERATOR;
 	}
 }

@@ -67,11 +67,8 @@ public abstract class AbstractDao<K, V>
 
 	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Execute safely and reinit consistency level in thread {}",
-					Thread.currentThread());
-		}
+		log.trace("Execute safely and reinit consistency level in thread {}",
+				Thread.currentThread());
 		try
 		{
 			return context.execute();
@@ -97,15 +94,6 @@ public abstract class AbstractDao<K, V>
 		public Pair<Composite, V> apply(HColumn<Composite, V> hColumn)
 		{
 			return new Pair<Composite, V>(hColumn.getName(), hColumn.getValue());
-		}
-	};
-
-	protected Function<HColumn<Composite, V>, Composite> hColumnToName = new Function<HColumn<Composite, V>, Composite>()
-	{
-		@Override
-		public Composite apply(HColumn<Composite, V> hColumn)
-		{
-			return hColumn.getName();
 		}
 	};
 
@@ -152,11 +140,8 @@ public abstract class AbstractDao<K, V>
 
 	public void setValue(K key, Composite name, V value)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set value {} to column family {} with key {} , column name {}", value,
-					columnFamily, key, name);
-		}
+		log.trace("Set value {} to column family {} with key {} , column name {}", value,
+				columnFamily, key, name);
 
 		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
 		this.setValueBatch(key, name, value, mutator);
@@ -175,43 +160,16 @@ public abstract class AbstractDao<K, V>
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer));
 	}
 
-	public void setValue(K key, Composite name, V value, int ttl)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set value {} to column family {} with key {} , column name {} and ttl {}",
-					value, columnFamily, key, format(name), ttl);
-		}
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		this.setValueBatch(key, name, value, ttl, mutator);
-		this.executeMutator(mutator);
-	}
-
 	public void setValueBatch(K key, Composite name, V value, int ttl, Mutator<K> mutator)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
-					value, columnFamily, key, name, ttl);
-		}
+		log.trace(
+				"Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
+				value, columnFamily, key, name, ttl);
 		mutator.addInsertion(
 				key,
 				columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, valueSerializer).setTtl(
 						ttl));
-	}
-
-	public void removeColumn(K key, Composite name)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Remove column name {} from column family {} with key {} ", format(name),
-					columnFamily, key);
-		}
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		this.removeColumnBatch(key, name, mutator);
-		this.executeMutator(mutator);
 	}
 
 	public void removeColumnBatch(K key, Composite name, Mutator<K> mutator)
@@ -222,37 +180,6 @@ public abstract class AbstractDao<K, V>
 					format(name), columnFamily, key);
 		}
 		mutator.addDeletion(key, columnFamily, name, columnNameSerializer);
-	}
-
-	public void removeColumnRange(K key, Composite start, Composite end)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Remove column slice within range having inclusive start/end {}/{} column names from column family {} with key {} ",
-					format(start), format(end), columnFamily, key);
-		}
-		this.removeColumnRange(key, start, end, false, Integer.MAX_VALUE);
-	}
-
-	public void removeColumnRange(K key, Composite start, Composite end, boolean reverse, int count)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Remove {} columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reserver {}",
-					count, format(start), format(end), columnFamily, key, reverse);
-		}
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace, keySerializer,
-				columnNameSerializer, valueSerializer).setColumnFamily(columnFamily).setKey(key)
-				.setRange(start, end, reverse, count).execute().get().getColumns();
-
-		for (HColumn<Composite, V> column : columns)
-		{
-			mutator.addDeletion(key, columnFamily, column.getName(), columnNameSerializer);
-		}
-		this.executeMutator(mutator);
 	}
 
 	public void removeColumnRangeBatch(K key, Composite start, Composite end, Mutator<K> mutator)
@@ -457,25 +384,10 @@ public abstract class AbstractDao<K, V>
 		});
 	}
 
-	public void removeRow(K key)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Remove row from column family {} with key {}", columnFamily, key);
-		}
-
-		Mutator<K> mutator = HFactory.createMutator(keyspace, keySerializer);
-		this.removeRowBatch(key, mutator);
-		this.executeMutator(mutator);
-	}
-
 	public void removeRowBatch(K key, Mutator<K> mutator)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Remove row as batch mutation from column family {} with key {}",
-					columnFamily, key);
-		}
+		log.trace("Remove row as batch mutation from column family {} with key {}", columnFamily,
+				key);
 
 		mutator.addDeletion(key, columnFamily);
 	}
@@ -522,11 +434,8 @@ public abstract class AbstractDao<K, V>
 
 	public void removeCounterRowBatch(K key, Mutator<K> mutator)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Remove counter row as batch mutation with key {} from column family {}",
-					key, columnFamily);
-		}
+		log.trace("Remove counter row as batch mutation with key {} from column family {}", key,
+				columnFamily);
 
 		SliceCounterQuery<K, Composite> query = HFactory
 				.createCounterSliceQuery(keyspace, keySerializer, columnNameSerializer)
@@ -594,11 +503,8 @@ public abstract class AbstractDao<K, V>
 
 	public void executeMutator(final Mutator<K> mutator)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Execute safely mutator with {} mutations for column family {}",
-					mutator.getPendingMutationCount(), columnFamily);
-		}
+		log.trace("Execute safely mutator with {} mutations for column family {}",
+				mutator.getPendingMutationCount(), columnFamily);
 
 		this.policy.loadConsistencyLevelForWrite(this.columnFamily);
 		reinitConsistencyLevels(new SafeExecutionContext<Void>()
@@ -615,10 +521,5 @@ public abstract class AbstractDao<K, V>
 	public String getColumnFamily()
 	{
 		return columnFamily;
-	}
-
-	public void setPolicy(AchillesConfigurableConsistencyLevelPolicy policy)
-	{
-		this.policy = policy;
 	}
 }

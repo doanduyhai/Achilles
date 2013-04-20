@@ -11,6 +11,9 @@ import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * AbstractWideMapWrapper
  * 
@@ -19,6 +22,8 @@ import java.util.List;
  */
 public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(AbstractWideMapWrapper.class);
+
 	protected PersistenceContext<ID> context;
 	protected AchillesInterceptor<ID> interceptor;
 	private EntityValidator validator = new EntityValidator();
@@ -27,12 +32,14 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 	private <T> T reinitConsistencyLevel(final SafeExecutionContext<T> executionContext)
 	{
+		log.trace("Execute safely");
 		try
 		{
 			return executionContext.execute();
 		}
 		finally
 		{
+			log.trace("Cleaning up flushing context");
 			context.cleanUpFlushContext();
 		}
 	}
@@ -1021,12 +1028,14 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 	private void forceReadConsistencyLevel(final ConsistencyLevel readLevel)
 	{
+		log.trace("Execute read operation with consistency level {}", readLevel.name());
 		validator.validateNoPendingBatch(context);
 		context.setReadConsistencyLevel(readLevel);
 	}
 
 	private void forceWriteConsistencyLevel(final ConsistencyLevel writeLevel)
 	{
+		log.trace("Execute write operation with consistency level {}", writeLevel.name());
 		validator.validateNoPendingBatch(context);
 		context.setWriteConsistencyLevel(writeLevel);
 	}

@@ -92,4 +92,11 @@ public class KeyValue<K, V> implements Serializable
 	{
 		return ttl;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "KeyValue [key=" + key + ", value=" + value + ", ttl=" + ttl + "]";
+	}
+
 }

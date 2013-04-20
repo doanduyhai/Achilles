@@ -6,11 +6,13 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * KeyValueIteratorForComposite
@@ -20,15 +22,18 @@ import me.prettyprint.hector.api.beans.HColumn;
  */
 public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(KeyValueIteratorImpl.class);
+
 	private KeyValueFactory factory = new KeyValueFactory();
-	protected Iterator<HColumn<Composite, V>> achillesSliceIterator;
+	protected AbstractAchillesSliceIterator<HColumn<Composite, V>> achillesSliceIterator;
 	private PropertyMeta<K, V> propertyMeta;
 	private PersistenceContext<ID> context;
 
 	protected KeyValueIteratorImpl() {}
 
 	public KeyValueIteratorImpl(PersistenceContext<ID> context,
-			Iterator<HColumn<Composite, V>> columnSliceIterator, PropertyMeta<K, V> propertyMeta)
+			AbstractAchillesSliceIterator<HColumn<Composite, V>> columnSliceIterator,
+			PropertyMeta<K, V> propertyMeta)
 	{
 		this.context = context;
 		this.achillesSliceIterator = columnSliceIterator;
@@ -38,12 +43,14 @@ public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 	@Override
 	public boolean hasNext()
 	{
+		log.trace("Does the {} has next value ? ", achillesSliceIterator.type());
 		return this.achillesSliceIterator.hasNext();
 	}
 
 	@Override
 	public KeyValue<K, V> next()
 	{
+		log.trace("Get next key/value from the {} ", achillesSliceIterator.type());
 		KeyValue<K, V> keyValue = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
@@ -60,6 +67,7 @@ public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 	@Override
 	public K nextKey()
 	{
+		log.trace("Get next key from the {} ", achillesSliceIterator.type());
 		K key = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
@@ -76,6 +84,7 @@ public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 	@Override
 	public V nextValue()
 	{
+		log.trace("Get next value from the {} ", achillesSliceIterator.type());
 		V value = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
@@ -92,6 +101,7 @@ public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 	@Override
 	public Integer nextTtl()
 	{
+		log.trace("Get next ttl from the {} ", achillesSliceIterator.type());
 		Integer ttl = null;
 		if (this.achillesSliceIterator.hasNext())
 		{

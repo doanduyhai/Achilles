@@ -223,7 +223,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 					entityDaosMap, //
 					columnFamilyDaosMap, //
 					consistencyPolicy, //
-					counterDao, cluster, keyspace, //
+					cluster, keyspace, //
 					objectMapperFactory, entityClass);
 
 			EntityMeta<?> entityMeta = entityParser.parseEntity(context);

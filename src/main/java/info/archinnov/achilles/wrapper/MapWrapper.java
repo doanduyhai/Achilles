@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * MapWrapper
  * 
@@ -18,6 +21,7 @@ import java.util.Set;
  */
 public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(MapWrapper.class);
 
 	private final Map<K, V> target;
 
@@ -30,6 +34,8 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	{
 		if (this.target.size() > 0)
 		{
+			log.trace("Mark map property {} of entity class {} dirty upon all elements clearance",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		this.target.clear();
@@ -54,6 +60,9 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		Set<Entry<K, V>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0)
 		{
+			log.trace("Build map entry wrapper for map property {} of entity class {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 			EntrySetWrapper<ID, K, V> wrapperSet = EntrySetWrapperBuilder //
 					.builder(context, targetEntrySet) //
 					.dirtyMap(dirtyMap) //
@@ -69,6 +78,8 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	@Override
 	public V get(Object key)
 	{
+		log.trace("Return value having key{} for map property {} of entity class {}", key,
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		if (isJoin())
 		{
 			V joinEntity = this.target.get(key);
@@ -97,6 +108,9 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		Set<K> keySet = this.target.keySet();
 		if (keySet.size() > 0)
 		{
+			log.trace("Build key set wrapper for map property {} of entity class {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 			KeySetWrapper<ID, K> keySetWrapper = KeySetWrapperBuilder //
 					.builder(context, keySet) //
 					.dirtyMap(dirtyMap) //
@@ -112,6 +126,10 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 	@Override
 	public V put(K key, V value)
 	{
+		log.trace(
+				"Mark map property {} of entity class {} dirty upon new value {} addition for key {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), value, key);
+
 		V result = this.target.put(key, proxifier.unproxy(value));
 		this.markDirty();
 		return result;
@@ -125,6 +143,11 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		{
 			map.put(entry.getKey(), proxifier.unproxy(entry.getValue()));
 		}
+
+		log.trace(
+				"Mark map property {} of entity class {} dirty upon new key/value pairs addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 		this.target.putAll(map);
 		this.markDirty();
 	}
@@ -135,6 +158,9 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		Object unproxy = proxifier.unproxy(key);
 		if (this.target.containsKey(unproxy))
 		{
+			log.trace(
+					"Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), key);
 			this.markDirty();
 		}
 		return this.target.remove(unproxy);
@@ -158,6 +184,9 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 
 		if (values.size() > 0)
 		{
+			log.trace("Build values collection wrapper for map property {} of entity class {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 			ValueCollectionWrapper<ID, V> collectionWrapper = ValueCollectionWrapperBuilder //
 					.builder(context, values) //
 					.dirtyMap(dirtyMap) //

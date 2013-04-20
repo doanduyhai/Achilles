@@ -114,11 +114,8 @@ public class EntityParser
 		buildDao(context, columnFamilyName, idMeta);
 		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass()
-					.getCanonicalName(), entityMeta);
-		}
+		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass()
+				.getCanonicalName(), entityMeta);
 		return entityMeta;
 	}
 
@@ -138,7 +135,7 @@ public class EntityParser
 			PropertyMeta<?, ?> propertyMeta = entry.getKey();
 			EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) entityMetaMap.get(clazz);
 
-			validator.validateJoinEntityNotDirectCFMapping(joinEntityMeta);
+			validator.validateJoinEntityNotDirectCFMapping(propertyMeta, joinEntityMeta);
 
 			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 			if (propertyMeta.type().isWideMap())
@@ -158,11 +155,8 @@ public class EntityParser
 				context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
 			}
 
-			if (log.isTraceEnabled())
-			{
-				log.trace("Join property meta built for entity class {} : {}", context
-						.getCurrentEntityClass().getCanonicalName(), propertyMeta);
-			}
+			log.trace("Join property meta built for entity class {} : {}",
+					clazz.getCanonicalName(), propertyMeta);
 		}
 	}
 

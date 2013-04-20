@@ -11,7 +11,6 @@ import java.util.Set;
  */
 public class KeySetWrapper<ID, K> extends SetWrapper<ID, K>
 {
-
 	public KeySetWrapper(Set<K> target) {
 		super(target);
 	}

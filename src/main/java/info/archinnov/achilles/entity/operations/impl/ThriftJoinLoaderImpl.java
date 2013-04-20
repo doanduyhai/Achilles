@@ -44,11 +44,8 @@ public class ThriftJoinLoaderImpl
 
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		if (log.isTraceEnabled())
-		{
-			log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
-					.getValueClass().getCanonicalName(), joinIds);
-		}
+		log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
+				.getValueClass().getCanonicalName(), joinIds);
 
 		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
 				.getColumnFamilyName());
@@ -107,11 +104,8 @@ public class ThriftJoinLoaderImpl
 
 		if (joinIds.size() > 0)
 		{
-			if (log.isTraceEnabled())
-			{
-				log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
-						.getValueClass().getCanonicalName(), joinIds);
-			}
+			log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
+					.getValueClass().getCanonicalName(), joinIds);
 
 			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
@@ -130,11 +124,8 @@ public class ThriftJoinLoaderImpl
 			PropertyMeta<?, V> propertyMeta)
 	{
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Fetching join keys for property {} of class {} ",
-					propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName());
-		}
+		log.trace("Fetching join keys for property {} of class {} ",
+				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName());
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -9,9 +10,14 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+
 import java.util.List;
+
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ExternalWideMapWrapper
@@ -19,151 +25,231 @@ import me.prettyprint.hector.api.beans.HColumn;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V> {
-    protected ID id;
-    protected GenericColumnFamilyDao<ID, V> dao;
-    protected PropertyMeta<K, V> propertyMeta;
-    private CompositeHelper compositeHelper;
-    private KeyValueFactory keyValueFactory;
-    private IteratorFactory iteratorFactory;
-    private CompositeFactory compositeFactory;
+public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
+{
 
-    protected Composite buildComposite(K key) {
-        Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
-        return comp;
-    }
+	private static final Logger log = LoggerFactory.getLogger(WideMapWrapper.class);
 
-    @Override
-    public V get(K key) {
-        V result = null;
-        Object value = dao.getValue(id, buildComposite(key));
-        if (value != null) {
-            result = propertyMeta.castValue(value);
-        }
-        return result;
-    }
+	protected ID id;
+	protected GenericColumnFamilyDao<ID, V> dao;
+	protected PropertyMeta<K, V> propertyMeta;
+	private CompositeHelper compositeHelper;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private CompositeFactory compositeFactory;
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value) {
-        dao.setValueBatch(id, buildComposite(key), (V) propertyMeta.writeValueAsSupportedTypeOrString(value),
-                context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+	protected Composite buildComposite(K key)
+	{
+		Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
+		return comp;
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void insert(K key, V value, int ttl) {
-        dao.setValueBatch(id, buildComposite(key), (V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
-                context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+	@Override
+	public V get(K key)
+	{
+		log.trace("Get value having key {}", key);
 
-    @Override
-    public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		V result = null;
+		Object value = dao.getValue(id, buildComposite(key));
+		if (value != null)
+		{
+			result = propertyMeta.castValue(value);
+		}
+		return result;
+	}
 
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value)
+	{
+		log.trace("Insert value {} with key {}", value, key);
 
-        List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.isReverse());
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-        return keyValueFactory.createKeyValueList(context, propertyMeta, hColumns);
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void insert(K key, V value, int ttl)
+	{
+		log.trace("Insert value {} with key {} and ttl {}", value, key, ttl);
 
-    @Override
-    public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		dao.setValueBatch(id, buildComposite(key),
+				(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+	@Override
+	public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.isReverse());
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				ordering);
 
-        return keyValueFactory.createValueList(propertyMeta, hColumns);
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find key/value pairs in range {} / {} with bounding {} and ordering {}",
+					format(composites[0]), format(composites[1]), bounds.name(), ordering.name());
+		}
 
-    @Override
-    public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
-        compositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
 
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+		return keyValueFactory.createKeyValueList(context, propertyMeta, hColumns);
+	}
 
-        List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0], composites[1], count,
-                ordering.isReverse());
+	@Override
+	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        return keyValueFactory.createKeyList(propertyMeta, hColumns);
-    }
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				ordering);
 
-    @Override
-    public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds, OrderingMode ordering) {
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find value in range {} / {} with bounding {} and ordering {}",
+					format(composites[0]), format(composites[1]), bounds.name(), ordering.name());
+		}
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
 
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds, ordering);
+		return keyValueFactory.createValueList(propertyMeta, hColumns);
+	}
 
-        AchillesSliceIterator<ID, V> columnSliceIterator = dao.getColumnsIterator(id, composites[0], composites[1],
-                ordering.isReverse(), count);
+	@Override
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
-        return iteratorFactory.createKeyValueIterator(context, columnSliceIterator, propertyMeta);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				ordering);
 
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace("Find keys in range {} / {} with bounding {} and ordering {}",
+					format(composites[0]), format(composites[1]), bounds.name(), ordering.name());
+		}
+		List<HColumn<Composite, V>> hColumns = dao.findRawColumnsRange(id, composites[0],
+				composites[1], count, ordering.isReverse());
 
-    @Override
-    public void remove(K key) {
-        dao.removeColumnBatch(id, buildComposite(key), context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		return keyValueFactory.createKeyList(propertyMeta, hColumns);
+	}
 
-    @Override
-    public void remove(K start, K end, BoundingMode bounds) {
-        compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
-        Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
-                OrderingMode.ASCENDING);
-        dao.removeColumnRangeBatch(id, composites[0], composites[1],
-                context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+	@Override
+	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering)
+	{
 
-    @Override
-    public void removeFirst(int count) {
-        dao.removeColumnRangeBatch(id, null, null, false, count, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				ordering);
 
-    @Override
-    public void removeLast(int count) {
-        dao.removeColumnRangeBatch(id, null, null, true, count, context.getColumnFamilyMutator(getExternalCFName()));
-        context.flush();
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace(
+					"Iterate in range {} / {} with bounding {} and ordering {} and batch of {} elements",
+					format(composites[0]), format(composites[1]), bounds.name(), ordering.name(),
+					count);
+		}
 
-    private String getExternalCFName() {
-        return propertyMeta.getExternalCFName();
-    }
+		AchillesSliceIterator<ID, V> columnSliceIterator = dao.getColumnsIterator(id,
+				composites[0], composites[1], ordering.isReverse(), count);
 
-    public void setId(ID id) {
-        this.id = id;
-    }
+		return iteratorFactory.createKeyValueIterator(context, columnSliceIterator, propertyMeta);
 
-    public void setDao(GenericColumnFamilyDao<ID, V> dao) {
-        this.dao = dao;
-    }
+	}
 
-    public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta) {
-        this.propertyMeta = wideMapMeta;
-    }
+	@Override
+	public void remove(K key)
+	{
+		log.trace("Remove value having key {}", key);
 
-    public void setCompositeHelper(CompositeHelper compositeHelper) {
-        this.compositeHelper = compositeHelper;
-    }
+		dao.removeColumnBatch(id, buildComposite(key),
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
 
-    public void setKeyValueFactory(KeyValueFactory keyValueFactory) {
-        this.keyValueFactory = keyValueFactory;
-    }
+	@Override
+	public void remove(K start, K end, BoundingMode bounds)
+	{
+		compositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+		Composite[] composites = compositeFactory.createForQuery(propertyMeta, start, end, bounds,
+				OrderingMode.ASCENDING);
 
-    public void setIteratorFactory(IteratorFactory iteratorFactory) {
-        this.iteratorFactory = iteratorFactory;
-    }
+		if (log.isTraceEnabled())
+		{
+			log.trace("Remove values in range {} / {} with bounding {} and ordering {}",
+					format(composites[0]), format(composites[1]), bounds.name(),
+					OrderingMode.ASCENDING.name());
+		}
 
-    public void setCompositeKeyFactory(CompositeFactory compositeFactory) {
-        this.compositeFactory = compositeFactory;
-    }
+		dao.removeColumnRangeBatch(id, composites[0], composites[1],
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
+
+	@Override
+	public void removeFirst(int count)
+	{
+		log.trace("Remove first {} values", count);
+
+		dao.removeColumnRangeBatch(id, null, null, false, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
+
+	@Override
+	public void removeLast(int count)
+	{
+		log.trace("Remove last {} values", count);
+
+		dao.removeColumnRangeBatch(id, null, null, true, count,
+				context.getColumnFamilyMutator(getExternalCFName()));
+		context.flush();
+	}
+
+	private String getExternalCFName()
+	{
+		return propertyMeta.getExternalCFName();
+	}
+
+	public void setId(ID id)
+	{
+		this.id = id;
+	}
+
+	public void setDao(GenericColumnFamilyDao<ID, V> dao)
+	{
+		this.dao = dao;
+	}
+
+	public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
+	{
+		this.propertyMeta = wideMapMeta;
+	}
+
+	public void setCompositeHelper(CompositeHelper compositeHelper)
+	{
+		this.compositeHelper = compositeHelper;
+	}
+
+	public void setKeyValueFactory(KeyValueFactory keyValueFactory)
+	{
+		this.keyValueFactory = keyValueFactory;
+	}
+
+	public void setIteratorFactory(IteratorFactory iteratorFactory)
+	{
+		this.iteratorFactory = iteratorFactory;
+	}
+
+	public void setCompositeKeyFactory(CompositeFactory compositeFactory)
+	{
+		this.compositeFactory = compositeFactory;
+	}
 }

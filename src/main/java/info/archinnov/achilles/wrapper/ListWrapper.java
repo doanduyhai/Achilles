@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * ListWrapper
  * 
@@ -15,15 +18,19 @@ import java.util.ListIterator;
  */
 public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List<V>
 {
+	private static final Logger log = LoggerFactory.getLogger(ListWrapper.class);
 
 	public ListWrapper(List<V> target) {
 		super(target);
 	}
 
 	@Override
-	public void add(int arg0, V arg1)
+	public void add(int index, V arg1)
 	{
-		((List<V>) super.target).add(arg0, proxifier.unproxy(arg1));
+		log.trace(
+				"Mark list property {} of entity class {} dirty upon element addition at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
+		((List<V>) super.target).add(index, proxifier.unproxy(arg1));
 		super.markDirty();
 	}
 
@@ -33,15 +40,19 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 		boolean result = ((List<V>) super.target).addAll(arg0, proxifier.unproxy(arg1));
 		if (result)
 		{
+			log.trace("Mark list property {} of entity class {} dirty upon elements addition",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			super.markDirty();
 		}
 		return result;
 	}
 
 	@Override
-	public V get(int arg0)
+	public V get(int index)
 	{
-		V result = ((List<V>) super.target).get(arg0);
+		log.trace("Return element at index {} for list property {} of entity class {}", index,
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+		V result = ((List<V>) super.target).get(index);
 		if (isJoin())
 		{
 			return proxifier.buildProxy(result, joinContext(result));
@@ -69,19 +80,8 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 	{
 		ListIterator<V> target = ((List<V>) super.target).listIterator();
 
-		return ListIteratorWrapperBuilder //
-				.builder(context, target) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
-				.build();
-	}
-
-	@Override
-	public ListIterator<V> listIterator(int arg0)
-	{
-		ListIterator<V> target = ((List<V>) super.target).listIterator(arg0);
+		log.trace("Build iterator wrapper for list property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		return ListIteratorWrapperBuilder //
 				.builder(context, target) //
@@ -93,25 +93,53 @@ public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List
 	}
 
 	@Override
-	public V remove(int arg0)
+	public ListIterator<V> listIterator(int index)
 	{
-		V result = ((List<V>) super.target).remove(arg0);
+		ListIterator<V> target = ((List<V>) super.target).listIterator(index);
+
+		log.trace("Build iterator wrapper for list property {} of entity class {} at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
+
+		return ListIteratorWrapperBuilder //
+				.builder(context, target) //
+				.dirtyMap(dirtyMap) //
+				.setter(setter) //
+				.propertyMeta(propertyMeta) //
+				.proxifier(proxifier) //
+				.build();
+	}
+
+	@Override
+	public V remove(int index)
+	{
+		log.trace(
+				"Mark list property {} of entity class {} dirty upon element removal at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
+
+		V result = ((List<V>) super.target).remove(index);
 		super.markDirty();
 		return result;
 	}
 
 	@Override
-	public V set(int arg0, V arg1)
+	public V set(int index, V arg1)
 	{
-		V result = ((List<V>) super.target).set(arg0, proxifier.unproxy(arg1));
+		log.trace("Mark list property {} of entity class {} dirty upon element set at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
+		V result = ((List<V>) super.target).set(index, proxifier.unproxy(arg1));
 		super.markDirty();
 		return result;
 	}
 
 	@Override
-	public List<V> subList(int arg0, int arg1)
+	public List<V> subList(int from, int to)
 	{
-		List<V> target = ((List<V>) super.target).subList(arg0, arg1);
+		List<V> target = ((List<V>) super.target).subList(from, to);
+
+		log.trace(
+				"Build sublist wrapper for list property {} of entity class {} between index {} and {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), from, to);
 
 		return ListWrapperBuilder //
 				.builder(context, target) //

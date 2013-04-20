@@ -46,7 +46,7 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_empty_property_meta_map() throws Exception
 	{
 		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, null, CompleteBean.class);
+				null, CompleteBean.class);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 		exception.expect(AchillesBeanMappingException.class);
 		exception
@@ -62,7 +62,7 @@ public class EntityParsingValidatorTest
 			throws Exception
 	{
 		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, null, CompleteBean.class);
+				null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
@@ -81,7 +81,7 @@ public class EntityParsingValidatorTest
 			throws Exception
 	{
 		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, null, CompleteBean.class);
+				null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
@@ -102,6 +102,12 @@ public class EntityParsingValidatorTest
 	@Test
 	public void should_exception_when_join_entity_is_direct_cf_mapping() throws Exception
 	{
+		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+				.valueClass(String.class) //
+				.field("test") //
+				.entityClassName("entity") //
+				.build();
+
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
 		joinMeta.setColumnFamilyDirectMapping(true);
 		joinMeta.setClassName("class.name");
@@ -109,7 +115,7 @@ public class EntityParsingValidatorTest
 		exception
 				.expectMessage("The entity 'class.name' is a direct Column Family mapping and cannot be a join entity");
 
-		validator.validateJoinEntityNotDirectCFMapping(joinMeta);
+		validator.validateJoinEntityNotDirectCFMapping(propertyMeta, joinMeta);
 	}
 
 	@Test

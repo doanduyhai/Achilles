@@ -1,6 +1,7 @@
 package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_JOIN_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
@@ -15,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
@@ -29,12 +29,10 @@ import me.prettyprint.hector.api.query.SliceQuery;
  * 
  */
 public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
-		AbstractAchillesSliceIterator implements Iterator<HColumn<Composite, VALUE>>
+		AbstractAchillesSliceIterator<HColumn<Composite, VALUE>>
 {
 
 	private SliceQuery<K, Composite, V> query;
-	private Iterator<HColumn<Composite, VALUE>> iterator;
-
 	private PropertyMeta<KEY, VALUE> propertyMeta;
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 	private GenericEntityDao<JOIN_ID> joinEntityDao;
@@ -90,36 +88,8 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		if (iterator == null)
-		{
-			loadEntities();
-
-		}
-		else if (!iterator.hasNext() && columns == count)
-		{ // only need to do another query if maximum columns were retrieved
-
-			// Exclude start from the query because is has been already fetched
-			if (reversed)
-			{
-				start.setEquality(ComponentEquality.LESS_THAN_EQUAL);
-			}
-			else
-			{
-				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
-			}
-
-			query.setRange(start, finish.function(), reversed, count);
-			loadEntities();
-			columns = 0;
-		}
-
-		return iterator.hasNext();
-	}
-
 	@SuppressWarnings("unchecked")
-	private void loadEntities()
+	protected Iterator<HColumn<Composite, VALUE>> fetchData()
 	{
 
 		Iterator<HColumn<Composite, V>> iter = executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, V>>>()
@@ -176,7 +146,7 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 				joinedHColumns.add(joinedHColumn);
 			}
 		}
-		iterator = joinedHColumns.iterator();
+		return joinedHColumns.iterator();
 	}
 
 	@Override
@@ -193,5 +163,23 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	public void remove()
 	{
 		iterator.remove();
+	}
+
+	@Override
+	protected void changeQueryRange()
+	{
+		query.setRange(start, finish.function(), reversed, count);
+	}
+
+	@Override
+	protected void resetStartColumn(HColumn<Composite, VALUE> column)
+	{
+		start = column.getName();
+	}
+
+	@Override
+	public IteratorType type()
+	{
+		return ACHILLES_JOIN_SLICE_ITERATOR;
 	}
 }

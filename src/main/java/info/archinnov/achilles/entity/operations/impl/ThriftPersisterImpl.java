@@ -317,22 +317,16 @@ public class ThriftPersisterImpl
 		Mutator<ID> entityMutator = context.getEntityMutator(entityMeta.getColumnFamilyName());
 		if (context.isDirectColumnFamilyMapping())
 		{
-			if (log.isTraceEnabled())
-			{
-				log.trace(
-						"Batch removing direct column family mapping of class {} and primary key {}",
-						context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-			}
+			log.trace("Batch removing direct column family mapping of class {} and primary key {}",
+					context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 			context.getColumnFamilyDao().removeRowBatch(primaryKey, entityMutator);
 		}
 		else
 		{
 
-			if (log.isTraceEnabled())
-			{
-				log.trace("Batch removing entity of class {} and primary key {}", context
-						.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-			}
+			log.trace("Batch removing entity of class {} and primary key {}", context
+					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+
 			context.getEntityDao().removeRowBatch(primaryKey, entityMutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
@@ -360,12 +354,10 @@ public class ThriftPersisterImpl
 	private <ID> void removeWideMap(PersistenceContext<ID> context, ID primaryKey,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Batch removing wideMap property {} of class {} and primary key {}",
-					propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-		}
+		log.trace("Batch removing wideMap property {} of class {} and primary key {}",
+				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
+
 		String externalColumnFamilyName = propertyMeta.getExternalCFName();
 		GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = context
 				.findColumnFamilyDao(externalColumnFamilyName);
@@ -424,12 +416,9 @@ public class ThriftPersisterImpl
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		Composite com = compositeFactory.createForBatchInsertSingleCounter(propertyMeta);
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Batch removing counter property {} of class {} and primary key {}",
-					propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-		}
+		log.trace("Batch removing counter property {} of class {} and primary key {}",
+				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
 
 		context.getCounterDao().removeCounterBatch(keyComp, com, context.getCounterMutator());
 	}
@@ -439,12 +428,10 @@ public class ThriftPersisterImpl
 			PropertyMeta<Void, Long> propertyMeta)
 	{
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Batch removing counter wideMap property {} of class {} and primary key {}",
-					propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-		}
+		log.trace("Batch removing counter wideMap property {} of class {} and primary key {}",
+				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
+
 		Composite keyComp = compositeFactory.createKeyForCounter(propertyMeta.fqcn(),
 				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
 		context.getCounterDao().removeCounterRowBatch(keyComp, context.getCounterMutator());

@@ -52,11 +52,8 @@ public class PersistenceContext<ID>
 			FlushContext flushContext, //
 			Object entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Create new persistence context for instance {} of class {}", entity,
-					entityMeta.getClassName());
-		}
+		log.trace("Create new persistence context for instance {} of class {}", entity,
+				entityMeta.getClassName());
 
 		this.entityMeta = entityMeta;
 		this.entityDaosMap = entityDaosMap;
@@ -82,11 +79,8 @@ public class PersistenceContext<ID>
 			FlushContext flushContext, //
 			Class<?> entityClass, ID primaryKey)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Create new persistence context for instance {} of class {}", entity,
-					entityMeta.getClassName());
-		}
+		log.trace("Create new persistence context for instance {} of class {}", entity,
+				entityMeta.getClassName());
 
 		this.entityMeta = entityMeta;
 		this.entityDaosMap = entityDaosMap;
@@ -106,11 +100,8 @@ public class PersistenceContext<ID>
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(
 			EntityMeta<JOIN_ID> joinMeta, Object joinEntity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
-					joinMeta.getClassName());
-		}
+		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
+				joinMeta.getClassName());
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, policy, flushContext, joinEntity);
 	}
@@ -118,11 +109,8 @@ public class PersistenceContext<ID>
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(Class<?> entityClass,
 			EntityMeta<JOIN_ID> joinMeta, JOIN_ID joinId)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
-					joinMeta.getClassName());
-		}
+		log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
+				joinMeta.getClassName());
 
 		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
 				counterDao, policy, flushContext, entityClass, joinId);

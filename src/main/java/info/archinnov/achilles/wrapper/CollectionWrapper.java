@@ -5,6 +5,9 @@ import static info.archinnov.achilles.wrapper.builder.IteratorWrapperBuilder.bui
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * CollectionWrapper
  * 
@@ -13,6 +16,8 @@ import java.util.Iterator;
  */
 public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements Collection<V>
 {
+	private static final Logger log = LoggerFactory.getLogger(CollectionWrapper.class);
+
 	protected Collection<V> target;
 
 	public CollectionWrapper(Collection<V> target) {
@@ -22,6 +27,8 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 	@Override
 	public boolean add(V arg0)
 	{
+		log.trace("Mark collection property {} of entity class {} dirty upon element addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.markDirty();
 		boolean result = target.add(proxifier.unproxy(arg0));
 
@@ -35,6 +42,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		result = target.addAll(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace(
+					"Mark collection property {} of entity class {} dirty upon elements addition",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -45,6 +55,8 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 	{
 		if (this.target.size() > 0)
 		{
+			log.trace("Mark collection property {} of entity class {} dirty upon clearance",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		this.target.clear();
@@ -71,6 +83,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 	@Override
 	public Iterator<V> iterator()
 	{
+		log.trace("Build iterator wrapper for collection property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 		return builder(context, this.target.iterator()) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
@@ -86,6 +101,8 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		result = this.target.remove(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace("Mark collection property {} of entity class {} dirty upon element removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -98,6 +115,8 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		result = this.target.removeAll(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace("Mark collection property {} of entity class {} dirty upon elements removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -110,6 +129,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		result = this.target.retainAll(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace(
+					"Mark collection property {} of entity class {} dirty upon elements retentions",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -127,6 +149,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		Object[] result = null;
 		if (isJoin())
 		{
+			log.trace(
+					"Build proxies for join entities of collection property {} of entity class {} upon toArray() call",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			Object[] array = new Object[this.target.size()];
 			int i = 0;
 			for (V joinEntity : this.target)
@@ -150,6 +175,9 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		T[] result = null;
 		if (isJoin())
 		{
+			log.trace(
+					"Build proxies for join entities of collection property {} of entity class {} upon toArray(T[] arg) call",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			T[] array = this.target.toArray(arg0);
 
 			for (int i = 0; i < array.length; i++)

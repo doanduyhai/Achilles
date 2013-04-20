@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JpaEntityInterceptorBuilder
  * 
@@ -19,6 +22,7 @@ import java.util.Set;
  */
 public class JpaEntityInterceptorBuilder<ID, T>
 {
+	private static final Logger log = LoggerFactory.getLogger(JpaEntityInterceptorBuilder.class);
 
 	private T target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
@@ -46,6 +50,9 @@ public class JpaEntityInterceptorBuilder<ID, T>
 
 	public JpaEntityInterceptor<ID, T> build()
 	{
+		log.debug("Build interceptor for entity of class {}", context.getEntityMeta()
+				.getClassName());
+
 		JpaEntityInterceptor<ID, T> interceptor = new JpaEntityInterceptor<ID, T>();
 
 		EntityMeta<ID> entityMeta = context.getEntityMeta();

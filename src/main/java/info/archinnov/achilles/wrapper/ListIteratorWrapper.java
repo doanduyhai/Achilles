@@ -2,6 +2,9 @@ package info.archinnov.achilles.wrapper;
 
 import java.util.ListIterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * ListIteratorWrapper
  * 
@@ -11,6 +14,7 @@ import java.util.ListIterator;
 public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements
 		ListIterator<V>
 {
+	private static final Logger log = LoggerFactory.getLogger(ListIteratorWrapper.class);
 
 	private ListIterator<V> target;
 
@@ -21,6 +25,8 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public void add(V e)
 	{
+		log.trace("Mark list property {} of entity class {} dirty upon element addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.add(proxifier.unproxy(e));
 		this.markDirty();
 	}
@@ -40,6 +46,8 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public V next()
 	{
+		log.trace("Return next element from list property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		V entity = this.target.next();
 		if (isJoin())
 		{
@@ -60,6 +68,8 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public V previous()
 	{
+		log.trace("Return previous element from list property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		V entity = this.target.previous();
 		if (isJoin())
 		{
@@ -80,6 +90,8 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public void remove()
 	{
+		log.trace("Mark list property {} of entity class {} dirty upon element removal",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.remove();
 		this.markDirty();
 	}
@@ -87,6 +99,9 @@ public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imp
 	@Override
 	public void set(V e)
 	{
+		log.trace(
+				"Mark list property {} of entity class {} dirty upon element set at current position",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.set(proxifier.unproxy(e));
 		this.markDirty();
 	}

@@ -340,7 +340,7 @@ public class JoinWideMapWrapperTest {
                         OrderingMode.DESCENDING.isReverse(), count)).thenReturn(iterator);
 
         KeyValueIterator<Integer, CompleteBean> keyValueIterator = mock(KeyValueIterator.class);
-        when(iteratorFactory.createKeyValueJoinIterator(context, iterator, propertyMeta))
+        when(iteratorFactory.createJoinKeyValueIterator(context, iterator, propertyMeta))
                 .thenReturn(keyValueIterator);
 
         KeyValueIterator<Integer, CompleteBean> expected = wrapper.iterator(start, end, count,

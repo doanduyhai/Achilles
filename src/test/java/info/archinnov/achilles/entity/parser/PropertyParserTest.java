@@ -1233,7 +1233,6 @@ public class PropertyParserTest
 				entityDaosMap, //
 				columnFamilyDaosMap, //
 				configurableCLPolicy, //
-				counterDao, //
 				cluster, keyspace, //
 				objectMapperFactory, entityClass);
 
@@ -1247,7 +1246,6 @@ public class PropertyParserTest
 				entityDaosMap, //
 				columnFamilyDaosMap, //
 				configurableCLPolicy, //
-				counterDao, //
 				cluster, keyspace, //
 				objectMapperFactory, CompleteBean.class);
 	}

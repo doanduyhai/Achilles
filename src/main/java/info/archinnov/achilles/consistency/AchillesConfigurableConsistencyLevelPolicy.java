@@ -145,8 +145,8 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public void reinitCurrentConsistencyLevels()
 	{
-		log.trace("Reinit current read/write consistency levels in the thread {}", Thread
-				.currentThread().getId());
+		log.trace("Reinit current read/write consistency levels in the thread {}",
+				Thread.currentThread());
 		currentReadConsistencyLevel.remove();
 		currentWriteConsistencyLevel.remove();
 	}
@@ -180,15 +180,14 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public void setCurrentReadLevel(ConsistencyLevel readLevel)
 	{
-		log.trace("Set current read consistency level to {} in the thread {}", readLevel, Thread
-				.currentThread().getId());
+		log.trace("Set current read consistency level to {} in the thread {}", readLevel,
+				Thread.currentThread());
 		currentReadConsistencyLevel.set(readLevel);
 	}
 
 	public void removeCurrentReadLevel()
 	{
-		log.trace("Remove current read consistency level  in the thread {}", Thread.currentThread()
-				.getId());
+		log.trace("Remove current read consistency level  in the thread {}", Thread.currentThread());
 		currentReadConsistencyLevel.remove();
 	}
 
@@ -201,15 +200,15 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 
 	public void setCurrentWriteLevel(ConsistencyLevel writeLevel)
 	{
-		log.trace("Set current write consistency level to {} in the thread {}", writeLevel, Thread
-				.currentThread().getId());
+		log.trace("Set current write consistency level to {} in the thread {}", writeLevel,
+				Thread.currentThread());
 		currentWriteConsistencyLevel.set(writeLevel);
 	}
 
 	public void removeCurrentWriteLevel()
 	{
-		log.trace("Remove current write consistency level  in the thread {}", Thread
-				.currentThread().getId());
+		log.trace("Remove current write consistency level  in the thread {}",
+				Thread.currentThread());
 		currentWriteConsistencyLevel.remove();
 	}
 }

@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PropertyMeta<K, V>
 {
+	private static final Logger log = LoggerFactory.getLogger(PropertyMeta.class);
+
 	private ObjectMapper objectMapper;
 	private PropertyType type;
 	private String propertyName;
@@ -159,70 +161,85 @@ public class PropertyMeta<K, V>
 		return keyClass.cast(object);
 	}
 
-	public V getValueFromString(Object object)
+	public V getValueFromString(Object stringValue)
 	{
+		log.trace("Getting value from string {} for property {} of entity class {}", stringValue,
+				propertyName, entityClassName);
 		try
 		{
 			if (valueClass == String.class)
 			{
-				return valueClass.cast(object);
+				log.trace("Casting value straight to string");
+				return valueClass.cast(stringValue);
 			}
 			else
 			{
-				return this.objectMapper.readValue((String) object, this.valueClass);
+				log.trace("Deserializing value from string");
+				return this.objectMapper.readValue((String) stringValue, this.valueClass);
 			}
 		}
 		catch (Exception e)
 		{
-			logger.error("Error while trying to deserialize the JSON : " + (String) object, e);
+			logger.error("Error while trying to deserialize the JSON : " + (String) stringValue, e);
 			return null;
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public KeyValue<K, V> getKeyValueFromString(Object object)
+	public KeyValue<K, V> getKeyValueFromString(Object stringKeyValue)
 	{
+		log.trace("Getting key/value from string {} for property {} of entity class {}",
+				stringKeyValue, propertyName, entityClassName);
 		try
 		{
-			return this.objectMapper.readValue((String) object, KeyValue.class);
+			return this.objectMapper.readValue((String) stringKeyValue, KeyValue.class);
 		}
 		catch (Exception e)
 		{
-			logger.error("Error while trying to deserialize the JSON : " + (String) object, e);
+			logger.error("Error while trying to deserialize the JSON : " + (String) stringKeyValue,
+					e);
 			return null;
 		}
 	}
 
-	public String writeValueToString(Object value)
+	public String writeValueToString(Object object)
 	{
+		log.trace("Writing value {} to string for property {} of entity class {}", object,
+				propertyName, entityClassName);
 		try
 		{
 			if (valueClass == String.class && type != MAP && type != LAZY_MAP)
 			{
-				return (String) value;
+				log.trace("Casting value straight to string");
+				return (String) object;
 			}
 			else
 			{
-				return this.objectMapper.writeValueAsString(value);
+				log.trace("Serializing value to string");
+				return this.objectMapper.writeValueAsString(object);
 			}
 		}
 		catch (Exception e)
 		{
-			logger.error("Error while trying to serialize to JSON the object : " + value, e);
+			logger.error("Error while trying to serialize to JSON the object : " + object, e);
 			return null;
 		}
 	}
 
 	public Object writeValueAsSupportedTypeOrString(V value)
 	{
+		log.trace("Writing value {} as native type or string for property {} of entity class {}",
+				value, propertyName, entityClassName);
 		try
 		{
 			if (isSupportedType(valueClass))
 			{
+				log.trace("Value belongs to list of supported native types");
 				return value;
 			}
 			else
 			{
+				log.trace("Serializing value to string");
 				return this.objectMapper.writeValueAsString(value);
 			}
 		}

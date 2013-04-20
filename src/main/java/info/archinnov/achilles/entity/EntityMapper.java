@@ -37,10 +37,7 @@ public class EntityMapper
 	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,
 			List<Pair<Composite, String>> columns, EntityMeta<ID> entityMeta, T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
-		}
+		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
 
 		Map<String, List<V>> listProperties = new HashMap<String, List<V>>();
 		Map<String, Set<V>> setProperties = new HashMap<String, Set<V>>();
@@ -164,10 +161,7 @@ public class EntityMapper
 
 	public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> idMeta, T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set primary key value {} to entity {} ", key, entity);
-		}
+		log.trace("Set primary key value {} to entity {} ", key, entity);
 
 		try
 		{
@@ -182,11 +176,7 @@ public class EntityMapper
 	public <T, ID> void setSimplePropertyToEntity(String value, PropertyMeta<?, ?> propertyMeta,
 			T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(),
-					entity);
-		}
+		log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(), entity);
 
 		try
 		{
@@ -201,10 +191,7 @@ public class EntityMapper
 
 	public <T, ID> void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
-		}
+		log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
 
 		try
 		{
@@ -218,10 +205,7 @@ public class EntityMapper
 
 	public <T, ID> void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
-		}
+		log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
 
 		try
 		{
@@ -235,10 +219,7 @@ public class EntityMapper
 
 	public <T, ID> void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
-		}
+		log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
 
 		try
 		{

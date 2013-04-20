@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -9,6 +10,9 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 
@@ -20,6 +24,7 @@ import com.google.common.base.Function;
  */
 public class CompositeTransformer
 {
+	private static final Logger log = LoggerFactory.getLogger(CompositeTransformer.class);
 
 	private PropertyHelper helper = new PropertyHelper();
 	private EntityProxifier proxifier = new EntityProxifier();
@@ -27,7 +32,6 @@ public class CompositeTransformer
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
-
 		return new Function<HColumn<Composite, ?>, K>()
 		{
 			public K apply(HColumn<Composite, ?> hColumn)
@@ -40,7 +44,6 @@ public class CompositeTransformer
 	public <K, V> Function<HColumn<Composite, ?>, V> buildValueTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
-
 		return new Function<HColumn<Composite, ?>, V>()
 		{
 			public V apply(HColumn<Composite, ?> hColumn)
@@ -52,7 +55,6 @@ public class CompositeTransformer
 
 	public Function<HColumn<Composite, ?>, ?> buildRawValueTransformer()
 	{
-
 		return new Function<HColumn<Composite, ?>, Object>()
 		{
 			public Object apply(HColumn<Composite, ?> hColumn)
@@ -65,12 +67,12 @@ public class CompositeTransformer
 	public <K, V> Function<HColumn<Composite, String>, Object> buildRawValueTransformer(
 			final PropertyMeta<K, V> propertyMeta)
 	{
-
 		return new Function<HColumn<Composite, String>, Object>()
 		{
 			@Override
 			public Object apply(HColumn<Composite, String> hColumn)
 			{
+
 				if (propertyMeta.type().isJoinColumn())
 				{
 					return propertyMeta.joinIdMeta().getValueFromString(hColumn.getValue());
@@ -85,7 +87,6 @@ public class CompositeTransformer
 
 	public Function<HColumn<Composite, ?>, Integer> buildTtlTransformer()
 	{
-
 		return new Function<HColumn<Composite, ?>, Integer>()
 		{
 			public Integer apply(HColumn<Composite, ?> hColumn)
@@ -98,7 +99,6 @@ public class CompositeTransformer
 	public <ID, K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
 			final PersistenceContext<ID> context, final PropertyMeta<K, V> propertyMeta)
 	{
-
 		return new Function<HColumn<Composite, ?>, KeyValue<K, V>>()
 		{
 			public KeyValue<K, V> apply(HColumn<Composite, ?> hColumn)
@@ -115,7 +115,13 @@ public class CompositeTransformer
 		V value = this.buildValue(context, propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
 
-		return new KeyValue<K, V>(key, value, ttl);
+		KeyValue<K, V> keyValue = new KeyValue<K, V>(key, value, ttl);
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built key/value from {} = {}",
+					format(hColumn.getName()) + ":" + hColumn.getValue(), keyValue);
+		}
+		return keyValue;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -131,10 +137,13 @@ public class CompositeTransformer
 		}
 		else
 		{
-
 			value = propertyMeta.castValue(hColumn.getValue());
 		}
-
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built value from {} = {}",
+					format(hColumn.getName()) + ":" + hColumn.getValue(), value);
+		}
 		return value;
 	}
 
@@ -147,7 +156,13 @@ public class CompositeTransformer
 		}
 		else
 		{
-			key = helper.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
+			key = helper
+					.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
+		}
+
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built key from {} = {}", format(hColumn.getName()), key);
 		}
 		return key;
 	}
@@ -183,7 +198,12 @@ public class CompositeTransformer
 		}
 		else
 		{
-			key = helper.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
+			key = helper
+					.buildMultiKeyFromComposite(propertyMeta, hColumn.getName().getComponents());
+		}
+		if (log.isTraceEnabled())
+		{
+			log.trace("Built counter key from {} = {}", format(hColumn.getName()), key);
 		}
 		return key;
 	}

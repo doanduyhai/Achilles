@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.parser.context;
 
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
@@ -32,7 +31,6 @@ public class EntityParsingContext
 	private Map<String, GenericEntityDao<?>> entityDaosMap;
 	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy;
-	private CounterDao counterDao;
 	private Cluster cluster;
 	private Keyspace keyspace;
 	private ObjectMapperFactory objectMapperFactory;
@@ -55,14 +53,13 @@ public class EntityParsingContext
 			Map<String, GenericEntityDao<?>> entityDaosMap, //
 			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
 			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy, //
-			CounterDao counterDao, Cluster cluster, Keyspace keyspace, //
+			Cluster cluster, Keyspace keyspace, //
 			ObjectMapperFactory objectMapperFactory, Class<?> currentEntityClass)
 	{
 		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
 		this.entityDaosMap = entityDaosMap;
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.configurableCLPolicy = configurableCLPolicy;
-		this.counterDao = counterDao;
 		this.cluster = cluster;
 		this.keyspace = keyspace;
 		this.objectMapperFactory = objectMapperFactory;
@@ -92,31 +89,9 @@ public class EntityParsingContext
 		return joinPropertyMetaToBeFilled;
 	}
 
-	public void setJoinPropertyMetaToBeFilled(
-			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled)
-	{
-		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
-	}
-
 	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
 	{
 		return configurableCLPolicy;
-	}
-
-	public void setConfigurableCLPolicy(
-			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy)
-	{
-		this.configurableCLPolicy = configurableCLPolicy;
-	}
-
-	public CounterDao getCounterDao()
-	{
-		return counterDao;
-	}
-
-	public void setCounterDao(CounterDao counterDao)
-	{
-		this.counterDao = counterDao;
 	}
 
 	public Cluster getCluster()
@@ -124,19 +99,9 @@ public class EntityParsingContext
 		return cluster;
 	}
 
-	public void setCluster(Cluster cluster)
-	{
-		this.cluster = cluster;
-	}
-
 	public Keyspace getKeyspace()
 	{
 		return keyspace;
-	}
-
-	public void setKeyspace(Keyspace keyspace)
-	{
-		this.keyspace = keyspace;
 	}
 
 	public Class<?> getCurrentEntityClass()
@@ -149,11 +114,6 @@ public class EntityParsingContext
 		return objectMapperFactory;
 	}
 
-	public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory)
-	{
-		this.objectMapperFactory = objectMapperFactory;
-	}
-
 	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
 	{
 		return propertyMetas;
@@ -164,19 +124,9 @@ public class EntityParsingContext
 		return wideMaps;
 	}
 
-	public void setWideMaps(Map<PropertyMeta<?, ?>, String> externalWideMaps)
-	{
-		this.wideMaps = externalWideMaps;
-	}
-
 	public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
 	{
 		return joinWideMaps;
-	}
-
-	public void setJoinWideMaps(Map<PropertyMeta<?, ?>, String> joinExternalWideMaps)
-	{
-		this.joinWideMaps = joinExternalWideMaps;
 	}
 
 	public void setPropertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
@@ -192,11 +142,6 @@ public class EntityParsingContext
 	public void setHasCounter(Boolean hasCounter)
 	{
 		this.hasCounter = hasCounter;
-	}
-
-	public boolean hasJoinEntity()
-	{
-		return !joinPropertyMetaToBeFilled.isEmpty();
 	}
 
 	public ObjectMapper getCurrentObjectMapper()
@@ -230,19 +175,9 @@ public class EntityParsingContext
 		return entityDaosMap;
 	}
 
-	public void setEntityDaosMap(Map<String, GenericEntityDao<?>> entityDaosMap)
-	{
-		this.entityDaosMap = entityDaosMap;
-	}
-
 	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
 	{
 		return columnFamilyDaosMap;
-	}
-
-	public void setColumnFamilyDaosMap(Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap)
-	{
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
 	}
 
 	public List<PropertyMeta<?, ?>> getCounterMetas()

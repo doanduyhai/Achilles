@@ -146,12 +146,6 @@ public class PropertyMetaFactory<K, V>
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> joinProperties(JoinProperties joinProperties)
-	{
-		this.joinProperties = joinProperties;
-		return this;
-	}
-
 	public PropertyMetaFactory<K, V> multiKeyProperties(MultiKeyProperties multiKeyProperties)
 	{
 		this.multiKeyProperties = multiKeyProperties;

@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * EntrySetWrapper
  * 
@@ -18,6 +21,7 @@ import java.util.Set;
 public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements
 		Set<Entry<K, V>>
 {
+	private static final Logger log = LoggerFactory.getLogger(EntrySetWrapper.class);
 
 	private Set<Entry<K, V>> target;
 
@@ -40,6 +44,8 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public void clear()
 	{
+		log.trace("Mark dirty for property {} of entity class {} upon entry set clearance",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.clear();
 		this.markDirty();
 	}
@@ -65,6 +71,8 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 	@Override
 	public Iterator<Entry<K, V>> iterator()
 	{
+		log.trace("Build iterator wrapper for entry set of property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return EntryIteratorWrapperBuilder //
 				.builder(context, this.target.iterator()) //
 				.dirtyMap(dirtyMap) //
@@ -81,6 +89,8 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		result = this.target.remove(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace("Mark dirty for property {} of entity class {} upon entry removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -93,6 +103,8 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		result = this.target.removeAll(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace("Mark dirty for property {} of entity class {} upon all entries removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -105,6 +117,8 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		result = this.target.retainAll(proxifier.unproxy(arg0));
 		if (result)
 		{
+			log.trace("Mark dirty for property {} of entity class {} upon entries retaining",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -122,6 +136,9 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		Object[] result = null;
 		if (isJoin())
 		{
+			log.trace(
+					"Build proxies for join entities of entrey set property {} of entity class {} upon toArray() call",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			Object[] array = new MapEntryWrapper[this.target.size()];
 			int i = 0;
 			for (Map.Entry<K, V> entry : this.target)
@@ -155,6 +172,10 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 
 			for (int i = 0; i < array.length; i++)
 			{
+				log.trace(
+						"Build proxies for join entities of entrey set property {} of entity class {} upon toArray(T[] arg) call",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 				array[i] = (T) MapEntryWrapperBuilder //
 						.builder(context, (Entry<K, V>) array[i]) //
 						.dirtyMap(dirtyMap) //

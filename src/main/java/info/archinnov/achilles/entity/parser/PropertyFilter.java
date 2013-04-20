@@ -29,12 +29,8 @@ public class PropertyFilter
 
 	public boolean matches(Field field)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Does the field {} of class {} has the annotations @Id/@Column/@JoinColumn ?",
-					field.getName(), field.getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Does the field {} of class {} has the annotations @Id/@Column/@JoinColumn ?",
+				field.getName(), field.getDeclaringClass().getCanonicalName());
 
 		for (Class clazz : acceptedAnnotations)
 		{
@@ -48,11 +44,8 @@ public class PropertyFilter
 
 	public boolean matches(Field field, Class annotation)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(),
-					field.getDeclaringClass().getCanonicalName(), annotation.getCanonicalName());
-		}
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field
+				.getDeclaringClass().getCanonicalName(), annotation.getCanonicalName());
 		if (field.getAnnotation(annotation) != null)
 		{
 			return true;
@@ -63,11 +56,8 @@ public class PropertyFilter
 	public boolean matches(Field field, Class annotation, String propertyName)
 	{
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(),
-					field.getDeclaringClass().getCanonicalName(), annotation.getCanonicalName());
-		}
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field
+				.getDeclaringClass().getCanonicalName(), annotation.getCanonicalName());
 
 		if (field.getAnnotation(annotation) != null && field.getName().equals(propertyName))
 		{
@@ -78,12 +68,8 @@ public class PropertyFilter
 
 	public <T extends Annotation> boolean hasAnnotation(Field field, Class<T> annotationClass)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(),
-					field.getDeclaringClass().getCanonicalName(),
-					annotationClass.getCanonicalName());
-		}
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field
+				.getDeclaringClass().getCanonicalName(), annotationClass.getCanonicalName());
 		return field.getAnnotation(annotationClass) != null;
 	}
 }

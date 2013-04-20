@@ -539,7 +539,6 @@ public class EntityParserTest
 				entityDaosMap, //
 				columnFamilyDaosMap, //
 				configurableCLPolicy, //
-				counterDao, //
 				cluster, keyspace, //
 				objectMapperFactory, entityClass);
 	}

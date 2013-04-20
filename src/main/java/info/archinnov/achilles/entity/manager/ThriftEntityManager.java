@@ -751,12 +751,8 @@ public class ThriftEntityManager implements EntityManager
 	private <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
 			ID primaryKey)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Initializing new persistence context for entity class {} and primary key {}",
-					entityClass.getCanonicalName(), primaryKey);
-		}
+		log.trace("Initializing new persistence context for entity class {} and primary key {}",
+				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
@@ -766,10 +762,7 @@ public class ThriftEntityManager implements EntityManager
 	@SuppressWarnings("unchecked")
 	private <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Initializing new persistence context for entity {}", entity);
-		}
+		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));

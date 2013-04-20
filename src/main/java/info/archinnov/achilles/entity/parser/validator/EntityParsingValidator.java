@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * EntityParsingValidator
@@ -19,8 +21,12 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EntityParsingValidator
 {
+	private static final Logger log = LoggerFactory.getLogger(EntityParsingValidator.class);
+
 	public void validateHasIdMeta(Class<?> entityClass, PropertyMeta<Void, ?> idMeta)
 	{
+		log.debug("Validate that entity class {} has an id meta", entityClass.getCanonicalName());
+
 		if (idMeta == null)
 		{
 			throw new AchillesBeanMappingException("The entity '" + entityClass.getCanonicalName()
@@ -30,6 +36,9 @@ public class EntityParsingValidator
 
 	public void validatePropertyMetas(EntityParsingContext context)
 	{
+		log.debug("Validate that there is at least one property meta for the entity class {}",
+				context.getCurrentEntityClass().getCanonicalName());
+
 		if (context.getPropertyMetas().isEmpty())
 		{
 			throw new AchillesBeanMappingException(
@@ -44,6 +53,10 @@ public class EntityParsingValidator
 		Map<String, PropertyMeta<?, ?>> propertyMetas = context.getPropertyMetas();
 		if (context.isColumnFamilyDirectMapping())
 		{
+			log.debug(
+					"Validate that there is at least one property meta for the column family direct mapping class {}",
+					context.getCurrentEntityClass().getCanonicalName());
+
 			if (propertyMetas != null && propertyMetas.size() > 1)
 			{
 				throw new AchillesBeanMappingException("The ColumnFamily entity '"
@@ -52,6 +65,10 @@ public class EntityParsingValidator
 			}
 
 			PropertyType type = propertyMetas.entrySet().iterator().next().getValue().type();
+
+			log.debug(
+					"Validate that the property meta for the column family direct mapping class {} is of type WIDE_MAP or JOIN_WIDE_MAP",
+					context.getCurrentEntityClass().getCanonicalName());
 
 			if (type != PropertyType.WIDE_MAP && type != PropertyType.JOIN_WIDE_MAP)
 			{
@@ -62,8 +79,13 @@ public class EntityParsingValidator
 		}
 	}
 
-	public <ID> void validateJoinEntityNotDirectCFMapping(EntityMeta<ID> joinEntityMeta)
+	public <K, V, ID> void validateJoinEntityNotDirectCFMapping(PropertyMeta<K, V> propertyMeta,
+			EntityMeta<ID> joinEntityMeta)
 	{
+		log.debug(
+				"Validate that the join entity for the property {} of the entity class {} is not a direct column family mapping",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+
 		if (joinEntityMeta.isColumnFamilyDirectMapping())
 		{
 			throw new AchillesBeanMappingException("The entity '" + joinEntityMeta.getClassName()
@@ -74,6 +96,8 @@ public class EntityParsingValidator
 	public <JOIN_ID> void validateJoinEntityExist(Map<Class<?>, EntityMeta<?>> entityMetaMap,
 			Class<JOIN_ID> joinEntityClass)
 	{
+		log.debug("Validate that the join entity class {} exists among all parsed entities",
+				joinEntityClass.getCanonicalName());
 
 		if (!entityMetaMap.containsKey(joinEntityClass))
 		{
@@ -84,6 +108,9 @@ public class EntityParsingValidator
 
 	public void validateAtLeastOneEntity(List<Class<?>> entities, List<String> entityPackages)
 	{
+		log.debug("Validate that at least one entity is found in the packages {}",
+				StringUtils.join(entityPackages, ","));
+
 		if (entities.isEmpty())
 		{
 			throw new AchillesBeanMappingException(

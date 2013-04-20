@@ -1,8 +1,6 @@
 package info.archinnov.achilles.helper;
 
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.LESS_THAN_EQUAL;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -13,6 +11,9 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * CompositeHelper
  * 
@@ -21,6 +22,8 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
  */
 public class CompositeHelper
 {
+	private static final Logger log = LoggerFactory.getLogger(CompositeHelper.class);
+
 	private EntityIntrospector introspector = new EntityIntrospector();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
@@ -45,6 +48,9 @@ public class CompositeHelper
 			}
 		}
 		lastNotNullIndex--;
+
+		log.trace("Last non null index for components of property {} : {}", propertyName,
+				lastNotNullIndex);
 		return lastNotNullIndex;
 	}
 
@@ -52,7 +58,8 @@ public class CompositeHelper
 	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end,
 			WideMap.OrderingMode ordering)
 	{
-
+		log.trace("Check composites {} / {} with respect to ordering mode {}", start, end,
+				ordering.name());
 		if (start != null && end != null)
 		{
 			if (wideMapMeta.isSingleKey())
@@ -79,7 +86,8 @@ public class CompositeHelper
 
 				List<Object> startComponentValues = introspector.determineMultiKeyValues(start,
 						componentGetters);
-				List<Object> endComponentValues = introspector.determineMultiKeyValues(end, componentGetters);
+				List<Object> endComponentValues = introspector.determineMultiKeyValues(end,
+						componentGetters);
 
 				this.findLastNonNullIndexForComponents(propertyName, startComponentValues);
 				this.findLastNonNullIndexForComponents(propertyName, endComponentValues);
@@ -118,6 +126,9 @@ public class CompositeHelper
 	public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds,
 			WideMap.OrderingMode ordering)
 	{
+		log.trace(
+				"Determine component equality with respect to bounding mode {} and ordering mode {}",
+				bounds.name(), ordering.name());
 		ComponentEquality[] result = new ComponentEquality[2];
 		if (WideMap.OrderingMode.DESCENDING.equals(ordering))
 		{
@@ -166,6 +177,9 @@ public class CompositeHelper
 			}
 		}
 
+		log.trace(
+				"For the to bounding mode {} and ordering mode {}, the component equalities should be : {} - {}",
+				bounds.name(), ordering.name(), result[0].name(), result[1].name());
 		return result;
 	}
 }

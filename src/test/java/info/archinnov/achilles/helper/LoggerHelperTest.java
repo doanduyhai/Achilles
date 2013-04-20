@@ -3,6 +3,7 @@ package info.archinnov.achilles.helper;
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.util.UUID;
 
@@ -64,5 +65,15 @@ public class LoggerHelperTest
 		comp.addComponent(2, uuid, GREATER_THAN_EQUAL);
 
 		assertThat(format(comp)).isEqualTo("[text:12:" + uuid + "(GREATER_THAN_EQUAL)]");
+	}
+
+	@Test
+	public void should_format_with_byte_array() throws Exception
+	{
+		Composite comp = new Composite();
+		comp.addComponent(0, PropertyType.COUNTER.flag(), EQUAL);
+		comp.addComponent(1, "test", GREATER_THAN_EQUAL);
+
+		assertThat(format(comp)).isEqualTo("[70:test(GREATER_THAN_EQUAL)]");
 	}
 }

@@ -43,11 +43,8 @@ public class ThriftLoaderImpl
 	@SuppressWarnings("unchecked")
 	public <T, ID> T load(PersistenceContext<ID> context) throws Exception
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
-					.getCanonicalName(), context.getPrimaryKey());
-		}
+		log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
 		Class<T> entityClass = (Class<T>) context.getEntityClass();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
@@ -56,10 +53,7 @@ public class ThriftLoaderImpl
 		T entity = null;
 		if (columns.size() > 0)
 		{
-			if (log.isTraceEnabled())
-			{
-				log.trace("Mapping data from Cassandra columns to entity");
-			}
+			log.trace("Mapping data from Cassandra columns to entity");
 
 			entity = entityClass.newInstance();
 			mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
@@ -79,20 +73,14 @@ public class ThriftLoaderImpl
 		String serialVersionUIDString = dao.getValue(key, composite);
 		if (StringUtils.isNotBlank(serialVersionUIDString))
 		{
-			if (log.isTraceEnabled())
-			{
-				log.trace("Serial version UID {} found for column family {} and primary key {}",
-						serialVersionUIDString, dao.getColumnFamily(), key);
-			}
+			log.trace("Serial version UID {} found for column family {} and primary key {}",
+					serialVersionUIDString, dao.getColumnFamily(), key);
 			return Long.parseLong(serialVersionUIDString);
 		}
 		else
 		{
-			if (log.isTraceEnabled())
-			{
-				log.trace("No serial version UID found for column family {} and primary key {}",
-						dao.getColumnFamily(), key);
-			}
+			log.trace("No serial version UID found for column family {} and primary key {}",
+					dao.getColumnFamily(), key);
 			return null;
 		}
 	}
@@ -157,10 +145,7 @@ public class ThriftLoaderImpl
 		{
 			if (resetConsistencyLevel)
 			{
-				if (log.isTraceEnabled())
-				{
-					log.trace("Resetting to default consistency level");
-				}
+				log.trace("Resetting to default consistency level");
 				policy.removeCurrentReadLevel();
 			}
 		}
@@ -170,13 +155,9 @@ public class ThriftLoaderImpl
 	public <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Loading list property {} of class {} from column family {} with primary key {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
-		}
+		log.trace("Loading list property {} of class {} from column family {} with primary key {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		List<V> list = null;
 		if (columns.size() > 0)
@@ -193,13 +174,9 @@ public class ThriftLoaderImpl
 	public <ID, V> Set<V> loadSetProperty(PersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Loading set property {} of class {} from column family {} with primary key {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
-		}
+		log.trace("Loading set property {} of class {} from column family {} with primary key {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<V> set = null;
 		if (columns.size() > 0)
@@ -216,13 +193,9 @@ public class ThriftLoaderImpl
 	public <ID, K, V> Map<K, V> loadMapProperty(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Loading map property {} of class {} from column family {} with primary key {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
-		}
+		log.trace("Loading map property {} of class {} from column family {} with primary key {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
+						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Class<K> keyClass = propertyMeta.getKeyClass();
 		Map<K, V> map = null;

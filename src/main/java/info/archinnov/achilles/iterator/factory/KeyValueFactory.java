@@ -1,5 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
+import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
@@ -16,6 +17,9 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 
 /**
@@ -26,6 +30,8 @@ import com.google.common.collect.Lists;
  */
 public class KeyValueFactory
 {
+	private static final Logger log = LoggerFactory.getLogger(KeyValueFactory.class);
+
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 	private EntityProxifier proxifier = new EntityProxifier();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
@@ -33,40 +39,53 @@ public class KeyValueFactory
 	public <ID, K, V> KeyValue<K, V> createKeyValue(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
+		log.trace("Build key/value for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return compositeTransformer.buildKeyValue(context, propertyMeta, hColumn);
 	}
 
 	public <K, V> K createKey(PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
+		log.trace("Build key for property {} of entity class {}", propertyMeta.getPropertyName(),
+				propertyMeta.getEntityClassName());
 		return compositeTransformer.buildKey(propertyMeta, hColumn);
 	}
 
 	public <ID, K, V> V createValue(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
+		log.trace("Build key value for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return compositeTransformer.buildValue(context, propertyMeta, hColumn);
 	}
 
 	public Integer createTtl(HColumn<Composite, ?> hColumn)
 	{
+		log.debug("Build ttl from Hcolumn {}", format(hColumn.getName()));
 		return hColumn.getTtl();
 	}
 
 	public <K, V, W> List<V> createValueList(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, W>> hColumns)
 	{
+		log.trace("Build value list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns, compositeTransformer.buildValueTransformer(propertyMeta));
 	}
 
 	public <K, V, W> List<K> createKeyList(PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, W>> hColumns)
 	{
+		log.trace("Build key list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
 	public <ID, K, V, W> List<KeyValue<K, V>> createKeyValueList(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
 	{
+		log.trace("Build key/value list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
 				compositeTransformer.buildKeyValueTransformer(context, propertyMeta));
 	}
@@ -75,6 +94,8 @@ public class KeyValueFactory
 	public <ID, JOIN_ID, K, V, W> List<V> createJoinValueList(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
 	{
+		log.trace("Build join value list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
 				compositeTransformer.buildRawValueTransformer());
@@ -95,6 +116,8 @@ public class KeyValueFactory
 			PersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
 			List<HColumn<Composite, W>> hColumns)
 	{
+		log.trace("Build join key/value list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<K> keys = Lists.transform(hColumns,
 				compositeTransformer.buildKeyTransformer(propertyMeta));
@@ -118,24 +141,32 @@ public class KeyValueFactory
 	public <K> KeyValue<K, Long> createCounterKeyValue(PropertyMeta<K, Long> propertyMeta,
 			HCounterColumn<Composite> hColumn)
 	{
+		log.trace("Build counter key/value for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return compositeTransformer.buildCounterKeyValue(propertyMeta, hColumn);
 	}
 
 	public <K> K createCounterKey(PropertyMeta<K, Long> propertyMeta,
 			HCounterColumn<Composite> hColumn)
 	{
+		log.trace("Build counter key for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return compositeTransformer.buildCounterKey(propertyMeta, hColumn);
 	}
 
 	public <K> Long createCounterValue(PropertyMeta<K, Long> propertyMeta,
 			HCounterColumn<Composite> hColumn)
 	{
+		log.trace("Build counter value for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return compositeTransformer.buildCounterValue(propertyMeta, hColumn);
 	}
 
 	public <K> List<KeyValue<K, Long>> createCounterKeyValueList(
 			PropertyMeta<K, Long> propertyMeta, List<HCounterColumn<Composite>> hColumns)
 	{
+		log.trace("Build counter key/value list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
 				compositeTransformer.buildCounterKeyValueTransformer(propertyMeta));
 	}
@@ -143,6 +174,8 @@ public class KeyValueFactory
 	public <K> List<Long> createCounterValueList(PropertyMeta<K, Long> propertyMeta,
 			List<HCounterColumn<Composite>> hColumns)
 	{
+		log.trace("Build counter value lsit for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
 				compositeTransformer.buildCounterValueTransformer(propertyMeta));
 	}
@@ -150,6 +183,8 @@ public class KeyValueFactory
 	public <K> List<K> createCounterKeyList(PropertyMeta<K, Long> propertyMeta,
 			List<HCounterColumn<Composite>> hColumns)
 	{
+		log.trace("Build counter key list for property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
 				compositeTransformer.buildCounterKeyTransformer(propertyMeta));
 	}

@@ -5,12 +5,12 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.iterator.AbstractAchillesSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorImpl;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 
 import mapping.entity.UserBean;
@@ -46,7 +46,7 @@ public class IteratorFactoryTest
 	private AchillesJoinSliceIterator<Long, String, Long, Integer, UserBean> joinColumnSliceDynamicComposite;
 
 	@Mock
-	private Iterator<HCounterColumn<Composite>> counterSliceIterator;
+	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> counterSliceIterator;
 
 	@Mock
 	private List<Method> componentSetters;
@@ -100,7 +100,7 @@ public class IteratorFactoryTest
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(joinColumnSliceComposite.hasNext()).thenReturn(true, false, true);
 
-		KeyValueIterator<Integer, UserBean> iterator = factory.createKeyValueJoinIterator(context,
+		KeyValueIterator<Integer, UserBean> iterator = factory.createJoinKeyValueIterator(context,
 				joinColumnSliceComposite, joinWideMapMeta);
 
 		assertThat(iterator).isExactlyInstanceOf(KeyValueIteratorImpl.class);
@@ -112,7 +112,7 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_join_dynamic_composite_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, UserBean> iterator = factory.createKeyValueJoinIterator(context,
+		KeyValueIterator<Integer, UserBean> iterator = factory.createJoinKeyValueIterator(context,
 				joinColumnSliceDynamicComposite, joinWideMapMeta);
 
 		when(joinColumnSliceDynamicComposite.hasNext()).thenReturn(true, false, true);

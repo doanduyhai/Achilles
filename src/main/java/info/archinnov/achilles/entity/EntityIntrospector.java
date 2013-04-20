@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 /**
- * EntityHelper
+ * EntityIntrospector
  * 
  * @author DuyHai DOAN
  * 
@@ -75,10 +75,7 @@ public class EntityIntrospector
 
 		String fieldName = field.getName();
 		String setter = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-		if (log.isTraceEnabled())
-		{
-			log.trace("Derived setter : {}", setter);
-		}
+		log.trace("Derived setter : {}", setter);
 		return setter;
 	}
 
@@ -113,10 +110,7 @@ public class EntityIntrospector
 					+ "' does not exist");
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Derived getter method : {}", getterMethod.getName());
-		}
+		log.trace("Derived getter method : {}", getterMethod.getName());
 		return getterMethod;
 	}
 
@@ -138,10 +132,7 @@ public class EntityIntrospector
 						+ "' does not return correct type or does not have the correct parameter");
 			}
 
-			if (log.isTraceEnabled())
-			{
-				log.trace("Derived setter method : {}", setterMethod.getName());
-			}
+			log.trace("Derived setter method : {}", setterMethod.getName());
 			return setterMethod;
 
 		}
@@ -174,11 +165,8 @@ public class EntityIntrospector
 
 	public Object getValueFromField(Object target, Method getter)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Get value with getter {} from instance {} of class {}", getter.getName(),
-					target, getter.getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Get value with getter {} from instance {} of class {}", getter.getName(),
+				target, getter.getDeclaringClass().getCanonicalName());
 
 		Object value = null;
 
@@ -196,20 +184,14 @@ public class EntityIntrospector
 			}
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Found value : {}", value);
-		}
+		log.trace("Found value : {}", value);
 		return value;
 	}
 
 	public void setValueToField(Object target, Method setter, Object... args)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Set value with setter {} to instance {} of class {} with {}",
-					setter.getName(), target, setter.getDeclaringClass().getCanonicalName(), args);
-		}
+		log.trace("Set value with setter {} to instance {} of class {} with {}", setter.getName(),
+				target, setter.getDeclaringClass().getCanonicalName(), args);
 
 		if (target != null)
 		{
@@ -227,11 +209,8 @@ public class EntityIntrospector
 
 	public <ID> ID getKey(Object entity, PropertyMeta<Void, ID> idMeta)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(),
-					entity, idMeta.getGetter().getDeclaringClass().getCanonicalName());
-		}
+		log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(),
+				entity, idMeta.getGetter().getDeclaringClass().getCanonicalName());
 
 		if (entity != null)
 		{
@@ -251,10 +230,7 @@ public class EntityIntrospector
 
 	public Long findSerialVersionUID(Class<?> entity)
 	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Find SerialVersionUID for entity {}", entity);
-		}
+		log.trace("Find SerialVersionUID for entity {}", entity);
 
 		Long serialVersionUID = null;
 		try
@@ -277,10 +253,7 @@ public class EntityIntrospector
 							+ entity.getCanonicalName() + "'", e);
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Found serialVersionUID : {}", serialVersionUID);
-		}
+		log.trace("Found serialVersionUID : {}", serialVersionUID);
 		return serialVersionUID;
 	}
 
@@ -308,10 +281,7 @@ public class EntityIntrospector
 					.normalizerAndValidateColumnFamilyName(canonicalName);
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Inferred columnFamilyName : {}", columnFamilyName);
-		}
+		log.trace("Inferred columnFamilyName : {}", columnFamilyName);
 		return columnFamilyName;
 	}
 
@@ -330,10 +300,7 @@ public class EntityIntrospector
 			achillesWrite = clevel.write();
 		}
 
-		if (log.isTraceEnabled())
-		{
-			log.trace("Found consistency levels : {}/{}", achillesRead, achillesWrite);
-		}
+		log.trace("Found consistency levels : {}/{}", achillesRead, achillesWrite);
 
 		return new Pair<ConsistencyLevel, ConsistencyLevel>(achillesRead, achillesWrite);
 	}
@@ -377,10 +344,7 @@ public class EntityIntrospector
 			{
 				if (filter.matches(declaredField, annotation))
 				{
-					if (log.isTraceEnabled())
-					{
-						log.trace("Found inherited private field : {}", declaredField);
-					}
+					log.trace("Found inherited private field : {}", declaredField);
 					return declaredField;
 				}
 			}
@@ -402,10 +366,7 @@ public class EntityIntrospector
 			{
 				if (filter.matches(declaredField, annotation, name))
 				{
-					if (log.isTraceEnabled())
-					{
-						log.trace("Found inherited private field : {}", declaredField);
-					}
+					log.trace("Found inherited private field : {}", declaredField);
 					return declaredField;
 				}
 			}
@@ -438,10 +399,7 @@ public class EntityIntrospector
 				multiKeyValues.add(key);
 			}
 		}
-		if (log.isTraceEnabled())
-		{
-			log.trace("Found multi key values : {}", multiKeyValues);
-		}
+		log.trace("Found multi key values : {}", multiKeyValues);
 		return multiKeyValues;
 	}
 }

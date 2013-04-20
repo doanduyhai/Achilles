@@ -11,11 +11,11 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.wrapper.builder.CounterWideMapWrapperBuilder;
-import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.SetWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.WideMapWrapperBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -25,6 +25,9 @@ import java.util.Set;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JpaEntityInterceptor
  * 
@@ -33,6 +36,7 @@ import net.sf.cglib.proxy.MethodProxy;
  */
 public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesInterceptor<ID>
 {
+	private static final Logger log = LoggerFactory.getLogger(JpaEntityInterceptor.class);
 
 	private EntityLoader loader = new EntityLoader();
 	private CompositeHelper compositeHelper = new CompositeHelper();
@@ -62,6 +66,9 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
+		log.trace("Method {} called for entity of class {}", method.getName(), target.getClass()
+				.getCanonicalName());
+
 		if (this.idGetter == method)
 		{
 			return this.key;
@@ -101,10 +108,13 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		// Load lazy into target object
 		if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method))
 		{
+			log.trace("Loading property {}", propertyMeta.getPropertyName());
+
 			this.loader.loadPropertyIntoObject(target, key, context, propertyMeta);
 			this.lazyAlreadyLoaded.add(method);
 		}
 
+		log.trace("Invoking getter {} on real object", method.getName());
 		Object rawValue = proxy.invoke(target, args);
 
 		// Build proxy when necessary
@@ -113,6 +123,9 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_SIMPLE:
 				if (rawValue != null)
 				{
+					log.trace("Build proxy on returned join entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
 					result = proxifier.buildProxy(rawValue, joinContext);
@@ -123,6 +136,9 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_LIST:
 				if (rawValue != null)
 				{
+					log.trace("Build list wrapper for entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					List<?> list = (List<?>) rawValue;
 					result = ListWrapperBuilder //
 							.builder(context, list) //
@@ -138,6 +154,9 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_SET:
 				if (rawValue != null)
 				{
+					log.trace("Build set wrapper for entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					Set<?> set = (Set<?>) rawValue;
 					result = SetWrapperBuilder //
 							.builder(context, set) //
@@ -153,6 +172,9 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_MAP:
 				if (rawValue != null)
 				{
+					log.trace("Build map wrapper for entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					Map<?, ?> map = (Map<?, ?>) rawValue;
 					result = MapWrapperBuilder //
 							.builder(context, map)//
@@ -166,20 +188,38 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case WIDE_MAP:
 				if (context.isDirectColumnFamilyMapping())
 				{
+					log.trace(
+							"Build direct column family wide map wrapper for entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					result = buildColumnFamilyWrapper(propertyMeta);
 				}
 				else
 				{
+					log.trace("Build wide map wrapper for entity of class {} ",
+							propertyMeta.getEntityClassName());
+
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
 			case WIDE_MAP_COUNTER:
+
+				log.trace("Build counter wide wrapper for entity of class {} ",
+						propertyMeta.getEntityClassName());
+
 				result = buildCounterWideMapWrapper(propertyMeta);
 				break;
 			case JOIN_WIDE_MAP:
+
+				log.trace("Build join wide wrapper for entity of class {} ",
+						propertyMeta.getEntityClassName());
+
 				result = buildJoinWideMapWrapper(propertyMeta);
 				break;
 			default:
+				log.trace("Return un-mapped raw value {} for entity of class {} ",
+						propertyMeta.getEntityClassName());
+
 				result = rawValue;
 				break;
 		}
@@ -283,6 +323,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		{
 			this.lazyAlreadyLoaded.add(propertyMeta.getGetter());
 		}
+		log.trace("Flaging property {}", propertyMeta.getPropertyName());
+
 		this.dirtyMap.put(method, propertyMeta);
 		result = proxy.invoke(target, args);
 		return result;

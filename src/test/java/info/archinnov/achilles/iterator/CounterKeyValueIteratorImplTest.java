@@ -4,9 +4,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import me.prettyprint.hector.api.beans.Composite;
@@ -30,16 +30,16 @@ import org.powermock.reflect.Whitebox;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class CounterKeyValueIteratorTest
+public class CounterKeyValueIteratorImplTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private CounterKeyValueIterator<Integer> iterator;
+	private CounterKeyValueIteratorImpl<Integer> iterator;
 
 	@Mock
-	private Iterator<HCounterColumn<Composite>> achillesSliceIterator;
+	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;
 
 	@Mock
 	private KeyValueFactory factory;
@@ -50,6 +50,7 @@ public class CounterKeyValueIteratorTest
 	@Before
 	public void setUp()
 	{
+		when(achillesSliceIterator.type()).thenReturn(IteratorType.ACHILLES_COUNTER_SLICE_ITERATOR);
 		Whitebox.setInternalState(iterator, "factory", factory);
 	}
 
