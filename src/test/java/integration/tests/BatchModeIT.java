@@ -9,12 +9,13 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.FlushContext;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.manager.BatchingThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
@@ -28,10 +29,12 @@ import integration.tests.entity.UserTestBuilder;
 import integration.tests.utils.CassandraLogAsserter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
@@ -40,7 +43,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 /**
  * BatchModeIT
@@ -99,11 +102,11 @@ public class BatchModeIT
 	@Test
 	public void should_batch_join_wide_map() throws Exception
 	{
-
 		// Start batch
-		em.startBatch();
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
 
-		user = em.merge(user);
+		user = batchEm.merge(user);
 
 		Composite startComp = new Composite();
 		startComp.addComponent(0, 1, ComponentEquality.EQUAL);
@@ -117,15 +120,15 @@ public class BatchModeIT
 		List<Pair<Composite, UUID>> columns = userTweetsDao.findColumnsRange(user.getId(),
 				startComp, endComp, false, 20);
 
-		Tweet foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
-		Tweet foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
+		Tweet foundOwnTweet1 = batchEm.find(Tweet.class, ownTweet1.getId());
+		Tweet foundOwnTweet2 = batchEm.find(Tweet.class, ownTweet2.getId());
 
 		assertThat(columns).isEmpty();
 		assertThat(foundOwnTweet1).isNull();
 		assertThat(foundOwnTweet2).isNull();
 
 		// End batch
-		em.endBatch();
+		batchEm.endBatch();
 
 		columns = userTweetsDao.findColumnsRange(user.getId(), startComp, endComp, false, 20);
 
@@ -134,14 +137,14 @@ public class BatchModeIT
 		assertThat(columns.get(0).right).isEqualTo(ownTweet1.getId());
 		assertThat(columns.get(1).right).isEqualTo(ownTweet2.getId());
 
-		foundOwnTweet1 = em.find(Tweet.class, ownTweet1.getId());
-		foundOwnTweet2 = em.find(Tweet.class, ownTweet2.getId());
+		foundOwnTweet1 = batchEm.find(Tweet.class, ownTweet1.getId());
+		foundOwnTweet2 = batchEm.find(Tweet.class, ownTweet2.getId());
 
 		assertThat(foundOwnTweet1.getId()).isEqualTo(ownTweet1.getId());
 		assertThat(foundOwnTweet1.getContent()).isEqualTo(ownTweet1.getContent());
 		assertThat(foundOwnTweet2.getId()).isEqualTo(ownTweet2.getId());
 		assertThat(foundOwnTweet2.getContent()).isEqualTo(ownTweet2.getContent());
-		assertThatBatchContextHasBeenReset();
+		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -149,11 +152,12 @@ public class BatchModeIT
 	public void should_batch_external_widemap_simple_join_and_counters() throws Exception
 	{
 		// Start batch
-		em.startBatch();
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = em.merge(entity);
+		entity = batchEm.merge(entity);
 
 		entity.setLabel("label");
 
@@ -166,7 +170,7 @@ public class BatchModeIT
 		entity.setVersion(10);
 		entity.getPopularTopics().insert("java", 100L);
 		entity.getPopularTopics().insert("scala", 35L);
-		em.merge(entity);
+		batchEm.merge(entity);
 
 		Composite labelComposite = new Composite();
 		labelComposite.addComponent(0, LAZY_SIMPLE.flag(), EQUAL);
@@ -185,7 +189,7 @@ public class BatchModeIT
 				startWideMapComp, endWideMapComp, false, 20);
 		assertThat(columns).isEmpty();
 
-		Tweet foundTweet = em.find(Tweet.class, welcomeTweet.getId());
+		Tweet foundTweet = batchEm.find(Tweet.class, welcomeTweet.getId());
 		assertThat(foundTweet).isNull();
 
 		Composite counterKey = createCounterKey(CompleteBean.class, entity.getId());
@@ -200,7 +204,7 @@ public class BatchModeIT
 				.isEqualTo(0L);
 
 		// Flush
-		em.endBatch();
+		batchEm.endBatch();
 
 		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isEqualTo("label");
 
@@ -212,7 +216,7 @@ public class BatchModeIT
 		assertThat(columns.get(1).left.getComponent(0).getValue(INT_SRZ)).isEqualTo(2);
 		assertThat(columns.get(1).right).isEqualTo("two");
 
-		foundTweet = em.find(Tweet.class, welcomeTweet.getId());
+		foundTweet = batchEm.find(Tweet.class, welcomeTweet.getId());
 		assertThat(foundTweet.getId()).isEqualTo(welcomeTweet.getId());
 		assertThat(foundTweet.getContent()).isEqualTo("welcomeTweet");
 
@@ -221,7 +225,7 @@ public class BatchModeIT
 				100L);
 		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName)).isEqualTo(
 				35L);
-		assertThatBatchContextHasBeenReset();
+		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
@@ -231,29 +235,30 @@ public class BatchModeIT
 		Tweet reTweet2 = TweetTestBuilder.tweet().randomId().content("reTweet2").buid();
 
 		// Start batch
-		em.startBatch();
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
 
-		user = em.merge(user);
+		user = batchEm.merge(user);
 		WideMap<Integer, Tweet> retweets = user.getRetweets();
 
 		retweets.insert(1, reTweet1);
 		retweets.insert(2, reTweet2);
 
-		Tweet foundRetweet1 = em.find(Tweet.class, reTweet1.getId());
-		Tweet foundRetweet2 = em.find(Tweet.class, reTweet2.getId());
+		Tweet foundRetweet1 = batchEm.find(Tweet.class, reTweet1.getId());
+		Tweet foundRetweet2 = batchEm.find(Tweet.class, reTweet2.getId());
 
 		assertThat(foundRetweet1).isNull();
 		assertThat(foundRetweet2).isNull();
 
 		// Flush
-		em.endBatch();
+		batchEm.endBatch();
 
-		foundRetweet1 = em.find(Tweet.class, reTweet1.getId());
-		foundRetweet2 = em.find(Tweet.class, reTweet2.getId());
+		foundRetweet1 = batchEm.find(Tweet.class, reTweet1.getId());
+		foundRetweet2 = batchEm.find(Tweet.class, reTweet2.getId());
 
 		assertThat(foundRetweet1.getContent()).isEqualTo("reTweet1");
 		assertThat(foundRetweet2.getContent()).isEqualTo("reTweet2");
-		assertThatBatchContextHasBeenReset();
+		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
@@ -264,17 +269,18 @@ public class BatchModeIT
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
-		em.startBatch();
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
 
-		em.merge(bean);
-		em.merge(tweet1);
-		em.merge(tweet2);
-		em.merge(user);
+		batchEm.merge(bean);
+		batchEm.merge(tweet1);
+		batchEm.merge(tweet2);
+		batchEm.merge(user);
 
-		CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
-		Tweet foundTweet1 = em.find(Tweet.class, tweet1.getId());
-		Tweet foundTweet2 = em.find(Tweet.class, tweet2.getId());
-		User foundUser = em.find(User.class, user.getId());
+		CompleteBean foundBean = batchEm.find(CompleteBean.class, bean.getId());
+		Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
+		Tweet foundTweet2 = batchEm.find(Tweet.class, tweet2.getId());
+		User foundUser = batchEm.find(User.class, user.getId());
 
 		assertThat(foundBean).isNull();
 		assertThat(foundTweet1).isNull();
@@ -282,19 +288,19 @@ public class BatchModeIT
 		assertThat(foundUser).isNull();
 
 		// Flush
-		em.endBatch();
+		batchEm.endBatch();
 
-		foundBean = em.find(CompleteBean.class, bean.getId());
-		foundTweet1 = em.find(Tweet.class, tweet1.getId());
-		foundTweet2 = em.find(Tweet.class, tweet2.getId());
-		foundUser = em.find(User.class, user.getId());
+		foundBean = batchEm.find(CompleteBean.class, bean.getId());
+		foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
+		foundTweet2 = batchEm.find(Tweet.class, tweet2.getId());
+		foundUser = batchEm.find(User.class, user.getId());
 
 		assertThat(foundBean.getName()).isEqualTo("name");
 		assertThat(foundTweet1.getContent()).isEqualTo("tweet1");
 		assertThat(foundTweet2.getContent()).isEqualTo("tweet2");
 		assertThat(foundUser.getFirstname()).isEqualTo("fn");
 		assertThat(foundUser.getLastname()).isEqualTo("ln");
-		assertThatBatchContextHasBeenReset();
+		assertThatBatchContextHasBeenReset(batchEm);
 		assertThatConsistencyLevelHasBeenReset();
 	}
 
@@ -307,33 +313,39 @@ public class BatchModeIT
 				.buid();
 
 		// Start batch
-		em.startBatch();
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
 
 		try
 		{
-			em.persist(tweet);
+			batchEm.persist(tweet);
 		}
 		catch (AchillesException e)
 		{
-			assertThatBatchContextHasBeenReset();
+			batchEm.cleanBatch();
+			assertThatBatchContextHasBeenReset(batchEm);
 			assertThatConsistencyLevelHasBeenReset();
+
+			assertThat(batchEm.find(Tweet.class, tweet.getId())).isNull();
 		}
 
-		// em should reinit batch context
-		em.persist(user);
+		// batchEm should reinit batch context
+		batchEm.persist(user);
+		batchEm.endBatch();
 
-		User foundUser = em.find(User.class, user.getId());
+		User foundUser = batchEm.find(User.class, user.getId());
 		assertThat(foundUser.getFirstname()).isEqualTo("firstname");
 		assertThat(foundUser.getLastname()).isEqualTo("lastname");
 
-		em.persist(tweet);
+		batchEm.persist(tweet);
+		batchEm.endBatch();
 
-		Tweet foundTweet = em.find(Tweet.class, tweet.getId());
+		Tweet foundTweet = batchEm.find(Tweet.class, tweet.getId());
 		assertThat(foundTweet.getContent()).isEqualTo("simple_tweet");
 		assertThat(foundTweet.getCreator().getId()).isEqualTo(foundUser.getId());
 		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo("firstname");
 		assertThat(foundTweet.getCreator().getLastname()).isEqualTo("lastname");
-
+		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
@@ -345,21 +357,25 @@ public class BatchModeIT
 
 		em.persist(tweet1);
 
-		em.startBatch(ONE, ALL);
+		// Start batch
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
+
+		batchEm.startBatch(ONE, ALL);
 
 		logAsserter.prepareLogLevel();
 
-		Tweet foundTweet1 = em.find(Tweet.class, tweet1.getId());
+		Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
 
 		assertThat(foundTweet1.getContent()).isEqualTo(tweet1.getContent());
 
-		em.persist(tweet2);
-		em.persist(tweet3);
+		batchEm.persist(tweet2);
+		batchEm.persist(tweet3);
 
-		em.endBatch();
+		batchEm.endBatch();
 
 		logAsserter.assertConsistencyLevels(ONE, ALL);
-		assertThatBatchContextHasBeenReset();
+		assertThatBatchContextHasBeenReset(batchEm);
 		assertThatConsistencyLevelHasBeenReset();
 	}
 
@@ -371,35 +387,47 @@ public class BatchModeIT
 
 		em.persist(tweet1);
 
-		em.startBatch(EACH_QUORUM, EACH_QUORUM);
-		em.persist(tweet2);
+		// Start batch
+		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		batchEm.startBatch();
+
+		batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+		batchEm.persist(tweet2);
 
 		try
 		{
-			em.endBatch();
+			batchEm.endBatch();
 		}
 		catch (Exception e)
 		{
-			assertThatBatchContextHasBeenReset();
+			assertThatBatchContextHasBeenReset(batchEm);
 			assertThatConsistencyLevelHasBeenReset();
 		}
 
+		Thread.sleep(1000);
 		logAsserter.prepareLogLevel();
-		em.persist(tweet2);
+		batchEm.persist(tweet2);
 
 		logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
-	}
-
-	private void assertThatBatchContextHasBeenReset()
-	{
-		assertThat(((FlushContext) Whitebox.getInternalState(em, "flushContext")).type())
-				.isEqualTo(BatchType.NONE);
 	}
 
 	private void assertThatConsistencyLevelHasBeenReset()
 	{
 		assertThat(policy.getCurrentReadLevel()).isNull();
 		assertThat(policy.getCurrentWriteLevel()).isNull();
+	}
+
+	private void assertThatBatchContextHasBeenReset(BatchingThriftEntityManager batchEm)
+	{
+		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
+		Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
+				flushContext, "mutatorMap");
+		boolean hasCustomConsistencyLevels = Whitebox.getInternalState(flushContext,
+				"hasCustomConsistencyLevels");
+
+		assertThat(mutatorMap).isEmpty();
+		assertThat(hasCustomConsistencyLevels).isFalse();
+
 	}
 
 	private <T> Composite createCounterKey(Class<T> clazz, Long id)

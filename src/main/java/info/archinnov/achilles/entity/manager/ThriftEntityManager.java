@@ -4,8 +4,7 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.FlushContext;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -51,20 +50,19 @@ public class ThriftEntityManager implements EntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
-	private final Map<Class<?>, EntityMeta<?>> entityMetaMap;
-	private final Map<String, GenericEntityDao<?>> entityDaosMap;
-	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	private final CounterDao counterDao;
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
-	private FlushContext flushContext;
+	protected final Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	protected final Map<String, GenericEntityDao<?>> entityDaosMap;
+	protected final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	protected final CounterDao counterDao;
+	protected AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityLoader loader = new EntityLoader();
-	private EntityMerger merger = new EntityMerger();
-	private EntityRefresher refresher = new EntityRefresher();
-	private EntityInitializer initializer = new EntityInitializer();
-	private EntityProxifier proxifier = new EntityProxifier();
-	private EntityValidator entityValidator = new EntityValidator();
+	protected EntityPersister persister = new EntityPersister();
+	protected EntityLoader loader = new EntityLoader();
+	protected EntityMerger merger = new EntityMerger();
+	protected EntityRefresher refresher = new EntityRefresher();
+	protected EntityInitializer initializer = new EntityInitializer();
+	protected EntityProxifier proxifier = new EntityProxifier();
+	protected EntityValidator entityValidator = new EntityValidator();
 
 	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
 			Map<String, GenericEntityDao<?>> entityDaosMap, //
@@ -77,8 +75,6 @@ public class ThriftEntityManager implements EntityManager
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		this.counterDao = counterDao;
 		this.consistencyPolicy = consistencyPolicy;
-		this.flushContext = new FlushContext(entityDaosMap, columnFamilyDaosMap, counterDao,
-				consistencyPolicy);
 	}
 
 	/**
@@ -101,18 +97,9 @@ public class ThriftEntityManager implements EntityManager
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
-		final PersistenceContext<?> context = initPersistenceContext(entity);
-		reinitBatchOnlyOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				persister.persist(context);
-				context.flush();
-				return null;
-			}
-		});
-
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		persister.persist(context);
+		context.flush();
 	}
 
 	/**
@@ -125,13 +112,20 @@ public class ThriftEntityManager implements EntityManager
 	 * @param writeLevel
 	 *            Consistency Level for write
 	 */
-	public void persist(Object entity, ConsistencyLevel writeLevel)
+	public void persist(final Object entity, ConsistencyLevel writeLevel)
 	{
 		log.debug("Persisting entity '{}' with write consistency level {}", entity,
 				writeLevel.name());
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setWriteConsistencyLevel(writeLevel);
-		persist(entity);
+		consistencyPolicy.setCurrentWriteLevel(writeLevel);
+		reinitConsistencyLevels(new SafeExecutionContext<Void>()
+		{
+			@Override
+			public Void execute()
+			{
+				persist(entity);
+				return null;
+			}
+		});
 	}
 
 	/**
@@ -165,18 +159,10 @@ public class ThriftEntityManager implements EntityManager
 			log.debug("Merging entity '{}' ", proxifier.unproxy(entity));
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
-		final PersistenceContext<?> context = initPersistenceContext(entity);
-
-		return reinitBatchOnlyOnError(new SafeExecutionContext<T>()
-		{
-			@Override
-			public T execute()
-			{
-				T merged = merger.mergeEntity(context);
-				context.flush();
-				return merged;
-			}
-		});
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		T merged = merger.mergeEntity(context);
+		context.flush();
+		return merged;
 	}
 
 	/**
@@ -204,16 +190,22 @@ public class ThriftEntityManager implements EntityManager
 	 *            Consistency Level for write
 	 * @return Merged entity or a new proxified entity
 	 */
-	public <T> T merge(T entity, ConsistencyLevel writeLevel)
+	public <T> T merge(final T entity, ConsistencyLevel writeLevel)
 	{
 		if (log.isDebugEnabled())
 		{
 			log.debug("Merging entity '{}' with write consistency level {}",
 					proxifier.unproxy(entity), writeLevel.name());
 		}
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setWriteConsistencyLevel(writeLevel);
-		return merge(entity);
+		consistencyPolicy.setCurrentWriteLevel(writeLevel);
+		return reinitConsistencyLevels(new SafeExecutionContext<T>()
+		{
+			@Override
+			public T execute()
+			{
+				return merge(entity);
+			}
+		});
 	}
 
 	/**
@@ -237,18 +229,10 @@ public class ThriftEntityManager implements EntityManager
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		final PersistenceContext<?> context = initPersistenceContext(entity);
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		persister.remove(context);
+		context.flush();
 
-		reinitBatchOnlyOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				persister.remove(context);
-				context.flush();
-				return null;
-			}
-		});
 	}
 
 	/**
@@ -265,16 +249,24 @@ public class ThriftEntityManager implements EntityManager
 	 * @param writeLevel
 	 *            Consistency Level for write
 	 */
-	public void remove(Object entity, ConsistencyLevel writeLevel)
+	public void remove(final Object entity, ConsistencyLevel writeLevel)
 	{
 		if (log.isDebugEnabled())
 		{
 			log.debug("Removing entity '{}' with write consistency level {}",
 					proxifier.unproxy(entity), writeLevel.name());
 		}
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setWriteConsistencyLevel(writeLevel);
-		remove(entity);
+		consistencyPolicy.setCurrentWriteLevel(writeLevel);
+		reinitConsistencyLevels(new SafeExecutionContext<Void>()
+		{
+			@Override
+			public Void execute()
+			{
+				remove(entity);
+				return null;
+			}
+		});
+
 	}
 
 	/**
@@ -294,22 +286,14 @@ public class ThriftEntityManager implements EntityManager
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
+		PersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
 
-		final PersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
-
-		return reinitBatchOnlyOnError(new SafeExecutionContext<T>()
+		T entity = loader.load(context);
+		if (entity != null)
 		{
-			@Override
-			public T execute()
-			{
-				T entity = loader.load(context);
-				if (entity != null)
-				{
-					entity = proxifier.buildProxy(entity, context);
-				}
-				return entity;
-			}
-		});
+			entity = proxifier.buildProxy(entity, context);
+		}
+		return entity;
 	}
 
 	/**
@@ -324,14 +308,21 @@ public class ThriftEntityManager implements EntityManager
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	public <T> T find(Class<T> entityClass, Object primaryKey, ConsistencyLevel readLevel)
+	public <T> T find(final Class<T> entityClass, final Object primaryKey,
+			ConsistencyLevel readLevel)
 	{
 		log.debug("Find entity class '{}' with primary key {} and read consistency level {}",
 				entityClass, primaryKey, readLevel.name());
 
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setReadConsistencyLevel(readLevel);
-		return find(entityClass, primaryKey);
+		consistencyPolicy.setCurrentReadLevel(readLevel);
+		return reinitConsistencyLevels(new SafeExecutionContext<T>()
+		{
+			@Override
+			public T execute()
+			{
+				return find(entityClass, primaryKey);
+			}
+		});
 	}
 
 	/**
@@ -365,15 +356,22 @@ public class ThriftEntityManager implements EntityManager
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	public <T> T getReference(Class<T> entityClass, Object primaryKey, ConsistencyLevel readLevel)
+	public <T> T getReference(final Class<T> entityClass, final Object primaryKey,
+			ConsistencyLevel readLevel)
 	{
 		log.debug(
 				"Get reference for entity class '{}' with primary key {} and read consistency level {}",
 				entityClass, primaryKey, readLevel.name());
 
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setReadConsistencyLevel(readLevel);
-		return find(entityClass, primaryKey);
+		consistencyPolicy.setCurrentReadLevel(readLevel);
+		return reinitConsistencyLevels(new SafeExecutionContext<T>()
+		{
+			@Override
+			public T execute()
+			{
+				return find(entityClass, primaryKey);
+			}
+		});
 	}
 
 	/**
@@ -394,17 +392,8 @@ public class ThriftEntityManager implements EntityManager
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		final PersistenceContext<?> context = initPersistenceContext(entity);
-
-		reinitBatchOnlyOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				refresher.refresh(context);
-				return null;
-			}
-		});
+		PersistenceContext<?> context = initPersistenceContext(entity);
+		refresher.refresh(context);
 	}
 
 	/**
@@ -417,72 +406,23 @@ public class ThriftEntityManager implements EntityManager
 	 * @param readLevel
 	 *            Consistency Level for read
 	 */
-	public void refresh(Object entity, ConsistencyLevel readLevel)
+	public void refresh(final Object entity, ConsistencyLevel readLevel)
 	{
 		if (log.isDebugEnabled())
 		{
 			log.debug("Refreshing entity '{}' with read consistency level {}",
 					proxifier.unproxy(entity), readLevel.name());
 		}
-
-		entityValidator.validateNoPendingBatch(flushContext);
-		flushContext.setReadConsistencyLevel(readLevel);
-		refresh(entity);
-	}
-
-	/**
-	 * Start a batch session using a Hector mutator.
-	 * 
-	 * Throw <strong>IllegalStateException</strong> if there is already a pending batch
-	 */
-	public void startBatch()
-	{
-		log.debug("Starting batch mode");
-		if (flushContext.type() == BatchType.BATCH)
+		consistencyPolicy.setCurrentReadLevel(readLevel);
+		reinitConsistencyLevels(new SafeExecutionContext<Void>()
 		{
-			throw new IllegalStateException(
-					"There is already a pending batch for this Entity Manager");
-		}
-		else
-		{
-			flushContext.startBatch();
-		}
-	}
-
-	public void startBatch(ConsistencyLevel readLevel, ConsistencyLevel writeLevel)
-	{
-		log.debug("Starting batch mode with write consistency level {}", writeLevel.name());
-		startBatch();
-		if (readLevel != null)
-		{
-			flushContext.setReadConsistencyLevel(readLevel);
-		}
-		if (writeLevel != null)
-		{
-			flushContext.setWriteConsistencyLevel(writeLevel);
-		}
-	}
-
-	/**
-	 * End an existing batch and flush all the mutators.
-	 * 
-	 * All join entities will be flushed through their own mutator.
-	 * 
-	 * Do nothing if no batch mutator was started
-	 * 
-	 */
-	public <T, ID> void endBatch()
-	{
-		log.debug("Ending batch mode");
-		if (flushContext.type() == BatchType.NONE)
-		{
-			throw new IllegalStateException(
-					"There is no pending batch for this Entity Manager. Please start a batch first");
-		}
-		else
-		{
-			flushContext.endBatch();
-		}
+			@Override
+			public Void execute()
+			{
+				refresh(entity);
+				return null;
+			}
+		});
 	}
 
 	/**
@@ -495,15 +435,7 @@ public class ThriftEntityManager implements EntityManager
 	{
 		log.debug("Force lazy fields initialization for entity {}", entity);
 		final EntityMeta<?> entityMeta = prepareEntityForInitialization(entity);
-		reinitBatchOnlyOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				initializer.initializeEntity(entity, entityMeta);
-				return null;
-			}
-		});
+		initializer.initializeEntity(entity, entityMeta);
 	}
 
 	/**
@@ -585,6 +517,20 @@ public class ThriftEntityManager implements EntityManager
 		log.debug("Unproxying set of entities {}", proxies);
 
 		return proxifier.unproxy(proxies);
+	}
+
+	/**
+	 * Create a new state-full EntityManager for batch handling <br/>
+	 * <br/>
+	 * 
+	 * <strong>WARNING : This EntityManager is state-full and not thread-safe. In case of exception, you MUST not re-use it but create another one</strong>
+	 * 
+	 * @return a new state-full EntityManager
+	 */
+	public BatchingThriftEntityManager batchingEntityManager()
+	{
+		return new BatchingThriftEntityManager(entityMetaMap, entityDaosMap, columnFamilyDaosMap,
+				counterDao, consistencyPolicy);
 	}
 
 	/**
@@ -748,7 +694,7 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
+	protected <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
 			ID primaryKey)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
@@ -756,18 +702,21 @@ public class ThriftEntityManager implements EntityManager
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, flushContext, entityClass, primaryKey);
+				counterDao, consistencyPolicy, new ImmediateFlushContext(entityDaosMap,
+						columnFamilyDaosMap, counterDao, consistencyPolicy), entityClass,
+				primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
+	protected <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
 		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, flushContext, entity);
+				counterDao, consistencyPolicy, new ImmediateFlushContext(entityDaosMap,
+						columnFamilyDaosMap, counterDao, consistencyPolicy), entity);
 	}
 
 	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)
@@ -778,28 +727,16 @@ public class ThriftEntityManager implements EntityManager
 		return entityMeta;
 	}
 
-	private <T> T reinitBatchOnlyOnError(SafeExecutionContext<T> context)
+	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
 	{
 		try
 		{
 			return context.execute();
 		}
-		catch (RuntimeException e)
-		{
-			flushContext.cleanUp();
-			throw e;
-		}
-		catch (Error err)
-		{
-			log.error(
-					"Recovering from mutations flushing. Cleaning flush context. WARNING !!! All batch mutations may not have been committed to Cassandra",
-					err);
-			flushContext.cleanUp();
-			throw err;
-		}
 		finally
 		{
-			flushContext.reinitConsistencyLevels();
+			consistencyPolicy.reinitCurrentConsistencyLevels();
+			consistencyPolicy.reinitDefaultConsistencyLevels();
 		}
 	}
 }

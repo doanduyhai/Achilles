@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFactory
+public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 {
 
-	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactoryImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactory.class);
 
 	private List<String> entityPackages;
 	private Cluster cluster;
@@ -63,7 +63,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 
 	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
 
-	protected ThriftEntityManagerFactoryImpl() {
+	protected ThriftEntityManagerFactory() {
 		counterDao = null;
 	}
 
@@ -166,7 +166,7 @@ public class ThriftEntityManagerFactoryImpl implements AchillesEntityManagerFact
 	 * 
 	 * 
 	 */
-	public ThriftEntityManagerFactoryImpl(Map<String, Object> configurationMap) {
+	public ThriftEntityManagerFactory(Map<String, Object> configurationMap) {
 		Validator.validateNotNull(configurationMap,
 				"Configuration map for Achilles ThrifEntityManagerFactory should not be null");
 		Validator.validateNotEmpty(configurationMap,

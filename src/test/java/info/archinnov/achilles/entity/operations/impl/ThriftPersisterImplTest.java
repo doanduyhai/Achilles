@@ -12,7 +12,7 @@ import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -115,7 +115,7 @@ public class ThriftPersisterImplTest
 	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
-	private FlushContext flushContext;
+	private ImmediateFlushContext immediateFlushContext;
 
 	@Captor
 	ArgumentCaptor<Composite> compositeCaptor;
@@ -136,14 +136,14 @@ public class ThriftPersisterImplTest
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.flushContext(flushContext) //
+				.immediateFlushContext(immediateFlushContext) //
 				.entityDao(entityDao) //
 				.columnFamilyDao(columnFamilyDao) //
 				.columnFamilyDaosMap(columnFamilyDaosMap) //
 				.entityDaosMap(entityDaosMap) //
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when((Mutator) flushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when((Mutator) immediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -155,7 +155,7 @@ public class ThriftPersisterImplTest
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.flushContext(flushContext).entityDao(entityDao) //
+				.immediateFlushContext(immediateFlushContext).entityDao(entityDao) //
 				.build();
 
 		thriftPersister.batchPersistVersionSerialUID(context);
@@ -233,7 +233,7 @@ public class ThriftPersisterImplTest
 
 		when(introspector.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(
 				counterValue);
-		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
+		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 		thriftPersister.batchPersistCounter(context, propertyMeta);
 
 		verify(policy).setCurrentWriteLevel(ALL);
@@ -535,7 +535,7 @@ public class ThriftPersisterImplTest
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("external_cf"))
 				.thenReturn(columnFamilyDao);
-		when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(cfMutator);
+		when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(cfMutator);
 
 		thriftPersister.remove(context);
 		verify(entityDao).removeRowBatch(entity.getId(), mutator);
@@ -572,7 +572,7 @@ public class ThriftPersisterImplTest
 		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
 				keyComp);
 		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
-		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
+		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
 
@@ -609,7 +609,7 @@ public class ThriftPersisterImplTest
 		Composite keyComp = new Composite();
 		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
 				keyComp);
-		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
+		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
 

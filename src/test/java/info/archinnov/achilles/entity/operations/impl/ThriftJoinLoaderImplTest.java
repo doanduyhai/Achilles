@@ -10,7 +10,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
-import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -82,7 +82,7 @@ public class ThriftJoinLoaderImplTest
 	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private FlushContext flushContext;
+	private ImmediateFlushContext immediateFlushContext;
 
 	@Mock
 	private GenericEntityDao<Long> joinEntityDao;
@@ -107,12 +107,12 @@ public class ThriftJoinLoaderImplTest
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.flushContext(flushContext) //
+				.immediateFlushContext(immediateFlushContext) //
 				.entityDao(entityDao) //
 				.entityDaosMap(entityDaosMap) //
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when((Mutator) flushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when((Mutator) immediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 		when((GenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
 
 	}

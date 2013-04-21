@@ -46,13 +46,13 @@ import com.google.common.collect.ImmutableMap;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftEntityManagerFactoryImplTest
+public class ThriftEntityManagerFactoryTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftEntityManagerFactoryImpl factory = new ThriftEntityManagerFactoryImpl();
+	private ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory();
 
 	@Mock
 	private EntityParsingValidator validator;

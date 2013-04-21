@@ -1,8 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.FlushContext;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -77,15 +75,5 @@ public class EntityValidator
 				.validateFalse(
 						context.isBatchMode(),
 						"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-	}
-
-	public <ID> void validateNoPendingBatch(FlushContext flushContext)
-	{
-		log.debug("Validate no pending batch");
-
-		Validator
-				.validateFalse(
-						flushContext.type() == BatchType.BATCH,
-						"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels batch start with 'startBatch(readLevel,writeLevel)'");
 	}
 }

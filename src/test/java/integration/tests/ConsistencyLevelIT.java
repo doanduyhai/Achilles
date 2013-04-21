@@ -3,6 +3,7 @@ package integration.tests;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.manager.BatchingThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -576,10 +577,11 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
-		em.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
+		BatchingThriftEntityManager batchingEm = em.batchingEntityManager();
+		batchingEm.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
 
-		em.persist(entity);
-		em.persist(tweet);
+		batchingEm.persist(entity);
+		batchingEm.persist(tweet);
 
 		Logger thriftLogger = Logger.getLogger("org.apache.cassandra.service.StorageProxy");
 		thriftLogger.setLevel(Level.TRACE);
@@ -591,7 +593,7 @@ public class ConsistencyLevelIT
 		ca.setName("test appender");
 		thriftLogger.addAppender(ca);
 
-		em.endBatch();
+		batchingEm.endBatch();
 		final String standardOutput = myOut.toString();
 
 		System.out.println(" : " + standardOutput);

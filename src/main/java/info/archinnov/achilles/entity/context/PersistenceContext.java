@@ -5,7 +5,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -166,7 +166,7 @@ public class PersistenceContext<ID>
 
 	public boolean isBatchMode()
 	{
-		return flushContext.type() == BatchType.BATCH;
+		return flushContext.type() == FlushType.BATCH;
 	}
 
 	public void flush()

@@ -32,7 +32,7 @@ public class PersistenceContextTestBuilder<ID>
 	private GenericEntityDao<ID> entityDao;
 	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
 
-	private FlushContext flushContext;
+	private ImmediateFlushContext immediateFlushContext;
 
 	public static <ID, T> PersistenceContextTestBuilder<ID> context(EntityMeta<ID> entityMeta,//
 			CounterDao counterDao, //
@@ -68,7 +68,7 @@ public class PersistenceContextTestBuilder<ID>
 				columnFamilyDaosMap, //
 				counterDao, //
 				policy, //
-				flushContext, //
+				immediateFlushContext, //
 				entityClass, primaryKey);
 
 		context.setEntity(entity);
@@ -110,9 +110,9 @@ public class PersistenceContextTestBuilder<ID>
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> flushContext(FlushContext flushContext)
+	public PersistenceContextTestBuilder<ID> immediateFlushContext(ImmediateFlushContext immediateFlushContext)
 	{
-		this.flushContext = flushContext;
+		this.immediateFlushContext = immediateFlushContext;
 		return this;
 	}
 

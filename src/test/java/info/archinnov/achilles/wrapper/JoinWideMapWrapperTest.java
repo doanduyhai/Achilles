@@ -10,7 +10,7 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -111,7 +111,7 @@ public class JoinWideMapWrapperTest {
     private GenericEntityDao<Long> entityDao;
 
     @Mock
-    private FlushContext flushContext;
+    private ImmediateFlushContext immediateFlushContext;
 
     private EntityMeta<Long> entityMeta;
 
@@ -149,7 +149,7 @@ public class JoinWideMapWrapperTest {
                 .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
                 .entity(entity) //
                 .entityDaosMap(entityDaosMap) //
-                .flushContext(flushContext) //
+                .immediateFlushContext(immediateFlushContext) //
                 .build();
         wrapper.setContext(context);
         when(propertyMeta.getExternalCFName()).thenReturn("external_cf");
@@ -213,11 +213,11 @@ public class JoinWideMapWrapperTest {
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
         when(joinDao.buildMutator()).thenReturn(joinMutator);
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
         wrapper.insert(key, entity);
 
         verify(dao).setValueBatch(id, comp, entity.getId(), mutator);
-        verify(flushContext).flush();
+        verify(immediateFlushContext).flush();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -244,12 +244,12 @@ public class JoinWideMapWrapperTest {
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
         when(joinDao.buildMutator()).thenReturn(joinMutator);
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
 
         wrapper.insert(key, entity, 150);
 
         verify(dao).setValueBatch(id, comp, entity.getId(), 150, mutator);
-        verify(flushContext).flush();
+        verify(immediateFlushContext).flush();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -356,7 +356,7 @@ public class JoinWideMapWrapperTest {
         Composite comp = new Composite();
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
 
         wrapper.remove(key);
 
@@ -374,7 +374,7 @@ public class JoinWideMapWrapperTest {
         when(
                 compositeFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
                         OrderingMode.ASCENDING)).thenReturn(new Composite[] { startComp, endComp });
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
 
         wrapper.remove(start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
 
@@ -386,7 +386,7 @@ public class JoinWideMapWrapperTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void should_remove_first() throws Exception {
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
         wrapper.removeFirst(15);
         verify(dao).removeColumnRangeBatch(id, null, null, false, 15, mutator);
     }
@@ -394,7 +394,7 @@ public class JoinWideMapWrapperTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void should_remove_last() throws Exception {
-        when((Mutator) flushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
         wrapper.removeLast(9);
         verify(dao).removeColumnRangeBatch(id, null, null, true, 9, mutator);
     }

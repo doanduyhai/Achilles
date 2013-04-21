@@ -6,7 +6,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactoryImpl;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public abstract class CassandraDaoTest
 
 	public static final Logger log = LoggerFactory.getLogger(CassandraDaoTest.class);
 
-	private static ThriftEntityManagerFactoryImpl emf;
+	private static ThriftEntityManagerFactory emf;
 
 	static
 	{
@@ -103,7 +103,7 @@ public abstract class CassandraDaoTest
 				CLUSTER_PARAM, getCluster(), KEYSPACE_PARAM, getKeyspace(),
 				FORCE_CF_CREATION_PARAM, true);
 
-		emf = new ThriftEntityManagerFactoryImpl(configMap);
+		emf = new ThriftEntityManagerFactory(configMap);
 		policy = Whitebox.getInternalState(emf, "consistencyPolicy");
 	}
 

@@ -12,7 +12,7 @@ import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.context.FlushContext;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -77,7 +77,7 @@ public class ThriftLoaderImplTest
 	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private FlushContext flushContext;
+	private ImmediateFlushContext immediateFlushContext;
 
 	@Mock
 	private CounterDao counterDao;
@@ -111,7 +111,7 @@ public class ThriftLoaderImplTest
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.flushContext(flushContext) //
+				.immediateFlushContext(immediateFlushContext) //
 				.entityDao(entityDao) //
 				.build();
 	}

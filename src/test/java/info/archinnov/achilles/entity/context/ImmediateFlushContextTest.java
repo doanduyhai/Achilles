@@ -8,7 +8,7 @@ import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -18,7 +18,9 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -37,10 +39,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 		"rawtypes"
 })
 @RunWith(MockitoJUnitRunner.class)
-public class FlushContextTest
+public class ImmediateFlushContextTest
 {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	@InjectMocks
-	private FlushContext context;
+	private ImmediateFlushContext context;
 
 	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
 
@@ -69,7 +74,6 @@ public class FlushContextTest
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(context, "type", BatchType.NONE);
 		Whitebox.setInternalState(context, "consistencyContext", consistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
 		Whitebox.setInternalState(context, "entityDaosMap", entityDaosMap);
@@ -80,16 +84,19 @@ public class FlushContextTest
 	}
 
 	@Test
-	public void should_start_batch() throws Exception
+	public void should_exception_when_start_batch() throws Exception
 	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Cannot start a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
 		context.startBatch();
-		assertThat(context.type()).isEqualTo(BatchType.BATCH);
 	}
 
 	@Test
 	public void should_flush() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
+				entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.flush();
@@ -100,17 +107,13 @@ public class FlushContextTest
 	}
 
 	@Test
-	public void should_end_batch() throws Exception
+	public void should_exception_when_end_batch() throws Exception
 	{
-		Whitebox.setInternalState(context, "type", BatchType.BATCH);
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
-		mutatorMap.put("cf", pair);
-
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Cannot end a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
 		context.endBatch();
 
-		verify(entityDao).executeMutator(mutator);
-		verify(consistencyContext).reinitConsistencyLevels();
-		assertThat(mutatorMap).isEmpty();
 	}
 
 	@Test
@@ -200,5 +203,11 @@ public class FlushContextTest
 		assertThat(actual).isSameAs(counterMutator);
 		assertThat((Mutator<Composite>) mutatorMap.get(COUNTER_CF).left).isSameAs(counterMutator);
 		assertThat((CounterDao) mutatorMap.get(COUNTER_CF).right).isSameAs(counterDao);
+	}
+
+	@Test
+	public void should_get_type() throws Exception
+	{
+		assertThat(context.type()).isSameAs(FlushType.IMMEDIATE);
 	}
 }

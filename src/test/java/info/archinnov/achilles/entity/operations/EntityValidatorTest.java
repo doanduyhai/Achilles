@@ -2,8 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.FlushContext;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -127,21 +126,12 @@ public class EntityValidatorTest
 		PersistenceContext<Long> context = PersistenceContextTestBuilder //
 				.mockAll(entityMeta, CompleteBean.class, 10L)//
 				.build();
-		FlushContext flushContext = new FlushContext(null, null, null, null);
+		ImmediateFlushContext immediateFlushContext = new ImmediateFlushContext(null, null, null,
+				null);
 
-		Whitebox.setInternalState(flushContext, "type", BatchType.NONE);
-		Whitebox.setInternalState(context, "flushContext", flushContext);
+		Whitebox.setInternalState(context, "flushContext", immediateFlushContext);
 
 		entityValidator.validateNoPendingBatch(context);
 	}
 
-	@Test
-	public void should_check_no_when_pending_batch_with_flush_context() throws Exception
-	{
-		FlushContext flushContext = new FlushContext(null, null, null, null);
-
-		Whitebox.setInternalState(flushContext, "type", BatchType.NONE);
-
-		entityValidator.validateNoPendingBatch(flushContext);
-	}
 }

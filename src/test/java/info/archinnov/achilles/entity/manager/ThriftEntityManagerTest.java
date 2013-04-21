@@ -1,15 +1,14 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.FlushContext;
-import info.archinnov.achilles.entity.context.FlushContext.BatchType;
+import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -112,7 +111,10 @@ public class ThriftEntityManagerTest
 	private Mutator<Long> joinMutator;
 
 	@Mock
-	private FlushContext flushContext;
+	private ImmediateFlushContext immediateFlushContext;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
 	@Captor
 	ArgumentCaptor<Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>>> mutatorMapCaptor;
@@ -134,9 +136,9 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "refresher", refresher);
 		Whitebox.setInternalState(em, "initializer", initializer);
 		Whitebox.setInternalState(em, "proxifier", proxifier);
-		Whitebox.setInternalState(em, "flushContext", flushContext);
 		Whitebox.setInternalState(em, "entityValidator", entityValidator);
 		Whitebox.setInternalState(em, "entityMetaMap", entityMetaMap);
+		Whitebox.setInternalState(em, "consistencyPolicy", consistencyPolicy);
 
 		idMeta = PropertyMetaTestBuilder //
 				.of(CompleteBean.class, Void.class, Long.class) //
@@ -262,69 +264,6 @@ public class ThriftEntityManagerTest
 	public void should_exception_when_set_flush_mode() throws Exception
 	{
 		em.setFlushMode(FlushModeType.COMMIT);
-	}
-
-	@Test
-	public void should_start_batch() throws Exception
-	{
-		when(flushContext.type()).thenReturn(BatchType.NONE);
-		em.startBatch();
-		verify(flushContext).startBatch();
-	}
-
-	@Test
-	public void should_exception_when_trying_to_start_already_pending_batch() throws Exception
-	{
-		when(flushContext.type()).thenReturn(BatchType.BATCH);
-
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("There is already a pending batch for this Entity Manager");
-
-		em.startBatch();
-	}
-
-	@Test
-	public void should_start_batch_with_consistency_level() throws Exception
-	{
-		when(flushContext.type()).thenReturn(BatchType.NONE);
-		em.startBatch(EACH_QUORUM, LOCAL_QUORUM);
-		verify(flushContext).startBatch();
-		verify(flushContext).setReadConsistencyLevel(EACH_QUORUM);
-		verify(flushContext).setWriteConsistencyLevel(LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_end_batch() throws Exception
-	{
-		when(flushContext.type()).thenReturn(BatchType.BATCH);
-		em.endBatch();
-		verify(flushContext).endBatch();
-	}
-
-	@Test
-	public void should_exception_when_ending_no_pending_batch() throws Exception
-	{
-		when(flushContext.type()).thenReturn(BatchType.NONE);
-		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("There is no pending batch for this Entity Manager. Please start a batch first");
-		em.endBatch();
-	}
-
-	@Test
-	public void should_reinit_flush_context_on_error() throws Exception
-	{
-		doThrow(new RuntimeException()).when(persister).persist(any(PersistenceContext.class));
-
-		try
-		{
-			em.persist(entity);
-		}
-		catch (Exception e)
-		{
-			verify(flushContext).cleanUp();
-			verify(flushContext).reinitConsistencyLevels();
-		}
 	}
 
 	@Test
