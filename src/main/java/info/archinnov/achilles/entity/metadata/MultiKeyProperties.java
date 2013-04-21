@@ -67,10 +67,11 @@ public class MultiKeyProperties
 	@Override
 	public String toString()
 	{
-		return "MultiKeyProperties [componentClasses="
+		return "MultiKeyProperties [componentClasses=["
 				+ StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ",")
-				+ ", componentSerializers="
-				+ StringUtils.join(Lists.transform(componentSerializers, srzToStringFn), ",") + "]";
+				+ "], componentSerializers=["
+				+ StringUtils.join(Lists.transform(componentSerializers, srzToStringFn), ",")
+				+ "]]";
 	}
 
 }

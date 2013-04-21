@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
@@ -134,12 +135,19 @@ public class EntityMeta<ID>
 	@Override
 	public String toString()
 	{
-		return "EntityMeta [className=" + className + ", columnFamilyName=" + columnFamilyName
-				+ ", serialVersionUID=" + serialVersionUID + ", idSerializer="
-				+ idSerializer.getComparatorType().getTypeName() + ", propertyMetas="
-				+ StringUtils.join(propertyMetas.keySet(), ",") + ", idMeta=" + idMeta
-				+ ", columnFamilyDirectMapping=" + columnFamilyDirectMapping
-				+ ",  consistencyLevels=[" + consistencyLevels.left.name() + ","
-				+ consistencyLevels.right.name() + "]]";
+		StringBuilder description = new StringBuilder();
+		description.append("EntityMeta [className=").append(className).append(", ");
+		description.append("columnFamilyName=").append(columnFamilyName).append(", ");
+		description.append("serialVersionUID=").append(serialVersionUID).append(", ");
+		description.append("idSerializer=").append(LONG_SRZ.getComparatorType().getTypeName())
+				.append(", ");
+		description.append("propertyMetas=[").append(StringUtils.join(propertyMetas.keySet(), ","))
+				.append("], ");
+		description.append("idMeta=").append(idMeta.toString()).append(", ");
+		description.append("columnFamilyDirectMapping=").append(columnFamilyDirectMapping)
+				.append(", ");
+		description.append("consistencyLevels=[").append(consistencyLevels.left.name()).append(",")
+				.append(consistencyLevels.right.name()).append("]]");
+		return description.toString();
 	}
 }

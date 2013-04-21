@@ -1,14 +1,17 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.Arrays;
@@ -73,8 +76,11 @@ public class CompositeTransformerTest
 		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
 		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder.noClass(Integer.class,
-				String.class).build();
+		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class)//
+				.type(WIDE_MAP)//
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))//
+				.build();
 
 		List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildKeyTransformer(propertyMeta));
@@ -187,7 +193,10 @@ public class CompositeTransformerTest
 		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
+				.noClass(Integer.class, String.class) //
+				.type(WIDE_MAP)//
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))//
+				.build();
 
 		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildKeyValueTransformer(context, propertyMeta));

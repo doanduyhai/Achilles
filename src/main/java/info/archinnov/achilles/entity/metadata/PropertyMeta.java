@@ -404,17 +404,23 @@ public class PropertyMeta<K, V>
 	@Override
 	public String toString()
 	{
-		return "PropertyMeta [type=" + type + ", propertyName=" + propertyName
-				+ ", entityClassName=" + entityClassName + ", keyClass="
-				+ keyClass.getCanonicalName() + ", keySerializer=" + keySerializer != null ? keySerializer
-				.getComparatorType().getTypeName() : "null" + ", valueClass="
-				+ valueClass.getCanonicalName() + ", valueSerializer="
+		return "PropertyMeta [type="
+				+ type
+				+ ", propertyName="
+				+ propertyName
+				+ ", entityClassName="
+				+ entityClassName
+				+ ", keyClass="
+				+ keyClass.getCanonicalName()
+				+ ", keySerializer="
+				+ (keySerializer != null ? keySerializer.getComparatorType().getTypeName() : "null")
+				+ ", valueClass=" + valueClass.getCanonicalName() + ", valueSerializer="
 				+ valueSerializer.getComparatorType().getTypeName() + ", counterProperties="
 				+ counterProperties + ", joinProperties=" + joinProperties
 				+ ", multiKeyProperties=" + multiKeyProperties + ", externalCfName="
-				+ externalCfName + ", idSerializer=" + idSerializer != null ? idSerializer
-				.getComparatorType().getTypeName() : "null" + ", consistencyLevels=["
-				+ consistencyLevels.left.name() + "," + consistencyLevels.right.name()
-				+ "], singleKey=" + singleKey + "]";
+				+ externalCfName + ", idSerializer="
+				+ (idSerializer != null ? idSerializer.getComparatorType().getTypeName() : "null")
+				+ ", consistencyLevels=[" + consistencyLevels.left.name() + ","
+				+ consistencyLevels.right.name() + "], singleKey=" + singleKey + "]";
 	}
 }

@@ -26,7 +26,7 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 	protected PersistenceContext<ID> context;
 	protected AchillesInterceptor<ID> interceptor;
-	private EntityValidator validator = new EntityValidator();
+	protected EntityValidator validator = new EntityValidator();
 
 	private static final int DEFAULT_COUNT = 100;
 

@@ -60,7 +60,7 @@ public class JoinProperties
 	@Override
 	public String toString()
 	{
-		return "JoinProperties [entityMeta=" + entityMeta.getClassName() + ", cascadeTypes="
-				+ StringUtils.join(cascadeTypes, ",") + "]";
+		return "JoinProperties [entityMeta=" + entityMeta.getClassName() + ", cascadeTypes=["
+				+ StringUtils.join(cascadeTypes, ",") + "]]";
 	}
 }
