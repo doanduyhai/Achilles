@@ -67,7 +67,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 
-			result = loader.load(joinContext);
+			result = (V) loader.load(joinContext);
 			result = proxifier.buildProxy(result, joinContext);
 		}
 		return result;

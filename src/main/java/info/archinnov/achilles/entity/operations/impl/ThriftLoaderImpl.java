@@ -60,7 +60,7 @@ public class ThriftLoaderImpl
 			introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 		}
 
-		return entity;
+		return (T) entity;
 	}
 
 	public <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
@@ -253,12 +253,12 @@ public class ThriftLoaderImpl
 			JOIN_ID joinId = joinIdMeta.getValueFromString(stringJoinId);
 			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
-			return loader.load(joinContext);
+			return (V) loader.load(joinContext);
 
 		}
 		else
 		{
-			return null;
+			return (V) null;
 		}
 	}
 }

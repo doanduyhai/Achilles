@@ -57,7 +57,7 @@ public class EntityLoader
 			}
 			else
 			{
-				entity = loaderImpl.load(context);
+				entity = (T) loaderImpl.load(context);
 			}
 
 		}
@@ -67,7 +67,7 @@ public class EntityLoader
 					+ entityClass.getCanonicalName() + "' with key '" + primaryKey + "'. Cause : "
 					+ e.getMessage(), e);
 		}
-		return entity;
+		return (T) entity;
 	}
 
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,

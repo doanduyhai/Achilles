@@ -30,7 +30,7 @@ public class EntityRefresher
 		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxifier
 				.getInterceptor(entity);
 
-		T freshEntity = loader.load(context);
+		T freshEntity = (T) loader.load(context);
 
 		interceptor.getDirtyMap().clear();
 		interceptor.getLazyAlreadyLoaded().clear();

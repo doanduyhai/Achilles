@@ -422,7 +422,7 @@ public class BatchModeIT
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
 		Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
 				flushContext, "mutatorMap");
-		boolean hasCustomConsistencyLevels = Whitebox.getInternalState(flushContext,
+		boolean hasCustomConsistencyLevels = (Boolean) Whitebox.getInternalState(flushContext,
 				"hasCustomConsistencyLevels");
 
 		assertThat(mutatorMap).isEmpty();

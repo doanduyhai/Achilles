@@ -151,6 +151,7 @@ public class ThriftEntityManager implements EntityManager
 	 *            Entity to be merged
 	 * @return Merged entity or a new proxified entity
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T merge(T entity)
 	{
@@ -160,7 +161,7 @@ public class ThriftEntityManager implements EntityManager
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		PersistenceContext<?> context = initPersistenceContext(entity);
-		T merged = merger.mergeEntity(context);
+		T merged = (T) merger.mergeEntity(context);
 		context.flush();
 		return merged;
 	}
@@ -279,6 +280,7 @@ public class ThriftEntityManager implements EntityManager
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
@@ -288,7 +290,7 @@ public class ThriftEntityManager implements EntityManager
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
 		PersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
 
-		T entity = loader.load(context);
+		T entity = (T) loader.load(context);
 		if (entity != null)
 		{
 			entity = proxifier.buildProxy(entity, context);
