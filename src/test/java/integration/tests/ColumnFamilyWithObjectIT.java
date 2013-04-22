@@ -1,10 +1,10 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -39,11 +39,11 @@ public class ColumnFamilyWithObjectIT
 			"unchecked",
 			"rawtypes"
 	})
-	private GenericColumnFamilyDao<Long, String> dao = CassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
+	private GenericColumnFamilyDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
 			(Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithObject.class.getName()));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

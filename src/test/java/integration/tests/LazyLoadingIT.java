@@ -1,7 +1,7 @@
 package integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
 import integration.tests.entity.CompleteBean;
@@ -19,7 +19,7 @@ import org.junit.Test;
  */
 public class LazyLoadingIT
 {
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private CompleteBean bean;
 

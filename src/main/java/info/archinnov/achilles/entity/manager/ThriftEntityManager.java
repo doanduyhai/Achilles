@@ -529,9 +529,9 @@ public class ThriftEntityManager implements EntityManager
 	 * 
 	 * @return a new state-full EntityManager
 	 */
-	public BatchingThriftEntityManager batchingEntityManager()
+	public ThriftBatchingEntityManager batchingEntityManager()
 	{
-		return new BatchingThriftEntityManager(entityMetaMap, entityDaosMap, columnFamilyDaosMap,
+		return new ThriftBatchingEntityManager(entityMetaMap, entityDaosMap, columnFamilyDaosMap,
 				counterDao, consistencyPolicy);
 	}
 

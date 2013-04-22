@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.columnFamily.ColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
@@ -272,12 +272,12 @@ public class EntityIntrospector
 
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ColumnFamilyHelper
+			columnFamilyName = ThriftColumnFamilyHelper
 					.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = ColumnFamilyHelper
+			columnFamilyName = ThriftColumnFamilyHelper
 					.normalizerAndValidateColumnFamilyName(canonicalName);
 		}
 

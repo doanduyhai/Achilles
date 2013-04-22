@@ -27,17 +27,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ColumnFamilyCreator
+public class ThriftColumnFamilyCreator
 {
-	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyCreator.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyCreator.class);
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ColumnFamilyHelper columnFamilyHelper = new ColumnFamilyHelper();
+	private ThriftColumnFamilyHelper thriftColumnFamilyHelper = new ThriftColumnFamilyHelper();
 	private List<ColumnFamilyDefinition> cfDefs;
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 	private Set<String> cfs = new HashSet<String>();
 
-	public ColumnFamilyCreator(Cluster cluster, Keyspace keyspace) {
+	public ThriftColumnFamilyCreator(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
 		this.keyspace = keyspace;
 		KeyspaceDefinition keyspaceDef = this.cluster.describeKeyspace(this.keyspace
@@ -80,13 +80,13 @@ public class ColumnFamilyCreator
 
 				PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
 						.next();
-				cfDef = columnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
+				cfDef = thriftColumnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
 						propertyMeta, entityMeta.getIdMeta().getValueClass(), columnFamilyName,
 						entityMeta.getClassName());
 			}
 			else
 			{
-				cfDef = this.columnFamilyHelper.buildEntityCF(entityMeta,
+				cfDef = this.thriftColumnFamilyHelper.buildEntityCF(entityMeta,
 						this.keyspace.getKeyspaceName());
 
 			}
@@ -137,7 +137,7 @@ public class ColumnFamilyCreator
 				log.debug("Force creation of column family for propertyMeta {}",
 						propertyMeta.getPropertyName());
 
-				cfDef = columnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
+				cfDef = thriftColumnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
 						propertyMeta, keyClass, externalColumnFamilyName, entityName);
 				this.addColumnFamily(cfDef);
 			}
@@ -150,7 +150,7 @@ public class ColumnFamilyCreator
 		}
 		else
 		{
-			this.columnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta,
+			this.thriftColumnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta,
 					externalColumnFamilyName);
 		}
 	}
@@ -177,7 +177,7 @@ public class ColumnFamilyCreator
 		}
 		else
 		{
-			this.columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+			this.thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 		}
 	}
 
@@ -200,7 +200,7 @@ public class ColumnFamilyCreator
 		}
 		else
 		{
-			this.columnFamilyHelper.validateCounterCF(cfDef);
+			this.thriftColumnFamilyHelper.validateCounterCF(cfDef);
 		}
 
 	}
@@ -210,7 +210,7 @@ public class ColumnFamilyCreator
 		log.debug("Creating generic counter column family");
 		if (!cfs.contains(COUNTER_CF))
 		{
-			ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCounterCF(this.keyspace
+			ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildCounterCF(this.keyspace
 					.getKeyspaceName());
 			this.addColumnFamily(cfDef);
 		}

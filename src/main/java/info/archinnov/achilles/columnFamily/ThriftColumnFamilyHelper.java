@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ColumnFamilyHelper
+public class ThriftColumnFamilyHelper
 {
-	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyHelper.class);
 
 	public static final String ENTITY_TYPE_ALIAS = "(BytesType,UTF8Type,Int32Type)";
 	public static final String SIMPLE_COUNTER_TYPE_ALIAS = "(UTF8Type)";

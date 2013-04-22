@@ -21,7 +21,7 @@
 		<level value="WARN" />
 	</logger>
 
-	<logger name="info.archinnov.achilles.common.CassandraDaoTest">
+	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
 		<level value="INFO" />
 	</logger>	
 	

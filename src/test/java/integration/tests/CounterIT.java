@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.*;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -40,10 +40,10 @@ public class CounterIT
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CounterDao counterDao = CassandraDaoTest.getCounterDao();
-	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = CassandraDaoTest
+	private CounterDao counterDao = ThriftCassandraDaoTest.getCounterDao();
+	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 	private CompleteBean bean;
 	private ObjectMapper mapper = new ObjectMapper();
 

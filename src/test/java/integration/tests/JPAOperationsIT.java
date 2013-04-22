@@ -1,11 +1,11 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
@@ -49,7 +49,7 @@ public class JPAOperationsIT
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private CompositeFactory compositeFactory = new CompositeFactory();
 

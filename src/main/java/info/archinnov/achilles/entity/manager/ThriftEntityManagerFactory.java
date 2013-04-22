@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -46,7 +46,7 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	private List<String> entityPackages;
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ColumnFamilyCreator columnFamilyCreator;
+	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 	private ObjectMapperFactory objectMapperFactory;
 
 	private EntityParser entityParser = new EntityParser();
@@ -183,7 +183,7 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 				cluster.getName(), keyspace.getKeyspaceName());
 
-		columnFamilyCreator = new ColumnFamilyCreator(cluster, keyspace);
+		thriftColumnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
 		counterDao = new CounterDao(cluster, keyspace, consistencyPolicy);
 		keyspace.setConsistencyLevelPolicy(consistencyPolicy);
 		bootstrap();
@@ -203,7 +203,7 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
 		}
 
-		columnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap,
+		thriftColumnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap,
 				forceColumnFamilyCreation, createCounterCf);
 	}
 

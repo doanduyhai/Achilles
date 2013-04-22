@@ -1,12 +1,12 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -61,7 +61,7 @@ public class JoinCollectionAndMapIT
 			normalizerAndValidateColumnFamilyName(BeanWithJoinCollectionAndMap.class
 					.getCanonicalName()));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private Tweet tweet1, tweet2, tweet3, tweet4, tweet5;
 

@@ -64,27 +64,6 @@ public class CompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<Composite, String>, Object> buildRawValueTransformer(
-			final PropertyMeta<K, V> propertyMeta)
-	{
-		return new Function<HColumn<Composite, String>, Object>()
-		{
-			@Override
-			public Object apply(HColumn<Composite, String> hColumn)
-			{
-
-				if (propertyMeta.type().isJoinColumn())
-				{
-					return propertyMeta.joinIdMeta().getValueFromString(hColumn.getValue());
-				}
-				else
-				{
-					return hColumn.getValue();
-				}
-			}
-		};
-	}
-
 	public Function<HColumn<Composite, ?>, Integer> buildTtlTransformer()
 	{
 		return new Function<HColumn<Composite, ?>, Integer>()

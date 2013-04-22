@@ -1,10 +1,10 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -36,7 +36,7 @@ public class ObjectAsWideMapValueIT
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName("bean_with_widemap_object"));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private BeanWithObjectAsWideMapValue bean;
 

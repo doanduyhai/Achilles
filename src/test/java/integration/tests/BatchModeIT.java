@@ -1,13 +1,13 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.*;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
@@ -15,7 +15,7 @@ import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.BatchingFlushContext;
-import info.archinnov.achilles.entity.manager.BatchingThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
@@ -66,7 +66,7 @@ public class BatchModeIT
 	private GenericColumnFamilyDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
 			SerializerUtils.UUID_SRZ, "user_tweets");
 
-	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = CassandraDaoTest
+	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
 
 	private GenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
@@ -77,9 +77,9 @@ public class BatchModeIT
 
 	private CounterDao counterDao = getCounterDao();
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private AchillesConfigurableConsistencyLevelPolicy policy = CassandraDaoTest
+	private AchillesConfigurableConsistencyLevelPolicy policy = ThriftCassandraDaoTest
 			.getConsistencyPolicy();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
@@ -103,7 +103,7 @@ public class BatchModeIT
 	public void should_batch_join_wide_map() throws Exception
 	{
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		user = batchEm.merge(user);
@@ -152,7 +152,7 @@ public class BatchModeIT
 	public void should_batch_external_widemap_simple_join_and_counters() throws Exception
 	{
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -235,7 +235,7 @@ public class BatchModeIT
 		Tweet reTweet2 = TweetTestBuilder.tweet().randomId().content("reTweet2").buid();
 
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		user = batchEm.merge(user);
@@ -269,7 +269,7 @@ public class BatchModeIT
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		batchEm.merge(bean);
@@ -313,7 +313,7 @@ public class BatchModeIT
 				.buid();
 
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		try
@@ -358,7 +358,7 @@ public class BatchModeIT
 		em.persist(tweet1);
 
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(ONE, ALL);
@@ -388,7 +388,7 @@ public class BatchModeIT
 		em.persist(tweet1);
 
 		// Start batch
-		BatchingThriftEntityManager batchEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
@@ -417,7 +417,7 @@ public class BatchModeIT
 		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
-	private void assertThatBatchContextHasBeenReset(BatchingThriftEntityManager batchEm)
+	private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm)
 	{
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
 		Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
@@ -463,7 +463,7 @@ public class BatchModeIT
 	@AfterClass
 	public static void cleanUp()
 	{
-		CassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
-		CassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
+		ThriftCassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
+		ThriftCassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
 	}
 }

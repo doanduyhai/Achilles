@@ -45,14 +45,14 @@ import testBuilders.PropertyMetaTestBuilder;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ColumnFamilyCreatorTest
+public class ThriftColumnFamilyCreatorTest
 {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ColumnFamilyCreator creator;
+	private ThriftColumnFamilyCreator creator;
 
 	@Mock
 	private Cluster cluster;
@@ -64,7 +64,7 @@ public class ColumnFamilyCreatorTest
 	private KeyspaceDefinition keyspaceDefinition;
 
 	@Mock
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ThriftColumnFamilyHelper thriftColumnFamilyHelper;
 
 	private Set<String> cfs = new HashSet<String>();
 
@@ -87,7 +87,7 @@ public class ColumnFamilyCreatorTest
 				.propertyName("id").accessors(accessors).build();
 
 		cfs.clear();
-		Whitebox.setInternalState(creator, "columnFamilyHelper", columnFamilyHelper);
+		Whitebox.setInternalState(creator, "thriftColumnFamilyHelper", thriftColumnFamilyHelper);
 		Whitebox.setInternalState(creator, "cfs", cfs);
 	}
 
@@ -99,7 +99,7 @@ public class ColumnFamilyCreatorTest
 		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 		when(keyspaceDefinition.getCfDefs()).thenReturn(cfDefs);
 
-		ColumnFamilyCreator creator = new ColumnFamilyCreator(cluster, keyspace);
+		ThriftColumnFamilyCreator creator = new ThriftColumnFamilyCreator(cluster, keyspace);
 
 		assertThat(Whitebox.getInternalState(creator, "cfDefs")).isSameAs(cfDefs);
 
@@ -141,11 +141,11 @@ public class ColumnFamilyCreatorTest
 	{
 		prepareData();
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
 
-		verify(columnFamilyHelper).buildEntityCF(meta, "keyspace");
+		verify(thriftColumnFamilyHelper).buildEntityCF(meta, "keyspace");
 		verify(cluster).addColumnFamily(cfDef, true);
 
 	}
@@ -160,8 +160,8 @@ public class ColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		meta.setClassName("entity");
 		when(
-				columnFamilyHelper.buildDirectMappingCF("keyspace", simplePropertyMeta, Long.class,
-						"testCF", "entity")).thenReturn(cfDef);
+				thriftColumnFamilyHelper.buildDirectMappingCF("keyspace", simplePropertyMeta,
+						Long.class, "testCF", "entity")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
 
@@ -176,7 +176,7 @@ public class ColumnFamilyCreatorTest
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
 
 		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(columnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
+		when(thriftColumnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), true, true);
 
@@ -193,7 +193,7 @@ public class ColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
 	}
 
 	@Test
@@ -220,9 +220,9 @@ public class ColumnFamilyCreatorTest
 				Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
-		verify(columnFamilyHelper).validateCFWithPropertyMeta(externalCFDef, externalWideMapMeta,
-				"externalCF");
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+		verify(thriftColumnFamilyHelper).validateCFWithPropertyMeta(externalCFDef,
+				externalWideMapMeta, "externalCF");
+		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
 	}
 
 	@Test
@@ -234,11 +234,11 @@ public class ColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList(cfDef));
 
 		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(columnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
+		when(thriftColumnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(), true, true);
 
-		verify(columnFamilyHelper).validateCounterCF(cfDef);
+		verify(thriftColumnFamilyHelper).validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -249,7 +249,7 @@ public class ColumnFamilyCreatorTest
 		cfDef.setName("testCF2");
 
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
-		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
@@ -265,7 +265,7 @@ public class ColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
 		when(cfDef.getName()).thenReturn("mocked_cfDef");
-		when(columnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
@@ -295,12 +295,12 @@ public class ColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
 		externalCFDef.setName("externalCF");
 		when(
-				columnFamilyHelper.buildDirectMappingCF("keyspace", externalWideMapMeta,
+				thriftColumnFamilyHelper.buildDirectMappingCF("keyspace", externalWideMapMeta,
 						Long.class, "externalCF", meta.getClassName())).thenReturn(externalCFDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, true, false);
 
-		verify(columnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
 		verify(cluster).addColumnFamily(externalCFDef, true);
 	}
 

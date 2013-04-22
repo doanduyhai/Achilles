@@ -1,11 +1,11 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getColumnFamilyDao;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -38,7 +38,7 @@ public class ColumnFamilyIT
 	private GenericColumnFamilyDao<Long, String> dao = getColumnFamilyDao(LONG_SRZ, STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(ColumnFamilyBean.class.getName()));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private ColumnFamilyBean bean;
 

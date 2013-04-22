@@ -19,10 +19,10 @@ import org.powermock.reflect.Whitebox;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BatchingThriftEntityManagerTest
+public class ThriftBatchingEntityManagerTest
 {
 	@InjectMocks
-	private BatchingThriftEntityManager em;
+	private ThriftBatchingEntityManager em;
 
 	@Mock
 	private BatchingFlushContext flushContext;

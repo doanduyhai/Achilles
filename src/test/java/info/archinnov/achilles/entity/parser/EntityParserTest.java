@@ -5,7 +5,7 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
@@ -82,7 +82,7 @@ public class EntityParserTest
 			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
 
 	@Mock
-	private ColumnFamilyCreator columnFamilyCreator;
+	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 
 	@Mock
 	private Cluster cluster;

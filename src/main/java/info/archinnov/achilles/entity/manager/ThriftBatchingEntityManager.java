@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class BatchingThriftEntityManager extends ThriftEntityManager
+public class ThriftBatchingEntityManager extends ThriftEntityManager
 {
-	private static final Logger log = LoggerFactory.getLogger(BatchingThriftEntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftBatchingEntityManager.class);
 
 	private BatchingFlushContext flushContext;
 
-	BatchingThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap,
+	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap,
 			Map<String, GenericEntityDao<?>> entityDaosMap,
 			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao,
 			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)

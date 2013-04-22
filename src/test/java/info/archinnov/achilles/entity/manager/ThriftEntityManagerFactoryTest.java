@@ -6,7 +6,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.columnFamily.ColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -64,7 +64,7 @@ public class ThriftEntityManagerFactoryTest
 	private EntityExplorer entityExplorer;
 
 	@Mock
-	private ColumnFamilyCreator columnFamilyCreator;
+	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 
 	@Mock
 	private ArgumentExtractorForThriftEMF argumentExtractor;
@@ -106,7 +106,7 @@ public class ThriftEntityManagerFactoryTest
 		verify(entityMetaMap).put(Long.class, entityMeta1);
 		verify(entityMetaMap).put(String.class, entityMeta2);
 		verify(entityParser).fillJoinEntityMeta(contextCaptor.capture(), eq(entityMetaMap));
-		verify(columnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
+		verify(thriftColumnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
 				eq(false));
 
 		List<EntityParsingContext> contexts = contextCaptor.getAllValues();

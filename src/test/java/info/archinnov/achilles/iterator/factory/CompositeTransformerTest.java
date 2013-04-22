@@ -211,4 +211,5 @@ public class CompositeTransformerTest
 		assertThat(keyValues.get(1).getValue()).isEqualTo("test2");
 		assertThat(keyValues.get(1).getTtl()).isEqualTo(789);
 	}
+
 }

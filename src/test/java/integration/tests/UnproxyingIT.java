@@ -1,10 +1,10 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.common.CassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import integration.tests.entity.CompleteBean;
@@ -28,7 +28,7 @@ public class UnproxyingIT
 	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	@Test
 	public void should_unproxy_object() throws Exception

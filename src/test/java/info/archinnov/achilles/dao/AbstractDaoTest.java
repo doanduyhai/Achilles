@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.mockito.Mockito.verify;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.hector.api.Cluster;
@@ -30,10 +30,10 @@ public class AbstractDaoTest
 
 	private GenericEntityDao<Long> abstractDao;
 
-	private Keyspace keyspace = CassandraDaoTest.getKeyspace();
+	private Keyspace keyspace = ThriftCassandraDaoTest.getKeyspace();
 
 	@Mock
-	private Cluster cluster = CassandraDaoTest.getCluster();
+	private Cluster cluster = ThriftCassandraDaoTest.getCluster();
 
 	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;

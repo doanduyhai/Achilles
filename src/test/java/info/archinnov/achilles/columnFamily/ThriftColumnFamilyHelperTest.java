@@ -1,6 +1,6 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.columnFamily.ColumnFamilyHelper.*;
+import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -41,14 +41,14 @@ import com.google.common.collect.ImmutableMap;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ColumnFamilyHelperTest
+public class ThriftColumnFamilyHelperTest
 {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ColumnFamilyHelper columnFamilyHelper;
+	private ThriftColumnFamilyHelper thriftColumnFamilyHelper;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -84,7 +84,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
 		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildEntityCF(entityMeta, "keyspace");
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildEntityCF(entityMeta, "keyspace");
 
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
@@ -103,7 +103,7 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
@@ -126,7 +126,7 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
@@ -152,7 +152,7 @@ public class ColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
@@ -164,7 +164,7 @@ public class ColumnFamilyHelperTest
 	public void should_build_counter_column_family() throws Exception
 	{
 
-		ColumnFamilyDefinition cfDef = columnFamilyHelper.buildCounterCF("keyspace");
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildCounterCF("keyspace");
 
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(COMPOSITETYPE.getTypeName());
 		assertThat(cfDef.getKeyValidationAlias()).isEqualTo(COUNTER_KEY_ALIAS);
@@ -179,7 +179,7 @@ public class ColumnFamilyHelperTest
 	{
 		String canonicalName = "org.achilles.entity.ClassName";
 
-		String normalized = ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+		String normalized = ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
 
 		assertThat(normalized).isEqualTo("ClassName");
 	}
@@ -194,7 +194,7 @@ public class ColumnFamilyHelperTest
 		exception
 				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType' should be 'org.apache.cassandra.db.marshal.CompositeType'");
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -209,7 +209,7 @@ public class ColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' key type alias 'wrong_alias' should be '"
 						+ COUNTER_KEY_ALIAS + "'");
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -225,7 +225,7 @@ public class ColumnFamilyHelperTest
 		exception
 				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType' should be 'CompositeType'");
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -243,7 +243,7 @@ public class ColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' comparator type alias 'wrong_alias' should be '"
 						+ SIMPLE_COUNTER_TYPE_ALIAS + "'");
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -262,7 +262,7 @@ public class ColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' validation class 'org.apache.cassandra.db.marshal.AsciiType' should be '"
 						+ COUNTERTYPE.getClassName() + "'");
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -273,7 +273,7 @@ public class ColumnFamilyHelperTest
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
-		ColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+		ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
 
 	}
 
@@ -285,7 +285,7 @@ public class ColumnFamilyHelperTest
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn(ENTITY_TYPE_ALIAS);
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -297,7 +297,7 @@ public class ColumnFamilyHelperTest
 		when(cfDef.getComparatorTypeAlias()).thenReturn(SIMPLE_COUNTER_TYPE_ALIAS);
 		when(cfDef.getDefaultValidationClass()).thenReturn(COUNTERTYPE.getClassName());
 
-		columnFamilyHelper.validateCounterCF(cfDef);
+		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -316,7 +316,7 @@ public class ColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COUNTERTYPE);
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -330,7 +330,7 @@ public class ColumnFamilyHelperTest
 		exception
 				.expectMessage("The column family 'cf' key class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -345,7 +345,7 @@ public class ColumnFamilyHelperTest
 		exception.expectMessage("The column family 'cf' comparator type should be '"
 				+ COMPOSITETYPE.getTypeName() + "'");
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -360,7 +360,7 @@ public class ColumnFamilyHelperTest
 		exception.expectMessage("The column family 'cf' comparator type should be '"
 				+ COMPOSITETYPE.getTypeName() + "'");
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -384,7 +384,7 @@ public class ColumnFamilyHelperTest
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'CounterColumnType'");
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -396,7 +396,7 @@ public class ColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COUNTERTYPE);
 
-		columnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta, "external_cf");
+		thriftColumnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta, "external_cf");
 	}
 
 	@Test
@@ -412,6 +412,6 @@ public class ColumnFamilyHelperTest
 		exception.expectMessage("The column family 'cf' comparator type alias should be '"
 				+ ENTITY_TYPE_ALIAS + "'");
 
-		columnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 }

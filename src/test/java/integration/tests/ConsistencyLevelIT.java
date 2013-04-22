@@ -1,9 +1,9 @@
 package integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CassandraDaoTest;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.manager.BatchingThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -59,15 +59,15 @@ public class ConsistencyLevelIT
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
-	private ThriftEntityManager em = CassandraDaoTest.getEm();
+	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private Cluster cluster = CassandraDaoTest.getCluster();
+	private Cluster cluster = ThriftCassandraDaoTest.getCluster();
 
-	private String keyspaceName = CassandraDaoTest.getKeyspace().getKeyspaceName();
+	private String keyspaceName = ThriftCassandraDaoTest.getKeyspace().getKeyspaceName();
 
 	private Long id = RandomUtils.nextLong();
 
-	private AchillesConfigurableConsistencyLevelPolicy policy = CassandraDaoTest
+	private AchillesConfigurableConsistencyLevelPolicy policy = ThriftCassandraDaoTest
 			.getConsistencyPolicy();
 
 	@Test
@@ -577,7 +577,7 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
-		BatchingThriftEntityManager batchingEm = em.batchingEntityManager();
+		ThriftBatchingEntityManager batchingEm = em.batchingEntityManager();
 		batchingEm.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
 
 		batchingEm.persist(entity);
@@ -617,7 +617,7 @@ public class ConsistencyLevelIT
 	@AfterClass
 	public static void cleanUp()
 	{
-		CassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
-		CassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
+		ThriftCassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
+		ThriftCassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
 	}
 }
