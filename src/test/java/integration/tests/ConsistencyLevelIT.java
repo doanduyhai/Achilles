@@ -6,12 +6,14 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.wrapper.CounterBuilder;
 import integration.tests.entity.BeanWithLocalQuorumConsistency;
 import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForExternalWidemap;
 import integration.tests.entity.BeanWithReadOneWriteAllConsistencyForExternalWidemap;
@@ -515,9 +517,9 @@ public class ConsistencyLevelIT
 	{
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		entity = em.merge(entity);
-		WideMap<String, Long> popularTopics = entity.getPopularTopics();
+		WideMap<String, Counter> popularTopics = entity.getPopularTopics();
 
-		popularTopics.insert("java", 110L);
+		popularTopics.insert("java", CounterBuilder.incr(110L));
 		try
 		{
 			popularTopics.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
@@ -530,9 +532,9 @@ public class ConsistencyLevelIT
 		}
 		assertThatConsistencyLevelsAreReinitialized();
 		logAsserter.prepareLogLevel();
-		KeyValue<String, Long> found = popularTopics.iterator(ConsistencyLevel.ALL).next();
+		KeyValue<String, Counter> found = popularTopics.iterator(ConsistencyLevel.ALL).next();
 		assertThat(found.getKey()).isEqualTo("java");
-		assertThat(found.getValue()).isEqualTo(110L);
+		assertThat(found.getValue().get()).isEqualTo(110L);
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 

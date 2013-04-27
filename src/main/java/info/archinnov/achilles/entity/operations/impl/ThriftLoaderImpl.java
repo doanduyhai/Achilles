@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity.operations.impl;
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
@@ -99,57 +98,6 @@ public class ThriftLoaderImpl
 		}
 		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
 				context.getPrimaryKey(), composite));
-	}
-
-	@SuppressWarnings("unchecked")
-	public <ID> Long loadSimpleCounterProperty(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta)
-	{
-		Composite keyComp = compositeFactory.createKeyForCounter(propertyMeta.fqcn(),
-				context.getPrimaryKey(), (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta());
-		Composite comp = compositeFactory.createBaseForCounterGet(propertyMeta);
-		if (log.isTraceEnabled())
-		{
-			log.trace(
-					"Loading counter property {} of class {} from column family {} with primary key {} and composite column name {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), format(keyComp), format(comp));
-		}
-		return loadCounterWithConsistencyLevel(context, propertyMeta, keyComp, comp);
-	}
-
-	private <ID> Long loadCounterWithConsistencyLevel(PersistenceContext<ID> context,
-			PropertyMeta<?, ?> propertyMeta, Composite keyComp, Composite comp)
-	{
-		boolean resetConsistencyLevel = false;
-		AchillesConfigurableConsistencyLevelPolicy policy = context.getPolicy();
-		if (policy.getCurrentReadLevel() == null)
-		{
-			policy.setCurrentReadLevel(propertyMeta.getReadConsistencyLevel());
-			resetConsistencyLevel = true;
-		}
-		Long counter;
-		try
-		{
-			if (log.isTraceEnabled())
-			{
-				log.trace(
-						"Loading counter property {} of class {} from column family {} with primary key {} and composite column name {} and consistency level {}",
-						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-								.getEntityMeta().getColumnFamilyName(), format(keyComp),
-						format(comp), propertyMeta.getReadConsistencyLevel().name());
-			}
-			counter = context.getCounterDao().getCounterValue(keyComp, comp);
-		}
-		finally
-		{
-			if (resetConsistencyLevel)
-			{
-				log.trace("Resetting to default consistency level");
-				policy.removeCurrentReadLevel();
-			}
-		}
-		return counter;
 	}
 
 	public <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,

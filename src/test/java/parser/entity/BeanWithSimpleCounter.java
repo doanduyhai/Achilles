@@ -1,7 +1,9 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Counter;
+import info.archinnov.achilles.entity.type.Counter;
+
 import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 
@@ -11,30 +13,30 @@ import javax.persistence.Id;
  * @author DuyHai DOAN
  * 
  */
-public class BeanWithSimpleCounter implements Serializable {
+public class BeanWithSimpleCounter implements Serializable
+{
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    @Id
-    private Long id;
+	@Id
+	private Long id;
 
-    @Counter
-    @Column
-    private long counter;
+	@Column
+	private Counter counter;
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId()
+	{
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id)
+	{
+		this.id = id;
+	}
 
-    public long getCounter() {
-        return counter;
-    }
+	public Counter getCounter()
+	{
+		return counter;
+	}
 
-    public void setCounter(long counter) {
-        this.counter = counter;
-    }
 }

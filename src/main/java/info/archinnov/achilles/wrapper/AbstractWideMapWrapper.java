@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.entity.context.PersistenceContext;
-import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
+import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;

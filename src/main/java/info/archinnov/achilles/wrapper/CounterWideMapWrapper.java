@@ -5,18 +5,19 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
 
 import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,50 +28,54 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Long>
+public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Counter>
 {
 
 	private static final Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
 
-	protected ID id;
-	protected String fqcn;
-	protected PropertyMeta<Void, ID> idMeta;
-	protected GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
-	protected PropertyMeta<K, Long> propertyMeta;
+	private ID id;
+	private GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
+	private PropertyMeta<K, Counter> propertyMeta;
 
-	protected CompositeHelper compositeHelper;
-	protected KeyValueFactory keyValueFactory;
-	protected IteratorFactory iteratorFactory;
-	protected CompositeFactory compositeFactory;
+	private CompositeHelper compositeHelper;
+	private KeyValueFactory keyValueFactory;
+	private IteratorFactory iteratorFactory;
+	private CompositeFactory compositeFactory;
 
 	@Override
-	public Long get(K key)
+	public Counter get(K key)
 	{
 		log.trace("Get counter value having key {}", key);
 		Composite comp = compositeFactory.createForQuery(propertyMeta, key, EQUAL);
-		return wideMapCounterDao.getCounterValue(id, comp);
+
+		return CounterWrapperBuilder.builder(id) //
+				.columnName(comp) //
+				.counterDao(wideMapCounterDao) //
+				.policy(context.getPolicy()) //
+				.readLevel(propertyMeta.getReadConsistencyLevel()) //
+				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
+				.build();
 
 	}
 
 	@Override
-	public void insert(K key, Long value, int ttl)
+	public void insert(K key, Counter value, int ttl)
 	{
 		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
 	}
 
 	@Override
-	public void insert(K key, Long value)
+	public void insert(K key, Counter value)
 	{
 		log.trace("Insert counter value {} with key {}", value, key);
 		Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
 
-		wideMapCounterDao.insertCounterBatch(id, comp, value,
-				(Mutator<ID>) context.getColumnFamilyMutator(propertyMeta.getExternalCFName()));
+		wideMapCounterDao.incrementCounter(id, comp, value.get());
 		context.flush();
 	}
 
 	@Override
-	public List<KeyValue<K, Long>> find(K start, K end, int count, BoundingMode bounds,
+	public List<KeyValue<K, Counter>> find(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
 	{
 		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
@@ -86,14 +91,13 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
 				queryComps[0], queryComps[1], count, ordering.isReverse());
 
-		return keyValueFactory.createCounterKeyValueList(propertyMeta, hColumns);
+		return keyValueFactory.createCounterKeyValueList(context, propertyMeta, hColumns);
 	}
 
 	@Override
-	public List<Long> findValues(K start, K end, int count, BoundingMode bounds,
+	public List<Counter> findValues(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
 	{
-
 		compositeHelper.checkBounds(propertyMeta, start, end, ordering);
 
 		Composite[] queryComps = compositeFactory.createForQuery( //
@@ -107,7 +111,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
 				queryComps[0], queryComps[1], count, ordering.isReverse());
 
-		return keyValueFactory.createCounterValueList(propertyMeta, hColumns);
+		return keyValueFactory.createCounterValueList(context, propertyMeta, hColumns);
 	}
 
 	@Override
@@ -129,7 +133,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	}
 
 	@Override
-	public KeyValueIterator<K, Long> iterator(K start, K end, int count, BoundingMode bounds,
+	public KeyValueIterator<K, Counter> iterator(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
 	{
 		Composite[] queryComps = compositeFactory.createForQuery( //
@@ -146,7 +150,17 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 				.getCounterColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(),
 						count);
 
-		return iteratorFactory.createCounterKeyValueIterator(columnSliceIterator, propertyMeta);
+		PropertyMeta<K, Counter> duplicateMeta;
+		if (context.getPolicy().getCurrentReadLevel() != null)
+		{
+			duplicateMeta = propertyMeta.duplicate(context.getPolicy().getCurrentReadLevel());
+		}
+		else
+		{
+			duplicateMeta = propertyMeta;
+		}
+		return iteratorFactory.createCounterKeyValueIterator(context, columnSliceIterator,
+				duplicateMeta);
 	}
 
 	@Override
@@ -182,9 +196,9 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		this.id = id;
 	}
 
-	public void setPropertyMeta(PropertyMeta<K, Long> wideMapMeta)
+	public void setPropertyMeta(PropertyMeta<K, Counter> propertyMeta)
 	{
-		this.propertyMeta = wideMapMeta;
+		this.propertyMeta = propertyMeta;
 	}
 
 	public void setCompositeHelper(CompositeHelper compositeHelper)
@@ -205,16 +219,6 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	public void setCompositeKeyFactory(CompositeFactory compositeFactory)
 	{
 		this.compositeFactory = compositeFactory;
-	}
-
-	public void setFqcn(String fqcn)
-	{
-		this.fqcn = fqcn;
-	}
-
-	public void setIdMeta(PropertyMeta<Void, ID> idMeta)
-	{
-		this.idMeta = idMeta;
 	}
 
 	public void setWideMapCounterDao(GenericColumnFamilyDao<ID, Long> wideMapCounterDao)

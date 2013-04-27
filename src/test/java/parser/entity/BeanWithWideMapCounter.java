@@ -1,6 +1,6 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Counter;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
@@ -23,9 +23,8 @@ public class BeanWithWideMapCounter implements Serializable
 	@Id
 	private Long id;
 
-	@Counter
 	@Column(table = "counters")
-	private WideMap<UUID, Long> counters;
+	private WideMap<UUID, Counter> counters;
 
 	public Long getId()
 	{
@@ -37,13 +36,9 @@ public class BeanWithWideMapCounter implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<UUID, Long> getCounters()
+	public WideMap<UUID, Counter> getCounters()
 	{
 		return counters;
 	}
 
-	public void setCounters(WideMap<UUID, Long> counters)
-	{
-		this.counters = counters;
-	}
 }

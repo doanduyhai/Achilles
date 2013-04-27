@@ -2,7 +2,6 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.Pair;
@@ -232,19 +231,6 @@ public class PropertyHelper
 			lazy = true;
 		}
 		return lazy;
-	}
-
-	public boolean hasCounterAnnotation(Field field)
-	{
-		log.debug("Check @Counter annotation on field {} of class {}", field.getName(), field
-				.getDeclaringClass().getCanonicalName());
-
-		boolean counter = false;
-		if (field.getAnnotation(Counter.class) != null)
-		{
-			counter = true;
-		}
-		return counter;
 	}
 
 	public boolean hasConsistencyAnnotation(Field field)

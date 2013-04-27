@@ -12,8 +12,10 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.wrapper.CounterBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +28,6 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +63,7 @@ public class KeyValueFactoryTest
 	private PropertyMeta<TweetMultiKey, String> multiKeyWideMeta;
 
 	@Mock
-	private PropertyMeta<Integer, Long> counterMeta;
+	private PropertyMeta<Integer, Counter> counterMeta;
 
 	@Mock
 	private MultiKeyProperties multiKeyProperties;
@@ -87,8 +88,6 @@ public class KeyValueFactoryTest
 
 	@Captor
 	private ArgumentCaptor<List<Long>> joinIdsCaptor;
-
-	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private Long joinId1 = 11L, joinId2 = 12L;
 	private Integer key1 = 11, key2 = 12, ttl1 = 456, ttl2 = 789;
@@ -125,251 +124,9 @@ public class KeyValueFactoryTest
 		when(proxifier.buildProxy(bean2, joinContext2)).thenReturn(bean2);
 	}
 
-	@Test
-	public void should_create_keyvalue_from_dynamic_composite_hcolumn() throws Exception
-	{
-		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(dynComp, "test");
-
-		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "test");
-		when(compositeTransformer.buildKeyValue(context, wideMapMeta, hColumn))
-				.thenReturn(keyValue);
-		KeyValue<Integer, String> built = factory.createKeyValue(context, wideMapMeta, hColumn);
-
-		assertThat(built).isSameAs(keyValue);
-	}
-
-	@Test
-	public void should_create_key_from_dynamic_composite_hcolumn() throws Exception
-	{
-		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(dynComp, "test");
-
-		Integer key = 123;
-		when(compositeTransformer.buildKey(wideMapMeta, hColumn)).thenReturn(key);
-		Integer built = factory.createKey(wideMapMeta, hColumn);
-
-		assertThat(built).isSameAs(key);
-	}
-
-	@Test
-	public void should_create_value_from_dynamic_composite_hcolumn() throws Exception
-	{
-		String value = "test";
-		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(dynComp, value);
-
-		when(compositeTransformer.buildValue(context, wideMapMeta, hColumn)).thenReturn(value);
-		String built = factory.createValue(context, wideMapMeta, hColumn);
-
-		assertThat(built).isEqualTo(value);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_create_value_list_for_dynamic_composite() throws Exception
-	{
-		Composite dynComp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite dynComp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(dynComp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(dynComp2, "test2");
-
-		Function<HColumn<Composite, ?>, String> function = new Function<HColumn<Composite, ?>, String>()
-		{
-			@Override
-			public String apply(HColumn<Composite, ?> hCol)
-			{
-				return (String) hCol.getValue();
-			}
-		};
-
-		when(compositeTransformer.buildValueTransformer(wideMapMeta)).thenReturn(function);
-
-		List<String> builtList = factory.createValueList(wideMapMeta, Arrays.asList(hCol1, hCol2));
-
-		assertThat(builtList).containsExactly("test1", "test2");
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_create_join_value_list_for_dynamic_composite() throws Exception
-	{
-
-		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, joinId1.toString());
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, joinId2.toString());
-
-		Function<HColumn<Composite, ?>, ?> rawValueFn = new Function<HColumn<Composite, ?>, Object>()
-		{
-			@Override
-			public Object apply(HColumn<Composite, ?> hCol)
-			{
-				try
-				{
-					return readLong((String) hCol.getValue());
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-				return hCol.getValue();
-			}
-		};
-
-		when((Function) compositeTransformer.buildRawValueTransformer()).thenReturn(rawValueFn);
-		List<UserBean> builtList = factory.createJoinValueList(context, propertyMeta,
-				Arrays.asList(hCol1, hCol2));
-
-		assertThat(builtList).containsExactly(bean1, bean2);
-		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_create_key_list_for_dynamic_composite() throws Exception
-	{
-		Composite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 11).buildSimple();
-		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(dynComp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(dynComp2, "test2");
-
-		Function<HColumn<Composite, ?>, Integer> function = new Function<HColumn<Composite, ?>, Integer>()
-		{
-			@Override
-			public Integer apply(HColumn<Composite, ?> hCol)
-			{
-				return (Integer) hCol.getName().getComponent(2).getValue(SerializerUtils.INT_SRZ);
-			}
-		};
-
-		when(compositeTransformer.buildKeyTransformer(wideMapMeta)).thenReturn(function);
-
-		List<Integer> builtList = factory.createKeyList(wideMapMeta, Arrays.asList(hCol1, hCol2));
-
-		assertThat(builtList).containsExactly(11, 12);
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_create_keyvalue_list_for_dynamic_composite() throws Exception
-	{
-		Composite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 11).buildSimple();
-		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(dynComp1, "test1", 456);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(dynComp2, "test2", 789);
-
-		Function<HColumn<Composite, String>, KeyValue<Integer, String>> function = new Function<HColumn<Composite, String>, KeyValue<Integer, String>>()
-		{
-			@Override
-			public KeyValue<Integer, String> apply(HColumn<Composite, String> hCol)
-			{
-				Integer key = (Integer) hCol.getName().getComponent(2)
-						.getValue(SerializerUtils.INT_SRZ);
-				String value = hCol.getValue();
-
-				return new KeyValue<Integer, String>(key, value, hCol.getTtl());
-			}
-		};
-
-		when((Function) compositeTransformer.buildKeyValueTransformer(context, wideMapMeta))
-				.thenReturn(function);
-
-		List<KeyValue<Integer, String>> builtList = factory.createKeyValueList(context,
-				wideMapMeta, Arrays.asList(hCol1, hCol2));
-
-		assertThat(builtList).hasSize(2);
-
-		assertThat(builtList.get(0).getKey()).isEqualTo(11);
-		assertThat(builtList.get(0).getValue()).isEqualTo("test1");
-		assertThat(builtList.get(0).getTtl()).isEqualTo(456);
-
-		assertThat(builtList.get(1).getKey()).isEqualTo(12);
-		assertThat(builtList.get(1).getValue()).isEqualTo("test2");
-		assertThat(builtList.get(1).getTtl()).isEqualTo(789);
-	}
-
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	@Test
-	public void should_create_join_key_value_list_for_dynamic_composite() throws Exception
-	{
-		Composite dynComp1 = CompositeTestBuilder.builder().values(0, 1, key1).buildSimple();
-		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, key2).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(dynComp1, joinId1.toString(),
-				ttl1);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(dynComp2, joinId2.toString(),
-				ttl2);
-
-		Function<HColumn<Composite, String>, Integer> keyFunction = new Function<HColumn<Composite, String>, Integer>()
-		{
-			@Override
-			public Integer apply(HColumn<Composite, String> hCol)
-			{
-				return (Integer) hCol.getName().getComponent(2).getValue(INT_SRZ);
-			}
-		};
-
-		Function<HColumn<Composite, String>, Object> rawValueFn = new Function<HColumn<Composite, String>, Object>()
-		{
-			@Override
-			public Object apply(HColumn<Composite, String> hCol)
-			{
-				try
-				{
-					return readLong(hCol.getValue());
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-				return hCol.getValue();
-			}
-		};
-		Function<HColumn<Composite, ?>, Integer> ttlFn = new Function<HColumn<Composite, ?>, Integer>()
-		{
-			@Override
-			public Integer apply(HColumn<Composite, ?> hCol)
-			{
-				return hCol.getTtl();
-			}
-		};
-
-		when((Function) compositeTransformer.buildKeyTransformer(propertyMeta)).thenReturn(
-				keyFunction);
-		when((Function) compositeTransformer.buildRawValueTransformer()).thenReturn(rawValueFn);
-		when(compositeTransformer.buildTtlTransformer()).thenReturn(ttlFn);
-
-		List<KeyValue<Integer, UserBean>> builtList = factory.createJoinKeyValueList(context,
-				propertyMeta, Arrays.asList(hCol1, hCol2));
-
-		assertThat(joinIdsCaptor.getValue()).containsExactly(joinId1, joinId2);
-
-		assertThat(builtList).hasSize(2);
-
-		assertThat(builtList.get(0).getKey()).isEqualTo(key1);
-		assertThat(builtList.get(0).getValue()).isEqualTo(bean1);
-		assertThat(builtList.get(0).getTtl()).isEqualTo(ttl1);
-
-		assertThat(builtList.get(1).getKey()).isEqualTo(key2);
-		assertThat(builtList.get(1).getValue()).isEqualTo(bean2);
-		assertThat(builtList.get(1).getTtl()).isEqualTo(ttl2);
-	}
-
 	// Composite
 	@Test
-	public void should_create_keyvalue_from_composite_hcolumn() throws Exception
+	public void should_create_keyvalue() throws Exception
 	{
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
 		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, "test");
@@ -383,7 +140,7 @@ public class KeyValueFactoryTest
 	}
 
 	@Test
-	public void should_create_key_from_composite_hcolumn() throws Exception
+	public void should_create_key() throws Exception
 	{
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
 		HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, "test");
@@ -396,7 +153,7 @@ public class KeyValueFactoryTest
 	}
 
 	@Test
-	public void should_create_value_from_composite_hcolumn() throws Exception
+	public void should_create_value() throws Exception
 	{
 		String value = "test";
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
@@ -414,7 +171,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_value_list_for_composite() throws Exception
+	public void should_create_value_list() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
@@ -445,7 +202,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_join_value_list_for_composite() throws Exception
+	public void should_create_join_value_list() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
@@ -475,7 +232,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_key_list_for_composite() throws Exception
+	public void should_create_key_list() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
@@ -505,7 +262,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_keyvalue_list_for_composite() throws Exception
+	public void should_create_keyvalue_list() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
@@ -548,7 +305,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_join_keyvalue_list_for_composite() throws Exception
+	public void should_create_join_keyvalue_list() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(key1).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(key2).buildSimple();
@@ -604,20 +361,23 @@ public class KeyValueFactoryTest
 	}
 
 	@Test
-	public void should_create_counter_keyvalue_from_dynamic_composite_hcolumn() throws Exception
+	public void should_create_counter_keyvalue() throws Exception
 	{
 		Composite comp = CompositeTestBuilder.builder().buildSimple();
 		HCounterColumn<Composite> hColumn = HColumnTestBuilder.counter(comp, 150L);
 
-		KeyValue<Integer, Long> keyValue = new KeyValue<Integer, Long>(12, 150L);
-		when(compositeTransformer.buildCounterKeyValue(counterMeta, hColumn)).thenReturn(keyValue);
-		KeyValue<Integer, Long> built = factory.createCounterKeyValue(counterMeta, hColumn);
+		KeyValue<Integer, Counter> keyValue = new KeyValue<Integer, Counter>(12,
+				CounterBuilder.incr(150L));
+		when(compositeTransformer.buildCounterKeyValue(context, counterMeta, hColumn)).thenReturn(
+				keyValue);
+		KeyValue<Integer, Counter> built = factory.createCounterKeyValue(context, counterMeta,
+				hColumn);
 
 		assertThat(built).isSameAs(keyValue);
 	}
 
 	@Test
-	public void should_create_counter_key_from_dynamic_composite_hcolumn() throws Exception
+	public void should_create_counter_key() throws Exception
 	{
 		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
 		HCounterColumn<Composite> hColumn = HColumnTestBuilder.counter(dynComp, 150L);
@@ -630,81 +390,87 @@ public class KeyValueFactoryTest
 	}
 
 	@Test
-	public void should_create_counter_value_from_dynamic_composite_hcolumn() throws Exception
+	public void should_create_counter_value() throws Exception
 	{
 		Long value = 150L;
 		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
 		HCounterColumn<Composite> hColumn = HColumnTestBuilder.counter(dynComp, value);
 
-		when(compositeTransformer.buildCounterValue(counterMeta, hColumn)).thenReturn(value);
-		Long built = factory.createCounterValue(counterMeta, hColumn);
+		Counter counter = CounterBuilder.incr(value);
+		when(compositeTransformer.buildCounterValue(context, counterMeta, hColumn)).thenReturn(
+				counter);
+		Counter built = factory.createCounterValue(context, counterMeta, hColumn);
 
-		assertThat(built).isEqualTo(value);
+		assertThat(built).isEqualTo(counter);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_create_counter_keyvalue_list_for_dynamic_composite() throws Exception
+	public void should_create_counter_keyvalue_list() throws Exception
 	{
 		Composite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 1).buildSimple();
 		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 2).buildSimple();
 		HCounterColumn<Composite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
 		HCounterColumn<Composite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
 
-		Function<HCounterColumn<Composite>, KeyValue<Integer, Long>> function = new Function<HCounterColumn<Composite>, KeyValue<Integer, Long>>()
+		Function<HCounterColumn<Composite>, KeyValue<Integer, Counter>> function = new Function<HCounterColumn<Composite>, KeyValue<Integer, Counter>>()
 		{
 			@Override
-			public KeyValue<Integer, Long> apply(HCounterColumn<Composite> hCol)
+			public KeyValue<Integer, Counter> apply(HCounterColumn<Composite> hCol)
 			{
 				Integer key = (Integer) hCol.getName().getComponent(2)
 						.getValue(SerializerUtils.INT_SRZ);
-				Long value = hCol.getValue();
+				Counter value = CounterBuilder.incr(hCol.getValue());
 
-				return new KeyValue<Integer, Long>(key, value, 0);
+				return new KeyValue<Integer, Counter>(key, value, 0);
 			}
 		};
 
-		when(compositeTransformer.buildCounterKeyValueTransformer(counterMeta))
+		when(compositeTransformer.buildCounterKeyValueTransformer(context, counterMeta))
 				.thenReturn(function);
 
-		List<KeyValue<Integer, Long>> builtList = factory.createCounterKeyValueList(counterMeta,
-				Arrays.asList(hCol1, hCol2));
+		List<KeyValue<Integer, Counter>> builtList = factory.createCounterKeyValueList(context,
+				counterMeta, Arrays.asList(hCol1, hCol2));
 
 		assertThat(builtList).hasSize(2);
 
 		assertThat(builtList.get(0).getKey()).isEqualTo(1);
-		assertThat(builtList.get(0).getValue()).isEqualTo(11L);
+		assertThat(builtList.get(0).getValue().get()).isEqualTo(11L);
 		assertThat(builtList.get(0).getTtl()).isEqualTo(0);
 
 		assertThat(builtList.get(1).getKey()).isEqualTo(2);
-		assertThat(builtList.get(1).getValue()).isEqualTo(12L);
+		assertThat(builtList.get(1).getValue().get()).isEqualTo(12L);
 		assertThat(builtList.get(1).getTtl()).isEqualTo(0);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_create_counter_value_list_for_dynamic_composite() throws Exception
+	public void should_create_counter_value_list() throws Exception
 	{
 		Composite dynComp1 = CompositeTestBuilder.builder().buildSimple();
 		Composite dynComp2 = CompositeTestBuilder.builder().buildSimple();
 		HCounterColumn<Composite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
 		HCounterColumn<Composite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
 
-		Function<HCounterColumn<Composite>, Long> function = new Function<HCounterColumn<Composite>, Long>()
+		Function<HCounterColumn<Composite>, Counter> function = new Function<HCounterColumn<Composite>, Counter>()
 		{
 			@Override
-			public Long apply(HCounterColumn<Composite> hCol)
+			public Counter apply(HCounterColumn<Composite> hCol)
 			{
-				return hCol.getValue();
+				return CounterBuilder.incr(hCol.getValue());
 			}
 		};
 
-		when(compositeTransformer.buildCounterValueTransformer(counterMeta)).thenReturn(function);
+		when(compositeTransformer.buildCounterValueTransformer(context, counterMeta)).thenReturn(
+				function);
 
-		List<Long> builtList = factory.createCounterValueList(counterMeta,
+		List<Counter> builtList = factory.createCounterValueList(context, counterMeta,
 				Arrays.asList(hCol1, hCol2));
 
-		assertThat(builtList).containsExactly(11L, 12L);
+		assertThat(builtList).hasSize(2);
+		assertThat(builtList.get(0).get()).isEqualTo(hCol1.getValue());
+		assertThat(builtList.get(1).get()).isEqualTo(hCol2.getValue());
+
 	}
 
 	@SuppressWarnings(
@@ -713,7 +479,7 @@ public class KeyValueFactoryTest
 			"rawtypes"
 	})
 	@Test
-	public void should_create_counter_key_list_for_dynamic_composite() throws Exception
+	public void should_create_counter_key_list() throws Exception
 	{
 		Composite dynComp1 = CompositeTestBuilder.builder().values(0, 1, 1).buildSimple();
 		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 2).buildSimple();
@@ -748,17 +514,12 @@ public class KeyValueFactoryTest
 	}
 
 	@Test
-	public void should_create_counter_ttl_for_dynamic_composite() throws Exception
+	public void should_create_counter_ttl() throws Exception
 	{
 		Composite name = new Composite();
 		HColumn<Composite, String> hCol = HColumnTestBuilder.simple(name, "test", 12);
 
 		assertThat(factory.createTtl(hCol)).isEqualTo(12);
-	}
-
-	private Long readLong(String value) throws Exception
-	{
-		return objectMapper.readValue(value, Long.class);
 	}
 
 }

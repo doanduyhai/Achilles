@@ -20,6 +20,7 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.wrapper.CounterBuilder;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
@@ -167,9 +168,9 @@ public class BatchModeIT
 		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
 		entity.setWelcomeTweet(welcomeTweet);
 
-		entity.setVersion(10);
-		entity.getPopularTopics().insert("java", 100L);
-		entity.getPopularTopics().insert("scala", 35L);
+		entity.getVersion().incr(10L);
+		entity.getPopularTopics().insert("java", CounterBuilder.incr(100L));
+		entity.getPopularTopics().insert("scala", CounterBuilder.incr(35L));
 		batchEm.merge(entity);
 
 		Composite labelComposite = new Composite();
@@ -198,10 +199,11 @@ public class BatchModeIT
 		Composite javaCounterName = createWideMapCounterName("java");
 		Composite scalaCounterName = createWideMapCounterName("scala");
 
-		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(0L);
-		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(0L);
-		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName))
-				.isEqualTo(0L);
+		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(
+				100L);
+		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName)).isEqualTo(
+				35L);
 
 		// Flush
 		batchEm.endBatch();

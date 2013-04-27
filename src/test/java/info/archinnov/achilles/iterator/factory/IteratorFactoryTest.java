@@ -4,6 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AbstractAchillesSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
@@ -61,7 +62,7 @@ public class IteratorFactoryTest
 	private PropertyMeta<Integer, String> multiKeyWideMapMeta;
 
 	@Mock
-	private PropertyMeta<Integer, Long> counterWideMapMeta;
+	private PropertyMeta<Integer, Counter> counterWideMapMeta;
 
 	@Mock
 	private PersistenceContext<Long> context;
@@ -125,8 +126,8 @@ public class IteratorFactoryTest
 	@Test
 	public void should_create_counter_key_value_iterator() throws Exception
 	{
-		KeyValueIterator<Integer, Long> iterator = factory.createCounterKeyValueIterator(
-				counterSliceIterator, counterWideMapMeta);
+		KeyValueIterator<Integer, Counter> iterator = factory.createCounterKeyValueIterator(
+				context, counterSliceIterator, counterWideMapMeta);
 
 		when(counterSliceIterator.hasNext()).thenReturn(true, false, true);
 

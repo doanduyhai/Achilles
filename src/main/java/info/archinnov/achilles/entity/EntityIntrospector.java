@@ -7,6 +7,7 @@ import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
@@ -151,13 +152,13 @@ public class EntityIntrospector
 		Method[] accessors = new Method[2];
 
 		accessors[0] = findGetter(beanClass, field);
-		if (field.getType() != WideMap.class)
+		if (field.getType() == WideMap.class || field.getType() == Counter.class)
 		{
-			accessors[1] = findSetter(beanClass, field);
+			accessors[1] = null;
 		}
 		else
 		{
-			accessors[1] = null;
+			accessors[1] = findSetter(beanClass, field);
 		}
 
 		return accessors;

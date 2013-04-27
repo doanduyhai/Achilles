@@ -268,7 +268,7 @@ public class EntityParserTest
 		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(entityContext.getHasCounter()).isTrue();
+		assertThat(entityContext.getHasSimpleCounter()).isTrue();
 		PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
 		assertThat(idMeta).isNotNull();
 		PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counter");
@@ -290,7 +290,7 @@ public class EntityParserTest
 		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(entityContext.getHasCounter()).isTrue();
+		assertThat(entityContext.getHasSimpleCounter()).isFalse();
 		PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
 		assertThat(idMeta).isNotNull();
 		PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counters");

@@ -1,12 +1,15 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
@@ -146,26 +149,26 @@ public class CompositeTransformer
 		return key;
 	}
 
-	public <K, V> Function<HCounterColumn<Composite>, KeyValue<K, Long>> buildCounterKeyValueTransformer(
-			final PropertyMeta<K, Long> propertyMeta)
+	public <ID, K, V> Function<HCounterColumn<Composite>, KeyValue<K, Counter>> buildCounterKeyValueTransformer(
+			final PersistenceContext<ID> context, final PropertyMeta<K, Counter> propertyMeta)
 	{
-		return new Function<HCounterColumn<Composite>, KeyValue<K, Long>>()
+		return new Function<HCounterColumn<Composite>, KeyValue<K, Counter>>()
 		{
 			@Override
-			public KeyValue<K, Long> apply(HCounterColumn<Composite> hColumn)
+			public KeyValue<K, Counter> apply(HCounterColumn<Composite> hColumn)
 			{
-				return buildCounterKeyValue(propertyMeta, hColumn);
+				return buildCounterKeyValue(context, propertyMeta, hColumn);
 			}
 		};
 	}
 
-	public <K> KeyValue<K, Long> buildCounterKeyValue(PropertyMeta<K, Long> propertyMeta,
-			HCounterColumn<Composite> hColumn)
+	public <ID, K> KeyValue<K, Counter> buildCounterKeyValue(PersistenceContext<ID> context,
+			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		K key = buildCounterKey(propertyMeta, hColumn);
-		Long value = buildCounterValue(propertyMeta, hColumn);
+		Counter value = buildCounterValue(context, propertyMeta, hColumn);
 
-		return new KeyValue<K, Long>(key, value, 0);
+		return new KeyValue<K, Counter>(key, value, 0);
 	}
 
 	public <K> K buildCounterKey(PropertyMeta<K, ?> propertyMeta, HCounterColumn<Composite> hColumn)
@@ -187,21 +190,31 @@ public class CompositeTransformer
 		return key;
 	}
 
-	public <K> Long buildCounterValue(PropertyMeta<K, Long> propertyMeta,
-			HCounterColumn<Composite> hColumn)
+	@SuppressWarnings("unchecked")
+	public <ID, K> Counter buildCounterValue(PersistenceContext<ID> context,
+			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
-		return propertyMeta.castValue(hColumn.getValue());
+		return CounterWrapperBuilder.builder(context.getPrimaryKey()) //
+				.columnName(hColumn.getName())
+				//
+				.counterDao(
+						(GenericColumnFamilyDao<ID, Long>) context.findColumnFamilyDao(propertyMeta
+								.getExternalCFName())) //
+				.readLevel(propertyMeta.getReadConsistencyLevel()) //
+				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
+				.policy(context.getPolicy())//
+				.build();
 	}
 
-	public <K> Function<HCounterColumn<Composite>, Long> buildCounterValueTransformer(
-			final PropertyMeta<K, Long> propertyMeta)
+	public <ID, K> Function<HCounterColumn<Composite>, Counter> buildCounterValueTransformer(
+			final PersistenceContext<ID> context, final PropertyMeta<K, Counter> propertyMeta)
 	{
-		return new Function<HCounterColumn<Composite>, Long>()
+		return new Function<HCounterColumn<Composite>, Counter>()
 		{
 			@Override
-			public Long apply(HCounterColumn<Composite> hColumn)
+			public Counter apply(HCounterColumn<Composite> hColumn)
 			{
-				return hColumn.getValue();
+				return buildCounterValue(context, propertyMeta, hColumn);
 			}
 		};
 	}

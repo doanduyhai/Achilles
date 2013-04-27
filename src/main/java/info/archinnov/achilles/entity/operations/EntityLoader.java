@@ -83,9 +83,6 @@ public class EntityLoader
 			case LAZY_SIMPLE:
 				value = loaderImpl.loadSimpleProperty(context, propertyMeta);
 				break;
-			case COUNTER:
-				value = loaderImpl.loadSimpleCounterProperty(context, propertyMeta);
-				break;
 			case LIST:
 			case LAZY_LIST:
 				value = loaderImpl.loadListProperty(context, propertyMeta);

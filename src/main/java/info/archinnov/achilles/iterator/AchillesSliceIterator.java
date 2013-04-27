@@ -12,7 +12,7 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
+import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 
 import java.util.Iterator;
 

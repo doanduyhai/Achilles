@@ -5,7 +5,6 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -193,20 +192,6 @@ public class PropertyHelperTest
 	}
 
 	@Test
-	public void should_check_counter_annotation() throws Exception
-	{
-		class Test
-		{
-			@Counter
-			private String counter;
-		}
-
-		Field field = Test.class.getDeclaredField("counter");
-
-		assertThat(helper.hasCounterAnnotation(field)).isTrue();
-	}
-
-	@Test
 	public void should_check_consistency_annotation() throws Exception
 	{
 		class Test
@@ -321,8 +306,8 @@ public class PropertyHelperTest
 		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 
-		TweetMultiKey multiKey = helper.buildMultiKeyFromComposite(multiKeyWideMeta, hCol1.getName()
-				.getComponents());
+		TweetMultiKey multiKey = helper.buildMultiKeyFromComposite(multiKeyWideMeta, hCol1
+				.getName().getComponents());
 
 		assertThat(multiKey.getAuthor()).isEqualTo("author1");
 		assertThat(multiKey.getId()).isEqualTo(uuid1);

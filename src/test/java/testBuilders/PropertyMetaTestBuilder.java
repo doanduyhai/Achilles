@@ -9,7 +9,9 @@ import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.entity.type.WideMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -108,7 +110,12 @@ public class PropertyMetaTestBuilder<T, K, V>
 		{
 			Field declaredField = clazz.getDeclaredField(field);
 			propertyMeta.setGetter(entityIntrospector.findGetter(clazz, declaredField));
-			propertyMeta.setSetter(entityIntrospector.findSetter(clazz, declaredField));
+			Class<?> fieldClass = declaredField.getType();
+			if (!WideMap.class.isAssignableFrom(fieldClass)
+					&& !Counter.class.isAssignableFrom(fieldClass))
+			{
+				propertyMeta.setSetter(entityIntrospector.findSetter(clazz, declaredField));
+			}
 		}
 
 		if (joinMeta != null || !cascadeTypes.isEmpty())

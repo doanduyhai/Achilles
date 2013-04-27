@@ -228,7 +228,7 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 
 			EntityMeta<?> entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
-			createCounterCf = context.getHasCounter() || createCounterCf;
+			createCounterCf = context.getHasSimpleCounter() || createCounterCf;
 		}
 
 		entityParser.fillJoinEntityMeta(new EntityParsingContext( //

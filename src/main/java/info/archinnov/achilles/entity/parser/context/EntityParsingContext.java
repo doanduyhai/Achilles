@@ -134,12 +134,12 @@ public class EntityParsingContext
 		this.propertyMetas = propertyMetas;
 	}
 
-	public Boolean getHasCounter()
+	public Boolean getHasSimpleCounter()
 	{
 		return hasCounter;
 	}
 
-	public void setHasCounter(Boolean hasCounter)
+	public void setHasSimpleCounter(Boolean hasCounter)
 	{
 		this.hasCounter = hasCounter;
 	}

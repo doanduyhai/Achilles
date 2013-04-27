@@ -26,7 +26,6 @@ public class PropertyParsingContext
 	private String currentExternalTableName;
 	private boolean joinColumn = false;
 	private boolean isCustomConsistencyLevels;
-	private boolean counterType;
 	private boolean primaryKey = false;
 
 	public PropertyParsingContext(EntityParsingContext context, //
@@ -141,15 +140,9 @@ public class PropertyParsingContext
 		this.isCustomConsistencyLevels = isCustomConsistencyLevels;
 	}
 
-	public boolean isCounterType()
+	public void hasSimpleCounterType()
 	{
-		return counterType;
-	}
-
-	public void setCounterType(boolean counterType)
-	{
-		this.counterType = counterType;
-		context.setHasCounter(counterType);
+		context.setHasSimpleCounter(true);
 	}
 
 	public boolean isPrimaryKey()

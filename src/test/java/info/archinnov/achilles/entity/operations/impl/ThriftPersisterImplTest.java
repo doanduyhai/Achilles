@@ -22,6 +22,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.serializer.SerializerUtils;
@@ -202,43 +203,6 @@ public class ThriftPersisterImplTest
 		thriftPersister.batchPersistSimpleProperty(context, propertyMeta);
 
 		verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue", mutator);
-
-	}
-
-	@Test
-	public void should_batch_persist_counter() throws Exception
-	{
-		String fqcn = CompleteBean.class.getCanonicalName();
-		Long counterValue = 123L;
-
-		PropertyMeta<Void, Long> counterIdMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
-				.build();
-		PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("count") //
-				.accesors() //
-				.counterIdMeta(counterIdMeta) //
-				.fqcn(fqcn) //
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
-				.build();
-
-		Composite keyComp = new Composite();
-		Composite comp = new Composite();
-		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
-				keyComp);
-		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
-
-		when(introspector.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(
-				counterValue);
-		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
-		thriftPersister.batchPersistCounter(context, propertyMeta);
-
-		verify(policy).setCurrentWriteLevel(ALL);
-		verify(counterDao).insertCounterBatch(keyComp, comp, counterValue, counterMutator);
-		verify(policy).removeCurrentWriteLevel();
 
 	}
 
@@ -535,7 +499,8 @@ public class ThriftPersisterImplTest
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("external_cf"))
 				.thenReturn(columnFamilyDao);
-		when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(cfMutator);
+		when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(
+				cfMutator);
 
 		thriftPersister.remove(context);
 		verify(entityDao).removeRowBatch(entity.getId(), mutator);
@@ -553,8 +518,8 @@ public class ThriftPersisterImplTest
 				.field("id") //
 				.accesors() //
 				.build();
-		PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
+		PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder //
+				.completeBean(Void.class, Counter.class) //
 				.field("count") //
 				.type(PropertyType.COUNTER) //
 				.accesors() //
@@ -563,7 +528,7 @@ public class ThriftPersisterImplTest
 				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
 				.build();
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		Map<String, PropertyMeta<Void, Long>> propertyMetas = ImmutableMap.of("geoPositions",
+		Map<String, PropertyMeta<Void, Counter>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 
@@ -591,8 +556,8 @@ public class ThriftPersisterImplTest
 				.field("id") //
 				.accesors() //
 				.build();
-		PropertyMeta<String, Long> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(String.class, Long.class) //
+		PropertyMeta<String, Counter> propertyMeta = PropertyMetaTestBuilder //
+				.completeBean(String.class, Counter.class) //
 				.field("popularTopics") //
 				.type(PropertyType.WIDE_MAP_COUNTER) //
 				.accesors() //
@@ -602,7 +567,7 @@ public class ThriftPersisterImplTest
 				.build();
 
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		Map<String, PropertyMeta<String, Long>> propertyMetas = ImmutableMap.of("geoPositions",
+		Map<String, PropertyMeta<String, Counter>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 

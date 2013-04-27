@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.*;
+import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -37,7 +38,6 @@ public class EntityPersister
 
 	public <ID> void persist(PersistenceContext<ID> context)
 	{
-
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
 		if (!entityMeta.isColumnFamilyDirectMapping())
@@ -65,9 +65,6 @@ public class EntityPersister
 			case SIMPLE:
 			case LAZY_SIMPLE:
 				persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
-				break;
-			case COUNTER:
-				persisterImpl.batchPersistCounter(context, (PropertyMeta<Void, Long>) propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
@@ -138,7 +135,8 @@ public class EntityPersister
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
 			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
-					context.findEntityDao(joinMeta.getColumnFamilyName()));
+					(GenericEntityDao<JOIN_ID>) context.findEntityDao(joinMeta
+							.getColumnFamilyName()));
 			Validator
 					.validateNotNull(
 							joinVersionSerialUID,

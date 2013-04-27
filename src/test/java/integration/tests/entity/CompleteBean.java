@@ -1,8 +1,8 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.entity.type.WideMap;
 
@@ -70,13 +70,11 @@ public class CompleteBean implements Serializable
 	@Column(table = "MultiKeyExternalWideMap")
 	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
 
-	@Counter
 	@Column
-	private long version;
+	private Counter version;
 
-	@Counter
 	@Column(table = "complete_bean_popular_topics")
-	private WideMap<String, Long> popularTopics;
+	private WideMap<String, Counter> popularTopics;
 
 	public Long getId()
 	{
@@ -188,24 +186,14 @@ public class CompleteBean implements Serializable
 		return multiKeyExternalWideMap;
 	}
 
-	public long getVersion()
+	public Counter getVersion()
 	{
 		return version;
 	}
 
-	public void setVersion(long version)
-	{
-		this.version = version;
-	}
-
-	public WideMap<String, Long> getPopularTopics()
+	public WideMap<String, Counter> getPopularTopics()
 	{
 		return popularTopics;
-	}
-
-	public void setPopularTopics(WideMap<String, Long> popularTopics)
-	{
-		this.popularTopics = popularTopics;
 	}
 
 	public static class UserTweetKey implements MultiKey

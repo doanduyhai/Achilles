@@ -4,8 +4,6 @@ import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
@@ -96,33 +94,6 @@ public class ThriftPersisterImpl
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
 					context.getEntityMutator(context.getColumnFamilyName()));
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <ID> void batchPersistCounter(PersistenceContext<ID> context,
-			PropertyMeta<Void, Long> propertyMeta)
-	{
-		String fqcn = propertyMeta.fqcn();
-		PropertyMeta<Void, ID> idMeta = (PropertyMeta<Void, ID>) propertyMeta.counterIdMeta();
-
-		Composite keyComp = compositeFactory.createKeyForCounter(fqcn, context.getPrimaryKey(),
-				idMeta);
-		Composite comp = compositeFactory.createForBatchInsertSingleCounter(propertyMeta);
-		Object counterValue = introspector.getValueFromField(context.getEntity(),
-				propertyMeta.getGetter());
-
-		if (counterValue != null)
-		{
-			if (log.isTraceEnabled())
-			{
-				log.trace(
-						"Batch persisting counter property {} from entity of class {} and primary key {} with column name {} and consistency level {}",
-						propertyMeta.getPropertyName(),
-						context.getEntityClass().getCanonicalName(), format(keyComp), format(comp),
-						propertyMeta.getWriteConsistencyLevel());
-			}
-			insertCounterWithConsistencyLevel(context, propertyMeta, keyComp, comp, counterValue);
 		}
 	}
 
@@ -351,6 +322,7 @@ public class ThriftPersisterImpl
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private <ID> void removeWideMap(PersistenceContext<ID> context, ID primaryKey,
 			PropertyMeta<?, ?> propertyMeta)
 	{
@@ -359,7 +331,7 @@ public class ThriftPersisterImpl
 				context.getPrimaryKey());
 
 		String externalColumnFamilyName = propertyMeta.getExternalCFName();
-		GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = context
+		GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = (GenericColumnFamilyDao<ID, ?>) context
 				.findColumnFamilyDao(externalColumnFamilyName);
 		findColumnFamilyDao.removeRowBatch(primaryKey,
 				context.getColumnFamilyMutator(externalColumnFamilyName));
@@ -381,31 +353,6 @@ public class ThriftPersisterImpl
 		}
 		context.getEntityDao().removeColumnRangeBatch(context.getPrimaryKey(), start, end,
 				context.getEntityMutator(context.getColumnFamilyName()));
-	}
-
-	private <ID> void insertCounterWithConsistencyLevel(PersistenceContext<ID> context,
-			PropertyMeta<Void, Long> propertyMeta, Composite keyComp, Composite comp,
-			Object counterValue)
-	{
-		CounterDao dao = context.getCounterDao();
-		AchillesConfigurableConsistencyLevelPolicy policy = context.getPolicy();
-		boolean resetConsistencyLevel = false;
-		if (policy.getCurrentWriteLevel() == null)
-		{
-			policy.setCurrentWriteLevel(propertyMeta.getWriteConsistencyLevel());
-			resetConsistencyLevel = true;
-		}
-		try
-		{
-			dao.insertCounterBatch(keyComp, comp, (Long) counterValue, context.getCounterMutator());
-		}
-		finally
-		{
-			if (resetConsistencyLevel)
-			{
-				policy.removeCurrentWriteLevel();
-			}
-		}
 	}
 
 	@SuppressWarnings("unchecked")

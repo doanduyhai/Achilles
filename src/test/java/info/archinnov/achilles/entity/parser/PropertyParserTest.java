@@ -5,7 +5,6 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
@@ -16,6 +15,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -231,18 +231,12 @@ public class PropertyParserTest
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Counter
 			@Column
-			private Long counter;
+			private Counter counter;
 
-			public Long getCounter()
+			public Counter getCounter()
 			{
 				return counter;
-			}
-
-			public void setCounter(Long counter)
-			{
-				this.counter = counter;
 			}
 		}
 		PropertyParsingContext context = newContext(Test.class,
@@ -257,54 +251,20 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_parse_counter_property_with_long_primitive() throws Exception
-	{
-		@SuppressWarnings("unused")
-		class Test
-		{
-			@Counter
-			@Column
-			private long counter;
-
-			public long getCounter()
-			{
-				return counter;
-			}
-
-			public void setCounter(long counter)
-			{
-				this.counter = counter;
-			}
-		}
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("counter"));
-		PropertyMeta<?, ?> meta = parser.parse(context);
-
-		assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
-		assertThat(meta.getCounterProperties()).isNotNull();
-		assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
-	}
-
-	@Test
 	public void should_parse_counter_property_with_consistency_level() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
 		{
 			@Consistency(read = ONE, write = ALL)
-			@Counter
 			@Column
-			private long counter;
+			private Counter counter;
 
-			public long getCounter()
+			public Counter getCounter()
 			{
 				return counter;
 			}
 
-			public void setCounter(long counter)
-			{
-				this.counter = counter;
-			}
 		}
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("counter"));
@@ -316,56 +276,20 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_exception_when_counter_type_is_not_long() throws Exception
-	{
-		@SuppressWarnings("unused")
-		class Test
-		{
-			@Counter
-			@Column
-			private String counter;
-
-			public String getCounter()
-			{
-				return counter;
-			}
-
-			public void setCounter(String counter)
-			{
-				this.counter = counter;
-			}
-		}
-
-		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("Wrong counter type for the field 'counter'. Only java.lang.Long and primitive long are allowed for @Counter types");
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("counter"));
-		parser.parse(context);
-	}
-
-	@Test
 	public void should_exception_when_counter_consistency_is_any_for_read() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
 		{
 			@Consistency(read = ANY, write = ALL)
-			@Counter
 			@Column
-			private Long counter;
+			private Counter counter;
 
-			public Long getCounter()
+			public Counter getCounter()
 			{
 				return counter;
 			}
-
-			public void setCounter(Long counter)
-			{
-				this.counter = counter;
-			}
 		}
-
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
 				.expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
@@ -381,18 +305,12 @@ public class PropertyParserTest
 		class Test
 		{
 			@Consistency(read = ONE, write = ANY)
-			@Counter
 			@Column
-			private Long counter;
+			private Counter counter;
 
-			public Long getCounter()
+			public Counter getCounter()
 			{
 				return counter;
-			}
-
-			public void setCounter(Long counter)
-			{
-				this.counter = counter;
 			}
 		}
 
@@ -658,39 +576,34 @@ public class PropertyParserTest
 		parser.parse(context);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_parse_counter_widemap() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Counter
 			@Column(table = "counter_xxx")
-			private WideMap<UUID, Long> counters;
+			private WideMap<UUID, Counter> counters;
 
-			public WideMap<UUID, Long> getCounters()
+			public WideMap<UUID, Counter> getCounters()
 			{
 				return counters;
-			}
-
-			public void setCounters(WideMap<UUID, Long> counters)
-			{
-				this.counters = counters;
 			}
 		}
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("counters"));
-		PropertyMeta<UUID, Long> meta = (PropertyMeta<UUID, Long>) parser.parse(context);
+		PropertyMeta<UUID, Counter> meta = (PropertyMeta<UUID, Counter>) parser.parse(context);
 
 		assertThat(meta.type()).isEqualTo(WIDE_MAP_COUNTER);
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
 		assertThat(meta.getExternalCFName()).isEqualTo("counter_xxx");
-		assertThat((Class<Long>) meta.getValueClass()).isEqualTo(Long.class);
-		assertThat((Serializer<Long>) meta.getValueSerializer()).isEqualTo(LONG_SRZ);
+		assertThat((Class<Counter>) meta.getValueClass()).isEqualTo(Counter.class);
+		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(OBJECT_SRZ);
 		assertThat((Class<UUID>) meta.getKeyClass()).isEqualTo(UUID.class);
 		assertThat((Serializer<UUID>) meta.getKeySerializer()).isEqualTo(UUID_SRZ);
 
-		assertThat((PropertyMeta<UUID, Long>) context.getCounterMetas().get(0)).isSameAs(meta);
+		assertThat((PropertyMeta<UUID, Counter>) context.getCounterMetas().get(0)).isSameAs(meta);
 	}
 
 	@Test
@@ -699,11 +612,10 @@ public class PropertyParserTest
 		@SuppressWarnings("unused")
 		class Test
 		{
-			@Counter
 			@Column
-			private WideMap<UUID, Long> counterWideMap;
+			private WideMap<UUID, Counter> counterWideMap;
 
-			public WideMap<UUID, Long> getCounterWideMap()
+			public WideMap<UUID, Counter> getCounterWideMap()
 			{
 				return counterWideMap;
 			}

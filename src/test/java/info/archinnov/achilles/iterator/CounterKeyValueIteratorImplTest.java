@@ -2,10 +2,13 @@ package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
+import info.archinnov.achilles.wrapper.CounterBuilder;
 
 import java.util.NoSuchElementException;
 
@@ -36,7 +39,10 @@ public class CounterKeyValueIteratorImplTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private CounterKeyValueIteratorImpl<Integer> iterator;
+	private CounterKeyValueIteratorImpl<Long, Integer> iterator;
+
+	@Mock
+	private PersistenceContext<Long> context;
 
 	@Mock
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;
@@ -45,7 +51,7 @@ public class CounterKeyValueIteratorImplTest
 	private KeyValueFactory factory;
 
 	@Mock
-	private PropertyMeta<Integer, Long> propertyMeta;
+	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Before
 	public void setUp()
@@ -65,13 +71,13 @@ public class CounterKeyValueIteratorImplTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_gitve_next_key_value() throws Exception
+	public void should_give_next_key_value() throws Exception
 	{
-		KeyValue<Integer, Long> keyValue = new KeyValue<Integer, Long>();
+		KeyValue<Integer, Counter> keyValue = new KeyValue<Integer, Counter>();
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
 		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		when(factory.createCounterKeyValue(propertyMeta, hColumn)).thenReturn(keyValue);
+		when(factory.createCounterKeyValue(context, propertyMeta, hColumn)).thenReturn(keyValue);
 
 		assertThat(iterator.next()).isSameAs(keyValue);
 	}
@@ -104,14 +110,15 @@ public class CounterKeyValueIteratorImplTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_gitve_next_value() throws Exception
+	public void should_give_next_value() throws Exception
 	{
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
 		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		when(factory.createCounterValue(propertyMeta, hColumn)).thenReturn(12L);
+		Counter counter = CounterBuilder.incr(12L);
+		when(factory.createCounterValue(context, propertyMeta, hColumn)).thenReturn(counter);
 
-		assertThat(iterator.nextValue()).isEqualTo(12L);
+		assertThat(iterator.nextValue()).isEqualTo(counter);
 	}
 
 	@Test(expected = NoSuchElementException.class)

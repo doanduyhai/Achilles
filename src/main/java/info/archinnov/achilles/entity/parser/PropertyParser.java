@@ -17,6 +17,7 @@ import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
@@ -60,7 +61,6 @@ public class PropertyParser
 
 		Field field = context.getCurrentField();
 		inferPropertyNameAndExternalTableName(context);
-		context.setCounterType(propertyHelper.hasCounterAnnotation(field));
 		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context
 				.getCurrentField()));
 
@@ -83,7 +83,10 @@ public class PropertyParser
 		{
 			propertyMeta = parseMapProperty(context);
 		}
-
+		else if (Counter.class.isAssignableFrom(fieldType))
+		{
+			propertyMeta = parseCounterProperty(context);
+		}
 		else if (WideMap.class.isAssignableFrom(fieldType))
 		{
 			propertyMeta = parseWideMapProperty(context);
@@ -111,17 +114,35 @@ public class PropertyParser
 		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
 				+ "' should be Serializable");
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-		PropertyType type;
-		CounterProperties counterProperties = null;
-		if (context.isCounterType())
-		{
-			counterProperties = buildCounterProperties(field.getType(), context);
-			type = PropertyType.COUNTER;
-		}
-		else
-		{
-			type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
-		}
+		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+
+		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
+				.objectMapper(context.getCurrentObjectMapper()) //
+				.type(type) //
+				.propertyName(context.getCurrentPropertyName()) //
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
+				.accessors(accessors) //
+				.consistencyLevels(context.getCurrentConsistencyLevels()) //
+				.build();
+
+		log.trace("Built simple property meta for property {} of entity class {} : {}",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
+				propertyMeta);
+		return propertyMeta;
+	}
+
+	public PropertyMeta<Void, ?> parseCounterProperty(PropertyParsingContext context)
+	{
+		log.debug("Parsing property {} as counter property of entity class {}", context
+				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+
+		Class<?> entityClass = context.getCurrentEntityClass();
+		Field field = context.getCurrentField();
+
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		PropertyType type = PropertyType.COUNTER;
+		CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass()
+				.getCanonicalName());
 
 		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
 				.objectMapper(context.getCurrentObjectMapper()) //
@@ -133,13 +154,11 @@ public class PropertyParser
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.build();
 
-		if (context.isCounterType())
+		context.hasSimpleCounterType();
+		context.getCounterMetas().add(propertyMeta);
+		if (context.isCustomConsistencyLevels())
 		{
-			context.getCounterMetas().add(propertyMeta);
-			if (context.isCustomConsistencyLevels())
-			{
-				parseSimpleCounterConsistencyLevel(context, propertyMeta);
-			}
+			parseSimpleCounterConsistencyLevel(context, propertyMeta);
 		}
 
 		log.trace("Built simple property meta for property {} of entity class {} : {}",
@@ -270,13 +289,15 @@ public class PropertyParser
 		Pair<Class<?>, Class<?>> types = determineMapGenericTypes(field);
 		Class<?> keyClass = types.left;
 		Class<?> valueClass = types.right;
+		boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
 
 		// Multi or Single Key
 		multiKeyProperties = parseWideMapMultiKey(multiKeyProperties, keyClass);
 
-		if (context.isCounterType())
+		if (isCounterValueType)
 		{
-			counterProperties = buildCounterProperties(valueClass, context);
+			counterProperties = new CounterProperties(context.getCurrentEntityClass()
+					.getCanonicalName());
 			type = WIDE_MAP_COUNTER;
 		}
 
@@ -295,7 +316,7 @@ public class PropertyParser
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.build();
 
-		if (context.isCounterType())
+		if (isCounterValueType)
 		{
 			context.getCounterMetas().add(propertyMeta);
 		}
@@ -482,24 +503,24 @@ public class PropertyParser
 		}
 	}
 
-	private <T> CounterProperties buildCounterProperties(Class<T> valueClass,
-			PropertyParsingContext context)
-	{
-		log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
-		CounterProperties counterProperties;
-		PropertyParsingValidator
-				.validateAllowedTypes(
-						valueClass,
-						allowedCounterTypes,
-						"Wrong counter type for the field '"
-								+ context.getCurrentField().getName()
-								+ "'. Only java.lang.Long and primitive long are allowed for @Counter types");
-		counterProperties = new CounterProperties(context.getCurrentEntityClass()
-				.getCanonicalName());
-
-		log.trace("Built counter properties : {}", counterProperties);
-		return counterProperties;
-	}
+	// private <T> CounterProperties buildCounterProperties(Class<T> valueClass,
+	// PropertyParsingContext context)
+	// {
+	// log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
+	// CounterProperties counterProperties;
+	// PropertyParsingValidator
+	// .validateAllowedTypes(
+	// valueClass,
+	// allowedCounterTypes,
+	// "Wrong counter type for the field '"
+	// + context.getCurrentField().getName()
+	// + "'. Only java.lang.Long and primitive long are allowed for @Counter types");
+	// counterProperties = new CounterProperties(context.getCurrentEntityClass()
+	// .getCanonicalName());
+	//
+	// log.trace("Built counter properties : {}", counterProperties);
+	// return counterProperties;
+	// }
 
 	private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)

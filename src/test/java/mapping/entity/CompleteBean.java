@@ -1,8 +1,8 @@
 package mapping.entity;
 
-import info.archinnov.achilles.annotations.Counter;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.entity.type.WideMap;
 
@@ -72,13 +72,11 @@ public class CompleteBean implements Serializable
 	@JoinColumn(table = "join_users")
 	private WideMap<Long, UserBean> joinUsers;
 
-	@Counter
 	@Column
-	private Long count;
+	private Counter count;
 
-	@Counter
 	@Column
-	private WideMap<String, Long> popularTopics;
+	private WideMap<String, Counter> popularTopics;
 
 	public Long getId()
 	{
@@ -195,24 +193,14 @@ public class CompleteBean implements Serializable
 		return joinUsers;
 	}
 
-	public Long getCount()
+	public Counter getCount()
 	{
 		return count;
 	}
 
-	public void setCount(Long count)
-	{
-		this.count = count;
-	}
-
-	public WideMap<String, Long> getPopularTopics()
+	public WideMap<String, Counter> getPopularTopics()
 	{
 		return popularTopics;
-	}
-
-	public void setPopularTopics(WideMap<String, Long> popularTopics)
-	{
-		this.popularTopics = popularTopics;
 	}
 
 	public Map<Integer, UserBean> getUsersMap()

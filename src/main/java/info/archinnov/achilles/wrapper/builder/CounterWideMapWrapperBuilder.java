@@ -4,6 +4,7 @@ import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -19,10 +20,8 @@ import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 public class CounterWideMapWrapperBuilder<ID, K>
 {
 	private ID id;
-	private String fqcn;
-	private PropertyMeta<Void, ID> idMeta;
 	private GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
-	private PropertyMeta<K, Long> propertyMeta;
+	private PropertyMeta<K, Counter> propertyMeta;
 
 	private AchillesInterceptor<ID> interceptor;
 	protected CompositeHelper compositeHelper;
@@ -32,7 +31,7 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	protected PersistenceContext<ID> context;
 
 	public CounterWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, Long> wideMapCounterDao,
-			PropertyMeta<K, Long> propertyMeta)
+			PropertyMeta<K, Counter> propertyMeta)
 	{
 		this.id = id;
 		this.wideMapCounterDao = wideMapCounterDao;
@@ -40,21 +39,10 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	}
 
 	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id,
-			GenericColumnFamilyDao<ID, Long> wideMapCounterDao, PropertyMeta<K, Long> propertyMeta)
+			GenericColumnFamilyDao<ID, Long> wideMapCounterDao,
+			PropertyMeta<K, Counter> propertyMeta)
 	{
 		return new CounterWideMapWrapperBuilder<ID, K>(id, wideMapCounterDao, propertyMeta);
-	}
-
-	public CounterWideMapWrapperBuilder<ID, K> fqcn(String fqcn)
-	{
-		this.fqcn = fqcn;
-		return this;
-	}
-
-	public CounterWideMapWrapperBuilder<ID, K> idMeta(PropertyMeta<Void, ID> idMeta)
-	{
-		this.idMeta = idMeta;
-		return this;
 	}
 
 	public CounterWideMapWrapperBuilder<ID, K> interceptor(AchillesInterceptor<ID> interceptor)
@@ -97,8 +85,6 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	{
 		CounterWideMapWrapper<ID, K> wrapper = new CounterWideMapWrapper<ID, K>();
 		wrapper.setId(id);
-		wrapper.setFqcn(fqcn);
-		wrapper.setIdMeta(idMeta);
 		wrapper.setWideMapCounterDao(wideMapCounterDao);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setInterceptor(interceptor);
@@ -107,7 +93,6 @@ public class CounterWideMapWrapperBuilder<ID, K>
 		wrapper.setCompositeKeyFactory(compositeFactory);
 		wrapper.setKeyValueFactory(keyValueFactory);
 		wrapper.setContext(context);
-
 		return wrapper;
 	}
 

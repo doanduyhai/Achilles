@@ -3,14 +3,17 @@ package info.archinnov.achilles.proxy.interceptor;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
 import info.archinnov.achilles.wrapper.builder.CounterWideMapWrapperBuilder;
+import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.JoinWideMapWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.wrapper.builder.MapWrapperBuilder;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -99,7 +103,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			"rawtypes",
 			"unchecked"
 	})
-	private <JOIN_ID> Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
+	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
 		Object result = null;
@@ -120,13 +124,19 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		// Build proxy when necessary
 		switch (propertyMeta.type())
 		{
+			case COUNTER:
+				log.trace("Build counter wrapper for property {} of entity of class {} ",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+				result = buildCounterWrapper(propertyMeta);
+				break;
 			case JOIN_SIMPLE:
 				if (rawValue != null)
 				{
-					log.trace("Build proxy on returned join entity of class {} ",
-							propertyMeta.getEntityClassName());
+					log.trace(
+							"Build proxy on returned join entity for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-					PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+					PersistenceContext<?> joinContext = context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
 					result = proxifier.buildProxy(rawValue, joinContext);
 				}
@@ -136,8 +146,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_LIST:
 				if (rawValue != null)
 				{
-					log.trace("Build list wrapper for entity of class {} ",
-							propertyMeta.getEntityClassName());
+					log.trace("Build list wrapper for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					List<?> list = (List<?>) rawValue;
 					result = ListWrapperBuilder //
@@ -154,8 +164,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_SET:
 				if (rawValue != null)
 				{
-					log.trace("Build set wrapper for entity of class {} ",
-							propertyMeta.getEntityClassName());
+					log.trace("Build set wrapper for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					Set<?> set = (Set<?>) rawValue;
 					result = SetWrapperBuilder //
@@ -172,8 +182,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 			case JOIN_MAP:
 				if (rawValue != null)
 				{
-					log.trace("Build map wrapper for entity of class {} ",
-							propertyMeta.getEntityClassName());
+					log.trace("Build map wrapper for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					Map<?, ?> map = (Map<?, ?>) rawValue;
 					result = MapWrapperBuilder //
@@ -189,40 +199,58 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				if (context.isDirectColumnFamilyMapping())
 				{
 					log.trace(
-							"Build direct column family wide map wrapper for entity of class {} ",
-							propertyMeta.getEntityClassName());
+							"Build direct column family wide map wrapper for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					result = buildColumnFamilyWrapper(propertyMeta);
 				}
 				else
 				{
-					log.trace("Build wide map wrapper for entity of class {} ",
-							propertyMeta.getEntityClassName());
+					log.trace("Build wide map wrapper for property {} of entity of class {} ",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
 			case WIDE_MAP_COUNTER:
 
-				log.trace("Build counter wide wrapper for entity of class {} ",
-						propertyMeta.getEntityClassName());
+				log.trace("Build counter wide wrapper for property {} of entity of class {} ",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 				result = buildCounterWideMapWrapper(propertyMeta);
 				break;
 			case JOIN_WIDE_MAP:
 
-				log.trace("Build join wide wrapper for entity of class {} ",
-						propertyMeta.getEntityClassName());
+				log.trace("Build join wide wrapper for property {} of entity of class {} ",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 				result = buildJoinWideMapWrapper(propertyMeta);
 				break;
 			default:
-				log.trace("Return un-mapped raw value {} for entity of class {} ",
-						propertyMeta.getEntityClassName());
+				log.trace("Return un-mapped raw value {} for property {} of entity of class {} ",
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 				result = rawValue;
 				break;
 		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Object buildCounterWrapper(PropertyMeta<ID, ?> propertyMeta)
+	{
+		Object result;
+		CounterProperties counterProperties = propertyMeta.getCounterProperties();
+		Composite keyComp = compositeFactory.createKeyForCounter(counterProperties.getFqcn(), key,
+				(PropertyMeta<Void, ID>) counterProperties.getIdMeta());
+		Composite comp = compositeFactory.createBaseForCounterGet(propertyMeta);
+		result = CounterWrapperBuilder.builder(keyComp) //
+				.counterDao(context.getCounterDao()) //
+				.columnName(comp) //
+				.readLevel(propertyMeta.getReadConsistencyLevel()) //
+				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
+				.policy(context.getPolicy()) //
+				.build();
 		return result;
 	}
 
@@ -246,22 +274,16 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.build();
 	}
 
-	@SuppressWarnings(
+	@SuppressWarnings("unchecked")
+	private <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta)
 	{
-			"rawtypes",
-			"unchecked"
-	})
-	private <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Long> propertyMeta)
-	{
-		GenericColumnFamilyDao<ID, Long> counterWideMapDao = context
+		GenericColumnFamilyDao<ID, Long> counterWideMapDao = (GenericColumnFamilyDao<ID, Long>) context
 				.findColumnFamilyDao(propertyMeta.getExternalCFName());
 
 		return CounterWideMapWrapperBuilder //
 				.builder(key, counterWideMapDao, propertyMeta)//
 				.interceptor(this) //
 				.context(context) //
-				.fqcn(propertyMeta.fqcn()) //
-				.idMeta((PropertyMeta) propertyMeta.counterIdMeta()) //
 				.compositeHelper(compositeHelper) //
 				.keyValueFactory(keyValueFactory) //
 				.iteratorFactory(iteratorFactory) //
@@ -313,10 +335,16 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 		PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
 		Object result = null;
 
-		if (propertyMeta.type().isWideMap())
+		switch (propertyMeta.type())
 		{
-			throw new UnsupportedOperationException(
-					"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
+			case COUNTER:
+				throw new UnsupportedOperationException(
+						"Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
+			case WIDE_MAP:
+				throw new UnsupportedOperationException(
+						"Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
+			default:
+				break;
 		}
 
 		if (propertyMeta.type().isLazy())

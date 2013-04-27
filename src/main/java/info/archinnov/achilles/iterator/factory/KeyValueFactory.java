@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
@@ -138,15 +139,15 @@ public class KeyValueFactory
 	}
 
 	// Counter
-	public <K> KeyValue<K, Long> createCounterKeyValue(PropertyMeta<K, Long> propertyMeta,
-			HCounterColumn<Composite> hColumn)
+	public <ID, K> KeyValue<K, Counter> createCounterKeyValue(PersistenceContext<ID> context,
+			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		log.trace("Build counter key/value for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return compositeTransformer.buildCounterKeyValue(propertyMeta, hColumn);
+		return compositeTransformer.buildCounterKeyValue(context, propertyMeta, hColumn);
 	}
 
-	public <K> K createCounterKey(PropertyMeta<K, Long> propertyMeta,
+	public <K> K createCounterKey(PropertyMeta<K, Counter> propertyMeta,
 			HCounterColumn<Composite> hColumn)
 	{
 		log.trace("Build counter key for property {} of entity class {}",
@@ -154,33 +155,34 @@ public class KeyValueFactory
 		return compositeTransformer.buildCounterKey(propertyMeta, hColumn);
 	}
 
-	public <K> Long createCounterValue(PropertyMeta<K, Long> propertyMeta,
-			HCounterColumn<Composite> hColumn)
+	public <ID, K> Counter createCounterValue(PersistenceContext<ID> context,
+			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		log.trace("Build counter value for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return compositeTransformer.buildCounterValue(propertyMeta, hColumn);
+		return compositeTransformer.buildCounterValue(context, propertyMeta, hColumn);
 	}
 
-	public <K> List<KeyValue<K, Long>> createCounterKeyValueList(
-			PropertyMeta<K, Long> propertyMeta, List<HCounterColumn<Composite>> hColumns)
+	public <ID, K> List<KeyValue<K, Counter>> createCounterKeyValueList(
+			PersistenceContext<ID> context, PropertyMeta<K, Counter> propertyMeta,
+			List<HCounterColumn<Composite>> hColumns)
 	{
 		log.trace("Build counter key/value list for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
-				compositeTransformer.buildCounterKeyValueTransformer(propertyMeta));
+				compositeTransformer.buildCounterKeyValueTransformer(context, propertyMeta));
 	}
 
-	public <K> List<Long> createCounterValueList(PropertyMeta<K, Long> propertyMeta,
-			List<HCounterColumn<Composite>> hColumns)
+	public <ID, K> List<Counter> createCounterValueList(PersistenceContext<ID> context,
+			PropertyMeta<K, Counter> propertyMeta, List<HCounterColumn<Composite>> hColumns)
 	{
 		log.trace("Build counter value lsit for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return Lists.transform(hColumns,
-				compositeTransformer.buildCounterValueTransformer(propertyMeta));
+				compositeTransformer.buildCounterValueTransformer(context, propertyMeta));
 	}
 
-	public <K> List<K> createCounterKeyList(PropertyMeta<K, Long> propertyMeta,
+	public <K> List<K> createCounterKeyList(PropertyMeta<K, Counter> propertyMeta,
 			List<HCounterColumn<Composite>> hColumns)
 	{
 		log.trace("Build counter key list for property {} of entity class {}",

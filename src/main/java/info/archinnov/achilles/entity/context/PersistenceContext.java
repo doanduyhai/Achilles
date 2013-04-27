@@ -122,11 +122,9 @@ public class PersistenceContext<ID>
 		return (GenericEntityDao<JOIN_ID>) entityDaosMap.get(columnFamilyName);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <JOIN_ID, V> GenericColumnFamilyDao<JOIN_ID, V> findColumnFamilyDao(
-			String columnFamilyName)
+	public GenericColumnFamilyDao<?, ?> findColumnFamilyDao(String columnFamilyName)
 	{
-		return (GenericColumnFamilyDao<JOIN_ID, V>) columnFamilyDaosMap.get(columnFamilyName);
+		return columnFamilyDaosMap.get(columnFamilyName);
 	}
 
 	public boolean isDirectColumnFamilyMapping()

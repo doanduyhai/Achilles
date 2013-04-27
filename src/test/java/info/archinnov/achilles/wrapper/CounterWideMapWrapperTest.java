@@ -1,14 +1,18 @@
 package info.archinnov.achilles.wrapper;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.DESCENDING;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -22,7 +26,6 @@ import java.util.List;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
-import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * CounterWideMapWrapperTest
@@ -55,7 +59,7 @@ public class CounterWideMapWrapperTest
 	private GenericColumnFamilyDao<Long, Long> wideMapCounterDao;
 
 	@Mock
-	private PropertyMeta<Integer, Long> propertyMeta;
+	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
 	private CompositeHelper compositeHelper;
@@ -70,13 +74,13 @@ public class CounterWideMapWrapperTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private Mutator<Long> counterMutator;
-
-	@Mock
 	private AchillesCounterSliceIterator<Long> achillesCounterSliceIterator;
 
 	@Mock
 	private PersistenceContext<Long> context;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	private Long id = 12L;
 	private Integer key = 11;
@@ -84,38 +88,41 @@ public class CounterWideMapWrapperTest
 
 	private Composite keyComp = new Composite();
 	private Composite comp = new Composite();
+	private ConsistencyLevel readLevel = EACH_QUORUM;
+	private ConsistencyLevel writeLevel = LOCAL_QUORUM;
 
 	@Before
 	public void setUp()
 	{
-		wrapper.setContext(context);
 		wrapper.setId(id);
-		wrapper.setFqcn(fqcn);
 		when(compositeFactory.createKeyForCounter(fqcn, id, idMeta)).thenReturn(keyComp);
-
+		when(context.getPolicy()).thenReturn(policy);
+		when(propertyMeta.getReadConsistencyLevel()).thenReturn(readLevel);
+		when(propertyMeta.getWriteConsistencyLevel()).thenReturn(writeLevel);
 	}
 
 	@Test
 	public void should_get_key() throws Exception
 	{
 		when(compositeFactory.createForQuery(propertyMeta, key, EQUAL)).thenReturn(comp);
+		Counter actual = wrapper.get(key);
 
-		when(wideMapCounterDao.getCounterValue(id, comp)).thenReturn(150L);
+		assertThat(Whitebox.getInternalState(actual, "columnName")).isSameAs(comp);
+		assertThat(Whitebox.getInternalState(actual, "counterDao")).isSameAs(wideMapCounterDao);
+		assertThat(Whitebox.getInternalState(actual, "policy")).isSameAs(policy);
+		assertThat(Whitebox.getInternalState(actual, "readLevel")).isSameAs(readLevel);
+		assertThat(Whitebox.getInternalState(actual, "writeLevel")).isSameAs(writeLevel);
 
-		Long actual = wrapper.get(key);
-
-		assertThat(actual).isEqualTo(150L);
 	}
 
 	@Test
 	public void should_insert() throws Exception
 	{
-		when(propertyMeta.getExternalCFName()).thenReturn("external_cf");
 		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-		when(context.getColumnFamilyMutator("external_cf")).thenReturn(counterMutator);
-		wrapper.insert(key, 150L);
 
-		verify(wideMapCounterDao).insertCounterBatch(id, comp, 150L, counterMutator);
+		wrapper.insert(key, CounterBuilder.incr(150L));
+
+		verify(wideMapCounterDao).incrementCounter(id, comp, 150L);
 		verify(context).flush();
 	}
 
@@ -124,7 +131,7 @@ public class CounterWideMapWrapperTest
 	{
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("Cannot insert counter value with ttl");
-		wrapper.insert(key, 150L, 3600);
+		wrapper.insert(key, CounterBuilder.incr(150L), 3600);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -142,12 +149,12 @@ public class CounterWideMapWrapperTest
 
 		when(wideMapCounterDao.findCounterColumnsRange(id, start, end, 100, DESCENDING.isReverse()))
 				.thenReturn(hColumns);
-		List<KeyValue<Integer, Long>> expected = new ArrayList<KeyValue<Integer, Long>>();
+		List<KeyValue<Integer, Counter>> expected = new ArrayList<KeyValue<Integer, Counter>>();
 
-		when(keyValueFactory.createCounterKeyValueList(propertyMeta, hColumns))
+		when(keyValueFactory.createCounterKeyValueList(context, propertyMeta, hColumns))
 				.thenReturn(expected);
 
-		List<KeyValue<Integer, Long>> actual = wrapper.find(11, 12, 100, INCLUSIVE_BOUNDS,
+		List<KeyValue<Integer, Counter>> actual = wrapper.find(11, 12, 100, INCLUSIVE_BOUNDS,
 				DESCENDING);
 
 		assertThat(actual).isSameAs(expected);
@@ -170,11 +177,12 @@ public class CounterWideMapWrapperTest
 		when(wideMapCounterDao.findCounterColumnsRange(id, start, end, 100, DESCENDING.isReverse()))
 				.thenReturn(hColumns);
 
-		List<Long> expected = new ArrayList<Long>();
+		List<Counter> expected = new ArrayList<Counter>();
 
-		when(keyValueFactory.createCounterValueList(propertyMeta, hColumns)).thenReturn(expected);
+		when(keyValueFactory.createCounterValueList(context, propertyMeta, hColumns)).thenReturn(
+				expected);
 
-		List<Long> actual = wrapper.findValues(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
+		List<Counter> actual = wrapper.findValues(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
 
 		assertThat(actual).isSameAs(expected);
 		verify(compositeHelper).checkBounds(propertyMeta, 11, 12, DESCENDING);
@@ -221,13 +229,13 @@ public class CounterWideMapWrapperTest
 		when(
 				wideMapCounterDao.getCounterColumnsIterator(id, start, end, DESCENDING.isReverse(),
 						100)).thenReturn(achillesCounterSliceIterator);
-		CounterKeyValueIteratorImpl<Integer> expected = mock(CounterKeyValueIteratorImpl.class);
+		CounterKeyValueIteratorImpl<Long, Integer> expected = mock(CounterKeyValueIteratorImpl.class);
 
 		when(
-				iteratorFactory.createCounterKeyValueIterator(achillesCounterSliceIterator,
-						propertyMeta)).thenReturn(expected);
+				iteratorFactory.createCounterKeyValueIterator(context,
+						achillesCounterSliceIterator, propertyMeta)).thenReturn(expected);
 
-		KeyValueIterator<Integer, Long> actual = wrapper.iterator(11, 12, 100, INCLUSIVE_BOUNDS,
+		KeyValueIterator<Integer, Counter> actual = wrapper.iterator(11, 12, 100, INCLUSIVE_BOUNDS,
 				DESCENDING);
 
 		assertThat(actual).isSameAs(expected);

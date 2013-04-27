@@ -27,8 +27,6 @@ public class CompleteBeanTestBuilder
 
 	private Long age;
 
-	private Long version;
-
 	private List<String> friends = new ArrayList<String>();
 
 	private Set<String> followers = new HashSet<String>();
@@ -51,7 +49,6 @@ public class CompleteBeanTestBuilder
 		bean.setFriends(friends);
 		bean.setFollowers(followers);
 		bean.setPreferences(preferences);
-		bean.setVersion(version != null ? version : 0);
 		return bean;
 	}
 
@@ -82,12 +79,6 @@ public class CompleteBeanTestBuilder
 	public CompleteBeanTestBuilder age(Long age)
 	{
 		this.age = age;
-		return this;
-	}
-
-	public CompleteBeanTestBuilder version(Long version)
-	{
-		this.version = version;
 		return this;
 	}
 

@@ -401,6 +401,30 @@ public class PropertyMeta<K, V>
 		this.entityClassName = entityClassName;
 	}
 
+	public PropertyMeta<K, V> duplicate(ConsistencyLevel readLevel)
+	{
+		PropertyMeta<K, V> duplicate = new PropertyMeta<K, V>();
+		duplicate.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(readLevel,
+				this.consistencyLevels.right));
+		duplicate.setCounterProperties(counterProperties);
+		duplicate.setEntityClassName(entityClassName);
+		duplicate.setExternalCfName(externalCfName);
+		duplicate.setGetter(getter);
+		duplicate.setIdSerializer(idSerializer);
+		duplicate.setJoinProperties(joinProperties);
+		duplicate.setKeyClass(keyClass);
+		duplicate.setKeySerializer(keySerializer);
+		duplicate.setMultiKeyProperties(multiKeyProperties);
+		duplicate.setObjectMapper(objectMapper);
+		duplicate.setPropertyName(propertyName);
+		duplicate.setSetter(setter);
+		duplicate.setSingleKey(singleKey);
+		duplicate.setType(type);
+		duplicate.setValueClass(valueClass);
+		duplicate.setValueSerializer(valueSerializer);
+		return duplicate;
+	}
+
 	@Override
 	public String toString()
 	{

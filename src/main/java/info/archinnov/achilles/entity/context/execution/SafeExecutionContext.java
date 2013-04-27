@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.execution_context;
+package info.archinnov.achilles.entity.context.execution;
 
 /**
  * SafeExecutionContext

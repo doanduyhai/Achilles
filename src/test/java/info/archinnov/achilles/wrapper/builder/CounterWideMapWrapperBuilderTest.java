@@ -3,7 +3,9 @@ package info.archinnov.achilles.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -26,10 +28,7 @@ public class CounterWideMapWrapperBuilderTest
 	private GenericColumnFamilyDao<Long, Long> wideMapCounterDao;
 
 	@Mock
-	private PropertyMeta<Integer, Long> propertyMeta;
-
-	@Mock
-	private PropertyMeta<Void, Long> idMeta;
+	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
 	private AchillesInterceptor<Long> interceptor;
@@ -46,27 +45,26 @@ public class CounterWideMapWrapperBuilderTest
 	@Mock
 	private CompositeFactory compositeFactory;
 
-	private String fqcn = "fqcn";
+	@Mock
+	private PersistenceContext<Long> context;
 
 	@Test
 	public void should_build() throws Exception
 	{
 		CounterWideMapWrapper<Long, Integer> wrapper = CounterWideMapWrapperBuilder
 				.builder(1L, wideMapCounterDao, propertyMeta) //
-				.fqcn(fqcn) //
-				.idMeta(idMeta) //
 				.interceptor(interceptor) //
 				.compositeHelper(compositeHelper) //
 				.iteratorFactory(iteratorFactory) //
 				.compositeFactory(compositeFactory) //
+				.context(context) //
 				.build();
 
 		assertThat(wrapper).isNotNull();
 		assertThat(wrapper.getInterceptor()).isSameAs(interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "wideMapCounterDao")).isSameAs(
 				wideMapCounterDao);
-		assertThat(Whitebox.getInternalState(wrapper, "fqcn")).isSameAs(fqcn);
-		assertThat(Whitebox.getInternalState(wrapper, "idMeta")).isSameAs(idMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 		assertThat(Whitebox.getInternalState(wrapper, "compositeHelper")).isSameAs(compositeHelper);
 		assertThat(Whitebox.getInternalState(wrapper, "iteratorFactory")).isSameAs(iteratorFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "keyValueFactory")).isSameAs(keyValueFactory);

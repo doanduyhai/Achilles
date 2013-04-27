@@ -8,22 +8,20 @@ import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.wrapper.CounterBuilder;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
-import integration.tests.entity.Tweet;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +43,6 @@ public class CounterIT
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 	private CompleteBean bean;
-	private ObjectMapper mapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
@@ -57,9 +54,10 @@ public class CounterIT
 	public void should_persist_counter() throws Exception
 	{
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		bean.setVersion(2L);
 
-		em.persist(bean);
+		bean = em.merge(bean);
+		bean.getVersion().incr(2L);
+
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
@@ -68,42 +66,24 @@ public class CounterIT
 	}
 
 	@Test
-	public void should_merge_counter() throws Exception
-	{
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		bean = em.merge(bean);
-
-		bean.setVersion(251L);
-
-		em.merge(bean);
-
-		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		Composite comp = createCounterName("version");
-		Long actual = counterDao.getCounterValue(keyComp, comp);
-
-		assertThat(actual).isEqualTo(251L);
-	}
-
-	@Test
 	public void should_find_counter() throws Exception
 	{
 		long version = 10L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").version(version).buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		em.persist(bean);
+		bean = em.merge(bean);
+		bean.getVersion().incr(version);
 
-		bean = em.find(CompleteBean.class, bean.getId());
-
-		assertThat(bean.getVersion()).isEqualTo(version);
+		assertThat(bean.getVersion().get()).isEqualTo(version);
 	}
 
 	@Test
 	public void should_remove_counter() throws Exception
 	{
 		long version = 154321L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").version(version).buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 		bean = em.merge(bean);
-
+		bean.getVersion().incr(version);
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
 		Long actual = counterDao.getCounterValue(keyComp, comp);
@@ -121,97 +101,6 @@ public class CounterIT
 	}
 
 	@Test
-	public void should_refresh_counter() throws Exception
-	{
-		long version = 454L, newVersion = -1234L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").version(version).buid();
-		bean = em.merge(bean);
-
-		assertThat(bean.getVersion()).isEqualTo(version);
-
-		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
-		Composite comp = createCounterName("version");
-
-		counterDao.insertCounter(keyComp, comp, newVersion);
-		em.refresh(bean);
-
-		assertThat(bean.getVersion()).isEqualTo(newVersion);
-	}
-
-	@Test
-	public void should_cascade_persist_counter() throws Exception
-	{
-		long favoriteCount = 120L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		Tweet tweet = createTweet();
-		tweet.setFavoriteCount(favoriteCount);
-		bean.setWelcomeTweet(tweet);
-
-		em.persist(bean);
-
-		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		Composite comp = createCounterName("favoriteCount");
-		Long actual = counterDao.getCounterValue(keyComp, comp);
-
-		assertThat(actual).isEqualTo(favoriteCount);
-	}
-
-	@Test
-	public void should_cascade_merge_counter() throws Exception
-	{
-		long favoriteCount = 45648L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		Tweet tweet = createTweet();
-		tweet.setFavoriteCount(favoriteCount);
-		bean.setWelcomeTweet(tweet);
-
-		em.merge(bean);
-
-		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		Composite comp = createCounterName("favoriteCount");
-		Long actual = counterDao.getCounterValue(keyComp, comp);
-
-		assertThat(actual).isEqualTo(favoriteCount);
-	}
-
-	@Test
-	public void should_find_counter_after_cascade_persist() throws Exception
-	{
-		long favoriteCount = 78L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		Tweet tweet = createTweet();
-		tweet.setFavoriteCount(favoriteCount);
-		bean.setWelcomeTweet(tweet);
-
-		em.merge(bean);
-
-		tweet = em.find(Tweet.class, tweet.getId());
-
-		assertThat(tweet.getFavoriteCount()).isEqualTo(favoriteCount);
-	}
-
-	@Test
-	public void should_cascade_refresh_counter() throws Exception
-	{
-		long favoriteCount = 10L, newFavoriteCount = 5465L;
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		Tweet tweet = createTweet();
-		tweet.setFavoriteCount(favoriteCount);
-		bean.setWelcomeTweet(tweet);
-
-		bean = em.merge(bean);
-
-		Composite keyComp = createCounterKey(Tweet.class, tweet.getId());
-		Composite comp = createCounterName("favoriteCount");
-
-		counterDao.insertCounter(keyComp, comp, newFavoriteCount);
-
-		em.refresh(bean);
-
-		assertThat(bean.getWelcomeTweet().getFavoriteCount()).isEqualTo(newFavoriteCount);
-	}
-
-	@Test
 	public void should_insert_counter_widemap() throws Exception
 	{
 		long javaCount = 1234, cassandraCount = 567;
@@ -220,8 +109,8 @@ public class CounterIT
 
 		bean = em.merge(bean);
 
-		bean.getPopularTopics().insert("cassandra", cassandraCount);
-		bean.getPopularTopics().insert("java", javaCount);
+		bean.getPopularTopics().insert("cassandra", CounterBuilder.incr(cassandraCount));
+		bean.getPopularTopics().insert("java", CounterBuilder.incr(javaCount));
 
 		Composite comp = createWideMapCounterName("java");
 
@@ -240,22 +129,22 @@ public class CounterIT
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 		bean = em.merge(bean);
 
-		WideMap<String, Long> popularTopics = bean.getPopularTopics();
+		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", cassandraCount);
-		popularTopics.insert("java", javaCount);
-		popularTopics.insert("scala", scalaCount);
+		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
+		popularTopics.insert("java", CounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
 
-		List<KeyValue<String, Long>> foundKeyValues = popularTopics.find("cassandra", null, 10,
+		List<KeyValue<String, Counter>> foundKeyValues = popularTopics.find("cassandra", null, 10,
 				INCLUSIVE_BOUNDS, ASCENDING);
 
 		assertThat(foundKeyValues).hasSize(3);
 		assertThat(foundKeyValues.get(0).getKey()).isEqualTo("cassandra");
-		assertThat(foundKeyValues.get(0).getValue()).isEqualTo(cassandraCount);
+		assertThat(foundKeyValues.get(0).getValue().get()).isEqualTo(cassandraCount);
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo("java");
-		assertThat(foundKeyValues.get(1).getValue()).isEqualTo(javaCount);
+		assertThat(foundKeyValues.get(1).getValue().get()).isEqualTo(javaCount);
 		assertThat(foundKeyValues.get(2).getKey()).isEqualTo("scala");
-		assertThat(foundKeyValues.get(2).getValue()).isEqualTo(scalaCount);
+		assertThat(foundKeyValues.get(2).getValue().get()).isEqualTo(scalaCount);
 
 		List<String> foundKeys = popularTopics.findKeys("cassandra", null, 10, INCLUSIVE_BOUNDS,
 				ASCENDING);
@@ -265,13 +154,13 @@ public class CounterIT
 		assertThat(foundKeys.get(1)).isEqualTo("java");
 		assertThat(foundKeys.get(2)).isEqualTo("scala");
 
-		List<Long> foundValues = popularTopics.findValues("cassandra", null, 10, INCLUSIVE_BOUNDS,
-				ASCENDING);
+		List<Counter> foundValues = popularTopics.findValues("cassandra", null, 10,
+				INCLUSIVE_BOUNDS, ASCENDING);
 
 		assertThat(foundValues).hasSize(3);
-		assertThat(foundValues.get(0)).isEqualTo(cassandraCount);
-		assertThat(foundValues.get(1)).isEqualTo(javaCount);
-		assertThat(foundValues.get(2)).isEqualTo(scalaCount);
+		assertThat(foundValues.get(0).get()).isEqualTo(cassandraCount);
+		assertThat(foundValues.get(1).get()).isEqualTo(javaCount);
+		assertThat(foundValues.get(2).get()).isEqualTo(scalaCount);
 	}
 
 	@Test
@@ -283,33 +172,33 @@ public class CounterIT
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 		bean = em.merge(bean);
 
-		WideMap<String, Long> popularTopics = bean.getPopularTopics();
+		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", cassandraCount);
-		popularTopics.insert("groovy", groovyCount);
-		popularTopics.insert("hibernate", hibernateCount);
-		popularTopics.insert("java", javaCount);
-		popularTopics.insert("scala", scalaCount);
-		popularTopics.insert("spring", springCount);
+		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
+		popularTopics.insert("groovy", CounterBuilder.incr(groovyCount));
+		popularTopics.insert("hibernate", CounterBuilder.incr(hibernateCount));
+		popularTopics.insert("java", CounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
+		popularTopics.insert("spring", CounterBuilder.incr(springCount));
 
-		Iterator<KeyValue<String, Long>> iterator = popularTopics.iterator("groovy", "spring", 2,
-				INCLUSIVE_START_BOUND_ONLY, ASCENDING);
+		Iterator<KeyValue<String, Counter>> iterator = popularTopics.iterator("groovy", "spring",
+				2, INCLUSIVE_START_BOUND_ONLY, ASCENDING);
 
-		KeyValue<String, Long> groovy = iterator.next();
+		KeyValue<String, Counter> groovy = iterator.next();
 		assertThat(groovy.getKey()).isEqualTo("groovy");
-		assertThat(groovy.getValue()).isEqualTo(groovyCount);
+		assertThat(groovy.getValue().get()).isEqualTo(groovyCount);
 
-		KeyValue<String, Long> hibernate = iterator.next();
+		KeyValue<String, Counter> hibernate = iterator.next();
 		assertThat(hibernate.getKey()).isEqualTo("hibernate");
-		assertThat(hibernate.getValue()).isEqualTo(hibernateCount);
+		assertThat(hibernate.getValue().get()).isEqualTo(hibernateCount);
 
-		KeyValue<String, Long> java = iterator.next();
+		KeyValue<String, Counter> java = iterator.next();
 		assertThat(java.getKey()).isEqualTo("java");
-		assertThat(java.getValue()).isEqualTo(javaCount);
+		assertThat(java.getValue().get()).isEqualTo(javaCount);
 
-		KeyValue<String, Long> scala = iterator.next();
+		KeyValue<String, Counter> scala = iterator.next();
 		assertThat(scala.getKey()).isEqualTo("scala");
-		assertThat(scala.getValue()).isEqualTo(scalaCount);
+		assertThat(scala.getValue().get()).isEqualTo(scalaCount);
 	}
 
 	@Test
@@ -318,9 +207,9 @@ public class CounterIT
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 		bean = em.merge(bean);
 
-		WideMap<String, Long> popularTopics = bean.getPopularTopics();
+		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", 44654L);
+		popularTopics.insert("cassandra", CounterBuilder.incr(44654L));
 
 		exception.expect(UnsupportedOperationException.class);
 		exception
@@ -344,14 +233,14 @@ public class CounterIT
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 		bean = em.merge(bean);
 
-		WideMap<String, Long> popularTopics = bean.getPopularTopics();
+		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", cassandraCount);
-		popularTopics.insert("groovy", groovyCount);
-		popularTopics.insert("hibernate", hibernateCount);
-		popularTopics.insert("java", javaCount);
-		popularTopics.insert("scala", scalaCount);
-		popularTopics.insert("spring", springCount);
+		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
+		popularTopics.insert("groovy", CounterBuilder.incr(groovyCount));
+		popularTopics.insert("hibernate", CounterBuilder.incr(hibernateCount));
+		popularTopics.insert("java", CounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
+		popularTopics.insert("spring", CounterBuilder.incr(springCount));
 
 		// Pause required to let Cassandra remove counter columns
 		Thread.sleep(1000);
@@ -380,27 +269,11 @@ public class CounterIT
 
 	}
 
-	private Tweet createTweet()
-	{
-		Tweet tweet = new Tweet();
-		tweet.setId(TimeUUIDUtils.getUniqueTimeUUIDinMillis());
-		tweet.setContent("welcome!");
-		return tweet;
-	}
-
 	private <T> Composite createCounterKey(Class<T> clazz, Long id)
 	{
 		Composite comp = new Composite();
 		comp.setComponent(0, clazz.getCanonicalName(), STRING_SRZ);
 		comp.setComponent(1, id.toString(), STRING_SRZ);
-		return comp;
-	}
-
-	private <T> Composite createCounterKey(Class<T> clazz, UUID id) throws Exception
-	{
-		Composite comp = new Composite();
-		comp.setComponent(0, clazz.getCanonicalName(), STRING_SRZ);
-		comp.setComponent(1, mapper.writeValueAsString(id), STRING_SRZ);
 		return comp;
 	}
 

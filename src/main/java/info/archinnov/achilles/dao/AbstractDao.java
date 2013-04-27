@@ -3,16 +3,18 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.execution_context.SafeExecutionContext;
+import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.AchillesSliceIterator;
+import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Iterator;
 import java.util.List;
 
+import me.prettyprint.cassandra.model.HCounterColumnImpl;
 import me.prettyprint.cassandra.model.thrift.ThriftCounterColumnQuery;
 import me.prettyprint.cassandra.service.KeyIterator;
 import me.prettyprint.hector.api.Cluster;
@@ -392,32 +394,59 @@ public abstract class AbstractDao<K, V>
 		mutator.addDeletion(key, columnFamily);
 	}
 
-	public void insertCounterBatch(K key, Composite name, Long value, Mutator<K> mutator)
-	{
-		log.trace(
-				"Insert counter column {} as batch mutation with key {} and value {} into column family {}",
-				format(name), key, value, columnFamily);
-
-		Long currentValue = this.getCounterValue(key, name);
-		long delta = value - currentValue;
-		mutator.addCounter(key, columnFamily,
-				HFactory.createCounterColumn(name, delta, columnNameSerializer));
-	}
-
-	public void insertCounter(K key, Composite name, Long value)
+	public void incrementCounter(K key, Composite name, Long value)
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace("Insert counter column {} with key {} and value {} into column family {}",
-					format(name), key, value, columnFamily);
+			log.trace("Incrementing counter column {} with key {} from column family {} by {}",
+					format(name), key, columnFamily, value);
+		}
+		Mutator<K> mutator = buildMutator();
+		mutator.addCounter(key, columnFamily, new HCounterColumnImpl<Composite>(name, value,
+				SerializerUtils.COMPOSITE_SRZ));
+		executeMutator(mutator);
+	}
+
+	public void decrementCounter(K key, Composite name, Long value)
+	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Decrementing counter column {} with key {} from column family {} by {}",
+					format(name), key, columnFamily, value);
+		}
+		Mutator<K> mutator = buildMutator();
+		mutator.addCounter(key, columnFamily, new HCounterColumnImpl<Composite>(name, value * -1L,
+				SerializerUtils.COMPOSITE_SRZ));
+		executeMutator(mutator);
+	}
+
+	public long getCounterValue(K key, Composite name)
+	{
+		if (log.isTraceEnabled())
+		{
+			log.trace("Get counter value column {} with key {} from column family {}",
+					format(name), key, columnFamily);
 		}
 
-		Mutator<K> mutator = buildMutator();
-		Long currentValue = this.getCounterValue(key, name);
-		long delta = value - currentValue;
-		mutator.addCounter(key, columnFamily,
-				HFactory.createCounterColumn(name, delta, columnNameSerializer));
-		this.executeMutator(mutator);
+		final CounterQuery<K, Composite> counter = new ThriftCounterColumnQuery<K, Composite>(
+				keyspace, keySerializer, columnNameSerializer).setColumnFamily(columnFamily)
+				.setKey(key).setName(name);
+
+		this.policy.loadConsistencyLevelForRead(columnFamily);
+		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
+		{
+			@Override
+			public Long execute()
+			{
+				long counterValue = 0;
+				HCounterColumn<Composite> column = counter.execute().get();
+				if (column != null)
+				{
+					counterValue = column.getValue();
+				}
+				return counterValue;
+			}
+		});
 	}
 
 	public void removeCounterBatch(K key, Composite name, Mutator<K> mutator)
@@ -465,35 +494,6 @@ public abstract class AbstractDao<K, V>
 	public void truncateCounters()
 	{
 		cluster.truncate(keyspace.getKeyspaceName(), CounterDao.COUNTER_CF);
-	}
-
-	public long getCounterValue(K key, Composite name)
-	{
-		if (log.isTraceEnabled())
-		{
-			log.trace("Get counter value column {} with key {} from column family {}",
-					format(name), key, columnFamily);
-		}
-
-		final CounterQuery<K, Composite> counter = new ThriftCounterColumnQuery<K, Composite>(
-				keyspace, keySerializer, columnNameSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setName(name);
-
-		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
-		{
-			@Override
-			public Long execute()
-			{
-				long counterValue = 0;
-				HCounterColumn<Composite> column = counter.execute().get();
-				if (column != null)
-				{
-					counterValue = column.getValue();
-				}
-				return counterValue;
-			}
-		});
 	}
 
 	public Mutator<K> buildMutator()

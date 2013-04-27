@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
@@ -20,7 +19,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.ArrayList;
@@ -161,34 +159,6 @@ public class ThriftLoaderImplTest
 
 		String actual = loaderImpl.loadSimpleProperty(context, nameMeta);
 		assertThat(actual).isEqualTo("name_xyz");
-	}
-
-	@Test
-	public void should_load_simple_counter() throws Exception
-	{
-		Long counterValue = RandomUtils.nextLong();
-		PropertyMeta<Void, String> counterMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("count") //
-				.counterIdMeta(idMeta) //
-				.fqcn("fqcn") //
-				.accesors() //
-				.consistencyLevels(
-						new Pair<ConsistencyLevel, ConsistencyLevel>(LOCAL_QUORUM, LOCAL_QUORUM)) //
-				.build();
-
-		Composite keyComp = new Composite();
-		Composite comp = new Composite();
-		when(compositeFactory.createKeyForCounter("fqcn", entity.getId(), idMeta)).thenReturn(
-				keyComp);
-		when(compositeFactory.createBaseForCounterGet(counterMeta)).thenReturn(comp);
-		when(counterDao.getCounterValue(keyComp, comp)).thenReturn(counterValue);
-
-		Long actual = loaderImpl.loadSimpleCounterProperty(context, counterMeta);
-
-		assertThat(actual).isEqualTo(counterValue);
-		verify(policy).setCurrentReadLevel(LOCAL_QUORUM);
-		verify(policy).removeCurrentReadLevel();
 	}
 
 	@Test

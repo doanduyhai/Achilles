@@ -2,6 +2,7 @@ package info.archinnov.achilles.iterator.factory;
 
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.iterator.AbstractAchillesSliceIterator;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
@@ -43,13 +44,14 @@ public class IteratorFactory
 		return new KeyValueIteratorImpl<ID, K, V>(context, joinColumnSliceIterator, propertyMeta);
 	}
 
-	public <K> KeyValueIterator<K, Long> createCounterKeyValueIterator(
+	public <ID, K> KeyValueIterator<K, Counter> createCounterKeyValueIterator(
+			PersistenceContext<ID> context,
 			AbstractAchillesSliceIterator<HCounterColumn<Composite>> columnSliceIterator,
-			PropertyMeta<K, Long> propertyMeta)
+			PropertyMeta<K, Counter> propertyMeta)
 	{
 		log.debug("Create new CounterKeyValueIterator for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return new CounterKeyValueIteratorImpl<K>(columnSliceIterator, propertyMeta);
+		return new CounterKeyValueIteratorImpl<ID, K>(context, columnSliceIterator, propertyMeta);
 	}
 
 }
