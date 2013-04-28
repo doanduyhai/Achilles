@@ -7,10 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 
 /**
  * HectorLogAsserter
@@ -22,17 +22,17 @@ public class CassandraLogAsserter
 {
 	private static final String STORAGE_PROXY_LOGGER = "org.apache.cassandra.service.StorageProxy";
 	private Logger thriftLogger = Logger.getLogger(STORAGE_PROXY_LOGGER);
-	private ConsoleAppender ca;
+	private WriterAppender writerAppender;
 	private ByteArrayOutputStream logStream;
 
 	public void prepareLogLevel()
 	{
 		logStream = new ByteArrayOutputStream();
 		thriftLogger.setLevel(Level.TRACE);
-		ca = new ConsoleAppender();
-		ca.setWriter(new OutputStreamWriter(logStream));
-		ca.setLayout(new PatternLayout("%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
-		thriftLogger.addAppender(ca);
+		writerAppender = new WriterAppender();
+		writerAppender.setWriter(new OutputStreamWriter(logStream));
+		writerAppender.setLayout(new PatternLayout("%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
+		thriftLogger.addAppender(writerAppender);
 
 	}
 
@@ -58,7 +58,7 @@ public class CassandraLogAsserter
 		{
 			logStream = null;
 			thriftLogger.setLevel(Level.WARN);
-			thriftLogger.removeAppender(ca);
+			thriftLogger.removeAppender(writerAppender);
 		}
 	}
 }

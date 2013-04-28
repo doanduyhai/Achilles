@@ -1,7 +1,6 @@
 package integration.tests.entity;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.entity.type.WideMap;
 
@@ -20,7 +19,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "beanWithWriteLocalQuorumWideMap")
-public class BeanWithWriteLocalQuorumConsistencyForExternalWidemap implements Serializable
+public class BeanWithWriteLocalQuorumConsistencyForWidemap implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -31,12 +30,12 @@ public class BeanWithWriteLocalQuorumConsistencyForExternalWidemap implements Se
 	private String name;
 
 	@Consistency(read = ONE, write = LOCAL_QUORUM)
-	@Column(table = "external_widemap_with_consistency2")
+	@Column(table = "widemap_with_consistency2")
 	private WideMap<Integer, String> wideMap;
 
-	public BeanWithWriteLocalQuorumConsistencyForExternalWidemap() {}
+	public BeanWithWriteLocalQuorumConsistencyForWidemap() {}
 
-	public BeanWithWriteLocalQuorumConsistencyForExternalWidemap(Long id, String name) {
+	public BeanWithWriteLocalQuorumConsistencyForWidemap(Long id, String name) {
 		this.id = id;
 		this.name = name;
 	}

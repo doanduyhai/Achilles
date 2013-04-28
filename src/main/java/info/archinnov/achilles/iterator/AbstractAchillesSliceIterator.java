@@ -57,7 +57,15 @@ public abstract class AbstractAchillesSliceIterator<HCOLUMN> implements Iterator
 	{
 		if (iterator == null)
 		{
-			iterator = fetchData();
+			iterator = executeSafely(new SafeExecutionContext<Iterator<HCOLUMN>>()
+			{
+				@Override
+				public Iterator<HCOLUMN> execute()
+				{
+					return fetchData();
+				}
+
+			});
 		}
 		else if (!iterator.hasNext() && columns == count)
 		{ // only need to do another query if maximum columns were retrieved
@@ -73,7 +81,15 @@ public abstract class AbstractAchillesSliceIterator<HCOLUMN> implements Iterator
 				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
 			}
 			changeQueryRange();
-			iterator = fetchData();
+			iterator = executeSafely(new SafeExecutionContext<Iterator<HCOLUMN>>()
+			{
+				@Override
+				public Iterator<HCOLUMN> execute()
+				{
+					return fetchData();
+				}
+
+			});
 			columns = 0;
 		}
 
@@ -142,6 +158,23 @@ public abstract class AbstractAchillesSliceIterator<HCOLUMN> implements Iterator
 		}
 		return result;
 
+	}
+
+	private <T> T executeSafely(SafeExecutionContext<T> context)
+	{
+		try
+		{
+			return context.execute();
+		}
+		catch (Exception e)
+		{
+			policy.reinitCurrentConsistencyLevels();
+			policy.reinitDefaultConsistencyLevels();
+			log.trace(
+					"Exception occurred while fetching next {} elements with consistency level {} in {}. Reset consistency levels",
+					count, readConsistencyLevelAtInitialization.name(), type());
+			throw new AchillesException(e);
+		}
 	}
 
 	public enum IteratorType

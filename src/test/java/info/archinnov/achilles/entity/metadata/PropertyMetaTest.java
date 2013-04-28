@@ -1,11 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,11 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
-
 import mapping.entity.UserBean;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
-import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
@@ -434,48 +427,5 @@ public class PropertyMetaTest
 				.build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_duplicate() throws Exception
-	{
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, String.class) //
-				.field("preferences") //
-				.accesors() //
-				.cascadeType(CascadeType.MERGE)//
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL)) //
-				.entityClassName("entityClassName") //
-				.externalCf("externalCf") //
-				.idSerializer(SerializerUtils.LONG_SRZ) //
-				.mapper(objectMapper) //
-				.type(PropertyType.JOIN_MAP) //
-				.build();
-		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
-		JoinProperties joinProperties = new JoinProperties();
-		CounterProperties counterProperties = new CounterProperties("fqcn");
-		propertyMeta.setMultiKeyProperties(multiKeyProperties);
-		propertyMeta.setJoinProperties(joinProperties);
-		propertyMeta.setCounterProperties(counterProperties);
-
-		PropertyMeta<Integer, String> duplicate = propertyMeta.duplicate(EACH_QUORUM);
-
-		assertThat(duplicate.getCounterProperties()).isSameAs(counterProperties);
-		assertThat(duplicate.getEntityClassName()).isEqualTo("entityClassName");
-		assertThat(duplicate.getExternalCFName()).isEqualTo("externalCf");
-		assertThat(duplicate.getGetter()).isSameAs(propertyMeta.getGetter());
-		assertThat((Serializer<Long>) duplicate.getIdSerializer()).isEqualTo(
-				SerializerUtils.LONG_SRZ);
-		assertThat(duplicate.getJoinProperties()).isSameAs(joinProperties);
-		assertThat(duplicate.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(duplicate.getKeySerializer()).isEqualTo(propertyMeta.getKeySerializer());
-		assertThat(duplicate.getMultiKeyProperties()).isSameAs(multiKeyProperties);
-		assertThat(duplicate.getPropertyName()).isEqualTo("preferences");
-		assertThat(duplicate.getReadConsistencyLevel()).isEqualTo(EACH_QUORUM);
-		assertThat(duplicate.getSetter()).isSameAs(propertyMeta.getSetter());
-		assertThat(duplicate.getValueClass()).isEqualTo(String.class);
-		assertThat(duplicate.getValueSerializer()).isEqualTo(propertyMeta.getValueSerializer());
-		assertThat(duplicate.getWriteConsistencyLevel()).isEqualTo(ALL);
 	}
 }

@@ -633,6 +633,32 @@ public class PropertyParserTest
 	}
 
 	@Test
+	public void should_exception_when_consistency_level_defined_for_counter_widemap()
+			throws Exception
+	{
+		@SuppressWarnings("unused")
+		class Test
+		{
+			@Consistency(read = ONE, write = ONE)
+			@Column(table = "table")
+			private WideMap<UUID, Counter> counterWideMap;
+
+			public WideMap<UUID, Counter> getCounterWideMap()
+			{
+				return counterWideMap;
+			}
+		}
+
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("counterWideMap"));
+
+		expectedEx.expect(AchillesBeanMappingException.class);
+		expectedEx
+				.expectMessage("Counter WideMap type does not support @ConsistencyLevel annotation. Only runtime consistency level is allowed");
+		parser.parse(context);
+	}
+
+	@Test
 	public void should_exception_when_cf_direct_mapping_has_external_wide_map() throws Exception
 	{
 		@SuppressWarnings("unused")

@@ -12,7 +12,9 @@ import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.CounterBuilder;
+import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 
@@ -22,6 +24,7 @@ import java.util.List;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +44,9 @@ public class CounterIT
 	private CounterDao counterDao = ThriftCassandraDaoTest.getCounterDao();
 	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
+	private GenericColumnFamilyDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
+			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
+
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 	private CompleteBean bean;
 
@@ -212,14 +218,12 @@ public class CounterIT
 		popularTopics.insert("cassandra", CounterBuilder.incr(44654L));
 
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 
 		popularTopics.remove("cassandra");
 
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 
 		popularTopics.remove("cassandra", null, BoundingMode.INCLUSIVE_BOUNDS);
 	}
@@ -267,6 +271,67 @@ public class CounterIT
 		comp = createWideMapCounterName("spring");
 		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
+	}
+
+	@Test
+	public void should_incr_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		counterWideMap.insert(10, CounterBuilder.incr());
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(1L);
+	}
+
+	@Test
+	public void should_incr_n_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		counterWideMap.insert(10, CounterBuilder.incr(15L));
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(15L);
+	}
+
+	@Test
+	public void should_decr_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		counterWideMap.insert(10, CounterBuilder.decr());
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(-1L);
+	}
+
+	@Test
+	public void should_decr_n_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		counterWideMap.insert(10, CounterBuilder.decr(15L));
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(-15L);
+	}
+
+	private BeanWithConsistencyLevelOnClassAndField prepareCounterWideMap()
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = new BeanWithConsistencyLevelOnClassAndField();
+		entity.setId(RandomUtils.nextLong());
+		entity.setName("name");
+		entity = em.merge(entity);
+
+		return entity;
+	}
+
+	private Composite prepareCounterWideMapName(Integer index)
+	{
+		Composite comp = new Composite();
+		comp.addComponent(10, SerializerUtils.INT_SRZ);
+		return comp;
 	}
 
 	private <T> Composite createCounterKey(Class<T> clazz, Long id)

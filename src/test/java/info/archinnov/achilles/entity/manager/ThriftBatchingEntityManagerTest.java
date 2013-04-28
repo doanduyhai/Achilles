@@ -3,9 +3,13 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.entity.context.BatchingFlushContext;
+import info.archinnov.achilles.exception.AchillesException;
+import integration.tests.entity.CompleteBean;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,6 +25,9 @@ import org.powermock.reflect.Whitebox;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftBatchingEntityManagerTest
 {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	@InjectMocks
 	private ThriftBatchingEntityManager em;
 
@@ -56,4 +63,63 @@ public class ThriftBatchingEntityManagerTest
 		verify(flushContext).endBatch();
 	}
 
+	@Test
+	public void should_exception_when_persist_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.persist(new CompleteBean(), ONE);
+	}
+
+	@Test
+	public void should_exception_when_merge_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.merge(new CompleteBean(), ONE);
+	}
+
+	@Test
+	public void should_exception_when_remove_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.remove(new CompleteBean(), ONE);
+	}
+
+	@Test
+	public void should_exception_when_find_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.find(CompleteBean.class, 11L, ONE);
+	}
+
+	@Test
+	public void should_exception_when_getReference_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.getReference(CompleteBean.class, 11L, ONE);
+	}
+
+	@Test
+	public void should_exception_when_refresh_with_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.refresh(new CompleteBean(), ONE);
+	}
 }

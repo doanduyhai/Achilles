@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.wrapper.CounterWrapper;
 import me.prettyprint.hector.api.beans.Composite;
@@ -17,7 +17,7 @@ public class CounterWrapperBuilder<ID>
 	private ID key;
 	private Composite columnName;
 	private AbstractDao<ID, Long> counterDao;
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private PersistenceContext<?> context;
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
@@ -54,9 +54,9 @@ public class CounterWrapperBuilder<ID>
 		return this;
 	}
 
-	public CounterWrapperBuilder<ID> policy(AchillesConfigurableConsistencyLevelPolicy policy)
+	public CounterWrapperBuilder<ID> context(PersistenceContext<?> context)
 	{
-		this.policy = policy;
+		this.context = context;
 		return this;
 	}
 
@@ -67,7 +67,7 @@ public class CounterWrapperBuilder<ID>
 		wrapper.setColumnName(columnName);
 		wrapper.setReadLevel(readLevel);
 		wrapper.setWriteLevel(writeLevel);
-		wrapper.setPolicy(policy);
+		wrapper.setContext(context);
 		return wrapper;
 	}
 }

@@ -15,6 +15,9 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
+import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.CounterKeyValueIteratorImpl;
@@ -109,7 +112,7 @@ public class CounterWideMapWrapperTest
 
 		assertThat(Whitebox.getInternalState(actual, "columnName")).isSameAs(comp);
 		assertThat(Whitebox.getInternalState(actual, "counterDao")).isSameAs(wideMapCounterDao);
-		assertThat(Whitebox.getInternalState(actual, "policy")).isSameAs(policy);
+		assertThat(Whitebox.getInternalState(actual, "context")).isSameAs(context);
 		assertThat(Whitebox.getInternalState(actual, "readLevel")).isSameAs(readLevel);
 		assertThat(Whitebox.getInternalState(actual, "writeLevel")).isSameAs(writeLevel);
 
@@ -123,7 +126,23 @@ public class CounterWideMapWrapperTest
 		wrapper.insert(key, CounterBuilder.incr(150L));
 
 		verify(wideMapCounterDao).incrementCounter(id, comp, 150L);
-		verify(context).flush();
+		verify(context, never()).flush();
+	}
+
+	@Test
+	public void should_cleanup_consistency_level_when_runtime_exception_on_insert()
+			throws Exception
+	{
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		doThrow(new RuntimeException()).when(wideMapCounterDao).incrementCounter(id, comp, 150L);
+		try
+		{
+			wrapper.insert(key, CounterBuilder.incr(150L));
+		}
+		catch (AchillesException e)
+		{
+			verify(context).cleanUpFlushContext();
+		}
 	}
 
 	@Test
@@ -245,8 +264,7 @@ public class CounterWideMapWrapperTest
 	public void should_exception_when_remove() throws Exception
 	{
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 		wrapper.remove(11);
 	}
 
@@ -254,8 +272,7 @@ public class CounterWideMapWrapperTest
 	public void should_exception_when_remove_range() throws Exception
 	{
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 
 		wrapper.remove(11, 12, INCLUSIVE_BOUNDS);
 	}
@@ -264,8 +281,7 @@ public class CounterWideMapWrapperTest
 	public void should_exception_when_remove_first() throws Exception
 	{
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 
 		wrapper.removeFirst(15);
 	}
@@ -274,9 +290,424 @@ public class CounterWideMapWrapperTest
 	public void should_exception_when_remove_last() throws Exception
 	{
 		exception.expect(UnsupportedOperationException.class);
-		exception
-				.expectMessage("Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		exception.expectMessage("Cannot remove counter value");
 
 		wrapper.removeLast(15);
+	}
+
+	@Test
+	public void should_not_get_with_consistency_level() throws Exception
+	{
+		wrapper.get(10, EACH_QUORUM);
+		verifyZeroInteractions(policy);
+	}
+
+	@Test
+	public void should_not_insert_with_consistency_level() throws Exception
+	{
+		when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
+		wrapper.insert(10, CounterBuilder.incr());
+		verifyZeroInteractions(policy);
+	}
+
+	@Test
+	public void should_exception_when_insert_with_ttl_and_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot insert counter value with ttl");
+
+		wrapper.insert(15, CounterBuilder.incr(), 10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_find_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+
+		wrapper.find(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findBoundsExclusive_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findBoundsExclusive(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverse_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverse(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverseBoundsExclusive_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverseBoundsExclusive(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirst_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirst(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirst_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirst(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLast_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLast(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLast_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLast(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findValues_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findValues(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findValues_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findValues(10, 11, 100, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING,
+				EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findBoundsExclusiveValues_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findBoundsExclusiveValues(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverseValues_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverseValues(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverseBoundsExclusiveValues_with_consistency_level()
+			throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverseBoundsExclusiveValues(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirstValue_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirstValue(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirstValues_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirstValues(11, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLastValue_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLastValue(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLastValue_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLastValues(11, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findKeys_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findKeys(10, 11, 100, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING,
+				EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findKeys_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findKeys(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findBoundsExclusiveKeys_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findBoundsExclusiveKeys(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverseKeys_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverseKeys(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findReverseBoundsExclusiveKeys_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findReverseBoundsExclusiveKeys(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirstKey_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirstKey(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findFirstKeys_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findFirstKeys(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLastKey_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLastKey(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_findLastKeys_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.findLastKeys(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iterate_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iterator(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iterate_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iterator(10, 11, 100, BoundingMode.EXCLUSIVE_BOUNDS, OrderingMode.ASCENDING,
+				EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iterate_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iterator(100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iterate_simple_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iterator(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iteratorBoundsExclusive_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iteratorBoundsExclusive(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iteratorReverse_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iteratorReverse(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iteratorReverse_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iteratorReverse(100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iteratorReverse_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iteratorReverse(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_iteratorReverseBoundsExclusive_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+		wrapper.iteratorReverseBoundsExclusive(11, 10, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_remove_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.remove(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_remove_range_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.remove(10, 11, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_remove_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.remove(10, 11, BoundingMode.EXCLUSIVE_BOUNDS, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_removeBoundsExclusive_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.remove(10, 11, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_removeFirst_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.removeFirst(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_removeFirst_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.removeFirst(10, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_removeLast_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.removeLast(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_removeLast_n_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception.expectMessage("Cannot remove counter value");
+
+		wrapper.removeLast(10, EACH_QUORUM);
 	}
 }

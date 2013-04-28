@@ -20,6 +20,7 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
 import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -318,6 +319,11 @@ public class PropertyParser
 
 		if (isCounterValueType)
 		{
+			if (propertyHelper.hasConsistencyAnnotation(context.getCurrentField()))
+			{
+				throw new AchillesBeanMappingException(
+						"Counter WideMap type does not support @ConsistencyLevel annotation. Only runtime consistency level is allowed");
+			}
 			context.getCounterMetas().add(propertyMeta);
 		}
 

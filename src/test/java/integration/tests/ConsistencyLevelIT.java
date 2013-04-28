@@ -1,8 +1,11 @@
 package integration.tests;
 
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -13,11 +16,13 @@ import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.CounterBuilder;
+import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
 import integration.tests.entity.BeanWithLocalQuorumConsistency;
-import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForExternalWidemap;
-import integration.tests.entity.BeanWithReadOneWriteAllConsistencyForExternalWidemap;
-import integration.tests.entity.BeanWithWriteLocalQuorumConsistencyForExternalWidemap;
+import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForWidemap;
+import integration.tests.entity.BeanWithReadOneWriteAllConsistencyForWidemap;
+import integration.tests.entity.BeanWithWriteLocalQuorumConsistencyForWidemap;
 import integration.tests.entity.BeanWithWriteOneAndReadLocalQuorumConsistency;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -27,20 +32,15 @@ import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 import integration.tests.utils.CassandraLogAsserter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.UUID;
 
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Rule;
@@ -66,6 +66,9 @@ public class ConsistencyLevelIT
 	private Cluster cluster = ThriftCassandraDaoTest.getCluster();
 
 	private String keyspaceName = ThriftCassandraDaoTest.getKeyspace().getKeyspaceName();
+
+	private GenericColumnFamilyDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
+			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
 
 	private Long id = RandomUtils.nextLong();
 
@@ -109,7 +112,7 @@ public class ConsistencyLevelIT
 	public void should_insert_find_get_iterator_and_remove_for_widemap_with_consistency_level()
 			throws Exception
 	{
-		BeanWithReadOneWriteAllConsistencyForExternalWidemap bean = new BeanWithReadOneWriteAllConsistencyForExternalWidemap(
+		BeanWithReadOneWriteAllConsistencyForWidemap bean = new BeanWithReadOneWriteAllConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -154,7 +157,7 @@ public class ConsistencyLevelIT
 	public void should_exception_when_writing_to_widemap_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithWriteLocalQuorumConsistencyForExternalWidemap bean = new BeanWithWriteLocalQuorumConsistencyForExternalWidemap(
+		BeanWithWriteLocalQuorumConsistencyForWidemap bean = new BeanWithWriteLocalQuorumConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -171,7 +174,7 @@ public class ConsistencyLevelIT
 	public void should_exception_when_reading_from_widemap_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithReadLocalQuorumConsistencyForExternalWidemap bean = new BeanWithReadLocalQuorumConsistencyForExternalWidemap(
+		BeanWithReadLocalQuorumConsistencyForWidemap bean = new BeanWithReadLocalQuorumConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -203,13 +206,12 @@ public class ConsistencyLevelIT
 		{
 			// Should reinit consistency level to default
 		}
-		BeanWithReadOneWriteAllConsistencyForExternalWidemap newBean = new BeanWithReadOneWriteAllConsistencyForExternalWidemap(
+		BeanWithReadOneWriteAllConsistencyForWidemap newBean = new BeanWithReadOneWriteAllConsistencyForWidemap(
 				id, "name");
 
 		em.persist(newBean);
 
-		newBean = em.find(BeanWithReadOneWriteAllConsistencyForExternalWidemap.class,
-				newBean.getId());
+		newBean = em.find(BeanWithReadOneWriteAllConsistencyForWidemap.class, newBean.getId());
 
 		assertThat(newBean).isNotNull();
 		assertThat(newBean.getName()).isEqualTo("name");
@@ -501,7 +503,7 @@ public class ConsistencyLevelIT
 		{
 			assertThat(e)
 					.hasMessage(
-							"me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+							"info.archinnov.achilles.exception.AchillesException: me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 		}
 
 		assertThatConsistencyLevelsAreReinitialized();
@@ -510,32 +512,6 @@ public class ConsistencyLevelIT
 		assertThat(found.getKey()).isEqualTo(uuid);
 		assertThat(found.getValue()).isEqualTo("new tweet etef");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.QUORUM);
-	}
-
-	@Test
-	public void should_iterate_on_counter_widemap_with_runtime_consistency_level() throws Exception
-	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
-		WideMap<String, Counter> popularTopics = entity.getPopularTopics();
-
-		popularTopics.insert("java", CounterBuilder.incr(110L));
-		try
-		{
-			popularTopics.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
-		}
-		catch (AchillesException e)
-		{
-			assertThat(e)
-					.hasMessage(
-							"me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-		}
-		assertThatConsistencyLevelsAreReinitialized();
-		logAsserter.prepareLogLevel();
-		KeyValue<String, Counter> found = popularTopics.iterator(ConsistencyLevel.ALL).next();
-		assertThat(found.getKey()).isEqualTo("java");
-		assertThat(found.getValue().get()).isEqualTo(110L);
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
@@ -553,7 +529,6 @@ public class ConsistencyLevelIT
 				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
 		tweets.iterator(ConsistencyLevel.EACH_QUORUM).hasNext();
-		assertThatConsistencyLevelsAreReinitialized();
 	}
 
 	@Test
@@ -579,26 +554,181 @@ public class ConsistencyLevelIT
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
+		logAsserter.prepareLogLevel();
 		ThriftBatchingEntityManager batchingEm = em.batchingEntityManager();
 		batchingEm.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
-
 		batchingEm.persist(entity);
 		batchingEm.persist(tweet);
 
-		Logger thriftLogger = Logger.getLogger("org.apache.cassandra.service.StorageProxy");
-		thriftLogger.setLevel(Level.TRACE);
-
-		ConsoleAppender ca = new ConsoleAppender();
-		final ByteArrayOutputStream myOut = new ByteArrayOutputStream();
-		ca.setWriter(new OutputStreamWriter(myOut));
-		ca.setLayout(new PatternLayout("%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
-		ca.setName("test appender");
-		thriftLogger.addAppender(ca);
-
 		batchingEm.endBatch();
-		final String standardOutput = myOut.toString();
+		logAsserter.assertConsistencyLevels(ALL, ONE);
+	}
 
-		System.out.println(" : " + standardOutput);
+	@Test
+	public void should_get_counter_with_consistency_level() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		entity = em.merge(entity);
+		try
+		{
+			entity.getVersion().get(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
+		}
+		assertThatConsistencyLevelsAreReinitialized();
+	}
+
+	@Test
+	public void should_increment_counter_with_consistency_level() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		entity = em.merge(entity);
+		try
+		{
+			entity.getVersion().incr(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
+		assertThatConsistencyLevelsAreReinitialized();
+	}
+
+	@Test
+	public void should_increment_n_counter_with_consistency_level() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		entity = em.merge(entity);
+		try
+		{
+			entity.getVersion().incr(10L, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
+		assertThatConsistencyLevelsAreReinitialized();
+	}
+
+	@Test
+	public void should_decrement_counter_with_consistency_level() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		entity = em.merge(entity);
+		try
+		{
+			entity.getVersion().decr(ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
+		assertThatConsistencyLevelsAreReinitialized();
+	}
+
+	@Test
+	public void should_decrement_counter_n_with_consistency_level() throws Exception
+	{
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		entity = em.merge(entity);
+		try
+		{
+			entity.getVersion().decr(10L, ConsistencyLevel.EACH_QUORUM);
+		}
+		catch (HInvalidRequestException e)
+		{
+			assertThat(e)
+					.hasMessage(
+							"InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		}
+		assertThatConsistencyLevelsAreReinitialized();
+	}
+
+	@Test
+	public void should_incr_with_consistency_level_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		logAsserter.prepareLogLevel();
+		counterWideMap.insert(10, CounterBuilder.incr(ALL));
+		logAsserter.assertConsistencyLevels(QUORUM, ALL);
+		assertThatConsistencyLevelsAreReinitialized();
+
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(1L);
+	}
+
+	@Test
+	public void should_incr_n_with_consistency_level_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		logAsserter.prepareLogLevel();
+		counterWideMap.insert(10, CounterBuilder.incr(15L, ALL));
+		logAsserter.assertConsistencyLevels(QUORUM, ALL);
+		assertThatConsistencyLevelsAreReinitialized();
+
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(15L);
+	}
+
+	@Test
+	public void should_decr_with_consistency_level_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		logAsserter.prepareLogLevel();
+		counterWideMap.insert(10, CounterBuilder.decr(ALL));
+		logAsserter.assertConsistencyLevels(QUORUM, ALL);
+		assertThatConsistencyLevelsAreReinitialized();
+
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(-1L);
+	}
+
+	@Test
+	public void should_decr_n_with_consistency_level_for_counter_widemap() throws Exception
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
+
+		logAsserter.prepareLogLevel();
+		counterWideMap.insert(10, CounterBuilder.decr(15L, ALL));
+		logAsserter.assertConsistencyLevels(QUORUM, ALL);
+		assertThatConsistencyLevelsAreReinitialized();
+
+		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
+				.isEqualTo(-15L);
+	}
+
+	private BeanWithConsistencyLevelOnClassAndField prepareCounterWideMap()
+	{
+		BeanWithConsistencyLevelOnClassAndField entity = new BeanWithConsistencyLevelOnClassAndField();
+		entity.setId(RandomUtils.nextLong());
+		entity.setName("name");
+		entity = em.merge(entity);
+
+		return entity;
+	}
+
+	private Composite prepareCounterWideMapName(Integer index)
+	{
+		Composite comp = new Composite();
+		comp.addComponent(10, SerializerUtils.INT_SRZ);
+		return comp;
 	}
 
 	private void assertThatConsistencyLevelsAreReinitialized()

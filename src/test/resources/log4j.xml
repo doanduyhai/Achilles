@@ -12,18 +12,20 @@
 		</layout>
 	</appender>
 	
+	<appender name="NullAppender" class="org.apache.log4j.varia.NullAppender" />
 	
 	<logger name="info.archinnov.achilles.columnFamily.ColumnFamilyHelper">
 		<level value="DEBUG" />
-	</logger>
-	
-	<logger name="org.apache.cassandra.service.StorageProxy">
-		<level value="WARN" />
 	</logger>
 
 	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
 		<level value="INFO" />
 	</logger>	
+	
+	<logger name="org.apache.cassandra.service.StorageProxy" additivity="false">
+		<level value="WARN" />
+		<appender-ref ref="NullAppender" />
+	</logger>
 	
 	<logger name="info.archinnov.achilles">
 		<level value="WARN" />

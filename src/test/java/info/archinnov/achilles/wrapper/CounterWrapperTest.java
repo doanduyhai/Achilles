@@ -5,6 +5,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
+import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import me.prettyprint.hector.api.beans.Composite;
 
@@ -39,7 +41,13 @@ public class CounterWrapperTest
 	private AbstractDao<Long, Long> counterDao;
 
 	@Mock
+	private PersistenceContext<Long> context;
+
+	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;
+
+	@Mock
+	private EntityValidator validator;
 
 	private ConsistencyLevel readLevel = EACH_QUORUM;
 	private ConsistencyLevel writeLevel = LOCAL_QUORUM;
@@ -48,11 +56,13 @@ public class CounterWrapperTest
 	public void setUp()
 	{
 		Whitebox.setInternalState(wrapper, "key", key);
+		Whitebox.setInternalState(wrapper, "validator", validator);
 		wrapper.setColumnName(columnName);
 		wrapper.setCounterDao(counterDao);
-		wrapper.setPolicy(policy);
+		wrapper.setContext(context);
 		wrapper.setReadLevel(readLevel);
 		wrapper.setWriteLevel(writeLevel);
+		when(context.getPolicy()).thenReturn(policy);
 	}
 
 	@Test
@@ -64,6 +74,19 @@ public class CounterWrapperTest
 		assertThat(value).isEqualTo(10L);
 
 		verify(policy).setCurrentReadLevel(readLevel);
+		verify(policy).removeCurrentReadLevel();
+	}
+
+	@Test
+	public void should_get_counter_with_consistency_level() throws Exception
+	{
+		when(counterDao.getCounterValue(key, columnName)).thenReturn(10L);
+		Long value = wrapper.get(EACH_QUORUM);
+
+		assertThat(value).isEqualTo(10L);
+
+		verify(validator).validateNoPendingBatch(context);
+		verify(policy).setCurrentReadLevel(EACH_QUORUM);
 		verify(policy).removeCurrentReadLevel();
 	}
 
@@ -91,6 +114,17 @@ public class CounterWrapperTest
 	}
 
 	@Test
+	public void should_incr_with_consistency() throws Exception
+	{
+		wrapper.incr(EACH_QUORUM);
+
+		verify(validator).validateNoPendingBatch(context);
+		verify(counterDao).incrementCounter(key, columnName, 1L);
+		verify(policy).setCurrentWriteLevel(EACH_QUORUM);
+		verify(policy).removeCurrentWriteLevel();
+	}
+
+	@Test
 	public void should_incr_with_existing_consistency_level() throws Exception
 	{
 		when(policy.getCurrentWriteLevel()).thenReturn(THREE);
@@ -112,6 +146,17 @@ public class CounterWrapperTest
 	}
 
 	@Test
+	public void should_incr_with_value_and_consistency() throws Exception
+	{
+		wrapper.incr(10L, EACH_QUORUM);
+
+		verify(validator).validateNoPendingBatch(context);
+		verify(counterDao).incrementCounter(key, columnName, 10L);
+		verify(policy).setCurrentWriteLevel(EACH_QUORUM);
+		verify(policy).removeCurrentWriteLevel();
+	}
+
+	@Test
 	public void should_decr() throws Exception
 	{
 		wrapper.decr();
@@ -122,12 +167,34 @@ public class CounterWrapperTest
 	}
 
 	@Test
+	public void should_decr_with_consistency() throws Exception
+	{
+		wrapper.decr(EACH_QUORUM);
+
+		verify(validator).validateNoPendingBatch(context);
+		verify(counterDao).decrementCounter(key, columnName, 1L);
+		verify(policy).setCurrentWriteLevel(EACH_QUORUM);
+		verify(policy).removeCurrentWriteLevel();
+	}
+
+	@Test
 	public void should_decr_with_value() throws Exception
 	{
 		wrapper.decr(10L);
 
 		verify(counterDao).decrementCounter(key, columnName, 10L);
 		verify(policy).setCurrentWriteLevel(writeLevel);
+		verify(policy).removeCurrentWriteLevel();
+	}
+
+	@Test
+	public void should_decr_with_value_and_consistency() throws Exception
+	{
+		wrapper.decr(10L, EACH_QUORUM);
+
+		verify(validator).validateNoPendingBatch(context);
+		verify(counterDao).decrementCounter(key, columnName, 10L);
+		verify(policy).setCurrentWriteLevel(EACH_QUORUM);
 		verify(policy).removeCurrentWriteLevel();
 	}
 }

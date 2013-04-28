@@ -1,7 +1,6 @@
 package integration.tests.entity;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.entity.type.WideMap;
 
@@ -20,7 +19,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "beanWithReadOneWriteAllWideMap")
-public class BeanWithReadOneWriteAllConsistencyForExternalWidemap implements Serializable
+public class BeanWithReadOneWriteAllConsistencyForWidemap implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -31,12 +30,12 @@ public class BeanWithReadOneWriteAllConsistencyForExternalWidemap implements Ser
 	private String name;
 
 	@Consistency(read = ONE, write = ALL)
-	@Column(table = "external_widemap_with_consistency1")
+	@Column(table = "widemap_with_consistency1")
 	private WideMap<Integer, String> wideMap;
 
-	public BeanWithReadOneWriteAllConsistencyForExternalWidemap() {}
+	public BeanWithReadOneWriteAllConsistencyForWidemap() {}
 
-	public BeanWithReadOneWriteAllConsistencyForExternalWidemap(Long id, String name) {
+	public BeanWithReadOneWriteAllConsistencyForWidemap(Long id, String name) {
 		this.id = id;
 		this.name = name;
 	}

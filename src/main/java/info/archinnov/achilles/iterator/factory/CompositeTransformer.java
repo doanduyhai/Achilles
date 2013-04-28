@@ -202,7 +202,7 @@ public class CompositeTransformer
 								.getExternalCFName())) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
-				.policy(context.getPolicy())//
+				.context(context)//
 				.build();
 	}
 

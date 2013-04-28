@@ -115,6 +115,7 @@ public class EntityMerger
 					}
 				}
 			}
+			interceptor.setContext(context);
 			interceptor.setTarget(realObject);
 			proxy = entity;
 		}

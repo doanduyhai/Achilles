@@ -28,7 +28,7 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 	protected AchillesInterceptor<ID> interceptor;
 	protected EntityValidator validator = new EntityValidator();
 
-	private static final int DEFAULT_COUNT = 100;
+	protected static final int DEFAULT_COUNT = 100;
 
 	private <T> T reinitConsistencyLevel(final SafeExecutionContext<T> executionContext)
 	{
@@ -1029,15 +1029,35 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 	private void forceReadConsistencyLevel(final ConsistencyLevel readLevel)
 	{
 		log.trace("Execute read operation with consistency level {}", readLevel.name());
-		validator.validateNoPendingBatch(context);
+		ensureNoPendingBatch();
 		context.setReadConsistencyLevel(readLevel);
 	}
 
 	private void forceWriteConsistencyLevel(final ConsistencyLevel writeLevel)
 	{
 		log.trace("Execute write operation with consistency level {}", writeLevel.name());
-		validator.validateNoPendingBatch(context);
+		ensureNoPendingBatch();
 		context.setWriteConsistencyLevel(writeLevel);
+	}
+
+	private void ensureNoPendingBatch() throws Error
+	{
+		try
+		{
+			validator.validateNoPendingBatch(context);
+		}
+		catch (RuntimeException e)
+		{
+			log.trace("Cleaning up flushing context");
+			context.cleanUpFlushContext();
+			throw e;
+		}
+		catch (Error e)
+		{
+			log.trace("Cleaning up flushing context");
+			context.cleanUpFlushContext();
+			throw e;
+		}
 	}
 
 	public AchillesInterceptor<ID> getInterceptor()

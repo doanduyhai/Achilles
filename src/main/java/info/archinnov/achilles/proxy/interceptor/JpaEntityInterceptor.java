@@ -249,7 +249,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				.columnName(comp) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
-				.policy(context.getPolicy()) //
+				.context(context) //
 				.build();
 		return result;
 	}

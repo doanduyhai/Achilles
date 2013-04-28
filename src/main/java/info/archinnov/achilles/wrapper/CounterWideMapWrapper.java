@@ -5,9 +5,11 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Counter>
 {
 
-	private static final Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
+	private static Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
 
 	private ID id;
 	private GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
@@ -51,7 +53,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		return CounterWrapperBuilder.builder(id) //
 				.columnName(comp) //
 				.counterDao(wideMapCounterDao) //
-				.policy(context.getPolicy()) //
+				.context(context) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
 				.build();
@@ -61,6 +63,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	@Override
 	public void insert(K key, Counter value, int ttl)
 	{
+		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
 	}
 
@@ -69,9 +72,16 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	{
 		log.trace("Insert counter value {} with key {}", value, key);
 		Composite comp = compositeFactory.createBaseComposite(propertyMeta, key);
-
-		wideMapCounterDao.incrementCounter(id, comp, value.get());
-		context.flush();
+		try
+		{
+			wideMapCounterDao.incrementCounter(id, comp, value.get());
+		}
+		catch (Exception e)
+		{
+			log.trace("Exception raised, clean up consistency levels");
+			context.cleanUpFlushContext();
+			throw new AchillesException(e);
+		}
 	}
 
 	@Override
@@ -150,45 +160,412 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 				.getCounterColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(),
 						count);
 
-		PropertyMeta<K, Counter> duplicateMeta;
-		if (context.getPolicy().getCurrentReadLevel() != null)
-		{
-			duplicateMeta = propertyMeta.duplicate(context.getPolicy().getCurrentReadLevel());
-		}
-		else
-		{
-			duplicateMeta = propertyMeta;
-		}
 		return iteratorFactory.createCounterKeyValueIterator(context, columnSliceIterator,
-				duplicateMeta);
+				propertyMeta);
 	}
 
 	@Override
 	public void remove(K key)
 	{
-		throw new UnsupportedOperationException(
-				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void remove(K start, K end, BoundingMode bounds)
 	{
-		throw new UnsupportedOperationException(
-				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		throw new UnsupportedOperationException(
-				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public Counter get(K key, ConsistencyLevel readLevel)
+	{
+		return get(key);
+	}
+
+	@Override
+	public void insert(K key, Counter value, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException(
-				"Cannot remove counter value. Please set a its value to 0 instead of removing it");
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public void insert(K key, Counter value, int ttl, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> find(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> find(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> findBoundsExclusive(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> findReverse(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> findReverseBoundsExclusive(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValue<K, Counter> findFirst(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> findFirst(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValue<K, Counter> findLast(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<KeyValue<K, Counter>> findLast(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findValues(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findValues(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findBoundsExclusiveValues(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findReverseValues(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findReverseBoundsExclusiveValues(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public Counter findFirstValue(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findFirstValues(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public Counter findLastValue(ConsistencyLevel readLevel)
+	{
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<Counter> findLastValues(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering,
+			ConsistencyLevel readLevel)
+	{
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findKeys(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findBoundsExclusiveKeys(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findReverseKeys(K start, K end, int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findReverseBoundsExclusiveKeys(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public K findFirstKey(ConsistencyLevel readLevel)
+	{
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findFirstKeys(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public K findLastKey(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public List<K> findLastKeys(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iterator(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iterator(K start, K end, int count, BoundingMode bounds,
+			OrderingMode ordering, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iterator(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iterator(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iteratorBoundsExclusive(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iteratorReverse(ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iteratorReverse(int count, ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iteratorReverse(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public KeyValueIterator<K, Counter> iteratorReverseBoundsExclusive(K start, K end, int count,
+			ConsistencyLevel readLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException(
+				"Please set runtime consistency level at Counter level instead of at WideMap level");
+	}
+
+	@Override
+	public void remove(K key, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void remove(K start, K end, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void remove(K start, K end, BoundingMode bounds, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void removeBoundsExclusive(K start, K end, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void removeFirst(ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void removeFirst(int count, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void removeLast(ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
+	}
+
+	@Override
+	public void removeLast(int count, ConsistencyLevel writeLevel)
+	{
+		context.cleanUpFlushContext();
+		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	public void setId(ID id)
