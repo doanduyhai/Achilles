@@ -2,11 +2,6 @@ package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.entity.context.FlushContext.FlushType.IMMEDIATE;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +16,10 @@ public class ImmediateFlushContext extends AbstractFlushContext
 {
 	private static final Logger log = LoggerFactory.getLogger(ImmediateFlushContext.class);
 
-	public ImmediateFlushContext(Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao,
+	public ImmediateFlushContext(DaoContext daoContext,
 			AchillesConfigurableConsistencyLevelPolicy policy)
 	{
-		super(entityDaosMap, columnFamilyDaosMap, counterDao, policy);
+		super(daoContext, policy);
 	}
 
 	@Override

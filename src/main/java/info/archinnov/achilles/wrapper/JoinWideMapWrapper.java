@@ -158,6 +158,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		return keyValueFactory.createKeyList(propertyMeta, hColumns);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
@@ -173,8 +174,8 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					count);
 		}
 
-		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
-				.getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+				.findEntityDao(propertyMeta.joinMeta().getColumnFamilyName());
 
 		AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
 				.getJoinColumnsIterator(joinEntityDao, propertyMeta, id, composites[0],

@@ -1,9 +1,8 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
@@ -51,10 +50,10 @@ public class ThriftEntityManager implements EntityManager
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	protected final Map<Class<?>, EntityMeta<?>> entityMetaMap;
-	protected final Map<String, GenericEntityDao<?>> entityDaosMap;
-	protected final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	protected final CounterDao counterDao;
-	protected AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	protected final AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+
+	protected final ConfigurationContext configContext;
+	protected final DaoContext daoContext;
 
 	protected EntityPersister persister = new EntityPersister();
 	protected EntityLoader loader = new EntityLoader();
@@ -65,16 +64,13 @@ public class ThriftEntityManager implements EntityManager
 	protected EntityValidator entityValidator = new EntityValidator();
 
 	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
-			Map<String, GenericEntityDao<?>> entityDaosMap, //
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap,//
-			CounterDao counterDao, //
-			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+			DaoContext daoContext, //
+			ConfigurationContext configContext)
 	{
 		this.entityMetaMap = entityMetaMap;
-		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.counterDao = counterDao;
-		this.consistencyPolicy = consistencyPolicy;
+		this.daoContext = daoContext;
+		this.configContext = configContext;
+		this.consistencyPolicy = configContext.getConsistencyPolicy();
 	}
 
 	/**
@@ -531,8 +527,7 @@ public class ThriftEntityManager implements EntityManager
 	 */
 	public ThriftBatchingEntityManager batchingEntityManager()
 	{
-		return new ThriftBatchingEntityManager(entityMetaMap, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy);
+		return new ThriftBatchingEntityManager(entityMetaMap, daoContext, configContext);
 	}
 
 	/**
@@ -703,10 +698,8 @@ public class ThriftEntityManager implements EntityManager
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
-		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, new ImmediateFlushContext(entityDaosMap,
-						columnFamilyDaosMap, counterDao, consistencyPolicy), entityClass,
-				primaryKey);
+		return new PersistenceContext<ID>(entityMeta, configContext, daoContext,
+				new ImmediateFlushContext(daoContext, consistencyPolicy), entityClass, primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -716,9 +709,8 @@ public class ThriftEntityManager implements EntityManager
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
-		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, new ImmediateFlushContext(entityDaosMap,
-						columnFamilyDaosMap, counterDao, consistencyPolicy), entity);
+		return new PersistenceContext<ID>(entityMeta, configContext, daoContext,
+				new ImmediateFlushContext(daoContext, consistencyPolicy), entity);
 	}
 
 	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)

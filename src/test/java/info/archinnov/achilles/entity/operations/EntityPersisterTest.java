@@ -170,12 +170,12 @@ public class EntityPersisterTest
 		GenericEntityDao<Long> entityDao = mock(GenericEntityDao.class);
 		entityDaosMap.put("cfName", entityDao);
 		Long joinId = RandomUtils.nextLong();
-
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(joinId);
 		when(loader.loadVersionSerialUID(bean.getId(), entityDao)).thenReturn(joinId);
+		context.getConfigContext().setEnsureJoinConsistency(true);
 
 		persister.cascadePersistOrEnsureExists(context, bean, joinProperties);
 

@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
-import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ public class EntityMetaBuilder<ID>
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
-	private Keyspace keyspace;
 	private boolean columnFamilyDirectMapping = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
@@ -50,7 +48,6 @@ public class EntityMetaBuilder<ID>
 	{
 		log.debug("Build entityMeta for entity class {}", className);
 
-		Validator.validateNotNull(keyspace, "keyspace should not be null");
 		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
@@ -117,12 +114,6 @@ public class EntityMetaBuilder<ID>
 	public EntityMetaBuilder<ID> propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		this.propertyMetas = propertyMetas;
-		return this;
-	}
-
-	public EntityMetaBuilder<ID> keyspace(Keyspace keyspace)
-	{
-		this.keyspace = keyspace;
 		return this;
 	}
 

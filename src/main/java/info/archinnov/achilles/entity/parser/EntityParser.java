@@ -2,8 +2,6 @@ package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import info.archinnov.achilles.annotations.ColumnFamily;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -22,8 +20,6 @@ import java.util.Map.Entry;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-
-import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -102,7 +98,6 @@ public class EntityParser
 		validator.validateColumnFamilyDirectMappings(context);
 
 		EntityMeta<ID> entityMeta = entityMetaBuilder((PropertyMeta<Void, ID>) idMeta)
-				.keyspace(context.getKeyspace()) //
 				.className(entityClass.getCanonicalName()) //
 				.columnFamilyName(columnFamilyName) //
 				.serialVersionUID(serialVersionUID) //
@@ -111,7 +106,7 @@ public class EntityParser
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.build();
 
-		buildDao(context, columnFamilyName, idMeta);
+		// buildDao(context, columnFamilyName, idMeta);
 		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
 		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass()
@@ -138,22 +133,24 @@ public class EntityParser
 			validator.validateJoinEntityNotDirectCFMapping(propertyMeta, joinEntityMeta);
 
 			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
-			if (propertyMeta.type().isWideMap())
-			{
 
-				GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
-						context.getCluster(), //
-						context.getKeyspace(), //
-						(Serializer<ID>) propertyMeta.getIdSerializer(), //
-						joinEntityMeta.getIdSerializer(), //
-						propertyMeta.getExternalCFName(),//
-						context.getConfigurableCLPolicy());
-
-				log.debug("Building join dao for column family {}",
-						propertyMeta.getExternalCFName());
-
-				context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
-			}
+			// TODO
+			// if (propertyMeta.type().isWideMap())
+			// {
+			//
+			// GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
+			// context.getCluster(), //
+			// context.getKeyspace(), //
+			// (Serializer<ID>) propertyMeta.getIdSerializer(), //
+			// joinEntityMeta.getIdSerializer(), //
+			// propertyMeta.getExternalCFName(),//
+			// context.getConfigurableCLPolicy());
+			//
+			// log.debug("Building join dao for column family {}",
+			// propertyMeta.getExternalCFName());
+			//
+			// context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
+			// }
 
 			log.trace("Join property meta built for entity class {} : {}",
 					clazz.getCanonicalName(), propertyMeta);
@@ -197,7 +194,6 @@ public class EntityParser
 	{
 		for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinWideMaps().entrySet())
 		{
-
 			PropertyMeta<?, ?> joinExternalWideMapMeta = entry.getKey();
 
 			log.debug("Fill join wide map meta {} of entity class {}", joinExternalWideMapMeta
@@ -221,19 +217,20 @@ public class EntityParser
 		}
 	}
 
-	private <ID, K, V> void buildDao(EntityParsingContext context, String columnFamilyName,
-			PropertyMeta<Void, ID> idMeta)
-	{
-		GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(context.getCluster(), //
-				context.getKeyspace(), //
-				idMeta.getValueSerializer(), //
-				columnFamilyName, //
-				context.getConfigurableCLPolicy());
-
-		log.debug("Build entity dao for column family {}", columnFamilyName);
-
-		context.getEntityDaosMap().put(columnFamilyName, entityDao);
-	}
+	// TODO
+	// private <ID, K, V> void buildDao(EntityParsingContext context, String columnFamilyName,
+	// PropertyMeta<Void, ID> idMeta)
+	// {
+	// GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(context.getCluster(), //
+	// context.getKeyspace(), //
+	// idMeta.getValueSerializer(), //
+	// columnFamilyName, //
+	// context.getConfigurableCLPolicy());
+	//
+	// log.debug("Build entity dao for column family {}", columnFamilyName);
+	//
+	// context.getEntityDaosMap().put(columnFamilyName, entityDao);
+	// }
 
 	private void saveConsistencyLevel(EntityParsingContext context, String columnFamilyName,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)

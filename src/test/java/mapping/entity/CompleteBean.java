@@ -58,11 +58,14 @@ public class CompleteBean implements Serializable
 	@Column
 	private WideMap<UUID, String> tweets;
 
-	@Column
+	@Column(table = "user_tweets")
 	private WideMap<UserTweetKey, String> userTweets;
 
 	@Column(table = "geo_positions")
 	private WideMap<UUID, String> geoPositions;
+
+	@Column(table = "friend_widemap")
+	private WideMap<String, UserBean> friendsWideMap;
 
 	@ManyToOne
 	@JoinColumn
@@ -75,7 +78,7 @@ public class CompleteBean implements Serializable
 	@Column
 	private Counter count;
 
-	@Column
+	@Column(table = "popular_topics")
 	private WideMap<String, Counter> popularTopics;
 
 	public Long getId()
@@ -211,6 +214,11 @@ public class CompleteBean implements Serializable
 	public void setUsersMap(Map<Integer, UserBean> usersMap)
 	{
 		this.usersMap = usersMap;
+	}
+
+	public WideMap<String, UserBean> getFriendsWideMap()
+	{
+		return friendsWideMap;
 	}
 
 	public static class UserTweetKey implements MultiKey

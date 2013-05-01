@@ -129,8 +129,9 @@ public class EntityPersister
 
 			persist(context);
 		}
-		else
+		else if (context.getConfigContext().isEnsureJoinConsistency())
 		{
+
 			log.debug("Consistency check for join entity of class {} and primary key {} ", context
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 

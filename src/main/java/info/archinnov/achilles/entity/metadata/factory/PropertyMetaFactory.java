@@ -101,7 +101,7 @@ public class PropertyMetaFactory<K, V>
 			case LAZY_MAP:
 			case WIDE_MAP:
 			case JOIN_WIDE_MAP:
-			case WIDE_MAP_COUNTER:
+			case COUNTER_WIDE_MAP:
 				meta = new PropertyMeta<K, V>();
 				break;
 

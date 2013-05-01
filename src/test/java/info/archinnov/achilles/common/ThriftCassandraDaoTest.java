@@ -5,6 +5,7 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 
@@ -60,10 +61,11 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 
 		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, ENTITY_PACKAGE,
 				CLUSTER_PARAM, getCluster(), KEYSPACE_PARAM, getKeyspace(),
-				FORCE_CF_CREATION_PARAM, true);
+				FORCE_CF_CREATION_PARAM, true, ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
-		policy = Whitebox.getInternalState(emf, "consistencyPolicy");
+		ConfigurationContext configContext = Whitebox.getInternalState(emf, "configContext");
+		policy = configContext.getConsistencyPolicy();
 	}
 
 	public static Cluster getCluster()

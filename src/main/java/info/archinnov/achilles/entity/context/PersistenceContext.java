@@ -9,9 +9,6 @@ import info.archinnov.achilles.entity.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
-
-import java.util.Map;
-
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
@@ -30,9 +27,8 @@ public class PersistenceContext<ID>
 
 	private final EntityIntrospector introspector = new EntityIntrospector();
 	private final EntityMeta<ID> entityMeta;
-	private final Map<String, GenericEntityDao<?>> entityDaosMap;
-	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	private final CounterDao counterDao;
+	private final DaoContext daoContext;
+	private final ConfigurationContext configContext;
 	private final AchillesConfigurableConsistencyLevelPolicy policy;
 
 	private Object entity;
@@ -44,11 +40,9 @@ public class PersistenceContext<ID>
 	// Flush
 	private FlushContext flushContext;
 
-	public PersistenceContext(EntityMeta<ID> entityMeta,
-			Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
-			CounterDao counterDao, //
-			AchillesConfigurableConsistencyLevelPolicy policy, //
+	public PersistenceContext(EntityMeta<ID> entityMeta, //
+			ConfigurationContext configContext, //
+			DaoContext daoContext, //
 			FlushContext flushContext, //
 			Object entity)
 	{
@@ -56,10 +50,9 @@ public class PersistenceContext<ID>
 				entityMeta.getClassName());
 
 		this.entityMeta = entityMeta;
-		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.counterDao = counterDao;
-		this.policy = policy;
+		this.daoContext = daoContext;
+		this.configContext = configContext;
+		this.policy = configContext.getConsistencyPolicy();
 		this.flushContext = flushContext;
 		this.entity = entity;
 		this.entityClass = entity.getClass();
@@ -72,10 +65,9 @@ public class PersistenceContext<ID>
 		this.initDaos();
 	}
 
-	public PersistenceContext(EntityMeta<ID> entityMeta,
-			Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao, //
-			AchillesConfigurableConsistencyLevelPolicy policy, //
+	public PersistenceContext(EntityMeta<ID> entityMeta, //
+			ConfigurationContext configContext, //
+			DaoContext daoContext, //
 			FlushContext flushContext, //
 			Class<?> entityClass, ID primaryKey)
 	{
@@ -83,10 +75,9 @@ public class PersistenceContext<ID>
 				entityMeta.getClassName());
 
 		this.entityMeta = entityMeta;
-		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.counterDao = counterDao;
-		this.policy = policy;
+		this.configContext = configContext;
+		this.policy = configContext.getConsistencyPolicy();
+		this.daoContext = daoContext;
 		this.flushContext = flushContext;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
@@ -102,8 +93,8 @@ public class PersistenceContext<ID>
 	{
 		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
 				joinMeta.getClassName());
-		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, policy, flushContext, joinEntity);
+		return new PersistenceContext<JOIN_ID>(joinMeta, configContext, daoContext, flushContext,
+				joinEntity);
 	}
 
 	public <JOIN_ID> PersistenceContext<JOIN_ID> newPersistenceContext(Class<?> entityClass,
@@ -112,19 +103,23 @@ public class PersistenceContext<ID>
 		log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
 				joinMeta.getClassName());
 
-		return new PersistenceContext<JOIN_ID>(joinMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, policy, flushContext, entityClass, joinId);
+		return new PersistenceContext<JOIN_ID>(joinMeta, configContext, daoContext, flushContext,
+				entityClass, joinId);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <JOIN_ID> GenericEntityDao<JOIN_ID> findEntityDao(String columnFamilyName)
+	public GenericEntityDao<?> findEntityDao(String columnFamilyName)
 	{
-		return (GenericEntityDao<JOIN_ID>) entityDaosMap.get(columnFamilyName);
+		return daoContext.findEntityDao(columnFamilyName);
 	}
 
 	public GenericColumnFamilyDao<?, ?> findColumnFamilyDao(String columnFamilyName)
 	{
-		return columnFamilyDaosMap.get(columnFamilyName);
+		return daoContext.findColumnFamilyDao(columnFamilyName);
+	}
+
+	public CounterDao getCounterDao()
+	{
+		return daoContext.getCounterDao();
 	}
 
 	public boolean isDirectColumnFamilyMapping()
@@ -202,16 +197,6 @@ public class PersistenceContext<ID>
 		return entityMeta;
 	}
 
-	public Map<String, GenericEntityDao<?>> getEntityDaosMap()
-	{
-		return entityDaosMap;
-	}
-
-	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
-	{
-		return columnFamilyDaosMap;
-	}
-
 	public Object getEntity()
 	{
 		return entity;
@@ -220,11 +205,6 @@ public class PersistenceContext<ID>
 	public void setEntity(Object entity)
 	{
 		this.entity = entity;
-	}
-
-	public CounterDao getCounterDao()
-	{
-		return counterDao;
 	}
 
 	public GenericEntityDao<ID> getEntityDao()
@@ -252,6 +232,11 @@ public class PersistenceContext<ID>
 		this.primaryKey = primaryKey;
 	}
 
+	public ConfigurationContext getConfigContext()
+	{
+		return configContext;
+	}
+
 	public AchillesConfigurableConsistencyLevelPolicy getPolicy()
 	{
 		return policy;
@@ -263,12 +248,12 @@ public class PersistenceContext<ID>
 		String columnFamilyName = entityMeta.getColumnFamilyName();
 		if (entityMeta.isColumnFamilyDirectMapping())
 		{
-			this.columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) columnFamilyDaosMap
-					.get(columnFamilyName);
+			this.columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) daoContext
+					.findColumnFamilyDao(columnFamilyName);
 		}
 		else
 		{
-			this.entityDao = (GenericEntityDao<ID>) entityDaosMap.get(columnFamilyName);
+			this.entityDao = (GenericEntityDao<ID>) daoContext.findEntityDao(columnFamilyName);
 		}
 	}
 }

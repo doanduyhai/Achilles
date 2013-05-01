@@ -2,9 +2,9 @@ package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContext;
+import info.archinnov.achilles.entity.context.DaoContextBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
@@ -13,7 +13,6 @@ import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.IOException;
@@ -47,24 +46,21 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	private Cluster cluster;
 	private Keyspace keyspace;
 	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
-	private ObjectMapperFactory objectMapperFactory;
 
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
 	private EntityParsingValidator validator = new EntityParsingValidator();
+	private DaoContextBuilder daoContextBuilder = new DaoContextBuilder();
 
-	boolean forceColumnFamilyCreation = false;
-	private CounterDao counterDao;
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private ConfigurationContext configContext;
+	private DaoContext daoContext;
 
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 
 	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
 
 	protected ThriftEntityManagerFactory() {
-		counterDao = null;
+		// counterDao = null;
 	}
 
 	/**
@@ -163,8 +159,15 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	 *            <br/>
 	 *            </li>
 	 *            </ul>
-	 * 
-	 * 
+	 *            <hr/>
+	 *            <h1>Join consistency</h1>
+	 *            <br/>
+	 *            <ul>
+	 *            <li>"achilles.consistency.join.check" <strong>(OPTIONAL)</strong>: whether check for join entity in Cassandra before inserting join primary key<br/>
+	 *            <br/>
+	 *            <strong>Warning: enable this option guarantees stronger data consistency but with the expense of read-before-write for each join entity insertion</strong> <br/>
+	 *            </li>
+	 *            </ul>
 	 */
 	public ThriftEntityManagerFactory(Map<String, Object> configurationMap) {
 		Validator.validateNotNull(configurationMap,
@@ -173,19 +176,18 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 				"Configuration map for Achilles ThrifEntityManagerFactory should not be empty");
 
 		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
+		configContext = parseConfiguration(configurationMap);
+
 		cluster = argumentExtractor.initCluster(configurationMap);
-		consistencyPolicy = initConsistencyLevelPolicy(configurationMap);
-		keyspace = argumentExtractor.initKeyspace(cluster, consistencyPolicy, configurationMap);
-		forceColumnFamilyCreation = argumentExtractor.initForceCFCreation(configurationMap);
-		objectMapperFactory = argumentExtractor.initObjectMapperFactory(configurationMap);
+		keyspace = argumentExtractor.initKeyspace(cluster, configContext.getConsistencyPolicy(),
+				configurationMap);
+		keyspace.setConsistencyLevelPolicy(configContext.getConsistencyPolicy());
 
 		log.info(
 				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 				cluster.getName(), keyspace.getKeyspaceName());
 
 		thriftColumnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
-		counterDao = new CounterDao(cluster, keyspace, consistencyPolicy);
-		keyspace.setConsistencyLevelPolicy(consistencyPolicy);
 		bootstrap();
 	}
 
@@ -193,18 +195,18 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	{
 		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
 
-		boolean createCounterCf = false;
+		boolean hasSimpleCounter = false;
 		try
 		{
-			createCounterCf = discoverEntities();
+			hasSimpleCounter = discoverEntities();
 		}
 		catch (Exception e)
 		{
 			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
 		}
 
-		thriftColumnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap,
-				forceColumnFamilyCreation, createCounterCf);
+		thriftColumnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap, configContext,
+				hasSimpleCounter);
 	}
 
 	protected boolean discoverEntities() throws ClassNotFoundException, IOException
@@ -215,29 +217,26 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 
 		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
 		validator.validateAtLeastOneEntity(entities, entityPackages);
-		boolean createCounterCf = false;
+		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities)
 		{
 			EntityParsingContext context = new EntityParsingContext(//
 					joinPropertyMetaToBeFilled, //
-					entityDaosMap, //
-					columnFamilyDaosMap, //
-					consistencyPolicy, //
-					cluster, keyspace, //
-					objectMapperFactory, entityClass);
+					configContext, entityClass);
 
 			EntityMeta<?> entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
-			createCounterCf = context.getHasSimpleCounter() || createCounterCf;
+			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
 		}
 
 		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				columnFamilyDaosMap, //
-				consistencyPolicy, //
-				cluster, keyspace), entityMetaMap);
+				configContext), entityMetaMap);
 
-		return createCounterCf;
+		daoContext = daoContextBuilder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+				hasSimpleCounter);
+
+		return hasSimpleCounter;
 	}
 
 	/**
@@ -250,10 +249,9 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	{
 		log.info("Create new Thrift-based Entity Manager ");
 
-		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
-				Collections.unmodifiableMap(entityDaosMap), //
-				Collections.unmodifiableMap(columnFamilyDaosMap), //
-				counterDao, consistencyPolicy);
+		return new ThriftEntityManager(//
+				Collections.unmodifiableMap(entityMetaMap), //
+				daoContext, configContext);
 	}
 
 	/**
@@ -266,10 +264,9 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	{
 		log.info("Create new Thrift-based Entity Manager ");
 
-		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
-				Collections.unmodifiableMap(entityDaosMap), //
-				Collections.unmodifiableMap(columnFamilyDaosMap), //
-				counterDao, consistencyPolicy);
+		return new ThriftEntityManager(//
+				Collections.unmodifiableMap(entityMetaMap), //
+				daoContext, configContext);
 	}
 
 	/**
@@ -306,5 +303,19 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 
 		return new AchillesConfigurableConsistencyLevelPolicy(defaultReadConsistencyLevel,
 				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
+	}
+
+	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap)
+	{
+		ConfigurationContext configContext = new ConfigurationContext();
+		configContext.setEnsureJoinConsistency(argumentExtractor
+				.ensureConsistencyOnJoin(configurationMap));
+		configContext.setForceColumnFamilyCreation(argumentExtractor
+				.initForceCFCreation(configurationMap));
+		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap));
+		configContext.setObjectMapperFactory(argumentExtractor
+				.initObjectMapperFactory(configurationMap));
+
+		return configContext;
 	}
 }

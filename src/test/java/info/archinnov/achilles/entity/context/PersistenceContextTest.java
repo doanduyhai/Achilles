@@ -18,6 +18,7 @@ import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.mutation.Mutator;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -52,10 +53,15 @@ public class PersistenceContextTest
 	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
+	private DaoContext daoContext;
+
+	@Mock
 	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
 	private CounterDao counterDao;
+
+	private ConfigurationContext configContext = new ConfigurationContext();
 
 	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy policy;
@@ -76,14 +82,21 @@ public class PersistenceContextTest
 
 	private UserBean bean;
 
+	@Before
+	public void setUp()
+	{
+		when(daoContext.getCounterDao()).thenReturn(counterDao);
+		configContext.setConsistencyPolicy(policy);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_init_entity_dao_on_initialization() throws Exception
 	{
 		prepareContextWithEntityDao();
 
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, entity);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, entity);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isEqualTo(entity);
@@ -97,11 +110,11 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
-		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
-				columFamilyDao);
+		when((GenericColumnFamilyDao<Long, String>) daoContext.findColumnFamilyDao("cf"))
+				.thenReturn(columFamilyDao);
 
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, entity);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, entity);
 
 		assertThat((GenericColumnFamilyDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
 				columFamilyDao);
@@ -113,9 +126,8 @@ public class PersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 		Long primaryKey = 150L;
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, CompleteBean.class,
-				primaryKey);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, CompleteBean.class, primaryKey);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(primaryKey);
 		assertThat(context.getEntity()).isNull();
@@ -128,8 +140,8 @@ public class PersistenceContextTest
 	public void should_spawn_child_context() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, entity);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, entity);
 
 		prepareNewContext();
 
@@ -147,8 +159,8 @@ public class PersistenceContextTest
 	public void should_spawn_child_context_with_id() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, entity);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, entity);
 
 		prepareNewContext();
 
@@ -170,11 +182,11 @@ public class PersistenceContextTest
 	public void should_find_column_family_dao() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, entityDaosMap,
-				columnFamilyDaosMap, counterDao, policy, immediateFlushContext, entity);
+		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
+				daoContext, immediateFlushContext, entity);
 
-		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("cf")).thenReturn(
-				columFamilyDao);
+		when((GenericColumnFamilyDao<Long, String>) daoContext.findColumnFamilyDao("cf"))
+				.thenReturn(columFamilyDao);
 
 		assertThat((GenericColumnFamilyDao) context.findColumnFamilyDao("cf")).isSameAs(
 				columFamilyDao);
@@ -200,7 +212,7 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		when((GenericEntityDao<Long>) entityDaosMap.get("cf")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf")).thenReturn(entityDao);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -220,7 +232,7 @@ public class PersistenceContextTest
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
 		when(joinMeta.isColumnFamilyDirectMapping()).thenReturn(false);
-		when((GenericEntityDao<Long>) entityDaosMap.get("cf2")).thenReturn(entityDao);
+		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}
 
 }

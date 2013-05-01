@@ -126,8 +126,7 @@ public class EntityValidatorTest
 		PersistenceContext<Long> context = PersistenceContextTestBuilder //
 				.mockAll(entityMeta, CompleteBean.class, 10L)//
 				.build();
-		ImmediateFlushContext immediateFlushContext = new ImmediateFlushContext(null, null, null,
-				null);
+		ImmediateFlushContext immediateFlushContext = new ImmediateFlushContext(null, null);
 
 		Whitebox.setInternalState(context, "flushContext", immediateFlushContext);
 

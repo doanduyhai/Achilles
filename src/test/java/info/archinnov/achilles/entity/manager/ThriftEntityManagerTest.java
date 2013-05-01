@@ -8,6 +8,8 @@ import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelP
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.ImmediateFlushContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -41,7 +43,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -64,7 +65,6 @@ public class ThriftEntityManagerTest
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	@InjectMocks
 	private ThriftEntityManager em;
 
 	@Mock
@@ -114,6 +114,12 @@ public class ThriftEntityManagerTest
 	private ImmediateFlushContext immediateFlushContext;
 
 	@Mock
+	private DaoContext daoContext;
+
+	@Mock
+	private ConfigurationContext configContext;
+
+	@Mock
 	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
 	@Captor
@@ -129,6 +135,9 @@ public class ThriftEntityManagerTest
 	@Before
 	public void setUp() throws Exception
 	{
+		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+		em = new ThriftEntityManager(entityMetaMap, daoContext, configContext);
+
 		Whitebox.setInternalState(em, "persister", persister);
 		merger.setPersister(persister);
 		Whitebox.setInternalState(em, "loader", loader);
@@ -137,7 +146,6 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "initializer", initializer);
 		Whitebox.setInternalState(em, "proxifier", proxifier);
 		Whitebox.setInternalState(em, "entityValidator", entityValidator);
-		Whitebox.setInternalState(em, "entityMetaMap", entityMetaMap);
 		Whitebox.setInternalState(em, "consistencyPolicy", consistencyPolicy);
 
 		idMeta = PropertyMetaTestBuilder //

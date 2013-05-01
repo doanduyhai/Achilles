@@ -212,7 +212,7 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 					result = buildWideMapWrapper(propertyMeta);
 				}
 				break;
-			case WIDE_MAP_COUNTER:
+			case COUNTER_WIDE_MAP:
 
 				log.trace("Build counter wide wrapper for property {} of entity of class {} ",
 						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());

@@ -25,7 +25,7 @@ public class PersistenceContextTestBuilder<ID>
 	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private CounterDao counterDao;
 	private AchillesConfigurableConsistencyLevelPolicy policy;
-
+	private boolean ensureJoinConsistency;
 	private Object entity;
 	private Class<?> entityClass;
 	private ID primaryKey;
@@ -62,12 +62,14 @@ public class PersistenceContextTestBuilder<ID>
 
 	public PersistenceContext<ID> build()
 	{
+		DaoContext daoContext = new DaoContext(entityDaosMap, columnFamilyDaosMap, counterDao);
+		ConfigurationContext configContext = new ConfigurationContext();
+		configContext.setConsistencyPolicy(policy);
+		configContext.setEnsureJoinConsistency(ensureJoinConsistency);
 		PersistenceContext<ID> context = new PersistenceContext<ID>(//
 				entityMeta, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				counterDao, //
-				policy, //
+				configContext, //
+				daoContext, //
 				immediateFlushContext, //
 				entityClass, primaryKey);
 
@@ -110,9 +112,16 @@ public class PersistenceContextTestBuilder<ID>
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> immediateFlushContext(ImmediateFlushContext immediateFlushContext)
+	public PersistenceContextTestBuilder<ID> immediateFlushContext(
+			ImmediateFlushContext immediateFlushContext)
 	{
 		this.immediateFlushContext = immediateFlushContext;
+		return this;
+	}
+
+	public PersistenceContextTestBuilder<ID> ensureJoinConsistency(boolean ensureJoinConsistency)
+	{
+		this.ensureJoinConsistency = ensureJoinConsistency;
 		return this;
 	}
 

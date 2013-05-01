@@ -8,8 +8,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -46,7 +45,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import parser.entity.CorrectMultiKey;
 import parser.entity.CorrectMultiKeyUnorderedKeys;
@@ -72,11 +70,10 @@ public class PropertyParserTest
 	private PropertyParser parser = new PropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private EntityParsingContext entityContext;
+	private ConfigurationContext configContext;
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
 			ONE, ALL, readConsistencyMap, writeConsistencyMap);
 
@@ -96,8 +93,9 @@ public class PropertyParserTest
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
-		entityDaosMap.clear();
-		columnFamilyDaosMap.clear();
+		configContext = new ConfigurationContext();
+		configContext.setConsistencyPolicy(configurableCLPolicy);
+		configContext.setObjectMapperFactory(objectMapperFactory);
 	}
 
 	@Test
@@ -595,7 +593,7 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("counters"));
 		PropertyMeta<UUID, Counter> meta = (PropertyMeta<UUID, Counter>) parser.parse(context);
 
-		assertThat(meta.type()).isEqualTo(WIDE_MAP_COUNTER);
+		assertThat(meta.type()).isEqualTo(COUNTER_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
 		assertThat(meta.getExternalCFName()).isEqualTo("counter_xxx");
 		assertThat((Class<Counter>) meta.getValueClass()).isEqualTo(Counter.class);
@@ -818,32 +816,6 @@ public class PropertyParserTest
 		parser.fillWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
 		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
-		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap()
-				.get("externalTableName");
-		assertThat(externalWideMapDao.getColumnFamily()).isEqualTo("externalTableName");
-		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
-				UUID_SRZ);
-	}
-
-	@Test
-	public void should_parse_widemap_with_non_primitive_value() throws Exception
-	{
-
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-
-		PropertyMeta<Long, CompleteBean> propertyMeta = PropertyMetaTestBuilder//
-				.noClass(Long.class, CompleteBean.class)//
-				.type(WIDE_MAP) //
-				.build();
-
-		initEntityParsingContext();
-
-		parser.fillWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
-
-		GenericColumnFamilyDao<?, ?> externalWideMapDao = entityContext.getColumnFamilyDaosMap()
-				.get("externalTableName");
-		assertThat(Whitebox.getInternalState(externalWideMapDao, "valueSerializer")).isEqualTo(
-				STRING_SRZ);
 	}
 
 	@Test
@@ -1168,11 +1140,7 @@ public class PropertyParserTest
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				configurableCLPolicy, //
-				cluster, keyspace, //
-				objectMapperFactory, entityClass);
+				configContext, entityClass);
 
 		return entityContext.newPropertyContext(field);
 	}
@@ -1181,10 +1149,6 @@ public class PropertyParserTest
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				configurableCLPolicy, //
-				cluster, keyspace, //
-				objectMapperFactory, CompleteBean.class);
+				configContext, CompleteBean.class);
 	}
 }

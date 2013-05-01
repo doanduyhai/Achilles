@@ -45,8 +45,7 @@ public class EntityParsingValidatorTest
 	@Test
 	public void should_exception_when_empty_property_meta_map() throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 		exception.expect(AchillesBeanMappingException.class);
 		exception
@@ -61,8 +60,7 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_more_than_one_property_meta_for_direct_cf_mapping()
 			throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
@@ -80,8 +78,7 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_incorrect_type_of_property_meta_for_direct_cf_mapping()
 			throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null, null, null, null, null,
-				null, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //

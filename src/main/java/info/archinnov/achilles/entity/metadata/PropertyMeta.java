@@ -353,7 +353,7 @@ public class PropertyMeta<K, V>
 
 	public boolean isCounter()
 	{
-		return this.type == COUNTER || this.type == WIDE_MAP_COUNTER;
+		return this.type == COUNTER || this.type == COUNTER_WIDE_MAP;
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel()

@@ -48,6 +48,8 @@ public class ArgumentExtractorForThriftEMF
 	public static final String READ_CONSISTENCY_MAP_PARAM = "achilles.consistency.read.map";
 	public static final String WRITE_CONSISTENCY_MAP_PARAM = "achilles.consistency.write.map";
 
+	public static final String ENSURE_CONSISTENCY_ON_JOIN_PARAM = "achilles.consistency.join.check";
+
 	private static final ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.QUORUM;
 
 	public List<String> initEntityPackages(Map<String, Object> configurationMap)
@@ -131,6 +133,20 @@ public class ArgumentExtractorForThriftEMF
 		if (forceColumnFamilyCreation != null)
 		{
 			return forceColumnFamilyCreation;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public boolean ensureConsistencyOnJoin(Map<String, Object> configurationMap)
+	{
+		Boolean ensureConsistencyOnJoin = (Boolean) configurationMap
+				.get(ENSURE_CONSISTENCY_ON_JOIN_PARAM);
+		if (ensureConsistencyOnJoin != null)
+		{
+			return ensureConsistencyOnJoin;
 		}
 		else
 		{

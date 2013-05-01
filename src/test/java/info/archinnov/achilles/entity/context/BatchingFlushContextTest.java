@@ -36,10 +36,6 @@ public class BatchingFlushContextTest
 	@InjectMocks
 	private BatchingFlushContext context;
 
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
-
 	@Mock
 	private CounterDao counterDao;
 
@@ -58,6 +54,9 @@ public class BatchingFlushContextTest
 	@Mock
 	private ConsistencyContext consistencyContext;
 
+	@Mock
+	private DaoContext daoContext;
+
 	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
 
 	@Before
@@ -65,11 +64,8 @@ public class BatchingFlushContextTest
 	{
 		Whitebox.setInternalState(context, "consistencyContext", consistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, "entityDaosMap", entityDaosMap);
-		Whitebox.setInternalState(context, "columnFamilyDaosMap", columnFamilyDaosMap);
+		Whitebox.setInternalState(context, "daoContext", daoContext);
 		mutatorMap.clear();
-		entityDaosMap.clear();
-		columnFamilyDaosMap.clear();
 	}
 
 	@Test

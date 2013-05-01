@@ -1,13 +1,12 @@
 package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContextBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.EntityExplorer;
@@ -24,7 +23,9 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.HConsistencyLevel;
+import me.prettyprint.hector.api.Keyspace;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +56,9 @@ public class ThriftEntityManagerFactoryTest
 	private ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory();
 
 	@Mock
+	private ConfigurationContext configContext;
+
+	@Mock
 	private EntityParsingValidator validator;
 
 	@Mock
@@ -74,6 +78,9 @@ public class ThriftEntityManagerFactoryTest
 
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+
+	@Mock
+	private DaoContextBuilder daoContextBuilder;
 
 	@Captor
 	private ArgumentCaptor<EntityParsingContext> contextCaptor;
@@ -106,9 +113,10 @@ public class ThriftEntityManagerFactoryTest
 		verify(entityMetaMap).put(Long.class, entityMeta1);
 		verify(entityMetaMap).put(String.class, entityMeta2);
 		verify(entityParser).fillJoinEntityMeta(contextCaptor.capture(), eq(entityMetaMap));
-		verify(thriftColumnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap), anyBoolean(),
-				eq(false));
-
+		verify(thriftColumnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap),
+				eq(configContext), eq(false));
+		verify(daoContextBuilder).buildDao(any(Cluster.class), any(Keyspace.class),
+				eq(entityMetaMap), eq(configContext), any(boolean.class));
 		List<EntityParsingContext> contexts = contextCaptor.getAllValues();
 
 		assertThat((Class<Long>) contexts.get(0).getCurrentEntityClass()).isEqualTo(Long.class);

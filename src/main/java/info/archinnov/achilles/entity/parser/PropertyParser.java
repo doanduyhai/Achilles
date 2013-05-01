@@ -1,11 +1,8 @@
 package info.archinnov.achilles.entity.parser;
 
-import static info.archinnov.achilles.entity.PropertyHelper.*;
+import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.PropertyHelper;
@@ -33,9 +30,6 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
-
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -299,7 +293,7 @@ public class PropertyParser
 		{
 			counterProperties = new CounterProperties(context.getCurrentEntityClass()
 					.getCanonicalName());
-			type = WIDE_MAP_COUNTER;
+			type = COUNTER_WIDE_MAP;
 		}
 
 		Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
@@ -343,31 +337,32 @@ public class PropertyParser
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
 				idMeta.getPropertyName());
 
-		GenericColumnFamilyDao<ID, ?> dao;
-		Cluster cluster = context.getCluster();
-		Keyspace keyspace = context.getKeyspace();
-		AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = context
-				.getConfigurableCLPolicy();
+		// GenericColumnFamilyDao<ID, ?> dao;
+		// Cluster cluster = context.getCluster();
+		// Keyspace keyspace = context.getKeyspace();
+		// AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = context
+		// .getConfigurableCLPolicy();
+		//
+		// Class<V> valueClass = propertyMeta.getValueClass();
 
-		Class<V> valueClass = propertyMeta.getValueClass();
-
-		if (!propertyMeta.type().isJoinColumn())
-		{
-			if (isSupportedType(valueClass))
-			{
-				dao = new GenericColumnFamilyDao<ID, V>(cluster, keyspace, //
-						idMeta.getValueSerializer(), //
-						propertyMeta.getValueSerializer(), //
-						externalTableName, configurableCLPolicy);
-			}
-			else
-			{
-				dao = new GenericColumnFamilyDao<ID, String>(cluster, keyspace, //
-						idMeta.getValueSerializer(), //
-						STRING_SRZ, externalTableName, configurableCLPolicy);
-			}
-			context.getColumnFamilyDaosMap().put(externalTableName, dao);
-		}
+		// TODO
+		// if (!propertyMeta.type().isJoinColumn())
+		// {
+		// if (isSupportedType(valueClass))
+		// {
+		// dao = new GenericColumnFamilyDao<ID, V>(cluster, keyspace, //
+		// idMeta.getValueSerializer(), //
+		// propertyMeta.getValueSerializer(), //
+		// externalTableName, configurableCLPolicy);
+		// }
+		// else
+		// {
+		// dao = new GenericColumnFamilyDao<ID, String>(cluster, keyspace, //
+		// idMeta.getValueSerializer(), //
+		// STRING_SRZ, externalTableName, configurableCLPolicy);
+		// }
+		// context.getColumnFamilyDaosMap().put(externalTableName, dao);
+		// }
 		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
 
 		log.trace("Complete wide map property {} of entity class {} : {}",
@@ -446,11 +441,11 @@ public class PropertyParser
 	{
 		log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
 
-		String externalTableName;
+		String externalCFName;
 
 		if (context.isColumnFamilyDirectMapping())
 		{
-			externalTableName = context.getCurrentColumnFamilyName();
+			externalCFName = context.getCurrentColumnFamilyName();
 			Validator
 					.validateBeanMappingTrue(
 							StringUtils.isBlank(context.getCurrentExternalTableName()),
@@ -462,10 +457,10 @@ public class PropertyParser
 		}
 		else
 		{
-			externalTableName = context.getCurrentExternalTableName();
+			externalCFName = context.getCurrentExternalTableName();
 			Validator
 					.validateBeanMappingFalse(
-							StringUtils.isBlank(externalTableName),
+							StringUtils.isBlank(externalCFName),
 							"External Column Family should be defined for WideMap property '"
 									+ propertyMeta.getPropertyName()
 									+ "' of entity '"
@@ -473,14 +468,14 @@ public class PropertyParser
 									+ "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
 
 		}
-		propertyMeta.setExternalCfName(externalTableName);
+		propertyMeta.setExternalCfName(externalCFName);
 		if (context.isJoinColumn())
 		{
-			context.getJoinWideMaps().put(propertyMeta, externalTableName);
+			context.getJoinWideMaps().put(propertyMeta, externalCFName);
 		}
 		else
 		{
-			context.getWideMaps().put(propertyMeta, externalTableName);
+			context.getWideMaps().put(propertyMeta, externalCFName);
 		}
 
 	}
@@ -508,25 +503,6 @@ public class PropertyParser
 			log.trace("Found custom consistency levels : {}", consistencyLevels);
 		}
 	}
-
-	// private <T> CounterProperties buildCounterProperties(Class<T> valueClass,
-	// PropertyParsingContext context)
-	// {
-	// log.trace("Build counter properties for property {}", context.getCurrentPropertyName());
-	// CounterProperties counterProperties;
-	// PropertyParsingValidator
-	// .validateAllowedTypes(
-	// valueClass,
-	// allowedCounterTypes,
-	// "Wrong counter type for the field '"
-	// + context.getCurrentField().getName()
-	// + "'. Only java.lang.Long and primitive long are allowed for @Counter types");
-	// counterProperties = new CounterProperties(context.getCurrentEntityClass()
-	// .getCanonicalName());
-	//
-	// log.trace("Built counter properties : {}", counterProperties);
-	// return counterProperties;
-	// }
 
 	private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context,
 			PropertyMeta<?, ?> propertyMeta)

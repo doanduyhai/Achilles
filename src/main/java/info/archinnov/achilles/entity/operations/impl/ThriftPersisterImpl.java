@@ -285,12 +285,13 @@ public class ThriftPersisterImpl
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
 
-		Mutator<ID> entityMutator = context.getEntityMutator(entityMeta.getColumnFamilyName());
 		if (context.isDirectColumnFamilyMapping())
 		{
 			log.trace("Batch removing direct column family mapping of class {} and primary key {}",
 					context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-			context.getColumnFamilyDao().removeRowBatch(primaryKey, entityMutator);
+			Mutator<ID> columnFamilyMutator = context.getColumnFamilyMutator(entityMeta
+					.getColumnFamilyName());
+			context.getColumnFamilyDao().removeRowBatch(primaryKey, columnFamilyMutator);
 		}
 		else
 		{
@@ -298,6 +299,7 @@ public class ThriftPersisterImpl
 			log.trace("Batch removing entity of class {} and primary key {}", context
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
+			Mutator<ID> entityMutator = context.getEntityMutator(entityMeta.getColumnFamilyName());
 			context.getEntityDao().removeRowBatch(primaryKey, entityMutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{

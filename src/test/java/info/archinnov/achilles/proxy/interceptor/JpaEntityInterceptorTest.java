@@ -425,7 +425,7 @@ public class JpaEntityInterceptorTest
 
 		when(getterMetas.containsKey(popularTopicsGetter)).thenReturn(true);
 		when(getterMetas.get(popularTopicsGetter)).thenReturn(propertyMeta);
-		when(propertyMeta.type()).thenReturn(WIDE_MAP_COUNTER);
+		when(propertyMeta.type()).thenReturn(COUNTER_WIDE_MAP);
 
 		Object counterWideMapWrapper = this.interceptor.intercept(bean, popularTopicsGetter,
 				(Object[]) null, proxy);

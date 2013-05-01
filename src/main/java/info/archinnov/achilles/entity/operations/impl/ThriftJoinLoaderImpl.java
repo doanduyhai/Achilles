@@ -47,8 +47,8 @@ public class ThriftJoinLoaderImpl
 		log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
 				.getValueClass().getCanonicalName(), joinIds);
 
-		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
-				.getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+				.findEntityDao(joinMeta.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -61,8 +61,8 @@ public class ThriftJoinLoaderImpl
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
-				.getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+				.findEntityDao(joinMeta.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -75,8 +75,8 @@ public class ThriftJoinLoaderImpl
 	{
 
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
-				.getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+				.findEntityDao(joinMeta.getColumnFamilyName());
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);

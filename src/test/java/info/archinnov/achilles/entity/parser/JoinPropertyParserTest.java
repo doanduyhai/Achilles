@@ -8,8 +8,7 @@ import info.archinnov.achilles.annotations.ColumnFamily;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -62,13 +61,12 @@ public class JoinPropertyParserTest
 	private JoinPropertyParser parser = new JoinPropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private EntityParsingContext entityContext;
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
 			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
+	private ConfigurationContext configContext;
 
 	@Mock
 	private Cluster cluster;
@@ -86,8 +84,10 @@ public class JoinPropertyParserTest
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
-		entityDaosMap.clear();
-		columnFamilyDaosMap.clear();
+		configContext = new ConfigurationContext();
+		configContext.setConsistencyPolicy(configurableCLPolicy);
+		configContext.setObjectMapperFactory(objectMapperFactory);
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -407,7 +407,6 @@ public class JoinPropertyParserTest
 
 		assertThat(propertyMeta.getExternalCFName()).isEqualTo("externalTableName");
 		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(entityContext.getColumnFamilyDaosMap()).isEmpty();
 
 		assertThat(
 				(PropertyMeta<Integer, UserBean>) entityContext.getPropertyMetas().values()
@@ -423,11 +422,7 @@ public class JoinPropertyParserTest
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				configurableCLPolicy, //
-				cluster, keyspace, //
-				objectMapperFactory, entityClass);
+				configContext, entityClass);
 
 		PropertyParsingContext context = entityContext.newPropertyContext(field);
 		context.setJoinColumn(true);
@@ -439,10 +434,6 @@ public class JoinPropertyParserTest
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				configurableCLPolicy, //
-				cluster, keyspace, //
-				objectMapperFactory, CompleteBean.class);
+				configContext, CompleteBean.class);
 	}
 }

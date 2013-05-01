@@ -1,16 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.CLUSTER_NAME_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.CLUSTER_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.FORCE_CF_CREATION_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.HOSTNAME_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.KEYSPACE_PARAM;
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.*;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
@@ -339,5 +330,18 @@ public class ArgumentExtractorForThriftEMFTest
 				.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
+	}
+
+	@Test
+	public void should_ensure_join_consistency() throws Exception
+	{
+		configMap.put(ArgumentExtractorForThriftEMF.ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
+		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isTrue();
+	}
+
+	@Test
+	public void should_not_ensure_join_consistency_by_default() throws Exception
+	{
+		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isFalse();
 	}
 }

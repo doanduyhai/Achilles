@@ -22,7 +22,7 @@ public enum PropertyType
 	LAZY_SET(70), //
 	LAZY_MAP(70), //
 	WIDE_MAP(70), //
-	WIDE_MAP_COUNTER(70), //
+	COUNTER_WIDE_MAP(70), //
 	JOIN_SIMPLE(70), //
 	JOIN_LIST(70), //
 	JOIN_SET(70), //
@@ -51,7 +51,7 @@ public enum PropertyType
 				|| this == LAZY_SET //
 				|| this == LAZY_MAP //
 				|| this == WIDE_MAP //
-				|| this == WIDE_MAP_COUNTER //
+				|| this == COUNTER_WIDE_MAP //
 				|| this == JOIN_SIMPLE //
 				|| this == JOIN_LIST //
 				|| this == JOIN_SET //
@@ -71,7 +71,7 @@ public enum PropertyType
 	public boolean isWideMap()
 	{
 		return (this == WIDE_MAP //
-				|| this == WIDE_MAP_COUNTER //
+				|| this == COUNTER_WIDE_MAP //
 		|| this == JOIN_WIDE_MAP);
 	}
 }

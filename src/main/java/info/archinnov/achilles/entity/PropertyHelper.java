@@ -49,7 +49,6 @@ public class PropertyHelper
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-	public static Set<Class<?>> allowedCounterTypes = new HashSet<Class<?>>();
 	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	static
@@ -97,9 +96,6 @@ public class PropertyHelper
 
 		// UUID
 		allowedTypes.add(UUID.class);
-
-		allowedCounterTypes.add(Long.class);
-		allowedCounterTypes.add(long.class);
 
 	}
 

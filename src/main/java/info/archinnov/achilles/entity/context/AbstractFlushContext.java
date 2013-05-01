@@ -29,21 +29,16 @@ public abstract class AbstractFlushContext implements FlushContext
 {
 	protected static final Logger log = LoggerFactory.getLogger(AbstractFlushContext.class);
 
-	protected Map<String, GenericEntityDao<?>> entityDaosMap;
-	protected Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	protected CounterDao counterDao;
+	protected DaoContext daoContext;
 
 	protected Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
 	protected ConsistencyContext consistencyContext;
 	protected boolean hasCustomConsistencyLevels = false;
 
-	protected AbstractFlushContext(Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao,
+	protected AbstractFlushContext(DaoContext daoContext,
 			AchillesConfigurableConsistencyLevelPolicy policy)
 	{
-		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.counterDao = counterDao;
+		this.daoContext = daoContext;
 		this.consistencyContext = new ConsistencyContext(policy);
 	}
 
@@ -109,8 +104,8 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			GenericEntityDao<ID> entityDao = (GenericEntityDao<ID>) entityDaosMap
-					.get(columnFamilyName);
+			GenericEntityDao<ID> entityDao = (GenericEntityDao<ID>) daoContext
+					.findEntityDao(columnFamilyName);
 
 			if (entityDao != null)
 			{
@@ -133,8 +128,8 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			GenericColumnFamilyDao<ID, ?> columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) columnFamilyDaosMap
-					.get(columnFamilyName);
+			GenericColumnFamilyDao<ID, ?> columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) daoContext
+					.findColumnFamilyDao(columnFamilyName);
 
 			if (columnFamilyDao != null)
 			{
@@ -157,6 +152,7 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
+			CounterDao counterDao = daoContext.getCounterDao();
 			mutator = counterDao.buildMutator();
 			mutatorMap
 					.put(COUNTER_CF, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator, counterDao));

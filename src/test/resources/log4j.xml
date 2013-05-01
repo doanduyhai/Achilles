@@ -17,7 +17,7 @@
 	<logger name="info.archinnov.achilles.columnFamily.ColumnFamilyHelper">
 		<level value="DEBUG" />
 	</logger>
-
+	
 	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
 		<level value="INFO" />
 	</logger>	

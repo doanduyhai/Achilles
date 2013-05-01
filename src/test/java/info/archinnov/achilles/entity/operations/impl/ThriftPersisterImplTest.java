@@ -468,10 +468,12 @@ public class ThriftPersisterImplTest
 		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_remove_direct_cf_mapping() throws Exception
 	{
 		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
+		when((Mutator) immediateFlushContext.getColumnFamilyMutator("cf")).thenReturn(mutator);
 		thriftPersister.remove(context);
 		verify(columnFamilyDao).removeRowBatch(entity.getId(), mutator);
 	}
@@ -559,7 +561,7 @@ public class ThriftPersisterImplTest
 		PropertyMeta<String, Counter> propertyMeta = PropertyMetaTestBuilder //
 				.completeBean(String.class, Counter.class) //
 				.field("popularTopics") //
-				.type(PropertyType.WIDE_MAP_COUNTER) //
+				.type(PropertyType.COUNTER_WIDE_MAP) //
 				.accesors() //
 				.counterIdMeta(counterIdMeta) //
 				.fqcn(fqcn) //

@@ -47,10 +47,6 @@ public class ImmediateFlushContextTest
 	@InjectMocks
 	private ImmediateFlushContext context;
 
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
-
 	@Mock
 	private CounterDao counterDao;
 
@@ -69,6 +65,9 @@ public class ImmediateFlushContextTest
 	@Mock
 	private ConsistencyContext consistencyContext;
 
+	@Mock
+	private DaoContext daoContext;
+
 	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
 
 	@Before
@@ -76,11 +75,8 @@ public class ImmediateFlushContextTest
 	{
 		Whitebox.setInternalState(context, "consistencyContext", consistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, "entityDaosMap", entityDaosMap);
-		Whitebox.setInternalState(context, "columnFamilyDaosMap", columnFamilyDaosMap);
+		Whitebox.setInternalState(context, "daoContext", daoContext);
 		mutatorMap.clear();
-		entityDaosMap.clear();
-		columnFamilyDaosMap.clear();
 	}
 
 	@Test
@@ -151,7 +147,7 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_entity_mutator() throws Exception
 	{
-		entityDaosMap.put("cf", entityDao);
+		when((GenericEntityDao) daoContext.findEntityDao("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Long> actual = context.getEntityMutator("cf");
@@ -173,7 +169,7 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_cf_mutator() throws Exception
 	{
-		columnFamilyDaosMap.put("cf", cfDao);
+		when((GenericColumnFamilyDao) daoContext.findColumnFamilyDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Long> actual = context.getColumnFamilyMutator("cf");
@@ -196,6 +192,7 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_counter_mutator() throws Exception
 	{
+		when(daoContext.getCounterDao()).thenReturn(counterDao);
 		when(counterDao.buildMutator()).thenReturn(counterMutator);
 
 		Mutator<Composite> actual = context.getCounterMutator();

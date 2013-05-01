@@ -1,6 +1,7 @@
 package info.archinnov.achilles.columnFamily;
 
 import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
@@ -96,7 +97,7 @@ public class ThriftColumnFamilyCreator
 	}
 
 	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta<?>> entityMetaMap,
-			boolean forceColumnFamilyCreation, boolean hasCounter)
+			ConfigurationContext configContext, boolean hasCounter)
 	{
 		for (Entry<Class<?>, EntityMeta<?>> entry : entityMetaMap.entrySet())
 		{
@@ -110,17 +111,18 @@ public class ThriftColumnFamilyCreator
 				if (propertyMeta.type().isWideMap())
 				{
 					validateOrCreateCFForWideMap(propertyMeta, entityMeta.getIdMeta()
-							.getValueClass(), forceColumnFamilyCreation,
+							.getValueClass(), configContext.isForceColumnFamilyCreation(),
 							propertyMeta.getExternalCFName(), entityMeta.getClassName());
 				}
 			}
 
-			this.validateOrCreateCFForEntity(entityMeta, forceColumnFamilyCreation);
+			this.validateOrCreateCFForEntity(entityMeta,
+					configContext.isForceColumnFamilyCreation());
 		}
 
 		if (hasCounter)
 		{
-			this.validateOrCreateCFForCounter(forceColumnFamilyCreation);
+			this.validateOrCreateCFForCounter(configContext.isForceColumnFamilyCreation());
 		}
 	}
 

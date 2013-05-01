@@ -1,17 +1,21 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.CompleteBean;
+
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -28,8 +32,16 @@ public class ThriftBatchingEntityManagerTest
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	@InjectMocks
 	private ThriftBatchingEntityManager em;
+
+	@Mock
+	private DaoContext daoContext;
+
+	@Mock
+	private ConfigurationContext configContext;
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
 
 	@Mock
 	private BatchingFlushContext flushContext;
@@ -37,6 +49,8 @@ public class ThriftBatchingEntityManagerTest
 	@Before
 	public void setUp()
 	{
+		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+		em = new ThriftBatchingEntityManager(null, daoContext, configContext);
 		Whitebox.setInternalState(em, "flushContext", flushContext);
 	}
 
@@ -121,5 +135,70 @@ public class ThriftBatchingEntityManagerTest
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
 		em.refresh(new CompleteBean(), ONE);
+	}
+
+	@Test
+	public void should_remove_safely() throws Exception
+	{
+		try
+		{
+			em.remove(new CompleteBean());
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+		}
+	}
+
+	@Test
+	public void should_get_reference_safely() throws Exception
+	{
+		try
+		{
+			em.getReference(CompleteBean.class, null);
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+		}
+	}
+
+	@Test
+	public void should_refresh_safely() throws Exception
+	{
+		try
+		{
+			em.refresh(new CompleteBean());
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+		}
+	}
+
+	@Test
+	public void should_initialize_entity_safely() throws Exception
+	{
+		try
+		{
+			em.initialize(new CompleteBean());
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+		}
+	}
+
+	@Test
+	public void should_initialize_entity_collection_safely() throws Exception
+	{
+		try
+		{
+			em.initialize(Arrays.asList(new CompleteBean()));
+		}
+		catch (Exception e)
+		{
+			verify(flushContext).cleanUp();
+		}
 	}
 }

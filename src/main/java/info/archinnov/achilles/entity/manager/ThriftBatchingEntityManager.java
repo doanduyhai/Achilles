@@ -1,10 +1,8 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,14 +27,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 	private BatchingFlushContext flushContext;
 
-	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap,
-			Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao,
-			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, DaoContext daoContext,
+			ConfigurationContext configContext)
 	{
-		super(entityMetaMap, entityDaosMap, columnFamilyDaosMap, counterDao, consistencyPolicy);
-		this.flushContext = new BatchingFlushContext(entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy);
+		super(entityMetaMap, daoContext, configContext);
+		this.flushContext = new BatchingFlushContext(daoContext, consistencyPolicy);
 	}
 
 	/**
@@ -254,8 +249,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(entityClass);
-		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, flushContext, entityClass, primaryKey);
+		return new PersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
+				entityClass, primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -265,8 +260,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
-		return new PersistenceContext<ID>(entityMeta, entityDaosMap, columnFamilyDaosMap,
-				counterDao, consistencyPolicy, flushContext, entity);
+		return new PersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
+				entity);
 	}
 
 	private <T> T reinitConsistencyLevelsOnError(SafeExecutionContext<T> context)

@@ -191,11 +191,12 @@ public class KeyValueFactory
 				compositeTransformer.buildCounterKeyTransformer(propertyMeta));
 	}
 
+	@SuppressWarnings("unchecked")
 	private <JOIN_ID, V, ID, K> Map<JOIN_ID, V> loadJoinEntities(PersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds)
 	{
-		GenericEntityDao<JOIN_ID> joinEntityDao = context.findEntityDao(joinMeta
-				.getColumnFamilyName());
+		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+				.findEntityDao(joinMeta.getColumnFamilyName());
 
 		Map<JOIN_ID, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, joinMeta, joinEntityDao);

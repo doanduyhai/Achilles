@@ -22,7 +22,7 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_SET.isLazy()).isTrue();
 		assertThat(PropertyType.LAZY_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.WIDE_MAP.isLazy()).isTrue();
-		assertThat(PropertyType.WIDE_MAP_COUNTER.isLazy()).isTrue();
+		assertThat(PropertyType.COUNTER_WIDE_MAP.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_SIMPLE.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_LIST.isLazy()).isTrue();
 		assertThat(PropertyType.JOIN_SET.isLazy()).isTrue();
@@ -48,7 +48,7 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_SET.isJoinColumn()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isJoinColumn()).isFalse();
 		assertThat(PropertyType.WIDE_MAP.isJoinColumn()).isFalse();
-		assertThat(PropertyType.WIDE_MAP_COUNTER.isJoinColumn()).isFalse();
+		assertThat(PropertyType.COUNTER_WIDE_MAP.isJoinColumn()).isFalse();
 
 		assertThat(PropertyType.JOIN_SIMPLE.isJoinColumn()).isTrue();
 		assertThat(PropertyType.JOIN_LIST.isJoinColumn()).isTrue();
@@ -70,7 +70,7 @@ public class PropertyTypeTest
 		assertThat(PropertyType.LAZY_SET.isWideMap()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isWideMap()).isFalse();
 		assertThat(PropertyType.WIDE_MAP.isWideMap()).isTrue();
-		assertThat(PropertyType.WIDE_MAP_COUNTER.isWideMap()).isTrue();
+		assertThat(PropertyType.COUNTER_WIDE_MAP.isWideMap()).isTrue();
 		assertThat(PropertyType.JOIN_SIMPLE.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_LIST.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_SET.isWideMap()).isFalse();

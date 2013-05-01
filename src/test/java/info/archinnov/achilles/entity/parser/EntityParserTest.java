@@ -8,8 +8,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -42,7 +41,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import parser.entity.Bean;
 import parser.entity.BeanWithColumnFamilyName;
@@ -74,8 +72,6 @@ public class EntityParserTest
 	private EntityParser parser;
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
 	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
 	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
@@ -96,6 +92,8 @@ public class EntityParserTest
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
+	private ConfigurationContext configContext = new ConfigurationContext();
+
 	private ObjectMapperFactory objectMapperFactory = new ObjectMapperFactory()
 	{
 		@Override
@@ -113,8 +111,8 @@ public class EntityParserTest
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
-		entityDaosMap.clear();
-		columnFamilyDaosMap.clear();
+		configContext.setConsistencyPolicy(configurableCLPolicy);
+		configContext.setObjectMapperFactory(objectMapperFactory);
 	}
 
 	@SuppressWarnings(
@@ -316,12 +314,6 @@ public class EntityParserTest
 		assertThat(usersPropertyMeta.type()).isEqualTo(WIDE_MAP);
 		assertThat(usersPropertyMeta.getExternalCFName()).isEqualTo("external_users");
 		assertThat((Serializer<Long>) usersPropertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
-		assertThat(entityContext.getColumnFamilyDaosMap()).isNotEmpty();
-		GenericColumnFamilyDao<?, ?> dao = entityContext.getColumnFamilyDaosMap().values()
-				.iterator().next();
-
-		assertThat(dao.getColumnFamily()).isEqualTo("external_users");
-		assertThat(Whitebox.getInternalState(dao, "valueSerializer")).isEqualTo(STRING_SRZ);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -338,7 +330,6 @@ public class EntityParserTest
 		assertThat((Serializer<Long>) usersPropertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(usersPropertyMeta)).isEqualTo(
 				UserBean.class);
-		assertThat(entityContext.getColumnFamilyDaosMap()).isEmpty();
 	}
 
 	@Test
@@ -536,10 +527,6 @@ public class EntityParserTest
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
-				entityDaosMap, //
-				columnFamilyDaosMap, //
-				configurableCLPolicy, //
-				cluster, keyspace, //
-				objectMapperFactory, entityClass);
+				configContext, entityClass);
 	}
 }

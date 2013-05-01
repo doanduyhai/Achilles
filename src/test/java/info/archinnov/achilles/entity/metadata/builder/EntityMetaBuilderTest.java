@@ -70,7 +70,6 @@ public class EntityMetaBuilderTest
 				.serialVersionUID(1L) //
 				.columnFamilyName("cfName") //
 				.propertyMetas(propertyMetas) //
-				.keyspace(keyspace) //
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
@@ -103,7 +102,7 @@ public class EntityMetaBuilderTest
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
 		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace).build();
+				.propertyMetas(propertyMetas).columnFamilyName("toto").build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
@@ -122,7 +121,7 @@ public class EntityMetaBuilderTest
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
 		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto").keyspace(keyspace)
+				.propertyMetas(propertyMetas).columnFamilyName("toto")
 				.columnFamilyDirectMapping(true).build();
 
 		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();

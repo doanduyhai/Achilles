@@ -1,9 +1,8 @@
 package info.archinnov.achilles.entity.parser.context;
 
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -13,9 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -28,12 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class EntityParsingContext
 {
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
-	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy;
-	private Cluster cluster;
-	private Keyspace keyspace;
-	private ObjectMapperFactory objectMapperFactory;
+	private ConfigurationContext configContext;
 	private Boolean hasCounter = false;
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
@@ -46,37 +37,22 @@ public class EntityParsingContext
 	private boolean columnFamilyDirectMapping = false;
 	private String currentColumnFamilyName;
 
-	public EntityParsingContext() {}
-
 	public EntityParsingContext(//
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			Map<String, GenericEntityDao<?>> entityDaosMap, //
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
-			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy, //
-			Cluster cluster, Keyspace keyspace, //
-			ObjectMapperFactory objectMapperFactory, Class<?> currentEntityClass)
+			ConfigurationContext configContext, //
+			Class<?> currentEntityClass)
 	{
 		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
-		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.configurableCLPolicy = configurableCLPolicy;
-		this.cluster = cluster;
-		this.keyspace = keyspace;
-		this.objectMapperFactory = objectMapperFactory;
+		this.configContext = configContext;
 		this.currentEntityClass = currentEntityClass;
 	}
 
-	public EntityParsingContext(//
+	public EntityParsingContext( //
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, //
-			AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy, //
-			Cluster cluster, Keyspace keyspace)
+			ConfigurationContext configContext)
 	{
 		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
-		this.configurableCLPolicy = configurableCLPolicy;
-		this.cluster = cluster;
-		this.keyspace = keyspace;
+		this.configContext = configContext;
 	}
 
 	public PropertyParsingContext newPropertyContext(Field currentField)
@@ -89,29 +65,14 @@ public class EntityParsingContext
 		return joinPropertyMetaToBeFilled;
 	}
 
-	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
+	public ConfigurationContext getConfigContext()
 	{
-		return configurableCLPolicy;
-	}
-
-	public Cluster getCluster()
-	{
-		return cluster;
-	}
-
-	public Keyspace getKeyspace()
-	{
-		return keyspace;
+		return configContext;
 	}
 
 	public Class<?> getCurrentEntityClass()
 	{
 		return currentEntityClass;
-	}
-
-	public ObjectMapperFactory getObjectMapperFactory()
-	{
-		return objectMapperFactory;
 	}
 
 	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
@@ -170,16 +131,6 @@ public class EntityParsingContext
 		this.currentConsistencyLevels = currentConsistencyLevels;
 	}
 
-	public Map<String, GenericEntityDao<?>> getEntityDaosMap()
-	{
-		return entityDaosMap;
-	}
-
-	public Map<String, GenericColumnFamilyDao<?, ?>> getColumnFamilyDaosMap()
-	{
-		return columnFamilyDaosMap;
-	}
-
 	public List<PropertyMeta<?, ?>> getCounterMetas()
 	{
 		return counterMetas;
@@ -198,5 +149,15 @@ public class EntityParsingContext
 	public void setCurrentColumnFamilyName(String currentColumnFamilyName)
 	{
 		this.currentColumnFamilyName = currentColumnFamilyName;
+	}
+
+	public ObjectMapperFactory getObjectMapperFactory()
+	{
+		return configContext.getObjectMapperFactory();
+	}
+
+	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
+	{
+		return configContext.getConsistencyPolicy();
 	}
 }
