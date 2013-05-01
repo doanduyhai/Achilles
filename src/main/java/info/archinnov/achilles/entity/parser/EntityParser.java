@@ -53,7 +53,7 @@ public class EntityParser
 				entityClass.getName());
 		Long serialVersionUID = introspector.findSerialVersionUID(entityClass);
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
-				.findConsistencyLevels(entityClass);
+				.findConsistencyLevels(entityClass, context.getConfigurableCLPolicy());
 
 		context.setColumnFamilyDirectMapping(entityClass.getAnnotation(ColumnFamily.class) != null ? true
 				: false);

@@ -22,6 +22,9 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 	private static final Logger log = LoggerFactory
 			.getLogger(AchillesConfigurableConsistencyLevelPolicy.class);
 
+	private ConsistencyLevel defaultGlobalReadConsistencyLevel;
+	private ConsistencyLevel defaultGlobalWriteConsistencyLevel;
+
 	static final ThreadLocal<HConsistencyLevel> defaultReadConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 	static final ThreadLocal<HConsistencyLevel> defaultWriteConsistencyLevelTL = new ThreadLocal<HConsistencyLevel>();
 	static final ThreadLocal<ConsistencyLevel> currentReadConsistencyLevel = new ThreadLocal<ConsistencyLevel>();
@@ -37,6 +40,8 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 				"Initializing Achilles Configurable Consistency Level Policy with default read/write levels {}/{} and read/write level maps {}/{}",
 				defaultReadLevel, defaultWriteLevel, readConsistencyMap, writeConsistencyMap);
 
+		this.defaultGlobalReadConsistencyLevel = defaultReadLevel;
+		this.defaultGlobalWriteConsistencyLevel = defaultWriteLevel;
 		this.setDefaultReadConsistencyLevel(defaultReadLevel.getHectorLevel());
 		this.setDefaultWriteConsistencyLevel(defaultWriteLevel.getHectorLevel());
 		this.setReadCfConsistencyLevels(readConsistencyMap);
@@ -210,5 +215,15 @@ public class AchillesConfigurableConsistencyLevelPolicy extends ConfigurableCons
 		log.trace("Remove current write consistency level  in the thread {}",
 				Thread.currentThread());
 		currentWriteConsistencyLevel.remove();
+	}
+
+	public ConsistencyLevel getDefaultGlobalReadConsistencyLevel()
+	{
+		return defaultGlobalReadConsistencyLevel;
+	}
+
+	public ConsistencyLevel getDefaultGlobalWriteConsistencyLevel()
+	{
+		return defaultGlobalWriteConsistencyLevel;
 	}
 }

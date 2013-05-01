@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
@@ -30,27 +31,6 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class ArgumentExtractorForThriftEMF
 {
-	public static final String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
-
-	public static final String HOSTNAME_PARAM = "achilles.cassandra.host";
-	public static final String CLUSTER_NAME_PARAM = "achilles.cassandra.cluster.name";
-	public static final String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
-
-	public static final String CLUSTER_PARAM = "achilles.cassandra.cluster";
-	public static final String KEYSPACE_PARAM = "achilles.cassandra.keyspace";
-
-	public static final String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
-	public static final String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
-	public static final String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
-
-	public static final String DEFAUT_READ_CONSISTENCY_PARAM = "achilles.default.consistency.read";
-	public static final String DEFAUT_WRITE_CONSISTENCY_PARAM = "achilles.default.consistency.write";
-	public static final String READ_CONSISTENCY_MAP_PARAM = "achilles.consistency.read.map";
-	public static final String WRITE_CONSISTENCY_MAP_PARAM = "achilles.consistency.write.map";
-
-	public static final String ENSURE_CONSISTENCY_ON_JOIN_PARAM = "achilles.consistency.join.check";
-
-	private static final ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.QUORUM;
 
 	public List<String> initEntityPackages(Map<String, Object> configurationMap)
 	{

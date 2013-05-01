@@ -1,6 +1,6 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
 import info.archinnov.achilles.dao.GenericColumnFamilyDao;

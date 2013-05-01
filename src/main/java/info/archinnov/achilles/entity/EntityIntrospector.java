@@ -3,6 +3,8 @@ package info.archinnov.achilles.entity;
 import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
@@ -286,12 +288,15 @@ public class EntityIntrospector
 		return columnFamilyName;
 	}
 
-	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity)
+	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity,
+			AchillesConfigurableConsistencyLevelPolicy policy)
 	{
 		log.debug("Find consistency levels for entity class {}", entity.getCanonicalName());
 
-		ConsistencyLevel achillesRead = ConsistencyLevel.QUORUM;
-		ConsistencyLevel achillesWrite = ConsistencyLevel.QUORUM;
+		ConsistencyLevel achillesRead = policy.getDefaultGlobalReadConsistencyLevel() != null ? policy
+				.getDefaultGlobalReadConsistencyLevel() : ConfigurationParameters.DEFAULT_LEVEL;
+		ConsistencyLevel achillesWrite = policy.getDefaultGlobalWriteConsistencyLevel() != null ? policy
+				.getDefaultGlobalWriteConsistencyLevel() : ConfigurationParameters.DEFAULT_LEVEL;
 
 		Consistency clevel = entity.getAnnotation(Consistency.class);
 

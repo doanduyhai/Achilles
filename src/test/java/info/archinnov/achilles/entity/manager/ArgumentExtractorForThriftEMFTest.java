@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.manager.ArgumentExtractorForThriftEMF.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -221,7 +221,7 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_init_object_mapper_factory_from_mapper() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.OBJECT_MAPPER_PARAM, mapper);
+		configMap.put(OBJECT_MAPPER_PARAM, mapper);
 
 		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
@@ -259,27 +259,27 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_init_default_read_consistency_level() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_READ_CONSISTENCY_PARAM, "ONE");
+		configMap.put(DEFAUT_READ_CONSISTENCY_PARAM, "ONE");
 		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
 	}
 
 	@Test
 	public void should_init_default_write_consistency_level() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_WRITE_CONSISTENCY_PARAM, "LOCAL_QUORUM");
+		configMap.put(DEFAUT_WRITE_CONSISTENCY_PARAM, "LOCAL_QUORUM");
 		assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
 	}
 
 	@Test
-	public void should_return_default_quorum_level_when_no_parameter() throws Exception
+	public void should_return_default_one_level_when_no_parameter() throws Exception
 	{
-		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(QUORUM);
+		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
 	}
 
 	@Test
 	public void should_exception_when_invalid_consistency_lvel() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.DEFAUT_READ_CONSISTENCY_PARAM, "wrong_value");
+		configMap.put(DEFAUT_READ_CONSISTENCY_PARAM, "wrong_value");
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("'wrong_value' is not a valid Consistency Level");
@@ -289,7 +289,7 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_init_read_consistency_level_map() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.READ_CONSISTENCY_MAP_PARAM,
+		configMap.put(READ_CONSISTENCY_MAP_PARAM,
 				ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
 
 		Map<String, HConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
@@ -301,7 +301,7 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_init_write_consistency_level_map() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
+		configMap.put(WRITE_CONSISTENCY_MAP_PARAM,
 				ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
 
 		Map<String, HConsistencyLevel> consistencyMap = extractor
@@ -323,8 +323,7 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_return_empty_consistency_map_when_empty_map_parameter() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.WRITE_CONSISTENCY_MAP_PARAM,
-				new HashMap<String, String>());
+		configMap.put(WRITE_CONSISTENCY_MAP_PARAM, new HashMap<String, String>());
 
 		Map<String, HConsistencyLevel> consistencyMap = extractor
 				.initWriteConsistencyMap(configMap);
@@ -335,7 +334,7 @@ public class ArgumentExtractorForThriftEMFTest
 	@Test
 	public void should_ensure_join_consistency() throws Exception
 	{
-		configMap.put(ArgumentExtractorForThriftEMF.ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
+		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isTrue();
 	}
 

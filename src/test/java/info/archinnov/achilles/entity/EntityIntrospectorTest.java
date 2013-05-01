@@ -5,6 +5,7 @@ import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactor
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -72,6 +73,9 @@ public class EntityIntrospectorTest
 	private GenericEntityDao<Long> dao;
 
 	private final EntityIntrospector introspector = new EntityIntrospector();
+
+	@Mock
+	private AchillesConfigurableConsistencyLevelPolicy policy;
 
 	@Test
 	public void should_derive_getter() throws Exception
@@ -549,8 +553,8 @@ public class EntityIntrospectorTest
 		class Test
 		{}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
-				.findConsistencyLevels(Test.class);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(
+				Test.class, policy);
 
 		assertThat(levels.left).isEqualTo(ANY);
 		assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
@@ -562,11 +566,11 @@ public class EntityIntrospectorTest
 		class Test
 		{}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
-				.findConsistencyLevels(Test.class);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(
+				Test.class, policy);
 
-		assertThat(levels.left).isEqualTo(QUORUM);
-		assertThat(levels.right).isEqualTo(QUORUM);
+		assertThat(levels.left).isEqualTo(ONE);
+		assertThat(levels.right).isEqualTo(ONE);
 	}
 
 	class Bean

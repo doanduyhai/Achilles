@@ -104,7 +104,8 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	 *            <ul>
 	 *            <li>"achilles.ddl.force.column.family.creation" <strong>(OPTIONAL)</strong>: create missing column families for entities if they are not found. Default = 'false'.<br/>
 	 *            <br/>
-	 *            &nbsp;&nbsp;If "achilles.ddl.force.column.family.creation" = false and no column family is found for any entity, Achilles will raise an <strong>InvalidColumnFamilyException</strong><br/>
+	 *            &nbsp;&nbsp;If "achilles.ddl.force.column.family.creation" = false and no column family is found for any entity, Achilles will raise an
+	 *            <strong>AchillesInvalidColumnFamilyException</strong><br/>
 	 *            <br/>
 	 *            </li>
 	 *            </ul>

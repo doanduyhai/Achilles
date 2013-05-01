@@ -242,7 +242,7 @@ public class ConsistencyLevelIT
 		em.persist(entity, ConsistencyLevel.ALL);
 		CompleteBean found = em.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zerferg");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -268,7 +268,7 @@ public class ConsistencyLevelIT
 		em.merge(entity, ConsistencyLevel.ALL);
 		CompleteBean found = em.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zeruioze");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -348,7 +348,7 @@ public class ConsistencyLevelIT
 		logAsserter.prepareLogLevel();
 		em.remove(entity, ConsistencyLevel.ALL);
 		assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -371,7 +371,7 @@ public class ConsistencyLevelIT
 		em.merge(entity, ConsistencyLevel.ALL);
 		CompleteBean found = em.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name qzerferf");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -398,7 +398,7 @@ public class ConsistencyLevelIT
 		KeyValue<UUID, String> found = tweets.findFirst();
 		assertThat(found.getKey()).isEqualTo(uuid);
 		assertThat(found.getValue()).isEqualTo("new tweet 5431");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.ALL);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -511,7 +511,7 @@ public class ConsistencyLevelIT
 		KeyValue<UUID, String> found = tweets.iterator().next();
 		assertThat(found.getKey()).isEqualTo(uuid);
 		assertThat(found.getValue()).isEqualTo("new tweet etef");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.QUORUM, ConsistencyLevel.QUORUM);
+		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
