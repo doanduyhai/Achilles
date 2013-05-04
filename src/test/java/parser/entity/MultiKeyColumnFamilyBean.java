@@ -1,6 +1,6 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
@@ -18,7 +18,7 @@ import mapping.entity.TweetMultiKey;
  * 
  */
 @Entity
-@ColumnFamily
+@WideRow
 public class MultiKeyColumnFamilyBean implements Serializable
 {
 

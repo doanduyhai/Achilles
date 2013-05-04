@@ -34,7 +34,7 @@ public class EntityParsingContext
 	private Class<?> currentEntityClass;
 	private ObjectMapper currentObjectMapper;
 	private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
-	private boolean columnFamilyDirectMapping = false;
+	private boolean wideRow = false;
 	private String currentColumnFamilyName;
 
 	public EntityParsingContext(//
@@ -115,14 +115,14 @@ public class EntityParsingContext
 		this.currentObjectMapper = currentObjectMapper;
 	}
 
-	public boolean isColumnFamilyDirectMapping()
+	public boolean isWideRow()
 	{
-		return columnFamilyDirectMapping;
+		return wideRow;
 	}
 
-	public void setColumnFamilyDirectMapping(boolean columnFamilyDirectMapping)
+	public void setWideRow(boolean wideRow)
 	{
-		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
+		this.wideRow = wideRow;
 	}
 
 	public void setCurrentConsistencyLevels(

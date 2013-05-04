@@ -86,7 +86,7 @@ public class ThriftEntityManager implements EntityManager
 	{
 		log.debug("Persisting entity '{}'", entity);
 		entityValidator.validateEntity(entity, entityMetaMap);
-		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
 
 		if (proxifier.isProxy(entity))
 		{
@@ -388,7 +388,7 @@ public class ThriftEntityManager implements EntityManager
 			log.debug("Refreshing entity '{}'", proxifier.unproxy(entity));
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
-		entityValidator.validateNotCFDirectMapping(entity, entityMetaMap);
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		PersistenceContext<?> context = initPersistenceContext(entity);
 		refresher.refresh(context);

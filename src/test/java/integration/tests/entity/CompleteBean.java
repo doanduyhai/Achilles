@@ -64,11 +64,11 @@ public class CompleteBean implements Serializable
 	@JoinColumn
 	private Tweet welcomeTweet;
 
-	@Column(table = "ExternalWideMap")
-	private WideMap<Integer, String> externalWideMap;
+	@Column(table = "complete_bean_widemap")
+	private WideMap<Integer, String> wideMap;
 
-	@Column(table = "MultiKeyExternalWideMap")
-	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
+	@Column(table = "complete_bean_multi_key_widemap")
+	private WideMap<UserTweetKey, String> multiKeyWideMap;
 
 	@Column
 	private Counter version;
@@ -176,14 +176,14 @@ public class CompleteBean implements Serializable
 		this.welcomeTweet = welcomeTweet;
 	}
 
-	public WideMap<Integer, String> getExternalWideMap()
+	public WideMap<Integer, String> getWideMap()
 	{
-		return externalWideMap;
+		return wideMap;
 	}
 
-	public WideMap<UserTweetKey, String> getMultiKeyExternalWideMap()
+	public WideMap<UserTweetKey, String> getMultiKeyWideMap()
 	{
-		return multiKeyExternalWideMap;
+		return multiKeyWideMap;
 	}
 
 	public Counter getVersion()

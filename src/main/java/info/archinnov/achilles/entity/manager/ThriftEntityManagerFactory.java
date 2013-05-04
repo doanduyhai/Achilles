@@ -135,10 +135,10 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	 *            <h1>Consistency Level</h1>
 	 *            <br/>
 	 *            <ul>
-	 *            <li>"achilles.default.consistency.read" <strong>(OPTIONAL)</strong>: default read consistency level for all entities<br/>
+	 *            <li>"achilles.consistency.read.default" <strong>(OPTIONAL)</strong>: default read consistency level for all entities<br/>
 	 *            <br/>
 	 *            </li>
-	 *            <li>"achilles.default.consistency.write" <strong>(OPTIONAL)</strong>: default write consistency level for all entities<br/>
+	 *            <li>"achilles.consistency.write.default" <strong>(OPTIONAL)</strong>: default write consistency level for all entities<br/>
 	 *            <br/>
 	 *            </li>
 	 *            <li>"achilles.consistency.read.map" <strong>(OPTIONAL)</strong>: map(String,String) of read consistency levels for column families<br/>

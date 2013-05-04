@@ -1,7 +1,7 @@
 package info.archinnov.achilles.proxy.interceptor;
 
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -196,10 +196,10 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 				}
 				break;
 			case WIDE_MAP:
-				if (context.isDirectColumnFamilyMapping())
+				if (context.isWideRow())
 				{
 					log.trace(
-							"Build direct column family wide map wrapper for property {} of entity of class {} ",
+							"Build wide row widemap wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					result = buildColumnFamilyWrapper(propertyMeta);
@@ -257,14 +257,14 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	@SuppressWarnings("unchecked")
 	private <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		String columnFamilyName = context.isDirectColumnFamilyMapping() ? context.getEntityMeta()
+		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 
-		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
-				.findColumnFamilyDao(columnFamilyName);
+		GenericWideRowDao<ID, V> wideRowDao = (GenericWideRowDao<ID, V>) context
+				.findWideRowDao(columnFamilyName);
 
 		return WideMapWrapperBuilder //
-				.builder(key, columnFamilyDao, propertyMeta) //
+				.builder(key, wideRowDao, propertyMeta) //
 				.context(context) //
 				.interceptor(this) //
 				.compositeHelper(compositeHelper) //
@@ -277,8 +277,8 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	@SuppressWarnings("unchecked")
 	private <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta)
 	{
-		GenericColumnFamilyDao<ID, Long> counterWideMapDao = (GenericColumnFamilyDao<ID, Long>) context
-				.findColumnFamilyDao(propertyMeta.getExternalCFName());
+		GenericWideRowDao<ID, Long> counterWideMapDao = (GenericWideRowDao<ID, Long>) context
+				.findWideRowDao(propertyMeta.getExternalCFName());
 
 		return CounterWideMapWrapperBuilder //
 				.builder(key, counterWideMapDao, propertyMeta)//
@@ -294,13 +294,13 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	@SuppressWarnings("unchecked")
 	private <K, JOIN_ID, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		String columnFamilyName = context.isDirectColumnFamilyMapping() ? context.getEntityMeta()
+		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
-		GenericColumnFamilyDao<ID, JOIN_ID> columnFamilyDao = (GenericColumnFamilyDao<ID, JOIN_ID>) context
-				.findColumnFamilyDao(columnFamilyName);
+		GenericWideRowDao<ID, JOIN_ID> wideRowDao = (GenericWideRowDao<ID, JOIN_ID>) context
+				.findWideRowDao(columnFamilyName);
 
 		return JoinWideMapWrapperBuilder //
-				.builder(key, columnFamilyDao, propertyMeta) //
+				.builder(key, wideRowDao, propertyMeta) //
 				.interceptor(this) //
 				.context(context) //
 				.compositeHelper(compositeHelper) //
@@ -316,10 +316,10 @@ public class JpaEntityInterceptor<ID, T> implements MethodInterceptor, AchillesI
 	@SuppressWarnings("unchecked")
 	private <K, V> Object buildColumnFamilyWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		GenericColumnFamilyDao<ID, V> columnFamilyDao = (GenericColumnFamilyDao<ID, V>) context
-				.findColumnFamilyDao(context.getEntityMeta().getColumnFamilyName());
+		GenericWideRowDao<ID, V> wideRowDao = (GenericWideRowDao<ID, V>) context
+				.findWideRowDao(context.getEntityMeta().getColumnFamilyName());
 
-		return WideMapWrapperBuilder.builder(key, columnFamilyDao, propertyMeta) //
+		return WideMapWrapperBuilder.builder(key, wideRowDao, propertyMeta) //
 				.interceptor(this) //
 				.context(context) //
 				.compositeHelper(compositeHelper) //

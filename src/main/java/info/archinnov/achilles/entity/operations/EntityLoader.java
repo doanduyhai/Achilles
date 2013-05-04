@@ -47,9 +47,9 @@ public class EntityLoader
 		try
 		{
 
-			if (entityMeta.isColumnFamilyDirectMapping())
+			if (entityMeta.isWideRow())
 			{
-				log.debug("Entity is a direct column family mapping, just set the primary key");
+				log.debug("Entity is a wide row, just set the primary key");
 
 				entity = entityClass.newInstance();
 				introspector

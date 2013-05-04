@@ -5,7 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.FlushContext.FlushType;
@@ -54,7 +54,7 @@ public class ImmediateFlushContextTest
 	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericColumnFamilyDao<Long, String> cfDao;
+	private GenericWideRowDao<Long, String> cfDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -162,20 +162,20 @@ public class ImmediateFlushContextTest
 		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
-		Mutator<Long> actual = context.getColumnFamilyMutator("cf");
+		Mutator<Long> actual = context.getWideRowMutator("cf");
 		assertThat(actual).isSameAs(mutator);
 	}
 
 	@Test
 	public void should_get_new_cf_mutator() throws Exception
 	{
-		when((GenericColumnFamilyDao) daoContext.findColumnFamilyDao("cf")).thenReturn(cfDao);
+		when((GenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
-		Mutator<Long> actual = context.getColumnFamilyMutator("cf");
+		Mutator<Long> actual = context.getWideRowMutator("cf");
 		assertThat(actual).isSameAs(mutator);
 		assertThat((Mutator<Long>) mutatorMap.get("cf").left).isSameAs(mutator);
-		assertThat((GenericColumnFamilyDao<Long, String>) mutatorMap.get("cf").right).isSameAs(
+		assertThat((GenericWideRowDao<Long, String>) mutatorMap.get("cf").right).isSameAs(
 				cfDao);
 	}
 

@@ -65,7 +65,7 @@ public class JpaEntityInterceptorBuilder<ID, T>
 		Validator.validateNotNull(entityMeta.getSetterMetas(),
 				"Setters metadata for interceptor of '"
 						+ context.getEntityClass().getCanonicalName() + "'should not be null");
-		if (entityMeta.isColumnFamilyDirectMapping())
+		if (entityMeta.isWideRow())
 		{
 			Validator.validateNotNull(context.getColumnFamilyDao(), "Column Family Dao for '"
 					+ context.getEntityClass().getCanonicalName() + "' should not be null");

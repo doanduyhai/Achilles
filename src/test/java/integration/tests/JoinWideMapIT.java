@@ -5,7 +5,7 @@ import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -45,7 +45,7 @@ public class JoinWideMapIT
 	private GenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericColumnFamilyDao<Long, UUID> externalJoinWideMapDao = getColumnFamilyDao(
+	private GenericWideRowDao<Long, UUID> externalJoinWideMapDao = getColumnFamilyDao(
 			LONG_SRZ, UUID_SRZ, normalizerAndValidateColumnFamilyName("retweets_cf"));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();

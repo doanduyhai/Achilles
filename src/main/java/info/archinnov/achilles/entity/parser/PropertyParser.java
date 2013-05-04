@@ -60,7 +60,7 @@ public class PropertyParser
 				.getCurrentField()));
 
 		validator.validateNoDuplicate(context);
-		validator.validateDirectCFMappingNoExternalWideMap(context);
+		validator.validateWideRowHasNoExternalWideMap(context);
 
 		Class<?> fieldType = field.getType();
 		PropertyMeta<?, ?> propertyMeta;
@@ -337,32 +337,6 @@ public class PropertyParser
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
 				idMeta.getPropertyName());
 
-		// GenericColumnFamilyDao<ID, ?> dao;
-		// Cluster cluster = context.getCluster();
-		// Keyspace keyspace = context.getKeyspace();
-		// AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = context
-		// .getConfigurableCLPolicy();
-		//
-		// Class<V> valueClass = propertyMeta.getValueClass();
-
-		// TODO
-		// if (!propertyMeta.type().isJoinColumn())
-		// {
-		// if (isSupportedType(valueClass))
-		// {
-		// dao = new GenericColumnFamilyDao<ID, V>(cluster, keyspace, //
-		// idMeta.getValueSerializer(), //
-		// propertyMeta.getValueSerializer(), //
-		// externalTableName, configurableCLPolicy);
-		// }
-		// else
-		// {
-		// dao = new GenericColumnFamilyDao<ID, String>(cluster, keyspace, //
-		// idMeta.getValueSerializer(), //
-		// STRING_SRZ, externalTableName, configurableCLPolicy);
-		// }
-		// context.getColumnFamilyDaosMap().put(externalTableName, dao);
-		// }
 		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
 
 		log.trace("Complete wide map property {} of entity class {} : {}",

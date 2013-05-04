@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface ColumnFamily
+public @interface WideRow
 {
 	/**
 	 * <p>
-	 * Define a ColumnFamily direct mapping. A ColumnFamily entity has an id (row key) annotated by @Id and a WideMap property annotated with @Column. The WideMap represents the Column Name/Column
-	 * Value representation in Thrift
+	 * Define a Wide row in Cassandra. A Wide row entity has an id (row key) annotated by @Id and a WideMap property annotated with @Column. The WideMap represents the Column Name/Column Value
+	 * representation in Thrift
 	 * </p>
 	 */
 }

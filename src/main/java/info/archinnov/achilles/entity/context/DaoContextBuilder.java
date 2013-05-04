@@ -4,8 +4,8 @@ import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
@@ -31,7 +31,7 @@ public class DaoContextBuilder
 	private static final Logger log = LoggerFactory.getLogger(DaoContextBuilder.class);
 
 	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
+	private Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap = new HashMap<String, GenericWideRowDao<?, ?>>();
 	private CounterDao counterDao;
 
 	public DaoContext buildDao(Cluster cluster, Keyspace keyspace,
@@ -46,7 +46,7 @@ public class DaoContextBuilder
 
 		for (EntityMeta<?> entityMeta : entityMetaMap.values())
 		{
-			if (!entityMeta.isColumnFamilyDirectMapping())
+			if (!entityMeta.isWideRow())
 			{
 				buildEntityDao(cluster, keyspace, configContext, entityMeta);
 			}
@@ -59,18 +59,17 @@ public class DaoContextBuilder
 					{
 						EntityMeta<?> joinEntityMeta = propertyMeta.getJoinProperties()
 								.getEntityMeta();
-						buildColumnFamilyDaoForJoinWideMap(cluster, keyspace, configContext,
+						buildWideRowDaoForJoinWideMap(cluster, keyspace, configContext,
 								propertyMeta, joinEntityMeta);
 					}
 					else
 					{
-						buildColumnFamilyDao(cluster, keyspace, configContext, entityMeta,
-								propertyMeta);
+						buildWideRowDao(cluster, keyspace, configContext, entityMeta, propertyMeta);
 					}
 				}
 			}
 		}
-		return new DaoContext(entityDaosMap, columnFamilyDaosMap, counterDao);
+		return new DaoContext(entityDaosMap, wideRowDaosMap, counterDao);
 	}
 
 	private <ID> void buildEntityDao(Cluster cluster, Keyspace keyspace,
@@ -88,12 +87,12 @@ public class DaoContextBuilder
 		log.debug("Build entity dao for column family {}", columnFamilyName);
 	}
 
-	private <ID, K, V> void buildColumnFamilyDao(Cluster cluster, Keyspace keyspace,
+	private <ID, K, V> void buildWideRowDao(Cluster cluster, Keyspace keyspace,
 			ConfigurationContext configContext, EntityMeta<ID> entityMeta,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		Class<?> valueClass = propertyMeta.getValueClass();
-		GenericColumnFamilyDao<?, ?> dao;
+		GenericWideRowDao<?, ?> dao;
 
 		PropertyMeta<Void, ID> idMeta = entityMeta.getIdMeta();
 		String externalCFName = propertyMeta.getExternalCFName();
@@ -101,46 +100,45 @@ public class DaoContextBuilder
 				.getConsistencyPolicy();
 		if (isSupportedType(valueClass))
 		{
-			dao = new GenericColumnFamilyDao<ID, V>(cluster, keyspace, //
+			dao = new GenericWideRowDao<ID, V>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					propertyMeta.getValueSerializer(), //
 					externalCFName, consistencyPolicy);
 		}
 		else if (Counter.class.isAssignableFrom(valueClass))
 		{
-			dao = new GenericColumnFamilyDao<ID, Long>(cluster, keyspace, //
+			dao = new GenericWideRowDao<ID, Long>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					LONG_SRZ, //
 					externalCFName, consistencyPolicy);
 		}
 		else
 		{
-			dao = new GenericColumnFamilyDao<ID, String>(cluster, keyspace, //
+			dao = new GenericWideRowDao<ID, String>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					STRING_SRZ, //
 					externalCFName, consistencyPolicy);
 		}
-		columnFamilyDaosMap.put(externalCFName, dao);
-		log.debug("Build column family dao for column family {}", externalCFName);
+		wideRowDaosMap.put(externalCFName, dao);
+		log.debug("Build column family dao for wide row {}", externalCFName);
 
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, K, V, JOIN_ID> void buildColumnFamilyDaoForJoinWideMap(Cluster cluster,
+	private <ID, K, V, JOIN_ID> void buildWideRowDaoForJoinWideMap(Cluster cluster,
 			Keyspace keyspace, ConfigurationContext configContext, PropertyMeta<K, V> propertyMeta,
 			EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 
-		GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
-				cluster, //
+		GenericWideRowDao<ID, JOIN_ID> joinDao = new GenericWideRowDao<ID, JOIN_ID>(cluster, //
 				keyspace, //
 				(Serializer<ID>) propertyMeta.getIdSerializer(), //
 				joinEntityMeta.getIdSerializer(), //
 				propertyMeta.getExternalCFName(),//
 				configContext.getConsistencyPolicy());
 
-		log.debug("Building join dao for column family {}", propertyMeta.getExternalCFName());
+		log.debug("Building join dao for wide row {}", propertyMeta.getExternalCFName());
 
-		columnFamilyDaosMap.put(propertyMeta.getExternalCFName(), joinDao);
+		wideRowDaosMap.put(propertyMeta.getExternalCFName(), joinDao);
 	}
 }

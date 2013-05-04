@@ -5,7 +5,7 @@ import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFam
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -13,7 +13,7 @@ import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
-import integration.tests.entity.ColumnFamilyBeanWithJoinEntity;
+import integration.tests.entity.WideRowBeanWithJoinEntity;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 
@@ -36,12 +36,12 @@ import org.junit.Test;
 public class ColumnFamilyWithJoinEntityIT
 {
 
-	private GenericColumnFamilyDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(ColumnFamilyBeanWithJoinEntity.class.getName()));
+	private GenericWideRowDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
+			normalizerAndValidateColumnFamilyName(WideRowBeanWithJoinEntity.class.getName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private ColumnFamilyBeanWithJoinEntity bean;
+	private WideRowBeanWithJoinEntity bean;
 
 	private WideMap<Integer, User> friends;
 
@@ -57,7 +57,7 @@ public class ColumnFamilyWithJoinEntityIT
 	@Before
 	public void setUp()
 	{
-		bean = new ColumnFamilyBeanWithJoinEntity();
+		bean = new WideRowBeanWithJoinEntity();
 		bean.setId(id);
 		bean = em.merge(bean);
 		friends = bean.getFriends();

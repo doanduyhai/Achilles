@@ -4,7 +4,7 @@ import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -285,13 +285,13 @@ public class ThriftPersisterImpl
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 		ID primaryKey = context.getPrimaryKey();
 
-		if (context.isDirectColumnFamilyMapping())
+		if (context.isWideRow())
 		{
-			log.trace("Batch removing direct column family mapping of class {} and primary key {}",
-					context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-			Mutator<ID> columnFamilyMutator = context.getColumnFamilyMutator(entityMeta
-					.getColumnFamilyName());
-			context.getColumnFamilyDao().removeRowBatch(primaryKey, columnFamilyMutator);
+			log.trace("Batch removing wide row of class {} and primary key {}", context
+					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+			Mutator<ID> wideRowMutator = context
+					.getWideRowMutator(entityMeta.getColumnFamilyName());
+			context.getColumnFamilyDao().removeRowBatch(primaryKey, wideRowMutator);
 		}
 		else
 		{
@@ -333,10 +333,10 @@ public class ThriftPersisterImpl
 				context.getPrimaryKey());
 
 		String externalColumnFamilyName = propertyMeta.getExternalCFName();
-		GenericColumnFamilyDao<ID, ?> findColumnFamilyDao = (GenericColumnFamilyDao<ID, ?>) context
-				.findColumnFamilyDao(externalColumnFamilyName);
+		GenericWideRowDao<ID, ?> findColumnFamilyDao = (GenericWideRowDao<ID, ?>) context
+				.findWideRowDao(externalColumnFamilyName);
 		findColumnFamilyDao.removeRowBatch(primaryKey,
-				context.getColumnFamilyMutator(externalColumnFamilyName));
+				context.getWideRowMutator(externalColumnFamilyName));
 	}
 
 	public <ID, V> void removePropertyBatch(PersistenceContext<ID> context,

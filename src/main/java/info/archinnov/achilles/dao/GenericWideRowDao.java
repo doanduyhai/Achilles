@@ -15,12 +15,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class GenericColumnFamilyDao<K, V> extends AbstractDao<K, V>
+public class GenericWideRowDao<K, V> extends AbstractDao<K, V>
 {
 
-	private static final Logger log = LoggerFactory.getLogger(GenericColumnFamilyDao.class);
+	private static final Logger log = LoggerFactory.getLogger(GenericWideRowDao.class);
 
-	public GenericColumnFamilyDao(Cluster cluster, Keyspace keyspace, //
+	public GenericWideRowDao(Cluster cluster, Keyspace keyspace, //
 			Serializer<K> keySrz, //
 			Serializer<V> valSrz, //
 			String cf, //

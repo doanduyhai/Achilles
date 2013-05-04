@@ -40,7 +40,7 @@ public class EntityPersister
 	{
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
-		if (!entityMeta.isColumnFamilyDirectMapping())
+		if (!entityMeta.isWideRow())
 		{
 			log.debug("Persisting transient entity {}", context.getEntity());
 

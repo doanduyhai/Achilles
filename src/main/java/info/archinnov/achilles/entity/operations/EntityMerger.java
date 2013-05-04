@@ -123,7 +123,7 @@ public class EntityMerger
 		{
 			log.debug("Persisting transient entity");
 
-			if (!context.isDirectColumnFamilyMapping())
+			if (!context.isWideRow())
 			{
 				this.persister.persist(context);
 			}

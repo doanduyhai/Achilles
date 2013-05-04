@@ -1,6 +1,7 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
+import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
 
@@ -9,14 +10,14 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * ColumnFamilyBeanWithWrongColumnType
+ * ColumnFamilyBean
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
-@ColumnFamily
-public class ColumnFamilyBeanWithWrongColumnType implements Serializable
+@WideRow
+public class WideRowBean implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;
@@ -25,7 +26,7 @@ public class ColumnFamilyBeanWithWrongColumnType implements Serializable
 	private Long id;
 
 	@Column
-	private String name;
+	private WideMap<Integer, String> values;
 
 	public Long getId()
 	{
@@ -37,13 +38,13 @@ public class ColumnFamilyBeanWithWrongColumnType implements Serializable
 		this.id = id;
 	}
 
-	public String getName()
+	public WideMap<Integer, String> getValues()
 	{
-		return name;
+		return values;
 	}
 
-	public void setName(String name)
+	public void setValues(WideMap<Integer, String> values)
 	{
-		this.name = name;
+		this.values = values;
 	}
 }

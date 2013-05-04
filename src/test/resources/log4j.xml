@@ -14,9 +14,10 @@
 	
 	<appender name="NullAppender" class="org.apache.log4j.varia.NullAppender" />
 	
-	<logger name="info.archinnov.achilles.columnFamily.ColumnFamilyHelper">
-		<level value="DEBUG" />
+	<logger name="info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper">
+		<level value="WARN" />
 	</logger>
+	
 	
 	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
 		<level value="INFO" />

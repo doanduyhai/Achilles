@@ -67,7 +67,7 @@ public class ThriftColumnFamilyCreatorTest
 	@Mock
 	private ThriftColumnFamilyHelper thriftColumnFamilyHelper;
 
-	private Set<String> cfs = new HashSet<String>();
+	private Set<String> columnFamilyNames = new HashSet<String>();
 
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
@@ -89,9 +89,9 @@ public class ThriftColumnFamilyCreatorTest
 		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
 				.propertyName("id").accessors(accessors).build();
 
-		cfs.clear();
+		columnFamilyNames.clear();
 		Whitebox.setInternalState(creator, "thriftColumnFamilyHelper", thriftColumnFamilyHelper);
-		Whitebox.setInternalState(creator, "cfs", cfs);
+		Whitebox.setInternalState(creator, "columnFamilyNames", columnFamilyNames);
 		configContext.setForceColumnFamilyCreation(true);
 	}
 
@@ -132,12 +132,21 @@ public class ThriftColumnFamilyCreatorTest
 	public void should_add_column_family() throws Exception
 	{
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+		creator.addColumnFamily(cfDef);
 
-		when(cluster.addColumnFamily(cfDef, true)).thenReturn("id");
+		verify(cluster).addColumnFamily(cfDef, true);
+	}
 
-		String id = this.creator.addColumnFamily(cfDef);
+	@Test
+	public void should_not_add_column_family_if_already_added() throws Exception
+	{
+		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+		cfDef.setName("name");
+		columnFamilyNames.add("name");
 
-		assertThat(id).isEqualTo("id");
+		creator.addColumnFamily(cfDef);
+
+		verify(cluster, never()).addColumnFamily(cfDef, true);
 	}
 
 	@Test
@@ -155,17 +164,17 @@ public class ThriftColumnFamilyCreatorTest
 	}
 
 	@Test
-	public void should_create_column_family_for_column_family_direct_mapping() throws Exception
+	public void should_create_column_family_for_wide_row() throws Exception
 	{
 		prepareData();
-		meta.setColumnFamilyDirectMapping(true);
+		meta.setWideRow(true);
 		idMeta.setValueClass(Long.class);
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		meta.setClassName("entity");
 		when(
-				thriftColumnFamilyHelper.buildDirectMappingCF("keyspace", simplePropertyMeta,
-						Long.class, "testCF", "entity")).thenReturn(cfDef);
+				thriftColumnFamilyHelper.buildWideRowCF("keyspace", simplePropertyMeta, Long.class,
+						"testCF", "entity")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
 
@@ -257,7 +266,7 @@ public class ThriftColumnFamilyCreatorTest
 		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
 
 		verify(cluster).addColumnFamily(cfDef, true);
-		assertThat(cfs).containsOnly("testCF2");
+		assertThat(columnFamilyNames).containsOnly("testCF2");
 	}
 
 	@Test
@@ -273,7 +282,7 @@ public class ThriftColumnFamilyCreatorTest
 		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
 
 		verify(cluster).addColumnFamily(cfDef, true);
-		assertThat(cfs).containsOnly("mocked_cfDef");
+		assertThat(columnFamilyNames).containsOnly("mocked_cfDef");
 	}
 
 	@Test
@@ -298,7 +307,7 @@ public class ThriftColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
 		externalCFDef.setName("externalCF");
 		when(
-				thriftColumnFamilyHelper.buildDirectMappingCF("keyspace", externalWideMapMeta,
+				thriftColumnFamilyHelper.buildWideRowCF("keyspace", externalWideMapMeta,
 						Long.class, "externalCF", meta.getClassName())).thenReturn(externalCFDef);
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);

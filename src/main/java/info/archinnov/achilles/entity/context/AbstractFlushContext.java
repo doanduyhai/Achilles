@@ -4,7 +4,7 @@ import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -119,7 +119,7 @@ public abstract class AbstractFlushContext implements FlushContext
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <ID> Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
+	public <ID> Mutator<ID> getWideRowMutator(String columnFamilyName)
 	{
 		Mutator<ID> mutator = null;
 		if (mutatorMap.containsKey(columnFamilyName))
@@ -128,8 +128,8 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			GenericColumnFamilyDao<ID, ?> columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) daoContext
-					.findColumnFamilyDao(columnFamilyName);
+			GenericWideRowDao<ID, ?> columnFamilyDao = (GenericWideRowDao<ID, ?>) daoContext
+					.findWideRowDao(columnFamilyName);
 
 			if (columnFamilyDao != null)
 			{

@@ -43,7 +43,7 @@ public class EntityMetaTestBuilder<ID>
 		meta.setIdSerializer(idMeta.getValueSerializer());
 		meta.setPropertyMetas(propertyMetas);
 		meta.setGetterMetas(getterMetas);
-		meta.setColumnFamilyDirectMapping(columnFamilyDirectMapping);
+		meta.setWideRow(columnFamilyDirectMapping);
 		meta.setConsistencyLevels(consistencyLevels);
 
 		return meta;

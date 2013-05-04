@@ -22,10 +22,10 @@ public interface ConfigurationParameters
 	String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
 	String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
 
-	String DEFAUT_READ_CONSISTENCY_PARAM = "achilles.default.consistency.read";
-	String DEFAUT_WRITE_CONSISTENCY_PARAM = "achilles.default.consistency.write";
-	String READ_CONSISTENCY_MAP_PARAM = "achilles.consistency.read.map";
-	String WRITE_CONSISTENCY_MAP_PARAM = "achilles.consistency.write.map";
+	String CONSISTENCY_LEVEL_READ_DEFAULT_PARAM = "achilles.consistency.read.default";
+	String CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM = "achilles.consistency.write.default";
+	String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
+	String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
 
 	String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
 	String ENSURE_CONSISTENCY_ON_JOIN_PARAM = "achilles.consistency.join.check";

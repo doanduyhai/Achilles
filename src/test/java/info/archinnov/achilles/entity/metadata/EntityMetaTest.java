@@ -42,7 +42,7 @@ public class EntityMetaTest
 		entityMeta.setIdSerializer(LONG_SRZ);
 		entityMeta.setPropertyMetas(propertyMetas);
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 		entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
 
 		StringBuilder toString = new StringBuilder();
@@ -53,7 +53,7 @@ public class EntityMetaTest
 				.append(", ");
 		toString.append("propertyMetas=[age,name], ");
 		toString.append("idMeta=").append(idMeta.toString()).append(", ");
-		toString.append("columnFamilyDirectMapping=true, ");
+		toString.append("wideRow=true, ");
 		toString.append("consistencyLevels=[ONE,ONE]]");
 		assertThat(entityMeta.toString()).isEqualTo(toString.toString());
 	}

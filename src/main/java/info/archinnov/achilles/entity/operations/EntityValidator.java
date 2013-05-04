@@ -50,21 +50,19 @@ public class EntityValidator
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T, ID> void validateNotCFDirectMapping(Object entity,
-			Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	public <T, ID> void validateNotWideRow(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
 	{
-		log.debug("Validate entity {} is not a direct column family mapping", entity);
+		log.debug("Validate entity {} is not a wide row", entity);
 
 		Validator.validateNotNull(entity, "Entity should not be null");
 
 		Class<T> baseClass = (Class<T>) proxifier.deriveBaseClass(entity);
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(baseClass);
 
-		if (entityMeta.isColumnFamilyDirectMapping())
+		if (entityMeta.isWideRow())
 		{
-			throw new IllegalArgumentException("This operation is not allowed for the entity '"
-					+ entity.getClass().getCanonicalName()
-					+ "' directly mapped to a native column family");
+			throw new IllegalArgumentException("This operation is not allowed for the wide row '"
+					+ entity.getClass().getCanonicalName());
 		}
 	}
 

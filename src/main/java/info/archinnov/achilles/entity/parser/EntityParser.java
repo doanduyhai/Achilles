@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -55,8 +55,7 @@ public class EntityParser
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
 				.findConsistencyLevels(entityClass, context.getConfigurableCLPolicy());
 
-		context.setColumnFamilyDirectMapping(entityClass.getAnnotation(ColumnFamily.class) != null ? true
-				: false);
+		context.setWideRow(entityClass.getAnnotation(WideRow.class) != null ? true : false);
 		context.setCurrentConsistencyLevels(consistencyLevels);
 		context.setCurrentColumnFamilyName(columnFamilyName);
 
@@ -93,16 +92,16 @@ public class EntityParser
 		// Deferred counter property meta completion
 		completeCounterPropertyMeta(context, idMeta);
 
-		// Finish validation of property metas and column family direct mappings
+		// Finish validation of property metas and wide row
 		validator.validatePropertyMetas(context);
-		validator.validateColumnFamilyDirectMappings(context);
+		validator.validateWideRows(context);
 
 		EntityMeta<ID> entityMeta = entityMetaBuilder((PropertyMeta<Void, ID>) idMeta)
 				.className(entityClass.getCanonicalName()) //
 				.columnFamilyName(columnFamilyName) //
 				.serialVersionUID(serialVersionUID) //
 				.propertyMetas(context.getPropertyMetas()) //
-				.columnFamilyDirectMapping(context.isColumnFamilyDirectMapping()) //
+				.wideRow(context.isWideRow()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.build();
 
@@ -130,7 +129,7 @@ public class EntityParser
 			PropertyMeta<?, ?> propertyMeta = entry.getKey();
 			EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) entityMetaMap.get(clazz);
 
-			validator.validateJoinEntityNotDirectCFMapping(propertyMeta, joinEntityMeta);
+			validator.validateJoinEntityNotWideRow(propertyMeta, joinEntityMeta);
 
 			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 

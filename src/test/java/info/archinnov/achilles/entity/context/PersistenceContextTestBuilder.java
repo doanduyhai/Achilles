@@ -3,8 +3,8 @@ package info.archinnov.achilles.entity.context;
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class PersistenceContextTestBuilder<ID>
 {
 	private EntityMeta<ID> entityMeta;
 	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
+	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericWideRowDao<?, ?>>();
 	private CounterDao counterDao;
 	private AchillesConfigurableConsistencyLevelPolicy policy;
 	private boolean ensureJoinConsistency;
@@ -30,7 +30,7 @@ public class PersistenceContextTestBuilder<ID>
 	private Class<?> entityClass;
 	private ID primaryKey;
 	private GenericEntityDao<ID> entityDao;
-	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
+	private GenericWideRowDao<ID, ?> wideRowDao;
 
 	private ImmediateFlushContext immediateFlushContext;
 
@@ -75,7 +75,7 @@ public class PersistenceContextTestBuilder<ID>
 
 		context.setEntity(entity);
 		Whitebox.setInternalState(context, "entityDao", entityDao);
-		Whitebox.setInternalState(context, "columnFamilyDao", columnFamilyDao);
+		Whitebox.setInternalState(context, "wideRowDao", wideRowDao);
 		return context;
 	}
 
@@ -87,7 +87,7 @@ public class PersistenceContextTestBuilder<ID>
 	}
 
 	public PersistenceContextTestBuilder<ID> columnFamilyDaosMap(
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap)
+			Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		return this;
@@ -106,9 +106,9 @@ public class PersistenceContextTestBuilder<ID>
 	}
 
 	public PersistenceContextTestBuilder<ID> columnFamilyDao(
-			GenericColumnFamilyDao<ID, ?> columnFamilyDao)
+			GenericWideRowDao<ID, ?> columnFamilyDao)
 	{
-		this.columnFamilyDao = columnFamilyDao;
+		this.wideRowDao = columnFamilyDao;
 		return this;
 	}
 

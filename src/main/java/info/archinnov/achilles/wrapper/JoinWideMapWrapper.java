@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -39,7 +39,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 	private ID id;
 	private PropertyMeta<K, V> propertyMeta;
-	private GenericColumnFamilyDao<ID, JOIN_ID> dao;
+	private GenericWideRowDao<ID, JOIN_ID> dao;
 	private EntityPersister persister;
 	private EntityLoader loader;
 	private EntityProxifier proxifier;
@@ -81,7 +81,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -93,7 +93,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId,
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -191,7 +191,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		log.trace("Remove join value having key {}", key);
 
 		dao.removeColumnBatch(id, buildComposite(key),
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -209,7 +209,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					OrderingMode.ASCENDING.name());
 		}
 		dao.removeColumnRangeBatch(id, queryComps[0], queryComps[1],
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -218,7 +218,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 	{
 		log.trace("Remove first {} join values", count);
 		dao.removeColumnRangeBatch(id, null, null, false, count,
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -227,7 +227,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 	{
 		log.trace("Remove last {} join values", count);
 		dao.removeColumnRangeBatch(id, null, null, true, count,
-				context.getColumnFamilyMutator(getExternalCFName()));
+				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
@@ -301,7 +301,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		this.iteratorFactory = iteratorFactory;
 	}
 
-	public void setDao(GenericColumnFamilyDao<ID, JOIN_ID> dao)
+	public void setDao(GenericWideRowDao<ID, JOIN_ID> dao)
 	{
 		this.dao = dao;
 	}

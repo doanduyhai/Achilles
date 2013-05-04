@@ -84,7 +84,8 @@ public class ThriftColumnFamilyHelperTest
 		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
 		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildEntityCF(entityMeta, "keyspace");
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildEntityCF(entityMeta,
+				"keyspace");
 
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
@@ -103,7 +104,7 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
@@ -126,7 +127,7 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
@@ -152,7 +153,7 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildDirectMappingCF("keyspace",
+		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
 				wideMapMeta, Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
@@ -179,7 +180,8 @@ public class ThriftColumnFamilyHelperTest
 	{
 		String canonicalName = "org.achilles.entity.ClassName";
 
-		String normalized = ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+		String normalized = ThriftColumnFamilyHelper
+				.normalizerAndValidateColumnFamilyName(canonicalName);
 
 		assertThat(normalized).isEqualTo("ClassName");
 	}
@@ -302,11 +304,11 @@ public class ThriftColumnFamilyHelperTest
 
 	@SuppressWarnings("rawtypes")
 	@Test
-	public void should_validate_column_family_direct_mapping() throws Exception
+	public void should_validate_wide_row() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
+		when(entityMeta.isWideRow()).thenReturn(true);
 
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
 				propertyMeta);
@@ -365,13 +367,12 @@ public class ThriftColumnFamilyHelperTest
 
 	@SuppressWarnings("rawtypes")
 	@Test
-	public void should_exception_when_composite_type_alias_when_cf_direct_mapping_not_match()
-			throws Exception
+	public void should_exception_when_composite_type_alias_wide_row_not_match() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
+		when(entityMeta.isWideRow()).thenReturn(true);
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetaMap);

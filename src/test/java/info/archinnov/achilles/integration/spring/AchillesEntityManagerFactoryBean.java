@@ -129,20 +129,20 @@ public class AchillesEntityManagerFactoryBean implements FactoryBean<ThriftEntit
 	{
 		if (defaultReadLevel != null)
 		{
-			configMap.put(DEFAUT_READ_CONSISTENCY_PARAM, defaultReadLevel);
+			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, defaultReadLevel);
 		}
 		if (defaultWriteLevel != null)
 		{
-			configMap.put(DEFAUT_WRITE_CONSISTENCY_PARAM, defaultWriteLevel);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, defaultWriteLevel);
 		}
 
 		if (readLevelMap != null)
 		{
-			configMap.put(READ_CONSISTENCY_MAP_PARAM, readLevelMap);
+			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, readLevelMap);
 		}
 		if (writeLevelMap != null)
 		{
-			configMap.put(WRITE_CONSISTENCY_MAP_PARAM, writeLevelMap);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, writeLevelMap);
 		}
 	}
 

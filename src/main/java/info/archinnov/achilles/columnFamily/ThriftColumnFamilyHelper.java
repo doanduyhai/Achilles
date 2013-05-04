@@ -71,7 +71,7 @@ public class ThriftColumnFamilyHelper
 		return cfDef;
 	}
 
-	public <ID> ColumnFamilyDefinition buildDirectMappingCF(String keyspaceName,
+	public <ID> ColumnFamilyDefinition buildWideRowCF(String keyspaceName,
 			PropertyMeta<?, ?> propertyMeta, Class<ID> keyClass, String columnFamilyName,
 			String entityName)
 	{
@@ -119,7 +119,7 @@ public class ThriftColumnFamilyHelper
 		String propertyName = propertyMeta.getPropertyName();
 
 		StringBuilder builder = new StringBuilder("\n\n");
-		builder.append("Create Composite-based column family for property ");
+		builder.append("Create Composite-based wide row column family for property ");
 		builder.append("'").append(propertyName).append("' of entity '");
 		builder.append(entityName).append("' : \n");
 		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
@@ -180,7 +180,7 @@ public class ThriftColumnFamilyHelper
 					+ entityMeta.getIdSerializer().getComparatorType().getClassName() + "'");
 		}
 
-		if (entityMeta.isColumnFamilyDirectMapping())
+		if (entityMeta.isWideRow())
 		{
 			this.validateCFWithPropertyMeta(cfDef, entityMeta.getPropertyMetas().values()
 					.iterator().next(), entityMeta.getColumnFamilyName());

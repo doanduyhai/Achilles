@@ -1,6 +1,6 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
@@ -16,8 +16,8 @@ import javax.persistence.Id;
  * 
  */
 @Entity
-@ColumnFamily
-public class ColumnFamilyBeanWithObject implements Serializable
+@WideRow
+public class WideRowBeanWithObject implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 

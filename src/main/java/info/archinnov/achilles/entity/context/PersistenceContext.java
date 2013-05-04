@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.context;
 
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.FlushContext.FlushType;
@@ -35,7 +35,7 @@ public class PersistenceContext<ID>
 	private Class<?> entityClass;
 	private ID primaryKey;
 	private GenericEntityDao<ID> entityDao;
-	private GenericColumnFamilyDao<ID, ?> columnFamilyDao;
+	private GenericWideRowDao<ID, ?> wideRowDao;
 
 	// Flush
 	private FlushContext flushContext;
@@ -112,9 +112,9 @@ public class PersistenceContext<ID>
 		return daoContext.findEntityDao(columnFamilyName);
 	}
 
-	public GenericColumnFamilyDao<?, ?> findColumnFamilyDao(String columnFamilyName)
+	public GenericWideRowDao<?, ?> findWideRowDao(String columnFamilyName)
 	{
-		return daoContext.findColumnFamilyDao(columnFamilyName);
+		return daoContext.findWideRowDao(columnFamilyName);
 	}
 
 	public CounterDao getCounterDao()
@@ -122,9 +122,9 @@ public class PersistenceContext<ID>
 		return daoContext.getCounterDao();
 	}
 
-	public boolean isDirectColumnFamilyMapping()
+	public boolean isWideRow()
 	{
-		return this.entityMeta.isColumnFamilyDirectMapping();
+		return this.entityMeta.isWideRow();
 	}
 
 	public String getColumnFamilyName()
@@ -134,12 +134,12 @@ public class PersistenceContext<ID>
 
 	public Mutator<ID> getCurrentColumnFamilyMutator()
 	{
-		return flushContext.getColumnFamilyMutator(entityMeta.getColumnFamilyName());
+		return flushContext.getWideRowMutator(entityMeta.getColumnFamilyName());
 	}
 
-	public Mutator<ID> getColumnFamilyMutator(String columnFamilyName)
+	public Mutator<ID> getWideRowMutator(String columnFamilyName)
 	{
-		return flushContext.getColumnFamilyMutator(columnFamilyName);
+		return flushContext.getWideRowMutator(columnFamilyName);
 	}
 
 	public Mutator<ID> getCurrentEntityMutator()
@@ -212,9 +212,9 @@ public class PersistenceContext<ID>
 		return entityDao;
 	}
 
-	public GenericColumnFamilyDao<ID, ?> getColumnFamilyDao()
+	public GenericWideRowDao<ID, ?> getColumnFamilyDao()
 	{
-		return columnFamilyDao;
+		return wideRowDao;
 	}
 
 	public Class<?> getEntityClass()
@@ -246,10 +246,10 @@ public class PersistenceContext<ID>
 	private void initDaos()
 	{
 		String columnFamilyName = entityMeta.getColumnFamilyName();
-		if (entityMeta.isColumnFamilyDirectMapping())
+		if (entityMeta.isWideRow())
 		{
-			this.columnFamilyDao = (GenericColumnFamilyDao<ID, ?>) daoContext
-					.findColumnFamilyDao(columnFamilyName);
+			this.wideRowDao = (GenericWideRowDao<ID, ?>) daoContext
+					.findWideRowDao(columnFamilyName);
 		}
 		else
 		{

@@ -118,7 +118,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_load_entity() throws Exception
 	{
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(loaderImpl.load(context)).thenReturn(bean);
 
 		Object actual = loader.load(context);
@@ -127,10 +127,10 @@ public class EntityLoaderTest
 	}
 
 	@Test
-	public void should_load_direct_column_family() throws Exception
+	public void should_load_wide_row() throws Exception
 	{
 		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
+		when(entityMeta.isWideRow()).thenReturn(true);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
@@ -145,7 +145,7 @@ public class EntityLoaderTest
 	@Test
 	public void should_throw_exception_on_load_error() throws Exception
 	{
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(loaderImpl.load(context)).thenThrow(new RuntimeException("test"));
 
 		exception.expect(AchillesException.class);

@@ -94,7 +94,7 @@ public class EntityPersisterTest
 	@Test
 	public void should_persist_versionSerialUID() throws Exception
 	{
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
 
 		persister.persist(context);
@@ -110,7 +110,7 @@ public class EntityPersisterTest
 				.type(PropertyType.SIMPLE).build();
 		propertyMetas.put("simple", simpleMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 
 		persister.persist(context);
@@ -147,7 +147,7 @@ public class EntityPersisterTest
 		UserBean user = new UserBean();
 
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(joinId);
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, propertyMeta.getGetter())).thenReturn(user);
 
@@ -194,7 +194,7 @@ public class EntityPersisterTest
 				.type(PropertyType.LIST).build();
 		propertyMetas.put("list", listMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, listMeta.getGetter())).thenReturn(list);
 		persister.persist(context);
@@ -215,7 +215,7 @@ public class EntityPersisterTest
 				.type(PropertyType.SET).build();
 		propertyMetas.put("set", setMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, setMeta.getGetter())).thenReturn(set);
 		persister.persist(context);
@@ -236,7 +236,7 @@ public class EntityPersisterTest
 				.type(PropertyType.MAP).build();
 		propertyMetas.put("map", mapMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, mapMeta.getGetter())).thenReturn(map);
 		persister.persist(context);
@@ -257,7 +257,7 @@ public class EntityPersisterTest
 				.type(PropertyType.JOIN_SIMPLE).build();
 		propertyMetas.put("join", joinMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, joinMeta.getGetter())).thenReturn(user);
 		persister.persist(context);
@@ -278,7 +278,7 @@ public class EntityPersisterTest
 				.type(PropertyType.JOIN_SET).build();
 		propertyMetas.put("joinSet", joinSetMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, joinSetMeta.getGetter())).thenReturn(joinSet);
 		persister.persist(context);
@@ -299,7 +299,7 @@ public class EntityPersisterTest
 				.type(PropertyType.JOIN_MAP).build();
 		propertyMetas.put("joinMap", joinMapMeta);
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when(introspector.getValueFromField(bean, joinMapMeta.getGetter())).thenReturn(joinMap);
 		persister.persist(context);

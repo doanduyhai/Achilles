@@ -4,7 +4,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -45,7 +45,7 @@ public class WideMapWrapperTest {
     private PersistenceContext<Long> context;
 
     @Mock
-    private GenericColumnFamilyDao<Long, String> dao;
+    private GenericWideRowDao<Long, String> dao;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
@@ -79,7 +79,7 @@ public class WideMapWrapperTest {
         when((Serializer<Long>) wideMapMeta.getIdSerializer()).thenReturn(LONG_SRZ);
         when(wideMapMeta.getKeySerializer()).thenReturn(INT_SRZ);
         when(compositeFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);
-        when(context.getColumnFamilyMutator("external_cf")).thenReturn(mutator);
+        when(context.getWideRowMutator("external_cf")).thenReturn(mutator);
 
     }
 

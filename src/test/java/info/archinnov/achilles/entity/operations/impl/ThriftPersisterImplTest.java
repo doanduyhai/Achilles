@@ -8,8 +8,8 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.context.ImmediateFlushContext;
@@ -86,7 +86,7 @@ public class ThriftPersisterImplTest
 	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericColumnFamilyDao<Long, String> columnFamilyDao;
+	private GenericWideRowDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -113,7 +113,7 @@ public class ThriftPersisterImplTest
 	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
 	private ImmediateFlushContext immediateFlushContext;
@@ -470,10 +470,10 @@ public class ThriftPersisterImplTest
 
 	@SuppressWarnings("rawtypes")
 	@Test
-	public void should_remove_direct_cf_mapping() throws Exception
+	public void should_remove_wide_row() throws Exception
 	{
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
-		when((Mutator) immediateFlushContext.getColumnFamilyMutator("cf")).thenReturn(mutator);
+		when(entityMeta.isWideRow()).thenReturn(true);
+		when((Mutator) immediateFlushContext.getWideRowMutator("cf")).thenReturn(mutator);
 		thriftPersister.remove(context);
 		verify(columnFamilyDao).removeRowBatch(entity.getId(), mutator);
 	}
@@ -486,7 +486,7 @@ public class ThriftPersisterImplTest
 	@Test
 	public void should_remove_entity_having_external_wide_map() throws Exception
 	{
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, String.class) //
 				.field("geoPositions")//
@@ -499,10 +499,10 @@ public class ThriftPersisterImplTest
 		Map<String, PropertyMeta<UUID, String>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("external_cf"))
-				.thenReturn(columnFamilyDao);
-		when((Mutator) immediateFlushContext.getColumnFamilyMutator("external_cf")).thenReturn(
-				cfMutator);
+		when((GenericWideRowDao<Long, String>) columnFamilyDaosMap.get("external_cf")).thenReturn(
+				columnFamilyDao);
+		when((Mutator) immediateFlushContext.getWideRowMutator("external_cf"))
+				.thenReturn(cfMutator);
 
 		thriftPersister.remove(context);
 		verify(entityDao).removeRowBatch(entity.getId(), mutator);
@@ -529,7 +529,7 @@ public class ThriftPersisterImplTest
 				.fqcn(fqcn) //
 				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
 				.build();
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		Map<String, PropertyMeta<Void, Counter>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
@@ -568,7 +568,7 @@ public class ThriftPersisterImplTest
 				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
 				.build();
 
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		Map<String, PropertyMeta<String, Counter>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);

@@ -4,8 +4,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -56,7 +56,7 @@ public class PersistenceContextTest
 	private DaoContext daoContext;
 
 	@Mock
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
 	private CounterDao counterDao;
@@ -70,7 +70,7 @@ public class PersistenceContextTest
 	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericColumnFamilyDao<Long, String> columFamilyDao;
+	private GenericWideRowDao<Long, String> columFamilyDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -106,17 +106,17 @@ public class PersistenceContextTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_init_column_family_dao_on_initialization() throws Exception
+	public void should_init_wide_row_dao_on_initialization() throws Exception
 	{
 		prepareContext();
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
-		when((GenericColumnFamilyDao<Long, String>) daoContext.findColumnFamilyDao("cf"))
-				.thenReturn(columFamilyDao);
+		when(entityMeta.isWideRow()).thenReturn(true);
+		when((GenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
+				columFamilyDao);
 
 		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
 				daoContext, immediateFlushContext, entity);
 
-		assertThat((GenericColumnFamilyDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
+		assertThat((GenericWideRowDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
 				columFamilyDao);
 	}
 
@@ -179,17 +179,16 @@ public class PersistenceContextTest
 			"rawtypes"
 	})
 	@Test
-	public void should_find_column_family_dao() throws Exception
+	public void should_find_wide_row_dao() throws Exception
 	{
 		prepareContextWithEntityDao();
 		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
 				daoContext, immediateFlushContext, entity);
 
-		when((GenericColumnFamilyDao<Long, String>) daoContext.findColumnFamilyDao("cf"))
-				.thenReturn(columFamilyDao);
-
-		assertThat((GenericColumnFamilyDao) context.findColumnFamilyDao("cf")).isSameAs(
+		when((GenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
 				columFamilyDao);
+
+		assertThat((GenericWideRowDao) context.findWideRowDao("cf")).isSameAs(columFamilyDao);
 	}
 
 	// //////////////////
@@ -211,7 +210,7 @@ public class PersistenceContextTest
 	private void prepareContextWithEntityDao() throws Exception
 	{
 		prepareContext();
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf")).thenReturn(entityDao);
 	}
 
@@ -231,7 +230,7 @@ public class PersistenceContextTest
 		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
-		when(joinMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(joinMeta.isWideRow()).thenReturn(false);
 		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}
 

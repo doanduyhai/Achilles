@@ -29,7 +29,7 @@ public interface FlushContext
 
 	public <ID> Mutator<ID> getEntityMutator(String columnFamilyName);
 
-	public <ID> Mutator<ID> getColumnFamilyMutator(String columnFamilyName);
+	public <ID> Mutator<ID> getWideRowMutator(String columnFamilyName);
 
 	public Mutator<Composite> getCounterMutator();
 

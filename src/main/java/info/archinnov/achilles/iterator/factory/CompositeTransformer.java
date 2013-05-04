@@ -1,7 +1,7 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -198,7 +198,7 @@ public class CompositeTransformer
 				.columnName(hColumn.getName())
 				//
 				.counterDao(
-						(GenericColumnFamilyDao<ID, Long>) context.findColumnFamilyDao(propertyMeta
+						(GenericWideRowDao<ID, Long>) context.findWideRowDao(propertyMeta
 								.getExternalCFName())) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //

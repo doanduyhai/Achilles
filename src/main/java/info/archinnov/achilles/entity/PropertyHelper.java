@@ -71,9 +71,6 @@ public class PropertyHelper
 		// Char
 		allowedTypes.add(Character.class);
 
-		// Char
-		allowedTypes.add(Character.class);
-
 		// Float
 		allowedTypes.add(Float.class);
 		allowedTypes.add(float.class);
@@ -246,7 +243,7 @@ public class PropertyHelper
 			boolean forCreation)
 	{
 		log.debug(
-				"Determine the Comparator type alias for composite-base column family using propertyMeta of field {} ",
+				"Determine the Comparator type alias for composite-based column family using propertyMeta of field {} ",
 				propertyMeta.getPropertyName());
 
 		Class<?> nameClass = propertyMeta.getKeyClass();

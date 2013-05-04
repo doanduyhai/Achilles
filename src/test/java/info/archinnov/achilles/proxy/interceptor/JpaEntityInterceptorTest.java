@@ -6,8 +6,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -16,11 +16,11 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
-import info.archinnov.achilles.wrapper.WideMapWrapper;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 import info.archinnov.achilles.wrapper.ListWrapper;
 import info.archinnov.achilles.wrapper.MapWrapper;
 import info.archinnov.achilles.wrapper.SetWrapper;
+import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import mapping.entity.ColumnFamilyBean;
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
+import mapping.entity.WideRowBean;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.MethodProxy;
@@ -108,7 +108,7 @@ public class JpaEntityInterceptorTest
 	private Map<String, GenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	private Long key = 452L;
 
@@ -156,7 +156,7 @@ public class JpaEntityInterceptorTest
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setGetterMetas(getterMetas);
 		entityMeta.setSetterMetas(setterMetas);
-		entityMeta.setColumnFamilyDirectMapping(false);
+		entityMeta.setWideRow(false);
 
 		context = PersistenceContextTestBuilder //
 				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
@@ -403,8 +403,8 @@ public class JpaEntityInterceptorTest
 	@Test
 	public void should_create_widemap_wrapper() throws Throwable
 	{
-		ColumnFamilyBean bean = new ColumnFamilyBean();
-		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
+		WideRowBean bean = new WideRowBean();
+		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
@@ -413,8 +413,7 @@ public class JpaEntityInterceptorTest
 		Object wideMapWrapper = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
 		assertThat(wideMapWrapper).isInstanceOf(WideMapWrapper.class);
-		assertThat(((WideMapWrapper) wideMapWrapper).getInterceptor())
-				.isSameAs(interceptor);
+		assertThat(((WideMapWrapper) wideMapWrapper).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test
@@ -436,15 +435,15 @@ public class JpaEntityInterceptorTest
 	}
 
 	@Test
-	public void should_create_column_family_wrapper() throws Throwable
+	public void should_create_wide_row_wrapper() throws Throwable
 	{
-		ColumnFamilyBean bean = new ColumnFamilyBean();
-		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
+		WideRowBean bean = new WideRowBean();
+		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 
 		Object name = this.interceptor.intercept(bean, mapGetter, (Object[]) null, proxy);
 
@@ -455,8 +454,8 @@ public class JpaEntityInterceptorTest
 	@Test
 	public void should_create_join_widemap_wrapper() throws Throwable
 	{
-		ColumnFamilyBean bean = new ColumnFamilyBean();
-		Method mapGetter = ColumnFamilyBean.class.getDeclaredMethod("getMap");
+		WideRowBean bean = new WideRowBean();
+		Method mapGetter = WideRowBean.class.getDeclaredMethod("getMap");
 
 		when(getterMetas.containsKey(mapGetter)).thenReturn(true);
 		when(getterMetas.get(mapGetter)).thenReturn(propertyMeta);
@@ -473,7 +472,7 @@ public class JpaEntityInterceptorTest
 	{
 		CompleteBean bean = new CompleteBean();
 		Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
-		GenericColumnFamilyDao<Long, String> externalWideMapDao = mock(GenericColumnFamilyDao.class);
+		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
 
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
@@ -481,7 +480,7 @@ public class JpaEntityInterceptorTest
 		when(propertyMeta.getExternalCFName()).thenReturn("geo_positions");
 		when(propertyMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 
-		when((GenericColumnFamilyDao<Long, String>) columnFamilyDaosMap.get("geo_positions"))
+		when((GenericWideRowDao<Long, String>) columnFamilyDaosMap.get("geo_positions"))
 				.thenReturn(externalWideMapDao);
 
 		Object externalWideMap = this.interceptor.intercept(bean, externalWideMapGetter,
@@ -492,8 +491,7 @@ public class JpaEntityInterceptorTest
 
 		assertThat(dao).isNotNull();
 		assertThat(dao).isSameAs(externalWideMapDao);
-		assertThat(((WideMapWrapper) externalWideMap).getInterceptor()).isSameAs(
-				interceptor);
+		assertThat(((WideMapWrapper) externalWideMap).getInterceptor()).isSameAs(interceptor);
 	}
 
 	@Test

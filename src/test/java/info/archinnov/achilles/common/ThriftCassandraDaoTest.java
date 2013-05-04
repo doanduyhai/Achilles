@@ -3,7 +3,7 @@ package info.archinnov.achilles.common;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.entity.context.ConfigurationContext;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -89,10 +89,10 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 		return new GenericEntityDao<K>(cluster, keyspace, keySerializer, columnFamily, policy);
 	}
 
-	public static <K, V> GenericColumnFamilyDao<K, V> getColumnFamilyDao(
+	public static <K, V> GenericWideRowDao<K, V> getColumnFamilyDao(
 			Serializer<K> keySerializer, Serializer<V> valueSerializer, String columnFamily)
 	{
-		return new GenericColumnFamilyDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
+		return new GenericWideRowDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
 				columnFamily, policy);
 	}
 

@@ -36,7 +36,7 @@ public class ThriftColumnFamilyCreator
 	private ThriftColumnFamilyHelper thriftColumnFamilyHelper = new ThriftColumnFamilyHelper();
 	private List<ColumnFamilyDefinition> cfDefs;
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
-	private Set<String> cfs = new HashSet<String>();
+	private Set<String> columnFamilyNames = new HashSet<String>();
 
 	public ThriftColumnFamilyCreator(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
@@ -63,25 +63,29 @@ public class ThriftColumnFamilyCreator
 		return null;
 	}
 
-	public String addColumnFamily(ColumnFamilyDefinition cfDef)
+	public void addColumnFamily(ColumnFamilyDefinition cfDef)
 	{
-		this.cfs.add(cfDef.getName());
-		return this.cluster.addColumnFamily(cfDef, true);
+		if (!columnFamilyNames.contains(cfDef.getName()))
+		{
+			columnFamilyNames.add(cfDef.getName());
+			cluster.addColumnFamily(cfDef, true);
+		}
+
 	}
 
 	public void createColumnFamily(EntityMeta<?> entityMeta)
 	{
 		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
 		String columnFamilyName = entityMeta.getColumnFamilyName();
-		if (!cfs.contains(columnFamilyName))
+		if (!columnFamilyNames.contains(columnFamilyName))
 		{
 			ColumnFamilyDefinition cfDef;
-			if (entityMeta.isColumnFamilyDirectMapping())
+			if (entityMeta.isWideRow())
 			{
 
 				PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
 						.next();
-				cfDef = thriftColumnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
+				cfDef = thriftColumnFamilyHelper.buildWideRowCF(keyspace.getKeyspaceName(),
 						propertyMeta, entityMeta.getIdMeta().getValueClass(), columnFamilyName,
 						entityMeta.getClassName());
 			}
@@ -139,7 +143,7 @@ public class ThriftColumnFamilyCreator
 				log.debug("Force creation of column family for propertyMeta {}",
 						propertyMeta.getPropertyName());
 
-				cfDef = thriftColumnFamilyHelper.buildDirectMappingCF(keyspace.getKeyspaceName(),
+				cfDef = thriftColumnFamilyHelper.buildWideRowCF(keyspace.getKeyspaceName(),
 						propertyMeta, keyClass, externalColumnFamilyName, entityName);
 				this.addColumnFamily(cfDef);
 			}
@@ -210,7 +214,7 @@ public class ThriftColumnFamilyCreator
 	private void createCounterColumnFamily()
 	{
 		log.debug("Creating generic counter column family");
-		if (!cfs.contains(COUNTER_CF))
+		if (!columnFamilyNames.contains(COUNTER_CF))
 		{
 			ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildCounterCF(this.keyspace
 					.getKeyspaceName());

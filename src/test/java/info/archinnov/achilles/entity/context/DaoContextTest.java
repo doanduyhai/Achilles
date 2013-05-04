@@ -2,8 +2,8 @@ package info.archinnov.achilles.entity.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +27,13 @@ public class DaoContextTest
 	private DaoContext context;
 
 	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericColumnFamilyDao<?, ?>>();
+	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap = new HashMap<String, GenericWideRowDao<?, ?>>();
 
 	@Mock
 	private GenericEntityDao<?> entityDao;
 
 	@Mock
-	private GenericColumnFamilyDao<?, ?> columnFamilyDao;
+	private GenericWideRowDao<?, ?> columnFamilyDao;
 
 	@Mock
 	private CounterDao counterDao;
@@ -60,10 +60,9 @@ public class DaoContextTest
 
 	@SuppressWarnings("rawtypes")
 	@Test
-	public void should_get_column_family_dao() throws Exception
+	public void should_get_wide_row_dao() throws Exception
 	{
 		columnFamilyDaosMap.put("dao", columnFamilyDao);
-		assertThat((GenericColumnFamilyDao) context.findColumnFamilyDao("dao")).isSameAs(
-				columnFamilyDao);
+		assertThat((GenericWideRowDao) context.findWideRowDao("dao")).isSameAs(columnFamilyDao);
 	}
 }

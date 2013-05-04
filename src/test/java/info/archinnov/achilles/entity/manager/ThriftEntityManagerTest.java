@@ -170,7 +170,7 @@ public class ThriftEntityManagerTest
 		em.persist(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(entityValidator).validateNotCFDirectMapping(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
 
 		verify(persister).persist(contextCaptor.capture());
 
@@ -260,7 +260,7 @@ public class ThriftEntityManagerTest
 		em.refresh(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(entityValidator).validateNotCFDirectMapping(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
 
 		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);

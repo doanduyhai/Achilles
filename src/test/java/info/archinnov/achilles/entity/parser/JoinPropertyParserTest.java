@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
@@ -346,7 +346,7 @@ public class JoinPropertyParserTest
 	public void should_fill_external_widemap_hashmap() throws Exception
 	{
 		@SuppressWarnings("unused")
-		@ColumnFamily
+		@WideRow
 		class Test
 		{
 			@ManyToMany

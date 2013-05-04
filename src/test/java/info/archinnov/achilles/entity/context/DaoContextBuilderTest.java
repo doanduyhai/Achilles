@@ -4,8 +4,8 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -91,7 +91,7 @@ public class DaoContextBuilderTest
 				.build();
 
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setColumnFamilyDirectMapping(false);
+		entityMeta.setWideRow(false);
 		entityMeta.setColumnFamilyName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
@@ -116,7 +116,7 @@ public class DaoContextBuilderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_build_column_family_dao() throws Exception
+	public void should_build_wide_row_dao() throws Exception
 	{
 		PropertyMeta<UUID, String> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, String.class) //
@@ -134,7 +134,7 @@ public class DaoContextBuilderTest
 		propertyMetas.put("geoPositions", geoPositionsMeta);
 
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 		entityMeta.setColumnFamilyName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
@@ -144,8 +144,8 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericColumnFamilyDao<Long, String> columnFamilyDao = (GenericColumnFamilyDao<Long, String>) context
-				.findColumnFamilyDao("externalCf");
+		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
 		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
@@ -163,7 +163,7 @@ public class DaoContextBuilderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_build_column_family_dao_with_object_value_type() throws Exception
+	public void should_build_wide_row_dao_with_object_value_type() throws Exception
 	{
 		PropertyMeta<UUID, UserBean> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, UserBean.class) //
@@ -181,7 +181,7 @@ public class DaoContextBuilderTest
 		propertyMetas.put("friendsWideMap", geoPositionsMeta);
 
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 		entityMeta.setColumnFamilyName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
@@ -191,8 +191,8 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericColumnFamilyDao<Long, String> columnFamilyDao = (GenericColumnFamilyDao<Long, String>) context
-				.findColumnFamilyDao("externalCf");
+		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
 		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
@@ -209,7 +209,7 @@ public class DaoContextBuilderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_build_column_family_dao_with_counter_type() throws Exception
+	public void should_build_wide_row_dao_with_counter_type() throws Exception
 	{
 		PropertyMeta<String, Counter> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(String.class, Counter.class) //
@@ -227,7 +227,7 @@ public class DaoContextBuilderTest
 		propertyMetas.put("popularTopics", geoPositionsMeta);
 
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 		entityMeta.setColumnFamilyName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
@@ -237,8 +237,8 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericColumnFamilyDao<Long, String> columnFamilyDao = (GenericColumnFamilyDao<Long, String>) context
-				.findColumnFamilyDao("externalCf");
+		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
 		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
@@ -255,7 +255,7 @@ public class DaoContextBuilderTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_build_column_family_dao_for_join_entity() throws Exception
+	public void should_build_wide_row_dao_for_join_entity() throws Exception
 	{
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
 		joinMeta.setIdSerializer(LONG_SRZ);
@@ -278,7 +278,7 @@ public class DaoContextBuilderTest
 		propertyMetas.put("joinUsers", joinUsersMeta);
 
 		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setColumnFamilyDirectMapping(true);
+		entityMeta.setWideRow(true);
 		entityMeta.setColumnFamilyName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
@@ -288,8 +288,8 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericColumnFamilyDao<Long, String> columnFamilyDao = (GenericColumnFamilyDao<Long, String>) context
-				.findColumnFamilyDao("externalCf");
+		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
 		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");

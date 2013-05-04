@@ -62,7 +62,7 @@ public class PropertyParsingContext
 
 	public boolean isColumnFamilyDirectMapping()
 	{
-		return context.isColumnFamilyDirectMapping();
+		return context.isWideRow();
 	}
 
 	public Field getCurrentField()

@@ -55,11 +55,11 @@ import parser.entity.BeanWithNotSerializableId;
 import parser.entity.BeanWithSimpleCounter;
 import parser.entity.BeanWithWideMapCounter;
 import parser.entity.ChildBean;
-import parser.entity.ColumnFamilyBean;
-import parser.entity.ColumnFamilyBeanWithJoinEntity;
-import parser.entity.ColumnFamilyBeanWithTwoColumns;
-import parser.entity.ColumnFamilyBeanWithWrongColumnType;
 import parser.entity.UserBean;
+import parser.entity.WideRowBean;
+import parser.entity.WideRowBeanWithJoinEntity;
+import parser.entity.WideRowBeanWithTwoColumns;
+import parser.entity.WideRowBeanWithWrongColumnType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest
@@ -388,12 +388,12 @@ public class EntityParserTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_parse_column_family() throws Exception
+	public void should_parse_wide_row() throws Exception
 	{
-		initEntityParsingContext(ColumnFamilyBean.class);
+		initEntityParsingContext(WideRowBean.class);
 		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
-		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
+		assertThat(meta.isWideRow()).isTrue();
 
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
@@ -408,12 +408,12 @@ public class EntityParserTest
 			"unchecked"
 	})
 	@Test
-	public void should_parse_column_family_with_join() throws Exception
+	public void should_parse_wide_row_with_join() throws Exception
 	{
-		initEntityParsingContext(ColumnFamilyBeanWithJoinEntity.class);
+		initEntityParsingContext(WideRowBeanWithJoinEntity.class);
 		EntityMeta<?> meta = parser.parseEntity(entityContext);
 
-		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
+		assertThat(meta.isWideRow()).isTrue();
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.getIdMeta().getValueClass()).isEqualTo((Class) Long.class);
 
@@ -434,11 +434,11 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_more_than_one_mapped_column() throws Exception
 	{
-		initEntityParsingContext(ColumnFamilyBeanWithTwoColumns.class);
+		initEntityParsingContext(WideRowBeanWithTwoColumns.class);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
-				+ ColumnFamilyBeanWithTwoColumns.class.getCanonicalName()
+				+ WideRowBeanWithTwoColumns.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
 		parser.parseEntity(entityContext);
@@ -448,10 +448,10 @@ public class EntityParserTest
 	@Test
 	public void should_exception_when_wide_row_has_wrong_column_type() throws Exception
 	{
-		initEntityParsingContext(ColumnFamilyBeanWithWrongColumnType.class);
+		initEntityParsingContext(WideRowBeanWithWrongColumnType.class);
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The ColumnFamily entity '"
-				+ ColumnFamilyBeanWithWrongColumnType.class.getCanonicalName()
+				+ WideRowBeanWithWrongColumnType.class.getCanonicalName()
 				+ "' should have one and only one @Column/@JoinColumn of type WideMap");
 
 		parser.parseEntity(entityContext);
@@ -465,7 +465,7 @@ public class EntityParserTest
 		initEntityParsingContext(null);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		joinEntityMeta.setColumnFamilyDirectMapping(false);
+		joinEntityMeta.setWideRow(false);
 		joinEntityMeta.setIdSerializer(LONG_SRZ);
 
 		PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
@@ -483,12 +483,12 @@ public class EntityParserTest
 	}
 
 	@Test
-	public void should_exception_when_join_entity_is_a_direct_cf_mapping() throws Exception
+	public void should_exception_when_join_entity_is_a_wide_row() throws Exception
 	{
 		initEntityParsingContext(BeanWithJoinColumnAsWideMap.class);
 
 		EntityMeta<Long> joinEntityMeta = new EntityMeta<Long>();
-		joinEntityMeta.setColumnFamilyDirectMapping(true);
+		joinEntityMeta.setWideRow(true);
 		joinEntityMeta.setClassName(BeanWithJoinColumnAsWideMap.class.getCanonicalName());
 		PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
 
@@ -499,7 +499,7 @@ public class EntityParserTest
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("The entity '"
 				+ BeanWithJoinColumnAsWideMap.class.getCanonicalName()
-				+ "' is a direct Column Family mapping and cannot be a join entity");
+				+ "' is a Wide row and cannot be a join entity");
 
 		parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 

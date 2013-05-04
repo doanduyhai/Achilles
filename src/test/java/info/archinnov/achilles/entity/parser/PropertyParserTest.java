@@ -657,7 +657,7 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_exception_when_cf_direct_mapping_has_external_wide_map() throws Exception
+	public void should_exception_when_wide_row_has_external_wide_map() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -678,11 +678,11 @@ public class PropertyParserTest
 
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("external"));
-		entityContext.setColumnFamilyDirectMapping(true);
+		entityContext.setWideRow(true);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx
-				.expectMessage("Error for field 'external' of entity 'null'. Direct Column Family mapping cannot have external WideMap. It does not make sense");
+				.expectMessage("Error for field 'external' of entity 'null'. Wide row entity cannot have external WideMap. It does not make sense");
 
 		parser.parse(context);
 	}
@@ -744,7 +744,7 @@ public class PropertyParserTest
 	}
 
 	@Test
-	public void should_fill_widemap_hashmap_when_direct_cf_mapping() throws Exception
+	public void should_fill_widemap_hashmap_when_wide_row() throws Exception
 	{
 		@SuppressWarnings("unused")
 		class Test
@@ -761,7 +761,7 @@ public class PropertyParserTest
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("tweets"));
 
-		entityContext.setColumnFamilyDirectMapping(true);
+		entityContext.setWideRow(true);
 
 		parser.parse(context);
 

@@ -29,7 +29,7 @@ public class EntityMeta<ID>
 	private PropertyMeta<Void, ID> idMeta;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
-	private boolean columnFamilyDirectMapping = false;
+	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	public String getClassName()
@@ -112,14 +112,14 @@ public class EntityMeta<ID>
 		this.setterMetas = setterMetas;
 	}
 
-	public boolean isColumnFamilyDirectMapping()
+	public boolean isWideRow()
 	{
-		return columnFamilyDirectMapping;
+		return wideRow;
 	}
 
-	public void setColumnFamilyDirectMapping(boolean columnFamilyDirectMapping)
+	public void setWideRow(boolean wideRow)
 	{
-		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
+		this.wideRow = wideRow;
 	}
 
 	public Pair<ConsistencyLevel, ConsistencyLevel> getConsistencyLevels()
@@ -144,8 +144,7 @@ public class EntityMeta<ID>
 		description.append("propertyMetas=[").append(StringUtils.join(propertyMetas.keySet(), ","))
 				.append("], ");
 		description.append("idMeta=").append(idMeta.toString()).append(", ");
-		description.append("columnFamilyDirectMapping=").append(columnFamilyDirectMapping)
-				.append(", ");
+		description.append("wideRow=").append(wideRow).append(", ");
 		description.append("consistencyLevels=[").append(consistencyLevels.left.name()).append(",")
 				.append(consistencyLevels.right.name()).append("]]");
 		return description.toString();

@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
@@ -25,7 +25,7 @@ import org.powermock.reflect.Whitebox;
 public class CounterWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericColumnFamilyDao<Long, Long> wideMapCounterDao;
+	private GenericWideRowDao<Long, Long> wideMapCounterDao;
 
 	@Mock
 	private PropertyMeta<Integer, Counter> propertyMeta;

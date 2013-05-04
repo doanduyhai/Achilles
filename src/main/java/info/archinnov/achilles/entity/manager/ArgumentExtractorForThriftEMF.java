@@ -156,13 +156,13 @@ public class ArgumentExtractorForThriftEMF
 
 	public ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap)
 	{
-		String defaultReadLevel = (String) configMap.get(DEFAUT_READ_CONSISTENCY_PARAM);
+		String defaultReadLevel = (String) configMap.get(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
 	}
 
 	public ConsistencyLevel initDefaultWriteConsistencyLevel(Map<String, Object> configMap)
 	{
-		String defaultWriteLevel = (String) configMap.get(DEFAUT_WRITE_CONSISTENCY_PARAM);
+		String defaultWriteLevel = (String) configMap.get(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
 	}
 
@@ -170,7 +170,7 @@ public class ArgumentExtractorForThriftEMF
 	public Map<String, HConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap
-				.get(READ_CONSISTENCY_MAP_PARAM);
+				.get(CONSISTENCY_LEVEL_READ_MAP_PARAM);
 
 		return parseConsistencyLevelMap(readConsistencyMap);
 	}
@@ -179,7 +179,7 @@ public class ArgumentExtractorForThriftEMF
 	public Map<String, HConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
-				.get(WRITE_CONSISTENCY_MAP_PARAM);
+				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}

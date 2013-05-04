@@ -6,7 +6,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -42,9 +42,9 @@ public class CounterIT
 	public ExpectedException exception = ExpectedException.none();
 
 	private CounterDao counterDao = ThriftCassandraDaoTest.getCounterDao();
-	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
+	private GenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
-	private GenericColumnFamilyDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
+	private GenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();

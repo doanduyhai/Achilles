@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.entity.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
@@ -20,7 +20,7 @@ import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 public class CounterWideMapWrapperBuilder<ID, K>
 {
 	private ID id;
-	private GenericColumnFamilyDao<ID, Long> wideMapCounterDao;
+	private GenericWideRowDao<ID, Long> wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
 	private AchillesInterceptor<ID> interceptor;
@@ -30,7 +30,7 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	protected CompositeFactory compositeFactory;
 	protected PersistenceContext<ID> context;
 
-	public CounterWideMapWrapperBuilder(ID id, GenericColumnFamilyDao<ID, Long> wideMapCounterDao,
+	public CounterWideMapWrapperBuilder(ID id, GenericWideRowDao<ID, Long> wideMapCounterDao,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		this.id = id;
@@ -39,7 +39,7 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	}
 
 	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id,
-			GenericColumnFamilyDao<ID, Long> wideMapCounterDao,
+			GenericWideRowDao<ID, Long> wideMapCounterDao,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		return new CounterWideMapWrapperBuilder<ID, K>(id, wideMapCounterDao, propertyMeta);

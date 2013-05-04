@@ -11,8 +11,8 @@ import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.BatchingFlushContext;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
@@ -64,17 +64,17 @@ public class BatchModeIT
 	private GenericEntityDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericColumnFamilyDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
+	private GenericWideRowDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
 			SerializerUtils.UUID_SRZ, "user_tweets");
 
-	private GenericColumnFamilyDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
+	private GenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
 
 	private GenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
-	private GenericColumnFamilyDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
-			STRING_SRZ, "ExternalWideMap");
+	private GenericWideRowDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
+			STRING_SRZ, "complete_bean_widemap");
 
 	private CounterDao counterDao = getCounterDao();
 
@@ -162,8 +162,8 @@ public class BatchModeIT
 
 		entity.setLabel("label");
 
-		entity.getExternalWideMap().insert(1, "one");
-		entity.getExternalWideMap().insert(2, "two");
+		entity.getWideMap().insert(1, "one");
+		entity.getWideMap().insert(2, "two");
 
 		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
 		entity.setWelcomeTweet(welcomeTweet);

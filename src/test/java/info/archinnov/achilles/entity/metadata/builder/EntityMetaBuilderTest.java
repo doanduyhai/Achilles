@@ -122,8 +122,8 @@ public class EntityMetaBuilderTest
 
 		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
 				.propertyMetas(propertyMetas).columnFamilyName("toto")
-				.columnFamilyDirectMapping(true).build();
+				.wideRow(true).build();
 
-		assertThat(meta.isColumnFamilyDirectMapping()).isTrue();
+		assertThat(meta.isWideRow()).isTrue();
 	}
 }

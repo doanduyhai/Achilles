@@ -32,7 +32,7 @@ public class EntityMetaBuilder<ID>
 	private String columnFamilyName;
 	private Long serialVersionUID;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
-	private boolean columnFamilyDirectMapping = false;
+	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
@@ -65,7 +65,7 @@ public class EntityMetaBuilder<ID>
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
 		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));
 		meta.setSetterMetas(Collections.unmodifiableMap(this.extractSetterMetas(propertyMetas)));
-		meta.setColumnFamilyDirectMapping(columnFamilyDirectMapping);
+		meta.setWideRow(wideRow);
 		meta.setConsistencyLevels(consistencyLevels);
 
 		return meta;
@@ -117,9 +117,9 @@ public class EntityMetaBuilder<ID>
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> columnFamilyDirectMapping(boolean columnFamilyDirectMapping)
+	public EntityMetaBuilder<ID> wideRow(boolean wideRow)
 	{
-		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
+		this.wideRow = wideRow;
 		return this;
 	}
 

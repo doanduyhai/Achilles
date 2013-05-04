@@ -91,33 +91,32 @@ public class EntityValidatorTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_validate_not_cf_direct_mapping() throws Exception
+	public void should_validate_not_wide_row() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(false);
+		when(entityMeta.isWideRow()).thenReturn(false);
 
-		entityValidator.validateNotCFDirectMapping(bean, entityMetaMap);
+		entityValidator.validateNotWideRow(bean, entityMetaMap);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_exception_when_cf_direct_mapping() throws Exception
+	public void should_exception_when_wide_row() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(entityMeta.isColumnFamilyDirectMapping()).thenReturn(true);
+		when(entityMeta.isWideRow()).thenReturn(true);
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("This operation is not allowed for the entity '"
-				+ CompleteBean.class.getCanonicalName()
-				+ "' directly mapped to a native column family");
+		exception.expectMessage("This operation is not allowed for the wide row '"
+				+ CompleteBean.class.getCanonicalName());
 
-		entityValidator.validateNotCFDirectMapping(bean, entityMetaMap);
+		entityValidator.validateNotWideRow(bean, entityMetaMap);
 	}
 
 	@Test

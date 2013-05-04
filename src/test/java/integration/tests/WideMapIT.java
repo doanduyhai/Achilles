@@ -2,11 +2,10 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -36,8 +35,8 @@ import org.junit.Test;
 public class WideMapIT
 {
 
-	private GenericColumnFamilyDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
-			STRING_SRZ, normalizerAndValidateColumnFamilyName("ExternalWideMap"));
+	private GenericWideRowDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
+			STRING_SRZ, normalizerAndValidateColumnFamilyName("complete_bean_widemap"));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
@@ -50,7 +49,7 @@ public class WideMapIT
 	{
 		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 		bean = em.merge(bean);
-		externalWideMap = bean.getExternalWideMap();
+		externalWideMap = bean.getWideMap();
 	}
 
 	@Test
@@ -213,7 +212,7 @@ public class WideMapIT
 	{
 		insert5Values();
 
-		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(4, 2, 10, 
+		List<KeyValue<Integer, String>> foundKeyValues = externalWideMap.find(4, 2, 10,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeyValues).hasSize(2);
@@ -222,13 +221,13 @@ public class WideMapIT
 		assertThat(foundKeyValues.get(1).getKey()).isEqualTo(2);
 		assertThat(foundKeyValues.get(1).getValue()).isEqualTo("value2");
 
-		List<String> foundValues = externalWideMap.findValues(4, 2, 10, 
+		List<String> foundValues = externalWideMap.findValues(4, 2, 10,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundValues.get(0)).isEqualTo("value3");
 		assertThat(foundValues.get(1)).isEqualTo("value2");
 
-		List<Integer> foundKeys = externalWideMap.findKeys(4, 2, 10, 
+		List<Integer> foundKeys = externalWideMap.findKeys(4, 2, 10,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(foundKeys.get(0)).isEqualTo(3);
@@ -327,7 +326,7 @@ public class WideMapIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(2, 4, 10, 
+		Iterator<KeyValue<Integer, String>> iter = externalWideMap.iterator(2, 4, 10,
 				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.context;
 
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 
 import java.util.Map;
@@ -15,14 +15,14 @@ import java.util.Map;
 public class DaoContext
 {
 	private final Map<String, GenericEntityDao<?>> entityDaosMap;
-	private final Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap;
+	private final Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap;
 	private final CounterDao counterDao;
 
 	public DaoContext(Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericColumnFamilyDao<?, ?>> columnFamilyDaosMap, CounterDao counterDao)
+			Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap, CounterDao counterDao)
 	{
 		this.entityDaosMap = entityDaosMap;
-		this.columnFamilyDaosMap = columnFamilyDaosMap;
+		this.wideRowDaosMap = wideRowDaosMap;
 		this.counterDao = counterDao;
 	}
 
@@ -36,8 +36,8 @@ public class DaoContext
 		return entityDaosMap.get(columnFamilyName);
 	}
 
-	public GenericColumnFamilyDao<?, ?> findColumnFamilyDao(String columnFamilyName)
+	public GenericWideRowDao<?, ?> findWideRowDao(String columnFamilyName)
 	{
-		return columnFamilyDaosMap.get(columnFamilyName);
+		return wideRowDaosMap.get(columnFamilyName);
 	}
 }

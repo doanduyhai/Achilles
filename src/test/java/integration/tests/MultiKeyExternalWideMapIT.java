@@ -2,11 +2,10 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -37,8 +36,9 @@ import org.junit.Test;
  */
 public class MultiKeyExternalWideMapIT
 {
-	private GenericColumnFamilyDao<Long, String> multiKeyExternalWideMapDao = getColumnFamilyDao(
-			LONG_SRZ, STRING_SRZ, normalizerAndValidateColumnFamilyName("MultiKeyExternalWideMap"));
+	private GenericWideRowDao<Long, String> multiKeyExternalWideMapDao = getColumnFamilyDao(
+			LONG_SRZ, STRING_SRZ,
+			normalizerAndValidateColumnFamilyName("complete_bean_multi_key_widemap"));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
@@ -61,7 +61,7 @@ public class MultiKeyExternalWideMapIT
 	{
 		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 		bean = em.merge(bean);
-		multiKeyExternalWideMap = bean.getMultiKeyExternalWideMap();
+		multiKeyExternalWideMap = bean.getMultiKeyWideMap();
 	}
 
 	@Test
@@ -130,9 +130,10 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find( //
-				new UserTweetKey(qux, uuid5), new UserTweetKey(foo, uuid3), 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
-				OrderingMode.DESCENDING);
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+				//
+				new UserTweetKey(qux, uuid5), new UserTweetKey(foo, uuid3), 10,
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		assertThat(results).hasSize(2);
 
@@ -154,7 +155,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
-				new UserTweetKey(bar, null), new UserTweetKey(foo, uuid3), 10, 
+				new UserTweetKey(bar, null), new UserTweetKey(foo, uuid3), 10,
 				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
@@ -179,7 +180,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
-				new UserTweetKey(bar, uuid1), new UserTweetKey(foo, null), 10, 
+				new UserTweetKey(bar, uuid1), new UserTweetKey(foo, null), 10,
 				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
@@ -203,8 +204,9 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
-				null, new UserTweetKey(foo, null), 10, BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
+		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(null,
+				new UserTweetKey(foo, null), 10, BoundingMode.INCLUSIVE_BOUNDS,
+				OrderingMode.ASCENDING);
 
 		assertThat(results).hasSize(3);
 
@@ -260,8 +262,9 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
-		multiKeyExternalWideMap.iterator(new UserTweetKey(qux, uuid5), new UserTweetKey(bar, uuid1), 2, 
-				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+		multiKeyExternalWideMap.iterator(new UserTweetKey(qux, uuid5),
+				new UserTweetKey(bar, uuid1), 2, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
 		assertThat(iter.hasNext());
 
@@ -312,7 +315,7 @@ public class MultiKeyExternalWideMapIT
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
 		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4), 
+		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4),
 				BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(

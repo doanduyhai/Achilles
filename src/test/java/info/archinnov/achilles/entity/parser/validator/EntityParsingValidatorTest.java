@@ -57,25 +57,24 @@ public class EntityParsingValidatorTest
 	}
 
 	@Test
-	public void should_exception_when_more_than_one_property_meta_for_direct_cf_mapping()
-			throws Exception
+	public void should_exception_when_more_than_one_property_meta_for_wide_row() throws Exception
 	{
 		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
 		context.setPropertyMetas(propertyMetas);
-		context.setColumnFamilyDirectMapping(true);
+		context.setWideRow(true);
 
 		exception.expect(AchillesBeanMappingException.class);
 		exception.expectMessage("The ColumnFamily entity '" + CompleteBean.class.getCanonicalName()
 				+ "' should not have more than one property annotated with @Column");
 
-		validator.validateColumnFamilyDirectMappings(context);
+		validator.validateWideRows(context);
 	}
 
 	@Test
-	public void should_exception_when_incorrect_type_of_property_meta_for_direct_cf_mapping()
+	public void should_exception_when_incorrect_type_of_property_meta_for_wide_row()
 			throws Exception
 	{
 		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
@@ -87,17 +86,17 @@ public class EntityParsingValidatorTest
 				.build();
 		propertyMetas.put("name", propertyMeta);
 		context.setPropertyMetas(propertyMetas);
-		context.setColumnFamilyDirectMapping(true);
+		context.setWideRow(true);
 
 		exception.expect(AchillesBeanMappingException.class);
 		exception.expectMessage("The ColumnFamily entity '" + CompleteBean.class.getCanonicalName()
 				+ "' should have one and only one @Column/@JoinColumn of type WideMap");
 
-		validator.validateColumnFamilyDirectMappings(context);
+		validator.validateWideRows(context);
 	}
 
 	@Test
-	public void should_exception_when_join_entity_is_direct_cf_mapping() throws Exception
+	public void should_exception_when_join_entity_is_wide_row() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
 				.valueClass(String.class) //
@@ -106,13 +105,13 @@ public class EntityParsingValidatorTest
 				.build();
 
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
-		joinMeta.setColumnFamilyDirectMapping(true);
+		joinMeta.setWideRow(true);
 		joinMeta.setClassName("class.name");
 		exception.expect(AchillesBeanMappingException.class);
 		exception
-				.expectMessage("The entity 'class.name' is a direct Column Family mapping and cannot be a join entity");
+				.expectMessage("The entity 'class.name' is a Wide row and cannot be a join entity");
 
-		validator.validateJoinEntityNotDirectCFMapping(propertyMeta, joinMeta);
+		validator.validateJoinEntityNotWideRow(propertyMeta, joinMeta);
 	}
 
 	@Test

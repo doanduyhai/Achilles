@@ -4,7 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.AbstractDao;
 import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericColumnFamilyDao;
+import info.archinnov.achilles.dao.GenericWideRowDao;
 import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.FlushContext.FlushType;
@@ -43,7 +43,7 @@ public class BatchingFlushContextTest
 	private GenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericColumnFamilyDao<Long, String> cfDao;
+	private GenericWideRowDao<Long, String> cfDao;
 
 	@Mock
 	private Mutator<Long> mutator;

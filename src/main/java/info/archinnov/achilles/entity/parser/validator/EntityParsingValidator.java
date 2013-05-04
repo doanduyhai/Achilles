@@ -48,13 +48,13 @@ public class EntityParsingValidator
 		}
 	}
 
-	public void validateColumnFamilyDirectMappings(EntityParsingContext context)
+	public void validateWideRows(EntityParsingContext context)
 	{
 		Map<String, PropertyMeta<?, ?>> propertyMetas = context.getPropertyMetas();
-		if (context.isColumnFamilyDirectMapping())
+		if (context.isWideRow())
 		{
 			log.debug(
-					"Validate that there is at least one property meta for the column family direct mapping class {}",
+					"Validate that there is at least one property meta for the wide row class {}",
 					context.getCurrentEntityClass().getCanonicalName());
 
 			if (propertyMetas != null && propertyMetas.size() > 1)
@@ -67,7 +67,7 @@ public class EntityParsingValidator
 			PropertyType type = propertyMetas.entrySet().iterator().next().getValue().type();
 
 			log.debug(
-					"Validate that the property meta for the column family direct mapping class {} is of type WIDE_MAP or JOIN_WIDE_MAP",
+					"Validate that the property meta for the wide row class {} is of type WIDE_MAP or JOIN_WIDE_MAP",
 					context.getCurrentEntityClass().getCanonicalName());
 
 			if (type != PropertyType.WIDE_MAP && type != PropertyType.JOIN_WIDE_MAP)
@@ -79,17 +79,17 @@ public class EntityParsingValidator
 		}
 	}
 
-	public <K, V, ID> void validateJoinEntityNotDirectCFMapping(PropertyMeta<K, V> propertyMeta,
+	public <K, V, ID> void validateJoinEntityNotWideRow(PropertyMeta<K, V> propertyMeta,
 			EntityMeta<ID> joinEntityMeta)
 	{
 		log.debug(
-				"Validate that the join entity for the property {} of the entity class {} is not a direct column family mapping",
+				"Validate that the join entity for the property {} of the entity class {} is not a wide row",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		if (joinEntityMeta.isColumnFamilyDirectMapping())
+		if (joinEntityMeta.isWideRow())
 		{
 			throw new AchillesBeanMappingException("The entity '" + joinEntityMeta.getClassName()
-					+ "' is a direct Column Family mapping and cannot be a join entity");
+					+ "' is a Wide row and cannot be a join entity");
 		}
 	}
 

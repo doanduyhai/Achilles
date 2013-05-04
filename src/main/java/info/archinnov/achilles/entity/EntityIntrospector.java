@@ -262,7 +262,6 @@ public class EntityIntrospector
 
 	public String inferColumnFamilyName(Class<?> entity, String canonicalName)
 	{
-		log.debug("Infer column family name for entity {}", canonicalName);
 		String columnFamilyName = null;
 		Table table = entity.getAnnotation(javax.persistence.Table.class);
 		if (table != null)
@@ -284,7 +283,7 @@ public class EntityIntrospector
 					.normalizerAndValidateColumnFamilyName(canonicalName);
 		}
 
-		log.trace("Inferred columnFamilyName : {}", columnFamilyName);
+		log.debug("Inferred columnFamilyName for entity {} : {}", canonicalName, columnFamilyName);
 		return columnFamilyName;
 	}
 

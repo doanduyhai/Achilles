@@ -1,6 +1,6 @@
-package integration.tests.entity;
+package mapping.entity;
 
-import info.archinnov.achilles.annotations.ColumnFamily;
+import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.io.Serializable;
@@ -16,8 +16,8 @@ import javax.persistence.Id;
  * 
  */
 @Entity
-@ColumnFamily
-public class MultiKeyColumnFamilyBean implements Serializable
+@WideRow
+public class MultiKeyWideRowBean implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -25,7 +25,7 @@ public class MultiKeyColumnFamilyBean implements Serializable
 	private Long id;
 
 	@Column
-	private WideMap<ColumnFamilyMultiKey, String> map;
+	private WideMap<WideRowMultiKey, String> map;
 
 	public Long getId()
 	{
@@ -37,7 +37,7 @@ public class MultiKeyColumnFamilyBean implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<ColumnFamilyMultiKey, String> getMap()
+	public WideMap<WideRowMultiKey, String> getMap()
 	{
 		return map;
 	}
