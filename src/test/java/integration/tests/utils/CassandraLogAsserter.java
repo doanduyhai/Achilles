@@ -43,7 +43,6 @@ public class CassandraLogAsserter
 		{
 			for (String logLine : standardOutputs)
 			{
-				System.out.println("logLine = " + logLine);
 				if (logLine.contains("fetchRows Command/ConsistencyLevel is"))
 				{
 					assertThat(logLine).contains("/" + read.name());

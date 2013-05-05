@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ThriftColumnFamilyHelper
 {
-	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyHelper.class);
+	private static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
+
+	private static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
 	public static final String ENTITY_TYPE_ALIAS = "(BytesType,UTF8Type,Int32Type)";
 	public static final String SIMPLE_COUNTER_TYPE_ALIAS = "(UTF8Type)";
@@ -55,7 +57,7 @@ public class ThriftColumnFamilyHelper
 		cfDef.setComment("Column family for entity '" + entityName + "'");
 
 		StringBuilder builder = new StringBuilder("\n\n");
-		builder.append("Create Composite-based column family for entity ");
+		builder.append("Create column family for entity ");
 		builder.append("'").append(entityName).append("' : \n");
 		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
 		builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
@@ -119,7 +121,7 @@ public class ThriftColumnFamilyHelper
 		String propertyName = propertyMeta.getPropertyName();
 
 		StringBuilder builder = new StringBuilder("\n\n");
-		builder.append("Create Composite-based wide row column family for property ");
+		builder.append("Create wide row column family for property ");
 		builder.append("'").append(propertyName).append("' of entity '");
 		builder.append(entityName).append("' : \n");
 		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");

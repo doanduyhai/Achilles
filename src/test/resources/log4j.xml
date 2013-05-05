@@ -14,8 +14,8 @@
 	
 	<appender name="NullAppender" class="org.apache.log4j.varia.NullAppender" />
 	
-	<logger name="info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper">
-		<level value="WARN" />
+	<logger name="ACHILLES_DDL_SCRIPT">
+		<level value="DEBUG" />
 	</logger>
 	
 	
