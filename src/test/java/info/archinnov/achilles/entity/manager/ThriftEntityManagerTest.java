@@ -195,6 +195,7 @@ public class ThriftEntityManagerTest
 
 		CompleteBean mergedEntity = em.merge(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
 
 		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);
 		assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(entityMeta);

@@ -68,7 +68,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	 * Do nothing if no batch mutator was started
 	 * 
 	 */
-	public <T, ID> void endBatch()
+	public void endBatch()
 	{
 		log.debug("Ending batch mode");
 		flushContext.endBatch();

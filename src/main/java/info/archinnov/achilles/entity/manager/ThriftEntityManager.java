@@ -155,6 +155,7 @@ public class ThriftEntityManager implements EntityManager
 		{
 			log.debug("Merging entity '{}' ", proxifier.unproxy(entity));
 		}
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
 		PersistenceContext<?> context = initPersistenceContext(entity);
 		T merged = (T) merger.mergeEntity(context);
