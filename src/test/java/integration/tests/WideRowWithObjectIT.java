@@ -1,8 +1,7 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericWideRowDao;
@@ -31,7 +30,7 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class ColumnFamilyWithObjectIT
+public class WideRowWithObjectIT
 {
 
 	@SuppressWarnings(
@@ -39,8 +38,8 @@ public class ColumnFamilyWithObjectIT
 			"unchecked",
 			"rawtypes"
 	})
-	private GenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
-			(Serializer) STRING_SRZ,
+	private GenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			LONG_SRZ, (Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
@@ -56,9 +55,7 @@ public class ColumnFamilyWithObjectIT
 	@Before
 	public void setUp()
 	{
-		bean = new WideRowBeanWithObject();
-		bean.setId(id);
-		bean = em.merge(bean);
+		bean = em.find(WideRowBeanWithObject.class, id);
 		map = bean.getMap();
 	}
 

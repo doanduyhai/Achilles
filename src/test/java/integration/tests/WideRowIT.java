@@ -2,8 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericWideRowDao;
@@ -32,7 +31,7 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class ColumnFamilyIT
+public class WideRowIT
 {
 
 	private GenericWideRowDao<Long, String> dao = getColumnFamilyDao(LONG_SRZ, STRING_SRZ,
@@ -49,9 +48,7 @@ public class ColumnFamilyIT
 	@Before
 	public void setUp()
 	{
-		bean = new WideRowBean();
-		bean.setId(id);
-		bean = em.merge(bean);
+		bean = em.find(WideRowBean.class, id);
 		map = bean.getMap();
 	}
 

@@ -1,10 +1,8 @@
 package integration.tests;
 
 import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
+import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.GenericWideRowDao;
@@ -14,8 +12,8 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
-import integration.tests.entity.WideRowMultiKey;
 import integration.tests.entity.MultiKeyWideRowBean;
+import integration.tests.entity.WideRowMultiKey;
 
 import java.util.Iterator;
 import java.util.List;
@@ -35,8 +33,8 @@ import org.junit.Test;
 public class MultiKeyColumnFamilyIT
 {
 
-	private GenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(LONG_SRZ,
-			STRING_SRZ,
+	private GenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			LONG_SRZ, STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
@@ -50,9 +48,7 @@ public class MultiKeyColumnFamilyIT
 	@Before
 	public void setUp()
 	{
-		bean = new MultiKeyWideRowBean();
-		bean.setId(id);
-		bean = em.merge(bean);
+		bean = em.find(MultiKeyWideRowBean.class, id);
 		map = bean.getMap();
 	}
 
@@ -149,8 +145,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(new WideRowMultiKey(14L, "14"), new WideRowMultiKey(12L, "12"), 10, 
-				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(new WideRowMultiKey(14L,
+				"14"), new WideRowMultiKey(12L, "12"), 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+				OrderingMode.DESCENDING);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value3");
@@ -162,8 +159,8 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null,
-				new WideRowMultiKey(12L, "12"), 10);
+		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, new WideRowMultiKey(
+				12L, "12"), 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -219,9 +216,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<WideRowMultiKey, String>> iter = map.iterator(new WideRowMultiKey(12L, "12"), 
-				new WideRowMultiKey(14L, "14"), 10,
-				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
+		Iterator<KeyValue<WideRowMultiKey, String>> iter = map.iterator(new WideRowMultiKey(12L,
+				"12"), new WideRowMultiKey(14L, "14"), 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY,
+				OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");
 		assertThat(iter.next().getValue()).isEqualTo("value3");
@@ -261,8 +258,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.removeBoundsExclusive(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(
-				15L, "15"));
+		map.removeBoundsExclusive(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(15L, "15"));
 
 		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
 
@@ -277,7 +273,8 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.remove(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(15L, "15"), BoundingMode.INCLUSIVE_START_BOUND_ONLY);
+		map.remove(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(15L, "15"),
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
 

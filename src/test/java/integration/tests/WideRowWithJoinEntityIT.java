@@ -13,9 +13,9 @@ import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
-import integration.tests.entity.WideRowBeanWithJoinEntity;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
+import integration.tests.entity.WideRowBeanWithJoinEntity;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class ColumnFamilyWithJoinEntityIT
+public class WideRowWithJoinEntityIT
 {
 
 	private GenericWideRowDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
@@ -57,9 +57,7 @@ public class ColumnFamilyWithJoinEntityIT
 	@Before
 	public void setUp()
 	{
-		bean = new WideRowBeanWithJoinEntity();
-		bean.setId(id);
-		bean = em.merge(bean);
+		bean = em.find(WideRowBeanWithJoinEntity.class, id);
 		friends = bean.getFriends();
 
 		user1 = UserTestBuilder.user().id(userId1).firstname("fn1").lastname("ln1").buid();
@@ -195,7 +193,8 @@ public class ColumnFamilyWithJoinEntityIT
 
 		insert5Users();
 
-		KeyValueIterator<Integer, User> iterator = friends.iterator(3, 1, 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
+		KeyValueIterator<Integer, User> iterator = friends.iterator(3, 1, 10,
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
 
 		User foundUser1 = iterator.next().getValue();
 		User foundUser2 = iterator.next().getValue();
