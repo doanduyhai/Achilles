@@ -231,7 +231,7 @@ public class ThriftColumnFamilyCreatorTest
 				Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
 
 		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
-		verify(thriftColumnFamilyHelper).validateCFWithPropertyMeta(externalCFDef,
+		verify(thriftColumnFamilyHelper).validateWideRowWithPropertyMeta(externalCFDef,
 				externalWideMapMeta, "externalCF");
 		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
 	}

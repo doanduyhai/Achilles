@@ -156,7 +156,7 @@ public class ThriftColumnFamilyCreator
 		}
 		else
 		{
-			this.thriftColumnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta,
+			this.thriftColumnFamilyHelper.validateWideRowWithPropertyMeta(cfDef, propertyMeta,
 					externalColumnFamilyName);
 		}
 	}

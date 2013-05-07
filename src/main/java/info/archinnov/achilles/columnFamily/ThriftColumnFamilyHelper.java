@@ -33,9 +33,13 @@ public class ThriftColumnFamilyHelper
 
 	private static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
-	public static final String ENTITY_TYPE_ALIAS = "(BytesType,UTF8Type,Int32Type)";
-	public static final String SIMPLE_COUNTER_TYPE_ALIAS = "(UTF8Type)";
+	public static final String ENTITY_COMPARATOR_TYPE_ALIAS = "(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)";
+	public static final String ENTITY_COMPARATOR_TYPE_CHECK = "CompositeType(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)";
+
 	public static final String COUNTER_KEY_ALIAS = "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
+	public static final String COUNTER_KEY_CHECK = "org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
+	public static final String COUNTER_COMPARATOR_TYPE_ALIAS = "(org.apache.cassandra.db.marshal.UTF8Type)";
+	public static final String COUNTER_COMPARATOR_CHECK = "CompositeType(org.apache.cassandra.db.marshal.UTF8Type)";
 
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 	public PropertyHelper helper = new PropertyHelper();
@@ -52,7 +56,7 @@ public class ThriftColumnFamilyHelper
 		String keyValidationType = entityMeta.getIdSerializer().getComparatorType().getTypeName();
 
 		cfDef.setKeyValidationClass(keyValidationType);
-		cfDef.setComparatorTypeAlias(ENTITY_TYPE_ALIAS);
+		cfDef.setComparatorTypeAlias(ENTITY_COMPARATOR_TYPE_ALIAS);
 		cfDef.setDefaultValidationClass(STRING_SRZ.getComparatorType().getTypeName());
 		cfDef.setComment("Column family for entity '" + entityName + "'");
 
@@ -61,8 +65,7 @@ public class ThriftColumnFamilyHelper
 		builder.append("'").append(entityName).append("' : \n");
 		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
 		builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
-		builder.append("\t\tand comparator = 'CompositeType").append(ENTITY_TYPE_ALIAS)
-				.append("'\n");
+		builder.append("\t\tand comparator = '").append(ENTITY_COMPARATOR_TYPE_CHECK).append("'\n");
 		builder.append("\t\tand default_validation_class = ")
 				.append(ComparatorType.UTF8TYPE.getTypeName()).append("\n");
 		builder.append("\t\tand comment = 'Column family for entity ").append(entityName)
@@ -146,17 +149,15 @@ public class ThriftColumnFamilyHelper
 		counterCfDef.setKeyValidationClass(COMPOSITETYPE.getTypeName());
 		counterCfDef.setKeyValidationAlias(COUNTER_KEY_ALIAS);
 		counterCfDef.setDefaultValidationClass(COUNTERTYPE.getClassName());
-		counterCfDef.setComparatorTypeAlias(SIMPLE_COUNTER_TYPE_ALIAS);
+		counterCfDef.setComparatorTypeAlias(COUNTER_COMPARATOR_TYPE_ALIAS);
 
 		counterCfDef.setComment("Generic Counter Column Family for Achilles");
 
 		StringBuilder builder = new StringBuilder("\n\n");
 		builder.append("Create generic counter column family for Achilles : \n");
 		builder.append("\tcreate column family ").append(COUNTER_CF).append("\n");
-		builder.append("\t\twith key_validation_class = ").append(COMPOSITETYPE.getTypeName());
-		builder.append(COUNTER_KEY_ALIAS).append("\n");
-		builder.append("\t\tand comparator = 'CompositeType").append(SIMPLE_COUNTER_TYPE_ALIAS)
-				.append("'\n");
+		builder.append("\t\twith key_validation_class = '").append(COUNTER_KEY_CHECK).append("'\n");
+		builder.append("\t\tand comparator = '").append(COUNTER_COMPARATOR_CHECK).append("'\n");
 		builder.append("\t\tand default_validation_class = ").append(COUNTERTYPE.getTypeName())
 				.append("\n");
 		builder.append("\t\tand comment = 'Generic Counter Column Family for Achilles'\n\n");
@@ -184,7 +185,7 @@ public class ThriftColumnFamilyHelper
 
 		if (entityMeta.isWideRow())
 		{
-			this.validateCFWithPropertyMeta(cfDef, entityMeta.getPropertyMetas().values()
+			this.validateWideRowWithPropertyMeta(cfDef, entityMeta.getPropertyMetas().values()
 					.iterator().next(), entityMeta.getColumnFamilyName());
 		}
 		else
@@ -194,25 +195,19 @@ public class ThriftColumnFamilyHelper
 					"Validating column family  composite comparator definition for entityMeta {}",
 					entityMeta.getClassName());
 
-			if (cfDef.getComparatorType() == null
-					|| !StringUtils.equals(cfDef.getComparatorType().getTypeName(),
-							COMPOSITETYPE.getTypeName()))
-			{
-				throw new AchillesInvalidColumnFamilyException("The column family '"
-						+ entityMeta.getColumnFamilyName() + "' comparator type should be '"
-						+ COMPOSITETYPE.getTypeName() + "'");
-			}
+			String comparatorType = (cfDef.getComparatorType() != null ? cfDef.getComparatorType()
+					.getTypeName() : "") + cfDef.getComparatorTypeAlias();
 
-			if (!StringUtils.equals(cfDef.getComparatorTypeAlias(), ENTITY_TYPE_ALIAS))
+			if (!StringUtils.equals(comparatorType, ENTITY_COMPARATOR_TYPE_CHECK))
 			{
 				throw new AchillesInvalidColumnFamilyException("The column family '"
-						+ entityMeta.getColumnFamilyName() + "' comparator type alias should be '"
-						+ ENTITY_TYPE_ALIAS + "'");
+						+ entityMeta.getColumnFamilyName() + "' comparator type '" + comparatorType
+						+ "' should be '" + ENTITY_COMPARATOR_TYPE_CHECK + "'");
 			}
 		}
 	}
 
-	public void validateCFWithPropertyMeta(ColumnFamilyDefinition cfDef,
+	public void validateWideRowWithPropertyMeta(ColumnFamilyDefinition cfDef,
 			PropertyMeta<?, ?> propertyMeta, String externalColumnFamilyName)
 	{
 		log.trace(
@@ -235,32 +230,20 @@ public class ThriftColumnFamilyHelper
 	{
 		log.trace("Validating counter column family row key definition ");
 
-		if (!StringUtils.equals(cfDef.getKeyValidationClass(), COMPOSITETYPE.getClassName()))
+		String keyValidation = cfDef.getKeyValidationClass() + cfDef.getKeyValidationAlias();
+		if (!StringUtils.equals(keyValidation, COUNTER_KEY_CHECK))
 		{
 			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' key class '" + cfDef.getKeyValidationClass() + "' should be '"
-					+ COMPOSITETYPE.getClassName() + "'");
+					+ "' key class '" + keyValidation + "' should be '" + COUNTER_KEY_CHECK + "'");
 		}
 
-		if (!StringUtils.equals(cfDef.getKeyValidationAlias(), COUNTER_KEY_ALIAS))
+		String comparatorType = (cfDef.getComparatorType() != null ? cfDef.getComparatorType()
+				.getTypeName() : "") + cfDef.getComparatorTypeAlias();
+		if (!StringUtils.equals(comparatorType, COUNTER_COMPARATOR_CHECK))
 		{
 			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' key type alias '" + cfDef.getKeyValidationAlias() + "' should be '"
-					+ COUNTER_KEY_ALIAS + "'");
-		}
-
-		if (cfDef.getComparatorType() != COMPOSITETYPE)
-		{
-			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' comparator type '" + cfDef.getComparatorType().getTypeName()
-					+ "' should be '" + COMPOSITETYPE.getTypeName() + "'");
-		}
-
-		if (!StringUtils.equals(cfDef.getComparatorTypeAlias(), SIMPLE_COUNTER_TYPE_ALIAS))
-		{
-			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' comparator type alias '" + cfDef.getComparatorTypeAlias()
-					+ "' should be '" + SIMPLE_COUNTER_TYPE_ALIAS + "'");
+					+ "' comparator type '" + comparatorType + "' should be '"
+					+ COUNTER_COMPARATOR_CHECK + "'");
 		}
 
 		if (!StringUtils.equals(cfDef.getDefaultValidationClass(), COUNTERTYPE.getClassName()))

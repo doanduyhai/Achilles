@@ -170,7 +170,7 @@ public class ThriftColumnFamilyHelperTest
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(COMPOSITETYPE.getTypeName());
 		assertThat(cfDef.getKeyValidationAlias()).isEqualTo(COUNTER_KEY_ALIAS);
 		assertThat(cfDef.getComparatorType()).isEqualTo(COMPOSITETYPE);
-		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(SIMPLE_COUNTER_TYPE_ALIAS);
+		assertThat(cfDef.getComparatorTypeAlias()).isEqualTo(COUNTER_COMPARATOR_TYPE_ALIAS);
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(COUNTERTYPE.getClassName());
 
 	}
@@ -191,10 +191,12 @@ public class ThriftColumnFamilyHelperTest
 	{
 
 		when(cfDef.getKeyValidationClass()).thenReturn(ASCIITYPE.getClassName());
+		when(cfDef.getKeyValidationAlias()).thenReturn("(alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
-				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType' should be 'org.apache.cassandra.db.marshal.CompositeType'");
+				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType(alias)' should be '"
+						+ COUNTER_KEY_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -204,12 +206,12 @@ public class ThriftColumnFamilyHelperTest
 			throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
-		when(cfDef.getKeyValidationAlias()).thenReturn("wrong_alias");
+		when(cfDef.getKeyValidationAlias()).thenReturn("(wrong_alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
-				.expectMessage("The column family 'achillesCounterCF' key type alias 'wrong_alias' should be '"
-						+ COUNTER_KEY_ALIAS + "'");
+				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.CompositeType(wrong_alias)' should be '"
+						+ COUNTER_KEY_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -222,10 +224,12 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(ASCIITYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
-				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType' should be 'CompositeType'");
+				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType(alias)' should be '"
+						+ COUNTER_COMPARATOR_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -238,12 +242,12 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn("wrong_alias");
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
-				.expectMessage("The column family 'achillesCounterCF' comparator type alias 'wrong_alias' should be '"
-						+ SIMPLE_COUNTER_TYPE_ALIAS + "'");
+				.expectMessage("The column family 'achillesCounterCF' comparator type 'CompositeType(wrong_alias)' should be '"
+						+ COUNTER_COMPARATOR_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCounterCF(cfDef);
 	}
@@ -256,7 +260,8 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(SIMPLE_COUNTER_TYPE_ALIAS);
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type)");
 		when(cfDef.getDefaultValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
@@ -286,7 +291,9 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(ENTITY_TYPE_ALIAS);
+		when(cfDef.getComparatorTypeAlias())
+				.thenReturn(
+						"(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)");
 		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
@@ -296,7 +303,8 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(SIMPLE_COUNTER_TYPE_ALIAS);
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type)");
 		when(cfDef.getDefaultValidationClass()).thenReturn(COUNTERTYPE.getClassName());
 
 		thriftColumnFamilyHelper.validateCounterCF(cfDef);
@@ -344,8 +352,8 @@ public class ThriftColumnFamilyHelperTest
 		when(cfDef.getComparatorType()).thenReturn(null);
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception.expectMessage("The column family 'cf' comparator type should be '"
-				+ COMPOSITETYPE.getTypeName() + "'");
+		exception.expectMessage("The column family 'cf' comparator type 'null' should be '"
+				+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
@@ -357,10 +365,12 @@ public class ThriftColumnFamilyHelperTest
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception.expectMessage("The column family 'cf' comparator type should be '"
-				+ COMPOSITETYPE.getTypeName() + "'");
+		exception
+				.expectMessage("The column family 'cf' comparator type 'AsciiType(alias)' should be '"
+						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
@@ -397,7 +407,8 @@ public class ThriftColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COUNTERTYPE);
 
-		thriftColumnFamilyHelper.validateCFWithPropertyMeta(cfDef, propertyMeta, "external_cf");
+		thriftColumnFamilyHelper
+				.validateWideRowWithPropertyMeta(cfDef, propertyMeta, "external_cf");
 	}
 
 	@Test
@@ -407,11 +418,12 @@ public class ThriftColumnFamilyHelperTest
 		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn("abc");
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception.expectMessage("The column family 'cf' comparator type alias should be '"
-				+ ENTITY_TYPE_ALIAS + "'");
+		exception
+				.expectMessage("The column family 'cf' comparator type 'CompositeType(wrong_alias)' should be '"
+						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
