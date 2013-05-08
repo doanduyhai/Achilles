@@ -42,11 +42,13 @@
  5. Jackson asl, mapper & xc 1.9.3 
    
   
- 
+# 5 minutes tutorial # 
 
+ To boostrap quickly with **Achilles**, you can check the **[5 minutes tutoria]**
+ 
 # Documentation #
 
- All the documentation and tutorial is available in the [Wiki](https://github.com/doanduyhai/Achilles/wiki)
+ All the documentation and tutorial is available in the **[Wiki]**
 
 # License #
 Copyright 2012 DuyHai DOAN
@@ -61,3 +63,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 * **1.7.1**: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
 * **1.7**: stable release
+
+
+[5 minutes tutoria]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
+[Wiki]: https://github.com/doanduyhai/Achilles/wiki
