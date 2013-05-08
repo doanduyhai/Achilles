@@ -59,5 +59,5 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changelog
 
-1.7.1: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
-1.7 : stable release
+* **1.7.1**: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
+* **1.7**: stable release
