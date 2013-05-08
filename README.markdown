@@ -21,7 +21,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles</artifactId>
-		<version>1.2-beta</version>
+		<version>1.7.1</version>
 	</dependency>  
  
  The framework has been released on **Sonatype OSS** repository so make sure you have the following
@@ -57,3 +57,7 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
+# Changelog
+
+1.7.1: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
+1.7 : stable release
