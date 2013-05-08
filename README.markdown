@@ -13,6 +13,7 @@
  - Join columns with cascading support
  - Support for counters
  - Support for custom consistency levels
+ - Batch mode to boost performance
 
 # Installation #
 
