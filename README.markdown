@@ -42,15 +42,15 @@
  5. Jackson asl, mapper & xc 1.9.3 
    
   
-# 5 minutes tutorial # 
+# 5 minutes tutorial
 
- To boostrap quickly with **Achilles**, you can check the **[5 minutes tutoria]**
+ To boostrap quickly with **Achilles**, you can check the **[5 minutes tutorial]**
  
-# Documentation #
+# Documentation
 
  All the documentation and tutorial is available in the **[Wiki]**
 
-# License #
+# License
 Copyright 2012 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
@@ -65,5 +65,5 @@ Unless required by applicable law or agreed to in writing, software distributed 
 * **1.7**: stable release
 
 
-[5 minutes tutoria]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
+[5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
