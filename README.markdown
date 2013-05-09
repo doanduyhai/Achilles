@@ -72,4 +72,5 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 [5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
+[Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
