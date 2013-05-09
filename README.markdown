@@ -46,6 +46,10 @@
 # 5 minutes tutorial
 
  To boostrap quickly with **Achilles**, you can check the **[5 minutes tutorial]**
+
+# Advanced tutorial
+
+ To get a deeper look on how you can use **Achilles**, check out the **[Twitter Demo]** application and read the **[Advanced Tutorial]** section
  
 # Documentation
 
@@ -67,4 +71,5 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 [5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
+[Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
