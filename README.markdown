@@ -64,8 +64,14 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-# Changelog
+# Changes log
 
+* **1.7.2**:
+    * Add commons-collections 3.2.1 to compile dependency
+    * Enhance error message for entity mapping
+    * Fix bug about default consistency level hard-coded to QUORUM for WideMap and Counters 
+    * Add `firstFirstMatching()` and `findLastMatching()` to the WideMap API
+    * Fix bug. Do not load join entity if no join primary keys
 * **1.7.1**: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
 * **1.7**: stable release
 
