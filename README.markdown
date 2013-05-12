@@ -22,7 +22,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles</artifactId>
-		<version>1.7.1</version>
+		<version>1.7.2</version>
 	</dependency>  
  
  The framework has been released on **Sonatype OSS** repository so make sure you have the following
