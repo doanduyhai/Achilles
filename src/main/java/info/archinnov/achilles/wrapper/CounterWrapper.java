@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -25,8 +25,8 @@ public class CounterWrapper<ID> implements Counter
 	private static final long serialVersionUID = 1L;
 	private ID key;
 	private Composite columnName;
-	private AbstractDao<ID, Long> counterDao;
-	private PersistenceContext<?> context;
+	private ThriftAbstractDao<ID, Long> counterDao;
+	private ThriftPersistenceContext<?> context;
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
@@ -187,7 +187,8 @@ public class CounterWrapper<ID> implements Counter
 		log.trace("Execute write with runtime consistency level {}", writeLevel.name());
 
 		boolean resetConsistencyLevel = false;
-		AchillesConfigurableConsistencyLevelPolicy policy = this.context.getPolicy();
+		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) this.context
+				.getPolicy();
 		if (policy.getCurrentWriteLevel() == null)
 		{
 			policy.setCurrentWriteLevel(writeLevel);
@@ -211,7 +212,8 @@ public class CounterWrapper<ID> implements Counter
 	{
 		log.trace("Execute read with runtime consistency level {}", readLevel.name());
 		boolean resetConsistencyLevel = false;
-		AchillesConfigurableConsistencyLevelPolicy policy = this.context.getPolicy();
+		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) this.context
+				.getPolicy();
 		if (policy.getCurrentReadLevel() == null)
 		{
 			policy.setCurrentReadLevel(readLevel);
@@ -230,7 +232,7 @@ public class CounterWrapper<ID> implements Counter
 		}
 	}
 
-	public void setCounterDao(AbstractDao<ID, Long> counterDao)
+	public void setCounterDao(ThriftAbstractDao<ID, Long> counterDao)
 	{
 		this.counterDao = counterDao;
 	}
@@ -250,7 +252,7 @@ public class CounterWrapper<ID> implements Counter
 		this.writeLevel = writeLevel;
 	}
 
-	public void setContext(PersistenceContext<?> context)
+	public void setContext(ThriftPersistenceContext<?> context)
 	{
 		this.context = context;
 	}

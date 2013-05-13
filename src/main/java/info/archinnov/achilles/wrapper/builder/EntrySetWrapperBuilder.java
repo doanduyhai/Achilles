@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.wrapper.EntrySetWrapper;
 
 import java.util.Map.Entry;
@@ -18,12 +18,12 @@ public class EntrySetWrapperBuilder<ID, K, V> extends
 	private Set<Entry<K, V>> target;
 
 	public static <ID, K, V> EntrySetWrapperBuilder<ID, K, V> builder(
-			PersistenceContext<ID> context, Set<Entry<K, V>> target)
+			AchillesPersistenceContext<ID> context, Set<Entry<K, V>> target)
 	{
 		return new EntrySetWrapperBuilder<ID, K, V>(context, target);
 	}
 
-	public EntrySetWrapperBuilder(PersistenceContext<ID> context, Set<Entry<K, V>> target) {
+	public EntrySetWrapperBuilder(AchillesPersistenceContext<ID> context, Set<Entry<K, V>> target) {
 		super.context = context;
 		this.target = target;
 	}

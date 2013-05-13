@@ -5,14 +5,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -72,22 +72,22 @@ public class ThriftLoaderImplTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private ImmediateFlushContext immediateFlushContext;
+	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Captor
 	ArgumentCaptor<CompleteBean> beanCaptor;
 
 	@Captor
-	ArgumentCaptor<PersistenceContext<Long>> contextCaptor;
+	ArgumentCaptor<ThriftPersistenceContext<Long>> contextCaptor;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -95,7 +95,7 @@ public class ThriftLoaderImplTest
 
 	private PropertyMeta<Void, Long> idMeta;
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Before
 	public void setUp() throws Throwable
@@ -107,9 +107,9 @@ public class ThriftLoaderImplTest
 				.build();
 
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.immediateFlushContext(immediateFlushContext) //
+				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
 				.entityDao(entityDao) //
 				.build();
 	}

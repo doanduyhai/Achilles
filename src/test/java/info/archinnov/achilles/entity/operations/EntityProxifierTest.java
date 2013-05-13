@@ -2,8 +2,8 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -106,9 +106,9 @@ public class EntityProxifierTest
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		PersistenceContext<Long> context = PersistenceContextTestBuilder
+		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, primaryKey)
-				.entityDao(mock(GenericEntityDao.class)).build();
+				.entityDao(mock(ThriftGenericEntityDao.class)).build();
 
 		CompleteBean proxy = proxifier.buildProxy(entity, context);
 
@@ -125,9 +125,9 @@ public class EntityProxifierTest
 	@Test
 	public void should_build_null_proxy() throws Exception
 	{
-		PersistenceContext<Long> context = PersistenceContextTestBuilder
+		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, 11L)
-				.entityDao(mock(GenericEntityDao.class)).build();
+				.entityDao(mock(ThriftGenericEntityDao.class)).build();
 
 		assertThat(proxifier.buildProxy(null, context)).isNull();
 	}

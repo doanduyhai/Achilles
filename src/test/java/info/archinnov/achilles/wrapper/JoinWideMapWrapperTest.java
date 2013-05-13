@@ -6,12 +6,12 @@ import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,7 +29,7 @@ import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -63,10 +63,10 @@ public class JoinWideMapWrapperTest {
     private JoinWideMapWrapper<Long, Long, Integer, CompleteBean> wrapper;
 
     @Mock
-    private GenericWideRowDao<Long, Long> dao;
+    private ThriftGenericWideRowDao<Long, Long> dao;
 
     @Mock
-    private GenericEntityDao<Long> joinDao;
+    private ThriftGenericEntityDao<Long> joinDao;
 
     @Mock
     private PropertyMeta<Integer, CompleteBean> propertyMeta;
@@ -93,7 +93,7 @@ public class JoinWideMapWrapperTest {
     private IteratorFactory iteratorFactory;
 
     @Mock
-    private AchillesInterceptor<Long> interceptor;
+    private AchillesJpaEntityInterceptor<Long> interceptor;
 
     @Mock
     private Mutator<Long> mutator;
@@ -102,28 +102,28 @@ public class JoinWideMapWrapperTest {
     private Mutator<Long> joinMutator;
 
     @Mock
-    private CounterDao counterDao;
+    private ThriftCounterDao thriftCounterDao;
 
     @Mock
-    private AchillesConfigurableConsistencyLevelPolicy policy;
+    private ThriftConsistencyLevelPolicy policy;
 
     @Mock
-    private GenericEntityDao<Long> entityDao;
+    private ThriftGenericEntityDao<Long> entityDao;
 
     @Mock
-    private ImmediateFlushContext immediateFlushContext;
+    private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
     private EntityMeta<Long> entityMeta;
 
     private EntityMeta<Long> joinMeta;
 
-    private PersistenceContext<Long> context;
+    private ThriftPersistenceContext<Long> context;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
     private Long id = 7425L;
 
-    private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+    private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
 
     @SuppressWarnings("unchecked")
     @Before
@@ -146,10 +146,10 @@ public class JoinWideMapWrapperTest {
 
         entityDaosMap.clear();
         context = PersistenceContextTestBuilder //
-                .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
                 .entity(entity) //
                 .entityDaosMap(entityDaosMap) //
-                .immediateFlushContext(immediateFlushContext) //
+                .thriftImmediateFlushContext(thriftImmediateFlushContext) //
                 .build();
         wrapper.setContext(context);
         when(propertyMeta.getExternalCFName()).thenReturn("external_cf");
@@ -167,8 +167,8 @@ public class JoinWideMapWrapperTest {
         when(propertyMeta.getValueClass()).thenReturn(CompleteBean.class);
 
         when(dao.getValue(id, comp)).thenReturn(entity.getId());
-        when(loader.load(any(PersistenceContext.class))).thenReturn(entity);
-        when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class))).thenReturn(entity);
+        when(loader.load(any(ThriftPersistenceContext.class))).thenReturn(entity);
+        when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(entity);
 
         CompleteBean actual = wrapper.get(key);
 
@@ -186,8 +186,8 @@ public class JoinWideMapWrapperTest {
         when(propertyMeta.getValueClass()).thenReturn(CompleteBean.class);
 
         when(dao.getValue(id, comp)).thenReturn(entity.getId());
-        when(loader.load(any(PersistenceContext.class))).thenReturn(null);
-        when(proxifier.buildProxy(eq(null), any(PersistenceContext.class))).thenReturn(null);
+        when(loader.load(any(ThriftPersistenceContext.class))).thenReturn(null);
+        when(proxifier.buildProxy(eq(null), any(ThriftPersistenceContext.class))).thenReturn(null);
 
         assertThat(wrapper.get(key)).isNull();
 
@@ -208,16 +208,16 @@ public class JoinWideMapWrapperTest {
 
         when(propertyMeta.getJoinProperties()).thenReturn(joinProperties);
         when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(entityMeta);
-        when(persister.cascadePersistOrEnsureExists(any(PersistenceContext.class), eq(entity), eq(joinProperties)))
+        when(persister.cascadePersistOrEnsureExists(any(ThriftPersistenceContext.class), eq(entity), eq(joinProperties)))
                 .thenReturn(entity.getId());
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
         when(joinDao.buildMutator()).thenReturn(joinMutator);
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
         wrapper.insert(key, entity);
 
         verify(dao).setValueBatch(id, comp, entity.getId(), mutator);
-        verify(immediateFlushContext).flush();
+        verify(thriftImmediateFlushContext).flush();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -239,17 +239,17 @@ public class JoinWideMapWrapperTest {
         when((EntityMeta<Long>) propertyMeta.joinMeta()).thenReturn(entityMeta);
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-        when(persister.cascadePersistOrEnsureExists(any(PersistenceContext.class), eq(entity), eq(joinProperties)))
+        when(persister.cascadePersistOrEnsureExists(any(ThriftPersistenceContext.class), eq(entity), eq(joinProperties)))
                 .thenReturn(entity.getId());
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
         when(joinDao.buildMutator()).thenReturn(joinMutator);
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
 
         wrapper.insert(key, entity, 150);
 
         verify(dao).setValueBatch(id, comp, entity.getId(), 150, mutator);
-        verify(immediateFlushContext).flush();
+        verify(thriftImmediateFlushContext).flush();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -356,7 +356,7 @@ public class JoinWideMapWrapperTest {
         Composite comp = new Composite();
 
         when(compositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
 
         wrapper.remove(key);
 
@@ -374,7 +374,7 @@ public class JoinWideMapWrapperTest {
         when(
                 compositeFactory.createForQuery(propertyMeta, start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
                         OrderingMode.ASCENDING)).thenReturn(new Composite[] { startComp, endComp });
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
 
         wrapper.remove(start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
 
@@ -386,7 +386,7 @@ public class JoinWideMapWrapperTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void should_remove_first() throws Exception {
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
         wrapper.removeFirst(15);
         verify(dao).removeColumnRangeBatch(id, null, null, false, 15, mutator);
     }
@@ -394,7 +394,7 @@ public class JoinWideMapWrapperTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void should_remove_last() throws Exception {
-        when((Mutator) immediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
+        when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
         wrapper.removeLast(9);
         verify(dao).removeColumnRangeBatch(id, null, null, true, 9, mutator);
     }

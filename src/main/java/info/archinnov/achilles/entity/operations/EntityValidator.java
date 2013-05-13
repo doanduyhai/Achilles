@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -66,7 +66,7 @@ public class EntityValidator
 		}
 	}
 
-	public <ID> void validateNoPendingBatch(PersistenceContext<ID> context)
+	public <ID> void validateNoPendingBatch(AchillesPersistenceContext<ID> context)
 	{
 		log.debug("Validate no pending batch");
 		Validator

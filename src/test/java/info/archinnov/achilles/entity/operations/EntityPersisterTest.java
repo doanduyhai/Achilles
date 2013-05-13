@@ -2,12 +2,12 @@ package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -69,23 +69,23 @@ public class EntityPersisterTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
 
 	@Before
 	public void setUp()
 	{
 		entityDaosMap.clear();
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, bean.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
 				.entity(bean)//
 				.entityDaosMap(entityDaosMap) //
 				.build();
@@ -167,7 +167,7 @@ public class EntityPersisterTest
 		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setColumnFamilyName("cfName");
-		GenericEntityDao<Long> entityDao = mock(GenericEntityDao.class);
+		ThriftGenericEntityDao<Long> entityDao = mock(ThriftGenericEntityDao.class);
 		entityDaosMap.put("cfName", entityDao);
 		Long joinId = RandomUtils.nextLong();
 		JoinProperties joinProperties = new JoinProperties();

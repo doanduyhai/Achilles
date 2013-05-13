@@ -3,11 +3,12 @@ package info.archinnov.achilles.entity.operations.impl;
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -40,7 +41,7 @@ public class ThriftLoaderImpl
 	private CompositeFactory compositeFactory = new CompositeFactory();
 
 	@SuppressWarnings("unchecked")
-	public <T, ID> T load(PersistenceContext<ID> context) throws Exception
+	public <T, ID> T load(ThriftPersistenceContext<ID> context) throws Exception
 	{
 		log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
@@ -62,7 +63,7 @@ public class ThriftLoaderImpl
 		return (T) entity;
 	}
 
-	public <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
+	public <ID, V> Long loadVersionSerialUID(ID key, ThriftGenericEntityDao<ID> dao)
 	{
 		Composite composite = new Composite();
 		composite.addComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
@@ -84,7 +85,7 @@ public class ThriftLoaderImpl
 		}
 	}
 
-	public <ID, V> V loadSimpleProperty(PersistenceContext<ID> context,
+	public <ID, V> V loadSimpleProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
@@ -100,7 +101,7 @@ public class ThriftLoaderImpl
 				context.getPrimaryKey(), composite));
 	}
 
-	public <ID, V> List<V> loadListProperty(PersistenceContext<ID> context,
+	public <ID, V> List<V> loadListProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		log.trace("Loading list property {} of class {} from column family {} with primary key {}",
@@ -119,7 +120,7 @@ public class ThriftLoaderImpl
 		return list;
 	}
 
-	public <ID, V> Set<V> loadSetProperty(PersistenceContext<ID> context,
+	public <ID, V> Set<V> loadSetProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		log.trace("Loading set property {} of class {} from column family {} with primary key {}",
@@ -138,7 +139,7 @@ public class ThriftLoaderImpl
 		return set;
 	}
 
-	public <ID, K, V> Map<K, V> loadMapProperty(PersistenceContext<ID> context,
+	public <ID, K, V> Map<K, V> loadMapProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		log.trace("Loading map property {} of class {} from column family {} with primary key {}",
@@ -160,8 +161,8 @@ public class ThriftLoaderImpl
 		return map;
 	}
 
-	private <ID, V> List<Pair<Composite, String>> fetchColumns(PersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta)
+	private <ID, V> List<Pair<Composite, String>> fetchColumns(
+			ThriftPersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
 	{
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -177,7 +178,7 @@ public class ThriftLoaderImpl
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> V loadJoinSimple(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, V> V loadJoinSimple(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta, EntityLoader loader)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
@@ -199,7 +200,7 @@ public class ThriftLoaderImpl
 		if (stringJoinId != null)
 		{
 			JOIN_ID joinId = joinIdMeta.getValueFromString(stringJoinId);
-			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+			AchillesPersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 			return (V) loader.load(joinContext);
 

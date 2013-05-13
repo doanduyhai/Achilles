@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -27,11 +27,11 @@ public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
 	private KeyValueFactory factory = new KeyValueFactory();
 	protected AbstractAchillesSliceIterator<HColumn<Composite, V>> achillesSliceIterator;
 	private PropertyMeta<K, V> propertyMeta;
-	private PersistenceContext<ID> context;
+	private ThriftPersistenceContext<ID> context;
 
 	protected KeyValueIteratorImpl() {}
 
-	public KeyValueIteratorImpl(PersistenceContext<ID> context,
+	public KeyValueIteratorImpl(ThriftPersistenceContext<ID> context,
 			AbstractAchillesSliceIterator<HColumn<Composite, V>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{

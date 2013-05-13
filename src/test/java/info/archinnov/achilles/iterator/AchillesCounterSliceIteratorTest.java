@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.util.Iterator;
@@ -55,7 +55,7 @@ public class AchillesCounterSliceIteratorTest
 	private AchillesCounterSliceIterator<Long> iterator;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private String columnFamily = "cf";
 

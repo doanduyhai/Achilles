@@ -1,10 +1,12 @@
-package info.archinnov.achilles.entity.manager;
+package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
@@ -16,7 +18,6 @@ import java.util.Map;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
@@ -44,12 +45,12 @@ import com.google.common.collect.ImmutableMap;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class ArgumentExtractorForThriftEMFTest
+public class ThriftArgumentExtractorTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private ArgumentExtractorForThriftEMF extractor = new ArgumentExtractorForThriftEMF();
+	private ThriftArgumentExtractor extractor = new ThriftArgumentExtractor();
 
 	@Mock
 	private Cluster cluster;
@@ -64,7 +65,7 @@ public class ArgumentExtractorForThriftEMFTest
 	private ObjectMapper mapper;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -292,10 +293,10 @@ public class ArgumentExtractorForThriftEMFTest
 		configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
 				ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
 
-		Map<String, HConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
 
-		assertThat(consistencyMap.get("cf1")).isEqualTo(HConsistencyLevel.ONE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(HConsistencyLevel.LOCAL_QUORUM);
+		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test
@@ -304,18 +305,16 @@ public class ArgumentExtractorForThriftEMFTest
 		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
 				ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
 
-		Map<String, HConsistencyLevel> consistencyMap = extractor
-				.initWriteConsistencyMap(configMap);
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
-		assertThat(consistencyMap.get("cf1")).isEqualTo(HConsistencyLevel.THREE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(HConsistencyLevel.EACH_QUORUM);
+		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.THREE);
+		assertThat(consistencyMap.get("cf2")).isEqualTo(ConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
 	public void should_return_empty_consistency_map_when_no_parameter() throws Exception
 	{
-		Map<String, HConsistencyLevel> consistencyMap = extractor
-				.initWriteConsistencyMap(configMap);
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
 	}
@@ -325,8 +324,7 @@ public class ArgumentExtractorForThriftEMFTest
 	{
 		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, new HashMap<String, String>());
 
-		Map<String, HConsistencyLevel> consistencyMap = extractor
-				.initWriteConsistencyMap(configMap);
+		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
 	}

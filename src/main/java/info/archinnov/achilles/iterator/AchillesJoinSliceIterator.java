@@ -1,10 +1,10 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_JOIN_SLICE_ITERATOR;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -35,11 +35,11 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	private SliceQuery<K, Composite, V> query;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
-	private GenericEntityDao<JOIN_ID> joinEntityDao;
+	private ThriftGenericEntityDao<JOIN_ID> joinEntityDao;
 
 	public AchillesJoinSliceIterator( //
-			AchillesConfigurableConsistencyLevelPolicy policy, //
-			GenericEntityDao<JOIN_ID> joinEntityDao, //
+			AchillesConsistencyLevelPolicy policy, //
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
 			SliceQuery<K, Composite, V> query, Composite start, //
 			final Composite finish, boolean reversed)
@@ -48,8 +48,8 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 				DEFAULT_LENGTH);
 	}
 
-	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, //
-			GenericEntityDao<JOIN_ID> joinEntityDao, //
+	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
 			SliceQuery<K, Composite, V> query, Composite start, //
 			final Composite finish, boolean reversed, int count)
@@ -64,8 +64,8 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 		}, reversed, count);
 	}
 
-	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, //
-			GenericEntityDao<JOIN_ID> joinEntityDao, //
+	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
 			SliceQuery<K, Composite, V> query, Composite start, //
 			ColumnSliceFinish finish, boolean reversed)
@@ -74,8 +74,8 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 				DEFAULT_LENGTH);
 	}
 
-	public AchillesJoinSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, //
-			GenericEntityDao<JOIN_ID> joinEntityDao, //
+	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
 			SliceQuery<K, Composite, V> query, Composite start, //
 			ColumnSliceFinish finish, boolean reversed, int count)

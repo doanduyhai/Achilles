@@ -1,9 +1,9 @@
 package info.archinnov.achilles.proxy.interceptor;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
@@ -26,19 +26,18 @@ public class JpaEntityInterceptorBuilder<ID, T>
 
 	private T target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
-	private PersistenceContext<ID> context;
-	private EntityLoader loader = new EntityLoader();
+	private ThriftPersistenceContext<ID> context;
 
 	public static <ID, T> JpaEntityInterceptorBuilder<ID, T> builder(
-			PersistenceContext<ID> context, T entity)
+			AchillesPersistenceContext<ID> context, T entity)
 	{
 		return new JpaEntityInterceptorBuilder<ID, T>(context, entity);
 	}
 
-	public JpaEntityInterceptorBuilder(PersistenceContext<ID> context, T entity) {
+	public JpaEntityInterceptorBuilder(AchillesPersistenceContext<ID> context, T entity) {
 		Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
 		Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
-		this.context = context;
+		this.context = (ThriftPersistenceContext<ID>) context;
 		this.target = entity;
 	}
 
@@ -92,7 +91,6 @@ public class JpaEntityInterceptorBuilder<ID, T>
 		interceptor.setLazyLoaded(this.lazyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
 		interceptor.setKey(context.getPrimaryKey());
-		interceptor.setLoader(loader);
 
 		return interceptor;
 	}

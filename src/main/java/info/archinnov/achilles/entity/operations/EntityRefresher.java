@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public class EntityRefresher
 	private EntityLoader loader = new EntityLoader();
 
 	@SuppressWarnings("unchecked")
-	public <ID, T> void refresh(PersistenceContext<ID> context)
+	public <ID, T> void refresh(AchillesPersistenceContext<ID> context)
 	{
 		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());

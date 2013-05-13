@@ -5,8 +5,8 @@ import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -41,10 +41,10 @@ public class CounterIT
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CounterDao counterDao = ThriftCassandraDaoTest.getCounterDao();
-	private GenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
+	private ThriftCounterDao thriftCounterDao = ThriftCassandraDaoTest.getCounterDao();
+	private ThriftGenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
-	private GenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
+	private ThriftGenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
@@ -53,7 +53,7 @@ public class CounterIT
 	@Before
 	public void setUp()
 	{
-		counterDao.truncateCounters();
+		thriftCounterDao.truncateCounters();
 	}
 
 	@Test
@@ -66,7 +66,7 @@ public class CounterIT
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
-		Long actual = counterDao.getCounterValue(keyComp, comp);
+		Long actual = thriftCounterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(2L);
 	}
@@ -92,7 +92,7 @@ public class CounterIT
 		bean.getVersion().incr(version);
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
-		Long actual = counterDao.getCounterValue(keyComp, comp);
+		Long actual = thriftCounterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(version);
 
@@ -101,7 +101,7 @@ public class CounterIT
 
 		em.remove(bean);
 
-		actual = counterDao.getCounterValue(keyComp, comp);
+		actual = thriftCounterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(0);
 	}
@@ -254,22 +254,22 @@ public class CounterIT
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createWideMapCounterName("cassandra");
 
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createWideMapCounterName("groovy");
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createWideMapCounterName("hibernate");
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createWideMapCounterName("java");
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createWideMapCounterName("scala");
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 		comp = createWideMapCounterName("spring");
-		assertThat(counterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
+		assertThat(thriftCounterDao.getCounterValue(keyComp, comp)).isEqualTo(0L);
 
 	}
 

@@ -7,9 +7,9 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
@@ -59,7 +59,7 @@ public class CounterWideMapWrapperTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private GenericWideRowDao<Long, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao<Long, Long> wideMapCounterDao;
 
 	@Mock
 	private PropertyMeta<Integer, Counter> propertyMeta;
@@ -80,10 +80,10 @@ public class CounterWideMapWrapperTest
 	private AchillesCounterSliceIterator<Long> achillesCounterSliceIterator;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private Long id = 12L;
 	private Integer key = 11;

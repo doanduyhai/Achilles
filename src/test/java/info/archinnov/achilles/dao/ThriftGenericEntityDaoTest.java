@@ -23,11 +23,11 @@ import org.powermock.reflect.Whitebox;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GenericEntityDaoTest
+public class ThriftGenericEntityDaoTest
 {
 
 	@InjectMocks
-	private GenericEntityDao<Long> dao = new GenericEntityDao<Long>();
+	private ThriftGenericEntityDao<Long> dao = new ThriftGenericEntityDao<Long>();
 
 	@Mock
 	private ExecutingKeyspace keyspace;

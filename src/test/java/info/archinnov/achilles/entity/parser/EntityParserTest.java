@@ -6,9 +6,9 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.persistence.CascadeType;
 
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
@@ -72,9 +71,9 @@ public class EntityParserTest
 	private EntityParser parser;
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
-	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
-	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
+	private Map<String, ConsistencyLevel> readConsistencyMap = new HashMap<String, ConsistencyLevel>();
+	private Map<String, ConsistencyLevel> writeConsistencyMap = new HashMap<String, ConsistencyLevel>();
+	private ThriftConsistencyLevelPolicy configurableCLPolicy = new ThriftConsistencyLevelPolicy(
 			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
 
 	@Mock
@@ -87,12 +86,12 @@ public class EntityParserTest
 	private Keyspace keyspace;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
+	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 
 	private ObjectMapperFactory objectMapperFactory = new ObjectMapperFactory()
 	{
@@ -228,9 +227,9 @@ public class EntityParserTest
 		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(configurableCLPolicy.getConsistencyLevelForRead(meta.getColumnFamilyName()))
-				.isEqualTo(HConsistencyLevel.ONE);
+				.isEqualTo(ConsistencyLevel.ONE);
 		assertThat(configurableCLPolicy.getConsistencyLevelForWrite(meta.getColumnFamilyName()))
-				.isEqualTo(HConsistencyLevel.ALL);
+				.isEqualTo(ConsistencyLevel.ALL);
 	}
 
 	@Test

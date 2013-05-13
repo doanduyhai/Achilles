@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.context;
 
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 
 import java.util.Map;
 
@@ -14,29 +14,29 @@ import java.util.Map;
  */
 public class DaoContext
 {
-	private final Map<String, GenericEntityDao<?>> entityDaosMap;
-	private final Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap;
-	private final CounterDao counterDao;
+	private final Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
+	private final Map<String, ThriftGenericWideRowDao<?, ?>> wideRowDaosMap;
+	private final ThriftCounterDao thriftCounterDao;
 
-	public DaoContext(Map<String, GenericEntityDao<?>> entityDaosMap,
-			Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap, CounterDao counterDao)
+	public DaoContext(Map<String, ThriftGenericEntityDao<?>> entityDaosMap,
+			Map<String, ThriftGenericWideRowDao<?, ?>> wideRowDaosMap, ThriftCounterDao thriftCounterDao)
 	{
 		this.entityDaosMap = entityDaosMap;
 		this.wideRowDaosMap = wideRowDaosMap;
-		this.counterDao = counterDao;
+		this.thriftCounterDao = thriftCounterDao;
 	}
 
-	public CounterDao getCounterDao()
+	public ThriftCounterDao getCounterDao()
 	{
-		return counterDao;
+		return thriftCounterDao;
 	}
 
-	public GenericEntityDao<?> findEntityDao(String columnFamilyName)
+	public ThriftGenericEntityDao<?> findEntityDao(String columnFamilyName)
 	{
 		return entityDaosMap.get(columnFamilyName);
 	}
 
-	public GenericWideRowDao<?, ?> findWideRowDao(String columnFamilyName)
+	public ThriftGenericWideRowDao<?, ?> findWideRowDao(String columnFamilyName)
 	{
 		return wideRowDaosMap.get(columnFamilyName);
 	}

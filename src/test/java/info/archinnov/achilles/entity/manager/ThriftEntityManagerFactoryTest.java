@@ -4,8 +4,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContextBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -24,7 +25,6 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 
 import org.junit.Rule;
@@ -53,10 +53,10 @@ public class ThriftEntityManagerFactoryTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory();
+	private ThriftEntityManagerFactory factory;
 
 	@Mock
-	private ConfigurationContext configContext;
+	private AchillesConfigurationContext configContext;
 
 	@Mock
 	private EntityParsingValidator validator;
@@ -71,7 +71,7 @@ public class ThriftEntityManagerFactoryTest
 	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 
 	@Mock
-	private ArgumentExtractorForThriftEMF argumentExtractor;
+	private ThriftArgumentExtractor argumentExtractor;
 
 	@Mock
 	private List<String> entityPackages;
@@ -166,10 +166,10 @@ public class ThriftEntityManagerFactoryTest
 	public void should_init_consistency_levels() throws Exception
 	{
 		ConsistencyLevel read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL;
-		Map<String, HConsistencyLevel> readMap = ImmutableMap.of("cf1", HConsistencyLevel.TWO,
-				"cf2", HConsistencyLevel.THREE);
-		Map<String, HConsistencyLevel> writeMap = ImmutableMap.of("cf1",
-				HConsistencyLevel.EACH_QUORUM, "cf2", HConsistencyLevel.LOCAL_QUORUM);
+		Map<String, ConsistencyLevel> readMap = ImmutableMap.of("cf1", ConsistencyLevel.TWO, "cf2",
+				ConsistencyLevel.THREE);
+		Map<String, ConsistencyLevel> writeMap = ImmutableMap.of("cf1",
+				ConsistencyLevel.EACH_QUORUM, "cf2", ConsistencyLevel.LOCAL_QUORUM);
 
 		Map<String, Object> configMap = new HashMap<String, Object>();
 		when(argumentExtractor.initDefaultReadConsistencyLevel(configMap)).thenReturn(read);
@@ -177,17 +177,17 @@ public class ThriftEntityManagerFactoryTest
 		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(readMap);
 		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(writeMap);
 
-		AchillesConfigurableConsistencyLevelPolicy actual = factory
-				.initConsistencyLevelPolicy(configMap);
+		ThriftConsistencyLevelPolicy actual = factory.initConsistencyLevelPolicy(configMap,
+				argumentExtractor);
 
-		assertThat(actual.getConsistencyLevelForRead("cf1")).isEqualTo(HConsistencyLevel.TWO);
-		assertThat(actual.getConsistencyLevelForRead("cf2")).isEqualTo(HConsistencyLevel.THREE);
+		assertThat(actual.getConsistencyLevelForRead("cf1")).isEqualTo(ConsistencyLevel.TWO);
+		assertThat(actual.getConsistencyLevelForRead("cf2")).isEqualTo(ConsistencyLevel.THREE);
 		assertThat(actual.getConsistencyLevelForWrite("cf1")).isEqualTo(
-				HConsistencyLevel.EACH_QUORUM);
+				ConsistencyLevel.EACH_QUORUM);
 		assertThat(actual.getConsistencyLevelForWrite("cf2")).isEqualTo(
-				HConsistencyLevel.LOCAL_QUORUM);
+				ConsistencyLevel.LOCAL_QUORUM);
 
-		assertThat(actual.getConsistencyLevelForRead("default")).isEqualTo(HConsistencyLevel.ONE);
-		assertThat(actual.getConsistencyLevelForWrite("default")).isEqualTo(HConsistencyLevel.ALL);
+		assertThat(actual.getConsistencyLevelForRead("default")).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(actual.getConsistencyLevelForWrite("default")).isEqualTo(ConsistencyLevel.ALL);
 	}
 }

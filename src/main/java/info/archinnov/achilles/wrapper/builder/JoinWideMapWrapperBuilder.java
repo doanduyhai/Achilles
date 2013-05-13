@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -10,7 +10,7 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 
 /**
@@ -22,9 +22,9 @@ import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 {
 	private ID id;
-	private GenericWideRowDao<ID, JOIN_ID> dao;
+	private ThriftGenericWideRowDao<ID, JOIN_ID> dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
-	private AchillesInterceptor<ID> interceptor;
+	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
 	private EntityPersister persister;
 	private EntityLoader loader;
 	private EntityProxifier proxifier;
@@ -32,9 +32,9 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private CompositeFactory compositeFactory;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
-	private PersistenceContext<ID> context;
+	private ThriftPersistenceContext<ID> context;
 
-	public JoinWideMapWrapperBuilder(ID id, GenericWideRowDao<ID, JOIN_ID> dao,
+	public JoinWideMapWrapperBuilder(ID id, ThriftGenericWideRowDao<ID, JOIN_ID> dao,
 			PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
 		this.dao = dao;
@@ -42,22 +42,20 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		this.joinExternalWideMapMeta = joinExternalWideMapMeta;
 	}
 
-	public static <ID, JOIN_ID, K, V> JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> builder(
-			ID id, GenericWideRowDao<ID, JOIN_ID> dao, PropertyMeta<K, V> joinExternalWideMapMeta)
+	public static <ID, JOIN_ID, K, V> JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> builder(ID id,
+			ThriftGenericWideRowDao<ID, JOIN_ID> dao, PropertyMeta<K, V> joinExternalWideMapMeta)
 	{
-		return new JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>(id, dao,
-				joinExternalWideMapMeta);
+		return new JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>(id, dao, joinExternalWideMapMeta);
 	}
 
 	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> interceptor(
-			AchillesInterceptor<ID> interceptor)
+			AchillesJpaEntityInterceptor<ID, ?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
 	}
 
-	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> context(
-			PersistenceContext<ID> context)
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> context(ThriftPersistenceContext<ID> context)
 	{
 		this.context = context;
 		return this;

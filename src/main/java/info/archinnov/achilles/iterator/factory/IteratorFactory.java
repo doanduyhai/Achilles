@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -25,7 +25,7 @@ public class IteratorFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(IteratorFactory.class);
 
-	public <ID, K, V> KeyValueIterator<K, V> createKeyValueIterator(PersistenceContext<ID> context,
+	public <ID, K, V> KeyValueIterator<K, V> createKeyValueIterator(ThriftPersistenceContext<ID> context,
 			AbstractAchillesSliceIterator<HColumn<Composite, V>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
@@ -35,7 +35,7 @@ public class IteratorFactory
 	}
 
 	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createJoinKeyValueIterator(
-			PersistenceContext<ID> context,
+			ThriftPersistenceContext<ID> context,
 			AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
@@ -45,7 +45,7 @@ public class IteratorFactory
 	}
 
 	public <ID, K> KeyValueIterator<K, Counter> createCounterKeyValueIterator(
-			PersistenceContext<ID> context,
+			ThriftPersistenceContext<ID> context,
 			AbstractAchillesSliceIterator<HCounterColumn<Composite>> columnSliceIterator,
 			PropertyMeta<K, Counter> propertyMeta)
 	{

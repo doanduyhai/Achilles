@@ -3,7 +3,7 @@ package integration.tests;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import net.sf.cglib.proxy.Factory;
@@ -39,7 +39,8 @@ public class LazyLoadingIT
 		bean = em.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
-		AchillesInterceptor<Long> interceptor = (AchillesInterceptor<Long>) proxy.getCallback(0);
+		AchillesJpaEntityInterceptor<Long, ?> interceptor = (AchillesJpaEntityInterceptor<Long, ?>) proxy
+				.getCallback(0);
 		CompleteBean trueBean = (CompleteBean) interceptor.getTarget();
 
 		assertThat(trueBean.getLabel()).isNull();

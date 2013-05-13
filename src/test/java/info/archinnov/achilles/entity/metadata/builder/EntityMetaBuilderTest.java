@@ -5,7 +5,7 @@ import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -38,7 +38,7 @@ public class EntityMetaBuilderTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private GenericEntityDao<?> dao;
+	private ThriftGenericEntityDao<?> dao;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;

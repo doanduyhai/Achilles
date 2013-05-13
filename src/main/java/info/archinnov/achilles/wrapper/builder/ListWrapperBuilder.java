@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.wrapper.ListWrapper;
 
 import java.util.List;
@@ -16,13 +16,13 @@ public class ListWrapperBuilder<ID, V> extends
 {
 	private List<V> target;
 
-	public static <ID, V> ListWrapperBuilder<ID, V> builder(PersistenceContext<ID> context,
+	public static <ID, V> ListWrapperBuilder<ID, V> builder(AchillesPersistenceContext<ID> context,
 			List<V> target)
 	{
 		return new ListWrapperBuilder<ID, V>(context, target);
 	}
 
-	public ListWrapperBuilder(PersistenceContext<ID> context, List<V> target) {
+	public ListWrapperBuilder(AchillesPersistenceContext<ID> context, List<V> target) {
 		super.context = context;
 		this.target = target;
 	}

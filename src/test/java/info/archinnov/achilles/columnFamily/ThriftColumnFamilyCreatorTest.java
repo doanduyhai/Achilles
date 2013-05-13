@@ -1,12 +1,12 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
+import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -79,7 +79,7 @@ public class ThriftColumnFamilyCreatorTest
 
 	private PropertyMeta<Void, Long> idMeta;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
+	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 
 	@Before
 	public void setUp() throws Exception

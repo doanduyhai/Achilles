@@ -5,7 +5,7 @@ import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFam
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -36,7 +36,7 @@ import org.junit.Test;
 public class WideRowWithJoinEntityIT
 {
 
-	private GenericWideRowDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
+	private ThriftGenericWideRowDao<Long, Long> dao = getColumnFamilyDao(LONG_SRZ, LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(WideRowBeanWithJoinEntity.class.getName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();

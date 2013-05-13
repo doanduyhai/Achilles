@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.parser.context;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -110,7 +110,7 @@ public class PropertyParsingContext
 		return context.getCurrentConsistencyLevels();
 	}
 
-	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
+	public AchillesConsistencyLevelPolicy getConfigurableCLPolicy()
 	{
 		return context.getConfigurableCLPolicy();
 	}

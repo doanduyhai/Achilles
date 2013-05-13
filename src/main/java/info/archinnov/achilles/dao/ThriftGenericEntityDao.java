@@ -2,7 +2,7 @@ package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,27 +27,26 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class GenericEntityDao<K> extends AbstractDao<K, String>
+public class ThriftGenericEntityDao<K> extends ThriftAbstractDao<K, String>
 {
-	private static final Logger log = LoggerFactory.getLogger(GenericEntityDao.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftGenericEntityDao.class);
 
 	private Composite startCompositeForEagerFetch;
 	private Composite endCompositeForEagerFetch;
 
-	protected GenericEntityDao() {
+	protected ThriftGenericEntityDao() {
 		this.initComposites();
 	}
 
-	public GenericEntityDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz, String cf,
-			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	public ThriftGenericEntityDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
+			String cf, AchillesConsistencyLevelPolicy consistencyPolicy)
 	{
-		super(cluster, keyspace);
+		super(cluster, keyspace, consistencyPolicy);
 		this.initComposites();
 		keySerializer = keySrz;
 		columnFamily = cf;
 		columnNameSerializer = COMPOSITE_SRZ;
 		valueSerializer = STRING_SRZ;
-		policy = consistencyPolicy;
 		log.debug(
 				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
 				keySrz.getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()

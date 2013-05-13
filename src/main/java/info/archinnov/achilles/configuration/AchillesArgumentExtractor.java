@@ -1,12 +1,10 @@
-package info.archinnov.achilles.entity.manager;
+package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.validation.Validator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,24 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import me.prettyprint.cassandra.service.CassandraHostConfigurator;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.factory.HFactory;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
- * ThriftArgumentExtractor
+ * AchillesArgumentExtractor
  * 
  * @author DuyHai DOAN
  * 
  */
-public class ArgumentExtractorForThriftEMF
+public abstract class AchillesArgumentExtractor
 {
-
 	public List<String> initEntityPackages(Map<String, Object> configurationMap)
 	{
 		String entityPackages = (String) configurationMap.get(ENTITY_PACKAGES_PARAM);
@@ -46,65 +37,6 @@ public class ArgumentExtractorForThriftEMF
 		{
 			return Arrays.asList(StringUtils.split(entityPackages, ","));
 		}
-	}
-
-	public Cluster initCluster(Map<String, Object> configurationMap)
-	{
-		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
-		if (cluster == null)
-		{
-			String cassandraHost = (String) configurationMap.get(HOSTNAME_PARAM);
-			String cassandraClusterName = (String) configurationMap.get(CLUSTER_NAME_PARAM);
-
-			Validator
-					.validateNotBlank(
-							cassandraHost,
-							"Either '"
-									+ CLUSTER_PARAM
-									+ "' property or '"
-									+ HOSTNAME_PARAM
-									+ "'/'"
-									+ CLUSTER_NAME_PARAM
-									+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
-			Validator
-					.validateNotBlank(
-							cassandraClusterName,
-							"Either '"
-									+ CLUSTER_PARAM
-									+ "' property or '"
-									+ HOSTNAME_PARAM
-									+ "'/'"
-									+ CLUSTER_NAME_PARAM
-									+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
-
-			cluster = HFactory.getOrCreateCluster(cassandraClusterName,
-					new CassandraHostConfigurator(cassandraHost));
-		}
-
-		return cluster;
-	}
-
-	public Keyspace initKeyspace(Cluster cluster,
-			AchillesConfigurableConsistencyLevelPolicy consistencyPolicy,
-			Map<String, Object> configurationMap)
-	{
-		Keyspace keyspace = (Keyspace) configurationMap.get(KEYSPACE_PARAM);
-		if (keyspace == null)
-		{
-			String keyspaceName = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
-			Validator
-					.validateNotBlank(
-							keyspaceName,
-							"Either '"
-									+ KEYSPACE_PARAM
-									+ "' property or '"
-									+ KEYSPACE_NAME_PARAM
-									+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
-
-			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
-		}
-		keyspace.setConsistencyLevelPolicy(consistencyPolicy);
-		return keyspace;
 	}
 
 	public boolean initForceCFCreation(Map<String, Object> configurationMap)
@@ -154,6 +86,18 @@ public class ArgumentExtractorForThriftEMF
 		return objectMapperFactory;
 	}
 
+	protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper)
+	{
+		return new ObjectMapperFactory()
+		{
+			@Override
+			public <T> ObjectMapper getMapper(Class<T> type)
+			{
+				return mapper;
+			}
+		};
+	}
+
 	public ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap)
 	{
 		String defaultReadLevel = (String) configMap.get(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
@@ -167,7 +111,7 @@ public class ArgumentExtractorForThriftEMF
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, HConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
+	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap
 				.get(CONSISTENCY_LEVEL_READ_MAP_PARAM);
@@ -176,7 +120,7 @@ public class ArgumentExtractorForThriftEMF
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, HConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
+	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
 				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
@@ -184,16 +128,15 @@ public class ArgumentExtractorForThriftEMF
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
 
-	private Map<String, HConsistencyLevel> parseConsistencyLevelMap(
+	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(
 			Map<String, String> consistencyLevelMap)
 	{
-		Map<String, HConsistencyLevel> map = new HashMap<String, HConsistencyLevel>();
+		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty())
 		{
 			for (Entry<String, String> entry : consistencyLevelMap.entrySet())
 			{
-				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue())
-						.getHectorLevel());
+				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
 			}
 		}
 
@@ -217,17 +160,4 @@ public class ArgumentExtractorForThriftEMF
 		}
 		return level;
 	}
-
-	protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper)
-	{
-		return new ObjectMapperFactory()
-		{
-			@Override
-			public <T> ObjectMapper getMapper(Class<T> type)
-			{
-				return mapper;
-			}
-		};
-	}
-
 }

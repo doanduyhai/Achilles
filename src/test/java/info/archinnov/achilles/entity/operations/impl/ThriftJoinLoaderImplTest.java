@@ -5,13 +5,13 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -67,29 +67,29 @@ public class ThriftJoinLoaderImplTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
 	private Mutator<Long> mutator;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private ImmediateFlushContext immediateFlushContext;
+	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
-	private GenericEntityDao<Long> joinEntityDao;
+	private ThriftGenericEntityDao<Long> joinEntityDao;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Captor
 	private ArgumentCaptor<List<Long>> listCaptor;
@@ -105,15 +105,15 @@ public class ThriftJoinLoaderImplTest
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.immediateFlushContext(immediateFlushContext) //
+				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
 				.entityDao(entityDao) //
 				.entityDaosMap(entityDaosMap) //
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when((Mutator) immediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
-		when((GenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
+		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when((ThriftGenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
 
 	}
 

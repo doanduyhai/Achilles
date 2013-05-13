@@ -1,8 +1,8 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.wrapper.CounterWrapper;
 import me.prettyprint.hector.api.beans.Composite;
@@ -31,10 +31,10 @@ public class CounterWrapperBuilderTest
 	private Composite columnName;
 
 	@Mock
-	private AbstractDao<Long, Long> counterDao;
+	private ThriftAbstractDao<Long, Long> counterDao;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	private ConsistencyLevel readLevel = ConsistencyLevel.ALL;
 	private ConsistencyLevel writeLevel = ConsistencyLevel.ANY;

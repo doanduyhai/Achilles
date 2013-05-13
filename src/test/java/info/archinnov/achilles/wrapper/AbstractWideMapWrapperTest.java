@@ -4,13 +4,13 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -31,16 +31,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AbstractWideMapWrapperTest {
 
     @Mock
-    private GenericEntityDao<Long> dao;
+    private ThriftGenericEntityDao<Long> dao;
 
     @Mock
-    private AchillesInterceptor<Long> interceptor;
+    private AchillesJpaEntityInterceptor<Long> interceptor;
 
     @Mock
     private EntityValidator validator = new EntityValidator();
 
     @Mock
-    private PersistenceContext<Long> context;
+    private ThriftPersistenceContext<Long> context;
 
     // private AbstractWideMapWrapper<Long, Long, String> wrapper;
 

@@ -4,14 +4,14 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContext;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
@@ -71,7 +71,7 @@ public class ThriftEntityManagerTest
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
 
 	@Mock
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
 	private EntityPersister persister;
@@ -99,10 +99,10 @@ public class ThriftEntityManagerTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericEntityDao<Long> joinEntityDao;
+	private ThriftGenericEntityDao<Long> joinEntityDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -111,22 +111,22 @@ public class ThriftEntityManagerTest
 	private Mutator<Long> joinMutator;
 
 	@Mock
-	private ImmediateFlushContext immediateFlushContext;
+	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
 	private DaoContext daoContext;
 
 	@Mock
-	private ConfigurationContext configContext;
+	private AchillesConfigurationContext configContext;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
 	@Captor
-	ArgumentCaptor<Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>>> mutatorMapCaptor;
+	ArgumentCaptor<Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>> mutatorMapCaptor;
 
 	@Captor
-	ArgumentCaptor<PersistenceContext<Long>> contextCaptor;
+	ArgumentCaptor<ThriftPersistenceContext<Long>> contextCaptor;
 
 	private Long primaryKey = 1165446L;
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name")

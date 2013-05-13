@@ -1,33 +1,19 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.DaoContextBuilder;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.parser.EntityExplorer;
-import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
-import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.validation.Validator;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,31 +23,15 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
+public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 {
 
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactory.class);
 
-	private List<String> entityPackages;
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 
-	private EntityParser entityParser = new EntityParser();
-	private EntityExplorer entityExplorer = new EntityExplorer();
-	private EntityParsingValidator validator = new EntityParsingValidator();
-	private DaoContextBuilder daoContextBuilder = new DaoContextBuilder();
-
-	private ConfigurationContext configContext;
 	private DaoContext daoContext;
-
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
-
-	private ArgumentExtractorForThriftEMF argumentExtractor = new ArgumentExtractorForThriftEMF();
-
-	protected ThriftEntityManagerFactory() {
-		// counterDao = null;
-	}
 
 	/**
 	 * Create a new ThriftEntityManagerFactoryImpl with a configuration map
@@ -171,73 +141,22 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 	 *            </ul>
 	 */
 	public ThriftEntityManagerFactory(Map<String, Object> configurationMap) {
-		Validator.validateNotNull(configurationMap,
-				"Configuration map for Achilles ThrifEntityManagerFactory should not be null");
-		Validator.validateNotEmpty(configurationMap,
-				"Configuration map for Achilles ThrifEntityManagerFactory should not be empty");
+		super(configurationMap, new ThriftArgumentExtractor());
 
-		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
-		configContext = parseConfiguration(configurationMap);
-
-		cluster = argumentExtractor.initCluster(configurationMap);
-		keyspace = argumentExtractor.initKeyspace(cluster, configContext.getConsistencyPolicy(),
+		ThriftArgumentExtractor thriftArgumentExtractor = new ThriftArgumentExtractor();
+		cluster = thriftArgumentExtractor.initCluster(configurationMap);
+		keyspace = thriftArgumentExtractor.initKeyspace(cluster,
+				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(),
 				configurationMap);
-		keyspace.setConsistencyLevelPolicy(configContext.getConsistencyPolicy());
 
 		log.info(
 				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 				cluster.getName(), keyspace.getKeyspaceName());
 
-		thriftColumnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
-		bootstrap();
-	}
-
-	protected void bootstrap()
-	{
-		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
-
-		boolean hasSimpleCounter = false;
-		try
-		{
-			hasSimpleCounter = discoverEntities();
-		}
-		catch (Exception e)
-		{
-			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
-		}
-
-		thriftColumnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap, configContext,
-				hasSimpleCounter);
-	}
-
-	protected boolean discoverEntities() throws ClassNotFoundException, IOException
-	{
-		log.info("Start discovery of entities, searching in packages '{}'",
-				StringUtils.join(entityPackages, ","));
-		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-
-		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
-		validator.validateAtLeastOneEntity(entities, entityPackages);
-		boolean hasSimpleCounter = false;
-		for (Class<?> entityClass : entities)
-		{
-			EntityParsingContext context = new EntityParsingContext(//
-					joinPropertyMetaToBeFilled, //
-					configContext, entityClass);
-
-			EntityMeta<?> entityMeta = entityParser.parseEntity(context);
-			entityMetaMap.put(entityClass, entityMeta);
-			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
-		}
-
-		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
-				joinPropertyMetaToBeFilled, //
-				configContext), entityMetaMap);
-
-		daoContext = daoContextBuilder.buildDao(cluster, keyspace, entityMetaMap, configContext,
-				hasSimpleCounter);
-
-		return hasSimpleCounter;
+		super.columnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
+		boolean hasSimpleCounter = bootstrap();
+		daoContext = new DaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap,
+				configContext, hasSimpleCounter);
 	}
 
 	/**
@@ -288,35 +207,4 @@ public class ThriftEntityManagerFactory implements AchillesEntityManagerFactory
 		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
 	}
 
-	protected AchillesConfigurableConsistencyLevelPolicy initConsistencyLevelPolicy(
-			Map<String, Object> configurationMap)
-	{
-		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
-
-		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
-				.initDefaultReadConsistencyLevel(configurationMap);
-		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
-				.initDefaultWriteConsistencyLevel(configurationMap);
-		Map<String, HConsistencyLevel> readConsistencyMap = argumentExtractor
-				.initReadConsistencyMap(configurationMap);
-		Map<String, HConsistencyLevel> writeConsistencyMap = argumentExtractor
-				.initWriteConsistencyMap(configurationMap);
-
-		return new AchillesConfigurableConsistencyLevelPolicy(defaultReadConsistencyLevel,
-				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
-	}
-
-	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap)
-	{
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setEnsureJoinConsistency(argumentExtractor
-				.ensureConsistencyOnJoin(configurationMap));
-		configContext.setForceColumnFamilyCreation(argumentExtractor
-				.initForceCFCreation(configurationMap));
-		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap));
-		configContext.setObjectMapperFactory(argumentExtractor
-				.initObjectMapperFactory(configurationMap));
-
-		return configContext;
-	}
 }

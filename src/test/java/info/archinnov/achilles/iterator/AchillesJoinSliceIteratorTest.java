@@ -4,8 +4,8 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -69,7 +69,7 @@ public class AchillesJoinSliceIteratorTest
 	private JoinEntityHelper joinHelper;
 
 	@Mock
-	private GenericEntityDao<Long> joinEntityDao;
+	private ThriftGenericEntityDao<Long> joinEntityDao;
 
 	private UserBean user1 = new UserBean();
 	private UserBean user2 = new UserBean();
@@ -81,7 +81,7 @@ public class AchillesJoinSliceIteratorTest
 	private AchillesJoinSliceIterator<Long, Long, Long, Integer, UserBean> iterator;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private String columnFamily = "cf";
 

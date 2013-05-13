@@ -2,7 +2,7 @@ package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.factory.HFactory.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractDao<K, V>
+public abstract class ThriftAbstractDao<K, V>
 {
 	public static final String LOGGER_NAME = "ACHILLES_DAO";
 	private static final Logger log = LoggerFactory.getLogger(LOGGER_NAME);
@@ -54,17 +54,21 @@ public abstract class AbstractDao<K, V>
 	protected Serializer<Composite> columnNameSerializer;
 	protected Serializer<V> valueSerializer;
 	protected String columnFamily;
-	protected AchillesConfigurableConsistencyLevelPolicy policy;
+	protected AchillesConsistencyLevelPolicy policy;
 
 	public static int DEFAULT_LENGTH = 100;
 
-	protected AbstractDao() {}
+	protected ThriftAbstractDao() {}
 
-	protected AbstractDao(Cluster cluster, Keyspace keyspace) {
+	protected ThriftAbstractDao(Cluster cluster, Keyspace keyspace,
+			AchillesConsistencyLevelPolicy policy)
+	{
 		Validator.validateNotNull(cluster, "Cluster should not be null");
 		Validator.validateNotNull(keyspace, "keyspace should not be null");
+		Validator.validateNotNull(keyspace, "policy should not be null");
 		this.cluster = cluster;
 		this.keyspace = keyspace;
+		this.policy = policy;
 	}
 
 	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
@@ -343,8 +347,8 @@ public abstract class AbstractDao<K, V>
 	}
 
 	public <JOIN_ID, KEY, VALUE> AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> getJoinColumnsIterator(
-			GenericEntityDao<JOIN_ID> joinEntityDao, PropertyMeta<KEY, VALUE> propertyMeta, K key,
-			Composite start, Composite end, boolean reversed, int count)
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, PropertyMeta<KEY, VALUE> propertyMeta,
+			K key, Composite start, Composite end, boolean reversed, int count)
 	{
 		if (log.isTraceEnabled())
 		{
@@ -493,7 +497,7 @@ public abstract class AbstractDao<K, V>
 
 	public void truncateCounters()
 	{
-		cluster.truncate(keyspace.getKeyspaceName(), CounterDao.COUNTER_CF);
+		cluster.truncate(keyspace.getKeyspaceName(), ThriftCounterDao.COUNTER_CF);
 	}
 
 	public Mutator<K> buildMutator()

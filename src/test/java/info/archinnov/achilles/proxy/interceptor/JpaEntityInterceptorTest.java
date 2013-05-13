@@ -4,11 +4,11 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -67,7 +67,7 @@ public class JpaEntityInterceptorTest
 	private JpaEntityInterceptor<Long, CompleteBean> interceptor;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -96,19 +96,19 @@ public class JpaEntityInterceptorTest
 	@Mock
 	private Mutator<Long> mutator;
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	private Long key = 452L;
 
@@ -159,7 +159,7 @@ public class JpaEntityInterceptorTest
 		entityMeta.setWideRow(false);
 
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
 				.entity(entity) //
 				.entityDao(entityDao) //
 				.entityDaosMap(entityDaosMap) //
@@ -173,7 +173,7 @@ public class JpaEntityInterceptorTest
 		Whitebox.setInternalState(interceptor, "loader", loader);
 		interceptor.setDirtyMap(dirtyMap);
 
-		when((GenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(entityDao);
+		when((ThriftGenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(entityDao);
 	}
 
 	@Test
@@ -472,7 +472,7 @@ public class JpaEntityInterceptorTest
 	{
 		CompleteBean bean = new CompleteBean();
 		Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
-		GenericWideRowDao<Long, String> externalWideMapDao = mock(GenericWideRowDao.class);
+		ThriftGenericWideRowDao<Long, String> externalWideMapDao = mock(ThriftGenericWideRowDao.class);
 
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
@@ -480,7 +480,7 @@ public class JpaEntityInterceptorTest
 		when(propertyMeta.getExternalCFName()).thenReturn("geo_positions");
 		when(propertyMeta.getIdSerializer()).thenReturn(LONG_SRZ);
 
-		when((GenericWideRowDao<Long, String>) columnFamilyDaosMap.get("geo_positions"))
+		when((ThriftGenericWideRowDao<Long, String>) columnFamilyDaosMap.get("geo_positions"))
 				.thenReturn(externalWideMapDao);
 
 		Object externalWideMap = this.interceptor.intercept(bean, externalWideMapGetter,

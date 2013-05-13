@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper;
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
@@ -36,7 +36,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 	private static Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
 
 	private ID id;
-	private GenericWideRowDao<ID, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao<ID, Long> wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
 	private CompositeHelper compositeHelper;
@@ -598,7 +598,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		this.compositeFactory = compositeFactory;
 	}
 
-	public void setWideMapCounterDao(GenericWideRowDao<ID, Long> wideMapCounterDao)
+	public void setWideMapCounterDao(ThriftGenericWideRowDao<ID, Long> wideMapCounterDao)
 	{
 		this.wideMapCounterDao = wideMapCounterDao;
 	}

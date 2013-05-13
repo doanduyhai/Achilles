@@ -2,10 +2,10 @@ package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -51,9 +51,9 @@ public class DaoContextBuilderTest
 	private Keyspace keyspace;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
+	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
 
@@ -70,15 +70,15 @@ public class DaoContextBuilderTest
 		DaoContext context = builder
 				.buildDao(cluster, keyspace, entityMetaMap, configContext, true);
 
-		CounterDao counterDao = context.getCounterDao();
-		assertThat(counterDao).isNotNull();
-		assertThat(Whitebox.getInternalState(counterDao, "policy")).isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(counterDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(counterDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(counterDao, "keySerializer")).isSameAs(COMPOSITE_SRZ);
-		assertThat(Whitebox.getInternalState(counterDao, "columnNameSerializer")).isSameAs(
+		ThriftCounterDao thriftCounterDao = context.getCounterDao();
+		assertThat(thriftCounterDao).isNotNull();
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "keySerializer")).isSameAs(COMPOSITE_SRZ);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "columnNameSerializer")).isSameAs(
 				COMPOSITE_SRZ);
-		assertThat(Whitebox.getInternalState(counterDao, "valueSerializer")).isSameAs(LONG_SRZ);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "valueSerializer")).isSameAs(LONG_SRZ);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -101,7 +101,7 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericEntityDao<Long> entityDao = (GenericEntityDao<Long>) context.findEntityDao("cf");
+		ThriftGenericEntityDao<Long> entityDao = (ThriftGenericEntityDao<Long>) context.findEntityDao("cf");
 
 		assertThat(entityDao).isNotNull();
 		assertThat(entityDao.getColumnFamily()).isEqualTo("cf");
@@ -144,7 +144,7 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+		ThriftGenericWideRowDao<Long, String> columnFamilyDao = (ThriftGenericWideRowDao<Long, String>) context
 				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
@@ -191,7 +191,7 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+		ThriftGenericWideRowDao<Long, String> columnFamilyDao = (ThriftGenericWideRowDao<Long, String>) context
 				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
@@ -237,7 +237,7 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+		ThriftGenericWideRowDao<Long, String> columnFamilyDao = (ThriftGenericWideRowDao<Long, String>) context
 				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();
@@ -288,7 +288,7 @@ public class DaoContextBuilderTest
 		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
-		GenericWideRowDao<Long, String> columnFamilyDao = (GenericWideRowDao<Long, String>) context
+		ThriftGenericWideRowDao<Long, String> columnFamilyDao = (ThriftGenericWideRowDao<Long, String>) context
 				.findWideRowDao("externalCf");
 
 		assertThat(columnFamilyDao).isNotNull();

@@ -2,7 +2,7 @@ package info.archinnov.achilles.iterator.factory;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -65,7 +65,7 @@ public class IteratorFactoryTest
 	private PropertyMeta<Integer, Counter> counterWideMapMeta;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Test
 	public void should_create_composite_key_value_iterator() throws Exception

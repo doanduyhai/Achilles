@@ -1,9 +1,10 @@
 package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityPersister
+public class EntityPersister implements AchillesEntityPersister
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
 
@@ -36,15 +37,17 @@ public class EntityPersister
 	private EntityLoader loader = new EntityLoader();
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
-	public <ID> void persist(PersistenceContext<ID> context)
+	@Override
+	public <ID> void persist(AchillesPersistenceContext<ID> context)
 	{
+
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
 		if (!entityMeta.isWideRow())
 		{
 			log.debug("Persisting transient entity {}", context.getEntity());
 
-			persisterImpl.batchPersistVersionSerialUID(context);
+			persisterImpl.batchPersistVersionSerialUID((ThriftPersistenceContext<ID>) context);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -54,54 +57,56 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, V> void persistProperty(PersistenceContext<ID> context,
+	public <ID, V> void persistProperty(AchillesPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
 				context.getEntity());
-
+		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
+				persisterImpl.batchPersistSimpleProperty(thriftContext, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				batchPersistListProperty(context, (PropertyMeta<Void, ?>) propertyMeta);
+				batchPersistListProperty(thriftContext, (PropertyMeta<Void, ?>) propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				batchPersistSetProperty(context, (PropertyMeta<Void, ?>) propertyMeta);
+				batchPersistSetProperty(thriftContext, (PropertyMeta<Void, ?>) propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				batchPersistMapProperty(context, propertyMeta);
+				batchPersistMapProperty(thriftContext, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				batchPersistJoinEntity(context, (PropertyMeta<Void, ?>) propertyMeta);
+				batchPersistJoinEntity(thriftContext, (PropertyMeta<Void, ?>) propertyMeta);
 				break;
 			case JOIN_LIST:
 			case JOIN_SET:
-				batchPersistJoinListOrSetProperty(context, (PropertyMeta<Void, ?>) propertyMeta);
+				batchPersistJoinListOrSetProperty(thriftContext,
+						(PropertyMeta<Void, ?>) propertyMeta);
 				break;
 			case JOIN_MAP:
-				batchPersistJoinMapProperty(context, propertyMeta);
+				batchPersistJoinMapProperty(thriftContext, propertyMeta);
 				break;
 			default:
 				break;
 		}
 	}
 
-	public <ID> void remove(PersistenceContext<ID> context)
+	@Override
+	public <ID> void remove(AchillesPersistenceContext<ID> context)
 	{
 		log.debug("Removing entity of class {} and primary key {} ", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		persisterImpl.remove(context);
+		persisterImpl.remove((ThriftPersistenceContext<ID>) context);
 	}
 
-	public <ID, V> void removePropertyBatch(PersistenceContext<ID> context,
+	public <ID, V> void removePropertyBatch(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Removing property {} from entity of class {} and primary key {} ",
@@ -112,8 +117,8 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(PersistenceContext<ID> context,
-			V joinEntity, JoinProperties joinProperties)
+	public <JOIN_ID, ID, V> JOIN_ID cascadePersistOrEnsureExists(
+			ThriftPersistenceContext<ID> context, V joinEntity, JoinProperties joinProperties)
 	{
 
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();
@@ -136,7 +141,7 @@ public class EntityPersister
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
 			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
-					(GenericEntityDao<JOIN_ID>) context.findEntityDao(joinMeta
+					(ThriftGenericEntityDao<JOIN_ID>) context.findEntityDao(joinMeta
 							.getColumnFamilyName()));
 			Validator
 					.validateNotNull(
@@ -153,7 +158,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, V> void batchPersistListProperty(PersistenceContext<ID> context,
+	private <ID, V> void batchPersistListProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<Void, V> propertyMeta)
 	{
 		List<V> list = (List<V>) introspector.getValueFromField(context.getEntity(),
@@ -165,7 +170,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, V> void batchPersistSetProperty(PersistenceContext<ID> context,
+	private <ID, V> void batchPersistSetProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<Void, V> propertyMeta)
 	{
 		Set<V> set = (Set<V>) introspector.getValueFromField(context.getEntity(),
@@ -177,7 +182,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, K, V> void batchPersistMapProperty(PersistenceContext<ID> context,
+	private <ID, K, V> void batchPersistMapProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
 
@@ -190,7 +195,7 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, V> void batchPersistJoinEntity(PersistenceContext<ID> context,
+	private <ID, V> void batchPersistJoinEntity(ThriftPersistenceContext<ID> context,
 			PropertyMeta<Void, V> propertyMeta)
 	{
 		V joinEntity = (V) introspector.getValueFromField(context.getEntity(),
@@ -203,8 +208,8 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, JOIN_ID, V> void batchPersistJoinListOrSetProperty(PersistenceContext<ID> context,
-			PropertyMeta<Void, V> propertyMeta)
+	private <ID, JOIN_ID, V> void batchPersistJoinListOrSetProperty(
+			ThriftPersistenceContext<ID> context, PropertyMeta<Void, V> propertyMeta)
 	{
 
 		Collection<V> joinCollection = (Collection<V>) introspector.getValueFromField(
@@ -216,8 +221,8 @@ public class EntityPersister
 	}
 
 	@SuppressWarnings("unchecked")
-	private <ID, K, V, JOIN_ID> void batchPersistJoinMapProperty(PersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta)
+	private <ID, K, V, JOIN_ID> void batchPersistJoinMapProperty(
+			ThriftPersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta)
 	{
 		Map<K, V> joinMap = (Map<K, V>) introspector.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());

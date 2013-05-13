@@ -2,10 +2,10 @@ package info.archinnov.achilles.entity.operations.impl;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.JoinEntityHelper;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -38,7 +38,7 @@ public class ThriftJoinLoaderImpl
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 
@@ -47,7 +47,7 @@ public class ThriftJoinLoaderImpl
 		log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
 				.getValueClass().getCanonicalName(), joinIds);
 
-		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
@@ -56,12 +56,12 @@ public class ThriftJoinLoaderImpl
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
@@ -70,12 +70,12 @@ public class ThriftJoinLoaderImpl
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(PersistenceContext<ID> context,
+	public <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(ThriftPersistenceContext<ID> context,
 			PropertyMeta<K, V> propertyMeta)
 	{
 
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -120,7 +120,7 @@ public class ThriftJoinLoaderImpl
 	}
 
 	@SuppressWarnings("unchecked")
-	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(PersistenceContext<ID> context,
+	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(ThriftPersistenceContext<ID> context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 
@@ -144,7 +144,7 @@ public class ThriftJoinLoaderImpl
 
 	private <V, JOIN_ID> void fillCollectionWithJoinEntities(PropertyMeta<?, V> propertyMeta,
 			EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds,
-			GenericEntityDao<JOIN_ID> joinEntityDao, Collection<V> joinEntities)
+			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, Collection<V> joinEntities)
 	{
 		if (joinIds.size() > 0)
 		{

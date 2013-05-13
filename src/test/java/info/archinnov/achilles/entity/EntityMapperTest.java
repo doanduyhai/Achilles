@@ -5,7 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
-import info.archinnov.achilles.dao.CounterDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -70,7 +70,7 @@ public class EntityMapperTest
 	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

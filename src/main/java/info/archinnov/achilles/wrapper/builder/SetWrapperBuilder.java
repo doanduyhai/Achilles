@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.wrapper.SetWrapper;
 
 import java.util.Set;
@@ -16,13 +16,13 @@ public class SetWrapperBuilder<ID, V> extends
 {
 	private Set<V> target;
 
-	public static <ID, V> SetWrapperBuilder<ID, V> builder(PersistenceContext<ID> context,
+	public static <ID, V> SetWrapperBuilder<ID, V> builder(AchillesPersistenceContext<ID> context,
 			Set<V> target)
 	{
 		return new SetWrapperBuilder<ID, V>(context, target);
 	}
 
-	public SetWrapperBuilder(PersistenceContext<ID> context, Set<V> target) {
+	public SetWrapperBuilder(AchillesPersistenceContext<ID> context, Set<V> target) {
 		super.context = context;
 		this.target = target;
 	}

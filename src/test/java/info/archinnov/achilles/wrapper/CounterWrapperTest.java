@@ -3,9 +3,9 @@ package info.archinnov.achilles.wrapper;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import me.prettyprint.hector.api.beans.Composite;
@@ -38,13 +38,13 @@ public class CounterWrapperTest
 	private Composite columnName;
 
 	@Mock
-	private AbstractDao<Long, Long> counterDao;
+	private ThriftAbstractDao<Long, Long> counterDao;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
 	private EntityValidator validator;

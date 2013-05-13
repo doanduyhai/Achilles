@@ -3,10 +3,10 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -59,17 +59,17 @@ public class EntrySetWrapperTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	private EntityMeta<Long> entityMeta;
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -88,7 +88,7 @@ public class EntrySetWrapperTest
 		entityMeta = new EntityMeta<Long>();
 		entityMeta.setIdMeta(idMeta);
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
 				.entity(entity) //
 				.build();
 	}
@@ -349,7 +349,7 @@ public class EntrySetWrapperTest
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
 		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class))).thenReturn(entity);
+		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(entity);
 
 		Object[] array = wrapper.toArray(new Entry[]
 		{

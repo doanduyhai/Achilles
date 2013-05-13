@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -25,10 +25,10 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class AbstractDaoTest
+public class ThriftAbstractDaoTest
 {
 
-	private GenericEntityDao<Long> abstractDao;
+	private ThriftGenericEntityDao<Long> abstractDao;
 
 	private Keyspace keyspace = ThriftCassandraDaoTest.getKeyspace();
 
@@ -36,14 +36,14 @@ public class AbstractDaoTest
 	private Cluster cluster = ThriftCassandraDaoTest.getCluster();
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	private String columnFamily = "CompleteBean";
 
 	@Before
 	public void setUp()
 	{
-		abstractDao = new GenericEntityDao<Long>(cluster, keyspace, LONG_SRZ, columnFamily, policy);
+		abstractDao = new ThriftGenericEntityDao<Long>(cluster, keyspace, LONG_SRZ, columnFamily, policy);
 	}
 
 	@Test

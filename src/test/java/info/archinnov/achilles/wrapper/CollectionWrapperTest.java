@@ -3,10 +3,10 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -55,17 +55,17 @@ public class CollectionWrapperTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	private EntityMeta<Long> entityMeta;
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -85,7 +85,7 @@ public class CollectionWrapperTest
 		entityMeta = new EntityMeta<Long>();
 		entityMeta.setIdMeta(idMeta);
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
 				.entity(entity) //
 				.build();
 	}
@@ -353,9 +353,9 @@ public class CollectionWrapperTest
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(PersistenceContext.class))).thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(PersistenceContext.class))).thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(PersistenceContext.class))).thenReturn(bean3);
+		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class))).thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class))).thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class))).thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 	}
@@ -389,9 +389,9 @@ public class CollectionWrapperTest
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(PersistenceContext.class))).thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(PersistenceContext.class))).thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(PersistenceContext.class))).thenReturn(bean3);
+		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class))).thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class))).thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class))).thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 

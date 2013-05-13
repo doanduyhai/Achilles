@@ -8,8 +8,8 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -67,12 +67,12 @@ public class EntityIntrospectorTest {
     private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
     @Mock
-    private GenericEntityDao<Long> dao;
+    private ThriftGenericEntityDao<Long> dao;
 
     private final EntityIntrospector introspector = new EntityIntrospector();
 
     @Mock
-    private AchillesConfigurableConsistencyLevelPolicy policy;
+    private ThriftConsistencyLevelPolicy policy;
 
     @Test
     public void should_derive_getter() throws Exception {

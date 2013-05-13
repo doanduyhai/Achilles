@@ -2,12 +2,12 @@ package info.archinnov.achilles.entity.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.FlushContext.FlushType;
+import info.archinnov.achilles.entity.context.AchillesFlushContext.FlushType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,19 +31,19 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class BatchingFlushContextTest
+public class ThriftBatchingFlushContextTest
 {
 	@InjectMocks
-	private BatchingFlushContext context;
+	private ThriftBatchingFlushContext context;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericWideRowDao<Long, String> cfDao;
+	private ThriftGenericWideRowDao<Long, String> cfDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -52,17 +52,17 @@ public class BatchingFlushContextTest
 	private Mutator<Composite> counterMutator;
 
 	@Mock
-	private ConsistencyContext consistencyContext;
+	private ThriftConsistencyContext thriftConsistencyContext;
 
 	@Mock
 	private DaoContext daoContext;
 
-	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
+	private Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>();
 
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(context, "consistencyContext", consistencyContext);
+		Whitebox.setInternalState(context, "consistencyContext", thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
 		Whitebox.setInternalState(context, "daoContext", daoContext);
 		mutatorMap.clear();
@@ -72,7 +72,7 @@ public class BatchingFlushContextTest
 	public void should_start_batch() throws Exception
 	{
 		context.startBatch();
-		verify(consistencyContext).reinitConsistencyLevels();
+		verify(thriftConsistencyContext).reinitConsistencyLevels();
 		assertThat(mutatorMap).isEmpty();
 	}
 
@@ -80,20 +80,20 @@ public class BatchingFlushContextTest
 	public void should_do_nothing_when_flush_called() throws Exception
 	{
 		context.flush();
-		verifyZeroInteractions(entityDao, consistencyContext);
+		verifyZeroInteractions(entityDao, thriftConsistencyContext);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
+		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(mutator,
 				entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.endBatch();
 
 		verify(entityDao).executeMutator(mutator);
-		verify(consistencyContext).reinitConsistencyLevels();
+		verify(thriftConsistencyContext).reinitConsistencyLevels();
 		assertThat(mutatorMap).isEmpty();
 	}
 

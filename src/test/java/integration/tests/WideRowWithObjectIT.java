@@ -4,7 +4,7 @@ import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.norm
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -38,7 +38,7 @@ public class WideRowWithObjectIT
 			"unchecked",
 			"rawtypes"
 	})
-	private GenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
+	private ThriftGenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
 			LONG_SRZ, (Serializer) STRING_SRZ,
 			normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()));
 

@@ -1,9 +1,9 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.entity.context.BatchingFlushContext;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -25,13 +25,13 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftBatchingEntityManager.class);
 
-	private BatchingFlushContext flushContext;
+	private ThriftBatchingFlushContext flushContext;
 
 	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, DaoContext daoContext,
-			ConfigurationContext configContext)
+			AchillesConfigurationContext configContext)
 	{
 		super(entityMetaMap, daoContext, configContext);
-		this.flushContext = new BatchingFlushContext(daoContext, consistencyPolicy);
+		this.flushContext = new ThriftBatchingFlushContext(daoContext, consistencyPolicy);
 	}
 
 	/**
@@ -242,25 +242,25 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
+	protected <T, ID> ThriftPersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
 			ID primaryKey)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(entityClass);
-		return new PersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
+		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
 				entityClass, primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
+	protected <ID> ThriftPersistenceContext<ID> initPersistenceContext(Object entity)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
-		return new PersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
+		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext, flushContext,
 				entity);
 	}
 

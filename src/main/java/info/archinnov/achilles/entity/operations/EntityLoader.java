@@ -1,8 +1,9 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityLoader
+public class EntityLoader implements AchillesEntityLoader
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityLoader.class);
 
@@ -27,8 +28,9 @@ public class EntityLoader
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
+	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID> T load(PersistenceContext<ID> context)
+	public <T, ID> T load(AchillesPersistenceContext<ID> context)
 	{
 		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
@@ -57,7 +59,7 @@ public class EntityLoader
 			}
 			else
 			{
-				entity = (T) loaderImpl.load(context);
+				entity = (T) loaderImpl.load((ThriftPersistenceContext<ID>) context);
 			}
 
 		}
@@ -71,41 +73,42 @@ public class EntityLoader
 	}
 
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
-			PersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
+			AchillesPersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Loading eager properties into entity of class {} with primary key {}", context
 				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
+		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
 		Object value = null;
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				value = loaderImpl.loadSimpleProperty(context, propertyMeta);
+				value = loaderImpl.loadSimpleProperty(thriftContext, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				value = loaderImpl.loadListProperty(context, propertyMeta);
+				value = loaderImpl.loadListProperty(thriftContext, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				value = loaderImpl.loadSetProperty(context, propertyMeta);
+				value = loaderImpl.loadSetProperty(thriftContext, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				value = loaderImpl.loadMapProperty(context, propertyMeta);
+				value = loaderImpl.loadMapProperty(thriftContext, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				value = loaderImpl.loadJoinSimple(context, propertyMeta, this);
+				value = loaderImpl.loadJoinSimple(thriftContext, propertyMeta, this);
 				break;
 			case JOIN_LIST:
-				value = joinLoaderImpl.loadJoinListProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinListProperty(thriftContext, propertyMeta);
 				break;
 			case JOIN_SET:
-				value = joinLoaderImpl.loadJoinSetProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinSetProperty(thriftContext, propertyMeta);
 				break;
 			case JOIN_MAP:
-				value = joinLoaderImpl.loadJoinMapProperty(context, propertyMeta);
+				value = joinLoaderImpl.loadJoinMapProperty(thriftContext, propertyMeta);
 				break;
 			default:
 				return;
@@ -113,7 +116,7 @@ public class EntityLoader
 		introspector.setValueToField(realObject, propertyMeta.getSetter(), value);
 	}
 
-	protected <ID, V> Long loadVersionSerialUID(ID key, GenericEntityDao<ID> dao)
+	protected <ID, V> Long loadVersionSerialUID(ID key, ThriftGenericEntityDao<ID> dao)
 	{
 		log.debug("Loading serialVersionUID for entity  with primary key {} from column family {}",
 				key, dao.getColumnFamily());

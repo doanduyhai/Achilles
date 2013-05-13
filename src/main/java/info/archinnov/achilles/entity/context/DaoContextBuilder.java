@@ -2,10 +2,11 @@ package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
@@ -30,17 +31,18 @@ public class DaoContextBuilder
 {
 	private static final Logger log = LoggerFactory.getLogger(DaoContextBuilder.class);
 
-	private Map<String, GenericEntityDao<?>> entityDaosMap = new HashMap<String, GenericEntityDao<?>>();
-	private Map<String, GenericWideRowDao<?, ?>> wideRowDaosMap = new HashMap<String, GenericWideRowDao<?, ?>>();
-	private CounterDao counterDao;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
+	private Map<String, ThriftGenericWideRowDao<?, ?>> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao<?, ?>>();
+	private ThriftCounterDao thriftCounterDao;
 
 	public DaoContext buildDao(Cluster cluster, Keyspace keyspace,
-			Map<Class<?>, EntityMeta<?>> entityMetaMap, ConfigurationContext configContext,
+			Map<Class<?>, EntityMeta<?>> entityMetaMap, AchillesConfigurationContext configContext,
 			boolean hasSimpleCounter)
 	{
 		if (hasSimpleCounter)
 		{
-			counterDao = new CounterDao(cluster, keyspace, configContext.getConsistencyPolicy());
+			thriftCounterDao = new ThriftCounterDao(cluster, keyspace,
+					configContext.getConsistencyPolicy());
 			log.debug("Build achillesCounterCF dao");
 		}
 
@@ -69,14 +71,14 @@ public class DaoContextBuilder
 				}
 			}
 		}
-		return new DaoContext(entityDaosMap, wideRowDaosMap, counterDao);
+		return new DaoContext(entityDaosMap, wideRowDaosMap, thriftCounterDao);
 	}
 
 	private <ID> void buildEntityDao(Cluster cluster, Keyspace keyspace,
-			ConfigurationContext configContext, EntityMeta<ID> entityMeta)
+			AchillesConfigurationContext configContext, EntityMeta<ID> entityMeta)
 	{
 		String columnFamilyName = entityMeta.getColumnFamilyName();
-		GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(//
+		ThriftGenericEntityDao<ID> entityDao = new ThriftGenericEntityDao<ID>(//
 				cluster, //
 				keyspace, //
 				(Serializer<ID>) entityMeta.getIdMeta().getValueSerializer(), //
@@ -88,33 +90,32 @@ public class DaoContextBuilder
 	}
 
 	private <ID, K, V> void buildWideRowDao(Cluster cluster, Keyspace keyspace,
-			ConfigurationContext configContext, EntityMeta<ID> entityMeta,
+			AchillesConfigurationContext configContext, EntityMeta<ID> entityMeta,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		Class<?> valueClass = propertyMeta.getValueClass();
-		GenericWideRowDao<?, ?> dao;
+		ThriftGenericWideRowDao<?, ?> dao;
 
 		PropertyMeta<Void, ID> idMeta = entityMeta.getIdMeta();
 		String externalCFName = propertyMeta.getExternalCFName();
-		AchillesConfigurableConsistencyLevelPolicy consistencyPolicy = configContext
-				.getConsistencyPolicy();
+		AchillesConsistencyLevelPolicy consistencyPolicy = configContext.getConsistencyPolicy();
 		if (isSupportedType(valueClass))
 		{
-			dao = new GenericWideRowDao<ID, V>(cluster, keyspace, //
+			dao = new ThriftGenericWideRowDao<ID, V>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					propertyMeta.getValueSerializer(), //
 					externalCFName, consistencyPolicy);
 		}
 		else if (Counter.class.isAssignableFrom(valueClass))
 		{
-			dao = new GenericWideRowDao<ID, Long>(cluster, keyspace, //
+			dao = new ThriftGenericWideRowDao<ID, Long>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					LONG_SRZ, //
 					externalCFName, consistencyPolicy);
 		}
 		else
 		{
-			dao = new GenericWideRowDao<ID, String>(cluster, keyspace, //
+			dao = new ThriftGenericWideRowDao<ID, String>(cluster, keyspace, //
 					idMeta.getValueSerializer(), //
 					STRING_SRZ, //
 					externalCFName, consistencyPolicy);
@@ -126,16 +127,17 @@ public class DaoContextBuilder
 
 	@SuppressWarnings("unchecked")
 	private <ID, K, V, JOIN_ID> void buildWideRowDaoForJoinWideMap(Cluster cluster,
-			Keyspace keyspace, ConfigurationContext configContext, PropertyMeta<K, V> propertyMeta,
-			EntityMeta<JOIN_ID> joinEntityMeta)
+			Keyspace keyspace, AchillesConfigurationContext configContext,
+			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 
-		GenericWideRowDao<ID, JOIN_ID> joinDao = new GenericWideRowDao<ID, JOIN_ID>(cluster, //
+		ThriftGenericWideRowDao<ID, JOIN_ID> joinDao = new ThriftGenericWideRowDao<ID, JOIN_ID>(
+				cluster, //
 				keyspace, //
 				(Serializer<ID>) propertyMeta.getIdSerializer(), //
 				joinEntityMeta.getIdSerializer(), //
 				propertyMeta.getExternalCFName(),//
-				configContext.getConsistencyPolicy());
+				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy());
 
 		log.debug("Building join dao for wide row {}", propertyMeta.getExternalCFName());
 

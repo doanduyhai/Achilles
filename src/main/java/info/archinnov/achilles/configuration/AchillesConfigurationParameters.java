@@ -3,21 +3,14 @@ package info.archinnov.achilles.configuration;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 /**
- * ConfigurationParameters
+ * AchillesConfigurationParameters
  * 
  * @author DuyHai DOAN
  * 
  */
-public interface ConfigurationParameters
+public interface AchillesConfigurationParameters
 {
 	String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
-
-	String HOSTNAME_PARAM = "achilles.cassandra.host";
-	String CLUSTER_NAME_PARAM = "achilles.cassandra.cluster.name";
-	String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
-
-	String CLUSTER_PARAM = "achilles.cassandra.cluster";
-	String KEYSPACE_PARAM = "achilles.cassandra.keyspace";
 
 	String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
 	String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";

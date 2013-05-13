@@ -1,14 +1,14 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 
 /**
@@ -20,17 +20,17 @@ import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 public class CounterWideMapWrapperBuilder<ID, K>
 {
 	private ID id;
-	private GenericWideRowDao<ID, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao<ID, Long> wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
-	private AchillesInterceptor<ID> interceptor;
+	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
 	protected CompositeHelper compositeHelper;
 	protected KeyValueFactory keyValueFactory;
 	protected IteratorFactory iteratorFactory;
 	protected CompositeFactory compositeFactory;
-	protected PersistenceContext<ID> context;
+	protected ThriftPersistenceContext<ID> context;
 
-	public CounterWideMapWrapperBuilder(ID id, GenericWideRowDao<ID, Long> wideMapCounterDao,
+	public CounterWideMapWrapperBuilder(ID id, ThriftGenericWideRowDao<ID, Long> wideMapCounterDao,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		this.id = id;
@@ -39,19 +39,20 @@ public class CounterWideMapWrapperBuilder<ID, K>
 	}
 
 	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id,
-			GenericWideRowDao<ID, Long> wideMapCounterDao,
+			ThriftGenericWideRowDao<ID, Long> wideMapCounterDao,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		return new CounterWideMapWrapperBuilder<ID, K>(id, wideMapCounterDao, propertyMeta);
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> interceptor(AchillesInterceptor<ID> interceptor)
+	public CounterWideMapWrapperBuilder<ID, K> interceptor(
+			AchillesJpaEntityInterceptor<ID, ?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> context(PersistenceContext<ID> context)
+	public CounterWideMapWrapperBuilder<ID, K> context(ThriftPersistenceContext<ID> context)
 	{
 		this.context = context;
 		return this;

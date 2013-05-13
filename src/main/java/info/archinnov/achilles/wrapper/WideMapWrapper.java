@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -31,7 +31,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 	private static final Logger log = LoggerFactory.getLogger(WideMapWrapper.class);
 
 	protected ID id;
-	protected GenericWideRowDao<ID, V> dao;
+	protected ThriftGenericWideRowDao<ID, V> dao;
 	protected PropertyMeta<K, V> propertyMeta;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
@@ -223,7 +223,7 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		this.id = id;
 	}
 
-	public void setDao(GenericWideRowDao<ID, V> dao)
+	public void setDao(ThriftGenericWideRowDao<ID, V> dao)
 	{
 		this.dao = dao;
 	}

@@ -4,8 +4,8 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -67,12 +67,12 @@ public class ConsistencyLevelIT
 
 	private String keyspaceName = ThriftCassandraDaoTest.getKeyspace().getKeyspaceName();
 
-	private GenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
+	private ThriftGenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
 
 	private Long id = RandomUtils.nextLong();
 
-	private AchillesConfigurableConsistencyLevelPolicy policy = ThriftCassandraDaoTest
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
 			.getConsistencyPolicy();
 
 	@Test

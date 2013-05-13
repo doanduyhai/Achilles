@@ -2,11 +2,11 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -43,10 +43,10 @@ public class JpaEntityInterceptorBuilderTest
 	private EntityMeta<Long> entityMeta;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao<Long> dao;
 
 	@Mock
-	private GenericWideRowDao<Long, String> columnFamilyDao;
+	private ThriftGenericWideRowDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -63,16 +63,16 @@ public class JpaEntityInterceptorBuilderTest
 	@Mock
 	private Set<Method> lazyLoaded;
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -80,7 +80,7 @@ public class JpaEntityInterceptorBuilderTest
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
 				.entity(entity) //
 				.entityDao(entityDao) //
 				.columnFamilyDao(columnFamilyDao) //

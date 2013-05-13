@@ -1,12 +1,12 @@
 package info.archinnov.achilles.entity.context;
 
-import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -25,21 +25,20 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractFlushContext implements FlushContext
+public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 {
-	protected static final Logger log = LoggerFactory.getLogger(AbstractFlushContext.class);
+	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 
 	protected DaoContext daoContext;
 
-	protected Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
-	protected ConsistencyContext consistencyContext;
+	protected Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>();
 	protected boolean hasCustomConsistencyLevels = false;
 
-	protected AbstractFlushContext(DaoContext daoContext,
-			AchillesConfigurableConsistencyLevelPolicy policy)
+	protected ThriftAbstractFlushContext(DaoContext daoContext,
+			AchillesConsistencyLevelPolicy policy)
 	{
 		this.daoContext = daoContext;
-		this.consistencyContext = new ConsistencyContext(policy);
+		this.consistencyContext = new ThriftConsistencyContext(policy);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -48,9 +47,10 @@ public abstract class AbstractFlushContext implements FlushContext
 		log.debug("Execute mutations flush");
 		try
 		{
-			for (Entry<String, Pair<Mutator<?>, AbstractDao<?, ?>>> entry : mutatorMap.entrySet())
+			for (Entry<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> entry : mutatorMap
+					.entrySet())
 			{
-				AbstractDao<ID, ?> dao = (AbstractDao<ID, ?>) entry.getValue().right;
+				ThriftAbstractDao<ID, ?> dao = (ThriftAbstractDao<ID, ?>) entry.getValue().right;
 				Mutator<ID> mutator = (Mutator<ID>) entry.getValue().left;
 				dao.executeMutator(mutator);
 			}
@@ -93,7 +93,6 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public <ID> Mutator<ID> getEntityMutator(String columnFamilyName)
 	{
@@ -104,20 +103,19 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			GenericEntityDao<ID> entityDao = (GenericEntityDao<ID>) daoContext
+			ThriftGenericEntityDao<ID> entityDao = (ThriftGenericEntityDao<ID>) daoContext
 					.findEntityDao(columnFamilyName);
 
 			if (entityDao != null)
 			{
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
-						entityDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(
+						mutator, entityDao));
 			}
 		}
 		return mutator;
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public <ID> Mutator<ID> getWideRowMutator(String columnFamilyName)
 	{
@@ -128,20 +126,19 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			GenericWideRowDao<ID, ?> columnFamilyDao = (GenericWideRowDao<ID, ?>) daoContext
+			ThriftGenericWideRowDao<ID, ?> columnFamilyDao = (ThriftGenericWideRowDao<ID, ?>) daoContext
 					.findWideRowDao(columnFamilyName);
 
 			if (columnFamilyDao != null)
 			{
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
-						columnFamilyDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(
+						mutator, columnFamilyDao));
 			}
 		}
 		return mutator;
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public Mutator<Composite> getCounterMutator()
 	{
@@ -152,10 +149,10 @@ public abstract class AbstractFlushContext implements FlushContext
 		}
 		else
 		{
-			CounterDao counterDao = daoContext.getCounterDao();
-			mutator = counterDao.buildMutator();
-			mutatorMap
-					.put(COUNTER_CF, new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator, counterDao));
+			ThriftCounterDao thriftCounterDao = daoContext.getCounterDao();
+			mutator = thriftCounterDao.buildMutator();
+			mutatorMap.put(COUNTER_CF, new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(mutator,
+					thriftCounterDao));
 		}
 		return mutator;
 	}

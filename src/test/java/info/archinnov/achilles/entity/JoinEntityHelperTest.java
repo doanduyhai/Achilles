@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -46,7 +46,7 @@ public class JoinEntityHelperTest
 	private JoinEntityHelper joinHelper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao<Long> dao;
 
 	@Mock
 	private EntityMeta<Long> joinMeta;

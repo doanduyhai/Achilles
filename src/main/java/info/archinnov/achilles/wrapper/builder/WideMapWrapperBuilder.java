@@ -1,13 +1,13 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 /**
@@ -19,16 +19,16 @@ import info.archinnov.achilles.wrapper.WideMapWrapper;
 public class WideMapWrapperBuilder<ID, K, V>
 {
 	private ID id;
-	private GenericWideRowDao<ID, V> dao;
+	private ThriftGenericWideRowDao<ID, V> dao;
 	private PropertyMeta<K, V> wideMapMeta;
-	private AchillesInterceptor<ID> interceptor;
+	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
 	private CompositeFactory compositeFactory;
-	private PersistenceContext<ID> context;
+	private ThriftPersistenceContext<ID> context;
 
-	public WideMapWrapperBuilder(ID id, GenericWideRowDao<ID, V> dao,
+	public WideMapWrapperBuilder(ID id, ThriftGenericWideRowDao<ID, V> dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.id = id;
@@ -37,18 +37,19 @@ public class WideMapWrapperBuilder<ID, K, V>
 	}
 
 	public static <ID, K, V> WideMapWrapperBuilder<ID, K, V> builder(ID id,
-			GenericWideRowDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
+			ThriftGenericWideRowDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
 	{
 		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> interceptor(AchillesInterceptor<ID> interceptor)
+	public WideMapWrapperBuilder<ID, K, V> interceptor(
+			AchillesJpaEntityInterceptor<ID, ?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> context(PersistenceContext<ID> context)
+	public WideMapWrapperBuilder<ID, K, V> context(ThriftPersistenceContext<ID> context)
 	{
 		this.context = context;
 		return this;
@@ -72,8 +73,7 @@ public class WideMapWrapperBuilder<ID, K, V>
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> compositeFactory(
-			CompositeFactory compositeFactory)
+	public WideMapWrapperBuilder<ID, K, V> compositeFactory(CompositeFactory compositeFactory)
 	{
 		this.compositeFactory = compositeFactory;
 		return this;

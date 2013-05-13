@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.context;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 /**
@@ -9,13 +9,13 @@ import info.archinnov.achilles.json.ObjectMapperFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ConfigurationContext
+public class AchillesConfigurationContext
 {
 	private boolean forceColumnFamilyCreation;
 
 	private boolean ensureJoinConsistency;
 
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private AchillesConsistencyLevelPolicy consistencyPolicy;
 
 	private ObjectMapperFactory objectMapperFactory;
 
@@ -39,12 +39,12 @@ public class ConfigurationContext
 		this.ensureJoinConsistency = ensureJoinConsistency;
 	}
 
-	public AchillesConfigurableConsistencyLevelPolicy getConsistencyPolicy()
+	public AchillesConsistencyLevelPolicy getConsistencyPolicy()
 	{
 		return consistencyPolicy;
 	}
 
-	public void setConsistencyPolicy(AchillesConfigurableConsistencyLevelPolicy consistencyPolicy)
+	public void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy)
 	{
 		this.consistencyPolicy = consistencyPolicy;
 	}

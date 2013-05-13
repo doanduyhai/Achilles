@@ -4,11 +4,11 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.annotations.WideRow;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -34,7 +34,6 @@ import javax.persistence.OneToOne;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 
@@ -61,12 +60,12 @@ public class JoinPropertyParserTest
 	private JoinPropertyParser parser = new JoinPropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, HConsistencyLevel> readConsistencyMap = new HashMap<String, HConsistencyLevel>();
-	private Map<String, HConsistencyLevel> writeConsistencyMap = new HashMap<String, HConsistencyLevel>();
+	private Map<String, ConsistencyLevel> readConsistencyMap = new HashMap<String, ConsistencyLevel>();
+	private Map<String, ConsistencyLevel> writeConsistencyMap = new HashMap<String, ConsistencyLevel>();
 	private EntityParsingContext entityContext;
-	private AchillesConfigurableConsistencyLevelPolicy configurableCLPolicy = new AchillesConfigurableConsistencyLevelPolicy(
+	private ThriftConsistencyLevelPolicy configurableCLPolicy = new ThriftConsistencyLevelPolicy(
 			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
-	private ConfigurationContext configContext;
+	private AchillesConfigurationContext configContext;
 
 	@Mock
 	private Cluster cluster;
@@ -78,13 +77,13 @@ public class JoinPropertyParserTest
 	private ObjectMapperFactory objectMapperFactory;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Before
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
-		configContext = new ConfigurationContext();
+		configContext = new AchillesConfigurationContext();
 		configContext.setConsistencyPolicy(configurableCLPolicy);
 		configContext.setObjectMapperFactory(objectMapperFactory);
 

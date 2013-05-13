@@ -3,7 +3,8 @@ package info.archinnov.achilles.entity.operations;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -34,7 +35,7 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public class EntityMerger
+public class EntityMerger implements AchillesEntityMerger
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
 
@@ -44,12 +45,14 @@ public class EntityMerger
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
 
+	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID> T mergeEntity(PersistenceContext<ID> context)
+	public <T, ID> T mergeEntity(AchillesPersistenceContext<ID> context)
 	{
 		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
+		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
 		T entity = (T) context.getEntity();
 		EntityMeta<ID> entityMeta = context.getEntityMeta();
 
@@ -75,9 +78,9 @@ public class EntityMerger
 					{
 						log.debug("Removing dirty collection/map {} before merging",
 								propertyMeta.getPropertyName());
-						this.persister.removePropertyBatch(context, propertyMeta);
+						persister.removePropertyBatch(thriftContext, propertyMeta);
 					}
-					this.persister.persistProperty(context, propertyMeta);
+					persister.persistProperty(context, propertyMeta);
 				}
 			}
 
@@ -98,16 +101,16 @@ public class EntityMerger
 						switch (propertyMeta.type())
 						{
 							case JOIN_SIMPLE:
-								mergeJoinProperty(context, realObject, propertyMeta);
+								mergeJoinProperty(thriftContext, realObject, propertyMeta);
 								break;
 							case JOIN_LIST:
-								mergeJoinListProperty(context, realObject, propertyMeta);
+								mergeJoinListProperty(thriftContext, realObject, propertyMeta);
 								break;
 							case JOIN_SET:
-								mergeJoinSetProperty(context, realObject, propertyMeta);
+								mergeJoinSetProperty(thriftContext, realObject, propertyMeta);
 								break;
 							case JOIN_MAP:
-								mergeJoinMapProperty(context, realObject, propertyMeta);
+								mergeJoinMapProperty(thriftContext, realObject, propertyMeta);
 								break;
 							default:
 								break;
@@ -115,7 +118,7 @@ public class EntityMerger
 					}
 				}
 			}
-			interceptor.setContext(context);
+			interceptor.setContext(thriftContext);
 			interceptor.setTarget(realObject);
 			proxy = entity;
 		}
@@ -134,7 +137,7 @@ public class EntityMerger
 		return proxy;
 	}
 
-	private <T, ID> void mergeJoinProperty(PersistenceContext<ID> context, T entity,
+	private <T, ID> void mergeJoinProperty(ThriftPersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
@@ -150,7 +153,7 @@ public class EntityMerger
 		}
 	}
 
-	private <T, ID> void mergeJoinListProperty(PersistenceContext<ID> context, T entity,
+	private <T, ID> void mergeJoinListProperty(ThriftPersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -161,7 +164,7 @@ public class EntityMerger
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <T, ID> void mergeJoinSetProperty(PersistenceContext<ID> context, T entity,
+	private <T, ID> void mergeJoinSetProperty(ThriftPersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -172,7 +175,7 @@ public class EntityMerger
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <ID> void mergeCollectionOfJoinEntities(PersistenceContext<ID> context,
+	private <ID> void mergeCollectionOfJoinEntities(ThriftPersistenceContext<ID> context,
 			JoinProperties joinProperties, Collection<?> joinEntities,
 			Collection<Object> mergedEntities)
 	{
@@ -188,7 +191,7 @@ public class EntityMerger
 		}
 	}
 
-	private <T, ID> void mergeJoinMapProperty(PersistenceContext<ID> context, T entity,
+	private <T, ID> void mergeJoinMapProperty(ThriftPersistenceContext<ID> context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();

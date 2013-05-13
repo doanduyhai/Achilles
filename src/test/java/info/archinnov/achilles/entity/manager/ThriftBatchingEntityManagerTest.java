@@ -2,9 +2,9 @@ package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.BatchingFlushContext;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.CompleteBean;
@@ -38,13 +38,13 @@ public class ThriftBatchingEntityManagerTest
 	private DaoContext daoContext;
 
 	@Mock
-	private ConfigurationContext configContext;
+	private AchillesConfigurationContext configContext;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
 	@Mock
-	private BatchingFlushContext flushContext;
+	private ThriftBatchingFlushContext flushContext;
 
 	@Before
 	public void setUp()

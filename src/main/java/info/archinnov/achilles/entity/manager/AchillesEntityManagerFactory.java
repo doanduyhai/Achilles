@@ -1,6 +1,29 @@
 package info.archinnov.achilles.entity.manager;
 
+import info.archinnov.achilles.columnFamily.AchillesColumnFamilyCreator;
+import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.parser.EntityExplorer;
+import info.archinnov.achilles.entity.parser.EntityParser;
+import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.validation.Validator;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.persistence.EntityManagerFactory;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AchillesEntityManagerFactory
@@ -8,7 +31,109 @@ import javax.persistence.EntityManagerFactory;
  * @author DuyHai DOAN
  * 
  */
-public interface AchillesEntityManagerFactory extends EntityManagerFactory
+public abstract class AchillesEntityManagerFactory implements EntityManagerFactory
 {
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
 
+	protected Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	protected AchillesColumnFamilyCreator columnFamilyCreator;
+	protected AchillesConfigurationContext configContext;
+	protected List<String> entityPackages;
+
+	private EntityParser entityParser = new EntityParser();
+	private EntityExplorer entityExplorer = new EntityExplorer();
+	private EntityParsingValidator validator = new EntityParsingValidator();
+
+	protected AchillesEntityManagerFactory(Map<String, Object> configurationMap,
+			AchillesArgumentExtractor argumentExtractor)
+	{
+		Validator.validateNotNull(configurationMap,
+				"Configuration map for AchillesEntityManagerFactory should not be null");
+		Validator.validateNotEmpty(configurationMap,
+				"Configuration map for AchillesEntityManagerFactory should not be empty");
+
+		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
+		configContext = parseConfiguration(configurationMap, argumentExtractor);
+	}
+
+	protected boolean bootstrap()
+	{
+		log.info("Bootstraping Achilles Thrift-based EntityManagerFactory ");
+
+		boolean hasSimpleCounter = false;
+		try
+		{
+			hasSimpleCounter = discoverEntities();
+		}
+		catch (Exception e)
+		{
+			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
+		}
+
+		columnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap, configContext,
+				hasSimpleCounter);
+
+		return hasSimpleCounter;
+	}
+
+	protected boolean discoverEntities() throws ClassNotFoundException, IOException
+	{
+		log.info("Start discovery of entities, searching in packages '{}'",
+				StringUtils.join(entityPackages, ","));
+		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+
+		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
+		validator.validateAtLeastOneEntity(entities, entityPackages);
+		boolean hasSimpleCounter = false;
+		for (Class<?> entityClass : entities)
+		{
+			EntityParsingContext context = new EntityParsingContext(//
+					joinPropertyMetaToBeFilled, //
+					configContext, entityClass);
+
+			EntityMeta<?> entityMeta = entityParser.parseEntity(context);
+			entityMetaMap.put(entityClass, entityMeta);
+			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
+		}
+
+		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
+				joinPropertyMetaToBeFilled, //
+				configContext), entityMetaMap);
+
+		return hasSimpleCounter;
+	}
+
+	protected ThriftConsistencyLevelPolicy initConsistencyLevelPolicy(
+			Map<String, Object> configurationMap, AchillesArgumentExtractor argumentExtractor)
+	{
+		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
+
+		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
+				.initDefaultReadConsistencyLevel(configurationMap);
+		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
+				.initDefaultWriteConsistencyLevel(configurationMap);
+		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor
+				.initReadConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
+				.initWriteConsistencyMap(configurationMap);
+
+		return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
+				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
+	}
+
+	protected AchillesConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
+			AchillesArgumentExtractor argumentExtractor)
+	{
+		AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+		configContext.setEnsureJoinConsistency(argumentExtractor
+				.ensureConsistencyOnJoin(configurationMap));
+		configContext.setForceColumnFamilyCreation(argumentExtractor
+				.initForceCFCreation(configurationMap));
+		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap,
+				argumentExtractor));
+		configContext.setObjectMapperFactory(argumentExtractor
+				.initObjectMapperFactory(configurationMap));
+
+		return configContext;
+	}
 }

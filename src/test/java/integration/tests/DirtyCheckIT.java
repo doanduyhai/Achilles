@@ -6,7 +6,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -40,7 +40,7 @@ import org.junit.Test;
  */
 public class DirtyCheckIT
 {
-	private GenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
+	private ThriftGenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();

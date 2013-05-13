@@ -9,9 +9,9 @@ package info.archinnov.achilles.iterator;
  *
  */
 
-import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_COUNTER_SLICE_ITERATOR;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 
 import java.util.Iterator;
@@ -30,16 +30,16 @@ public class AchillesCounterSliceIterator<K> extends
 
 	private SliceCounterQuery<K, Composite> query;
 
-	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			final Composite finish, boolean reversed)
+	public AchillesCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, final Composite finish,
+			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			final Composite finish, boolean reversed, int count)
+	public AchillesCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, final Composite finish,
+			boolean reversed, int count)
 	{
 		this(policy, cf, query, start, new ColumnSliceFinish()
 		{
@@ -52,16 +52,16 @@ public class AchillesCounterSliceIterator<K> extends
 		}, reversed, count);
 	}
 
-	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed)
+	public AchillesCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, ColumnSliceFinish finish,
+			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesCounterSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed, int count)
+	public AchillesCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, ColumnSliceFinish finish,
+			boolean reversed, int count)
 	{
 		super(policy, cf, start, finish, reversed, count);
 		this.query = query;

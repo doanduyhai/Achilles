@@ -4,12 +4,12 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -80,10 +80,10 @@ public class EntityLoaderTest
 	private EntityMapper mapper;
 
 	@Mock
-	private GenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao<Long> dao;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
 	private CompositeFactory compositeFactory;
@@ -98,20 +98,20 @@ public class EntityLoaderTest
 	private ThriftLoaderImpl loaderImpl;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Captor
 	ArgumentCaptor<Long> idCaptor;
 
 	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Before
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, bean.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
 				.entity(bean).build();
 	}
 

@@ -8,13 +8,13 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -58,29 +58,29 @@ public class BatchModeIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
+	private ThriftGenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
-	private GenericEntityDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
+	private ThriftGenericEntityDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
 
-	private GenericWideRowDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
+	private ThriftGenericWideRowDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
 			SerializerUtils.UUID_SRZ, "user_tweets");
 
-	private GenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
+	private ThriftGenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
 			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
 
-	private GenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
+	private ThriftGenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()));
 
-	private GenericWideRowDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
+	private ThriftGenericWideRowDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
 			STRING_SRZ, "complete_bean_widemap");
 
-	private CounterDao counterDao = getCounterDao();
+	private ThriftCounterDao thriftCounterDao = getCounterDao();
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private AchillesConfigurableConsistencyLevelPolicy policy = ThriftCassandraDaoTest
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
 			.getConsistencyPolicy();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
@@ -199,7 +199,7 @@ public class BatchModeIT
 		Composite javaCounterName = createWideMapCounterName("java");
 		Composite scalaCounterName = createWideMapCounterName("scala");
 
-		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
+		assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
 		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(
 				100L);
 		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName)).isEqualTo(
@@ -222,7 +222,7 @@ public class BatchModeIT
 		assertThat(foundTweet.getId()).isEqualTo(welcomeTweet.getId());
 		assertThat(foundTweet.getContent()).isEqualTo("welcomeTweet");
 
-		assertThat(counterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
+		assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
 		assertThat(popularTopicsDao.getCounterValue(entity.getId(), javaCounterName)).isEqualTo(
 				100L);
 		assertThat(popularTopicsDao.getCounterValue(entity.getId(), scalaCounterName)).isEqualTo(
@@ -421,8 +421,8 @@ public class BatchModeIT
 
 	private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm)
 	{
-		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
-		Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
+		ThriftBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
+		Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
 				flushContext, "mutatorMap");
 		boolean hasCustomConsistencyLevels = (Boolean) Whitebox.getInternalState(flushContext,
 				"hasCustomConsistencyLevels");

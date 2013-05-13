@@ -2,7 +2,7 @@ package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -42,7 +42,7 @@ public class CounterKeyValueIteratorImplTest
 	private CounterKeyValueIteratorImpl<Long, Integer> iterator;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;

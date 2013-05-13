@@ -1,7 +1,7 @@
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
@@ -27,14 +27,14 @@ public abstract class AbstractAchillesSliceIterator<HCOLUMN> implements Iterator
 	protected boolean reversed;
 	protected int count = DEFAULT_LENGTH;
 	protected int columns = 0;
-	protected AchillesConfigurableConsistencyLevelPolicy policy;
+	protected AchillesConsistencyLevelPolicy policy;
 	protected String columnFamily;
 	protected ConsistencyLevel readConsistencyLevelAtInitialization;
 	protected Iterator<HCOLUMN> iterator;
 	protected Composite start;
 	protected ColumnSliceFinish finish;
 
-	protected AbstractAchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy,
+	protected AbstractAchillesSliceIterator(AchillesConsistencyLevelPolicy policy,
 			String columnFamily, Composite start, ColumnSliceFinish finish, boolean reversed,
 			int count)
 	{

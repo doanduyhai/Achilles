@@ -1,11 +1,12 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 
@@ -36,7 +37,7 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 	private static final String ENTITY_PACKAGE = "integration.tests.entity";
 	private static Cluster cluster;
 	private static Keyspace keyspace;
-	private static AchillesConfigurableConsistencyLevelPolicy policy;
+	private static ThriftConsistencyLevelPolicy policy;
 
 	public static final Logger log = LoggerFactory.getLogger(ThriftCassandraDaoTest.class);
 
@@ -64,8 +65,8 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 				FORCE_CF_CREATION_PARAM, true, ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
-		ConfigurationContext configContext = Whitebox.getInternalState(emf, "configContext");
-		policy = configContext.getConsistencyPolicy();
+		AchillesConfigurationContext configContext = Whitebox.getInternalState(emf, "configContext");
+		policy = (ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy();
 	}
 
 	public static Cluster getCluster()
@@ -83,25 +84,25 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 		return (ThriftEntityManager) emf.createEntityManager();
 	}
 
-	public static <K> GenericEntityDao<K> getEntityDao(Serializer<K> keySerializer,
+	public static <K> ThriftGenericEntityDao<K> getEntityDao(Serializer<K> keySerializer,
 			String columnFamily)
 	{
-		return new GenericEntityDao<K>(cluster, keyspace, keySerializer, columnFamily, policy);
+		return new ThriftGenericEntityDao<K>(cluster, keyspace, keySerializer, columnFamily, policy);
 	}
 
-	public static <K, V> GenericWideRowDao<K, V> getColumnFamilyDao(
+	public static <K, V> ThriftGenericWideRowDao<K, V> getColumnFamilyDao(
 			Serializer<K> keySerializer, Serializer<V> valueSerializer, String columnFamily)
 	{
-		return new GenericWideRowDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
+		return new ThriftGenericWideRowDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
 				columnFamily, policy);
 	}
 
-	public static CounterDao getCounterDao()
+	public static ThriftCounterDao getCounterDao()
 	{
-		return new CounterDao(cluster, keyspace, policy);
+		return new ThriftCounterDao(cluster, keyspace, policy);
 	}
 
-	public static AchillesConfigurableConsistencyLevelPolicy getConsistencyPolicy()
+	public static ThriftConsistencyLevelPolicy getConsistencyPolicy()
 	{
 		return policy;
 	}

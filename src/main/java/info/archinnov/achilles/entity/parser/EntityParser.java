@@ -133,24 +133,6 @@ public class EntityParser
 
 			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 
-			// TODO
-			// if (propertyMeta.type().isWideMap())
-			// {
-			//
-			// GenericColumnFamilyDao<ID, JOIN_ID> joinDao = new GenericColumnFamilyDao<ID, JOIN_ID>(
-			// context.getCluster(), //
-			// context.getKeyspace(), //
-			// (Serializer<ID>) propertyMeta.getIdSerializer(), //
-			// joinEntityMeta.getIdSerializer(), //
-			// propertyMeta.getExternalCFName(),//
-			// context.getConfigurableCLPolicy());
-			//
-			// log.debug("Building join dao for column family {}",
-			// propertyMeta.getExternalCFName());
-			//
-			// context.getColumnFamilyDaosMap().put(propertyMeta.getExternalCFName(), joinDao);
-			// }
-
 			log.trace("Join property meta built for entity class {} : {}",
 					clazz.getCanonicalName(), propertyMeta);
 		}
@@ -216,31 +198,16 @@ public class EntityParser
 		}
 	}
 
-	// TODO
-	// private <ID, K, V> void buildDao(EntityParsingContext context, String columnFamilyName,
-	// PropertyMeta<Void, ID> idMeta)
-	// {
-	// GenericEntityDao<ID> entityDao = new GenericEntityDao<ID>(context.getCluster(), //
-	// context.getKeyspace(), //
-	// idMeta.getValueSerializer(), //
-	// columnFamilyName, //
-	// context.getConfigurableCLPolicy());
-	//
-	// log.debug("Build entity dao for column family {}", columnFamilyName);
-	//
-	// context.getEntityDaosMap().put(columnFamilyName, entityDao);
-	// }
-
 	private void saveConsistencyLevel(EntityParsingContext context, String columnFamilyName,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		log.debug("Set default read/write consistency levels {} / {} for column family {}",
 				consistencyLevels.left.name(), consistencyLevels.right.name(), columnFamilyName);
 
-		context.getConfigurableCLPolicy().setConsistencyLevelForRead(
-				consistencyLevels.left.getHectorLevel(), columnFamilyName);
-		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(
-				consistencyLevels.right.getHectorLevel(), columnFamilyName);
+		context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left,
+				columnFamilyName);
+		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(consistencyLevels.right,
+				columnFamilyName);
 	}
 
 }

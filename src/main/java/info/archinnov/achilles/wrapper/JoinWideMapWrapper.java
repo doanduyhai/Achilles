@@ -2,9 +2,10 @@ package info.archinnov.achilles.wrapper;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -39,7 +40,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 	private ID id;
 	private PropertyMeta<K, V> propertyMeta;
-	private GenericWideRowDao<ID, JOIN_ID> dao;
+	private ThriftGenericWideRowDao<ID, JOIN_ID> dao;
 	private EntityPersister persister;
 	private EntityLoader loader;
 	private EntityProxifier proxifier;
@@ -64,7 +65,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		{
 			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 
-			PersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+			AchillesPersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 
 			result = (V) loader.load(joinContext);
@@ -174,7 +175,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					count);
 		}
 
-		GenericEntityDao<JOIN_ID> joinEntityDao = (GenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
 				.findEntityDao(propertyMeta.joinMeta().getColumnFamilyName());
 
 		AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
@@ -239,7 +240,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 		if (value != null)
 		{
-			PersistenceContext<JOIN_ID> joinContext = (PersistenceContext<JOIN_ID>) context
+			ThriftPersistenceContext<JOIN_ID> joinContext = (ThriftPersistenceContext<JOIN_ID>) context
 					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
 			joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
@@ -301,7 +302,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		this.iteratorFactory = iteratorFactory;
 	}
 
-	public void setDao(GenericWideRowDao<ID, JOIN_ID> dao)
+	public void setDao(ThriftGenericWideRowDao<ID, JOIN_ID> dao)
 	{
 		this.dao = dao;
 	}

@@ -5,7 +5,7 @@ import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
@@ -42,7 +42,7 @@ public class JoinColumnIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private GenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
+	private ThriftGenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
 			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();

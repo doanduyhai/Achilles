@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 
@@ -35,7 +35,7 @@ public class EntityProxifier
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			AchillesInterceptor<ID> interceptor = this.getInterceptor(entity);
+			AchillesJpaEntityInterceptor<ID, ?> interceptor = this.getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 
@@ -43,7 +43,7 @@ public class EntityProxifier
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T, ID> T buildProxy(T entity, PersistenceContext<ID> context)
+	public <T, ID> T buildProxy(T entity, AchillesPersistenceContext<ID> context)
 	{
 
 		if (entity == null)

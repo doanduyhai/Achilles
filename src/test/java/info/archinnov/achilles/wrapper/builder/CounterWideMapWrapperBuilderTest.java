@@ -2,14 +2,14 @@ package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 
 import org.junit.Test;
@@ -25,13 +25,13 @@ import org.powermock.reflect.Whitebox;
 public class CounterWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericWideRowDao<Long, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao<Long, Long> wideMapCounterDao;
 
 	@Mock
 	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
-	private AchillesInterceptor<Long> interceptor;
+	private AchillesJpaEntityInterceptor<Long> interceptor;
 
 	@Mock
 	private CompositeHelper compositeHelper;
@@ -46,7 +46,7 @@ public class CounterWideMapWrapperBuilderTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Test
 	public void should_build() throws Exception

@@ -9,9 +9,9 @@ package info.archinnov.achilles.iterator;
  *
  */
 
-import static info.archinnov.achilles.dao.AbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_SLICE_ITERATOR;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 
 import java.util.Iterator;
@@ -25,14 +25,14 @@ public class AchillesSliceIterator<K, V> extends
 {
 	private SliceQuery<K, Composite, V> query;
 
-	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+	public AchillesSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, Composite, V> query, Composite start, final Composite finish,
 			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+	public AchillesSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, Composite, V> query, Composite start, final Composite finish,
 			boolean reversed, int count)
 	{
@@ -46,14 +46,14 @@ public class AchillesSliceIterator<K, V> extends
 		}, reversed, count);
 	}
 
-	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+	public AchillesSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, Composite, V> query, Composite start, ColumnSliceFinish finish,
 			boolean reversed)
 	{
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public AchillesSliceIterator(AchillesConfigurableConsistencyLevelPolicy policy, String cf,
+	public AchillesSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
 			SliceQuery<K, Composite, V> query, Composite start, ColumnSliceFinish finish,
 			boolean reversed, int count)
 	{

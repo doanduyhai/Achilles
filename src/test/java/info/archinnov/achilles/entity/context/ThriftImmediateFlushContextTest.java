@@ -1,14 +1,14 @@
 package info.archinnov.achilles.entity.context;
 
-import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
+import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.dao.AbstractDao;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.FlushContext.FlushType;
+import info.archinnov.achilles.entity.context.AchillesFlushContext.FlushType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -39,22 +39,22 @@ import org.mockito.runners.MockitoJUnitRunner;
 		"rawtypes"
 })
 @RunWith(MockitoJUnitRunner.class)
-public class ImmediateFlushContextTest
+public class ThriftImmediateFlushContextTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ImmediateFlushContext context;
+	private ThriftImmediateFlushContext context;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericWideRowDao<Long, String> cfDao;
+	private ThriftGenericWideRowDao<Long, String> cfDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -63,17 +63,17 @@ public class ImmediateFlushContextTest
 	private Mutator<Composite> counterMutator;
 
 	@Mock
-	private ConsistencyContext consistencyContext;
+	private ThriftConsistencyContext thriftConsistencyContext;
 
 	@Mock
 	private DaoContext daoContext;
 
-	private Map<String, Pair<Mutator<?>, AbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, AbstractDao<?, ?>>>();
+	private Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>();
 
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(context, "consistencyContext", consistencyContext);
+		Whitebox.setInternalState(context, "consistencyContext", thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
 		Whitebox.setInternalState(context, "daoContext", daoContext);
 		mutatorMap.clear();
@@ -91,14 +91,14 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_flush() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair<Mutator<?>, AbstractDao<?, ?>>(mutator,
+		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(mutator,
 				entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.flush();
 
 		verify(entityDao).executeMutator(mutator);
-		verify(consistencyContext).reinitConsistencyLevels();
+		verify(thriftConsistencyContext).reinitConsistencyLevels();
 		assertThat(mutatorMap).isEmpty();
 	}
 
@@ -116,14 +116,14 @@ public class ImmediateFlushContextTest
 	public void should_set_write_consistency_level() throws Exception
 	{
 		context.setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		verify(consistencyContext).setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+		verify(thriftConsistencyContext).setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_set_read_consistency_level() throws Exception
 	{
 		context.setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		verify(consistencyContext).setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+		verify(thriftConsistencyContext).setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test
@@ -131,13 +131,13 @@ public class ImmediateFlushContextTest
 	{
 		Whitebox.setInternalState(context, "hasCustomConsistencyLevels", false);
 		context.reinitConsistencyLevels();
-		verify(consistencyContext).reinitConsistencyLevels();
+		verify(thriftConsistencyContext).reinitConsistencyLevels();
 	}
 
 	@Test
 	public void should_get_existing_entity_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Long> actual = context.getEntityMutator("cf");
@@ -147,19 +147,19 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_entity_mutator() throws Exception
 	{
-		when((GenericEntityDao) daoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when((ThriftGenericEntityDao) daoContext.findEntityDao("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Long> actual = context.getEntityMutator("cf");
 		assertThat(actual).isSameAs(mutator);
 		assertThat((Mutator<Long>) mutatorMap.get("cf").left).isSameAs(mutator);
-		assertThat((GenericEntityDao<Long>) mutatorMap.get("cf").right).isSameAs(entityDao);
+		assertThat((ThriftGenericEntityDao<Long>) mutatorMap.get("cf").right).isSameAs(entityDao);
 	}
 
 	@Test
 	public void should_get_existing_cf_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Long> actual = context.getWideRowMutator("cf");
@@ -169,21 +169,21 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_cf_mutator() throws Exception
 	{
-		when((GenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(cfDao);
+		when((ThriftGenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Long> actual = context.getWideRowMutator("cf");
 		assertThat(actual).isSameAs(mutator);
 		assertThat((Mutator<Long>) mutatorMap.get("cf").left).isSameAs(mutator);
-		assertThat((GenericWideRowDao<Long, String>) mutatorMap.get("cf").right).isSameAs(
+		assertThat((ThriftGenericWideRowDao<Long, String>) mutatorMap.get("cf").right).isSameAs(
 				cfDao);
 	}
 
 	@Test
 	public void should_get_existing_counter_mutator() throws Exception
 	{
-		Pair<Mutator<?>, AbstractDao<?, ?>> pair = new Pair(counterMutator, counterDao);
-		mutatorMap.put(CounterDao.COUNTER_CF, pair);
+		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair(counterMutator, thriftCounterDao);
+		mutatorMap.put(ThriftCounterDao.COUNTER_CF, pair);
 
 		Mutator<Composite> actual = context.getCounterMutator();
 		assertThat(actual).isSameAs(counterMutator);
@@ -192,14 +192,14 @@ public class ImmediateFlushContextTest
 	@Test
 	public void should_get_new_counter_mutator() throws Exception
 	{
-		when(daoContext.getCounterDao()).thenReturn(counterDao);
-		when(counterDao.buildMutator()).thenReturn(counterMutator);
+		when(daoContext.getCounterDao()).thenReturn(thriftCounterDao);
+		when(thriftCounterDao.buildMutator()).thenReturn(counterMutator);
 
 		Mutator<Composite> actual = context.getCounterMutator();
 
 		assertThat(actual).isSameAs(counterMutator);
 		assertThat((Mutator<Composite>) mutatorMap.get(COUNTER_CF).left).isSameAs(counterMutator);
-		assertThat((CounterDao) mutatorMap.get(COUNTER_CF).right).isSameAs(counterDao);
+		assertThat((ThriftCounterDao) mutatorMap.get(COUNTER_CF).right).isSameAs(thriftCounterDao);
 	}
 
 	@Test

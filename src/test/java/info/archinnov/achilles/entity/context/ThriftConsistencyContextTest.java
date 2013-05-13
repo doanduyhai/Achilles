@@ -7,7 +7,7 @@ package info.archinnov.achilles.entity.context;
  * @author DuyHai DOAN
  *
  */
-public class ConsistencyContextTest
+public class ThriftConsistencyContextTest
 {
 
 }

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -26,12 +26,12 @@ public class CounterKeyValueIteratorImpl<ID, K> implements KeyValueIterator<K, C
 	private static final Logger log = LoggerFactory.getLogger(CounterKeyValueIteratorImpl.class);
 
 	private KeyValueFactory factory = new KeyValueFactory();
-	private PersistenceContext<ID> context;
+	private ThriftPersistenceContext<ID> context;
 
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;
 	private PropertyMeta<K, Counter> propertyMeta;
 
-	public CounterKeyValueIteratorImpl(PersistenceContext<ID> context,
+	public CounterKeyValueIteratorImpl(ThriftPersistenceContext<ID> context,
 			AbstractAchillesSliceIterator<HCounterColumn<Composite>> columnSliceIterator,
 			PropertyMeta<K, Counter> propertyMeta)
 	{

@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContext;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -50,9 +50,9 @@ public class ThriftEntityManager implements EntityManager
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	protected final Map<Class<?>, EntityMeta<?>> entityMetaMap;
-	protected final AchillesConfigurableConsistencyLevelPolicy consistencyPolicy;
+	protected final AchillesConsistencyLevelPolicy consistencyPolicy;
 
-	protected final ConfigurationContext configContext;
+	protected final AchillesConfigurationContext configContext;
 	protected final DaoContext daoContext;
 
 	protected EntityPersister persister = new EntityPersister();
@@ -65,7 +65,7 @@ public class ThriftEntityManager implements EntityManager
 
 	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
 			DaoContext daoContext, //
-			ConfigurationContext configContext)
+			AchillesConfigurationContext configContext)
 	{
 		this.entityMetaMap = entityMetaMap;
 		this.daoContext = daoContext;
@@ -93,7 +93,7 @@ public class ThriftEntityManager implements EntityManager
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
-		PersistenceContext<?> context = initPersistenceContext(entity);
+		ThriftPersistenceContext<?> context = initPersistenceContext(entity);
 		persister.persist(context);
 		context.flush();
 	}
@@ -157,7 +157,7 @@ public class ThriftEntityManager implements EntityManager
 		}
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
-		PersistenceContext<?> context = initPersistenceContext(entity);
+		ThriftPersistenceContext<?> context = initPersistenceContext(entity);
 		T merged = (T) merger.mergeEntity(context);
 		context.flush();
 		return merged;
@@ -227,7 +227,7 @@ public class ThriftEntityManager implements EntityManager
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		PersistenceContext<?> context = initPersistenceContext(entity);
+		ThriftPersistenceContext<?> context = initPersistenceContext(entity);
 		persister.remove(context);
 		context.flush();
 
@@ -285,7 +285,7 @@ public class ThriftEntityManager implements EntityManager
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		PersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
+		ThriftPersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
 
 		T entity = (T) loader.load(context);
 		if (entity != null)
@@ -391,7 +391,7 @@ public class ThriftEntityManager implements EntityManager
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		PersistenceContext<?> context = initPersistenceContext(entity);
+		ThriftPersistenceContext<?> context = initPersistenceContext(entity);
 		refresher.refresh(context);
 	}
 
@@ -692,26 +692,27 @@ public class ThriftEntityManager implements EntityManager
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T, ID> PersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
+	protected <T, ID> ThriftPersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
 			ID primaryKey)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
-		return new PersistenceContext<ID>(entityMeta, configContext, daoContext,
-				new ImmediateFlushContext(daoContext, consistencyPolicy), entityClass, primaryKey);
+		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext,
+				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entityClass,
+				primaryKey);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <ID> PersistenceContext<ID> initPersistenceContext(Object entity)
+	protected <ID> ThriftPersistenceContext<ID> initPersistenceContext(Object entity)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
-		return new PersistenceContext<ID>(entityMeta, configContext, daoContext,
-				new ImmediateFlushContext(daoContext, consistencyPolicy), entity);
+		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext,
+				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entity);
 	}
 
 	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)

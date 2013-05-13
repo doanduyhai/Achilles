@@ -6,9 +6,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
-import info.archinnov.achilles.dao.GenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.JoinEntityHelper;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -77,10 +77,10 @@ public class KeyValueFactoryTest {
     private CompositeTransformer compositeTransformer;
 
     @Mock
-    private PersistenceContext<Long> context, joinContext1, joinContext2;
+    private ThriftPersistenceContext<Long> context, joinContext1, joinContext2;
 
     @Mock
-    private GenericEntityDao<Long> joinEntityDao;
+    private ThriftGenericEntityDao<Long> joinEntityDao;
 
     @Captor
     private ArgumentCaptor<List<Long>> joinIdsCaptor;
@@ -100,7 +100,7 @@ public class KeyValueFactoryTest {
         Whitebox.setInternalState(factory, "compositeTransformer", compositeTransformer);
 
         when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
-        when((GenericEntityDao) context.findEntityDao("join_cf")).thenReturn(joinEntityDao);
+        when((ThriftGenericEntityDao) context.findEntityDao("join_cf")).thenReturn(joinEntityDao);
 
         joinMeta.setColumnFamilyName("join_cf");
         propertyMeta = noClass(Integer.class, UserBean.class) //

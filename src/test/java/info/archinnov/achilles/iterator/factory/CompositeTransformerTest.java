@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.PropertyHelper;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -56,10 +56,10 @@ public class CompositeTransformerTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@Mock
-	private PersistenceContext<Long> joinContext;
+	private ThriftPersistenceContext<Long> joinContext;
 
 	@Before
 	public void setUp()

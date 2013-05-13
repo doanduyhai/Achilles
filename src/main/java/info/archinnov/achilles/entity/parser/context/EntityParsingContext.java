@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.parser.context;
 
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -24,7 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class EntityParsingContext
 {
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
-	private ConfigurationContext configContext;
+	private AchillesConfigurationContext configContext;
 	private Boolean hasCounter = false;
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
@@ -39,7 +39,7 @@ public class EntityParsingContext
 
 	public EntityParsingContext(//
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			ConfigurationContext configContext, //
+			AchillesConfigurationContext configContext, //
 			Class<?> currentEntityClass)
 	{
 		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
@@ -49,7 +49,7 @@ public class EntityParsingContext
 
 	public EntityParsingContext( //
 			Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
-			ConfigurationContext configContext)
+			AchillesConfigurationContext configContext)
 	{
 		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
 		this.configContext = configContext;
@@ -65,7 +65,7 @@ public class EntityParsingContext
 		return joinPropertyMetaToBeFilled;
 	}
 
-	public ConfigurationContext getConfigContext()
+	public AchillesConfigurationContext getConfigContext()
 	{
 		return configContext;
 	}
@@ -156,7 +156,7 @@ public class EntityParsingContext
 		return configContext.getObjectMapperFactory();
 	}
 
-	public AchillesConfigurableConsistencyLevelPolicy getConfigurableCLPolicy()
+	public AchillesConsistencyLevelPolicy getConfigurableCLPolicy()
 	{
 		return configContext.getConsistencyPolicy();
 	}

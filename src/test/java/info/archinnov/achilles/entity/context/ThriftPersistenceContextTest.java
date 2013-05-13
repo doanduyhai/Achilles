@@ -2,10 +2,10 @@ package info.archinnov.achilles.entity.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.EntityIntrospector;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -34,7 +34,7 @@ import testBuilders.PropertyMetaTestBuilder;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class PersistenceContextTest
+public class ThriftPersistenceContextTest
 {
 	@Mock
 	private EntityIntrospector introspector;
@@ -50,33 +50,33 @@ public class PersistenceContextTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
 	private DaoContext daoContext;
 
 	@Mock
-	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
-
-	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private GenericWideRowDao<Long, String> columFamilyDao;
+	private ThriftGenericEntityDao<Long> entityDao;
+
+	@Mock
+	private ThriftGenericWideRowDao<Long, String> columFamilyDao;
 
 	@Mock
 	private Mutator<Long> mutator;
 
 	@Mock
-	private ImmediateFlushContext immediateFlushContext;
+	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -85,7 +85,7 @@ public class PersistenceContextTest
 	@Before
 	public void setUp()
 	{
-		when(daoContext.getCounterDao()).thenReturn(counterDao);
+		when(daoContext.getCounterDao()).thenReturn(thriftCounterDao);
 		configContext.setConsistencyPolicy(policy);
 	}
 
@@ -95,8 +95,8 @@ public class PersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, entity);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, entity);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isEqualTo(entity);
@@ -110,13 +110,13 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(true);
-		when((GenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
+		when((ThriftGenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
 				columFamilyDao);
 
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, entity);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, entity);
 
-		assertThat((GenericWideRowDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
+		assertThat((ThriftGenericWideRowDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
 				columFamilyDao);
 	}
 
@@ -126,8 +126,8 @@ public class PersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 		Long primaryKey = 150L;
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, CompleteBean.class, primaryKey);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, CompleteBean.class, primaryKey);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(primaryKey);
 		assertThat(context.getEntity()).isNull();
@@ -140,12 +140,12 @@ public class PersistenceContextTest
 	public void should_spawn_child_context() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, entity);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
-		PersistenceContext<Long> newContext = context.newPersistenceContext(joinMeta, bean);
+		ThriftPersistenceContext<Long> newContext = context.newPersistenceContext(joinMeta, bean);
 
 		assertThat(newContext.getPrimaryKey()).isEqualTo(bean.getUserId());
 		assertThat(newContext.getEntity()).isEqualTo(bean);
@@ -159,12 +159,12 @@ public class PersistenceContextTest
 	public void should_spawn_child_context_with_id() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, entity);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
-		PersistenceContext<Long> newContext = context.newPersistenceContext(UserBean.class,
+		ThriftPersistenceContext<Long> newContext = context.newPersistenceContext(UserBean.class,
 				joinMeta, bean.getUserId());
 
 		assertThat(newContext.getPrimaryKey()).isEqualTo(bean.getUserId());
@@ -182,13 +182,13 @@ public class PersistenceContextTest
 	public void should_find_wide_row_dao() throws Exception
 	{
 		prepareContextWithEntityDao();
-		PersistenceContext<Long> context = new PersistenceContext<Long>(entityMeta, configContext,
-				daoContext, immediateFlushContext, entity);
+		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+				daoContext, thriftImmediateFlushContext, entity);
 
-		when((GenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
+		when((ThriftGenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
 				columFamilyDao);
 
-		assertThat((GenericWideRowDao) context.findWideRowDao("cf")).isSameAs(columFamilyDao);
+		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("cf")).isSameAs(columFamilyDao);
 	}
 
 	// //////////////////
@@ -211,7 +211,7 @@ public class PersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when((ThriftGenericEntityDao<Long>) daoContext.findEntityDao("cf")).thenReturn(entityDao);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -231,7 +231,7 @@ public class PersistenceContextTest
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
 		when(joinMeta.isWideRow()).thenReturn(false);
-		when((GenericEntityDao<Long>) daoContext.findEntityDao("cf2")).thenReturn(entityDao);
+		when((ThriftGenericEntityDao<Long>) daoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}
 
 }

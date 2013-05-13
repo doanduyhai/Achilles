@@ -3,7 +3,7 @@ package integration.tests;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -35,7 +35,7 @@ public class ConsistencyLevelPriorityOrderingIT
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private AchillesConfigurableConsistencyLevelPolicy policy = ThriftCassandraDaoTest
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
 			.getConsistencyPolicy();
 
 	// Normal type

@@ -6,14 +6,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.consistency.AchillesConfigurableConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.CounterDao;
-import info.archinnov.achilles.dao.GenericEntityDao;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.ImmediateFlushContext;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -83,10 +83,10 @@ public class ThriftPersisterImplTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private GenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao<Long> entityDao;
 
 	@Mock
-	private GenericWideRowDao<Long, String> columnFamilyDao;
+	private ThriftGenericWideRowDao<Long, String> columnFamilyDao;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;
@@ -95,7 +95,7 @@ public class ThriftPersisterImplTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private CounterDao counterDao;
+	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -107,16 +107,16 @@ public class ThriftPersisterImplTest
 	private Mutator<Composite> counterMutator;
 
 	@Mock
-	private AchillesConfigurableConsistencyLevelPolicy policy;
+	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private Map<String, GenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private Map<String, GenericWideRowDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap;
 
 	@Mock
-	private ImmediateFlushContext immediateFlushContext;
+	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Captor
 	ArgumentCaptor<Composite> compositeCaptor;
@@ -125,7 +125,7 @@ public class ThriftPersisterImplTest
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private PersistenceContext<Long> context;
+	private ThriftPersistenceContext<Long> context;
 
 	@SuppressWarnings(
 	{
@@ -135,16 +135,16 @@ public class ThriftPersisterImplTest
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.immediateFlushContext(immediateFlushContext) //
+				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
 				.entityDao(entityDao) //
 				.columnFamilyDao(columnFamilyDao) //
 				.columnFamilyDaosMap(columnFamilyDaosMap) //
 				.entityDaosMap(entityDaosMap) //
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when((Mutator) immediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,9 +154,9 @@ public class ThriftPersisterImplTest
 		when(introspector.findSerialVersionUID(entity.getClass())).thenReturn(151L);
 
 		context = PersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity) //
-				.immediateFlushContext(immediateFlushContext).entityDao(entityDao) //
+				.thriftImmediateFlushContext(thriftImmediateFlushContext).entityDao(entityDao) //
 				.build();
 
 		thriftPersister.batchPersistVersionSerialUID(context);
@@ -340,8 +340,8 @@ public class ThriftPersisterImplTest
 
 		verify(entityDao).insertColumnBatch(entity.getId(), comp, joinId.toString(), mutator);
 
-		ArgumentCaptor<PersistenceContext> contextCaptor = ArgumentCaptor
-				.forClass(PersistenceContext.class);
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
 		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user),
 				eq(propertyMeta.getJoinProperties()));
 		assertThat(contextCaptor.getValue().getEntity()).isSameAs(user);
@@ -392,14 +392,14 @@ public class ThriftPersisterImplTest
 		verify(entityDao).insertColumnBatch(entity.getId(), comp1, joinId1.toString(), mutator);
 		verify(entityDao).insertColumnBatch(entity.getId(), comp2, joinId2.toString(), mutator);
 
-		ArgumentCaptor<PersistenceContext> contextCaptor = ArgumentCaptor
-				.forClass(PersistenceContext.class);
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
 		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user1),
 				eq(propertyMeta.getJoinProperties()));
 		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user2),
 				eq(propertyMeta.getJoinProperties()));
 
-		List<PersistenceContext> contextes = contextCaptor.getAllValues();
+		List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
 
 		assertThat(contextes.get(0).getEntity()).isSameAs(user1);
 		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
@@ -454,15 +454,15 @@ public class ThriftPersisterImplTest
 		verify(entityDao).insertColumnBatch(entity.getId(), comp1, writeString(kv1), mutator);
 		verify(entityDao).insertColumnBatch(entity.getId(), comp2, writeString(kv2), mutator);
 
-		ArgumentCaptor<PersistenceContext> contextCaptor = ArgumentCaptor
-				.forClass(PersistenceContext.class);
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
 
 		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user1),
 				eq(propertyMeta.getJoinProperties()));
 		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user2),
 				eq(propertyMeta.getJoinProperties()));
 
-		List<PersistenceContext> contextes = contextCaptor.getAllValues();
+		List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
 
 		assertThat(contextes.get(0).getEntity()).isSameAs(user1);
 		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
@@ -473,7 +473,7 @@ public class ThriftPersisterImplTest
 	public void should_remove_wide_row() throws Exception
 	{
 		when(entityMeta.isWideRow()).thenReturn(true);
-		when((Mutator) immediateFlushContext.getWideRowMutator("cf")).thenReturn(mutator);
+		when((Mutator) thriftImmediateFlushContext.getWideRowMutator("cf")).thenReturn(mutator);
 		thriftPersister.remove(context);
 		verify(columnFamilyDao).removeRowBatch(entity.getId(), mutator);
 	}
@@ -499,9 +499,9 @@ public class ThriftPersisterImplTest
 		Map<String, PropertyMeta<UUID, String>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when((GenericWideRowDao<Long, String>) columnFamilyDaosMap.get("external_cf")).thenReturn(
+		when((ThriftGenericWideRowDao<Long, String>) columnFamilyDaosMap.get("external_cf")).thenReturn(
 				columnFamilyDao);
-		when((Mutator) immediateFlushContext.getWideRowMutator("external_cf"))
+		when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf"))
 				.thenReturn(cfMutator);
 
 		thriftPersister.remove(context);
@@ -539,11 +539,11 @@ public class ThriftPersisterImplTest
 		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
 				keyComp);
 		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
-		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
+		when(thriftImmediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
 
-		verify(counterDao).removeCounterBatch(keyComp, comp, counterMutator);
+		verify(thriftCounterDao).removeCounterBatch(keyComp, comp, counterMutator);
 
 	}
 
@@ -576,11 +576,11 @@ public class ThriftPersisterImplTest
 		Composite keyComp = new Composite();
 		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
 				keyComp);
-		when(immediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
+		when(thriftImmediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
 
-		verify(counterDao).removeCounterRowBatch(keyComp, counterMutator);
+		verify(thriftCounterDao).removeCounterRowBatch(keyComp, counterMutator);
 
 	}
 

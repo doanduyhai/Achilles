@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.wrapper.AbstractWrapper;
 import info.archinnov.achilles.wrapper.KeySetWrapper;
 
@@ -17,13 +17,13 @@ public class KeySetWrapperBuilder<ID, K> extends
 {
 	private Set<K> target;
 
-	public KeySetWrapperBuilder(PersistenceContext<ID> context, Set<K> target) {
+	public KeySetWrapperBuilder(AchillesPersistenceContext<ID> context, Set<K> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static <ID, K> KeySetWrapperBuilder<ID, K> builder(PersistenceContext<ID> context,
-			Set<K> target)
+	public static <ID, K> KeySetWrapperBuilder<ID, K> builder(
+			AchillesPersistenceContext<ID> context, Set<K> target)
 	{
 		return new KeySetWrapperBuilder<ID, K>(context, target);
 	}

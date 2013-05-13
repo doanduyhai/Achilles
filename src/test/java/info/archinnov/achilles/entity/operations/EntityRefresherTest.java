@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.EntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -66,7 +66,7 @@ public class EntityRefresherTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		PersistenceContext<Long> context = PersistenceContextTestBuilder //
+		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder //
 				.mockAll(entityMeta, CompleteBean.class, bean.getId()) //
 				.entity(bean).build();
 		when(proxifier.getInterceptor(bean)).thenReturn(jpaEntityInterceptor);

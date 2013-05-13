@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -10,7 +10,7 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 
 import org.junit.Test;
@@ -30,13 +30,13 @@ import org.powermock.reflect.Whitebox;
 public class JoinWideMapWrapperBuilderTest
 {
 	@Mock
-	private GenericWideRowDao<Integer, Long> dao;
+	private ThriftGenericWideRowDao<Integer, Long> dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private AchillesInterceptor<Integer> interceptor;
+	private AchillesJpaEntityInterceptor<Integer> interceptor;
 
 	@Mock
 	private EntityPersister persister;

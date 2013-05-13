@@ -4,8 +4,8 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.GenericWideRowDao;
-import info.archinnov.achilles.entity.context.PersistenceContext;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -16,7 +16,7 @@ import info.archinnov.achilles.iterator.AchillesSliceIterator;
 import info.archinnov.achilles.iterator.KeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
-import info.archinnov.achilles.proxy.interceptor.AchillesInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
@@ -42,10 +42,10 @@ public class WideMapWrapperTest {
     private WideMapWrapper<Long, Integer, String> wrapper;
 
     @Mock
-    private PersistenceContext<Long> context;
+    private ThriftPersistenceContext<Long> context;
 
     @Mock
-    private GenericWideRowDao<Long, String> dao;
+    private ThriftGenericWideRowDao<Long, String> dao;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
@@ -67,7 +67,7 @@ public class WideMapWrapperTest {
     private Composite comp = new Composite();
 
     @Mock
-    private AchillesInterceptor<Long> interceptor;
+    private AchillesJpaEntityInterceptor<Long> interceptor;
 
     @Mock
     private Mutator<Long> mutator;

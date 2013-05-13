@@ -1,15 +1,12 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
-import info.archinnov.achilles.entity.context.ConfigurationContext;
+import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -28,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftColumnFamilyCreator
+public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyCreator.class);
 	private Cluster cluster;
@@ -49,7 +46,7 @@ public class ThriftColumnFamilyCreator
 		}
 	}
 
-	public ColumnFamilyDefinition discoverColumnFamily(String columnFamilyName)
+	protected ColumnFamilyDefinition discoverColumnFamily(String columnFamilyName)
 	{
 		log.debug("Start discovery of column family {}", columnFamilyName);
 		for (ColumnFamilyDefinition cfDef : this.cfDefs)
@@ -63,7 +60,7 @@ public class ThriftColumnFamilyCreator
 		return null;
 	}
 
-	public void addColumnFamily(ColumnFamilyDefinition cfDef)
+	protected void addColumnFamily(ColumnFamilyDefinition cfDef)
 	{
 		if (!columnFamilyNames.contains(cfDef.getName()))
 		{
@@ -73,7 +70,7 @@ public class ThriftColumnFamilyCreator
 
 	}
 
-	public void createColumnFamily(EntityMeta<?> entityMeta)
+	protected void createColumnFamily(EntityMeta<?> entityMeta)
 	{
 		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
 		String columnFamilyName = entityMeta.getColumnFamilyName();
@@ -100,37 +97,8 @@ public class ThriftColumnFamilyCreator
 
 	}
 
-	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta<?>> entityMetaMap,
-			ConfigurationContext configContext, boolean hasCounter)
-	{
-		for (Entry<Class<?>, EntityMeta<?>> entry : entityMetaMap.entrySet())
-		{
-
-			EntityMeta<?> entityMeta = entry.getValue();
-			for (Entry<String, PropertyMeta<?, ?>> entryMeta : entityMeta.getPropertyMetas()
-					.entrySet())
-			{
-				PropertyMeta<?, ?> propertyMeta = entryMeta.getValue();
-
-				if (propertyMeta.type().isWideMap())
-				{
-					validateOrCreateCFForWideMap(propertyMeta, entityMeta.getIdMeta()
-							.getValueClass(), configContext.isForceColumnFamilyCreation(),
-							propertyMeta.getExternalCFName(), entityMeta.getClassName());
-				}
-			}
-
-			this.validateOrCreateCFForEntity(entityMeta,
-					configContext.isForceColumnFamilyCreation());
-		}
-
-		if (hasCounter)
-		{
-			this.validateOrCreateCFForCounter(configContext.isForceColumnFamilyCreation());
-		}
-	}
-
-	private <ID> void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
+	@Override
+	protected <ID> void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
 			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
 			String entityName)
 	{
@@ -161,7 +129,8 @@ public class ThriftColumnFamilyCreator
 		}
 	}
 
-	public void validateOrCreateCFForEntity(EntityMeta<?> entityMeta,
+	@Override
+	protected void validateOrCreateCFForEntity(EntityMeta<?> entityMeta,
 			boolean forceColumnFamilyCreation)
 	{
 		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getColumnFamilyName());
@@ -172,7 +141,7 @@ public class ThriftColumnFamilyCreator
 				log.debug("Force creation of column family for entityMeta {}",
 						entityMeta.getClassName());
 
-				this.createColumnFamily(entityMeta);
+				createColumnFamily(entityMeta);
 			}
 			else
 			{
@@ -187,7 +156,8 @@ public class ThriftColumnFamilyCreator
 		}
 	}
 
-	private void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation)
+	@Override
+	protected void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation)
 	{
 		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(COUNTER_CF);
 		if (cfDef == null)

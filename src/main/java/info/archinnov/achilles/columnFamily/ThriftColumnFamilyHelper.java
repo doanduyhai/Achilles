@@ -1,6 +1,6 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.dao.CounterDao.COUNTER_CF;
+import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import info.archinnov.achilles.entity.PropertyHelper;
