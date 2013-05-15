@@ -4,9 +4,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -39,13 +39,13 @@ public class JoinWideMapWrapperBuilderTest
 	private AchillesJpaEntityInterceptor<Integer> interceptor;
 
 	@Mock
-	private EntityPersister persister;
+	private ThriftEntityPersister persister;
 
 	@Mock
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private CompositeHelper compositeHelper;

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.helper;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
@@ -24,7 +24,7 @@ public class CompositeHelper
 {
 	private static final Logger log = LoggerFactory.getLogger(CompositeHelper.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
 	{

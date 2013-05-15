@@ -14,7 +14,7 @@ import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
 import info.archinnov.achilles.wrapper.JoinWideMapWrapper;
 import info.archinnov.achilles.wrapper.ListWrapper;
@@ -82,7 +82,7 @@ public class JpaEntityInterceptorTest
 	private Set<Method> lazyLoaded;
 
 	@Mock
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
 	private MethodProxy proxy;

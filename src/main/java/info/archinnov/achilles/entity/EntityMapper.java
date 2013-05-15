@@ -31,7 +31,7 @@ public class EntityMapper
 
 	private static final Logger log = LoggerFactory.getLogger(EntityMapper.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	@SuppressWarnings("unchecked")
 	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,

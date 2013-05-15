@@ -4,9 +4,9 @@ import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
 import info.archinnov.achilles.iterator.factory.KeyValueFactory;
@@ -25,9 +25,9 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 	private ThriftGenericWideRowDao<ID, JOIN_ID> dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
 	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
-	private EntityPersister persister;
-	private EntityLoader loader;
-	private EntityProxifier proxifier;
+	private ThriftEntityPersister persister;
+	private ThriftEntityLoader loader;
+	private AchillesEntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private CompositeFactory compositeFactory;
 	private KeyValueFactory keyValueFactory;
@@ -61,19 +61,19 @@ public class JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V>
 		return this;
 	}
 
-	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> proxifier(EntityProxifier proxifier)
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> proxifier(AchillesEntityProxifier proxifier)
 	{
 		this.proxifier = proxifier;
 		return this;
 	}
 
-	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> persister(EntityPersister persister)
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> persister(ThriftEntityPersister persister)
 	{
 		this.persister = persister;
 		return this;
 	}
 
-	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> loader(EntityLoader loader)
+	public JoinWideMapWrapperBuilder<ID, JOIN_ID, K, V> loader(ThriftEntityLoader loader)
 	{
 		this.loader = loader;
 		return this;

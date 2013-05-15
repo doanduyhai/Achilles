@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.context;
 
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.AchillesFlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -15,7 +15,7 @@ import info.archinnov.achilles.validation.Validator;
  */
 public abstract class AchillesPersistenceContext<ID>
 {
-	protected final EntityIntrospector introspector = new EntityIntrospector();
+	protected final AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 	protected final EntityMeta<ID> entityMeta;
 	protected final AchillesConfigurationContext configContext;
 	protected final AchillesConsistencyLevelPolicy policy;

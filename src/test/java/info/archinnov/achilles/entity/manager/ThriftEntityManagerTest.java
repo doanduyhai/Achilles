@@ -15,13 +15,13 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
-import info.archinnov.achilles.entity.operations.EntityInitializer;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityMerger;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
-import info.archinnov.achilles.entity.operations.EntityRefresher;
-import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
+import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,25 +74,25 @@ public class ThriftEntityManagerTest
 	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
 
 	@Mock
-	private EntityPersister persister;
+	private ThriftEntityPersister persister;
 
 	@Mock
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
-	private EntityMerger merger;
+	private ThriftEntityMerger merger;
 
 	@Mock
-	private EntityRefresher refresher;
+	private AchillesEntityRefresher refresher;
 
 	@Mock
-	private EntityInitializer initializer;
+	private AchillesEntityInitializer initializer;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private EntityValidator entityValidator;
+	private AchillesEntityValidator achillesEntityValidator;
 
 	private EntityMeta<Long> entityMeta;
 
@@ -145,7 +145,7 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "refresher", refresher);
 		Whitebox.setInternalState(em, "initializer", initializer);
 		Whitebox.setInternalState(em, "proxifier", proxifier);
-		Whitebox.setInternalState(em, "entityValidator", entityValidator);
+		Whitebox.setInternalState(em, "entityValidator", achillesEntityValidator);
 		Whitebox.setInternalState(em, "consistencyPolicy", consistencyPolicy);
 
 		idMeta = PropertyMetaTestBuilder //
@@ -169,8 +169,8 @@ public class ThriftEntityManagerTest
 
 		em.persist(entity);
 
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateEntity(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateNotWideRow(entity, entityMetaMap);
 
 		verify(persister).persist(contextCaptor.capture());
 
@@ -194,8 +194,8 @@ public class ThriftEntityManagerTest
 		when(merger.mergeEntity(contextCaptor.capture())).thenReturn(entity);
 
 		CompleteBean mergedEntity = em.merge(entity);
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateEntity(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateNotWideRow(entity, entityMetaMap);
 
 		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);
 		assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(entityMeta);
@@ -211,7 +211,7 @@ public class ThriftEntityManagerTest
 
 		em.remove(entity);
 		verify(proxifier).ensureProxy(entity);
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateEntity(entity, entityMetaMap);
 		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);
 		assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(entityMeta);
 
@@ -260,8 +260,8 @@ public class ThriftEntityManagerTest
 
 		em.refresh(entity);
 
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateEntity(entity, entityMetaMap);
+		verify(achillesEntityValidator).validateNotWideRow(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
 
 		assertThat(contextCaptor.getValue().getEntity()).isEqualTo(entity);

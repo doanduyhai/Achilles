@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.wrapper.EntrySetWrapper;
 
 import java.lang.reflect.Method;
@@ -38,7 +38,7 @@ public class EntrySetWrapperBuilderTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private ThriftPersistenceContext<Long> context;

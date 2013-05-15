@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -20,11 +20,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityLoader implements AchillesEntityLoader
+public class ThriftEntityLoader implements AchillesEntityLoader
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityLoader.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityLoader.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 

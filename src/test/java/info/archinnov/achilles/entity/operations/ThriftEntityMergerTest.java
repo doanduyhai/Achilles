@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -49,14 +49,14 @@ import testBuilders.PropertyMetaTestBuilder;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMergerTest
+public class ThriftEntityMergerTest
 {
 
 	@InjectMocks
-	private EntityMerger merger;
+	private ThriftEntityMerger merger;
 
 	@Mock
-	private EntityPersister persister;
+	private ThriftEntityPersister persister;
 
 	@Mock
 	private JpaEntityInterceptor<Object, CompleteBean> interceptor;
@@ -71,10 +71,10 @@ public class EntityMergerTest
 	private ThriftGenericEntityDao<Long> dao;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;

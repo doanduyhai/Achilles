@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.validation.Validator;
@@ -16,12 +16,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityValidator
+public class AchillesEntityValidator
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityValidator.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
-	private EntityProxifier proxifier = new EntityProxifier();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)

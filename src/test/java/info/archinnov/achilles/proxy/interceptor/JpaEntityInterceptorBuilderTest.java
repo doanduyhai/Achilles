@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class JpaEntityInterceptorBuilderTest
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
 		assertThat(entityLoader).isNotNull();
-		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
+		assertThat(entityLoader).isInstanceOf(ThriftEntityLoader.class);
 	}
 
 	@Test
@@ -156,6 +156,6 @@ public class JpaEntityInterceptorBuilderTest
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
 		assertThat(entityLoader).isNotNull();
-		assertThat(entityLoader).isInstanceOf(EntityLoader.class);
+		assertThat(entityLoader).isInstanceOf(ThriftEntityLoader.class);
 	}
 }

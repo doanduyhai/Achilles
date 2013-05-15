@@ -33,9 +33,9 @@ import com.google.common.collect.Lists;
  * @author DuyHai DOAN
  * 
  */
-public class EntityIntrospector
+public class AchillesEntityIntrospector
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityIntrospector.class);
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityIntrospector.class);
 
 	private PropertyFilter filter = new PropertyFilter();
 

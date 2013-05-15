@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
@@ -31,7 +31,7 @@ public class CompositeTransformer
 	private static final Logger log = LoggerFactory.getLogger(CompositeTransformer.class);
 
 	private PropertyHelper helper = new PropertyHelper();
-	private EntityProxifier proxifier = new EntityProxifier();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)

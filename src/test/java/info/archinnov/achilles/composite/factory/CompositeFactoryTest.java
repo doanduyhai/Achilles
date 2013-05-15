@@ -4,7 +4,7 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
@@ -51,7 +51,7 @@ public class CompositeFactoryTest
 	private CompositeHelper helper;
 
 	@Mock
-	private EntityIntrospector entityIntrospector;
+	private AchillesEntityIntrospector achillesEntityIntrospector;
 
 	@Mock
 	private PropertyMeta<Integer, String> wideMapMeta;
@@ -96,7 +96,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		Composite comp = factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
@@ -119,7 +119,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		expectedEx.expect(AchillesException.class);
@@ -141,7 +141,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		expectedEx.expect(AchillesException.class);
@@ -182,7 +182,7 @@ public class CompositeFactoryTest
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
 				keyValues);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
@@ -244,9 +244,9 @@ public class CompositeFactoryTest
 						GREATER_THAN_EQUAL
 				});
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(entityIntrospector.determineMultiKeyValues(tweetKey1, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey1, componentGetters)).thenReturn(
 				keyValues1);
-		when(entityIntrospector.determineMultiKeyValues(tweetKey2, componentGetters)).thenReturn(
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey2, componentGetters)).thenReturn(
 				keyValues2);
 
 		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);

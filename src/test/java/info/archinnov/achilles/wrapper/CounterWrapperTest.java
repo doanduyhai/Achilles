@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import me.prettyprint.hector.api.beans.Composite;
 
@@ -47,7 +47,7 @@ public class CounterWrapperTest
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private EntityValidator validator;
+	private AchillesEntityValidator validator;
 
 	private ConsistencyLevel readLevel = EACH_QUORUM;
 	private ConsistencyLevel writeLevel = LOCAL_QUORUM;

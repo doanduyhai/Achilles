@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,12 +29,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityPersister implements AchillesEntityPersister
+public class ThriftEntityPersister implements AchillesEntityPersister
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityPersister.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
-	private EntityLoader loader = new EntityLoader();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private ThriftEntityLoader loader = new ThriftEntityLoader();
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
 	@Override

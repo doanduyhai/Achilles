@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -34,20 +34,20 @@ import org.mockito.runners.MockitoJUnitRunner;
 		"rawtypes",
 		"unchecked"
 })
-public class EntityRefresherTest
+public class AchillesEntityRefresherTest
 {
 
 	@InjectMocks
-	private EntityRefresher entityRefresher;
+	private AchillesEntityRefresher achillesEntityRefresher;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -76,7 +76,7 @@ public class EntityRefresherTest
 		when(jpaEntityInterceptor.getLazyAlreadyLoaded()).thenReturn(lazyLoaded);
 		when(loader.load(context)).thenReturn(bean);
 
-		entityRefresher.refresh(context);
+		achillesEntityRefresher.refresh(context);
 
 		verify(dirtyMap).clear();
 		verify(lazyLoaded).clear();

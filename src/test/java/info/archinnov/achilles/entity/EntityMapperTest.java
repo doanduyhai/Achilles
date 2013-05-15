@@ -58,7 +58,7 @@ public class EntityMapperTest
 	private EntityMapper mapper;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
 	private ExecutingKeyspace keyspace;

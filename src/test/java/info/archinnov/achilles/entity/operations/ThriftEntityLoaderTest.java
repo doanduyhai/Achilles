@@ -7,7 +7,7 @@ import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
@@ -41,13 +41,13 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityLoaderTest
+public class ThriftEntityLoaderTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -89,7 +89,7 @@ public class EntityLoaderTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
 	private ThriftJoinLoaderImpl joinLoaderImpl;

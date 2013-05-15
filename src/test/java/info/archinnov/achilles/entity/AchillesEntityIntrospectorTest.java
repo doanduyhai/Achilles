@@ -46,7 +46,7 @@ import testBuilders.PropertyMetaTestBuilder;
  */
 @SuppressWarnings("unused")
 @RunWith(MockitoJUnitRunner.class)
-public class EntityIntrospectorTest {
+public class AchillesEntityIntrospectorTest {
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -69,7 +69,7 @@ public class EntityIntrospectorTest {
     @Mock
     private ThriftGenericEntityDao<Long> dao;
 
-    private final EntityIntrospector introspector = new EntityIntrospector();
+    private final AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
     @Mock
     private ThriftConsistencyLevelPolicy policy;

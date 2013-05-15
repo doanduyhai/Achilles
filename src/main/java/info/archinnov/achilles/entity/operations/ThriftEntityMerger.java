@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -35,13 +35,13 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public class EntityMerger implements AchillesEntityMerger
+public class ThriftEntityMerger implements AchillesEntityMerger
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMerger.class);
 
-	private EntityPersister persister = new EntityPersister();
-	private EntityIntrospector introspector = new EntityIntrospector();
-	private EntityProxifier proxifier = new EntityProxifier();
+	private ThriftEntityPersister persister = new ThriftEntityPersister();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
 
@@ -211,7 +211,7 @@ public class EntityMerger implements AchillesEntityMerger
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntitiesMap);
 	}
 
-	public void setPersister(EntityPersister persister)
+	public void setPersister(ThriftEntityPersister persister)
 	{
 		this.persister = persister;
 	}

@@ -5,14 +5,14 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class ThriftLoaderImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
 
 	private EntityMapper mapper = new EntityMapper();
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 	private CompositeFactory compositeFactory = new CompositeFactory();
 
 	@SuppressWarnings("unchecked")
@@ -179,7 +179,7 @@ public class ThriftLoaderImpl
 
 	@SuppressWarnings("unchecked")
 	public <ID, JOIN_ID, V> V loadJoinSimple(ThriftPersistenceContext<ID> context,
-			PropertyMeta<?, V> propertyMeta, EntityLoader loader)
+			PropertyMeta<?, V> propertyMeta, ThriftEntityLoader loader)
 	{
 		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
 		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta

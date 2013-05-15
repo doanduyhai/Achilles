@@ -38,9 +38,9 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityProxifierTest
+public class AchillesEntityProxifierTest
 {
-	private EntityProxifier proxifier = new EntityProxifier();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 
 	@Mock
 	private EntityMeta<Long> entityMeta;

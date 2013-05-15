@@ -50,7 +50,7 @@ public class PropertyHelper
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-	private EntityIntrospector entityIntrospector = new EntityIntrospector();
+	private AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
 
 	static
 	{
@@ -156,8 +156,8 @@ public class PropertyHelper
 		for (Integer order : orderList)
 		{
 			Field multiKeyField = components.get(order);
-			componentGetters.add(entityIntrospector.findGetter(keyClass, multiKeyField));
-			componentSetters.add(entityIntrospector.findSetter(keyClass, multiKeyField));
+			componentGetters.add(achillesEntityIntrospector.findGetter(keyClass, multiKeyField));
+			componentSetters.add(achillesEntityIntrospector.findSetter(keyClass, multiKeyField));
 			componentClasses.add(multiKeyField.getType());
 		}
 
@@ -322,7 +322,7 @@ public class PropertyHelper
 			{
 				Component<?> comp = components.get(i);
 				Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
-				entityIntrospector.setValueToField(key, componentSetters.get(i), compValue);
+				achillesEntityIntrospector.setValueToField(key, componentSetters.get(i), compValue);
 			}
 
 		}
@@ -349,9 +349,9 @@ public class PropertyHelper
 
 		Consistency clevel = field.getAnnotation(Consistency.class);
 
-		ConsistencyLevel defaultGlobalRead = entityIntrospector
+		ConsistencyLevel defaultGlobalRead = achillesEntityIntrospector
 				.getDefaultGlobalReadConsistency(policy);
-		ConsistencyLevel defaultGlobalWrite = entityIntrospector
+		ConsistencyLevel defaultGlobalWrite = achillesEntityIntrospector
 				.getDefaultGlobalWriteConsistency(policy);
 
 		if (clevel != null)

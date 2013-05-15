@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 
@@ -36,7 +36,7 @@ public class KeyValueFactory
 	private static final Logger log = LoggerFactory.getLogger(KeyValueFactory.class);
 
 	private JoinEntityHelper joinHelper = new JoinEntityHelper();
-	private EntityProxifier proxifier = new EntityProxifier();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 
 	public <ID, K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext<ID> context,

@@ -4,7 +4,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
-import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import me.prettyprint.hector.api.beans.Composite;
@@ -30,7 +30,7 @@ public class CounterWrapper<ID> implements Counter
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
-	private EntityValidator validator = new EntityValidator();
+	private AchillesEntityValidator validator = new AchillesEntityValidator();
 
 	public CounterWrapper(ID key) {
 		this.key = key;

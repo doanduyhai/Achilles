@@ -2,7 +2,7 @@ package info.archinnov.achilles.composite.factory;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.WideMap;
@@ -29,7 +29,7 @@ public class CompositeFactory
 	private static final Logger log = LoggerFactory.getLogger(CompositeFactory.class);
 
 	private CompositeHelper helper = new CompositeHelper();
-	private EntityIntrospector entityIntrospector = new EntityIntrospector();
+	private AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
 
 	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)
@@ -54,7 +54,7 @@ public class CompositeFactory
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityIntrospector.determineMultiKeyValues(keyValue,
+			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();
@@ -106,7 +106,7 @@ public class CompositeFactory
 
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
 			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
-			List<Object> keyValues = entityIntrospector.determineMultiKeyValues(keyValue,
+			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
 			int valueCount = keyValues.size();

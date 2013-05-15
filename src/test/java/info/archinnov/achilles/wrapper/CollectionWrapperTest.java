@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class CollectionWrapperTest
 	private PropertyMeta<Void, CompleteBean> joinPropertyMeta;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -122,7 +122,7 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new EntityProxifier());
+		wrapper.setProxifier(new AchillesEntityProxifier());
 
 		wrapper.addAll(Arrays.asList("a", "b"));
 
@@ -240,7 +240,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new EntityProxifier());
+		wrapper.setProxifier(new AchillesEntityProxifier());
 		wrapper.removeAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(1);
@@ -277,7 +277,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new EntityProxifier());
+		wrapper.setProxifier(new AchillesEntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(2);
@@ -296,7 +296,7 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new EntityProxifier());
+		wrapper.setProxifier(new AchillesEntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "b", "c"));
 
 		assertThat(target).hasSize(3);

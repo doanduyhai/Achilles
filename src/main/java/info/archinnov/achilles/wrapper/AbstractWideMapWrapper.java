@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
-import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
@@ -26,7 +26,7 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 
 	protected ThriftPersistenceContext<ID> context;
 	protected AchillesJpaEntityInterceptor<ID, ?> interceptor;
-	protected EntityValidator validator = new EntityValidator();
+	protected AchillesEntityValidator validator = new AchillesEntityValidator();
 
 	protected static final int DEFAULT_COUNT = 100;
 

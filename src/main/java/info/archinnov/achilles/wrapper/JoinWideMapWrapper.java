@@ -9,9 +9,9 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.helper.CompositeHelper;
@@ -41,9 +41,9 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 	private ID id;
 	private PropertyMeta<K, V> propertyMeta;
 	private ThriftGenericWideRowDao<ID, JOIN_ID> dao;
-	private EntityPersister persister;
-	private EntityLoader loader;
-	private EntityProxifier proxifier;
+	private ThriftEntityPersister persister;
+	private ThriftEntityLoader loader;
+	private AchillesEntityProxifier proxifier;
 	private CompositeHelper compositeHelper;
 	private CompositeFactory compositeFactory;
 	private KeyValueFactory keyValueFactory;
@@ -267,17 +267,17 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		this.propertyMeta = externalWideMapMeta;
 	}
 
-	public void setEntityProxifier(EntityProxifier proxifier)
+	public void setEntityProxifier(AchillesEntityProxifier proxifier)
 	{
 		this.proxifier = proxifier;
 	}
 
-	public void setPersister(EntityPersister persister)
+	public void setPersister(ThriftEntityPersister persister)
 	{
 		this.persister = persister;
 	}
 
-	public void setLoader(EntityLoader loader)
+	public void setLoader(ThriftEntityLoader loader)
 	{
 		this.loader = loader;
 	}

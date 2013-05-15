@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.wrapper.ListIteratorWrapper;
 
 import java.lang.reflect.Method;
@@ -36,7 +36,7 @@ public class ListIteratorWrapperBuilderTest
 	private Method setter;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private ThriftPersistenceContext<Long> context;

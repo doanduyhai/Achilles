@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.PropertyHelper.allowedTypes;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory.factory;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
@@ -46,7 +46,7 @@ public class PropertyParser
 	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
 	private PropertyHelper propertyHelper = new PropertyHelper();
-	private EntityIntrospector entityIntrospector = new EntityIntrospector();
+	private AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
 	private PropertyParsingValidator validator = new PropertyParsingValidator();
 
 	public PropertyMeta<?, ?> parse(PropertyParsingContext context)
@@ -108,7 +108,7 @@ public class PropertyParser
 
 		Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
 		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
@@ -134,7 +134,7 @@ public class PropertyParser
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = PropertyType.COUNTER;
 		CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass()
 				.getCanonicalName());
@@ -177,7 +177,7 @@ public class PropertyParser
 
 		Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
 		PropertyMeta<Void, V> listMeta = factory(valueClass) //
@@ -210,7 +210,7 @@ public class PropertyParser
 		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 		Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
 		PropertyMeta<Void, V> setMeta = factory(valueClass) //
@@ -249,7 +249,7 @@ public class PropertyParser
 		Validator.validateSerializable(keyClass, "Map key type of '" + field.getName()
 				+ "' should be Serializable");
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
 		PropertyMeta<K, V> mapMeta = factory(keyClass, valueClass) //
@@ -297,7 +297,7 @@ public class PropertyParser
 
 		Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
 				+ "' should be Serializable");
-		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 
 		PropertyMeta<?, ?> propertyMeta = factory(keyClass, valueClass) //
 				.objectMapper(context.getCurrentObjectMapper()) //

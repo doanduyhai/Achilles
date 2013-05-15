@@ -6,7 +6,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -47,23 +47,23 @@ import testBuilders.PropertyMetaTestBuilder;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityPersisterTest
+public class ThriftEntityPersisterTest
 {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private EntityPersister persister;
+	private ThriftEntityPersister persister;
 
 	@Mock
-	private EntityLoader loader;
+	private ThriftEntityLoader loader;
 
 	@Mock
 	private ThriftPersisterImpl persisterImpl;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
 	private EntityMeta<Long> entityMeta;

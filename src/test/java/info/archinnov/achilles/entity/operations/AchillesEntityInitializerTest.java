@@ -23,12 +23,12 @@ import com.google.common.collect.ImmutableMap;
  * @author DuyHai DOAN
  * 
  */
-public class EntityInitializerTest
+public class AchillesEntityInitializerTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private EntityInitializer initializer = new EntityInitializer();
+	private AchillesEntityInitializer initializer = new AchillesEntityInitializer();
 
 	@SuppressWarnings(
 	{

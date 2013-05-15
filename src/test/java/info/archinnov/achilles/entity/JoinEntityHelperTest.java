@@ -37,7 +37,7 @@ public class JoinEntityHelperTest
 {
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
 	private EntityMapper mapper;

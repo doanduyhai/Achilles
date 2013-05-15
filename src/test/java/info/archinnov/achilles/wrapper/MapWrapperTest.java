@@ -6,7 +6,7 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -48,7 +48,7 @@ public class MapWrapperTest
 	private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private ThriftPersistenceContext<Long> context;

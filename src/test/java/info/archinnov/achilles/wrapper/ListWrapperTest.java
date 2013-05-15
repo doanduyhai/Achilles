@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ListWrapperTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Before
 	public void setUp() throws Exception
@@ -69,7 +69,7 @@ public class ListWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		ListWrapper<Long, String> listWrapper = prepareListWrapper(target);
-		listWrapper.setProxifier(new EntityProxifier());
+		listWrapper.setProxifier(new AchillesEntityProxifier());
 		listWrapper.addAll(1, Arrays.asList("b", "c"));
 
 		assertThat(target).hasSize(3);

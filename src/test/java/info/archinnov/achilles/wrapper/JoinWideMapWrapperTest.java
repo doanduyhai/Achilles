@@ -18,9 +18,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
@@ -75,13 +75,13 @@ public class JoinWideMapWrapperTest {
     private CompositeFactory compositeFactory;
 
     @Mock
-    private EntityPersister persister;
+    private ThriftEntityPersister persister;
 
     @Mock
-    private EntityLoader loader;
+    private ThriftEntityLoader loader;
 
     @Mock
-    private EntityProxifier proxifier;
+    private AchillesEntityProxifier proxifier;
 
     @Mock
     private CompositeHelper compositeHelper;

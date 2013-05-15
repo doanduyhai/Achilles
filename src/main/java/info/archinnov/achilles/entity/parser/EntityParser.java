@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.parser;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
@@ -39,7 +39,7 @@ public class EntityParser
 	private PropertyParser parser = new PropertyParser();
 	private JoinPropertyParser joinParser = new JoinPropertyParser();
 	private PropertyFilter filter = new PropertyFilter();
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	@SuppressWarnings("unchecked")
 	public <ID> EntityMeta<ID> parseEntity(EntityParsingContext context)

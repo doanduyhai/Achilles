@@ -28,7 +28,7 @@ public class JoinEntityHelper
 	private static final Logger log = LoggerFactory.getLogger(JoinEntityHelper.class);
 
 	private EntityMapper mapper = new EntityMapper();
-	private EntityIntrospector introspector = new EntityIntrospector();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
 			EntityMeta<ID> entityMeta, ThriftGenericEntityDao<ID> joinEntityDao)

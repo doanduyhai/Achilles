@@ -5,14 +5,14 @@ import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
@@ -40,8 +40,8 @@ public class ThriftPersisterImpl
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftPersisterImpl.class);
 
-	private EntityIntrospector introspector = new EntityIntrospector();
-	private EntityProxifier proxifier = new EntityProxifier();
+	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 
 	private CompositeFactory compositeFactory = new CompositeFactory();
 
@@ -172,7 +172,7 @@ public class ThriftPersisterImpl
 
 	@SuppressWarnings("unchecked")
 	public <ID, JOIN_ID, V> void batchPersistJoinEntity(ThriftPersistenceContext<ID> context,
-			PropertyMeta<Void, V> propertyMeta, V joinEntity, EntityPersister persister)
+			PropertyMeta<Void, V> propertyMeta, V joinEntity, ThriftEntityPersister persister)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		PropertyMeta<Void, JOIN_ID> idMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
@@ -203,7 +203,7 @@ public class ThriftPersisterImpl
 	@SuppressWarnings("unchecked")
 	public <ID, JOIN_ID, V> void batchPersistJoinCollection(ThriftPersistenceContext<ID> context,
 			PropertyMeta<Void, V> propertyMeta, Collection<V> joinCollection,
-			EntityPersister persister)
+			ThriftEntityPersister persister)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();
@@ -243,7 +243,7 @@ public class ThriftPersisterImpl
 
 	@SuppressWarnings("unchecked")
 	public <ID, K, V, JOIN_ID> void batchPersistJoinMap(ThriftPersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta, Map<K, V> joinMap, EntityPersister persiter)
+			PropertyMeta<K, V> propertyMeta, Map<K, V> joinMap, ThriftEntityPersister persiter)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) joinProperties.getEntityMeta();

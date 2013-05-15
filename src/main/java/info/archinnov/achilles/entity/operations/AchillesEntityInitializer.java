@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityInitializer
+public class AchillesEntityInitializer
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityInitializer.class);
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityInitializer.class);
 
 	public <T> void initializeEntity(T entity, EntityMeta<?> entityMeta)
 	{

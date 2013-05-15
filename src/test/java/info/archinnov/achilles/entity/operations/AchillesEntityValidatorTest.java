@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.EntityIntrospector;
+import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
@@ -30,19 +30,19 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityValidatorTest
+public class AchillesEntityValidatorTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private EntityValidator entityValidator;
+	private AchillesEntityValidator achillesEntityValidator;
 
 	@Mock
-	private EntityIntrospector introspector;
+	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	@Mock
 	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
@@ -69,7 +69,7 @@ public class EntityValidatorTest
 		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(introspector.getKey(bean, idMeta)).thenReturn(12L);
 
-		entityValidator.validateEntity(bean, entityMetaMap);
+		achillesEntityValidator.validateEntity(bean, entityMetaMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -86,7 +86,7 @@ public class EntityValidatorTest
 		exception.expectMessage("Cannot get primary key for entity "
 				+ CompleteBean.class.getCanonicalName());
 
-		entityValidator.validateEntity(bean, entityMetaMap);
+		achillesEntityValidator.validateEntity(bean, entityMetaMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -99,7 +99,7 @@ public class EntityValidatorTest
 		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(entityMeta.isWideRow()).thenReturn(false);
 
-		entityValidator.validateNotWideRow(bean, entityMetaMap);
+		achillesEntityValidator.validateNotWideRow(bean, entityMetaMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,7 +116,7 @@ public class EntityValidatorTest
 		exception.expectMessage("This operation is not allowed for the wide row '"
 				+ CompleteBean.class.getCanonicalName());
 
-		entityValidator.validateNotWideRow(bean, entityMetaMap);
+		achillesEntityValidator.validateNotWideRow(bean, entityMetaMap);
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class EntityValidatorTest
 
 		Whitebox.setInternalState(context, "flushContext", thriftImmediateFlushContext);
 
-		entityValidator.validateNoPendingBatch(context);
+		achillesEntityValidator.validateNoPendingBatch(context);
 	}
 
 }

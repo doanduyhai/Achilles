@@ -12,12 +12,18 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityRefresher
+public class AchillesEntityRefresher
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityRefresher.class);
 
-	private EntityProxifier proxifier = new EntityProxifier();
-	private EntityLoader loader = new EntityLoader();
+	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private AchillesEntityLoader loader;
+
+	public AchillesEntityRefresher() {}
+
+	public AchillesEntityRefresher(AchillesEntityLoader loader) {
+		this.loader = loader;
+	}
 
 	@SuppressWarnings("unchecked")
 	public <ID, T> void refresh(AchillesPersistenceContext<ID> context)

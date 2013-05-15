@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityProxifier
+public class AchillesEntityProxifier
 {
-	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
+	private static final Logger log = LoggerFactory.getLogger(AchillesEntityProxifier.class);
 
 	public <ID> Class<?> deriveBaseClass(Object entity)
 	{

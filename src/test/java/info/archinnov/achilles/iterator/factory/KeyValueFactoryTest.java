@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.serializer.SerializerUtils;
@@ -71,7 +71,7 @@ public class KeyValueFactoryTest {
     private JoinEntityHelper joinHelper;
 
     @Mock
-    private EntityProxifier proxifier;
+    private AchillesEntityProxifier proxifier;
 
     @Mock
     private CompositeTransformer compositeTransformer;

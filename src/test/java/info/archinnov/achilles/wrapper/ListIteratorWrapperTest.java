@@ -3,7 +3,7 @@ package info.archinnov.achilles.wrapper;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class ListIteratorWrapperTest
 	private PropertyMeta<Void, Integer> propertyMeta;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private AchillesEntityProxifier proxifier;
 
 	private ListIteratorWrapper<Long, Integer> wrapper;
 
