@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import me.prettyprint.hector.api.Serializer;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,16 +33,14 @@ public class PropertyMeta<K, V>
 	private String propertyName;
 	private String entityClassName;
 	private Class<K> keyClass;
-	private Serializer<K> keySerializer;
 	private Class<V> valueClass;
-	private Serializer<V> valueSerializer;
 	private Method getter;
 	private Method setter;
 	private CounterProperties counterProperties;
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
 	private String externalCfName;
-	private Serializer<?> idSerializer;
+	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	private boolean singleKey;
@@ -96,16 +92,6 @@ public class PropertyMeta<K, V>
 		this.keyClass = keyClass;
 	}
 
-	public Serializer<K> getKeySerializer()
-	{
-		return keySerializer;
-	}
-
-	public void setKeySerializer(Serializer<K> keySerializer)
-	{
-		this.keySerializer = keySerializer;
-	}
-
 	public Class<V> getValueClass()
 	{
 		return valueClass;
@@ -114,16 +100,6 @@ public class PropertyMeta<K, V>
 	public void setValueClass(Class<V> valueClass)
 	{
 		this.valueClass = valueClass;
-	}
-
-	public Serializer<V> getValueSerializer()
-	{
-		return valueSerializer;
-	}
-
-	public void setValueSerializer(Serializer<V> valueSerializer)
-	{
-		this.valueSerializer = valueSerializer;
 	}
 
 	public Method getGetter()
@@ -154,6 +130,16 @@ public class PropertyMeta<K, V>
 	public void setMultiKeyProperties(MultiKeyProperties multiKeyProperties)
 	{
 		this.multiKeyProperties = multiKeyProperties;
+	}
+
+	public Class<?> getIdClass()
+	{
+		return idClass;
+	}
+
+	public void setIdClass(Class<?> idClass)
+	{
+		this.idClass = idClass;
 	}
 
 	public K getKey(Object object)
@@ -381,16 +367,6 @@ public class PropertyMeta<K, V>
 		this.externalCfName = externalCfName;
 	}
 
-	public Serializer<?> getIdSerializer()
-	{
-		return idSerializer;
-	}
-
-	public void setIdSerializer(Serializer<?> idSerializer)
-	{
-		this.idSerializer = idSerializer;
-	}
-
 	public String getEntityClassName()
 	{
 		return entityClassName;
@@ -404,22 +380,11 @@ public class PropertyMeta<K, V>
 	@Override
 	public String toString()
 	{
-		return "PropertyMeta [type="
-				+ type
-				+ ", propertyName="
-				+ propertyName
-				+ ", entityClassName="
-				+ entityClassName
-				+ ", keyClass="
-				+ keyClass.getCanonicalName()
-				+ ", keySerializer="
-				+ (keySerializer != null ? keySerializer.getComparatorType().getTypeName() : "null")
-				+ ", valueClass=" + valueClass.getCanonicalName() + ", valueSerializer="
-				+ valueSerializer.getComparatorType().getTypeName() + ", counterProperties="
-				+ counterProperties + ", joinProperties=" + joinProperties
+		return "PropertyMeta [type=" + type + ", propertyName=" + propertyName
+				+ ", entityClassName=" + entityClassName + ", keyClass="
+				+ keyClass.getCanonicalName() + ", valueClass=" + valueClass.getCanonicalName()
+				+ ", counterProperties=" + counterProperties + ", joinProperties=" + joinProperties
 				+ ", multiKeyProperties=" + multiKeyProperties + ", externalCfName="
-				+ externalCfName + ", idSerializer="
-				+ (idSerializer != null ? idSerializer.getComparatorType().getTypeName() : "null")
 				+ ", consistencyLevels=[" + consistencyLevels.left.name() + ","
 				+ consistencyLevels.right.name() + "], singleKey=" + singleKey + "]";
 	}

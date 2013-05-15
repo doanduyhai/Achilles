@@ -14,6 +14,7 @@ import info.archinnov.achilles.entity.type.Counter;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -78,10 +79,11 @@ public class DaoContextBuilder
 			AchillesConfigurationContext configContext, EntityMeta<ID> entityMeta)
 	{
 		String columnFamilyName = entityMeta.getColumnFamilyName();
+		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
 		ThriftGenericEntityDao<ID> entityDao = new ThriftGenericEntityDao<ID>(//
 				cluster, //
 				keyspace, //
-				(Serializer<ID>) entityMeta.getIdMeta().getValueSerializer(), //
+				idSerializer, //
 				columnFamilyName, //
 				configContext.getConsistencyPolicy());
 
@@ -96,27 +98,29 @@ public class DaoContextBuilder
 		Class<?> valueClass = propertyMeta.getValueClass();
 		ThriftGenericWideRowDao<?, ?> dao;
 
-		PropertyMeta<Void, ID> idMeta = entityMeta.getIdMeta();
 		String externalCFName = propertyMeta.getExternalCFName();
 		AchillesConsistencyLevelPolicy consistencyPolicy = configContext.getConsistencyPolicy();
+		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
+		Serializer<V> valueSerializer = SerializerTypeInferer.getSerializer(propertyMeta
+				.getValueClass());
 		if (isSupportedType(valueClass))
 		{
 			dao = new ThriftGenericWideRowDao<ID, V>(cluster, keyspace, //
-					idMeta.getValueSerializer(), //
-					propertyMeta.getValueSerializer(), //
+					idSerializer, //
+					valueSerializer, //
 					externalCFName, consistencyPolicy);
 		}
 		else if (Counter.class.isAssignableFrom(valueClass))
 		{
 			dao = new ThriftGenericWideRowDao<ID, Long>(cluster, keyspace, //
-					idMeta.getValueSerializer(), //
+					idSerializer, //
 					LONG_SRZ, //
 					externalCFName, consistencyPolicy);
 		}
 		else
 		{
 			dao = new ThriftGenericWideRowDao<ID, String>(cluster, keyspace, //
-					idMeta.getValueSerializer(), //
+					idSerializer, //
 					STRING_SRZ, //
 					externalCFName, consistencyPolicy);
 		}
@@ -125,17 +129,20 @@ public class DaoContextBuilder
 
 	}
 
-	@SuppressWarnings("unchecked")
 	private <ID, K, V, JOIN_ID> void buildWideRowDaoForJoinWideMap(Cluster cluster,
 			Keyspace keyspace, AchillesConfigurationContext configContext,
 			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinEntityMeta)
 	{
 
+		Serializer<JOIN_ID> joinIdSerializer = SerializerTypeInferer.getSerializer(joinEntityMeta
+				.getIdClass());
+		Serializer<ID> idSerializer = SerializerTypeInferer
+				.getSerializer(propertyMeta.getIdClass());
 		ThriftGenericWideRowDao<ID, JOIN_ID> joinDao = new ThriftGenericWideRowDao<ID, JOIN_ID>(
 				cluster, //
 				keyspace, //
-				(Serializer<ID>) propertyMeta.getIdSerializer(), //
-				joinEntityMeta.getIdSerializer(), //
+				idSerializer, //
+				joinIdSerializer, //
 				propertyMeta.getExternalCFName(),//
 				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy());
 

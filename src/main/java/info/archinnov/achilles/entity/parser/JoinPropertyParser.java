@@ -86,7 +86,7 @@ public class JoinPropertyParser
 
 		joinPropertyMeta.setExternalCfName(ThriftColumnFamilyHelper
 				.normalizerAndValidateColumnFamilyName(externalTableName));
-		joinPropertyMeta.setIdSerializer(idMeta.getValueSerializer());
+		joinPropertyMeta.setIdClass(idMeta.getValueClass());
 		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
 		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
 				joinPropertyMeta.getValueClass());

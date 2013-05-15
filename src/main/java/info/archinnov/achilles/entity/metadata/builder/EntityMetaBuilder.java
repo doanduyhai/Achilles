@@ -11,9 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
-import me.prettyprint.hector.api.Serializer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +54,7 @@ public class EntityMetaBuilder<ID>
 		EntityMeta<ID> meta = new EntityMeta<ID>();
 
 		meta.setIdMeta(idMeta);
-		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(idMeta.getValueClass());
-		meta.setIdSerializer(idSerializer);
+		meta.setIdClass(idMeta.getValueClass());
 		meta.setClassName(className);
 		meta.setColumnFamilyName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);

@@ -10,9 +10,6 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
 
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
-import me.prettyprint.hector.api.Serializer;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,11 +70,7 @@ public class PropertyMetaFactory<K, V>
 		return this;
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
+	@SuppressWarnings("unchecked")
 	public PropertyMeta<K, V> build()
 	{
 		log.debug("Build propertyMeta for property {} of entity class {}", propertyName,
@@ -115,12 +108,7 @@ public class PropertyMetaFactory<K, V>
 		meta.setPropertyName(propertyName);
 		meta.setEntityClassName(entityClassName);
 		meta.setKeyClass(keyClass);
-		if (keyClass != Void.class)
-		{
-			meta.setKeySerializer((Serializer) SerializerTypeInferer.getSerializer(keyClass));
-		}
 		meta.setValueClass(valueClass);
-		meta.setValueSerializer((Serializer) SerializerTypeInferer.getSerializer(valueClass));
 		meta.setGetter(accessors[0]);
 		meta.setSetter(accessors[1]);
 

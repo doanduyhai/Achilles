@@ -9,8 +9,10 @@ import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
@@ -45,7 +47,8 @@ public class CompositeFactory
 			Validator.validateNotNull(keyValue, "The values for the for the key of WideMap '"
 					+ propertyName + "' should not be null");
 
-			Serializer<T> keySerializer = (Serializer<T>) propertyMeta.getKeySerializer();
+			Serializer<T> keySerializer = SerializerTypeInferer.getSerializer(propertyMeta
+					.getKeyClass());
 			composite.setComponent(0, keyValue, keySerializer, keySerializer.getComparatorType()
 					.getTypeName());
 		}
@@ -53,7 +56,7 @@ public class CompositeFactory
 		{
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Serializer<?>> componentSerializers = getComponentSerializers(multiKeyProperties);
 			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
@@ -105,7 +108,8 @@ public class CompositeFactory
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			List<Serializer<?>> componentSerializers = multiKeyProperties.getComponentSerializers();
+			List<Serializer<?>> componentSerializers = getComponentSerializers(multiKeyProperties);
+
 			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
@@ -134,6 +138,16 @@ public class CompositeFactory
 			}
 		}
 		return composite;
+	}
+
+	private List<Serializer<?>> getComponentSerializers(MultiKeyProperties multiKeyProperties)
+	{
+		List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
+		for (Class<?> clazz : multiKeyProperties.getComponentClasses())
+		{
+			componentSerializers.add(SerializerTypeInferer.getSerializer(clazz));
+		}
+		return componentSerializers;
 	}
 
 	public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,

@@ -338,7 +338,7 @@ public class PropertyParser
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
 				idMeta.getPropertyName());
 
-		propertyMeta.setIdSerializer(idMeta.getValueSerializer());
+		propertyMeta.setIdClass(idMeta.getValueClass());
 
 		log.trace("Complete wide map property {} of entity class {} : {}",
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),

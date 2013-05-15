@@ -7,8 +7,6 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import me.prettyprint.hector.api.Serializer;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -24,7 +22,7 @@ public class EntityMeta<ID>
 	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
-	private Serializer<ID> idSerializer;
+	private Class<ID> idClass;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private PropertyMeta<Void, ID> idMeta;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -60,16 +58,6 @@ public class EntityMeta<ID>
 	public void setSerialVersionUID(Long serialVersionUID)
 	{
 		this.serialVersionUID = serialVersionUID;
-	}
-
-	public Serializer<ID> getIdSerializer()
-	{
-		return idSerializer;
-	}
-
-	public void setIdSerializer(Serializer<ID> idSerializer)
-	{
-		this.idSerializer = idSerializer;
 	}
 
 	public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
@@ -130,6 +118,16 @@ public class EntityMeta<ID>
 	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		this.consistencyLevels = consistencyLevels;
+	}
+
+	public Class<ID> getIdClass()
+	{
+		return idClass;
+	}
+
+	public void setIdClass(Class<ID> idClass)
+	{
+		this.idClass = idClass;
 	}
 
 	@Override

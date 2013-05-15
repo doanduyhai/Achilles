@@ -3,7 +3,7 @@ package info.archinnov.achilles.columnFamily;
 import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
-import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
@@ -42,7 +42,7 @@ public class ThriftColumnFamilyHelper
 	public static final String COUNTER_COMPARATOR_CHECK = "CompositeType(org.apache.cassandra.db.marshal.UTF8Type)";
 
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
-	public PropertyHelper helper = new PropertyHelper();
+	public ThriftPropertyHelper helper = new ThriftPropertyHelper();
 
 	public <ID> ColumnFamilyDefinition buildEntityCF(EntityMeta<ID> entityMeta, String keyspaceName)
 	{
@@ -53,7 +53,8 @@ public class ThriftColumnFamilyHelper
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, ComparatorType.COMPOSITETYPE);
 
-		String keyValidationType = entityMeta.getIdSerializer().getComparatorType().getTypeName();
+		Serializer<?> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
+		String keyValidationType = idSerializer.getComparatorType().getTypeName();
 
 		cfDef.setKeyValidationClass(keyValidationType);
 		cfDef.setComparatorTypeAlias(ENTITY_COMPARATOR_TYPE_ALIAS);
@@ -108,7 +109,8 @@ public class ThriftColumnFamilyHelper
 			{
 				if (propertyMeta.isJoin())
 				{
-					valueSerializer = propertyMeta.joinIdMeta().getValueSerializer();
+					valueSerializer = SerializerTypeInferer.getSerializer(propertyMeta.joinIdMeta()
+							.getValueClass());
 				}
 				else
 				{
@@ -173,14 +175,16 @@ public class ThriftColumnFamilyHelper
 		log.trace("Validating column family row key definition for entityMeta {}",
 				entityMeta.getClassName());
 
-		if (!StringUtils.equals(cfDef.getKeyValidationClass(), entityMeta.getIdSerializer()
-				.getComparatorType().getClassName()))
+		Serializer<?> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
+
+		if (!StringUtils.equals(cfDef.getKeyValidationClass(), idSerializer.getComparatorType()
+				.getClassName()))
 		{
 			throw new AchillesInvalidColumnFamilyException("The column family '"
 					+ entityMeta.getColumnFamilyName() + "' key class '"
 					+ cfDef.getKeyValidationClass()
 					+ "' does not correspond to the entity id class '"
-					+ entityMeta.getIdSerializer().getComparatorType().getClassName() + "'");
+					+ idSerializer.getComparatorType().getClassName() + "'");
 		}
 
 		if (entityMeta.isWideRow())

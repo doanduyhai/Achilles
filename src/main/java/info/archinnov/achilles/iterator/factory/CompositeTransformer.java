@@ -2,7 +2,7 @@ package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.LoggerHelper.format;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -11,6 +11,8 @@ import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
+import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
+import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
@@ -30,7 +32,7 @@ public class CompositeTransformer
 {
 	private static final Logger log = LoggerFactory.getLogger(CompositeTransformer.class);
 
-	private PropertyHelper helper = new PropertyHelper();
+	private ThriftPropertyHelper helper = new ThriftPropertyHelper();
 	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
@@ -133,9 +135,11 @@ public class CompositeTransformer
 	public <K, V> K buildKey(PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
 		K key;
+		Serializer<K> keySerializer = SerializerTypeInferer.getSerializer(propertyMeta
+				.getKeyClass());
 		if (propertyMeta.isSingleKey())
 		{
-			key = (K) hColumn.getName().get(0, propertyMeta.getKeySerializer());
+			key = (K) hColumn.getName().get(0, keySerializer);
 		}
 		else
 		{
@@ -175,9 +179,11 @@ public class CompositeTransformer
 	public <K> K buildCounterKey(PropertyMeta<K, ?> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		K key;
+		Serializer<K> keySerializer = SerializerTypeInferer.getSerializer(propertyMeta
+				.getKeyClass());
 		if (propertyMeta.isSingleKey())
 		{
-			key = hColumn.getName().get(0, propertyMeta.getKeySerializer());
+			key = hColumn.getName().get(0, keySerializer);
 		}
 		else
 		{
