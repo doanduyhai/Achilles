@@ -7,9 +7,11 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
+import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.Map;
@@ -46,7 +48,9 @@ public class ThriftEntityManager extends AchillesEntityManager
 		super.persister = new ThriftEntityPersister();
 		super.loader = new ThriftEntityLoader();
 		super.merger = new ThriftEntityMerger();
-		super.refresher = new AchillesEntityRefresher(super.loader);
+		super.proxifier = new ThriftEntityProxifier();
+		super.achillesEntityValidator = new AchillesEntityValidator(super.proxifier);
+		super.refresher = new AchillesEntityRefresher(super.loader, super.proxifier);
 	}
 
 	public void persist(final Object entity, ConsistencyLevel writeLevel)

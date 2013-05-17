@@ -5,6 +5,9 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.helper.CompositeHelper;
 import info.archinnov.achilles.iterator.factory.IteratorFactory;
@@ -28,6 +31,12 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 	private KeyValueFactory keyValueFactory = new KeyValueFactory();
 	private IteratorFactory iteratorFactory = new IteratorFactory();
 	private CompositeFactory compositeFactory = new CompositeFactory();
+
+	protected JpaEntityInterceptor() {
+		super.loader = new ThriftEntityLoader();
+		super.persister = new ThriftEntityPersister();
+		super.proxifier = new ThriftEntityProxifier();
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -110,8 +119,8 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 				.proxifier(proxifier)//
 				.iteratorFactory(iteratorFactory) //
 				.keyValueFactory(keyValueFactory) //
-				.loader(loader) //
-				.persister(persister) //
+				.loader((ThriftEntityLoader) loader) //
+				.persister((ThriftEntityPersister) persister) //
 				.build();
 	}
 

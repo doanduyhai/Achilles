@@ -4,7 +4,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.PropertyHelper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -13,6 +12,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.Arrays;
 import java.util.List;

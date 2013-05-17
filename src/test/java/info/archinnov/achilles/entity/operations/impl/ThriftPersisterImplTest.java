@@ -10,7 +10,6 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
@@ -24,6 +23,7 @@ import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.serializer.SerializerUtils;
 

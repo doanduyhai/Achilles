@@ -2,7 +2,6 @@ package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import info.archinnov.achilles.annotations.WideRow;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -10,6 +9,7 @@ import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
@@ -22,6 +21,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
 import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -8,7 +8,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.EntityMapper;
+import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
@@ -77,7 +77,7 @@ public class ThriftEntityLoaderTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private EntityMapper mapper;
+	private ThriftEntityMapper mapper;
 
 	@Mock
 	private ThriftGenericEntityDao<Long> dao;

@@ -2,10 +2,10 @@ package info.archinnov.achilles.entity.parser.validator;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 

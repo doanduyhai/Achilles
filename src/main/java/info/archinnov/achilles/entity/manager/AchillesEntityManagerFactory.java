@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.AchillesColumnFamilyCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.parser.EntityExplorer;
 import info.archinnov.achilles.entity.parser.EntityParser;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
@@ -103,23 +102,8 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		return hasSimpleCounter;
 	}
 
-	protected ThriftConsistencyLevelPolicy initConsistencyLevelPolicy(
-			Map<String, Object> configurationMap, AchillesArgumentExtractor argumentExtractor)
-	{
-		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
-
-		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
-				.initDefaultReadConsistencyLevel(configurationMap);
-		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
-				.initDefaultWriteConsistencyLevel(configurationMap);
-		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor
-				.initReadConsistencyMap(configurationMap);
-		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
-				.initWriteConsistencyMap(configurationMap);
-
-		return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
-				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
-	}
+	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
+			Map<String, Object> configurationMap, AchillesArgumentExtractor argumentExtractor);
 
 	protected AchillesConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
 			AchillesArgumentExtractor argumentExtractor)

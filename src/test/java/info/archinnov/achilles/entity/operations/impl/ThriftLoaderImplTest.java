@@ -8,9 +8,8 @@ import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.EntityMapper;
+import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
@@ -20,6 +19,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public class ThriftLoaderImplTest
 	private ThriftEntityLoader loader;
 
 	@Mock
-	private EntityMapper mapper;
+	private ThriftEntityMapper mapper;
 
 	@Mock
 	private AchillesEntityIntrospector introspector;

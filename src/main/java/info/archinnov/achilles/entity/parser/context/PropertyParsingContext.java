@@ -1,9 +1,9 @@
 package info.archinnov.achilles.entity.parser.context;
 
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Field;
 import java.util.List;

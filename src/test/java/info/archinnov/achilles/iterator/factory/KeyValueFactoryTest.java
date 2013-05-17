@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static testBuilders.PropertyMetaTestBuilder.noClass;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
@@ -68,7 +68,7 @@ public class KeyValueFactoryTest {
     private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
     @Mock
-    private JoinEntityHelper joinHelper;
+    private ThriftJoinEntityHelper joinHelper;
 
     @Mock
     private AchillesEntityProxifier proxifier;

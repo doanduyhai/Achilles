@@ -41,7 +41,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
 

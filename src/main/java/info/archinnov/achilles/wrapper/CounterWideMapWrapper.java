@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.helper.LoggerHelper.format;
+import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;

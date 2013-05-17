@@ -2,8 +2,6 @@ package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptorBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class AchillesEntityProxifier
+public abstract class AchillesEntityProxifier
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityProxifier.class);
 
@@ -56,7 +54,7 @@ public class AchillesEntityProxifier
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		enhancer.setCallback(JpaEntityInterceptorBuilder.builder(context, entity).build());
+		enhancer.setCallback(buildInterceptor(context, entity));
 
 		return (T) enhancer.create();
 	}
@@ -67,7 +65,7 @@ public class AchillesEntityProxifier
 		log.debug("Get real entity from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
+		AchillesJpaEntityInterceptor<ID, T> interceptor = (AchillesJpaEntityInterceptor<ID, T>) factory
 				.getCallback(0);
 		return (T) interceptor.getTarget();
 	}
@@ -78,12 +76,12 @@ public class AchillesEntityProxifier
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T, ID> JpaEntityInterceptor<ID, T> getInterceptor(T proxy)
+	public <T, ID> AchillesJpaEntityInterceptor<ID, T> getInterceptor(T proxy)
 	{
 		log.debug("Get JPA interceptor from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) factory
+		AchillesJpaEntityInterceptor<ID, T> interceptor = (AchillesJpaEntityInterceptor<ID, T>) factory
 				.getCallback(0);
 		return interceptor;
 	}
@@ -160,4 +158,7 @@ public class AchillesEntityProxifier
 
 		return result;
 	}
+
+	public abstract <ID, T> AchillesJpaEntityInterceptor<ID, T> buildInterceptor(
+			AchillesPersistenceContext<ID> context, T entity);
 }

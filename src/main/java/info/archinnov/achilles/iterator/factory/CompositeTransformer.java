@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator.factory;
 
-import static info.archinnov.achilles.helper.LoggerHelper.format;
+import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.wrapper.builder.CounterWrapperBuilder;
@@ -33,7 +34,7 @@ public class CompositeTransformer
 	private static final Logger log = LoggerFactory.getLogger(CompositeTransformer.class);
 
 	private ThriftPropertyHelper helper = new ThriftPropertyHelper();
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)

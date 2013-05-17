@@ -17,10 +17,10 @@ import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;

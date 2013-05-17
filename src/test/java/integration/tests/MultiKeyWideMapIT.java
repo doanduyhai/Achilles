@@ -5,10 +5,10 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;

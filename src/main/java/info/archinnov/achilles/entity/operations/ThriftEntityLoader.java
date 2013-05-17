@@ -72,6 +72,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 		return (T) entity;
 	}
 
+	@Override
 	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
 			AchillesPersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
 	{

@@ -3,12 +3,12 @@ package info.archinnov.achilles.entity.operations.impl;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +35,7 @@ public class ThriftJoinLoaderImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftJoinLoaderImpl.class);
 
 	private CompositeFactory compositeFactory = new CompositeFactory();
-	private JoinEntityHelper joinHelper = new JoinEntityHelper();
+	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
 
 	@SuppressWarnings("unchecked")
 	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(ThriftPersistenceContext<ID> context,

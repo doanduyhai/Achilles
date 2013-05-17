@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity;
 
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
@@ -23,11 +23,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinEntityHelper
+public class ThriftJoinEntityHelper
 {
-	private static final Logger log = LoggerFactory.getLogger(JoinEntityHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftJoinEntityHelper.class);
 
-	private EntityMapper mapper = new EntityMapper();
+	private ThriftEntityMapper mapper = new ThriftEntityMapper();
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.wrapper.CollectionWrapper;
 
 import java.util.Collection;
@@ -16,13 +16,13 @@ public class CollectionWrapperBuilder<ID, V> extends
 {
 	private Collection<V> target;
 
-	public static <ID, V> CollectionWrapperBuilder<ID, V> builder(ThriftPersistenceContext<ID> context,
-			Collection<V> target)
+	public static <ID, V> CollectionWrapperBuilder<ID, V> builder(
+			AchillesPersistenceContext<ID> context, Collection<V> target)
 	{
 		return new CollectionWrapperBuilder<ID, V>(context, target);
 	}
 
-	public CollectionWrapperBuilder(ThriftPersistenceContext<ID> context, Collection<V> target) {
+	public CollectionWrapperBuilder(AchillesPersistenceContext<ID> context, Collection<V> target) {
 		super.context = context;
 		this.target = target;
 	}

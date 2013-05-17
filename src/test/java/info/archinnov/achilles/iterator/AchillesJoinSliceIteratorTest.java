@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -66,7 +66,7 @@ public class AchillesJoinSliceIteratorTest
 	private Iterator<HColumn<Composite, Long>> columnsIterator;
 
 	@Mock
-	private JoinEntityHelper joinHelper;
+	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
 	private ThriftGenericEntityDao<Long> joinEntityDao;

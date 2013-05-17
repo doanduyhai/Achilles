@@ -1,13 +1,14 @@
 package info.archinnov.achilles.iterator.factory;
 
-import static info.archinnov.achilles.helper.LoggerHelper.format;
+import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
 
@@ -35,8 +36,8 @@ public class KeyValueFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(KeyValueFactory.class);
 
-	private JoinEntityHelper joinHelper = new JoinEntityHelper();
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
+	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 
 	public <ID, K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext<ID> context,

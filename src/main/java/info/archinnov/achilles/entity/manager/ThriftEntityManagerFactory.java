@@ -1,10 +1,13 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
+import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.DaoContext;
 import info.archinnov.achilles.entity.context.DaoContextBuilder;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.Collections;
 import java.util.Map;
@@ -205,6 +208,25 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	public boolean isOpen()
 	{
 		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
+	}
+
+	@Override
+	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
+			Map<String, Object> configurationMap, AchillesArgumentExtractor argumentExtractor)
+	{
+		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
+
+		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
+				.initDefaultReadConsistencyLevel(configurationMap);
+		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
+				.initDefaultWriteConsistencyLevel(configurationMap);
+		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor
+				.initReadConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
+				.initWriteConsistencyMap(configurationMap);
+
+		return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
+				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
 	}
 
 }

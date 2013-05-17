@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.parser.context;
 
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.lang.reflect.Field;

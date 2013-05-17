@@ -1,7 +1,6 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.wrapper.AbstractWrapper;
@@ -48,7 +47,7 @@ public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilde
 		return (T) this;
 	}
 
-	public T context(ThriftPersistenceContext<ID> context)
+	public T context(AchillesPersistenceContext<ID> context)
 	{
 		this.context = context;
 		return (T) this;

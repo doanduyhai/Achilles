@@ -4,9 +4,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,17 +33,17 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class JoinEntityHelperTest
+public class ThriftJoinEntityHelperTest
 {
 
 	@Mock
 	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityMapper mapper;
+	private ThriftEntityMapper mapper;
 
 	@InjectMocks
-	private JoinEntityHelper joinHelper;
+	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
 	private ThriftGenericEntityDao<Long> dao;

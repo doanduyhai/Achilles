@@ -1,8 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -137,8 +136,6 @@ public class EntityMeta<ID>
 		description.append("EntityMeta [className=").append(className).append(", ");
 		description.append("columnFamilyName=").append(columnFamilyName).append(", ");
 		description.append("serialVersionUID=").append(serialVersionUID).append(", ");
-		description.append("idSerializer=").append(LONG_SRZ.getComparatorType().getTypeName())
-				.append(", ");
 		description.append("propertyMetas=[").append(StringUtils.join(propertyMetas.keySet(), ","))
 				.append("], ");
 		description.append("idMeta=").append(idMeta.toString()).append(", ");

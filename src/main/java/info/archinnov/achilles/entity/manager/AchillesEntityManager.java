@@ -3,12 +3,11 @@ package info.archinnov.achilles.entity.manager;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
 import info.archinnov.achilles.entity.operations.AchillesEntityLoader;
 import info.archinnov.achilles.entity.operations.AchillesEntityMerger;
 import info.archinnov.achilles.entity.operations.AchillesEntityPersister;
-import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
 import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
@@ -48,9 +47,9 @@ public abstract class AchillesEntityManager implements EntityManager
 	protected AchillesEntityLoader loader;
 	protected AchillesEntityMerger merger;
 	protected AchillesEntityRefresher refresher;
+	protected AchillesEntityProxifier proxifier;
+	protected AchillesEntityValidator achillesEntityValidator;
 	protected AchillesEntityInitializer initializer = new AchillesEntityInitializer();
-	protected AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
-	protected AchillesEntityValidator achillesEntityValidator = new AchillesEntityValidator();
 
 	AchillesEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
 			AchillesConfigurationContext configContext)
@@ -572,7 +571,7 @@ public abstract class AchillesEntityManager implements EntityManager
 
 	protected abstract <ID> AchillesPersistenceContext<ID> initPersistenceContext(Object entity);
 
-	protected abstract <T, ID> ThriftPersistenceContext<ID> initPersistenceContext(
+	protected abstract <T, ID> AchillesPersistenceContext<ID> initPersistenceContext(
 			Class<T> entityClass, ID primaryKey);
 
 	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)

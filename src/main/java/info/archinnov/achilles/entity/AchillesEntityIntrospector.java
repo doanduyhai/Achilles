@@ -2,14 +2,14 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper;
-import info.archinnov.achilles.configuration.ThriftConfigurationParameters;
+import info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper;
+import info.archinnov.achilles.configuration.AchillesConfigurationParameters;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.PropertyFilter;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
@@ -284,12 +284,12 @@ public class AchillesEntityIntrospector
 
 		if (!StringUtils.isBlank(columnFamilyName))
 		{
-			columnFamilyName = ThriftColumnFamilyHelper
+			columnFamilyName = AchillesColumnFamilyHelper
 					.normalizerAndValidateColumnFamilyName(columnFamilyName);
 		}
 		else
 		{
-			columnFamilyName = ThriftColumnFamilyHelper
+			columnFamilyName = AchillesColumnFamilyHelper
 					.normalizerAndValidateColumnFamilyName(canonicalName);
 		}
 
@@ -421,13 +421,13 @@ public class AchillesEntityIntrospector
 	{
 		return policy.getDefaultGlobalReadConsistencyLevel() != null ? policy
 				.getDefaultGlobalReadConsistencyLevel()
-				: ThriftConfigurationParameters.DEFAULT_LEVEL;
+				: AchillesConfigurationParameters.DEFAULT_LEVEL;
 	}
 
 	public ConsistencyLevel getDefaultGlobalWriteConsistency(AchillesConsistencyLevelPolicy policy)
 	{
 		return policy.getDefaultGlobalWriteConsistencyLevel() != null ? policy
 				.getDefaultGlobalWriteConsistencyLevel()
-				: ThriftConfigurationParameters.DEFAULT_LEVEL;
+				: AchillesConfigurationParameters.DEFAULT_LEVEL;
 	}
 }

@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.parser.validator;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ANY;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.parser.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.validation.Validator;
 

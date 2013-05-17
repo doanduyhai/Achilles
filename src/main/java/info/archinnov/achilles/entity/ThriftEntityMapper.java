@@ -1,11 +1,11 @@
 package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.HashMap;
@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityMapper
+public class ThriftEntityMapper
 {
 
-	private static final Logger log = LoggerFactory.getLogger(EntityMapper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMapper.class);
 
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 

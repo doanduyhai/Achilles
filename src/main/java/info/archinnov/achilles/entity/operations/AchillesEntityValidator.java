@@ -21,7 +21,11 @@ public class AchillesEntityValidator
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityValidator.class);
 
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private AchillesEntityProxifier proxifier;
+
+	public AchillesEntityValidator(AchillesEntityProxifier proxifier) {
+		this.proxifier = proxifier;
+	}
 
 	@SuppressWarnings("rawtypes")
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)

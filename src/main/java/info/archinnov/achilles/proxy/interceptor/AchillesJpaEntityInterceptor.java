@@ -2,8 +2,8 @@ package info.archinnov.achilles.proxy.interceptor;
 
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.AchillesEntityLoader;
+import info.archinnov.achilles.entity.operations.AchillesEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.wrapper.builder.ListWrapperBuilder;
@@ -31,9 +31,9 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesJpaEntityInterceptor.class);
 
-	protected ThriftEntityLoader loader = new ThriftEntityLoader();
-	protected ThriftEntityPersister persister = new ThriftEntityPersister();
-	protected AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	protected AchillesEntityLoader loader;
+	protected AchillesEntityPersister persister;
+	protected AchillesEntityProxifier proxifier;
 
 	protected T target;
 	protected ID key;

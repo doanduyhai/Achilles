@@ -6,11 +6,11 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,13 +49,13 @@ import com.google.common.collect.Sets;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMapperTest
+public class ThriftEntityMapperTest
 {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
 	@InjectMocks
-	private EntityMapper mapper;
+	private ThriftEntityMapper mapper;
 
 	@Mock
 	private AchillesEntityIntrospector introspector;

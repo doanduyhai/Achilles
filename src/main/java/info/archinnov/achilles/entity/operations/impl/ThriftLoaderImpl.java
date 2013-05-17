@@ -1,12 +1,11 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.helper.LoggerHelper.format;
+import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.EntityMapper;
+import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -14,6 +13,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class ThriftLoaderImpl
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
 
-	private EntityMapper mapper = new EntityMapper();
+	private ThriftEntityMapper mapper = new ThriftEntityMapper();
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 	private CompositeFactory compositeFactory = new CompositeFactory();
 

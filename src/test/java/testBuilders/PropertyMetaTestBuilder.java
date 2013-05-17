@@ -1,6 +1,5 @@
 package testBuilders;
 
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -11,6 +10,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.MultiKey;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.entity.type.WideMap;
 
 import java.lang.reflect.Field;

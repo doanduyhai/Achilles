@@ -3,12 +3,12 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.AbstractAchillesSliceIterator.IteratorType.ACHILLES_JOIN_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 
 	private SliceQuery<K, Composite, V> query;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
-	private JoinEntityHelper joinHelper = new JoinEntityHelper();
+	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
 	private ThriftGenericEntityDao<JOIN_ID> joinEntityDao;
 
 	public AchillesJoinSliceIterator( //

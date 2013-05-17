@@ -2,9 +2,9 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

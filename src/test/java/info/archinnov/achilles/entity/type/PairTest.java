@@ -1,6 +1,7 @@
-package info.archinnov.achilles.dao;
+package info.archinnov.achilles.entity.type;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.type.Pair;
 
 import org.junit.Test;
 

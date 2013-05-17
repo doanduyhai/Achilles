@@ -4,10 +4,10 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.parser.validator.PropertyParsingValidator;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.validation.Validator;
 

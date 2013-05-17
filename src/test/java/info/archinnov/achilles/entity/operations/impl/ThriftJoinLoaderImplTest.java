@@ -8,8 +8,7 @@ import info.archinnov.achilles.composite.factory.CompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
-import info.archinnov.achilles.entity.JoinEntityHelper;
+import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
@@ -19,6 +18,7 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class ThriftJoinLoaderImplTest
 	private ThriftJoinLoaderImpl thriftJoinLoader;
 
 	@Mock
-	private JoinEntityHelper joinHelper;
+	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
 	private CompositeFactory compositeFactory;

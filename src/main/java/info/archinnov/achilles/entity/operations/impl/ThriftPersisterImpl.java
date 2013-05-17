@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.helper.LoggerHelper.format;
+import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.GREATER_THAN_EQUAL;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
@@ -11,8 +11,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
@@ -41,7 +42,7 @@ public class ThriftPersisterImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftPersisterImpl.class);
 
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	private CompositeFactory compositeFactory = new CompositeFactory();
 

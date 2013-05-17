@@ -6,8 +6,8 @@ import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.Pair;
 import info.archinnov.achilles.entity.context.AchillesFlushContext.FlushType;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
