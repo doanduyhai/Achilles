@@ -11,25 +11,25 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class MapEntryWrapperBuilder<ID, K, V> extends
-		AbstractWrapperBuilder<ID, MapEntryWrapperBuilder<ID, K, V>, K, V>
+public class MapEntryWrapperBuilder<K, V> extends
+		AbstractWrapperBuilder<MapEntryWrapperBuilder<K, V>, K, V>
 {
 	private final Map.Entry<K, V> target;
 
-	public MapEntryWrapperBuilder(AchillesPersistenceContext<ID> context, Map.Entry<K, V> target) {
+	public MapEntryWrapperBuilder(AchillesPersistenceContext context, Map.Entry<K, V> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static <ID, K, V> MapEntryWrapperBuilder<ID, K, V> builder(
-			AchillesPersistenceContext<ID> context, Map.Entry<K, V> target)
+	public static <K, V> MapEntryWrapperBuilder<K, V> builder(AchillesPersistenceContext context,
+			Map.Entry<K, V> target)
 	{
-		return new MapEntryWrapperBuilder<ID, K, V>(context, target);
+		return new MapEntryWrapperBuilder<K, V>(context, target);
 	}
 
-	public MapEntryWrapper<ID, K, V> build()
+	public MapEntryWrapper<K, V> build()
 	{
-		MapEntryWrapper<ID, K, V> wrapper = new MapEntryWrapper<ID, K, V>(this.target);
+		MapEntryWrapper<K, V> wrapper = new MapEntryWrapper<K, V>(this.target);
 		super.build(wrapper);
 		return wrapper;
 	}

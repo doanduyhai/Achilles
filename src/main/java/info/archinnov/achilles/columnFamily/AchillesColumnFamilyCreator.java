@@ -16,13 +16,13 @@ import java.util.Map.Entry;
 public abstract class AchillesColumnFamilyCreator
 {
 
-	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta<?>> entityMetaMap,
+	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta> entityMetaMap,
 			AchillesConfigurationContext configContext, boolean hasCounter)
 	{
-		for (Entry<Class<?>, EntityMeta<?>> entry : entityMetaMap.entrySet())
+		for (Entry<Class<?>, EntityMeta> entry : entityMetaMap.entrySet())
 		{
 
-			EntityMeta<?> entityMeta = entry.getValue();
+			EntityMeta entityMeta = entry.getValue();
 			for (Entry<String, PropertyMeta<?, ?>> entryMeta : entityMeta.getPropertyMetas()
 					.entrySet())
 			{
@@ -45,11 +45,11 @@ public abstract class AchillesColumnFamilyCreator
 		}
 	}
 
-	protected abstract <ID> void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
-			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
+	protected abstract void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
+			Class<?> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
 			String entityName);
 
-	protected abstract void validateOrCreateCFForEntity(EntityMeta<?> entityMeta,
+	protected abstract void validateOrCreateCFForEntity(EntityMeta entityMeta,
 			boolean forceColumnFamilyCreation);
 
 	protected abstract void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation);

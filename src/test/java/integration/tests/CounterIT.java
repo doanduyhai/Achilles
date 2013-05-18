@@ -2,7 +2,7 @@ package integration.tests;
 
 import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.*;
 import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -42,10 +42,10 @@ public class CounterIT
 	public ExpectedException exception = ExpectedException.none();
 
 	private ThriftCounterDao thriftCounterDao = ThriftCassandraDaoTest.getCounterDao();
-	private ThriftGenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
-			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
-	private ThriftGenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
-			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
+	private ThriftGenericWideRowDao popularTopicsDao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			"complete_bean_popular_topics", Long.class, Long.class);
+	private ThriftGenericWideRowDao counterWideMapDao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			"counter_widemap", Long.class, Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 	private CompleteBean bean;

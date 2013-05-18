@@ -37,17 +37,16 @@ public class ThriftJoinLoaderImpl
 	private CompositeFactory compositeFactory = new CompositeFactory();
 	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> List<V> loadJoinListProperty(ThriftPersistenceContext<ID> context,
+	public <V> List<V> loadJoinListProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 
-		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
+		EntityMeta joinMeta = propertyMeta.joinMeta();
+		List<Object> joinIds = fetchColumns(context, propertyMeta);
 		log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
 				.getValueClass().getCanonicalName(), joinIds);
 
-		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao joinEntityDao = context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 		List<V> joinEntities = new ArrayList<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
@@ -55,13 +54,12 @@ public class ThriftJoinLoaderImpl
 		return joinEntities;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, V> Set<V> loadJoinSetProperty(ThriftPersistenceContext<ID> context,
+	public <V> Set<V> loadJoinSetProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		List<JOIN_ID> joinIds = fetchColumns(context, propertyMeta);
-		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
+		EntityMeta joinMeta = propertyMeta.joinMeta();
+		List<Object> joinIds = fetchColumns(context, propertyMeta);
+		ThriftGenericEntityDao joinEntityDao = context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 		Set<V> joinEntities = new HashSet<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
@@ -69,13 +67,12 @@ public class ThriftJoinLoaderImpl
 		return joinEntities;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V> Map<K, V> loadJoinMapProperty(ThriftPersistenceContext<ID> context,
+	public <K, V> Map<K, V> loadJoinMapProperty(ThriftPersistenceContext context,
 			PropertyMeta<K, V> propertyMeta)
 	{
 
-		EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
-		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
+		EntityMeta joinMeta = propertyMeta.joinMeta();
+		ThriftGenericEntityDao joinEntityDao = context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -83,21 +80,20 @@ public class ThriftJoinLoaderImpl
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 
-		PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
-				.joinIdMeta();
+		PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
 		Map<K, V> map = propertyMeta.newMapInstance();
-		Map<K, JOIN_ID> partialMap = new HashMap<K, JOIN_ID>();
+		Map<K, Object> partialMap = new HashMap<K, Object>();
 
 		Class<K> keyClass = propertyMeta.getKeyClass();
 
-		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
+		List<Object> joinIds = new ArrayList<Object>();
 
 		for (Pair<Composite, String> pair : columns)
 		{
 			KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
 
-			JOIN_ID joinId = joinIdMeta.getValueFromString(holder.getValue());
+			Object joinId = joinIdMeta.getValueFromString(holder.getValue());
 			partialMap.put(keyClass.cast(holder.getKey()), joinId);
 			joinIds.add(joinId);
 		}
@@ -107,10 +103,10 @@ public class ThriftJoinLoaderImpl
 			log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
 					.getValueClass().getCanonicalName(), joinIds);
 
-			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
+			Map<Object, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
+					joinIds, joinMeta, joinEntityDao);
 
-			for (Entry<K, JOIN_ID> entry : partialMap.entrySet())
+			for (Entry<K, Object> entry : partialMap.entrySet())
 			{
 				map.put(entry.getKey(), entitiesMap.get(entry.getValue()));
 			}
@@ -119,8 +115,7 @@ public class ThriftJoinLoaderImpl
 		return map;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <JOIN_ID, ID, V> List<JOIN_ID> fetchColumns(ThriftPersistenceContext<ID> context,
+	private <V> List<Object> fetchColumns(ThriftPersistenceContext context,
 			PropertyMeta<?, V> propertyMeta)
 	{
 
@@ -131,27 +126,27 @@ public class ThriftJoinLoaderImpl
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
-		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
+		List<Object> joinIds = new ArrayList<Object>();
 
-		PropertyMeta<Void, ?> joinIdMeta = propertyMeta.joinIdMeta();
+		PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
 		for (Pair<Composite, String> pair : columns)
 		{
-			joinIds.add((JOIN_ID) joinIdMeta.getValueFromString(pair.right));
+			joinIds.add(joinIdMeta.getValueFromString(pair.right));
 		}
 		return joinIds;
 	}
 
-	private <V, JOIN_ID> void fillCollectionWithJoinEntities(PropertyMeta<?, V> propertyMeta,
-			EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds,
-			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, Collection<V> joinEntities)
+	private <V> void fillCollectionWithJoinEntities(PropertyMeta<?, V> propertyMeta,
+			EntityMeta joinMeta, List<Object> joinIds, ThriftGenericEntityDao joinEntityDao,
+			Collection<V> joinEntities)
 	{
 		if (joinIds.size() > 0)
 		{
-			Map<JOIN_ID, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
-					(List<JOIN_ID>) joinIds, joinMeta, joinEntityDao);
+			Map<Object, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
+					joinIds, joinMeta, joinEntityDao);
 
-			for (JOIN_ID joinId : joinIds)
+			for (Object joinId : joinIds)
 			{
 				joinEntities.add(entitiesMap.get(joinId));
 			}

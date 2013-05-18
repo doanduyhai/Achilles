@@ -21,17 +21,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CounterKeyValueIteratorImpl<ID, K> implements KeyValueIterator<K, Counter>
+public class CounterKeyValueIteratorImpl<K> implements KeyValueIterator<K, Counter>
 {
 	private static final Logger log = LoggerFactory.getLogger(CounterKeyValueIteratorImpl.class);
 
 	private KeyValueFactory factory = new KeyValueFactory();
-	private ThriftPersistenceContext<ID> context;
+	private ThriftPersistenceContext context;
 
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;
 	private PropertyMeta<K, Counter> propertyMeta;
 
-	public CounterKeyValueIteratorImpl(ThriftPersistenceContext<ID> context,
+	public CounterKeyValueIteratorImpl(ThriftPersistenceContext context,
 			AbstractAchillesSliceIterator<HCounterColumn<Composite>> columnSliceIterator,
 			PropertyMeta<K, Counter> propertyMeta)
 	{

@@ -1,9 +1,9 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.composite.factory.CompositeFactory;
@@ -46,8 +46,8 @@ public class JPAOperationsIT
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private ThriftGenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
+	private ThriftGenericEntityDao dao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
@@ -283,7 +283,7 @@ public class JPAOperationsIT
 		composite.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		composite.addComponent(2, 0, ComponentEquality.EQUAL);
 
-		assertThat(readLong(dao.getValue(bean.getId(), composite))).isEqualTo(100L);
+		assertThat(readLong(dao.<Long, String> getValue(bean.getId(), composite))).isEqualTo(100L);
 
 		Composite startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),

@@ -18,7 +18,7 @@ public class AchillesEntityInitializer
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityInitializer.class);
 
-	public <T> void initializeEntity(T entity, EntityMeta<?> entityMeta)
+	public <T> void initializeEntity(T entity, EntityMeta entityMeta)
 	{
 		log.debug("Initializing lazy fields for entity {} of class {}", entity,
 				entityMeta.getClassName());

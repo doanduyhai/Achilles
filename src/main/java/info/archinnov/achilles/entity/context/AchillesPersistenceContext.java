@@ -13,19 +13,19 @@ import info.archinnov.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesPersistenceContext<ID>
+public abstract class AchillesPersistenceContext
 {
 	protected final AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	protected final EntityMeta<ID> entityMeta;
+	protected final EntityMeta entityMeta;
 	protected final AchillesConfigurationContext configContext;
 	protected final AchillesConsistencyLevelPolicy policy;
 	protected final Class<?> entityClass;
 
 	protected Object entity;
-	protected ID primaryKey;
+	protected Object primaryKey;
 	protected AchillesFlushContext flushContext;
 
-	protected AchillesPersistenceContext(EntityMeta<ID> entityMeta,
+	protected AchillesPersistenceContext(EntityMeta entityMeta,
 			AchillesConfigurationContext configContext, Object entity,
 			AchillesFlushContext flushContext)
 	{
@@ -43,8 +43,8 @@ public abstract class AchillesPersistenceContext<ID>
 				+ "' should not be null");
 	}
 
-	protected AchillesPersistenceContext(EntityMeta<ID> entityMeta,
-			AchillesConfigurationContext configContext, Class<?> entityClass, ID primaryKey,
+	protected AchillesPersistenceContext(EntityMeta entityMeta,
+			AchillesConfigurationContext configContext, Class<?> entityClass, Object primaryKey,
 			AchillesFlushContext flushContext)
 	{
 		this.entityMeta = entityMeta;
@@ -58,11 +58,11 @@ public abstract class AchillesPersistenceContext<ID>
 				+ "' should not be null");
 	}
 
-	public abstract <JOIN_ID> AchillesPersistenceContext<JOIN_ID> newPersistenceContext(
-			EntityMeta<JOIN_ID> joinMeta, Object joinEntity);
+	public abstract AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta,
+			Object joinEntity);
 
-	public abstract <JOIN_ID> AchillesPersistenceContext<JOIN_ID> newPersistenceContext(
-			Class<?> entityClass, EntityMeta<JOIN_ID> joinMeta, JOIN_ID joinId);
+	public abstract AchillesPersistenceContext newPersistenceContext(Class<?> entityClass,
+			EntityMeta joinMeta, Object joinId);
 
 	public boolean isWideRow()
 	{
@@ -109,7 +109,7 @@ public abstract class AchillesPersistenceContext<ID>
 		flushContext.cleanUp();
 	}
 
-	public EntityMeta<ID> getEntityMeta()
+	public EntityMeta getEntityMeta()
 	{
 		return entityMeta;
 	}
@@ -129,12 +129,12 @@ public abstract class AchillesPersistenceContext<ID>
 		return entityClass;
 	}
 
-	public ID getPrimaryKey()
+	public Object getPrimaryKey()
 	{
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(ID primaryKey)
+	public void setPrimaryKey(Object primaryKey)
 	{
 		this.primaryKey = primaryKey;
 	}

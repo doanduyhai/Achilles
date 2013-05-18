@@ -16,19 +16,19 @@ import info.archinnov.achilles.wrapper.WideMapWrapper;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapperBuilder<ID, K, V>
+public class WideMapWrapperBuilder<K, V>
 {
-	private ID id;
-	private ThriftGenericWideRowDao<ID, V> dao;
+	private Object id;
+	private ThriftGenericWideRowDao dao;
 	private PropertyMeta<K, V> wideMapMeta;
-	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
+	private AchillesJpaEntityInterceptor<?> interceptor;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
 	private IteratorFactory iteratorFactory;
 	private CompositeFactory compositeFactory;
-	private ThriftPersistenceContext<ID> context;
+	private ThriftPersistenceContext context;
 
-	public WideMapWrapperBuilder(ID id, ThriftGenericWideRowDao<ID, V> dao,
+	public WideMapWrapperBuilder(Object id, ThriftGenericWideRowDao dao,
 			PropertyMeta<K, V> wideMapMeta)
 	{
 		this.id = id;
@@ -36,52 +36,51 @@ public class WideMapWrapperBuilder<ID, K, V>
 		this.wideMapMeta = wideMapMeta;
 	}
 
-	public static <ID, K, V> WideMapWrapperBuilder<ID, K, V> builder(ID id,
-			ThriftGenericWideRowDao<ID, V> dao, PropertyMeta<K, V> wideMapMeta)
+	public static <K, V> WideMapWrapperBuilder<K, V> builder(Object id,
+			ThriftGenericWideRowDao dao, PropertyMeta<K, V> wideMapMeta)
 	{
-		return new WideMapWrapperBuilder<ID, K, V>(id, dao, wideMapMeta);
+		return new WideMapWrapperBuilder<K, V>(id, dao, wideMapMeta);
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> interceptor(
-			AchillesJpaEntityInterceptor<ID, ?> interceptor)
+	public WideMapWrapperBuilder<K, V> interceptor(AchillesJpaEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> context(ThriftPersistenceContext<ID> context)
+	public WideMapWrapperBuilder<K, V> context(ThriftPersistenceContext context)
 	{
 		this.context = context;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> compositeHelper(CompositeHelper compositeHelper)
+	public WideMapWrapperBuilder<K, V> compositeHelper(CompositeHelper compositeHelper)
 	{
 		this.compositeHelper = compositeHelper;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> keyValueFactory(KeyValueFactory keyValueFactory)
+	public WideMapWrapperBuilder<K, V> keyValueFactory(KeyValueFactory keyValueFactory)
 	{
 		this.keyValueFactory = keyValueFactory;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> iteratorFactory(IteratorFactory iteratorFactory)
+	public WideMapWrapperBuilder<K, V> iteratorFactory(IteratorFactory iteratorFactory)
 	{
 		this.iteratorFactory = iteratorFactory;
 		return this;
 	}
 
-	public WideMapWrapperBuilder<ID, K, V> compositeFactory(CompositeFactory compositeFactory)
+	public WideMapWrapperBuilder<K, V> compositeFactory(CompositeFactory compositeFactory)
 	{
 		this.compositeFactory = compositeFactory;
 		return this;
 	}
 
-	public WideMapWrapper<ID, K, V> build()
+	public WideMapWrapper<K, V> build()
 	{
-		WideMapWrapper<ID, K, V> wrapper = new WideMapWrapper<ID, K, V>();
+		WideMapWrapper<K, V> wrapper = new WideMapWrapper<K, V>();
 		wrapper.setId(id);
 		wrapper.setDao(dao);
 		wrapper.setWideMapMeta(wideMapMeta);

@@ -169,7 +169,6 @@ public class PropertyHelper
 		return multiKeyProperties;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)
 	{
 		log.debug("Infer parameterized value class for collection type {} of entity class {} ",

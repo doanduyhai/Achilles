@@ -183,7 +183,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	 * @return ThriftEntityManager
 	 */
 	@Override
-	public EntityManager createEntityManager(@SuppressWarnings("rawtypes") Map map)
+	public EntityManager createEntityManager(Map map)
 	{
 		log.info("Create new Thrift-based Entity Manager ");
 

@@ -40,7 +40,7 @@ public class KeyValueFactory
 	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 
-	public <ID, K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext<ID> context,
+	public <K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext context,
 			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
 		log.trace("Build key/value for property {} of entity class {}",
@@ -55,8 +55,8 @@ public class KeyValueFactory
 		return compositeTransformer.buildKey(propertyMeta, hColumn);
 	}
 
-	public <ID, K, V> V createValue(ThriftPersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
+	public <K, V> V createValue(ThriftPersistenceContext context, PropertyMeta<K, V> propertyMeta,
+			HColumn<Composite, ?> hColumn)
 	{
 		log.trace("Build key value for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -85,9 +85,8 @@ public class KeyValueFactory
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	public <ID, K, V, W> List<KeyValue<K, V>> createKeyValueList(
-			ThriftPersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, W>> hColumns)
+	public <K, V, W> List<KeyValue<K, V>> createKeyValueList(ThriftPersistenceContext context,
+			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
 	{
 		log.trace("Build key/value list for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -95,8 +94,7 @@ public class KeyValueFactory
 				compositeTransformer.buildKeyValueTransformer(context, propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V, W> List<V> createJoinValueList(ThriftPersistenceContext<ID> context,
+	public <K, V, W> List<V> createJoinValueList(ThriftPersistenceContext context,
 			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
 	{
 		log.trace("Build join value list for property {} of entity class {}",
@@ -107,15 +105,14 @@ public class KeyValueFactory
 		if (CollectionUtils.isNotEmpty(hColumns))
 		{
 
-			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+			EntityMeta joinMeta = propertyMeta.joinMeta();
 
-			List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
+			List<Object> joinIds = Lists.transform(hColumns,
 					compositeTransformer.buildRawValueTransformer());
 
-			Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta,
-					joinIds);
+			Map<Object, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
 
-			for (JOIN_ID joinId : joinIds)
+			for (Object joinId : joinIds)
 			{
 				V proxy = buildProxy(context, joinMeta, joinEntities, joinId);
 				result.add(proxy);
@@ -125,10 +122,8 @@ public class KeyValueFactory
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V, W> List<KeyValue<K, V>> createJoinKeyValueList(
-			ThriftPersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			List<HColumn<Composite, W>> hColumns)
+	public <K, V, W> List<KeyValue<K, V>> createJoinKeyValueList(ThriftPersistenceContext context,
+			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
 	{
 		log.trace("Build join key/value list for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -138,14 +133,13 @@ public class KeyValueFactory
 		if (CollectionUtils.isNotEmpty(hColumns))
 		{
 
-			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+			EntityMeta joinMeta = propertyMeta.joinMeta();
 			List<K> keys = Lists.transform(hColumns,
 					compositeTransformer.buildKeyTransformer(propertyMeta));
-			List<JOIN_ID> joinIds = (List<JOIN_ID>) Lists.transform(hColumns,
+			List<Object> joinIds = Lists.transform(hColumns,
 					compositeTransformer.buildRawValueTransformer());
 
-			Map<JOIN_ID, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta,
-					joinIds);
+			Map<Object, V> joinEntities = loadJoinEntities(context, propertyMeta, joinMeta, joinIds);
 
 			List<Integer> ttls = Lists.transform(hColumns,
 					compositeTransformer.buildTtlTransformer());
@@ -160,7 +154,7 @@ public class KeyValueFactory
 	}
 
 	// Counter
-	public <ID, K> KeyValue<K, Counter> createCounterKeyValue(ThriftPersistenceContext<ID> context,
+	public <K> KeyValue<K, Counter> createCounterKeyValue(ThriftPersistenceContext context,
 			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		log.trace("Build counter key/value for property {} of entity class {}",
@@ -176,7 +170,7 @@ public class KeyValueFactory
 		return compositeTransformer.buildCounterKey(propertyMeta, hColumn);
 	}
 
-	public <ID, K> Counter createCounterValue(ThriftPersistenceContext<ID> context,
+	public <K> Counter createCounterValue(ThriftPersistenceContext context,
 			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		log.trace("Build counter value for property {} of entity class {}",
@@ -184,8 +178,8 @@ public class KeyValueFactory
 		return compositeTransformer.buildCounterValue(context, propertyMeta, hColumn);
 	}
 
-	public <ID, K> List<KeyValue<K, Counter>> createCounterKeyValueList(
-			ThriftPersistenceContext<ID> context, PropertyMeta<K, Counter> propertyMeta,
+	public <K> List<KeyValue<K, Counter>> createCounterKeyValueList(
+			ThriftPersistenceContext context, PropertyMeta<K, Counter> propertyMeta,
 			List<HCounterColumn<Composite>> hColumns)
 	{
 		log.trace("Build counter key/value list for property {} of entity class {}",
@@ -194,7 +188,7 @@ public class KeyValueFactory
 				compositeTransformer.buildCounterKeyValueTransformer(context, propertyMeta));
 	}
 
-	public <ID, K> List<Counter> createCounterValueList(ThriftPersistenceContext<ID> context,
+	public <K> List<Counter> createCounterValueList(ThriftPersistenceContext context,
 			PropertyMeta<K, Counter> propertyMeta, List<HCounterColumn<Composite>> hColumns)
 	{
 		log.trace("Build counter value lsit for property {} of entity class {}",
@@ -212,25 +206,23 @@ public class KeyValueFactory
 				compositeTransformer.buildCounterKeyTransformer(propertyMeta));
 	}
 
-	@SuppressWarnings("unchecked")
-	private <JOIN_ID, V, ID, K> Map<JOIN_ID, V> loadJoinEntities(
-			ThriftPersistenceContext<ID> context, PropertyMeta<K, V> propertyMeta,
-			EntityMeta<JOIN_ID> joinMeta, List<JOIN_ID> joinIds)
+	private <K, V> Map<Object, V> loadJoinEntities(ThriftPersistenceContext context,
+			PropertyMeta<K, V> propertyMeta, EntityMeta joinMeta, List<Object> joinIds)
 	{
-		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
+		ThriftGenericEntityDao joinEntityDao = context
 				.findEntityDao(joinMeta.getColumnFamilyName());
 
-		Map<JOIN_ID, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
+		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, joinMeta, joinEntityDao);
 		return joinEntities;
 	}
 
-	private <V, JOIN_ID, ID> V buildProxy(ThriftPersistenceContext<ID> context,
-			EntityMeta<JOIN_ID> joinMeta, Map<JOIN_ID, V> joinEntities, Object joinId)
+	private <V> V buildProxy(ThriftPersistenceContext context, EntityMeta joinMeta,
+			Map<Object, V> joinEntities, Object joinId)
 	{
 		V joinEntity = joinEntities.get(joinId);
-		AchillesPersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(joinMeta,
-				joinEntity);
+		AchillesPersistenceContext joinContext = context
+				.newPersistenceContext(joinMeta, joinEntity);
 		V proxy = proxifier.buildProxy(joinEntity, joinContext);
 		return proxy;
 	}

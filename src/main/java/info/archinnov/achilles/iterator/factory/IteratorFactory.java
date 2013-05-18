@@ -25,33 +25,33 @@ public class IteratorFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(IteratorFactory.class);
 
-	public <ID, K, V> KeyValueIterator<K, V> createKeyValueIterator(ThriftPersistenceContext<ID> context,
+	public <K, V> KeyValueIterator<K, V> createKeyValueIterator(ThriftPersistenceContext context,
 			AbstractAchillesSliceIterator<HColumn<Composite, V>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		log.debug("Create new KeyValueIterator for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return new KeyValueIteratorImpl<ID, K, V>(context, columnSliceIterator, propertyMeta);
+		return new KeyValueIteratorImpl<K, V>(context, columnSliceIterator, propertyMeta);
 	}
 
-	public <ID, JOIN_ID, K, V> KeyValueIterator<K, V> createJoinKeyValueIterator(
-			ThriftPersistenceContext<ID> context,
-			AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator,
+	public <K, V> KeyValueIterator<K, V> createJoinKeyValueIterator(
+			ThriftPersistenceContext context,
+			AchillesJoinSliceIterator<?, K, V> joinColumnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		log.debug("Create new JoinKeyValueIterator for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return new KeyValueIteratorImpl<ID, K, V>(context, joinColumnSliceIterator, propertyMeta);
+		return new KeyValueIteratorImpl<K, V>(context, joinColumnSliceIterator, propertyMeta);
 	}
 
-	public <ID, K> KeyValueIterator<K, Counter> createCounterKeyValueIterator(
-			ThriftPersistenceContext<ID> context,
+	public <K> KeyValueIterator<K, Counter> createCounterKeyValueIterator(
+			ThriftPersistenceContext context,
 			AbstractAchillesSliceIterator<HCounterColumn<Composite>> columnSliceIterator,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		log.debug("Create new CounterKeyValueIterator for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		return new CounterKeyValueIteratorImpl<ID, K>(context, columnSliceIterator, propertyMeta);
+		return new CounterKeyValueIteratorImpl<K>(context, columnSliceIterator, propertyMeta);
 	}
 
 }

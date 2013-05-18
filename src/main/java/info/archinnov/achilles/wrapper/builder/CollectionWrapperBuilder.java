@@ -11,25 +11,25 @@ import java.util.Collection;
  * @author DuyHai DOAN
  * 
  */
-public class CollectionWrapperBuilder<ID, V> extends
-		AbstractWrapperBuilder<ID, CollectionWrapperBuilder<ID, V>, Void, V>
+public class CollectionWrapperBuilder<V> extends
+		AbstractWrapperBuilder<CollectionWrapperBuilder<V>, Void, V>
 {
 	private Collection<V> target;
 
-	public static <ID, V> CollectionWrapperBuilder<ID, V> builder(
-			AchillesPersistenceContext<ID> context, Collection<V> target)
+	public static <V> CollectionWrapperBuilder<V> builder(AchillesPersistenceContext context,
+			Collection<V> target)
 	{
-		return new CollectionWrapperBuilder<ID, V>(context, target);
+		return new CollectionWrapperBuilder<V>(context, target);
 	}
 
-	public CollectionWrapperBuilder(AchillesPersistenceContext<ID> context, Collection<V> target) {
+	public CollectionWrapperBuilder(AchillesPersistenceContext context, Collection<V> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public CollectionWrapper<ID, V> build()
+	public CollectionWrapper<V> build()
 	{
-		CollectionWrapper<ID, V> collectionWrapper = new CollectionWrapper<ID, V>(this.target);
+		CollectionWrapper<V> collectionWrapper = new CollectionWrapper<V>(this.target);
 		super.build(collectionWrapper);
 		return collectionWrapper;
 	}

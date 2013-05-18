@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class IteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements Iterator<V>
+public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iterator<V>
 {
 	private static final Logger log = LoggerFactory.getLogger(IteratorWrapper.class);
 
@@ -38,7 +38,7 @@ public class IteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> impleme
 			log.trace(
 					"Build proxy for join entity for property {} of entity class {} upon next() call",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-			AchillesPersistenceContext<?> joinContext = context.newPersistenceContext(
+			AchillesPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.joinMeta(), value);
 			return proxifier.buildProxy(value, joinContext);
 		}

@@ -6,7 +6,6 @@ import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Pair;
 
@@ -28,20 +27,20 @@ import me.prettyprint.hector.api.query.SliceQuery;
  *         Modification of original version from Hector ColumnSliceIterator
  * 
  */
-public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
+public class AchillesJoinSliceIterator<K, KEY, VALUE> extends
 		AbstractAchillesSliceIterator<HColumn<Composite, VALUE>>
 {
 
-	private SliceQuery<K, Composite, V> query;
+	private SliceQuery<K, Composite, Object> query;
 	private PropertyMeta<KEY, VALUE> propertyMeta;
 	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
-	private ThriftGenericEntityDao<JOIN_ID> joinEntityDao;
+	private ThriftGenericEntityDao joinEntityDao;
 
 	public AchillesJoinSliceIterator( //
 			AchillesConsistencyLevelPolicy policy, //
-			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
+			ThriftGenericEntityDao joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
-			SliceQuery<K, Composite, V> query, Composite start, //
+			SliceQuery<K, Composite, Object> query, Composite start, //
 			final Composite finish, boolean reversed)
 	{
 		this(policy, joinEntityDao, cf, propertyMeta, query, start, finish, reversed,
@@ -49,9 +48,9 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	}
 
 	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
-			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
+			ThriftGenericEntityDao joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
-			SliceQuery<K, Composite, V> query, Composite start, //
+			SliceQuery<K, Composite, Object> query, Composite start, //
 			final Composite finish, boolean reversed, int count)
 	{
 		this(policy, joinEntityDao, cf, propertyMeta, query, start, new ColumnSliceFinish()
@@ -65,9 +64,9 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	}
 
 	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
-			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
+			ThriftGenericEntityDao joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
-			SliceQuery<K, Composite, V> query, Composite start, //
+			SliceQuery<K, Composite, Object> query, Composite start, //
 			ColumnSliceFinish finish, boolean reversed)
 	{
 		this(policy, joinEntityDao, cf, propertyMeta, query, start, finish, reversed,
@@ -75,9 +74,9 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	}
 
 	public AchillesJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
-			ThriftGenericEntityDao<JOIN_ID> joinEntityDao, //
+			ThriftGenericEntityDao joinEntityDao, //
 			String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
-			SliceQuery<K, Composite, V> query, Composite start, //
+			SliceQuery<K, Composite, Object> query, Composite start, //
 			ColumnSliceFinish finish, boolean reversed, int count)
 	{
 		super(policy, cf, start, finish, reversed, count);
@@ -88,37 +87,35 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected Iterator<HColumn<Composite, VALUE>> fetchData()
 	{
 
-		Iterator<HColumn<Composite, V>> iter = executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, V>>>()
+		Iterator<HColumn<Composite, Object>> iter = executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, Object>>>()
 		{
 			@Override
-			public Iterator<HColumn<Composite, V>> execute()
+			public Iterator<HColumn<Composite, Object>> execute()
 			{
 				return query.execute().get().getColumns().iterator();
 			}
 		});
 
-		List<JOIN_ID> joinIds = new ArrayList<JOIN_ID>();
-		Map<JOIN_ID, Pair<Composite, Integer>> hColumMap = new HashMap<JOIN_ID, Pair<Composite, Integer>>();
+		List<Object> joinIds = new ArrayList<Object>();
+		Map<Object, Pair<Composite, Integer>> hColumMap = new HashMap<Object, Pair<Composite, Integer>>();
 
 		while (iter.hasNext())
 		{
-			HColumn<Composite, V> hColumn = iter.next();
+			HColumn<Composite, ?> hColumn = iter.next();
 
-			PropertyMeta<Void, JOIN_ID> joinIdMeta = (PropertyMeta<Void, JOIN_ID>) propertyMeta
-					.joinIdMeta();
+			PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
-			JOIN_ID joinId;
+			Object joinId;
 			if (propertyMeta.type().isWideMap())
 			{
-				joinId = (JOIN_ID) joinIdMeta.castValue(hColumn.getValue());
+				joinId = joinIdMeta.castValue(hColumn.getValue());
 			}
 			else
 			{
-				joinId = (JOIN_ID) joinIdMeta.getValueFromString(hColumn.getValue());
+				joinId = joinIdMeta.getValueFromString(hColumn.getValue());
 
 			}
 			joinIds.add(joinId);
@@ -130,11 +127,10 @@ public class AchillesJoinSliceIterator<K, V, JOIN_ID, KEY, VALUE> extends
 		if (joinIds.size() > 0)
 		{
 
-			Map<JOIN_ID, VALUE> loadedEntities = joinHelper.loadJoinEntities(
-					propertyMeta.getValueClass(), joinIds,
-					(EntityMeta<JOIN_ID>) propertyMeta.joinMeta(), joinEntityDao);
+			Map<Object, VALUE> loadedEntities = joinHelper.loadJoinEntities(
+					propertyMeta.getValueClass(), joinIds, propertyMeta.joinMeta(), joinEntityDao);
 
-			for (JOIN_ID joinId : joinIds)
+			for (Object joinId : joinIds)
 			{
 				Pair<Composite, Integer> pair = hColumMap.get(joinId);
 				Composite name = pair.left;

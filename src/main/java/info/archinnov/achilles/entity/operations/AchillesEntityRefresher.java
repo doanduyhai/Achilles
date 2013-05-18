@@ -26,15 +26,14 @@ public class AchillesEntityRefresher
 		this.proxifier = proxifier;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, T> void refresh(AchillesPersistenceContext<ID> context)
+	public <T> void refresh(AchillesPersistenceContext context)
 	{
 		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		Object entity = context.getEntity();
 
-		AchillesJpaEntityInterceptor<ID, T> interceptor = (AchillesJpaEntityInterceptor<ID, T>) proxifier
+		AchillesJpaEntityInterceptor<T> interceptor = (AchillesJpaEntityInterceptor<T>) proxifier
 				.getInterceptor(entity);
 
 		T freshEntity = (T) loader.load(context);

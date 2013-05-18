@@ -17,20 +17,20 @@ import info.archinnov.achilles.wrapper.CounterWideMapWrapper;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWideMapWrapperBuilder<ID, K>
+public class CounterWideMapWrapperBuilder<K>
 {
-	private ID id;
-	private ThriftGenericWideRowDao<ID, Long> wideMapCounterDao;
+	private Object id;
+	private ThriftGenericWideRowDao wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
-	private AchillesJpaEntityInterceptor<ID, ?> interceptor;
+	private AchillesJpaEntityInterceptor<?> interceptor;
 	protected CompositeHelper compositeHelper;
 	protected KeyValueFactory keyValueFactory;
 	protected IteratorFactory iteratorFactory;
 	protected CompositeFactory compositeFactory;
-	protected ThriftPersistenceContext<ID> context;
+	protected ThriftPersistenceContext context;
 
-	public CounterWideMapWrapperBuilder(ID id, ThriftGenericWideRowDao<ID, Long> wideMapCounterDao,
+	public CounterWideMapWrapperBuilder(Object id, ThriftGenericWideRowDao wideMapCounterDao,
 			PropertyMeta<K, Counter> propertyMeta)
 	{
 		this.id = id;
@@ -38,53 +38,51 @@ public class CounterWideMapWrapperBuilder<ID, K>
 		this.propertyMeta = propertyMeta;
 	}
 
-	public static <ID, K> CounterWideMapWrapperBuilder<ID, K> builder(ID id,
-			ThriftGenericWideRowDao<ID, Long> wideMapCounterDao,
-			PropertyMeta<K, Counter> propertyMeta)
+	public static <K> CounterWideMapWrapperBuilder<K> builder(Object id,
+			ThriftGenericWideRowDao wideMapCounterDao, PropertyMeta<K, Counter> propertyMeta)
 	{
-		return new CounterWideMapWrapperBuilder<ID, K>(id, wideMapCounterDao, propertyMeta);
+		return new CounterWideMapWrapperBuilder<K>(id, wideMapCounterDao, propertyMeta);
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> interceptor(
-			AchillesJpaEntityInterceptor<ID, ?> interceptor)
+	public CounterWideMapWrapperBuilder<K> interceptor(AchillesJpaEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> context(ThriftPersistenceContext<ID> context)
+	public CounterWideMapWrapperBuilder<K> context(ThriftPersistenceContext context)
 	{
 		this.context = context;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> compositeHelper(CompositeHelper compositeHelper)
+	public CounterWideMapWrapperBuilder<K> compositeHelper(CompositeHelper compositeHelper)
 	{
 		this.compositeHelper = compositeHelper;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> keyValueFactory(KeyValueFactory keyValueFactory)
+	public CounterWideMapWrapperBuilder<K> keyValueFactory(KeyValueFactory keyValueFactory)
 	{
 		this.keyValueFactory = keyValueFactory;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> iteratorFactory(IteratorFactory iteratorFactory)
+	public CounterWideMapWrapperBuilder<K> iteratorFactory(IteratorFactory iteratorFactory)
 	{
 		this.iteratorFactory = iteratorFactory;
 		return this;
 	}
 
-	public CounterWideMapWrapperBuilder<ID, K> compositeFactory(CompositeFactory compositeFactory)
+	public CounterWideMapWrapperBuilder<K> compositeFactory(CompositeFactory compositeFactory)
 	{
 		this.compositeFactory = compositeFactory;
 		return this;
 	}
 
-	public CounterWideMapWrapper<ID, K> build()
+	public CounterWideMapWrapper<K> build()
 	{
-		CounterWideMapWrapper<ID, K> wrapper = new CounterWideMapWrapper<ID, K>();
+		CounterWideMapWrapper<K> wrapper = new CounterWideMapWrapper<K>();
 		wrapper.setId(id);
 		wrapper.setWideMapCounterDao(wideMapCounterDao);
 		wrapper.setPropertyMeta(propertyMeta);

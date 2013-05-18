@@ -8,7 +8,7 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class SetWrapper<ID, V> extends CollectionWrapper<ID, V> implements Set<V>
+public class SetWrapper<V> extends CollectionWrapper<V> implements Set<V>
 {
 
 	public SetWrapper(Set<V> target) {

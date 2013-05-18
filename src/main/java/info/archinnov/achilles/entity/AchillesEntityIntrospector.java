@@ -216,7 +216,7 @@ public class AchillesEntityIntrospector
 		}
 	}
 
-	public <ID> ID getKey(Object entity, PropertyMeta<Void, ID> idMeta)
+	public Object getKey(Object entity, PropertyMeta<?, ?> idMeta)
 	{
 		Method getter = idMeta.getGetter();
 

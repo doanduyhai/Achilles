@@ -26,7 +26,6 @@ public class Pair<T1, T2>
 		return 31 * hashCode + (right == null ? 0 : right.hashCode());
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public final boolean equals(Object o)
 	{

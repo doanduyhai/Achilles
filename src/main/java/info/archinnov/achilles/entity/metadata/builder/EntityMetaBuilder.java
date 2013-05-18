@@ -20,11 +20,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityMetaBuilder<ID>
+public class EntityMetaBuilder
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
-	private PropertyMeta<Void, ID> idMeta;
+	private PropertyMeta<?, ?> idMeta;
 	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
@@ -32,16 +32,16 @@ public class EntityMetaBuilder<ID>
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-	public static <ID> EntityMetaBuilder<ID> entityMetaBuilder(PropertyMeta<Void, ID> idMeta)
+	public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
 	{
-		return new EntityMetaBuilder<ID>(idMeta);
+		return new EntityMetaBuilder(idMeta);
 	}
 
-	public EntityMetaBuilder(PropertyMeta<Void, ID> idMeta) {
+	public EntityMetaBuilder(PropertyMeta<?, ?> idMeta) {
 		this.idMeta = idMeta;
 	}
 
-	public EntityMeta<ID> build()
+	public EntityMeta build()
 	{
 		log.debug("Build entityMeta for entity class {}", className);
 
@@ -51,7 +51,7 @@ public class EntityMetaBuilder<ID>
 		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN,
 				"columnFamilyName");
 
-		EntityMeta<ID> meta = new EntityMeta<ID>();
+		EntityMeta meta = new EntityMeta();
 
 		meta.setIdMeta(idMeta);
 		meta.setIdClass(idMeta.getValueClass());
@@ -89,37 +89,37 @@ public class EntityMetaBuilder<ID>
 		return setterMetas;
 	}
 
-	public EntityMetaBuilder<ID> className(String className)
+	public EntityMetaBuilder className(String className)
 	{
 		this.className = className;
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> columnFamilyName(String columnFamilyName)
+	public EntityMetaBuilder columnFamilyName(String columnFamilyName)
 	{
 		this.columnFamilyName = columnFamilyName;
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> serialVersionUID(long serialVersionUID)
+	public EntityMetaBuilder serialVersionUID(long serialVersionUID)
 	{
 		this.serialVersionUID = serialVersionUID;
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
+	public EntityMetaBuilder propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
 	{
 		this.propertyMetas = propertyMetas;
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> wideRow(boolean wideRow)
+	public EntityMetaBuilder wideRow(boolean wideRow)
 	{
 		this.wideRow = wideRow;
 		return this;
 	}
 
-	public EntityMetaBuilder<ID> consistencyLevels(
+	public EntityMetaBuilder consistencyLevels(
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		this.consistencyLevels = consistencyLevels;

@@ -70,7 +70,7 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 
 	}
 
-	protected void createColumnFamily(EntityMeta<?> entityMeta)
+	protected void createColumnFamily(EntityMeta entityMeta)
 	{
 		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
 		String columnFamilyName = entityMeta.getColumnFamilyName();
@@ -98,9 +98,8 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 	}
 
 	@Override
-	protected <ID> void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta,
-			Class<ID> keyClass, boolean forceColumnFamilyCreation, String externalColumnFamilyName,
-			String entityName)
+	protected void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
+			boolean forceColumnFamilyCreation, String externalColumnFamilyName, String entityName)
 	{
 
 		ColumnFamilyDefinition cfDef = discoverColumnFamily(externalColumnFamilyName);
@@ -130,7 +129,7 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 	}
 
 	@Override
-	protected void validateOrCreateCFForEntity(EntityMeta<?> entityMeta,
+	protected void validateOrCreateCFForEntity(EntityMeta entityMeta,
 			boolean forceColumnFamilyCreation)
 	{
 		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getColumnFamilyName());

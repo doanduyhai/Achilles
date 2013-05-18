@@ -46,15 +46,14 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			MAP, LAZY_MAP);
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T, ID> T mergeEntity(AchillesPersistenceContext<ID> context)
+	public <T> T mergeEntity(AchillesPersistenceContext context)
 	{
 		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		T entity = (T) context.getEntity();
-		EntityMeta<ID> entityMeta = context.getEntityMeta();
+		EntityMeta entityMeta = context.getEntityMeta();
 
 		Validator.validateNotNull(entity, "Proxy object should not be null");
 		Validator.validateNotNull(entityMeta, "entityMeta should not be null");
@@ -65,7 +64,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Checking for dirty fields before merging");
 
 			T realObject = proxifier.getRealObject(entity);
-			JpaEntityInterceptor<ID, T> interceptor = (JpaEntityInterceptor<ID, T>) proxifier
+			JpaEntityInterceptor<T> interceptor = (JpaEntityInterceptor<T>) proxifier
 					.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
@@ -137,7 +136,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		return proxy;
 	}
 
-	private <T, ID> void mergeJoinProperty(ThriftPersistenceContext<ID> context, T entity,
+	private <T> void mergeJoinProperty(ThriftPersistenceContext context, T entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
@@ -153,7 +152,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		}
 	}
 
-	private <T, ID> void mergeJoinListProperty(ThriftPersistenceContext<ID> context, T entity,
+	private void mergeJoinListProperty(ThriftPersistenceContext context, Object entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -164,7 +163,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <T, ID> void mergeJoinSetProperty(ThriftPersistenceContext<ID> context, T entity,
+	private void mergeJoinSetProperty(ThriftPersistenceContext context, Object entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
@@ -175,7 +174,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntities);
 	}
 
-	private <ID> void mergeCollectionOfJoinEntities(ThriftPersistenceContext<ID> context,
+	private void mergeCollectionOfJoinEntities(ThriftPersistenceContext context,
 			JoinProperties joinProperties, Collection<?> joinEntities,
 			Collection<Object> mergedEntities)
 	{
@@ -191,7 +190,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		}
 	}
 
-	private <T, ID> void mergeJoinMapProperty(ThriftPersistenceContext<ID> context, T entity,
+	private void mergeJoinMapProperty(ThriftPersistenceContext context, Object entity,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();

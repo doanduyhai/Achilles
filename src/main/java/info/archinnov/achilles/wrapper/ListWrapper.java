@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ListWrapper<ID, V> extends CollectionWrapper<ID, V> implements List<V>
+public class ListWrapper<V> extends CollectionWrapper<V> implements List<V>
 {
 	private static final Logger log = LoggerFactory.getLogger(ListWrapper.class);
 

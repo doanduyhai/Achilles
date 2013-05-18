@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInterceptor
+public abstract class AchillesJpaEntityInterceptor<T> implements MethodInterceptor
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesJpaEntityInterceptor.class);
 
@@ -36,14 +36,14 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 	protected AchillesEntityProxifier proxifier;
 
 	protected T target;
-	protected ID key;
+	protected Object key;
 	protected Method idGetter;
 	protected Method idSetter;
 	protected Map<Method, PropertyMeta<?, ?>> getterMetas;
 	protected Map<Method, PropertyMeta<?, ?>> setterMetas;
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Set<Method> lazyAlreadyLoaded;
-	protected AchillesPersistenceContext<ID> context;
+	protected AchillesPersistenceContext context;
 
 	public Object getTarget()
 	{
@@ -82,16 +82,11 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 		return result;
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
-	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
+	private <K, V> Object interceptGetter(Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
 		Object result = null;
-		PropertyMeta propertyMeta = this.getterMetas.get(method);
+		PropertyMeta<?, ?> propertyMeta = this.getterMetas.get(method);
 
 		// Load lazy into target object
 		if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method))
@@ -120,7 +115,7 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 							"Build proxy on returned join entity for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-					AchillesPersistenceContext<?> joinContext = context.newPersistenceContext(
+					AchillesPersistenceContext joinContext = context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
 					result = proxifier.buildProxy(rawValue, joinContext);
 				}
@@ -133,12 +128,13 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 					log.trace("Build list wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-					List<?> list = (List<?>) rawValue;
+					List<V> list = (List<V>) rawValue;
 					result = ListWrapperBuilder //
 							.builder(context, list) //
 							.dirtyMap(dirtyMap) //
-							.setter(propertyMeta.getSetter()) //
-							.propertyMeta(propertyMeta) //
+							.setter(propertyMeta.getSetter())
+							//
+							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method)) //
 							.proxifier(proxifier)//
 							.build();
 				}
@@ -151,12 +147,13 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 					log.trace("Build set wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-					Set<?> set = (Set<?>) rawValue;
+					Set<V> set = (Set<V>) rawValue;
 					result = SetWrapperBuilder //
 							.builder(context, set) //
 							.dirtyMap(dirtyMap) //
-							.setter(propertyMeta.getSetter())//
-							.propertyMeta(propertyMeta) //
+							.setter(propertyMeta.getSetter())
+							//
+							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method)) //
 							.proxifier(proxifier)//
 							.build();
 				}
@@ -169,12 +166,13 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 					log.trace("Build map wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-					Map<?, ?> map = (Map<?, ?>) rawValue;
+					Map<K, V> map = (Map<K, V>) rawValue;
 					result = MapWrapperBuilder //
 							.builder(context, map)//
 							.dirtyMap(dirtyMap) //
-							.setter(propertyMeta.getSetter()) //
-							.propertyMeta(propertyMeta) //
+							.setter(propertyMeta.getSetter())
+							//
+							.propertyMeta(this.<K, V> getPropertyMetaByProperty(method)) //
 							.proxifier(proxifier)//
 							.build();
 				}
@@ -201,7 +199,8 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 				log.trace("Build counter wide wrapper for property {} of entity of class {} ",
 						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-				result = buildCounterWideMapWrapper(propertyMeta);
+				result = buildCounterWideMapWrapper(this
+						.<K, Counter> getPropertyMetaByProperty(method));
 				break;
 			case JOIN_WIDE_MAP:
 
@@ -220,10 +219,9 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 		return result;
 	}
 
-	protected abstract Object buildCounterWrapper(PropertyMeta<ID, ?> propertyMeta);
+	protected abstract Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
 
-	protected abstract <K, JOIN_ID, V> Object buildJoinWideMapWrapper(
-			PropertyMeta<K, V> propertyMeta);
+	protected abstract <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta);
 
 	protected abstract <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta);
 
@@ -270,7 +268,7 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 		return lazyAlreadyLoaded;
 	}
 
-	public ID getKey()
+	public Object getKey()
 	{
 		return key;
 	}
@@ -280,7 +278,7 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 		this.target = target;
 	}
 
-	void setKey(ID key)
+	void setKey(Object key)
 	{
 		this.key = key;
 	}
@@ -315,13 +313,18 @@ public abstract class AchillesJpaEntityInterceptor<ID, T> implements MethodInter
 		this.lazyAlreadyLoaded = lazyLoaded;
 	}
 
-	public AchillesPersistenceContext<ID> getContext()
+	public AchillesPersistenceContext getContext()
 	{
 		return context;
 	}
 
-	public void setContext(AchillesPersistenceContext<ID> context)
+	public void setContext(AchillesPersistenceContext context)
 	{
 		this.context = context;
+	}
+
+	private <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(Method method)
+	{
+		return (PropertyMeta<K, V>) getterMetas.get(method);
 	}
 }

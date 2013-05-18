@@ -23,7 +23,7 @@ public class EntityParsingValidator
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityParsingValidator.class);
 
-	public void validateHasIdMeta(Class<?> entityClass, PropertyMeta<Void, ?> idMeta)
+	public void validateHasIdMeta(Class<?> entityClass, PropertyMeta<?, ?> idMeta)
 	{
 		log.debug("Validate that entity class {} has an id meta", entityClass.getCanonicalName());
 
@@ -79,8 +79,8 @@ public class EntityParsingValidator
 		}
 	}
 
-	public <K, V, ID> void validateJoinEntityNotWideRow(PropertyMeta<K, V> propertyMeta,
-			EntityMeta<ID> joinEntityMeta)
+	public void validateJoinEntityNotWideRow(PropertyMeta<?, ?> propertyMeta,
+			EntityMeta joinEntityMeta)
 	{
 		log.debug(
 				"Validate that the join entity for the property {} of the entity class {} is not a wide row",
@@ -93,8 +93,8 @@ public class EntityParsingValidator
 		}
 	}
 
-	public <JOIN_ID> void validateJoinEntityExist(Map<Class<?>, EntityMeta<?>> entityMetaMap,
-			Class<JOIN_ID> joinEntityClass)
+	public void validateJoinEntityExist(Map<Class<?>, EntityMeta> entityMetaMap,
+			Class<?> joinEntityClass)
 	{
 		log.debug("Validate that the join entity class {} exists among all parsed entities",
 				joinEntityClass.getCanonicalName());

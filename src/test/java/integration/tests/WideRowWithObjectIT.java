@@ -1,7 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
@@ -15,7 +14,6 @@ import integration.tests.entity.WideRowBeanWithObject.Holder;
 import java.util.Iterator;
 import java.util.List;
 
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
@@ -33,14 +31,10 @@ import org.junit.Test;
 public class WideRowWithObjectIT
 {
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
-	private ThriftGenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
-			LONG_SRZ, (Serializer) STRING_SRZ,
-			normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()));
+	private ThriftGenericWideRowDao dao = ThriftCassandraDaoTest.getColumnFamilyDao(
+
+	normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()), Long.class,
+			String.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

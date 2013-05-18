@@ -14,11 +14,6 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-		"rawtypes",
-		"unchecked"
-})
 public class PropertyFilter
 {
 	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);

@@ -19,15 +19,15 @@ import org.apache.commons.lang.StringUtils;
 public class JoinProperties
 {
 
-	private EntityMeta<?> entityMeta;
+	private EntityMeta entityMeta;
 	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
-	public EntityMeta<?> getEntityMeta()
+	public EntityMeta getEntityMeta()
 	{
 		return entityMeta;
 	}
 
-	public void setEntityMeta(EntityMeta<?> entityMeta)
+	public void setEntityMeta(EntityMeta entityMeta)
 	{
 		this.entityMeta = entityMeta;
 	}

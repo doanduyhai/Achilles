@@ -39,7 +39,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 
 	protected final DaoContext daoContext;
 
-	ThriftEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
+	ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			DaoContext daoContext, //
 			AchillesConfigurationContext configContext)
 	{
@@ -174,27 +174,24 @@ public class ThriftEntityManager extends AchillesEntityManager
 		return new ThriftBatchingEntityManager(entityMetaMap, daoContext, configContext);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <T, ID> ThriftPersistenceContext<ID> initPersistenceContext(Class<T> entityClass,
-			ID primaryKey)
+	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
+			Object primaryKey)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext,
+		EntityMeta entityMeta = this.entityMetaMap.get(entityClass);
+		return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
 				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entityClass,
 				primaryKey);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <ID> ThriftPersistenceContext<ID> initPersistenceContext(Object entity)
+	protected ThriftPersistenceContext initPersistenceContext(Object entity)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) this.entityMetaMap.get(proxifier
-				.deriveBaseClass(entity));
-		return new ThriftPersistenceContext<ID>(entityMeta, configContext, daoContext,
+		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
+		return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
 				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entity);
 	}
 

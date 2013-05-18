@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.wrapper.builder.MapEntryWrapperBuilder.builder;
+import info.archinnov.achilles.wrapper.builder.MapEntryWrapperBuilder;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements
+public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
 		Iterator<Entry<K, V>>
 {
 	private static final Logger log = LoggerFactory.getLogger(EntryIteratorWrapper.class);
@@ -40,7 +40,7 @@ public class EntryIteratorWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> im
 		{
 			log.trace("Build wrapper for next entry of property {} of entity class {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-			result = builder(context, entry) //
+			result = MapEntryWrapperBuilder.builder(context, entry) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
 					.propertyMeta(propertyMeta) //

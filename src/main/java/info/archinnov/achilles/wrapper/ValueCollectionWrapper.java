@@ -8,7 +8,7 @@ import java.util.Collection;
  * @author DuyHai DOAN
  * 
  */
-public class ValueCollectionWrapper<ID, V> extends CollectionWrapper<ID, V>
+public class ValueCollectionWrapper<V> extends CollectionWrapper<V>
 {
 
 	public ValueCollectionWrapper(Collection<V> target) {

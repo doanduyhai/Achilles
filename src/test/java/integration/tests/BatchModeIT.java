@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
@@ -19,7 +19,6 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.serializer.SerializerUtils;
 import info.archinnov.achilles.wrapper.CounterBuilder;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -58,30 +57,30 @@ public class BatchModeIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private ThriftGenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
-			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
+	private ThriftGenericEntityDao tweetDao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
 
-	private ThriftGenericEntityDao<Long> userDao = getEntityDao(SerializerUtils.LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()));
+	private ThriftGenericEntityDao userDao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()), Long.class);
 
-	private ThriftGenericWideRowDao<Long, UUID> userTweetsDao = getColumnFamilyDao(LONG_SRZ,
-			SerializerUtils.UUID_SRZ, "user_tweets");
+	private ThriftGenericWideRowDao userTweetsDao = getColumnFamilyDao("user_tweets", Long.class,
+			UUID.class);
 
-	private ThriftGenericWideRowDao<Long, Long> popularTopicsDao = ThriftCassandraDaoTest
-			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "complete_bean_popular_topics");
+	private ThriftGenericWideRowDao popularTopicsDao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			"complete_bean_popular_topics", Long.class, Long.class);
 
-	private ThriftGenericEntityDao<Long> completeBeanDao = getEntityDao(SerializerUtils.LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()));
+	private ThriftGenericEntityDao completeBeanDao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()),
+			Long.class);
 
-	private ThriftGenericWideRowDao<Long, String> externalWideMapDao = getColumnFamilyDao(LONG_SRZ,
-			STRING_SRZ, "complete_bean_widemap");
+	private ThriftGenericWideRowDao externalWideMapDao = getColumnFamilyDao(
+			"complete_bean_widemap", Long.class, String.class);
 
 	private ThriftCounterDao thriftCounterDao = getCounterDao();
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
-			.getConsistencyPolicy();
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -421,8 +420,9 @@ public class BatchModeIT
 
 	private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm)
 	{
-		ThriftBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
-		Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = Whitebox.getInternalState(
+		ThriftBatchingFlushContext flushContext = Whitebox
+				.getInternalState(batchEm, "flushContext");
+		Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = Whitebox.getInternalState(
 				flushContext, "mutatorMap");
 		boolean hasCustomConsistencyLevels = (Boolean) Whitebox.getInternalState(flushContext,
 				"hasCustomConsistencyLevels");

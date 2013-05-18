@@ -14,8 +14,8 @@ public class ThriftEntityProxifier extends AchillesEntityProxifier
 {
 
 	@Override
-	public <ID, T> AchillesJpaEntityInterceptor<ID, T> buildInterceptor(
-			AchillesPersistenceContext<ID> context, T entity)
+	public <T> AchillesJpaEntityInterceptor<T> buildInterceptor(AchillesPersistenceContext context,
+			T entity)
 	{
 		return JpaEntityInterceptorBuilder.builder(context, entity).build();
 	}

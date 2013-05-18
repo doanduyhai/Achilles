@@ -31,7 +31,7 @@ public class ThriftJoinEntityHelper
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
-			EntityMeta<ID> entityMeta, ThriftGenericEntityDao<ID> joinEntityDao)
+			EntityMeta entityMeta, ThriftGenericEntityDao joinEntityDao)
 	{
 		if (log.isTraceEnabled())
 		{

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.wrapper;
 
-import static info.archinnov.achilles.wrapper.builder.IteratorWrapperBuilder.builder;
+import info.archinnov.achilles.wrapper.builder.IteratorWrapperBuilder;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements Collection<V>
+public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V>
 {
 	private static final Logger log = LoggerFactory.getLogger(CollectionWrapper.class);
 
@@ -86,7 +86,7 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		log.trace("Build iterator wrapper for collection property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		return builder(context, this.target.iterator()) //
+		return IteratorWrapperBuilder.builder(context, this.target.iterator()) //
 				.dirtyMap(dirtyMap) //
 				.setter(setter) //
 				.propertyMeta(propertyMeta) //
@@ -168,7 +168,6 @@ public class CollectionWrapper<ID, V> extends AbstractWrapper<ID, Void, V> imple
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{

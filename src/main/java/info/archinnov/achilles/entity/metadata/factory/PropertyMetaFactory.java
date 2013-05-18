@@ -20,15 +20,13 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class PropertyMetaFactory<K, V>
+public class PropertyMetaFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(PropertyMetaFactory.class);
 
 	private PropertyType type;
 	private String propertyName;
 	private String entityClassName;
-	private Class<K> keyClass;
-	private Class<V> valueClass;
 	private Method[] accessors;
 	private ObjectMapper objectMapper;
 	private CounterProperties counterProperties;
@@ -37,41 +35,30 @@ public class PropertyMetaFactory<K, V>
 	private MultiKeyProperties multiKeyProperties;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-	public PropertyMetaFactory(Class<K> keyClass, Class<V> valueClass) {
-		this.keyClass = keyClass;
-		this.valueClass = valueClass;
-	}
-
-	public static <K, V> PropertyMetaFactory<K, V> factory(Class<K> keyClass, Class<V> valueClass)
+	public static <K, V> PropertyMetaFactory factory()
 	{
-		return new PropertyMetaFactory<K, V>(keyClass, valueClass);
+		return new PropertyMetaFactory();
 	}
 
-	public static <V> PropertyMetaFactory<Void, V> factory(Class<V> valueClass)
-	{
-		return new PropertyMetaFactory<Void, V>(Void.class, valueClass);
-	}
-
-	public PropertyMetaFactory<K, V> propertyName(String propertyName)
+	public PropertyMetaFactory propertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> entityClassName(String entityClassName)
+	public PropertyMetaFactory entityClassName(String entityClassName)
 	{
 		this.entityClassName = entityClassName;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> objectMapper(ObjectMapper objectMapper)
+	public PropertyMetaFactory objectMapper(ObjectMapper objectMapper)
 	{
 		this.objectMapper = objectMapper;
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
-	public PropertyMeta<K, V> build()
+	public <K, V> PropertyMeta<K, V> build(Class<K> keyClass, Class<V> valueClass)
 	{
 		log.debug("Build propertyMeta for property {} of entity class {}", propertyName,
 				entityClassName);
@@ -88,8 +75,6 @@ public class PropertyMetaFactory<K, V>
 			case LAZY_SET:
 			case JOIN_SIMPLE:
 			case COUNTER:
-				meta = (PropertyMeta<K, V>) new PropertyMeta<Void, V>();
-				break;
 			case MAP:
 			case LAZY_MAP:
 			case WIDE_MAP:
@@ -122,31 +107,31 @@ public class PropertyMetaFactory<K, V>
 		return meta;
 	}
 
-	public PropertyMetaFactory<K, V> type(PropertyType type)
+	public PropertyMetaFactory type(PropertyType type)
 	{
 		this.type = type;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> accessors(Method[] accessors)
+	public PropertyMetaFactory accessors(Method[] accessors)
 	{
 		this.accessors = accessors;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> multiKeyProperties(MultiKeyProperties multiKeyProperties)
+	public PropertyMetaFactory multiKeyProperties(MultiKeyProperties multiKeyProperties)
 	{
 		this.multiKeyProperties = multiKeyProperties;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> counterProperties(CounterProperties counterProperties)
+	public PropertyMetaFactory counterProperties(CounterProperties counterProperties)
 	{
 		this.counterProperties = counterProperties;
 		return this;
 	}
 
-	public PropertyMetaFactory<K, V> consistencyLevels(
+	public PropertyMetaFactory consistencyLevels(
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		this.consistencyLevels = consistencyLevels;

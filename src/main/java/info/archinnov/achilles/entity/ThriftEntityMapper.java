@@ -33,9 +33,8 @@ public class ThriftEntityMapper
 
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
-	@SuppressWarnings("unchecked")
 	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,
-			List<Pair<Composite, String>> columns, EntityMeta<ID> entityMeta, T entity)
+			List<Pair<Composite, String>> columns, EntityMeta entityMeta, T entity)
 	{
 		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
 
@@ -44,8 +43,6 @@ public class ThriftEntityMapper
 		Map<String, Map<K, V>> mapProperties = new HashMap<String, Map<K, V>>();
 
 		setIdToEntity(key, entityMeta.getIdMeta(), entity);
-
-		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
 		for (Pair<Composite, String> pair : columns)
 		{
@@ -62,7 +59,8 @@ public class ThriftEntityMapper
 				continue;
 			}
 
-			PropertyMeta<K, V> propertyMeta = (PropertyMeta<K, V>) propertyMetas.get(propertyName);
+			PropertyMeta<K, V> propertyMeta = entityMeta
+					.<K, V> getPropertyMetaByProperty(propertyName);
 
 			if (propertyMeta.type() == PropertyType.SIMPLE)
 			{
@@ -71,37 +69,41 @@ public class ThriftEntityMapper
 
 			else if (propertyMeta.type() == PropertyType.LIST)
 			{
-				PropertyMeta<Void, V> listMeta = (PropertyMeta<Void, V>) propertyMeta;
+				PropertyMeta<Void, V> listMeta = entityMeta
+						.<Void, V> getPropertyMetaByProperty(propertyName);
 				addToList(listProperties, listMeta, listMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.SET)
 			{
-				PropertyMeta<Void, V> setMeta = (PropertyMeta<Void, V>) propertyMeta;
+				PropertyMeta<Void, V> setMeta = entityMeta
+						.<Void, V> getPropertyMetaByProperty(propertyName);
 				addToSet(setProperties, setMeta, setMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.MAP)
 			{
-				PropertyMeta<K, V> mapMeta = (PropertyMeta<K, V>) propertyMeta;
-
-				addToMap(mapProperties, mapMeta, propertyMeta.getKeyValueFromString(pair.right));
+				addToMap(mapProperties, propertyMeta,
+						propertyMeta.getKeyValueFromString(pair.right));
 			}
 		}
 
 		for (Entry<String, List<V>> entry : listProperties.entrySet())
 		{
-			setListPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setListPropertyToEntity(entry.getValue(),
+					entityMeta.<Void, V> getPropertyMetaByProperty(entry.getKey()), entity);
 		}
 
 		for (Entry<String, Set<V>> entry : setProperties.entrySet())
 		{
-			setSetPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setSetPropertyToEntity(entry.getValue(),
+					entityMeta.<Void, V> getPropertyMetaByProperty(entry.getKey()), entity);
 		}
 
 		for (Entry<String, Map<K, V>> entry : mapProperties.entrySet())
 		{
-			setMapPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
+			setMapPropertyToEntity(entry.getValue(),
+					entityMeta.<K, V> getPropertyMetaByProperty(entry.getKey()), entity);
 		}
 
 	}
@@ -189,7 +191,8 @@ public class ThriftEntityMapper
 		}
 	}
 
-	public <T, ID> void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, T entity)
+	public <T, V> void setListPropertyToEntity(List<V> list, PropertyMeta<Void, V> listMeta,
+			T entity)
 	{
 		log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
 
@@ -217,7 +220,7 @@ public class ThriftEntityMapper
 		}
 	}
 
-	public <T, ID> void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, T entity)
+	public <T, K, V> void setMapPropertyToEntity(Map<K, V> map, PropertyMeta<K, V> mapMeta, T entity)
 	{
 		log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
 

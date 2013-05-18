@@ -1,7 +1,6 @@
 package integration.tests;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -67,13 +66,12 @@ public class ConsistencyLevelIT
 
 	private String keyspaceName = ThriftCassandraDaoTest.getKeyspace().getKeyspaceName();
 
-	private ThriftGenericWideRowDao<Long, Long> counterWideMapDao = ThriftCassandraDaoTest
-			.getColumnFamilyDao(LONG_SRZ, LONG_SRZ, "counter_widemap");
+	private ThriftGenericWideRowDao counterWideMapDao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			"counter_widemap", Long.class, Long.class);
 
 	private Long id = RandomUtils.nextLong();
 
-	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
-			.getConsistencyPolicy();
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
 	@Test
 	public void should_throw_exception_when_persisting_with_local_quorum_consistency()

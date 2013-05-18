@@ -33,7 +33,7 @@ public class ThriftColumnFamilyHelper extends AchillesColumnFamilyHelper
 
 	public ThriftPropertyHelper helper = new ThriftPropertyHelper();
 
-	public <ID> ColumnFamilyDefinition buildEntityCF(EntityMeta<ID> entityMeta, String keyspaceName)
+	public ColumnFamilyDefinition buildEntityCF(EntityMeta entityMeta, String keyspaceName)
 	{
 
 		String entityName = entityMeta.getClassName();
@@ -159,7 +159,7 @@ public class ThriftColumnFamilyHelper extends AchillesColumnFamilyHelper
 
 	}
 
-	public void validateCFWithEntityMeta(ColumnFamilyDefinition cfDef, EntityMeta<?> entityMeta)
+	public void validateCFWithEntityMeta(ColumnFamilyDefinition cfDef, EntityMeta entityMeta)
 	{
 		log.trace("Validating column family row key definition for entityMeta {}",
 				entityMeta.getClassName());

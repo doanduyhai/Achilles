@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
+public abstract class AbstractWideMapWrapper<K, V> implements WideMap<K, V>
 {
 	private static final Logger log = LoggerFactory.getLogger(AbstractWideMapWrapper.class);
 
-	protected ThriftPersistenceContext<ID> context;
-	protected AchillesJpaEntityInterceptor<ID, ?> interceptor;
+	protected ThriftPersistenceContext context;
+	protected AchillesJpaEntityInterceptor<?> interceptor;
 	protected AchillesEntityValidator validator = new AchillesEntityValidator(
 			new ThriftEntityProxifier());
 
@@ -1153,17 +1153,17 @@ public abstract class AbstractWideMapWrapper<ID, K, V> implements WideMap<K, V>
 		}
 	}
 
-	public AchillesJpaEntityInterceptor<ID, ?> getInterceptor()
+	public AchillesJpaEntityInterceptor<?> getInterceptor()
 	{
 		return interceptor;
 	}
 
-	public void setInterceptor(final AchillesJpaEntityInterceptor<ID, ?> interceptor)
+	public void setInterceptor(final AchillesJpaEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 	}
 
-	public void setContext(final ThriftPersistenceContext<ID> context)
+	public void setContext(final ThriftPersistenceContext context)
 	{
 		this.context = context;
 	}

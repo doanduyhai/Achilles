@@ -33,7 +33,6 @@ public class CompositeFactory
 	private CompositeHelper helper = new CompositeHelper();
 	private AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
 
-	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)
 	{
 		log.trace("Creating base composite for propertyMeta {}", propertyMeta.getPropertyName());
@@ -56,7 +55,7 @@ public class CompositeFactory
 		{
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			List<Serializer<?>> componentSerializers = getComponentSerializers(multiKeyProperties);
+			List<Serializer<Object>> componentSerializers = getComponentSerializers(multiKeyProperties);
 			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
 			int srzCount = componentSerializers.size();
@@ -73,7 +72,7 @@ public class CompositeFactory
 
 			for (int i = 0; i < srzCount; i++)
 			{
-				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
+				Serializer<Object> srz = componentSerializers.get(i);
 				composite.setComponent(i, keyValues.get(i), srz, srz.getComparatorType()
 						.getTypeName());
 			}
@@ -81,7 +80,6 @@ public class CompositeFactory
 		return composite;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <K, V, T> Composite createForQuery(PropertyMeta<K, V> propertyMeta, T keyValue,
 			ComponentEquality equality)
 	{
@@ -108,7 +106,7 @@ public class CompositeFactory
 			log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
 
 			MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-			List<Serializer<?>> componentSerializers = getComponentSerializers(multiKeyProperties);
+			List<Serializer<Object>> componentSerializers = getComponentSerializers(multiKeyProperties);
 
 			List<Object> keyValues = achillesEntityIntrospector.determineMultiKeyValues(keyValue,
 					multiKeyProperties.getComponentGetters());
@@ -123,7 +121,7 @@ public class CompositeFactory
 
 			for (int i = 0; i <= lastNotNullIndex; i++)
 			{
-				Serializer<Object> srz = (Serializer<Object>) componentSerializers.get(i);
+				Serializer<Object> srz = componentSerializers.get(i);
 				Object value = keyValues.get(i);
 				if (i < lastNotNullIndex)
 				{
@@ -140,12 +138,12 @@ public class CompositeFactory
 		return composite;
 	}
 
-	private List<Serializer<?>> getComponentSerializers(MultiKeyProperties multiKeyProperties)
+	private List<Serializer<Object>> getComponentSerializers(MultiKeyProperties multiKeyProperties)
 	{
-		List<Serializer<?>> componentSerializers = new ArrayList<Serializer<?>>();
+		List<Serializer<Object>> componentSerializers = new ArrayList<Serializer<Object>>();
 		for (Class<?> clazz : multiKeyProperties.getComponentClasses())
 		{
-			componentSerializers.add(SerializerTypeInferer.getSerializer(clazz));
+			componentSerializers.add(SerializerTypeInferer.<Object> getSerializer(clazz));
 		}
 		return componentSerializers;
 	}
@@ -170,7 +168,7 @@ public class CompositeFactory
 		return queryComp;
 	}
 
-	public <ID> Composite createKeyForCounter(String fqcn, ID key, PropertyMeta<Void, ID> idMeta)
+	public Composite createKeyForCounter(String fqcn, Object key, PropertyMeta<?, ?> idMeta)
 	{
 		log.trace("Creating composite counter row key for entity class {} and primary key {}",
 				fqcn, key);

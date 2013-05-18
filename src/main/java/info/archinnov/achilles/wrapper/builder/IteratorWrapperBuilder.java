@@ -11,25 +11,25 @@ import java.util.Iterator;
  * @author DuyHai DOAN
  * 
  */
-public class IteratorWrapperBuilder<ID, V> extends
-		AbstractWrapperBuilder<ID, IteratorWrapperBuilder<ID, V>, Void, V>
+public class IteratorWrapperBuilder<V> extends
+		AbstractWrapperBuilder<IteratorWrapperBuilder<V>, Void, V>
 {
 	private Iterator<V> target;
 
-	public static <ID, V> IteratorWrapperBuilder<ID, V> builder(
-			AchillesPersistenceContext<ID> context, Iterator<V> target)
+	public static <V> IteratorWrapperBuilder<V> builder(AchillesPersistenceContext context,
+			Iterator<V> target)
 	{
-		return new IteratorWrapperBuilder<ID, V>(context, target);
+		return new IteratorWrapperBuilder<V>(context, target);
 	}
 
-	public IteratorWrapperBuilder(AchillesPersistenceContext<ID> context, Iterator<V> target) {
+	public IteratorWrapperBuilder(AchillesPersistenceContext context, Iterator<V> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public IteratorWrapper<ID, V> build()
+	public IteratorWrapper<V> build()
 	{
-		IteratorWrapper<ID, V> iteratorWrapper = new IteratorWrapper<ID, V>(this.target);
+		IteratorWrapper<V> iteratorWrapper = new IteratorWrapper<V>(this.target);
 		super.build(iteratorWrapper);
 		return iteratorWrapper;
 	}

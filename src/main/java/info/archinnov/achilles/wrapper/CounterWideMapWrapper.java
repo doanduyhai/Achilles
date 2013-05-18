@@ -30,13 +30,13 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, Counter>
+public class CounterWideMapWrapper<K> extends AbstractWideMapWrapper<K, Counter>
 {
 
 	private static Logger log = LoggerFactory.getLogger(CounterWideMapWrapper.class);
 
-	private ID id;
-	private ThriftGenericWideRowDao<ID, Long> wideMapCounterDao;
+	private Object id;
+	private ThriftGenericWideRowDao wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
 	private CompositeHelper compositeHelper;
@@ -50,10 +50,10 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		log.trace("Get counter value having key {}", key);
 		Composite comp = compositeFactory.createForQuery(propertyMeta, key, EQUAL);
 
-		return CounterWrapperBuilder.builder(id) //
+		return CounterWrapperBuilder.builder(context) //
 				.columnName(comp) //
 				.counterDao(wideMapCounterDao) //
-				.context(context) //
+				.key(id) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
 				.build();
@@ -156,7 +156,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name(),
 					count);
 		}
-		AchillesCounterSliceIterator<ID> columnSliceIterator = wideMapCounterDao
+		AchillesCounterSliceIterator<?> columnSliceIterator = wideMapCounterDao
 				.getCounterColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(),
 						count);
 
@@ -568,7 +568,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
-	public void setId(ID id)
+	public void setId(Object id)
 	{
 		this.id = id;
 	}
@@ -598,7 +598,7 @@ public class CounterWideMapWrapper<ID, K> extends AbstractWideMapWrapper<ID, K, 
 		this.compositeFactory = compositeFactory;
 	}
 
-	public void setWideMapCounterDao(ThriftGenericWideRowDao<ID, Long> wideMapCounterDao)
+	public void setWideMapCounterDao(ThriftGenericWideRowDao wideMapCounterDao)
 	{
 		this.wideMapCounterDao = wideMapCounterDao;
 	}

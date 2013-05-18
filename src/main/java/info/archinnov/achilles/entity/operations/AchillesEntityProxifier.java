@@ -33,15 +33,14 @@ public abstract class AchillesEntityProxifier
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			AchillesJpaEntityInterceptor<ID, ?> interceptor = this.getInterceptor(entity);
+			AchillesJpaEntityInterceptor<?> interceptor = this.getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 
 		return baseClass;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T, ID> T buildProxy(T entity, AchillesPersistenceContext<ID> context)
+	public <T> T buildProxy(T entity, AchillesPersistenceContext context)
 	{
 
 		if (entity == null)
@@ -59,13 +58,12 @@ public abstract class AchillesEntityProxifier
 		return (T) enhancer.create();
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T, ID> T getRealObject(T proxy)
+	public <T> T getRealObject(T proxy)
 	{
 		log.debug("Get real entity from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		AchillesJpaEntityInterceptor<ID, T> interceptor = (AchillesJpaEntityInterceptor<ID, T>) factory
+		AchillesJpaEntityInterceptor<T> interceptor = (AchillesJpaEntityInterceptor<T>) factory
 				.getCallback(0);
 		return (T) interceptor.getTarget();
 	}
@@ -75,13 +73,12 @@ public abstract class AchillesEntityProxifier
 		return Factory.class.isAssignableFrom(entity.getClass());
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T, ID> AchillesJpaEntityInterceptor<ID, T> getInterceptor(T proxy)
+	public <T> AchillesJpaEntityInterceptor<T> getInterceptor(T proxy)
 	{
 		log.debug("Get JPA interceptor from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		AchillesJpaEntityInterceptor<ID, T> interceptor = (AchillesJpaEntityInterceptor<ID, T>) factory
+		AchillesJpaEntityInterceptor<T> interceptor = (AchillesJpaEntityInterceptor<T>) factory
 				.getCallback(0);
 		return interceptor;
 	}
@@ -159,6 +156,6 @@ public abstract class AchillesEntityProxifier
 		return result;
 	}
 
-	public abstract <ID, T> AchillesJpaEntityInterceptor<ID, T> buildInterceptor(
-			AchillesPersistenceContext<ID> context, T entity);
+	public abstract <T> AchillesJpaEntityInterceptor<T> buildInterceptor(
+			AchillesPersistenceContext context, T entity);
 }

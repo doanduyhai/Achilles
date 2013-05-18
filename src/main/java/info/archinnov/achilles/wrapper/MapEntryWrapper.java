@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class MapEntryWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map.Entry<K, V>
+public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.Entry<K, V>
 {
 	private static final Logger log = LoggerFactory.getLogger(MapEntryWrapper.class);
 

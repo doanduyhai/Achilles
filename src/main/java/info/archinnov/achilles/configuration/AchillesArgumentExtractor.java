@@ -110,7 +110,6 @@ public abstract class AchillesArgumentExtractor
 		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap
@@ -119,7 +118,6 @@ public abstract class AchillesArgumentExtractor
 		return parseConsistencyLevelMap(readConsistencyMap);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap)
 	{
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap

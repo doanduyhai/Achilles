@@ -77,7 +77,7 @@ public class JoinPropertyParser
 		return joinPropertyMeta;
 	}
 
-	public <ID> void fillJoinWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
+	public void fillJoinWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
 			PropertyMeta<?, ?> joinPropertyMeta, String externalTableName)
 	{
 		log.debug("Filling join wide map meta {} of entity class {} with id meta {} info",

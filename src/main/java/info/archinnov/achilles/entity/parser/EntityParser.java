@@ -41,8 +41,7 @@ public class EntityParser
 	private PropertyFilter filter = new PropertyFilter();
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
-	@SuppressWarnings("unchecked")
-	public <ID> EntityMeta<ID> parseEntity(EntityParsingContext context)
+	public EntityMeta parseEntity(EntityParsingContext context)
 	{
 		log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
 
@@ -59,7 +58,7 @@ public class EntityParser
 		context.setCurrentConsistencyLevels(consistencyLevels);
 		context.setCurrentColumnFamilyName(columnFamilyName);
 
-		PropertyMeta<Void, ID> idMeta = null;
+		PropertyMeta<?, ?> idMeta = null;
 		List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
 		for (Field field : inheritedFields)
 		{
@@ -67,7 +66,7 @@ public class EntityParser
 			if (filter.hasAnnotation(field, Id.class))
 			{
 				propertyContext.setPrimaryKey(true);
-				idMeta = (PropertyMeta<Void, ID>) parser.parse(propertyContext);
+				idMeta = parser.parse(propertyContext);
 			}
 			else if (filter.hasAnnotation(field, Column.class))
 			{
@@ -96,8 +95,7 @@ public class EntityParser
 		validator.validatePropertyMetas(context);
 		validator.validateWideRows(context);
 
-		EntityMeta<ID> entityMeta = entityMetaBuilder((PropertyMeta<Void, ID>) idMeta)
-				.className(entityClass.getCanonicalName()) //
+		EntityMeta entityMeta = entityMetaBuilder(idMeta).className(entityClass.getCanonicalName()) //
 				.columnFamilyName(columnFamilyName) //
 				.serialVersionUID(serialVersionUID) //
 				.propertyMetas(context.getPropertyMetas()) //
@@ -113,9 +111,8 @@ public class EntityParser
 		return entityMeta;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID> void fillJoinEntityMeta(EntityParsingContext context,
-			Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	public void fillJoinEntityMeta(EntityParsingContext context,
+			Map<Class<?>, EntityMeta> entityMetaMap)
 	{
 		log.debug("Fill in join entity meta into property meta of join type");
 
@@ -127,7 +124,7 @@ public class EntityParser
 			validator.validateJoinEntityExist(entityMetaMap, clazz);
 
 			PropertyMeta<?, ?> propertyMeta = entry.getKey();
-			EntityMeta<JOIN_ID> joinEntityMeta = (EntityMeta<JOIN_ID>) entityMetaMap.get(clazz);
+			EntityMeta joinEntityMeta = entityMetaMap.get(clazz);
 
 			validator.validateJoinEntityNotWideRow(propertyMeta, joinEntityMeta);
 
@@ -157,7 +154,7 @@ public class EntityParser
 		context.setCurrentObjectMapper(objectMapper);
 	}
 
-	private void processWideMap(EntityParsingContext context, PropertyMeta<Void, ?> idMeta)
+	private void processWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta)
 	{
 		for (Entry<PropertyMeta<?, ?>, String> entry : context.getWideMaps().entrySet())
 		{
@@ -171,7 +168,7 @@ public class EntityParser
 	}
 
 	private void processJoinWideMap(EntityParsingContext context, String columnFamilyName,
-			PropertyMeta<Void, ?> idMeta)
+			PropertyMeta<?, ?> idMeta)
 	{
 		for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinWideMaps().entrySet())
 		{
@@ -184,8 +181,7 @@ public class EntityParser
 		}
 	}
 
-	private void completeCounterPropertyMeta(EntityParsingContext context,
-			PropertyMeta<Void, ?> idMeta)
+	private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta<?, ?> idMeta)
 	{
 		for (PropertyMeta<?, ?> counterMeta : context.getCounterMetas())
 		{

@@ -171,14 +171,13 @@ public class PropertyMeta<K, V>
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public KeyValue<K, V> getKeyValueFromString(Object stringKeyValue)
+	public KeyValue<K, V> getKeyValueFromString(String stringKeyValue)
 	{
 		log.trace("Getting key/value from string {} for property {} of entity class {}",
 				stringKeyValue, propertyName, entityClassName);
 		try
 		{
-			return this.objectMapper.readValue((String) stringKeyValue, KeyValue.class);
+			return this.objectMapper.readValue(stringKeyValue, KeyValue.class);
 		}
 		catch (Exception e)
 		{
@@ -267,17 +266,17 @@ public class PropertyMeta<K, V>
 		return type.isJoinColumn();
 	}
 
-	public EntityMeta<?> joinMeta()
+	public EntityMeta joinMeta()
 	{
 		return joinProperties != null ? joinProperties.getEntityMeta() : null;
 	}
 
-	public PropertyMeta<Void, ?> joinIdMeta()
+	public PropertyMeta<?, ?> joinIdMeta()
 	{
 		return joinMeta() != null ? joinMeta().getIdMeta() : null;
 	}
 
-	public PropertyMeta<Void, ?> counterIdMeta()
+	public PropertyMeta<?, ?> counterIdMeta()
 	{
 		return counterProperties != null ? counterProperties.getIdMeta() : null;
 	}

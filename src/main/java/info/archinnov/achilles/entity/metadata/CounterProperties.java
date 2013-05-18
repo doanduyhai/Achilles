@@ -9,13 +9,13 @@ package info.archinnov.achilles.entity.metadata;
 public class CounterProperties
 {
 	private String fqcn;
-	private PropertyMeta<Void, ?> idMeta;
+	private PropertyMeta<?, ?> idMeta;
 
 	public CounterProperties(String fqcn) {
 		this.fqcn = fqcn;
 	}
 
-	public CounterProperties(String fqcn, PropertyMeta<Void, ?> idMeta) {
+	public CounterProperties(String fqcn, PropertyMeta<?, ?> idMeta) {
 		this.fqcn = fqcn;
 		this.idMeta = idMeta;
 	}
@@ -25,12 +25,12 @@ public class CounterProperties
 		return fqcn;
 	}
 
-	public PropertyMeta<Void, ?> getIdMeta()
+	public PropertyMeta<?, ?> getIdMeta()
 	{
 		return idMeta;
 	}
 
-	public void setIdMeta(PropertyMeta<Void, ?> idMeta)
+	public void setIdMeta(PropertyMeta<?, ?> idMeta)
 	{
 		this.idMeta = idMeta;
 	}

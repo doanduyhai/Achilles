@@ -24,7 +24,7 @@ import me.prettyprint.hector.api.beans.Composite;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID, T>
+public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 {
 
 	private CompositeHelper compositeHelper = new CompositeHelper();
@@ -38,36 +38,33 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 		super.proxifier = new ThriftEntityProxifier();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	protected Object buildCounterWrapper(PropertyMeta<ID, ?> propertyMeta)
+	protected Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
 	{
 		Object result;
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		CounterProperties counterProperties = propertyMeta.getCounterProperties();
 		Composite keyComp = compositeFactory.createKeyForCounter(counterProperties.getFqcn(), key,
-				(PropertyMeta<Void, ID>) counterProperties.getIdMeta());
+				counterProperties.getIdMeta());
 		Composite comp = compositeFactory.createBaseForCounterGet(propertyMeta);
-		result = CounterWrapperBuilder.builder(keyComp) //
+		result = CounterWrapperBuilder.builder(thriftContext) //
 				.counterDao(thriftContext.getCounterDao()) //
 				.columnName(comp) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
-				.context(thriftContext) //
+				.key(keyComp) //
 				.build();
 		return result;
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 
-		ThriftGenericWideRowDao<ID, V> wideRowDao = (ThriftGenericWideRowDao<ID, V>) thriftContext
-				.findWideRowDao(columnFamilyName);
+		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return WideMapWrapperBuilder //
 				.builder(key, wideRowDao, propertyMeta) //
@@ -81,12 +78,11 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta)
 	{
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
-		ThriftGenericWideRowDao<ID, Long> counterWideMapDao = (ThriftGenericWideRowDao<ID, Long>) thriftContext
-				.findWideRowDao(propertyMeta.getExternalCFName());
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
+		ThriftGenericWideRowDao counterWideMapDao = thriftContext.findWideRowDao(propertyMeta
+				.getExternalCFName());
 
 		return CounterWideMapWrapperBuilder //
 				.builder(key, counterWideMapDao, propertyMeta)//
@@ -100,15 +96,13 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	protected <K, JOIN_ID, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
+	protected <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
-		ThriftGenericWideRowDao<ID, JOIN_ID> wideRowDao = (ThriftGenericWideRowDao<ID, JOIN_ID>) thriftContext
-				.findWideRowDao(columnFamilyName);
+		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return JoinWideMapWrapperBuilder //
 				.builder(key, wideRowDao, propertyMeta) //
@@ -125,12 +119,11 @@ public class JpaEntityInterceptor<ID, T> extends AchillesJpaEntityInterceptor<ID
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected <K, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta)
 	{
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
-		ThriftGenericWideRowDao<ID, V> wideRowDao = (ThriftGenericWideRowDao<ID, V>) thriftContext
-				.findWideRowDao(context.getEntityMeta().getColumnFamilyName());
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
+		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(context.getEntityMeta()
+				.getColumnFamilyName());
 
 		return WideMapWrapperBuilder.builder(key, wideRowDao, propertyMeta) //
 				.interceptor(this) //

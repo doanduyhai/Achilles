@@ -20,18 +20,18 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class KeyValueIteratorImpl<ID, K, V> implements KeyValueIterator<K, V>
+public class KeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 {
 	private static final Logger log = LoggerFactory.getLogger(KeyValueIteratorImpl.class);
 
 	private KeyValueFactory factory = new KeyValueFactory();
 	protected AbstractAchillesSliceIterator<HColumn<Composite, V>> achillesSliceIterator;
 	private PropertyMeta<K, V> propertyMeta;
-	private ThriftPersistenceContext<ID> context;
+	private ThriftPersistenceContext context;
 
 	protected KeyValueIteratorImpl() {}
 
-	public KeyValueIteratorImpl(ThriftPersistenceContext<ID> context,
+	public KeyValueIteratorImpl(ThriftPersistenceContext context,
 			AbstractAchillesSliceIterator<HColumn<Composite, V>> columnSliceIterator,
 			PropertyMeta<K, V> propertyMeta)
 	{

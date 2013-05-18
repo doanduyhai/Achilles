@@ -33,14 +33,14 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
+public class JoinWideMapWrapper<K, V> extends AbstractWideMapWrapper<K, V>
 {
 
 	private static final Logger log = LoggerFactory.getLogger(JoinWideMapWrapper.class);
 
-	private ID id;
+	private Object id;
 	private PropertyMeta<K, V> propertyMeta;
-	private ThriftGenericWideRowDao<ID, JOIN_ID> dao;
+	private ThriftGenericWideRowDao dao;
 	private ThriftEntityPersister persister;
 	private ThriftEntityLoader loader;
 	private AchillesEntityProxifier proxifier;
@@ -54,18 +54,17 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		return compositeFactory.createBaseComposite(propertyMeta, key);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public V get(K key)
 	{
 		log.trace("Get join value having key {}", key);
 		V result = null;
-		JOIN_ID joinId = dao.getValue(id, buildComposite(key));
+		Object joinId = dao.getValue(id, buildComposite(key));
 		if (joinId != null)
 		{
-			EntityMeta<JOIN_ID> joinMeta = (EntityMeta<JOIN_ID>) propertyMeta.joinMeta();
+			EntityMeta joinMeta = propertyMeta.joinMeta();
 
-			AchillesPersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
+			AchillesPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 
 			result = (V) loader.load(joinContext);
@@ -74,25 +73,23 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
 		log.trace("Insert join value {} with key {} and ttl {}", value, key, ttl);
 
-		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		Object joinId = persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
 		log.trace("Insert join value {} with key {}", value, key);
 
-		JOIN_ID joinId = (JOIN_ID) persistOrEnsureJoinEntityExists(value);
+		Object joinId = persistOrEnsureJoinEntityExists(value);
 		dao.setValueBatch(id, buildComposite(key), joinId,
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
@@ -115,7 +112,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
 
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
 		return keyValueFactory.createJoinKeyValueList(context, propertyMeta, hColumns);
@@ -133,7 +130,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 			log.trace("Find join values in range {} / {} with bounding {} and ordering {}",
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
 		return keyValueFactory.createJoinValueList(context, propertyMeta, hColumns);
@@ -153,13 +150,12 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
 
-		List<HColumn<Composite, JOIN_ID>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
+		List<HColumn<Composite, Object>> hColumns = dao.findRawColumnsRange(id, queryComps[0],
 				queryComps[1], count, ordering.isReverse());
 
 		return keyValueFactory.createKeyList(propertyMeta, hColumns);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public KeyValueIterator<K, V> iterator(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering)
@@ -175,12 +171,12 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 					count);
 		}
 
-		ThriftGenericEntityDao<JOIN_ID> joinEntityDao = (ThriftGenericEntityDao<JOIN_ID>) context
-				.findEntityDao(propertyMeta.joinMeta().getColumnFamilyName());
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
+				.getColumnFamilyName());
 
-		AchillesJoinSliceIterator<ID, ?, JOIN_ID, K, V> joinColumnSliceIterator = dao
-				.getJoinColumnsIterator(joinEntityDao, propertyMeta, id, composites[0],
-						composites[1], ordering.isReverse(), count);
+		AchillesJoinSliceIterator<?, K, V> joinColumnSliceIterator = dao.getJoinColumnsIterator(
+				joinEntityDao, propertyMeta, id, composites[0], composites[1],
+				ordering.isReverse(), count);
 
 		return iteratorFactory.createJoinKeyValueIterator(context, joinColumnSliceIterator,
 				propertyMeta);
@@ -232,7 +228,6 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		context.flush();
 	}
 
-	@SuppressWarnings("unchecked")
 	private Object persistOrEnsureJoinEntityExists(V value)
 	{
 		Object joinId = null;
@@ -240,7 +235,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 
 		if (value != null)
 		{
-			ThriftPersistenceContext<JOIN_ID> joinContext = (ThriftPersistenceContext<JOIN_ID>) context
+			ThriftPersistenceContext joinContext = (ThriftPersistenceContext) context
 					.newPersistenceContext(propertyMeta.joinMeta(), value);
 
 			joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
@@ -257,7 +252,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		return propertyMeta.getExternalCFName();
 	}
 
-	public void setId(ID id)
+	public void setId(Object id)
 	{
 		this.id = id;
 	}
@@ -302,7 +297,7 @@ public class JoinWideMapWrapper<ID, JOIN_ID, K, V> extends AbstractWideMapWrappe
 		this.iteratorFactory = iteratorFactory;
 	}
 
-	public void setDao(ThriftGenericWideRowDao<ID, JOIN_ID> dao)
+	public void setDao(ThriftGenericWideRowDao dao)
 	{
 		this.dao = dao;
 	}

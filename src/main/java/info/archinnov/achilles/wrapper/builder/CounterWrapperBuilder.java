@@ -12,62 +12,62 @@ import me.prettyprint.hector.api.beans.Composite;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWrapperBuilder<ID>
+public class CounterWrapperBuilder
 {
-	private ID key;
+	private Object key;
 	private Composite columnName;
-	private ThriftAbstractDao<ID, Long> counterDao;
-	private ThriftPersistenceContext<?> context;
+	private ThriftAbstractDao counterDao;
+	private ThriftPersistenceContext context;
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
-	public static <ID> CounterWrapperBuilder<ID> builder(ID key)
+	public static CounterWrapperBuilder builder(ThriftPersistenceContext context)
 	{
-		return new CounterWrapperBuilder<ID>(key);
+		return new CounterWrapperBuilder(context);
 	}
 
-	public CounterWrapperBuilder(ID key) {
+	protected CounterWrapperBuilder(ThriftPersistenceContext context) {
+		this.context = context;
+	}
+
+	public CounterWrapperBuilder key(Object key)
+	{
 		this.key = key;
+		return this;
 	}
 
-	public CounterWrapperBuilder<ID> counterDao(ThriftAbstractDao<ID, Long> counterDao)
+	public CounterWrapperBuilder counterDao(ThriftAbstractDao counterDao)
 	{
 		this.counterDao = counterDao;
 		return this;
 	}
 
-	public CounterWrapperBuilder<ID> columnName(Composite columnName)
+	public CounterWrapperBuilder columnName(Composite columnName)
 	{
 		this.columnName = columnName;
 		return this;
 	}
 
-	public CounterWrapperBuilder<ID> readLevel(ConsistencyLevel readLevel)
+	public CounterWrapperBuilder readLevel(ConsistencyLevel readLevel)
 	{
 		this.readLevel = readLevel;
 		return this;
 	}
 
-	public CounterWrapperBuilder<ID> writeLevel(ConsistencyLevel writeLevel)
+	public CounterWrapperBuilder writeLevel(ConsistencyLevel writeLevel)
 	{
 		this.writeLevel = writeLevel;
 		return this;
 	}
 
-	public CounterWrapperBuilder<ID> context(ThriftPersistenceContext<?> context)
+	public CounterWrapper build()
 	{
-		this.context = context;
-		return this;
-	}
-
-	public CounterWrapper<ID> build()
-	{
-		CounterWrapper<ID> wrapper = new CounterWrapper<ID>(key);
+		CounterWrapper wrapper = new CounterWrapper(context);
 		wrapper.setCounterDao(counterDao);
 		wrapper.setColumnName(columnName);
 		wrapper.setReadLevel(readLevel);
 		wrapper.setWriteLevel(writeLevel);
-		wrapper.setContext(context);
+		wrapper.setKey(key);
 		return wrapper;
 	}
 }

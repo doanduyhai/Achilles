@@ -1,8 +1,7 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -33,8 +32,8 @@ import org.junit.Test;
 public class ObjectAsWideMapValueIT
 {
 
-	private ThriftGenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizerAndValidateColumnFamilyName("bean_with_widemap_object"));
+	private ThriftGenericEntityDao dao = getEntityDao(
+			normalizerAndValidateColumnFamilyName("bean_with_widemap_object"), Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

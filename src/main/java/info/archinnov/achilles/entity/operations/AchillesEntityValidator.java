@@ -27,18 +27,17 @@ public class AchillesEntityValidator
 		this.proxifier = proxifier;
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void validateEntity(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	public void validateEntity(Object entity, Map<Class<?>, EntityMeta> entityMetaMap)
 	{
 		Validator.validateNotNull(entity, "Entity should not be null");
 
-		Class baseClass = proxifier.deriveBaseClass(entity);
-		EntityMeta<?> entityMeta = entityMetaMap.get(baseClass);
+		Class<?> baseClass = proxifier.deriveBaseClass(entity);
+		EntityMeta entityMeta = entityMetaMap.get(baseClass);
 		validateEntity(entity, entityMeta);
 
 	}
 
-	public void validateEntity(Object entity, EntityMeta<?> entityMeta)
+	public void validateEntity(Object entity, EntityMeta entityMeta)
 	{
 		log.debug("Validate entity {}", entity);
 
@@ -53,15 +52,14 @@ public class AchillesEntityValidator
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T, ID> void validateNotWideRow(Object entity, Map<Class<?>, EntityMeta<?>> entityMetaMap)
+	public void validateNotWideRow(Object entity, Map<Class<?>, EntityMeta> entityMetaMap)
 	{
 		log.debug("Validate entity {} is not a wide row", entity);
 
 		Validator.validateNotNull(entity, "Entity should not be null");
 
-		Class<T> baseClass = (Class<T>) proxifier.deriveBaseClass(entity);
-		EntityMeta<ID> entityMeta = (EntityMeta<ID>) entityMetaMap.get(baseClass);
+		Class<?> baseClass = proxifier.deriveBaseClass(entity);
+		EntityMeta entityMeta = entityMetaMap.get(baseClass);
 
 		if (entityMeta.isWideRow())
 		{
@@ -70,7 +68,7 @@ public class AchillesEntityValidator
 		}
 	}
 
-	public <ID> void validateNoPendingBatch(AchillesPersistenceContext<ID> context)
+	public void validateNoPendingBatch(AchillesPersistenceContext context)
 	{
 		log.debug("Validate no pending batch");
 		Validator

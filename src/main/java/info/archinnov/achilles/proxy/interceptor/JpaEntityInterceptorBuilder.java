@@ -20,41 +20,41 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class JpaEntityInterceptorBuilder<ID, T>
+public class JpaEntityInterceptorBuilder<T>
 {
 	private static final Logger log = LoggerFactory.getLogger(JpaEntityInterceptorBuilder.class);
 
 	private T target;
 	private Set<Method> lazyLoaded = new HashSet<Method>();
-	private ThriftPersistenceContext<ID> context;
+	private ThriftPersistenceContext context;
 
-	public static <ID, T> JpaEntityInterceptorBuilder<ID, T> builder(
-			AchillesPersistenceContext<ID> context, T entity)
+	public static <T> JpaEntityInterceptorBuilder<T> builder(AchillesPersistenceContext context,
+			T entity)
 	{
-		return new JpaEntityInterceptorBuilder<ID, T>(context, entity);
+		return new JpaEntityInterceptorBuilder<T>(context, entity);
 	}
 
-	public JpaEntityInterceptorBuilder(AchillesPersistenceContext<ID> context, T entity) {
+	public JpaEntityInterceptorBuilder(AchillesPersistenceContext context, T entity) {
 		Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
 		Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
-		this.context = (ThriftPersistenceContext<ID>) context;
+		this.context = (ThriftPersistenceContext) context;
 		this.target = entity;
 	}
 
-	public JpaEntityInterceptorBuilder<ID, T> lazyLoaded(Set<Method> lazyLoaded)
+	public JpaEntityInterceptorBuilder<T> lazyLoaded(Set<Method> lazyLoaded)
 	{
 		this.lazyLoaded = lazyLoaded;
 		return this;
 	}
 
-	public JpaEntityInterceptor<ID, T> build()
+	public JpaEntityInterceptor<T> build()
 	{
 		log.debug("Build interceptor for entity of class {}", context.getEntityMeta()
 				.getClassName());
 
-		JpaEntityInterceptor<ID, T> interceptor = new JpaEntityInterceptor<ID, T>();
+		JpaEntityInterceptor<T> interceptor = new JpaEntityInterceptor<T>();
 
-		EntityMeta<ID> entityMeta = context.getEntityMeta();
+		EntityMeta entityMeta = context.getEntityMeta();
 
 		Validator.validateNotNull(this.target, "Target object for interceptor of '"
 				+ context.getEntityClass().getCanonicalName() + "' should not be null");

@@ -14,14 +14,13 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings("unchecked")
-public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilder<ID, T, K, V>, K, V>
+public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T, K, V>, K, V>
 {
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	private Method setter;
 	private PropertyMeta<K, V> propertyMeta;
 	private AchillesEntityProxifier proxifier;
-	protected AchillesPersistenceContext<ID> context;
+	protected AchillesPersistenceContext context;
 
 	public T dirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
@@ -47,13 +46,13 @@ public abstract class AbstractWrapperBuilder<ID, T extends AbstractWrapperBuilde
 		return (T) this;
 	}
 
-	public T context(AchillesPersistenceContext<ID> context)
+	public T context(AchillesPersistenceContext context)
 	{
 		this.context = context;
 		return (T) this;
 	}
 
-	public void build(AbstractWrapper<ID, K, V> wrapper)
+	public void build(AbstractWrapper<K, V> wrapper)
 	{
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);

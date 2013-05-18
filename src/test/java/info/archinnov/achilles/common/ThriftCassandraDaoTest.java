@@ -9,13 +9,14 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.Map;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.factory.HFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -65,7 +66,8 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 				FORCE_CF_CREATION_PARAM, true, ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
-		AchillesConfigurationContext configContext = Whitebox.getInternalState(emf, "configContext");
+		AchillesConfigurationContext configContext = Whitebox
+				.getInternalState(emf, "configContext");
 		policy = (ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy();
 	}
 
@@ -84,22 +86,25 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 		return (ThriftEntityManager) emf.createEntityManager();
 	}
 
-	public static <K> ThriftGenericEntityDao<K> getEntityDao(Serializer<K> keySerializer,
-			String columnFamily)
+	public static <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass)
 	{
-		return new ThriftGenericEntityDao<K>(cluster, keyspace, keySerializer, columnFamily, policy);
+		return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy,
+				new Pair<Class<K>, Class<String>>(keyClass, String.class));
 	}
 
-	public static <K, V> ThriftGenericWideRowDao<K, V> getColumnFamilyDao(
-			Serializer<K> keySerializer, Serializer<V> valueSerializer, String columnFamily)
+	public static <K, V> ThriftGenericWideRowDao getColumnFamilyDao(String columnFamily,
+			Class<K> keyClass, Class<V> valueClass)
 	{
-		return new ThriftGenericWideRowDao<K, V>(cluster, keyspace, keySerializer, valueSerializer,
-				columnFamily, policy);
+
+		return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy,
+				new Pair<Class<K>, Class<V>>(keyClass, valueClass));
 	}
 
 	public static ThriftCounterDao getCounterDao()
 	{
-		return new ThriftCounterDao(cluster, keyspace, policy);
+		Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = new Pair<Class<Composite>, Class<Long>>(
+				Composite.class, Long.class);
+		return new ThriftCounterDao(cluster, keyspace, policy, rowkeyAndValueClasses);
 	}
 
 	public static ThriftConsistencyLevelPolicy getConsistencyPolicy()

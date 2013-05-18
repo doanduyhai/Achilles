@@ -1,18 +1,16 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.KeyValueIterator;
 import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
 import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
-import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
@@ -42,11 +40,11 @@ public class JoinWideMapIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private ThriftGenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
-			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
+	private ThriftGenericEntityDao tweetDao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
 
-	private ThriftGenericWideRowDao<Long, UUID> externalJoinWideMapDao = getColumnFamilyDao(
-			LONG_SRZ, UUID_SRZ, normalizerAndValidateColumnFamilyName("retweets_cf"));
+	private ThriftGenericWideRowDao externalJoinWideMapDao = getColumnFamilyDao(
+			normalizerAndValidateColumnFamilyName("retweets_cf"), Long.class, UUID.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

@@ -111,14 +111,14 @@ public class PropertyParser
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
-		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
+		PropertyMeta<Void, ?> propertyMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.accessors(accessors) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.build();
+				.build(Void.class, field.getType());
 
 		log.trace("Built simple property meta for property {} of entity class {} : {}",
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
@@ -139,7 +139,7 @@ public class PropertyParser
 		CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass()
 				.getCanonicalName());
 
-		PropertyMeta<Void, ?> propertyMeta = factory(field.getType()) //
+		PropertyMeta<Void, ?> propertyMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
@@ -147,7 +147,7 @@ public class PropertyParser
 				.accessors(accessors) //
 				.counterProperties(counterProperties) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.build();
+				.build(Void.class, field.getType());
 
 		context.hasSimpleCounterType();
 		context.getCounterMetas().add(propertyMeta);
@@ -180,13 +180,14 @@ public class PropertyParser
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-		PropertyMeta<Void, V> listMeta = factory(valueClass) //
+		PropertyMeta<Void, V> listMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors).build();
+				.accessors(accessors)//
+				.build(Void.class, valueClass);
 
 		log.trace("Built list property meta for property {} of entity class {} : {}",
 				listMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
@@ -213,14 +214,14 @@ public class PropertyParser
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-		PropertyMeta<Void, V> setMeta = factory(valueClass) //
+		PropertyMeta<Void, V> setMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
 				.accessors(accessors)//
-				.build();
+				.build(Void.class, valueClass);
 
 		log.trace("Built set property meta for property {} of  entity class {} : {}",
 				setMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
@@ -229,7 +230,6 @@ public class PropertyParser
 		return setMeta;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <K, V> PropertyMeta<K, V> parseMapProperty(PropertyParsingContext context)
 	{
 		log.debug("Parsing property {} as map property of entity class {}", context
@@ -240,9 +240,9 @@ public class PropertyParser
 
 		validator.validateMapGenerics(field, entityClass);
 
-		Pair<Class<?>, Class<?>> types = determineMapGenericTypes(field);
-		Class<K> keyClass = (Class<K>) types.left;
-		Class<V> valueClass = (Class<V>) types.right;
+		Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
+		Class<K> keyClass = types.left;
+		Class<V> valueClass = types.right;
 
 		Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
 				+ "' should be Serializable");
@@ -252,13 +252,14 @@ public class PropertyParser
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-		PropertyMeta<K, V> mapMeta = factory(keyClass, valueClass) //
+		PropertyMeta<K, V> mapMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors).build();
+				.accessors(accessors)//
+				.build(keyClass, valueClass);
 
 		log.trace("Built map property meta for property {} of entity class {} : {}",
 				mapMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
@@ -268,7 +269,7 @@ public class PropertyParser
 
 	}
 
-	public PropertyMeta<?, ?> parseWideMapProperty(PropertyParsingContext context)
+	public <K, V> PropertyMeta<K, V> parseWideMapProperty(PropertyParsingContext context)
 	{
 		log.debug("Parsing property {} as wide map property of entity class {}", context
 				.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
@@ -281,9 +282,9 @@ public class PropertyParser
 		MultiKeyProperties multiKeyProperties = null;
 		CounterProperties counterProperties = null;
 
-		Pair<Class<?>, Class<?>> types = determineMapGenericTypes(field);
-		Class<?> keyClass = types.left;
-		Class<?> valueClass = types.right;
+		Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
+		Class<K> keyClass = types.left;
+		Class<V> valueClass = types.right;
 		boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
 
 		// Multi or Single Key
@@ -299,7 +300,7 @@ public class PropertyParser
 				+ "' should be Serializable");
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 
-		PropertyMeta<?, ?> propertyMeta = factory(keyClass, valueClass) //
+		PropertyMeta<K, V> propertyMeta = factory() //
 				.objectMapper(context.getCurrentObjectMapper()) //
 				.type(type) //
 				.propertyName(context.getCurrentPropertyName()) //
@@ -308,7 +309,7 @@ public class PropertyParser
 				.multiKeyProperties(multiKeyProperties) //
 				.counterProperties(counterProperties) //
 				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.build();
+				.build(keyClass, valueClass);
 
 		if (isCounterValueType)
 		{
@@ -331,8 +332,8 @@ public class PropertyParser
 		return propertyMeta;
 	}
 
-	public <ID, V> void fillWideMap(EntityParsingContext context, PropertyMeta<Void, ID> idMeta,
-			PropertyMeta<?, V> propertyMeta, String externalTableName)
+	public void fillWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
+			PropertyMeta<?, ?> propertyMeta, String externalTableName)
 	{
 		log.debug("Filling wide map meta {} of entity class {} with id meta {} info",
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
@@ -374,7 +375,7 @@ public class PropertyParser
 
 	}
 
-	private Pair<Class<?>, Class<?>> determineMapGenericTypes(Field field)
+	private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field)
 	{
 		log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
 				field.getName(), field.getDeclaringClass().getCanonicalName());
@@ -383,8 +384,8 @@ public class PropertyParser
 		ParameterizedType pt = (ParameterizedType) genericType;
 		Type[] actualTypeArguments = pt.getActualTypeArguments();
 
-		return new Pair<Class<?>, Class<?>>((Class<?>) actualTypeArguments[0],
-				(Class<?>) actualTypeArguments[1]);
+		return new Pair<Class<K>, Class<V>>((Class<K>) actualTypeArguments[0],
+				(Class<V>) actualTypeArguments[1]);
 	}
 
 	private MultiKeyProperties parseWideMapMultiKey(MultiKeyProperties multiKeyProperties,

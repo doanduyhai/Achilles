@@ -12,8 +12,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 public interface AchillesEntityLoader
 {
 
-	public <T, ID> T load(AchillesPersistenceContext<ID> context);
+	public <T> T load(AchillesPersistenceContext context);
 
-	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
-			AchillesPersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta);
+	public <V> void loadPropertyIntoObject(Object realObject, Object key,
+			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta);
 }

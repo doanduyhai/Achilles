@@ -25,13 +25,13 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
+public class WideMapWrapper<K, V> extends AbstractWideMapWrapper<K, V>
 {
 
 	private static final Logger log = LoggerFactory.getLogger(WideMapWrapper.class);
 
-	protected ID id;
-	protected ThriftGenericWideRowDao<ID, V> dao;
+	protected Object id;
+	protected ThriftGenericWideRowDao dao;
 	protected PropertyMeta<K, V> propertyMeta;
 	private CompositeHelper compositeHelper;
 	private KeyValueFactory keyValueFactory;
@@ -58,26 +58,24 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value)
 	{
 		log.trace("Insert value {} with key {}", value, key);
 
 		dao.setValueBatch(id, buildComposite(key),
-				(V) propertyMeta.writeValueAsSupportedTypeOrString(value),
+				propertyMeta.writeValueAsSupportedTypeOrString(value),
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void insert(K key, V value, int ttl)
 	{
 		log.trace("Insert value {} with key {} and ttl {}", value, key, ttl);
 
 		dao.setValueBatch(id, buildComposite(key),
-				(V) propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
+				propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
@@ -157,8 +155,8 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 					count);
 		}
 
-		AchillesSliceIterator<ID, V> columnSliceIterator = dao.getColumnsIterator(id,
-				composites[0], composites[1], ordering.isReverse(), count);
+		AchillesSliceIterator<?, V> columnSliceIterator = dao.getColumnsIterator(id, composites[0],
+				composites[1], ordering.isReverse(), count);
 
 		return iteratorFactory.createKeyValueIterator(context, columnSliceIterator, propertyMeta);
 
@@ -218,12 +216,12 @@ public class WideMapWrapper<ID, K, V> extends AbstractWideMapWrapper<ID, K, V>
 		return propertyMeta.getExternalCFName();
 	}
 
-	public void setId(ID id)
+	public void setId(Object id)
 	{
 		this.id = id;
 	}
 
-	public void setDao(ThriftGenericWideRowDao<ID, V> dao)
+	public void setDao(ThriftGenericWideRowDao dao)
 	{
 		this.dao = dao;
 	}

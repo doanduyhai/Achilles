@@ -9,7 +9,7 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class KeySetWrapper<ID, K> extends SetWrapper<ID, K>
+public class KeySetWrapper<K> extends SetWrapper<K>
 {
 	public KeySetWrapper(Set<K> target) {
 		super(target);

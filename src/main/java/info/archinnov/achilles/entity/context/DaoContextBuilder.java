@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.context;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -10,14 +9,14 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.Counter;
+import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.Composite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,22 +31,23 @@ public class DaoContextBuilder
 {
 	private static final Logger log = LoggerFactory.getLogger(DaoContextBuilder.class);
 
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
-	private Map<String, ThriftGenericWideRowDao<?, ?>> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao<?, ?>>();
+	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
+	private Map<String, ThriftGenericWideRowDao> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 	private ThriftCounterDao thriftCounterDao;
 
 	public DaoContext buildDao(Cluster cluster, Keyspace keyspace,
-			Map<Class<?>, EntityMeta<?>> entityMetaMap, AchillesConfigurationContext configContext,
+			Map<Class<?>, EntityMeta> entityMetaMap, AchillesConfigurationContext configContext,
 			boolean hasSimpleCounter)
 	{
 		if (hasSimpleCounter)
 		{
 			thriftCounterDao = new ThriftCounterDao(cluster, keyspace,
-					configContext.getConsistencyPolicy());
+					configContext.getConsistencyPolicy(), //
+					new Pair<Class<Composite>, Class<Long>>(Composite.class, Long.class));
 			log.debug("Build achillesCounterCF dao");
 		}
 
-		for (EntityMeta<?> entityMeta : entityMetaMap.values())
+		for (EntityMeta entityMeta : entityMetaMap.values())
 		{
 			if (!entityMeta.isWideRow())
 			{
@@ -60,7 +60,7 @@ public class DaoContextBuilder
 				{
 					if (propertyMeta.type().isJoinColumn())
 					{
-						EntityMeta<?> joinEntityMeta = propertyMeta.getJoinProperties()
+						EntityMeta joinEntityMeta = propertyMeta.getJoinProperties()
 								.getEntityMeta();
 						buildWideRowDaoForJoinWideMap(cluster, keyspace, configContext,
 								propertyMeta, joinEntityMeta);
@@ -75,76 +75,65 @@ public class DaoContextBuilder
 		return new DaoContext(entityDaosMap, wideRowDaosMap, thriftCounterDao);
 	}
 
-	private <ID> void buildEntityDao(Cluster cluster, Keyspace keyspace,
-			AchillesConfigurationContext configContext, EntityMeta<ID> entityMeta)
+	private void buildEntityDao(Cluster cluster, Keyspace keyspace,
+			AchillesConfigurationContext configContext, EntityMeta entityMeta)
 	{
 		String columnFamilyName = entityMeta.getColumnFamilyName();
-		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
-		ThriftGenericEntityDao<ID> entityDao = new ThriftGenericEntityDao<ID>(//
+		ThriftGenericEntityDao entityDao = new ThriftGenericEntityDao(//
 				cluster, //
 				keyspace, //
-				idSerializer, //
 				columnFamilyName, //
-				configContext.getConsistencyPolicy());
+				configContext.getConsistencyPolicy(), //
+				new Pair<Class<?>, Class<String>>(entityMeta.getIdClass(), String.class));
 
 		entityDaosMap.put(columnFamilyName, entityDao);
 		log.debug("Build entity dao for column family {}", columnFamilyName);
 	}
 
-	private <ID, K, V> void buildWideRowDao(Cluster cluster, Keyspace keyspace,
-			AchillesConfigurationContext configContext, EntityMeta<ID> entityMeta,
+	private <K, V> void buildWideRowDao(Cluster cluster, Keyspace keyspace,
+			AchillesConfigurationContext configContext, EntityMeta entityMeta,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		Class<?> valueClass = propertyMeta.getValueClass();
-		ThriftGenericWideRowDao<?, ?> dao;
+		ThriftGenericWideRowDao dao;
 
 		String externalCFName = propertyMeta.getExternalCFName();
 		AchillesConsistencyLevelPolicy consistencyPolicy = configContext.getConsistencyPolicy();
-		Serializer<ID> idSerializer = SerializerTypeInferer.getSerializer(entityMeta.getIdClass());
-		Serializer<V> valueSerializer = SerializerTypeInferer.getSerializer(propertyMeta
-				.getValueClass());
 		if (isSupportedType(valueClass))
 		{
-			dao = new ThriftGenericWideRowDao<ID, V>(cluster, keyspace, //
-					idSerializer, //
-					valueSerializer, //
-					externalCFName, consistencyPolicy);
+			dao = new ThriftGenericWideRowDao(cluster, keyspace, //
+					externalCFName, consistencyPolicy, //
+					new Pair<Class<?>, Class<V>>(entityMeta.getIdClass(),
+							propertyMeta.getValueClass()));
 		}
 		else if (Counter.class.isAssignableFrom(valueClass))
 		{
-			dao = new ThriftGenericWideRowDao<ID, Long>(cluster, keyspace, //
-					idSerializer, //
-					LONG_SRZ, //
-					externalCFName, consistencyPolicy);
+			dao = new ThriftGenericWideRowDao(cluster, keyspace, //
+					externalCFName, consistencyPolicy,//
+					new Pair<Class<?>, Class<Long>>(entityMeta.getIdClass(), Long.class));
 		}
 		else
 		{
-			dao = new ThriftGenericWideRowDao<ID, String>(cluster, keyspace, //
-					idSerializer, //
-					STRING_SRZ, //
-					externalCFName, consistencyPolicy);
+			dao = new ThriftGenericWideRowDao(cluster, keyspace, //
+					externalCFName, consistencyPolicy, //
+					new Pair<Class<?>, Class<String>>(entityMeta.getIdClass(), String.class));
 		}
 		wideRowDaosMap.put(externalCFName, dao);
 		log.debug("Build column family dao for wide row {}", externalCFName);
 
 	}
 
-	private <ID, K, V, JOIN_ID> void buildWideRowDaoForJoinWideMap(Cluster cluster,
-			Keyspace keyspace, AchillesConfigurationContext configContext,
-			PropertyMeta<K, V> propertyMeta, EntityMeta<JOIN_ID> joinEntityMeta)
+	private <K, V> void buildWideRowDaoForJoinWideMap(Cluster cluster, Keyspace keyspace,
+			AchillesConfigurationContext configContext, PropertyMeta<K, V> propertyMeta,
+			EntityMeta joinEntityMeta)
 	{
 
-		Serializer<JOIN_ID> joinIdSerializer = SerializerTypeInferer.getSerializer(joinEntityMeta
-				.getIdClass());
-		Serializer<ID> idSerializer = SerializerTypeInferer
-				.getSerializer(propertyMeta.getIdClass());
-		ThriftGenericWideRowDao<ID, JOIN_ID> joinDao = new ThriftGenericWideRowDao<ID, JOIN_ID>(
+		ThriftGenericWideRowDao joinDao = new ThriftGenericWideRowDao(
 				cluster, //
 				keyspace, //
-				idSerializer, //
-				joinIdSerializer, //
 				propertyMeta.getExternalCFName(),//
-				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy());
+				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(),//
+				new Pair<Class<?>, Class<?>>(propertyMeta.getIdClass(), joinEntityMeta.getIdClass()));
 
 		log.debug("Building join dao for wide row {}", propertyMeta.getExternalCFName());
 

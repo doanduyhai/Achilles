@@ -42,8 +42,8 @@ public class JoinColumnIT
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	private ThriftGenericEntityDao<UUID> tweetDao = getEntityDao(SerializerUtils.UUID_SRZ,
-			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()));
+	private ThriftGenericEntityDao tweetDao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

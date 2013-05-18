@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements Map<K, V>
+public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 {
 	private static final Logger log = LoggerFactory.getLogger(MapWrapper.class);
 
@@ -63,7 +63,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 			log.trace("Build map entry wrapper for map property {} of entity class {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-			EntrySetWrapper<ID, K, V> wrapperSet = EntrySetWrapperBuilder //
+			EntrySetWrapper<K, V> wrapperSet = EntrySetWrapperBuilder //
 					.builder(context, targetEntrySet) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
@@ -97,11 +97,6 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		return this.target.isEmpty();
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Override
 	public Set<K> keySet()
 	{
@@ -111,7 +106,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 			log.trace("Build key set wrapper for map property {} of entity class {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-			KeySetWrapper<ID, K> keySetWrapper = KeySetWrapperBuilder //
+			KeySetWrapper<K> keySetWrapper = KeySetWrapperBuilder //
 					.builder(context, keySet) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //
@@ -172,11 +167,6 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 		return this.target.size();
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Override
 	public Collection<V> values()
 	{
@@ -187,7 +177,7 @@ public class MapWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements M
 			log.trace("Build values collection wrapper for map property {} of entity class {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-			ValueCollectionWrapper<ID, V> collectionWrapper = ValueCollectionWrapperBuilder //
+			ValueCollectionWrapper<V> collectionWrapper = ValueCollectionWrapperBuilder //
 					.builder(context, values) //
 					.dirtyMap(dirtyMap) //
 					.setter(setter) //

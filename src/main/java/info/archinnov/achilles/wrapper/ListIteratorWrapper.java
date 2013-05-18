@@ -11,8 +11,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ListIteratorWrapper<ID, V> extends AbstractWrapper<ID, Void, V> implements
-		ListIterator<V>
+public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V>
 {
 	private static final Logger log = LoggerFactory.getLogger(ListIteratorWrapper.class);
 

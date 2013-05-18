@@ -38,7 +38,7 @@ public abstract class AchillesEntityManager implements EntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
 
-	protected final Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	protected final Map<Class<?>, EntityMeta> entityMetaMap;
 	protected final AchillesConsistencyLevelPolicy consistencyPolicy;
 
 	protected final AchillesConfigurationContext configContext;
@@ -51,7 +51,7 @@ public abstract class AchillesEntityManager implements EntityManager
 	protected AchillesEntityValidator achillesEntityValidator;
 	protected AchillesEntityInitializer initializer = new AchillesEntityInitializer();
 
-	AchillesEntityManager(Map<Class<?>, EntityMeta<?>> entityMetaMap, //
+	AchillesEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			AchillesConfigurationContext configContext)
 	{
 		this.entityMetaMap = entityMetaMap;
@@ -79,7 +79,7 @@ public abstract class AchillesEntityManager implements EntityManager
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
-		AchillesPersistenceContext<?> context = initPersistenceContext(entity);
+		AchillesPersistenceContext context = initPersistenceContext(entity);
 		persister.persist(context);
 		context.flush();
 	}
@@ -119,7 +119,6 @@ public abstract class AchillesEntityManager implements EntityManager
 	 *            Entity to be merged
 	 * @return Merged entity or a new proxified entity
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T merge(T entity)
 	{
@@ -129,8 +128,8 @@ public abstract class AchillesEntityManager implements EntityManager
 		}
 		achillesEntityValidator.validateNotWideRow(entity, entityMetaMap);
 		achillesEntityValidator.validateEntity(entity, entityMetaMap);
-		AchillesPersistenceContext<?> context = initPersistenceContext(entity);
-		T merged = (T) merger.mergeEntity(context);
+		AchillesPersistenceContext context = initPersistenceContext(entity);
+		T merged = merger.<T> mergeEntity(context);
 		context.flush();
 		return merged;
 	}
@@ -183,7 +182,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		}
 		achillesEntityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		AchillesPersistenceContext<?> context = initPersistenceContext(entity);
+		AchillesPersistenceContext context = initPersistenceContext(entity);
 		persister.remove(context);
 		context.flush();
 	}
@@ -214,7 +213,6 @@ public abstract class AchillesEntityManager implements EntityManager
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
@@ -222,9 +220,9 @@ public abstract class AchillesEntityManager implements EntityManager
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		AchillesPersistenceContext<Object> context = initPersistenceContext(entityClass, primaryKey);
+		AchillesPersistenceContext context = initPersistenceContext(entityClass, primaryKey);
 
-		T entity = (T) loader.load(context);
+		T entity = loader.<T> load(context);
 		if (entity != null)
 		{
 			entity = proxifier.buildProxy(entity, context);
@@ -299,7 +297,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		achillesEntityValidator.validateEntity(entity, entityMetaMap);
 		achillesEntityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		AchillesPersistenceContext<?> context = initPersistenceContext(entity);
+		AchillesPersistenceContext context = initPersistenceContext(entity);
 		refresher.refresh(context);
 	}
 
@@ -324,7 +322,7 @@ public abstract class AchillesEntityManager implements EntityManager
 	public <T> void initialize(final T entity)
 	{
 		log.debug("Force lazy fields initialization for entity {}", entity);
-		final EntityMeta<?> entityMeta = prepareEntityForInitialization(entity);
+		final EntityMeta entityMeta = prepareEntityForInitialization(entity);
 		initializer.initializeEntity(entity, entityMeta);
 	}
 
@@ -339,7 +337,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		log.debug("Force lazy fields initialization for entity collection {}", entities);
 		for (T entity : entities)
 		{
-			EntityMeta<?> entityMeta = prepareEntityForInitialization(entity);
+			EntityMeta entityMeta = prepareEntityForInitialization(entity);
 			initializer.initializeEntity(entity, entityMeta);
 		}
 	}
@@ -500,7 +498,6 @@ public abstract class AchillesEntityManager implements EntityManager
 	/**
 	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass)
 	{
@@ -569,16 +566,16 @@ public abstract class AchillesEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
-	protected abstract <ID> AchillesPersistenceContext<ID> initPersistenceContext(Object entity);
+	protected abstract AchillesPersistenceContext initPersistenceContext(Object entity);
 
-	protected abstract <T, ID> AchillesPersistenceContext<ID> initPersistenceContext(
-			Class<T> entityClass, ID primaryKey);
+	protected abstract AchillesPersistenceContext initPersistenceContext(Class<?> entityClass,
+			Object primaryKey);
 
-	private <T> EntityMeta<?> prepareEntityForInitialization(T entity)
+	private EntityMeta prepareEntityForInitialization(Object entity)
 	{
 		proxifier.ensureProxy(entity);
 		Object realObject = proxifier.getRealObject(entity);
-		EntityMeta<?> entityMeta = entityMetaMap.get(realObject.getClass());
+		EntityMeta entityMeta = entityMetaMap.get(realObject.getClass());
 		return entityMeta;
 	}
 }

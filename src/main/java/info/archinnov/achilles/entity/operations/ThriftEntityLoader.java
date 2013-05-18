@@ -29,15 +29,14 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T, ID> T load(AchillesPersistenceContext<ID> context)
+	public <T> T load(AchillesPersistenceContext context)
 	{
 		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		Class<T> entityClass = (Class<T>) context.getEntityClass();
-		EntityMeta<ID> entityMeta = context.getEntityMeta();
-		ID primaryKey = context.getPrimaryKey();
+		EntityMeta entityMeta = context.getEntityMeta();
+		Object primaryKey = context.getPrimaryKey();
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity '" + entityClass.getCanonicalName()
@@ -59,7 +58,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			}
 			else
 			{
-				entity = (T) loaderImpl.load((ThriftPersistenceContext<ID>) context);
+				entity = (T) loaderImpl.load((ThriftPersistenceContext) context);
 			}
 
 		}
@@ -73,13 +72,13 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 	}
 
 	@Override
-	public <ID, V> void loadPropertyIntoObject(Object realObject, ID key,
-			AchillesPersistenceContext<ID> context, PropertyMeta<?, V> propertyMeta)
+	public <V> void loadPropertyIntoObject(Object realObject, Object key,
+			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Loading eager properties into entity of class {} with primary key {}", context
 				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
-		ThriftPersistenceContext<ID> thriftContext = (ThriftPersistenceContext<ID>) context;
+		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		Object value = null;
 		switch (propertyMeta.type())
 		{
@@ -117,7 +116,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 		introspector.setValueToField(realObject, propertyMeta.getSetter(), value);
 	}
 
-	protected <ID, V> Long loadVersionSerialUID(ID key, ThriftGenericEntityDao<ID> dao)
+	protected Long loadVersionSerialUID(Object key, ThriftGenericEntityDao dao)
 	{
 		log.debug("Loading serialVersionUID for entity  with primary key {} from column family {}",
 				key, dao.getColumnFamily());

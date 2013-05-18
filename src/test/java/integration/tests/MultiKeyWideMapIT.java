@@ -1,6 +1,5 @@
 package integration.tests;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
@@ -35,8 +34,8 @@ import org.junit.Test;
  */
 public class MultiKeyWideMapIT
 {
-	private ThriftGenericWideRowDao<Long, String> userTweetsDao = ThriftCassandraDaoTest
-			.getColumnFamilyDao(LONG_SRZ, STRING_SRZ, "complete_bean_user_tweets");
+	private ThriftGenericWideRowDao userTweetsDao = ThriftCassandraDaoTest.getColumnFamilyDao(
+			"complete_bean_user_tweets", Long.class, String.class);
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private CompleteBean bean;

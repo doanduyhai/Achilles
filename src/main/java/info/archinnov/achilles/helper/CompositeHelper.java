@@ -54,7 +54,6 @@ public class CompositeHelper
 		return lastNotNullIndex;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <K, V> void checkBounds(PropertyMeta<K, V> wideMapMeta, K start, K end,
 			WideMap.OrderingMode ordering)
 	{

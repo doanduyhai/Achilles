@@ -12,27 +12,26 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class KeySetWrapperBuilder<ID, K> extends
-		AbstractWrapperBuilder<ID, KeySetWrapperBuilder<ID, K>, K, Void>
+public class KeySetWrapperBuilder<K> extends
+		AbstractWrapperBuilder<KeySetWrapperBuilder<K>, K, Void>
 {
 	private Set<K> target;
 
-	public KeySetWrapperBuilder(AchillesPersistenceContext<ID> context, Set<K> target) {
+	public KeySetWrapperBuilder(AchillesPersistenceContext context, Set<K> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static <ID, K> KeySetWrapperBuilder<ID, K> builder(
-			AchillesPersistenceContext<ID> context, Set<K> target)
+	public static <K> KeySetWrapperBuilder<K> builder(AchillesPersistenceContext context,
+			Set<K> target)
 	{
-		return new KeySetWrapperBuilder<ID, K>(context, target);
+		return new KeySetWrapperBuilder<K>(context, target);
 	}
 
-	@SuppressWarnings("unchecked")
-	public KeySetWrapper<ID, K> build()
+	public KeySetWrapper<K> build()
 	{
-		KeySetWrapper<ID, K> keySetWrapper = new KeySetWrapper<ID, K>(this.target);
-		super.build((AbstractWrapper<ID, K, Void>) keySetWrapper);
+		KeySetWrapper<K> keySetWrapper = new KeySetWrapper<K>(this.target);
+		super.build((AbstractWrapper<K, Void>) keySetWrapper);
 		return keySetWrapper;
 	}
 

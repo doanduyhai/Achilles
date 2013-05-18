@@ -13,13 +13,13 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AbstractWrapper<ID, K, V>
+public abstract class AbstractWrapper<K, V>
 {
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta<K, V> propertyMeta;
 	protected AchillesEntityProxifier proxifier;
-	protected AchillesPersistenceContext<ID> context;
+	protected AchillesPersistenceContext context;
 
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
@@ -59,12 +59,12 @@ public abstract class AbstractWrapper<ID, K, V>
 		return this.propertyMeta.type().isJoinColumn();
 	}
 
-	public void setContext(AchillesPersistenceContext<ID> context)
+	public void setContext(AchillesPersistenceContext context)
 	{
 		this.context = context;
 	}
 
-	protected AchillesPersistenceContext<?> joinContext(V joinEntity)
+	protected AchillesPersistenceContext joinContext(V joinEntity)
 	{
 		return context.newPersistenceContext(propertyMeta.joinMeta(), joinEntity);
 	}

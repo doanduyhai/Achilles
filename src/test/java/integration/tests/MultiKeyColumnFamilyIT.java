@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -33,9 +33,10 @@ import org.junit.Test;
 public class MultiKeyColumnFamilyIT
 {
 
-	private ThriftGenericWideRowDao<Long, String> dao = ThriftCassandraDaoTest.getColumnFamilyDao(
-			LONG_SRZ, STRING_SRZ,
-			normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()));
+	private ThriftGenericWideRowDao dao = ThriftCassandraDaoTest.getColumnFamilyDao(
+
+	normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()), Long.class,
+			String.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

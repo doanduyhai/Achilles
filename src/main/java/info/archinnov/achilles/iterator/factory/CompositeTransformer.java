@@ -1,11 +1,9 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
-import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
@@ -82,8 +80,8 @@ public class CompositeTransformer
 		};
 	}
 
-	public <ID, K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
-			final ThriftPersistenceContext<ID> context, final PropertyMeta<K, V> propertyMeta)
+	public <K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
+			final ThriftPersistenceContext context, final PropertyMeta<K, V> propertyMeta)
 	{
 		return new Function<HColumn<Composite, ?>, KeyValue<K, V>>()
 		{
@@ -94,7 +92,7 @@ public class CompositeTransformer
 		};
 	}
 
-	public <ID, K, V> KeyValue<K, V> buildKeyValue(ThriftPersistenceContext<ID> context,
+	public <K, V> KeyValue<K, V> buildKeyValue(ThriftPersistenceContext context,
 			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
 	{
 		K key = buildKey(propertyMeta, hColumn);
@@ -110,15 +108,14 @@ public class CompositeTransformer
 		return keyValue;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, JOIN_ID, K, V> V buildValue(ThriftPersistenceContext<ID> context,
-			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
+	public <K, V> V buildValue(ThriftPersistenceContext context, PropertyMeta<K, V> propertyMeta,
+			HColumn<Composite, ?> hColumn)
 	{
 		V value;
 		if (propertyMeta.isJoin())
 		{
-			AchillesPersistenceContext<JOIN_ID> joinContext = context.newPersistenceContext(
-					(EntityMeta<JOIN_ID>) propertyMeta.joinMeta(), (V) hColumn.getValue());
+			AchillesPersistenceContext joinContext = context.newPersistenceContext(
+					propertyMeta.joinMeta(), hColumn.getValue());
 			value = proxifier.buildProxy((V) hColumn.getValue(), joinContext);
 		}
 		else
@@ -155,8 +152,8 @@ public class CompositeTransformer
 		return key;
 	}
 
-	public <ID, K, V> Function<HCounterColumn<Composite>, KeyValue<K, Counter>> buildCounterKeyValueTransformer(
-			final ThriftPersistenceContext<ID> context, final PropertyMeta<K, Counter> propertyMeta)
+	public <K, V> Function<HCounterColumn<Composite>, KeyValue<K, Counter>> buildCounterKeyValueTransformer(
+			final ThriftPersistenceContext context, final PropertyMeta<K, Counter> propertyMeta)
 	{
 		return new Function<HCounterColumn<Composite>, KeyValue<K, Counter>>()
 		{
@@ -168,7 +165,7 @@ public class CompositeTransformer
 		};
 	}
 
-	public <ID, K> KeyValue<K, Counter> buildCounterKeyValue(ThriftPersistenceContext<ID> context,
+	public <K> KeyValue<K, Counter> buildCounterKeyValue(ThriftPersistenceContext context,
 			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
 		K key = buildCounterKey(propertyMeta, hColumn);
@@ -198,24 +195,20 @@ public class CompositeTransformer
 		return key;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <ID, K> Counter buildCounterValue(ThriftPersistenceContext<ID> context,
+	public <K> Counter buildCounterValue(ThriftPersistenceContext context,
 			PropertyMeta<K, Counter> propertyMeta, HCounterColumn<Composite> hColumn)
 	{
-		return CounterWrapperBuilder.builder(context.getPrimaryKey()) //
-				.columnName(hColumn.getName())
-				//
-				.counterDao(
-						(ThriftGenericWideRowDao<ID, Long>) context.findWideRowDao(propertyMeta
-								.getExternalCFName())) //
+		return CounterWrapperBuilder.builder(context) //
+				.columnName(hColumn.getName()) //
+				.counterDao(context.findWideRowDao(propertyMeta.getExternalCFName())) //
 				.readLevel(propertyMeta.getReadConsistencyLevel()) //
 				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
-				.context(context)//
+				.key(context.getPrimaryKey())//
 				.build();
 	}
 
-	public <ID, K> Function<HCounterColumn<Composite>, Counter> buildCounterValueTransformer(
-			final ThriftPersistenceContext<ID> context, final PropertyMeta<K, Counter> propertyMeta)
+	public <K> Function<HCounterColumn<Composite>, Counter> buildCounterValueTransformer(
+			final ThriftPersistenceContext context, final PropertyMeta<K, Counter> propertyMeta)
 	{
 		return new Function<HCounterColumn<Composite>, Counter>()
 		{

@@ -35,8 +35,7 @@ public class ConsistencyLevelPriorityOrderingIT
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest
-			.getConsistencyPolicy();
+	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
 	// Normal type
 	@Test

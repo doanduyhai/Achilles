@@ -12,7 +12,6 @@ import java.util.Map;
 
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -28,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftGenericEntityDao<K> extends ThriftAbstractDao<K, String>
+public class ThriftGenericEntityDao extends ThriftAbstractDao
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftGenericEntityDao.class);
 
@@ -39,23 +38,20 @@ public class ThriftGenericEntityDao<K> extends ThriftAbstractDao<K, String>
 		this.initComposites();
 	}
 
-	public ThriftGenericEntityDao(Cluster cluster, Keyspace keyspace, Serializer<K> keySrz,
-			String cf, AchillesConsistencyLevelPolicy consistencyPolicy)
+	public <K, V> ThriftGenericEntityDao(Cluster cluster, Keyspace keyspace, String cf,
+			AchillesConsistencyLevelPolicy consistencyPolicy, Pair<K, V> rowkeyAndValueClasses)
 	{
-		super(cluster, keyspace, consistencyPolicy);
+		super(cluster, keyspace, cf, consistencyPolicy, rowkeyAndValueClasses);
 		this.initComposites();
-		keySerializer = keySrz;
-		columnFamily = cf;
 		columnNameSerializer = COMPOSITE_SRZ;
-		valueSerializer = STRING_SRZ;
 		log.debug(
 				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
-				keySrz.getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
+				keySerializer.getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
 						.getTypeName());
 
 	}
 
-	public List<Pair<Composite, String>> eagerFetchEntity(K key)
+	public <K> List<Pair<Composite, String>> eagerFetchEntity(K key)
 	{
 		log.trace("Eager fetching properties for column family {} ", columnFamily);
 
@@ -63,7 +59,7 @@ public class ThriftGenericEntityDao<K> extends ThriftAbstractDao<K, String>
 				false, Integer.MAX_VALUE);
 	}
 
-	public Map<K, List<Pair<Composite, String>>> eagerFetchEntities(List<K> keys)
+	public <K> Map<K, List<Pair<Composite, String>>> eagerFetchEntities(List<K> keys)
 	{
 		log.trace("Eager fetching properties for multiple entities in column family {} ",
 				columnFamily);

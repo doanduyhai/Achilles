@@ -34,7 +34,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
 
-	protected Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected AchillesColumnFamilyCreator columnFamilyCreator;
 	protected AchillesConfigurationContext configContext;
 	protected List<String> entityPackages;
@@ -90,7 +90,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 					joinPropertyMetaToBeFilled, //
 					configContext, entityClass);
 
-			EntityMeta<?> entityMeta = entityParser.parseEntity(context);
+			EntityMeta entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
 			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
 		}

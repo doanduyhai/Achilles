@@ -11,25 +11,24 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class ListWrapperBuilder<ID, V> extends
-		AbstractWrapperBuilder<ID, ListWrapperBuilder<ID, V>, Void, V>
+public class ListWrapperBuilder<V> extends AbstractWrapperBuilder<ListWrapperBuilder<V>, Void, V>
 {
 	private List<V> target;
 
-	public static <ID, V> ListWrapperBuilder<ID, V> builder(AchillesPersistenceContext<ID> context,
+	public static <V> ListWrapperBuilder<V> builder(AchillesPersistenceContext context,
 			List<V> target)
 	{
-		return new ListWrapperBuilder<ID, V>(context, target);
+		return new ListWrapperBuilder<V>(context, target);
 	}
 
-	public ListWrapperBuilder(AchillesPersistenceContext<ID> context, List<V> target) {
+	public ListWrapperBuilder(AchillesPersistenceContext context, List<V> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public ListWrapper<ID, V> build()
+	public ListWrapper<V> build()
 	{
-		ListWrapper<ID, V> listWrapper = new ListWrapper<ID, V>(this.target);
+		ListWrapper<V> listWrapper = new ListWrapper<V>(this.target);
 		super.build(listWrapper);
 		return listWrapper;
 	}

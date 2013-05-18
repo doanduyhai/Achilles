@@ -14,20 +14,25 @@ import org.apache.commons.lang.StringUtils;
  * @author DuyHai DOAN
  * 
  */
-public class EntityMeta<ID>
+public class EntityMeta
 {
 
 	public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";
 	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
-	private Class<ID> idClass;
+	private Class<?> idClass;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
-	private PropertyMeta<Void, ID> idMeta;
+	private PropertyMeta<?, ?> idMeta;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+
+	public <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(String propertyName)
+	{
+		return (PropertyMeta<K, V>) propertyMetas.get(propertyName);
+	}
 
 	public String getClassName()
 	{
@@ -69,12 +74,12 @@ public class EntityMeta<ID>
 		this.propertyMetas = propertyMetas;
 	}
 
-	public PropertyMeta<Void, ID> getIdMeta()
+	public PropertyMeta<?, ?> getIdMeta()
 	{
 		return idMeta;
 	}
 
-	public void setIdMeta(PropertyMeta<Void, ID> idMeta)
+	public void setIdMeta(PropertyMeta<?, ?> idMeta)
 	{
 		this.idMeta = idMeta;
 	}
@@ -119,12 +124,12 @@ public class EntityMeta<ID>
 		this.consistencyLevels = consistencyLevels;
 	}
 
-	public Class<ID> getIdClass()
+	public Class<?> getIdClass()
 	{
 		return idClass;
 	}
 
-	public void setIdClass(Class<ID> idClass)
+	public void setIdClass(Class<?> idClass)
 	{
 		this.idClass = idClass;
 	}

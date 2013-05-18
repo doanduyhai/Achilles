@@ -1,10 +1,10 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.type.Pair;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.Composite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,21 +15,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftCounterDao extends ThriftAbstractDao<Composite, Long>
+public class ThriftCounterDao extends ThriftAbstractDao
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftCounterDao.class);
 	public static final String COUNTER_CF = "achillesCounterCF";
 
 	public ThriftCounterDao(Cluster cluster, Keyspace keyspace,
-			AchillesConsistencyLevelPolicy consistencyPolicy)
+			AchillesConsistencyLevelPolicy consistencyPolicy, Pair<?, ?> rowkeyAndValueClasses)
 	{
+		super(cluster, keyspace, COUNTER_CF, consistencyPolicy, rowkeyAndValueClasses);
 
-		super(cluster, keyspace, consistencyPolicy);
-
-		keySerializer = COMPOSITE_SRZ;
-		columnFamily = COUNTER_CF;
 		columnNameSerializer = COMPOSITE_SRZ;
-		valueSerializer = LONG_SRZ;
 		log.debug("Initializing CounterDao with Composite key serializer, DynamicComposite comparator and Long value serializer ");
 	}
 }

@@ -19,23 +19,23 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CounterWrapper<ID> implements Counter
+public class CounterWrapper implements Counter
 {
 	private static final Logger log = LoggerFactory.getLogger(CounterWrapper.class);
 
 	private static final long serialVersionUID = 1L;
-	private ID key;
+	private Object key;
 	private Composite columnName;
-	private ThriftAbstractDao<ID, Long> counterDao;
-	private ThriftPersistenceContext<?> context;
+	private ThriftAbstractDao counterDao;
+	private ThriftPersistenceContext context;
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
 	private AchillesEntityValidator validator = new AchillesEntityValidator(
 			new ThriftEntityProxifier());
 
-	public CounterWrapper(ID key) {
-		this.key = key;
+	public CounterWrapper(ThriftPersistenceContext context) {
+		this.context = context;
 	}
 
 	@Override
@@ -234,7 +234,7 @@ public class CounterWrapper<ID> implements Counter
 		}
 	}
 
-	public void setCounterDao(ThriftAbstractDao<ID, Long> counterDao)
+	public void setCounterDao(ThriftAbstractDao counterDao)
 	{
 		this.counterDao = counterDao;
 	}
@@ -254,8 +254,8 @@ public class CounterWrapper<ID> implements Counter
 		this.writeLevel = writeLevel;
 	}
 
-	public void setContext(ThriftPersistenceContext<?> context)
+	public void setKey(Object key)
 	{
-		this.context = context;
+		this.key = key;
 	}
 }

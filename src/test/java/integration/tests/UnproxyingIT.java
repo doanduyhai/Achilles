@@ -25,8 +25,8 @@ import org.junit.Test;
 public class UnproxyingIT
 {
 
-	private ThriftGenericEntityDao<Long> dao = getEntityDao(LONG_SRZ,
-			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()));
+	private ThriftGenericEntityDao dao = getEntityDao(
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()),Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

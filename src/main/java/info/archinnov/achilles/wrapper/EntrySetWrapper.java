@@ -18,8 +18,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> implements
-		Set<Entry<K, V>>
+public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<Entry<K, V>>
 {
 	private static final Logger log = LoggerFactory.getLogger(EntrySetWrapper.class);
 
@@ -161,7 +160,6 @@ public class EntrySetWrapper<ID, K, V> extends AbstractWrapper<ID, K, V> impleme
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] arg0)
 	{
