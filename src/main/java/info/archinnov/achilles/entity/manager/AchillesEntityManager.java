@@ -222,7 +222,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
 		AchillesPersistenceContext context = initPersistenceContext(entityClass, primaryKey);
 
-		T entity = loader.<T> load(context);
+		T entity = loader.<T> load(context, entityClass);
 		if (entity != null)
 		{
 			entity = proxifier.buildProxy(entity, context);

@@ -15,6 +15,9 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.Pair;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,7 +113,7 @@ public class ThriftLoaderImpl
 		List<V> list = null;
 		if (columns.size() > 0)
 		{
-			list = propertyMeta.newListInstance();
+			list = new ArrayList<V>();
 			for (Pair<Composite, String> pair : columns)
 			{
 				list.add(propertyMeta.getValueFromString(pair.right));
@@ -129,7 +132,7 @@ public class ThriftLoaderImpl
 		Set<V> set = null;
 		if (columns.size() > 0)
 		{
-			set = propertyMeta.newSetInstance();
+			set = new HashSet<V>();
 			for (Pair<Composite, String> pair : columns)
 			{
 				set.add(propertyMeta.getValueFromString(pair.right));
@@ -149,7 +152,7 @@ public class ThriftLoaderImpl
 		Map<K, V> map = null;
 		if (columns.size() > 0)
 		{
-			map = propertyMeta.newMapInstance();
+			map = new HashMap<K, V>();
 			for (Pair<Composite, String> pair : columns)
 			{
 				KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
@@ -199,7 +202,7 @@ public class ThriftLoaderImpl
 			Object joinId = joinIdMeta.getValueFromString(stringJoinId);
 			AchillesPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
-			return (V) loader.load(joinContext);
+			return loader.<V> load(joinContext, propertyMeta.getValueClass());
 
 		}
 		else

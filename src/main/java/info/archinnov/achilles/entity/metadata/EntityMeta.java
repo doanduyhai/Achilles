@@ -29,11 +29,6 @@ public class EntityMeta
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-	public <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(String propertyName)
-	{
-		return (PropertyMeta<K, V>) propertyMetas.get(propertyName);
-	}
-
 	public String getClassName()
 	{
 		return className;

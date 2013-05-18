@@ -55,9 +55,7 @@ public abstract class ThriftAbstractDao
 	protected Serializer<Composite> columnNameSerializer;
 	protected String columnFamily;
 	protected AchillesConsistencyLevelPolicy policy;
-	protected Serializer<?> keySerializer;
-	protected Serializer<?> valueSerializer;
-	// protected Pair<?, ?> rowkeyAndValueClasses;
+	protected Pair<?, ?> rowkeyAndValueClasses;
 
 	public static int DEFAULT_LENGTH = 100;
 
@@ -73,10 +71,7 @@ public abstract class ThriftAbstractDao
 		this.keyspace = keyspace;
 		this.columnFamily = cf;
 		this.policy = policy;
-		this.keySerializer = SerializerTypeInferer
-				.getSerializer((Class<?>) rowkeyAndValueClasses.left);
-		this.valueSerializer = SerializerTypeInferer
-				.getSerializer((Class<?>) rowkeyAndValueClasses.right);
+		this.rowkeyAndValueClasses = rowkeyAndValueClasses;
 	}
 
 	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
@@ -125,8 +120,8 @@ public abstract class ThriftAbstractDao
 			log.trace("Insert column {} into column family {} with key {}", format(name),
 					columnFamily, key);
 		}
-		mutator.addInsertion(key, columnFamily, HFactory.createColumn(name, value,
-				columnNameSerializer, (Serializer<V>) valueSerializer));
+		mutator.addInsertion(key, columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()));
 	}
 
 	public <K, V> V getValue(final K key, final Composite name)
@@ -145,8 +140,8 @@ public abstract class ThriftAbstractDao
 			public HColumn<Composite, V> execute()
 			{
 				return HFactory
-						.createColumnQuery(keyspace, (Serializer<K>) keySerializer,
-								columnNameSerializer, (Serializer<V>) valueSerializer)
+						.createColumnQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
+								columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
 						.setColumnFamily(columnFamily).setKey(key).setName(name).execute().get();
 			}
 		});
@@ -163,7 +158,7 @@ public abstract class ThriftAbstractDao
 		log.trace("Set value {} to column family {} with key {} , column name {}", value,
 				columnFamily, key, name);
 
-		Mutator<K> mutator = HFactory.createMutator(keyspace, (Serializer<K>) keySerializer);
+		Mutator<K> mutator = HFactory.createMutator(keyspace, this.<K> rowSrz());
 		this.setValueBatch(key, name, value, mutator);
 		this.executeMutator(mutator);
 	}
@@ -176,8 +171,8 @@ public abstract class ThriftAbstractDao
 					"Set value {} as batch mutation to column family {} with key {} , column name {}",
 					value, columnFamily, key, format(name));
 		}
-		mutator.addInsertion(key, columnFamily, HFactory.createColumn(name, value,
-				columnNameSerializer, (Serializer<V>) valueSerializer));
+		mutator.addInsertion(key, columnFamily,
+				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()));
 	}
 
 	public <K, V> void setValueBatch(K key, Composite name, V value, int ttl, Mutator<K> mutator)
@@ -188,8 +183,8 @@ public abstract class ThriftAbstractDao
 		mutator.addInsertion(
 				key,
 				columnFamily,
-				HFactory.createColumn(name, value, columnNameSerializer,
-						(Serializer<V>) valueSerializer).setTtl(ttl));
+				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()).setTtl(
+						ttl));
 	}
 
 	public <K> void removeColumnBatch(K key, Composite name, Mutator<K> mutator)
@@ -223,9 +218,8 @@ public abstract class ThriftAbstractDao
 					"Remove {} columns slice within range having inclusive start/end {}/{} column names as batch mutation from column family {} with key {} and reserver {}",
 					count, format(start), format(end), columnFamily, key, reverse);
 		}
-		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace,
-				(Serializer<K>) keySerializer, columnNameSerializer,
-				(Serializer<V>) valueSerializer).setColumnFamily(columnFamily).setKey(key)
+		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace, this.<K> rowSrz(),
+				columnNameSerializer, this.<V> valSrz()).setColumnFamily(columnFamily).setKey(key)
 				.setRange(start, end, reverse, count).execute().get().getColumns();
 
 		for (HColumn<Composite, V> column : columns)
@@ -249,8 +243,8 @@ public abstract class ThriftAbstractDao
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
-				return createSliceQuery(keyspace, (Serializer<K>) keySerializer,
-						columnNameSerializer, (Serializer<V>) valueSerializer)
+				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
+						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
 						.setColumnFamily(columnFamily).setKey(key)
 						.setRange(start, end, reverse, count).execute().get().getColumns();
 			}
@@ -273,8 +267,8 @@ public abstract class ThriftAbstractDao
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
-				return createSliceQuery(keyspace, (Serializer<K>) keySerializer,
-						columnNameSerializer, (Serializer<V>) valueSerializer)
+				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
+						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
 						.setColumnFamily(columnFamily).setKey(key)
 						.setRange(start, end, reverse, count).execute().get().getColumns();
 			}
@@ -298,8 +292,8 @@ public abstract class ThriftAbstractDao
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
-				return createSliceQuery(keyspace, (Serializer<K>) keySerializer,
-						columnNameSerializer, (Serializer<V>) valueSerializer)
+				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
+						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
 						.setColumnFamily(columnFamily).setKey(key)
 						.setRange(start, end, reverse, count).execute().get().getColumns();
 			}
@@ -323,7 +317,7 @@ public abstract class ThriftAbstractDao
 			public List<HCounterColumn<Composite>> execute()
 			{
 				return HFactory
-						.createCounterSliceQuery(keyspace, (Serializer<K>) keySerializer,
+						.createCounterSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 								columnNameSerializer).setColumnFamily(columnFamily).setKey(key)
 						.setRange(start, end, reverse, count).execute().get().getColumns();
 			}
@@ -341,8 +335,8 @@ public abstract class ThriftAbstractDao
 		}
 
 		SliceQuery<K, Composite, V> query = createSliceQuery(keyspace,
-				(Serializer<K>) keySerializer, columnNameSerializer,
-				(Serializer<V>) valueSerializer).setColumnFamily(columnFamily).setKey(key);
+				ThriftAbstractDao.this.<K> rowSrz(), columnNameSerializer,
+				ThriftAbstractDao.this.<V> valSrz()).setColumnFamily(columnFamily).setKey(key);
 
 		return new AchillesSliceIterator<K, V>(policy, columnFamily, query, start, end, reverse,
 				length);
@@ -360,8 +354,7 @@ public abstract class ThriftAbstractDao
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		SliceCounterQuery<K, Composite> query = createCounterSliceQuery(keyspace,
-				(Serializer<K>) keySerializer, columnNameSerializer).setColumnFamily(columnFamily)
-				.setKey(key);
+				this.<K> rowSrz(), columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
 
 		return new AchillesCounterSliceIterator<K>(policy, columnFamily, query, start, end,
 				reverse, length);
@@ -379,9 +372,9 @@ public abstract class ThriftAbstractDao
 					propertyMeta.getPropertyName());
 		}
 
-		SliceQuery<K, Composite, Object> query = createSliceQuery(keyspace,
-				(Serializer<K>) keySerializer, columnNameSerializer,
-				(Serializer<Object>) valueSerializer).setColumnFamily(columnFamily).setKey(key);
+		SliceQuery<K, Composite, Object> query = createSliceQuery(keyspace, this.<K> rowSrz(),
+				columnNameSerializer, this.<Object> valSrz()).setColumnFamily(columnFamily).setKey(
+				key);
 
 		return new AchillesJoinSliceIterator<K, KEY, VALUE>(policy, joinEntityDao, columnFamily,
 				propertyMeta, query, start, end, reversed, count);
@@ -405,8 +398,8 @@ public abstract class ThriftAbstractDao
 			public Rows<K, Composite, V> execute()
 			{
 				return HFactory
-						.createMultigetSliceQuery(keyspace, (Serializer<K>) keySerializer,
-								columnNameSerializer, (Serializer<V>) valueSerializer)
+						.createMultigetSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
+								columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
 						.setColumnFamily(columnFamily).setKeys(keys)
 						.setRange(start, end, reverse, size).execute().get();
 			}
@@ -456,8 +449,8 @@ public abstract class ThriftAbstractDao
 		}
 
 		final CounterQuery<K, Composite> counter = new ThriftCounterColumnQuery<K, Composite>(
-				keyspace, (Serializer<K>) keySerializer, columnNameSerializer)
-				.setColumnFamily(columnFamily).setKey(key).setName(name);
+				keyspace, this.<K> rowSrz(), columnNameSerializer).setColumnFamily(columnFamily)
+				.setKey(key).setName(name);
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
@@ -494,8 +487,8 @@ public abstract class ThriftAbstractDao
 				columnFamily);
 
 		SliceCounterQuery<K, Composite> query = HFactory
-				.createCounterSliceQuery(keyspace, (Serializer<K>) keySerializer,
-						columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
+				.createCounterSliceQuery(keyspace, this.<K> rowSrz(), columnNameSerializer)
+				.setColumnFamily(columnFamily).setKey(key);
 
 		AchillesCounterSliceIterator<K> iterator = new AchillesCounterSliceIterator<K>(policy,
 				columnFamily, query, (Composite) null, (Composite) null, false, DEFAULT_LENGTH);
@@ -510,9 +503,9 @@ public abstract class ThriftAbstractDao
 	public <K> void truncate()
 	{
 
-		Mutator<K> mutator = HFactory.createMutator(keyspace, (Serializer<K>) keySerializer);
-		Iterator<K> iterator = new KeyIterator<K>(keyspace, columnFamily,
-				(Serializer<K>) keySerializer).iterator();
+		Mutator<K> mutator = HFactory.createMutator(keyspace, this.<K> rowSrz());
+		Iterator<K> iterator = new KeyIterator<K>(keyspace, columnFamily, this.<K> rowSrz())
+				.iterator();
 		while (iterator.hasNext())
 		{
 			this.removeRowBatch(iterator.next(), mutator);
@@ -525,10 +518,9 @@ public abstract class ThriftAbstractDao
 		cluster.truncate(keyspace.getKeyspaceName(), ThriftCounterDao.COUNTER_CF);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <K> Mutator<K> buildMutator()
 	{
-		return (Mutator<K>) HFactory.createMutator(this.keyspace, keySerializer);
+		return HFactory.createMutator(this.keyspace, this.<K> rowSrz());
 	}
 
 	public <K> void executeMutator(final Mutator<K> mutator)
@@ -553,13 +545,13 @@ public abstract class ThriftAbstractDao
 		return columnFamily;
 	}
 
-	// protected <T> Serializer<T> getRowSerializer()
-	// {
-	// return SerializerTypeInferer.<T> getSerializer(rowkeyAndValueClasses.left);
-	// }
+	protected <T> Serializer<T> rowSrz()
+	{
+		return SerializerTypeInferer.<T> getSerializer((Class<?>) rowkeyAndValueClasses.left);
+	}
 
-	// protected <T> Serializer<T> getValueSerializer()
-	// {
-	// return SerializerTypeInferer.<T> getSerializer(rowkeyAndValueClasses.right);
-	// }
+	protected <T> Serializer<T> valSrz()
+	{
+		return SerializerTypeInferer.<T> getSerializer((Class<?>) rowkeyAndValueClasses.right);
+	}
 }

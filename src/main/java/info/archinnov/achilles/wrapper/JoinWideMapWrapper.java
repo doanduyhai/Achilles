@@ -67,7 +67,7 @@ public class JoinWideMapWrapper<K, V> extends AbstractWideMapWrapper<K, V>
 			AchillesPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 
-			result = (V) loader.load(joinContext);
+			result = loader.<V> load(joinContext, propertyMeta.getValueClass());
 			result = proxifier.buildProxy(result, joinContext);
 		}
 		return result;

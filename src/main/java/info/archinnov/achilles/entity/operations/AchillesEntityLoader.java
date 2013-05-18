@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 public interface AchillesEntityLoader
 {
 
-	public <T> T load(AchillesPersistenceContext context);
+	public <T> T load(AchillesPersistenceContext context, Class<T> entityClass);
 
 	public <V> void loadPropertyIntoObject(Object realObject, Object key,
 			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta);

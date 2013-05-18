@@ -4,7 +4,6 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
@@ -91,27 +90,22 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		return daoContext.getCounterDao();
 	}
 
-	public <ID> Mutator<ID> getCurrentColumnFamilyMutator()
+	public Mutator<Object> getCurrentColumnFamilyMutator()
 	{
 		return thriftFlushContext.getWideRowMutator(entityMeta.getColumnFamilyName());
 	}
 
-	public <ID> Mutator<ID> getWideRowMutator(String columnFamilyName)
+	public Mutator<Object> getWideRowMutator(String columnFamilyName)
 	{
 		return thriftFlushContext.getWideRowMutator(columnFamilyName);
 	}
 
-	public <ID> Mutator<ID> getCurrentEntityMutator()
-	{
-		return thriftFlushContext.getEntityMutator(entityMeta.getColumnFamilyName());
-	}
-
-	public <ID> Mutator<ID> getEntityMutator(String columnFamilyName)
+	public Mutator<Object> getEntityMutator(String columnFamilyName)
 	{
 		return thriftFlushContext.getEntityMutator(columnFamilyName);
 	}
 
-	public Mutator<Composite> getCounterMutator()
+	public Mutator<Object> getCounterMutator()
 	{
 		return thriftFlushContext.getCounterMutator();
 	}

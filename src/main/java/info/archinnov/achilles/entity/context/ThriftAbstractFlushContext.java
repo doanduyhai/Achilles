@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
@@ -31,7 +30,7 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 
 	protected DaoContext daoContext;
 
-	protected Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao>>();
+	protected Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>();
 	protected boolean hasCustomConsistencyLevels = false;
 
 	protected ThriftAbstractFlushContext(DaoContext daoContext,
@@ -46,7 +45,8 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		log.debug("Execute mutations flush");
 		try
 		{
-			for (Entry<String, Pair<Mutator<?>, ThriftAbstractDao>> entry : mutatorMap.entrySet())
+			for (Entry<String, Pair<Mutator<Object>, ThriftAbstractDao>> entry : mutatorMap
+					.entrySet())
 			{
 				ThriftAbstractDao dao = entry.getValue().right;
 				Mutator<?> mutator = entry.getValue().left;
@@ -91,12 +91,12 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 	}
 
-	public <ID> Mutator<ID> getEntityMutator(String columnFamilyName)
+	public Mutator<Object> getEntityMutator(String columnFamilyName)
 	{
-		Mutator<ID> mutator = null;
+		Mutator<Object> mutator = null;
 		if (mutatorMap.containsKey(columnFamilyName))
 		{
-			mutator = (Mutator<ID>) mutatorMap.get(columnFamilyName).left;
+			mutator = mutatorMap.get(columnFamilyName).left;
 		}
 		else
 		{
@@ -105,19 +105,19 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 			if (entityDao != null)
 			{
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
-						entityDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<Object>, ThriftAbstractDao>(
+						mutator, entityDao));
 			}
 		}
 		return mutator;
 	}
 
-	public <ID> Mutator<ID> getWideRowMutator(String columnFamilyName)
+	public Mutator<Object> getWideRowMutator(String columnFamilyName)
 	{
-		Mutator<ID> mutator = null;
+		Mutator<Object> mutator = null;
 		if (mutatorMap.containsKey(columnFamilyName))
 		{
-			mutator = (Mutator<ID>) mutatorMap.get(columnFamilyName).left;
+			mutator = mutatorMap.get(columnFamilyName).left;
 		}
 		else
 		{
@@ -126,25 +126,25 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 			if (columnFamilyDao != null)
 			{
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
-						columnFamilyDao));
+				mutatorMap.put(columnFamilyName, new Pair<Mutator<Object>, ThriftAbstractDao>(
+						mutator, columnFamilyDao));
 			}
 		}
 		return mutator;
 	}
 
-	public Mutator<Composite> getCounterMutator()
+	public Mutator<Object> getCounterMutator()
 	{
-		Mutator<Composite> mutator = null;
+		Mutator<Object> mutator = null;
 		if (mutatorMap.containsKey(COUNTER_CF))
 		{
-			mutator = (Mutator<Composite>) mutatorMap.get(COUNTER_CF).left;
+			mutator = mutatorMap.get(COUNTER_CF).left;
 		}
 		else
 		{
 			ThriftCounterDao thriftCounterDao = daoContext.getCounterDao();
 			mutator = thriftCounterDao.buildMutator();
-			mutatorMap.put(COUNTER_CF, new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
+			mutatorMap.put(COUNTER_CF, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
 					thriftCounterDao));
 		}
 		return mutator;

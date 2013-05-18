@@ -82,7 +82,7 @@ public class ThriftJoinLoaderImpl
 
 		PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
-		Map<K, V> map = propertyMeta.newMapInstance();
+		Map<K, V> map = new HashMap<K, V>();
 		Map<K, Object> partialMap = new HashMap<K, Object>();
 
 		Class<K> keyClass = propertyMeta.getKeyClass();

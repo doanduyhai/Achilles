@@ -7,14 +7,9 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,21 +50,6 @@ public class PropertyMeta<K, V>
 	public void setType(PropertyType propertyType)
 	{
 		this.type = propertyType;
-	}
-
-	public List<V> newListInstance()
-	{
-		return new ArrayList<V>();
-	}
-
-	public Set<V> newSetInstance()
-	{
-		return new HashSet<V>();
-	}
-
-	public Map<K, V> newMapInstance()
-	{
-		return new HashMap<K, V>();
 	}
 
 	public String getPropertyName()
@@ -177,7 +157,8 @@ public class PropertyMeta<K, V>
 				stringKeyValue, propertyName, entityClassName);
 		try
 		{
-			return this.objectMapper.readValue(stringKeyValue, KeyValue.class);
+			return this.objectMapper.readValue(stringKeyValue, new TypeReference<KeyValue<K, V>>()
+			{});
 		}
 		catch (Exception e)
 		{
@@ -239,11 +220,8 @@ public class PropertyMeta<K, V>
 	{
 		try
 		{
-			if (type.isJoinColumn())
-			{
-				return this.valueClass.cast(object);
-			}
-			else if (isSupportedType(valueClass) || type == MAP || type == LAZY_MAP)
+			if (type.isJoinColumn() || isSupportedType(valueClass) || type == MAP
+					|| type == LAZY_MAP)
 			{
 				return this.valueClass.cast(object);
 			}

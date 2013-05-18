@@ -46,7 +46,7 @@ public class ThriftGenericEntityDao extends ThriftAbstractDao
 		columnNameSerializer = COMPOSITE_SRZ;
 		log.debug(
 				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
-				keySerializer.getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
+				this.rowSrz().getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
 						.getTypeName());
 
 	}

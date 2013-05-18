@@ -8,7 +8,9 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,16 +35,18 @@ public class ThriftEntityMapper
 
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
-	public <T, ID, K, V> void setEagerPropertiesToEntity(ID key,
-			List<Pair<Composite, String>> columns, EntityMeta entityMeta, T entity)
+	public void setEagerPropertiesToEntity(Object key, List<Pair<Composite, String>> columns,
+			EntityMeta entityMeta, Object entity)
 	{
 		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
 
-		Map<String, List<V>> listProperties = new HashMap<String, List<V>>();
-		Map<String, Set<V>> setProperties = new HashMap<String, Set<V>>();
-		Map<String, Map<K, V>> mapProperties = new HashMap<String, Map<K, V>>();
+		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
+		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
+		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
 
 		setIdToEntity(key, entityMeta.getIdMeta(), entity);
+
+		Map<String, PropertyMeta<?, ?>> propertyMetas = entityMeta.getPropertyMetas();
 
 		for (Pair<Composite, String> pair : columns)
 		{
@@ -59,8 +63,10 @@ public class ThriftEntityMapper
 				continue;
 			}
 
-			PropertyMeta<K, V> propertyMeta = entityMeta
-					.<K, V> getPropertyMetaByProperty(propertyName);
+			// PropertyMeta<K, V> propertyMeta = entityMeta
+			// .<K, V> getPropertyMetaByProperty(propertyName);
+
+			PropertyMeta<?, ?> propertyMeta = propertyMetas.get(propertyName);
 
 			if (propertyMeta.type() == PropertyType.SIMPLE)
 			{
@@ -69,16 +75,12 @@ public class ThriftEntityMapper
 
 			else if (propertyMeta.type() == PropertyType.LIST)
 			{
-				PropertyMeta<Void, V> listMeta = entityMeta
-						.<Void, V> getPropertyMetaByProperty(propertyName);
-				addToList(listProperties, listMeta, listMeta.getValueFromString(pair.right));
+				addToList(listProperties, propertyMeta, propertyMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.SET)
 			{
-				PropertyMeta<Void, V> setMeta = entityMeta
-						.<Void, V> getPropertyMetaByProperty(propertyName);
-				addToSet(setProperties, setMeta, setMeta.getValueFromString(pair.right));
+				addToSet(setProperties, propertyMeta, propertyMeta.getValueFromString(pair.right));
 			}
 
 			else if (propertyMeta.type() == PropertyType.MAP)
@@ -88,34 +90,31 @@ public class ThriftEntityMapper
 			}
 		}
 
-		for (Entry<String, List<V>> entry : listProperties.entrySet())
+		for (Entry<String, List<Object>> entry : listProperties.entrySet())
 		{
-			setListPropertyToEntity(entry.getValue(),
-					entityMeta.<Void, V> getPropertyMetaByProperty(entry.getKey()), entity);
+			setListPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
-		for (Entry<String, Set<V>> entry : setProperties.entrySet())
+		for (Entry<String, Set<Object>> entry : setProperties.entrySet())
 		{
-			setSetPropertyToEntity(entry.getValue(),
-					entityMeta.<Void, V> getPropertyMetaByProperty(entry.getKey()), entity);
+			setSetPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
-		for (Entry<String, Map<K, V>> entry : mapProperties.entrySet())
+		for (Entry<String, Map<Object, Object>> entry : mapProperties.entrySet())
 		{
-			setMapPropertyToEntity(entry.getValue(),
-					entityMeta.<K, V> getPropertyMetaByProperty(entry.getKey()), entity);
+			setMapPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 
 	}
 
-	protected <V> void addToList(Map<String, List<V>> listProperties,
-			PropertyMeta<Void, V> listMeta, V value)
+	protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta<?, ?> listMeta,
+			Object value)
 	{
 		String propertyName = listMeta.getPropertyName();
-		List<V> list = null;
+		List<Object> list = null;
 		if (!listProperties.containsKey(propertyName))
 		{
-			list = listMeta.newListInstance();
+			list = new ArrayList<Object>();
 			listProperties.put(propertyName, list);
 		}
 		else
@@ -125,15 +124,15 @@ public class ThriftEntityMapper
 		list.add(value);
 	}
 
-	protected <V> void addToSet(Map<String, Set<V>> setProperties, PropertyMeta<Void, V> setMeta,
-			V value)
+	protected void addToSet(Map<String, Set<Object>> setProperties, PropertyMeta<?, ?> setMeta,
+			Object value)
 	{
 		String propertyName = setMeta.getPropertyName();
 
-		Set<V> set = null;
+		Set<Object> set = null;
 		if (!setProperties.containsKey(propertyName))
 		{
-			set = setMeta.newSetInstance();
+			set = new HashSet<Object>();
 			setProperties.put(propertyName, set);
 		}
 		else
@@ -143,15 +142,15 @@ public class ThriftEntityMapper
 		set.add(value);
 	}
 
-	protected <K, V> void addToMap(Map<String, Map<K, V>> mapProperties,
-			PropertyMeta<K, V> mapMeta, KeyValue<K, V> keyValue)
+	protected void addToMap(Map<String, Map<Object, Object>> mapProperties,
+			PropertyMeta<?, ?> mapMeta, KeyValue<?, ?> keyValue)
 	{
 		String propertyName = mapMeta.getPropertyName();
 
-		Map<K, V> map = null;
+		Map<Object, Object> map = null;
 		if (!mapProperties.containsKey(propertyName))
 		{
-			map = mapMeta.newMapInstance();
+			map = new HashMap<Object, Object>();
 			mapProperties.put(propertyName, map);
 		}
 		else
@@ -191,8 +190,7 @@ public class ThriftEntityMapper
 		}
 	}
 
-	public <T, V> void setListPropertyToEntity(List<V> list, PropertyMeta<Void, V> listMeta,
-			T entity)
+	public void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, Object entity)
 	{
 		log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
 
@@ -206,7 +204,7 @@ public class ThriftEntityMapper
 		}
 	}
 
-	public <T, ID> void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, T entity)
+	public void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, Object entity)
 	{
 		log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
 
@@ -220,7 +218,7 @@ public class ThriftEntityMapper
 		}
 	}
 
-	public <T, K, V> void setMapPropertyToEntity(Map<K, V> map, PropertyMeta<K, V> mapMeta, T entity)
+	public void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, Object entity)
 	{
 		log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
 

@@ -29,7 +29,7 @@ public class ThriftGenericWideRowDao extends ThriftAbstractDao
 		columnNameSerializer = COMPOSITE_SRZ;
 		log.debug(
 				"Initializing GenericColumnFamilyDao for key serializer '{}', composite comparator and value serializer '{}'",
-				keySerializer.getComparatorType().getTypeName(), valueSerializer
-						.getComparatorType().getTypeName());
+				this.rowSrz().getComparatorType().getTypeName(), this.valSrz().getComparatorType()
+						.getTypeName());
 	}
 }

@@ -29,12 +29,11 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@Override
-	public <T> T load(AchillesPersistenceContext context)
+	public <T> T load(AchillesPersistenceContext context, Class<T> entityClass)
 	{
 		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		Class<T> entityClass = (Class<T>) context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 
@@ -58,7 +57,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			}
 			else
 			{
-				entity = (T) loaderImpl.load((ThriftPersistenceContext) context);
+				entity = loaderImpl.load((ThriftPersistenceContext) context);
 			}
 
 		}
@@ -68,7 +67,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 					+ entityClass.getCanonicalName() + "' with key '" + primaryKey + "'. Cause : "
 					+ e.getMessage(), e);
 		}
-		return (T) entity;
+		return entity;
 	}
 
 	@Override
