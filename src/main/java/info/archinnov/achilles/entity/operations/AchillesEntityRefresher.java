@@ -35,7 +35,7 @@ public class AchillesEntityRefresher
 
 		AchillesJpaEntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
 
-		T freshEntity = loader.<T> load(context, (Class<T>) context.getEntityClass());
+		Object freshEntity = loader.load(context, context.getEntityClass());
 
 		interceptor.getDirtyMap().clear();
 		interceptor.getLazyAlreadyLoaded().clear();

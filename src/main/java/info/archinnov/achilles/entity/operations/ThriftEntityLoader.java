@@ -57,7 +57,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			}
 			else
 			{
-				entity = loaderImpl.load((ThriftPersistenceContext) context);
+				entity = loaderImpl.load((ThriftPersistenceContext) context, entityClass);
 			}
 
 		}

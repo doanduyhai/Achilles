@@ -54,7 +54,7 @@ public class KeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 		KeyValue<K, V> keyValue = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			HColumn<Composite, V> column = this.achillesSliceIterator.next();
 			keyValue = factory.createKeyValue(context, propertyMeta, column);
 		}
 		else
@@ -88,7 +88,7 @@ public class KeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 		V value = null;
 		if (this.achillesSliceIterator.hasNext())
 		{
-			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			HColumn<Composite, V> column = this.achillesSliceIterator.next();
 			value = factory.createValue(context, propertyMeta, column);
 		}
 		else

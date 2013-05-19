@@ -54,7 +54,8 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
 			throws Throwable
 	{
-		log.trace("Method {} called for entity of class {}", method.getName(), target.getClass()
+		log.trace("Method {} called for entity of class {}", method.getName(), target
+				.getClass()
 				.getCanonicalName());
 
 		if (this.idGetter == method)
@@ -111,9 +112,10 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 			case JOIN_SIMPLE:
 				if (rawValue != null)
 				{
-					log.trace(
-							"Build proxy on returned join entity for property {} of entity of class {} ",
-							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+					log
+							.trace("Build proxy on returned join entity for property {} of entity of class {} ",
+									propertyMeta.getPropertyName(),
+									propertyMeta.getEntityClassName());
 
 					AchillesPersistenceContext joinContext = context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
@@ -129,13 +131,12 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					List<V> list = (List<V>) rawValue;
-					result = ListWrapperBuilder //
-							.builder(context, list) //
-							.dirtyMap(dirtyMap) //
+					result = ListWrapperBuilder
+							.builder(context, list)
+							.dirtyMap(dirtyMap)
 							.setter(propertyMeta.getSetter())
-							//
-							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method)) //
-							.proxifier(proxifier)//
+							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method))
+							.proxifier(proxifier)
 							.build();
 				}
 				break;
@@ -148,13 +149,12 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 					Set<V> set = (Set<V>) rawValue;
-					result = SetWrapperBuilder //
-							.builder(context, set) //
-							.dirtyMap(dirtyMap) //
+					result = SetWrapperBuilder
+							.builder(context, set)
+							.dirtyMap(dirtyMap)
 							.setter(propertyMeta.getSetter())
-							//
-							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method)) //
-							.proxifier(proxifier)//
+							.propertyMeta(this.<Void, V> getPropertyMetaByProperty(method))
+							.proxifier(proxifier)
 							.build();
 				}
 				break;
@@ -168,21 +168,26 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 
 					Map<K, V> map = (Map<K, V>) rawValue;
 					result = MapWrapperBuilder //
-							.builder(context, map)//
-							.dirtyMap(dirtyMap) //
+							.builder(context, map)
+							//
+							.dirtyMap(dirtyMap)
+							//
 							.setter(propertyMeta.getSetter())
 							//
-							.propertyMeta(this.<K, V> getPropertyMetaByProperty(method)) //
-							.proxifier(proxifier)//
+							.propertyMeta(this.<K, V> getPropertyMetaByProperty(method))
+							//
+							.proxifier(proxifier)
+							//
 							.build();
 				}
 				break;
 			case WIDE_MAP:
 				if (context.isWideRow())
 				{
-					log.trace(
-							"Build wide row widemap wrapper for property {} of entity of class {} ",
-							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+					log
+							.trace("Build wide row widemap wrapper for property {} of entity of class {} ",
+									propertyMeta.getPropertyName(),
+									propertyMeta.getEntityClassName());
 
 					result = buildWideRowWrapper(propertyMeta);
 				}

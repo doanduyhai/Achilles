@@ -64,7 +64,7 @@ public abstract class AbstractWrapper<K, V>
 		this.context = context;
 	}
 
-	protected AchillesPersistenceContext joinContext(V joinEntity)
+	protected AchillesPersistenceContext joinContext(Object joinEntity)
 	{
 		return context.newPersistenceContext(propertyMeta.joinMeta(), joinEntity);
 	}

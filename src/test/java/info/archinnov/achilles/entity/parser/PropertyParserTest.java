@@ -1153,4 +1153,5 @@ public class PropertyParserTest
 				joinPropertyMetaToBeFilled, //
 				configContext, CompleteBean.class);
 	}
+
 }

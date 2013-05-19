@@ -43,8 +43,7 @@ public class EntityExplorer
 	}
 
 	public List<Class<?>> listCandidateClassesFromPackage(String packageName,
-			Class<? extends Annotation>... annotationClass) throws ClassNotFoundException,
-			IOException
+			Class<?>... annotationClass) throws ClassNotFoundException, IOException
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		assert classLoader != null;

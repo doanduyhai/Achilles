@@ -9,7 +9,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
@@ -46,13 +46,12 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			MAP, LAZY_MAP);
 
 	@Override
-	public <T> T mergeEntity(AchillesPersistenceContext context)
+	public <T> T mergeEntity(AchillesPersistenceContext context, T entity)
 	{
 		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
-		T entity = (T) context.getEntity();
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		Validator.validateNotNull(entity, "Proxy object should not be null");
@@ -64,8 +63,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Checking for dirty fields before merging");
 
 			T realObject = proxifier.getRealObject(entity);
-			JpaEntityInterceptor<T> interceptor = (JpaEntityInterceptor<T>) proxifier
-					.getInterceptor(entity);
+			AchillesJpaEntityInterceptor<T> interceptor = proxifier.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
 			if (dirtyMap.size() > 0)
@@ -146,8 +144,9 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		if (joinEntity != null)
 		{
 			log.debug("Merging join entity {} ", joinEntity);
-			Object mergedEntity = mergeEntity(context.newPersistenceContext(
-					joinProperties.getEntityMeta(), joinEntity));
+			Object mergedEntity = mergeEntity(
+					context.newPersistenceContext(joinProperties.getEntityMeta(), joinEntity),
+					joinEntity);
 			introspector.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
 		}
 	}
@@ -183,8 +182,9 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Merging join collection of entity {} ", joinEntities);
 			for (Object joinEntity : joinEntities)
 			{
-				Object mergedEntity = mergeEntity(context.newPersistenceContext(
-						joinProperties.getEntityMeta(), joinEntity));
+				Object mergedEntity = mergeEntity(
+						context.newPersistenceContext(joinProperties.getEntityMeta(), joinEntity),
+						joinEntity);
 				mergedEntities.add(mergedEntity);
 			}
 		}
@@ -203,7 +203,8 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			for (Entry<?, ?> joinEntityEntry : joinEntitiesMap.entrySet())
 			{
 				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
-						joinProperties.getEntityMeta(), joinEntityEntry.getValue()));
+						joinProperties.getEntityMeta(), joinEntityEntry.getValue()),
+						joinEntityEntry.getValue());
 				mergedEntitiesMap.put(joinEntityEntry.getKey(), mergedEntity);
 			}
 		}

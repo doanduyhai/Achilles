@@ -63,7 +63,7 @@ public abstract class AchillesEntityProxifier
 		log.debug("Get real entity from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		AchillesJpaEntityInterceptor<T> interceptor = (AchillesJpaEntityInterceptor<T>) factory
+		AchillesJpaEntityInterceptor<?> interceptor = (AchillesJpaEntityInterceptor<?>) factory
 				.getCallback(0);
 		return (T) interceptor.getTarget();
 	}

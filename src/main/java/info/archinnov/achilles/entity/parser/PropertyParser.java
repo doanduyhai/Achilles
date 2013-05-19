@@ -287,7 +287,7 @@ public class PropertyParser
 		Class<V> valueClass = types.right;
 		boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
 
-		// Multi or Single Key
+		// Multi Key
 		multiKeyProperties = parseWideMapMultiKey(multiKeyProperties, keyClass);
 
 		if (isCounterValueType)

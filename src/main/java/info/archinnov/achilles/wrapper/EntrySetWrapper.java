@@ -73,11 +73,16 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 		log.trace("Build iterator wrapper for entry set of property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return EntryIteratorWrapperBuilder //
-				.builder(context, this.target.iterator()) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+				.builder(context, this.target.iterator())
+				//
+				.dirtyMap(dirtyMap)
+				//
+				.setter(setter)
+				//
+				.propertyMeta(propertyMeta)
+				//
+				.proxifier(proxifier)
+				//
 				.build();
 	}
 
@@ -135,19 +140,24 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 		Object[] result = null;
 		if (isJoin())
 		{
-			log.trace(
-					"Build proxies for join entities of entrey set property {} of entity class {} upon toArray() call",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+			log
+					.trace("Build proxies for join entities of entrey set property {} of entity class {} upon toArray() call",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			Object[] array = new MapEntryWrapper[this.target.size()];
 			int i = 0;
 			for (Map.Entry<K, V> entry : this.target)
 			{
 				array[i] = MapEntryWrapperBuilder //
-						.builder(context, entry) //
-						.dirtyMap(dirtyMap) //
-						.setter(setter) //
-						.propertyMeta(propertyMeta) //
-						.proxifier(proxifier) //
+						.builder(context, entry)
+						//
+						.dirtyMap(dirtyMap)
+						//
+						.setter(setter)
+						//
+						.propertyMeta(propertyMeta)
+						//
+						.proxifier(proxifier)
+						//
 						.build();
 				i++;
 			}
@@ -170,16 +180,16 @@ public class EntrySetWrapper<K, V> extends AbstractWrapper<K, V> implements Set<
 
 			for (int i = 0; i < array.length; i++)
 			{
-				log.trace(
-						"Build proxies for join entities of entrey set property {} of entity class {} upon toArray(T[] arg) call",
-						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+				log
+						.trace("Build proxies for join entities of entrey set property {} of entity class {} upon toArray(T[] arg) call",
+								propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-				array[i] = (T) MapEntryWrapperBuilder //
-						.builder(context, (Entry<K, V>) array[i]) //
-						.dirtyMap(dirtyMap) //
-						.setter(setter) //
-						.propertyMeta(propertyMeta) //
-						.proxifier(proxifier) //
+				array[i] = (T) MapEntryWrapperBuilder
+						.builder(context, (Entry<K, V>) array[i])
+						.dirtyMap(dirtyMap)
+						.setter(setter)
+						.propertyMeta(propertyMeta)
+						.proxifier(proxifier)
 						.build();
 			}
 			result = array;

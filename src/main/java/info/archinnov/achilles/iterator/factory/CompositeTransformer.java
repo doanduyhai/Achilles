@@ -80,12 +80,12 @@ public class CompositeTransformer
 		};
 	}
 
-	public <K, V> Function<HColumn<Composite, ?>, KeyValue<K, V>> buildKeyValueTransformer(
+	public <K, V> Function<HColumn<Composite, V>, KeyValue<K, V>> buildKeyValueTransformer(
 			final ThriftPersistenceContext context, final PropertyMeta<K, V> propertyMeta)
 	{
-		return new Function<HColumn<Composite, ?>, KeyValue<K, V>>()
+		return new Function<HColumn<Composite, V>, KeyValue<K, V>>()
 		{
-			public KeyValue<K, V> apply(HColumn<Composite, ?> hColumn)
+			public KeyValue<K, V> apply(HColumn<Composite, V> hColumn)
 			{
 				return buildKeyValue(context, propertyMeta, hColumn);
 			}
@@ -93,7 +93,7 @@ public class CompositeTransformer
 	}
 
 	public <K, V> KeyValue<K, V> buildKeyValue(ThriftPersistenceContext context,
-			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, V> hColumn)
 	{
 		K key = buildKey(propertyMeta, hColumn);
 		V value = this.buildValue(context, propertyMeta, hColumn);
@@ -109,13 +109,13 @@ public class CompositeTransformer
 	}
 
 	public <K, V> V buildValue(ThriftPersistenceContext context, PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+			HColumn<Composite, V> hColumn)
 	{
-		V value;
+		V value = hColumn.getValue();
 		if (propertyMeta.isJoin())
 		{
 			AchillesPersistenceContext joinContext = context.newPersistenceContext(
-					propertyMeta.joinMeta(), hColumn.getValue());
+					propertyMeta.joinMeta(), value);
 			value = proxifier.buildProxy((V) hColumn.getValue(), joinContext);
 		}
 		else

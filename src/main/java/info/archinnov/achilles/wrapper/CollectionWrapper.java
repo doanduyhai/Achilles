@@ -87,10 +87,14 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		return IteratorWrapperBuilder.builder(context, this.target.iterator()) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+				.dirtyMap(dirtyMap)
+				//
+				.setter(setter)
+				//
+				.propertyMeta(propertyMeta)
+				//
+				.proxifier(proxifier)
+				//
 				.build();
 	}
 
@@ -129,9 +133,9 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 		result = this.target.retainAll(proxifier.unproxy(arg0));
 		if (result)
 		{
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon elements retentions",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+			log
+					.trace("Mark collection property {} of entity class {} dirty upon elements retentions",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -149,9 +153,9 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 		Object[] result = null;
 		if (isJoin())
 		{
-			log.trace(
-					"Build proxies for join entities of collection property {} of entity class {} upon toArray() call",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+			log
+					.trace("Build proxies for join entities of collection property {} of entity class {} upon toArray() call",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			Object[] array = new Object[this.target.size()];
 			int i = 0;
 			for (V joinEntity : this.target)
@@ -174,14 +178,14 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 		T[] result = null;
 		if (isJoin())
 		{
-			log.trace(
-					"Build proxies for join entities of collection property {} of entity class {} upon toArray(T[] arg) call",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+			log
+					.trace("Build proxies for join entities of collection property {} of entity class {} upon toArray(T[] arg) call",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			T[] array = this.target.toArray(arg0);
 
 			for (int i = 0; i < array.length; i++)
 			{
-				array[i] = proxifier.buildProxy(array[i], joinContext((V) array[i]));
+				array[i] = proxifier.buildProxy(array[i], joinContext(array[i]));
 			}
 			result = array;
 		}

@@ -41,7 +41,7 @@ public class KeyValueFactory
 	private CompositeTransformer compositeTransformer = new CompositeTransformer();
 
 	public <K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext context,
-			PropertyMeta<K, V> propertyMeta, HColumn<Composite, ?> hColumn)
+			PropertyMeta<K, V> propertyMeta, HColumn<Composite, V> hColumn)
 	{
 		log.trace("Build key/value for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -56,7 +56,7 @@ public class KeyValueFactory
 	}
 
 	public <K, V> V createValue(ThriftPersistenceContext context, PropertyMeta<K, V> propertyMeta,
-			HColumn<Composite, ?> hColumn)
+			HColumn<Composite, V> hColumn)
 	{
 		log.trace("Build key value for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -85,8 +85,8 @@ public class KeyValueFactory
 		return Lists.transform(hColumns, compositeTransformer.buildKeyTransformer(propertyMeta));
 	}
 
-	public <K, V, W> List<KeyValue<K, V>> createKeyValueList(ThriftPersistenceContext context,
-			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, W>> hColumns)
+	public <K, V> List<KeyValue<K, V>> createKeyValueList(ThriftPersistenceContext context,
+			PropertyMeta<K, V> propertyMeta, List<HColumn<Composite, V>> hColumns)
 	{
 		log.trace("Build key/value list for property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());

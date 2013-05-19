@@ -43,11 +43,10 @@ public class ThriftLoaderImpl
 	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 	private CompositeFactory compositeFactory = new CompositeFactory();
 
-	public <T> T load(ThriftPersistenceContext context) throws Exception
+	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) throws Exception
 	{
 		log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
-		Class<T> entityClass = (Class<T>) context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 

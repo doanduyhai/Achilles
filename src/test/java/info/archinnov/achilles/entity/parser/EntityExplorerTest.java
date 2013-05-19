@@ -34,7 +34,6 @@ public class EntityExplorerTest
 		assertThat(entities).contains(Entity3.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_classes_from_single_package() throws Exception
 	{
@@ -45,7 +44,6 @@ public class EntityExplorerTest
 		assertThat(entities).contains(Entity1.class, Entity2.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_find_classes_when_not_matching_annotation() throws Exception
 	{
@@ -55,7 +53,6 @@ public class EntityExplorerTest
 		assertThat(entities).isEmpty();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_find_classes_when_no_annotation_found() throws Exception
 	{
