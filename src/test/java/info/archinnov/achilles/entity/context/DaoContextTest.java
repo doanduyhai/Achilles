@@ -26,14 +26,14 @@ public class DaoContextTest
 {
 	private DaoContext context;
 
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
-	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao<?, ?>>();
+	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
+	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 
 	@Mock
-	private ThriftGenericEntityDao<?> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ThriftGenericWideRowDao<?, ?> columnFamilyDao;
+	private ThriftGenericWideRowDao columnFamilyDao;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -50,7 +50,6 @@ public class DaoContextTest
 		assertThat(context.getCounterDao()).isSameAs(thriftCounterDao);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_get_entity_dao() throws Exception
 	{
@@ -58,11 +57,11 @@ public class DaoContextTest
 		assertThat((ThriftGenericEntityDao) context.findEntityDao("dao")).isSameAs(entityDao);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_get_wide_row_dao() throws Exception
 	{
 		columnFamilyDaosMap.put("dao", columnFamilyDao);
-		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("dao")).isSameAs(columnFamilyDao);
+		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("dao")).isSameAs(
+				columnFamilyDao);
 	}
 }

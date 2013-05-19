@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftTableCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -156,7 +156,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 				.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 						cluster.getName(), keyspace.getKeyspaceName());
 
-		super.columnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
+		super.columnFamilyCreator = new ThriftTableCreator(cluster, keyspace);
 		boolean hasSimpleCounter = bootstrap();
 		daoContext = new DaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap,
 				configContext, hasSimpleCounter);

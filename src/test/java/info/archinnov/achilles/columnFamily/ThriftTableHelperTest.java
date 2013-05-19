@@ -1,11 +1,11 @@
 package info.archinnov.achilles.columnFamily;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.*;
+import static info.archinnov.achilles.columnFamily.ThriftTableHelper.*;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -18,7 +18,6 @@ import java.util.UUID;
 
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 
@@ -41,17 +40,17 @@ import com.google.common.collect.ImmutableMap;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftColumnFamilyHelperTest
+public class ThriftTableHelperTest
 {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftColumnFamilyHelper thriftColumnFamilyHelper;
+	private ThriftTableHelper thriftTableHelper;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private PropertyMeta<Long, String> propertyMeta;
@@ -60,32 +59,26 @@ public class ThriftColumnFamilyHelperTest
 	private Keyspace keyspace;
 
 	@Mock
-	private PropertyHelper helper;
+	private ThriftPropertyHelper helper;
 
 	@Mock
 	private ColumnFamilyDefinition cfDef;
 
 	@Test
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	public void should_build_entity_column_family() throws Exception
 	{
-		PropertyMeta<?, Long> propertyMeta = mock(PropertyMeta.class);
-		when((Serializer) propertyMeta.getValueSerializer()).thenReturn(STRING_SRZ);
+		PropertyMeta<?, String> propertyMeta = mock(PropertyMeta.class);
+		when(propertyMeta.getValueClass()).thenReturn(String.class);
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("age", propertyMeta);
 
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when((Serializer) entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
 		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildEntityCF(entityMeta,
-				"keyspace");
+		ColumnFamilyDefinition cfDef = thriftTableHelper.buildEntityCF(entityMeta, "keyspace");
 
 		assertThat(cfDef).isNotNull();
 		assertThat(cfDef.getKeyspaceName()).isEqualTo("keyspace");
@@ -104,8 +97,8 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
-				wideMapMeta, Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = thriftTableHelper.buildWideRowCF("keyspace", wideMapMeta,
+				Long.class, "cf", "entity");
 
 		assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(
@@ -127,8 +120,8 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
-				wideMapMeta, Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = thriftTableHelper.buildWideRowCF("keyspace", wideMapMeta,
+				Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				STRING_SRZ.getComparatorType().getTypeName());
@@ -142,9 +135,10 @@ public class ThriftColumnFamilyHelperTest
 		wideMapMeta.setValueClass(CompleteBean.class);
 		wideMapMeta.setType(PropertyType.JOIN_SIMPLE);
 
-		PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder.valueClass(UUID.class)
+		PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder
+				.valueClass(UUID.class)
 				.build();
-		EntityMeta<UUID> joinMeta = new EntityMeta<UUID>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
@@ -153,8 +147,8 @@ public class ThriftColumnFamilyHelperTest
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildWideRowCF("keyspace",
-				wideMapMeta, Long.class, "cf", "entity");
+		ColumnFamilyDefinition cfDef = thriftTableHelper.buildWideRowCF("keyspace", wideMapMeta,
+				Long.class, "cf", "entity");
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				UUID_SRZ.getComparatorType().getTypeName());
@@ -165,7 +159,7 @@ public class ThriftColumnFamilyHelperTest
 	public void should_build_counter_column_family() throws Exception
 	{
 
-		ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildCounterCF("keyspace");
+		ColumnFamilyDefinition cfDef = thriftTableHelper.buildCounterCF("keyspace");
 
 		assertThat(cfDef.getKeyValidationClass()).isEqualTo(COMPOSITETYPE.getTypeName());
 		assertThat(cfDef.getKeyValidationAlias()).isEqualTo(COUNTER_KEY_ALIAS);
@@ -180,8 +174,7 @@ public class ThriftColumnFamilyHelperTest
 	{
 		String canonicalName = "org.achilles.entity.ClassName";
 
-		String normalized = ThriftColumnFamilyHelper
-				.normalizerAndValidateColumnFamilyName(canonicalName);
+		String normalized = ThriftTableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
 
 		assertThat(normalized).isEqualTo("ClassName");
 	}
@@ -198,7 +191,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType(alias)' should be '"
 						+ COUNTER_KEY_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -213,7 +206,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.CompositeType(wrong_alias)' should be '"
 						+ COUNTER_KEY_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -231,7 +224,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType(alias)' should be '"
 						+ COUNTER_COMPARATOR_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -249,7 +242,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' comparator type 'CompositeType(wrong_alias)' should be '"
 						+ COUNTER_COMPARATOR_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -269,7 +262,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'achillesCounterCF' validation class 'org.apache.cassandra.db.marshal.AsciiType' should be '"
 						+ COUNTERTYPE.getClassName() + "'");
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@Test
@@ -280,7 +273,7 @@ public class ThriftColumnFamilyHelperTest
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
-		ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+		ThriftTableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
 
 	}
 
@@ -289,12 +282,12 @@ public class ThriftColumnFamilyHelperTest
 	{
 
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias())
 				.thenReturn(
 						"(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)");
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -307,7 +300,7 @@ public class ThriftColumnFamilyHelperTest
 				"(org.apache.cassandra.db.marshal.UTF8Type)");
 		when(cfDef.getDefaultValidationClass()).thenReturn(COUNTERTYPE.getClassName());
 
-		thriftColumnFamilyHelper.validateCounterCF(cfDef);
+		thriftTableHelper.validateCounterCF(cfDef);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -315,7 +308,7 @@ public class ThriftColumnFamilyHelperTest
 	public void should_validate_wide_row() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.isWideRow()).thenReturn(true);
 
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
@@ -326,28 +319,28 @@ public class ThriftColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COUNTERTYPE);
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
 	public void should_exception_when_not_matching_key_validation_class() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
 				.expectMessage("The column family 'cf' key class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
 	public void should_exception_when_comparator_type_null() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(null);
 
@@ -355,14 +348,14 @@ public class ThriftColumnFamilyHelperTest
 		exception.expectMessage("The column family 'cf' comparator type 'null' should be '"
 				+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
 	public void should_exception_when_comparator_type_not_composite() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
@@ -372,7 +365,7 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'cf' comparator type 'AsciiType(alias)' should be '"
 						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -380,7 +373,7 @@ public class ThriftColumnFamilyHelperTest
 	public void should_exception_when_composite_type_alias_wide_row_not_match() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(entityMeta.isWideRow()).thenReturn(true);
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
@@ -395,7 +388,7 @@ public class ThriftColumnFamilyHelperTest
 		exception
 				.expectMessage("The column family 'cf' comparator type should be 'CounterColumnType'");
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 
 	@Test
@@ -407,15 +400,14 @@ public class ThriftColumnFamilyHelperTest
 				ComparatorType.COUNTERTYPE.getTypeName());
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COUNTERTYPE);
 
-		thriftColumnFamilyHelper
-				.validateWideRowWithPropertyMeta(cfDef, propertyMeta, "external_cf");
+		thriftTableHelper.validateWideRowWithPropertyMeta(cfDef, propertyMeta, "external_cf");
 	}
 
 	@Test
 	public void should_exception_when_comparator_type_alias_does_not_match() throws Exception
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-		when(entityMeta.getIdSerializer()).thenReturn(LONG_SRZ);
+		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
@@ -425,6 +417,6 @@ public class ThriftColumnFamilyHelperTest
 				.expectMessage("The column family 'cf' comparator type 'CompositeType(wrong_alias)' should be '"
 						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
-		thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+		thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 	}
 }

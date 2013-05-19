@@ -2,6 +2,7 @@ package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
@@ -27,7 +28,7 @@ public class ThriftGenericEntityDaoTest
 {
 
 	@InjectMocks
-	private ThriftGenericEntityDao<Long> dao = new ThriftGenericEntityDao<Long>();
+	private ThriftGenericEntityDao dao = new ThriftGenericEntityDao();
 
 	@Mock
 	private ExecutingKeyspace keyspace;
@@ -38,7 +39,8 @@ public class ThriftGenericEntityDaoTest
 	@Test
 	public void should_build_mutator() throws Exception
 	{
-
+		dao = new ThriftGenericEntityDao(new Pair<Class<Long>, Class<String>>(Long.class,
+				String.class));
 		Mutator<Long> mutator = dao.buildMutator();
 		assertThat(mutator).isNotNull();
 	}

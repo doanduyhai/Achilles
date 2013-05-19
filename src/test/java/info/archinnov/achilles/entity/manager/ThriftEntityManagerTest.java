@@ -15,12 +15,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
-import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
-import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
 import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.type.Pair;
 
 import java.util.ArrayList;
@@ -55,10 +55,6 @@ import testBuilders.PropertyMetaTestBuilder;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings(
-{
-	"unchecked"
-})
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftEntityManagerTest
 {
@@ -68,10 +64,10 @@ public class ThriftEntityManagerTest
 	private ThriftEntityManager em;
 
 	@Mock
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao> entityDaosMap;
 
 	@Mock
 	private ThriftEntityPersister persister;
@@ -94,15 +90,15 @@ public class ThriftEntityManagerTest
 	@Mock
 	private AchillesEntityValidator achillesEntityValidator;
 
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> joinEntityDao;
+	private ThriftGenericEntityDao joinEntityDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -122,21 +118,27 @@ public class ThriftEntityManagerTest
 	@Mock
 	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
-	@Captor
-	ArgumentCaptor<Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>> mutatorMapCaptor;
+	@Mock
+	private AchillesEntityManagerFactory emf;
 
 	@Captor
-	ArgumentCaptor<ThriftPersistenceContext<Long>> contextCaptor;
+	ArgumentCaptor<Map<String, Pair<Mutator<?>, ThriftAbstractDao>>> mutatorMapCaptor;
+
+	@Captor
+	ArgumentCaptor<ThriftPersistenceContext> contextCaptor;
 
 	private Long primaryKey = 1165446L;
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name")
+	private CompleteBean entity = CompleteBeanTestBuilder
+			.builder()
+			.id(primaryKey)
+			.name("name")
 			.buid();
 
 	@Before
 	public void setUp() throws Exception
 	{
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-		em = new ThriftEntityManager(entityMetaMap, daoContext, configContext);
+		em = new ThriftEntityManager(emf, entityMetaMap, daoContext, configContext);
 
 		Whitebox.setInternalState(em, "persister", persister);
 		merger.setPersister(persister);
@@ -149,16 +151,16 @@ public class ThriftEntityManagerTest
 		Whitebox.setInternalState(em, "consistencyPolicy", consistencyPolicy);
 
 		idMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
-				.type(SIMPLE) //
+				.of(CompleteBean.class, Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.type(SIMPLE)
 				.build();
 		entityMeta = EntityMetaTestBuilder.builder(idMeta).build();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(entity))
 				.thenReturn(CompleteBean.class);
-		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 
 	}
 
@@ -191,7 +193,7 @@ public class ThriftEntityManagerTest
 	public void should_merge() throws Exception
 	{
 
-		when(merger.mergeEntity(contextCaptor.capture())).thenReturn(entity);
+		when(merger.mergeEntity(contextCaptor.capture(), eq(entity))).thenReturn(entity);
 
 		CompleteBean mergedEntity = em.merge(entity);
 		verify(achillesEntityValidator).validateEntity(entity, entityMetaMap);
@@ -220,7 +222,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_find() throws Exception
 	{
-		when(loader.load(contextCaptor.capture())).thenReturn(entity);
+		when(loader.load(contextCaptor.capture(), eq(CompleteBean.class))).thenReturn(entity);
 		when(proxifier.buildProxy(eq(entity), contextCaptor.capture())).thenReturn(entity);
 
 		CompleteBean bean = em.find(CompleteBean.class, primaryKey);
@@ -234,7 +236,7 @@ public class ThriftEntityManagerTest
 	@Test
 	public void should_get_reference() throws Exception
 	{
-		when(loader.load(contextCaptor.capture())).thenReturn(entity);
+		when(loader.load(contextCaptor.capture(), eq(CompleteBean.class))).thenReturn(entity);
 		when(proxifier.buildProxy(eq(entity), contextCaptor.capture())).thenReturn(entity);
 
 		CompleteBean bean = em.find(CompleteBean.class, primaryKey);

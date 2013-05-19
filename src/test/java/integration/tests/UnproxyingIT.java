@@ -1,8 +1,7 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -26,7 +25,7 @@ public class UnproxyingIT
 {
 
 	private ThriftGenericEntityDao dao = getEntityDao(
-			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()),Long.class);
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 

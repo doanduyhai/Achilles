@@ -4,8 +4,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.context.AchillesFlushContext.FlushType;
 import info.archinnov.achilles.entity.type.Pair;
 
@@ -40,10 +40,10 @@ public class ThriftBatchingFlushContextTest
 	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ThriftGenericWideRowDao<Long, String> cfDao;
+	private ThriftGenericWideRowDao cfDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -57,7 +57,7 @@ public class ThriftBatchingFlushContextTest
 	@Mock
 	private DaoContext daoContext;
 
-	private Map<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao<?, ?>>>();
+	private Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao>>();
 
 	@Before
 	public void setUp()
@@ -86,7 +86,7 @@ public class ThriftBatchingFlushContextTest
 	@Test
 	public void should_end_batch() throws Exception
 	{
-		Pair<Mutator<?>, ThriftAbstractDao<?, ?>> pair = new Pair<Mutator<?>, ThriftAbstractDao<?, ?>>(mutator,
+		Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
 				entityDao);
 		mutatorMap.put("cf", pair);
 

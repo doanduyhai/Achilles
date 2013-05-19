@@ -1,5 +1,6 @@
 package info.archinnov.achilles.composite.factory;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -19,7 +20,6 @@ import java.util.UUID;
 
 import mapping.entity.TweetMultiKey;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 
@@ -31,6 +31,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * CompositeKeyFactoryTest
@@ -67,7 +69,7 @@ public class CompositeFactoryTest
 	{
 		when(wideMapMeta.isSingleKey()).thenReturn(true);
 		when(wideMapMeta.getPropertyName()).thenReturn("property");
-		when(wideMapMeta.getKeySerializer()).thenReturn(INT_SRZ);
+		when((Class<Integer>) wideMapMeta.getKeyClass()).thenReturn(Integer.class);
 
 		when(multiKeyWideMapMeta.isSingleKey()).thenReturn(false);
 		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("property");
@@ -83,21 +85,11 @@ public class CompositeFactoryTest
 		assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(12);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_multikey_for_insert() throws Exception
 	{
-		List<Method> componentGetters = mock(List.class);
-		TweetMultiKey tweetMultiKey = new TweetMultiKey();
-		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
-				UUID_SRZ);
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-		List<Object> keyValues = Arrays.asList((Object) 1, "a", uuid);
-
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
-				keyValues);
+		TweetMultiKey tweetMultiKey = prepareData(1, "a", uuid);
 
 		Composite comp = factory.createBaseComposite(multiKeyWideMapMeta, tweetMultiKey);
 
@@ -107,20 +99,10 @@ public class CompositeFactoryTest
 		assertThat((UUID) comp.getComponents().get(2).getValue()).isEqualTo(uuid);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_missing_value() throws Exception
 	{
-		TweetMultiKey tweetMultiKey = new TweetMultiKey();
-		List<Method> componentGetters = mock(List.class);
-		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
-				UUID_SRZ);
-		List<Object> keyValues = Arrays.asList((Object) 1, "a");
-
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
-				keyValues);
+		TweetMultiKey tweetMultiKey = prepareData(1, "a");
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("There should be 3 values for the key of WideMap 'property'");
@@ -129,20 +111,10 @@ public class CompositeFactoryTest
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_null_value() throws Exception
 	{
-		TweetMultiKey tweetMultiKey = new TweetMultiKey();
-		List<Method> componentGetters = mock(List.class);
-		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
-				UUID_SRZ);
-		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
-
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
-				keyValues);
+		TweetMultiKey tweetMultiKey = prepareData(1, "a", null);
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx
@@ -170,20 +142,11 @@ public class CompositeFactoryTest
 		assertThat(comp).isNull();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_multikey_for_query() throws Exception
 	{
-		TweetMultiKey tweetMultiKey = new TweetMultiKey();
-		List<Method> componentGetters = mock(List.class);
-		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
-				UUID_SRZ);
 		List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
-
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
-		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters)).thenReturn(
-				keyValues);
+		TweetMultiKey tweetMultiKey = prepareData(1, "a", null);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
 
@@ -222,15 +185,14 @@ public class CompositeFactoryTest
 		assertThat(composites[1].getComponent(0).getValue()).isEqualTo(15);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_multikey_composites_for_query() throws Exception
 	{
 		TweetMultiKey tweetKey1 = new TweetMultiKey();
 		TweetMultiKey tweetKey2 = new TweetMultiKey();
 		List<Method> componentGetters = mock(List.class);
-		List<Serializer<?>> serializers = Arrays.asList((Serializer<?>) INT_SRZ, STRING_SRZ,
-				UUID_SRZ);
+		List<Class<?>> componentClasses = Arrays.asList((Class<?>) Integer.class, String.class,
+				UUID.class);
 		List<Object> keyValues1 = Arrays.asList((Object) 1, "a", null);
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 		List<Object> keyValues2 = Arrays.asList((Object) 5, "c", uuid);
@@ -244,12 +206,12 @@ public class CompositeFactoryTest
 						GREATER_THAN_EQUAL
 				});
 		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey1, componentGetters)).thenReturn(
-				keyValues1);
-		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey2, componentGetters)).thenReturn(
-				keyValues2);
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey1, componentGetters))
+				.thenReturn(keyValues1);
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetKey2, componentGetters))
+				.thenReturn(keyValues2);
 
-		when(multiKeyProperties.getComponentSerializers()).thenReturn(serializers);
+		when(multiKeyProperties.getComponentClasses()).thenReturn(componentClasses);
 
 		when(helper.findLastNonNullIndexForComponents("property", keyValues1)).thenReturn(1);
 		when(helper.findLastNonNullIndexForComponents("property", keyValues2)).thenReturn(2);
@@ -273,4 +235,133 @@ public class CompositeFactoryTest
 		assertThat(composites[1].getComponent(2).getValue()).isEqualTo(uuid);
 	}
 
+	@Test
+	public void should_create_key_for_counter() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+
+		Composite comp = factory.createKeyForCounter("fqcn", 11L, idMeta);
+
+		assertThat(comp.getComponents()).hasSize(2);
+		assertThat(comp.getComponent(0).getValue(STRING_SRZ)).isEqualTo("fqcn");
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("11");
+	}
+
+	@Test
+	public void should_create_base_for_get() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createBaseForGet(meta);
+
+		assertThat(comp.getComponents()).hasSize(3);
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
+		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(1).getEquality()).isEqualTo(EQUAL);
+		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(0);
+		assertThat(comp.getComponent(2).getEquality()).isEqualTo(EQUAL);
+	}
+
+	@Test
+	public void should_create_base_for_counter_get() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createBaseForCounterGet(meta);
+
+		assertThat(comp.getComponents()).hasSize(1);
+		assertThat(comp.getComponent(0).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
+	}
+
+	@Test
+	public void should_create_base_for_query() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createBaseForQuery(meta, GREATER_THAN_EQUAL);
+
+		assertThat(comp.getComponents()).hasSize(2);
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
+		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(1).getEquality()).isEqualTo(GREATER_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_create_for_batch_insert_single() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createForBatchInsertSingleValue(meta);
+
+		assertThat(comp.getComponents()).hasSize(3);
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(0);
+	}
+
+	@Test
+	public void should_create_for_batch_insert_single_counter() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createForBatchInsertSingleCounter(meta);
+
+		assertThat(comp.getComponents()).hasSize(1);
+		assertThat(comp.getComponent(0).getValue(STRING_SRZ)).isEqualTo("name");
+	}
+
+	@Test
+	public void should_create_for_batch_insert_multiple() throws Exception
+	{
+		PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
+
+		Composite comp = factory.createForBatchInsertMultiValue(meta, 21);
+
+		assertThat(comp.getComponents()).hasSize(3);
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(21);
+	}
+
+	private TweetMultiKey prepareData(Object... objects)
+	{
+		TweetMultiKey tweetMultiKey = new TweetMultiKey();
+		List<Method> componentGetters = mock(List.class);
+		List<Class<?>> componentClasses = Arrays.asList((Class<?>) Integer.class, String.class,
+				UUID.class);
+		List<Object> keyValues = Arrays.asList(objects);
+
+		when(multiKeyProperties.getComponentClasses()).thenReturn(componentClasses);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(achillesEntityIntrospector.determineMultiKeyValues(tweetMultiKey, componentGetters))
+				.thenReturn(keyValues);
+		return tweetMultiKey;
+	}
 }

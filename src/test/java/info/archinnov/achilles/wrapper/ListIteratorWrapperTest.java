@@ -39,7 +39,7 @@ public class ListIteratorWrapperTest
 	@Mock
 	private AchillesEntityProxifier proxifier;
 
-	private ListIteratorWrapper<Long, Integer> wrapper;
+	private ListIteratorWrapper<Integer> wrapper;
 
 	@Before
 	public void setUp() throws Exception
@@ -50,7 +50,7 @@ public class ListIteratorWrapperTest
 		list.add(1);
 		list.add(2);
 
-		wrapper = new ListIteratorWrapper<Long, Integer>(list.listIterator());
+		wrapper = new ListIteratorWrapper<Integer>(list.listIterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

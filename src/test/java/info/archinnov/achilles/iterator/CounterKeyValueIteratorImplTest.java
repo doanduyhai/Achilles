@@ -39,10 +39,10 @@ public class CounterKeyValueIteratorImplTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private CounterKeyValueIteratorImpl<Long, Integer> iterator;
+	private CounterKeyValueIteratorImpl<Integer> iterator;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> achillesSliceIterator;
@@ -69,7 +69,6 @@ public class CounterKeyValueIteratorImplTest
 		verify(achillesSliceIterator).hasNext();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_key_value() throws Exception
 	{
@@ -89,7 +88,6 @@ public class CounterKeyValueIteratorImplTest
 		iterator.next();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_key() throws Exception
 	{
@@ -108,7 +106,6 @@ public class CounterKeyValueIteratorImplTest
 		iterator.nextKey();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_value() throws Exception
 	{

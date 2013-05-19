@@ -2,7 +2,6 @@ package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
@@ -19,7 +18,6 @@ import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ import javax.persistence.JoinColumn;
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -125,7 +122,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("id");
 		assertThat(meta.getValueClass()).isEqualTo(Long.class);
-		assertThat(meta.getValueSerializer()).isEqualTo(LONG_SRZ);
 		assertThat(context.getPropertyMetas()).isEmpty();
 
 	}
@@ -157,7 +153,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat(meta.getValueClass()).isEqualTo(String.class);
-		assertThat(meta.getValueSerializer()).isEqualTo(STRING_SRZ);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getName");
 		assertThat((Class<String>) meta.getGetter().getReturnType()).isEqualTo(String.class);
@@ -423,8 +418,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
-				SerializerUtils.STRING_SRZ);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFriends");
 		assertThat((Class<List>) meta.getGetter().getReturnType()).isEqualTo(List.class);
@@ -461,8 +454,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
 		assertThat((Class<Long>) meta.getValueClass()).isEqualTo(Long.class);
-		assertThat((Serializer<Long>) meta.getValueSerializer())
-				.isEqualTo(SerializerUtils.LONG_SRZ);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFollowers");
 		assertThat((Class<Set>) meta.getGetter().getReturnType()).isEqualTo(Set.class);
@@ -498,8 +489,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
-				SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.MAP);
 
 		assertThat((Class<Integer>) meta.getKeyClass()).isEqualTo(Integer.class);
@@ -508,9 +497,6 @@ public class PropertyParserTest
 		assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
 		assertThat(meta.getSetter().getName()).isEqualTo("setPreferences");
 		assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
-
-		assertThat((Serializer<Integer>) meta.getKeySerializer())
-				.isEqualTo(SerializerUtils.INT_SRZ);
 	}
 
 	@Test
@@ -540,12 +526,9 @@ public class PropertyParserTest
 		assertThat(meta.getExternalCFName()).isEqualTo("xxx");
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
-				SerializerUtils.STRING_SRZ);
 
 		assertThat((Class<UUID>) meta.getKeyClass()).isEqualTo(UUID.class);
 
-		assertThat((Serializer<UUID>) meta.getKeySerializer()).isEqualTo(SerializerUtils.UUID_SRZ);
 	}
 
 	@Test
@@ -574,7 +557,6 @@ public class PropertyParserTest
 		parser.parse(context);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_parse_counter_widemap() throws Exception
 	{
@@ -597,9 +579,7 @@ public class PropertyParserTest
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
 		assertThat(meta.getExternalCFName()).isEqualTo("counter_xxx");
 		assertThat(meta.getValueClass()).isEqualTo(Counter.class);
-		assertThat((Serializer) meta.getValueSerializer()).isEqualTo(OBJECT_SRZ);
 		assertThat(meta.getKeyClass()).isEqualTo(UUID.class);
-		assertThat(meta.getKeySerializer()).isEqualTo(UUID_SRZ);
 
 		assertThat((PropertyMeta<UUID, Counter>) context.getCounterMetas().get(0)).isSameAs(meta);
 	}
@@ -767,7 +747,10 @@ public class PropertyParserTest
 
 		parser.parse(context);
 
-		Entry<PropertyMeta<?, ?>, String> entry = context.getWideMaps().entrySet().iterator()
+		Entry<PropertyMeta<?, ?>, String> entry = context
+				.getWideMaps()
+				.entrySet()
+				.iterator()
 				.next();
 
 		PropertyMeta<?, ?> propertyMeta = entry.getKey();
@@ -809,15 +792,15 @@ public class PropertyParserTest
 	{
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 		PropertyMeta<Long, UUID> propertyMeta = PropertyMetaTestBuilder//
-				.noClass(Long.class, UUID.class) //
-				.type(WIDE_MAP) //
+				.noClass(Long.class, UUID.class)
+				.type(WIDE_MAP)
 				.build();
 
 		initEntityParsingContext();
 
 		parser.fillWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
-		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
+		assertThat((Class<Long>) propertyMeta.getIdClass()).isEqualTo(Long.class);
 	}
 
 	@Test
@@ -876,8 +859,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
-				SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.isSingleKey()).isFalse();
 
@@ -893,11 +874,11 @@ public class PropertyParserTest
 		assertThat(multiKeyProperties.getComponentSetters().get(0).getName()).isEqualTo("setName");
 		assertThat(multiKeyProperties.getComponentSetters().get(1).getName()).isEqualTo("setRank");
 
-		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
-		assertThat((Serializer<String>) multiKeyProperties.getComponentSerializers().get(0))
-				.isEqualTo(SerializerUtils.STRING_SRZ);
-		assertThat((Serializer<Integer>) multiKeyProperties.getComponentSerializers().get(1))
-				.isEqualTo(SerializerUtils.INT_SRZ);
+		assertThat(multiKeyProperties.getComponentClasses()).hasSize(2);
+		assertThat((Class<String>) multiKeyProperties.getComponentClasses().get(0)).isEqualTo(
+				String.class);
+		assertThat((Class<Integer>) multiKeyProperties.getComponentClasses().get(1)).isEqualTo(
+				int.class);
 	}
 
 	@Test
@@ -926,8 +907,6 @@ public class PropertyParserTest
 
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
-		assertThat((Serializer<String>) meta.getValueSerializer()).isEqualTo(
-				SerializerUtils.STRING_SRZ);
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
 		assertThat(meta.isSingleKey()).isFalse();
 
@@ -940,11 +919,11 @@ public class PropertyParserTest
 		assertThat(multiKeyProperties.getComponentGetters().get(0).getName()).isEqualTo("getName");
 		assertThat(multiKeyProperties.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
-		assertThat(multiKeyProperties.getComponentSerializers()).hasSize(2);
-		assertThat((Serializer<String>) multiKeyProperties.getComponentSerializers().get(0))
-				.isEqualTo(SerializerUtils.STRING_SRZ);
-		assertThat((Serializer<Integer>) multiKeyProperties.getComponentSerializers().get(1))
-				.isEqualTo(SerializerUtils.INT_SRZ);
+		assertThat(multiKeyProperties.getComponentClasses()).hasSize(2);
+		assertThat((Class<String>) multiKeyProperties.getComponentClasses().get(0)).isEqualTo(
+				String.class);
+		assertThat((Class<Integer>) multiKeyProperties.getComponentClasses().get(1)).isEqualTo(
+				int.class);
 	}
 
 	@Test

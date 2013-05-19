@@ -1,6 +1,6 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.ThriftColumnFamilyHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -9,7 +9,6 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.serializer.SerializerUtils;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
@@ -65,7 +64,11 @@ public class JoinColumnIT
 
 		em.persist(creator);
 
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		em.persist(tweet);
@@ -92,7 +95,11 @@ public class JoinColumnIT
 
 		em.persist(creator);
 
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		em.persist(tweet);
@@ -115,7 +122,11 @@ public class JoinColumnIT
 
 		em.persist(creator);
 
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		creator.setFirstname("dfvdfv");
@@ -139,7 +150,11 @@ public class JoinColumnIT
 
 		em.persist(creator);
 
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		tweet = em.merge(tweet);
@@ -169,7 +184,11 @@ public class JoinColumnIT
 	{
 
 		creator = UserTestBuilder.user().id(RandomUtils.nextLong()).buid();
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		expectedEx.expect(AchillesException.class);
@@ -187,7 +206,11 @@ public class JoinColumnIT
 	{
 		em.persist(creator);
 
-		tweet = TweetTestBuilder.tweet().randomId().content("this is a tweet").creator(creator)
+		tweet = TweetTestBuilder
+				.tweet()
+				.randomId()
+				.content("this is a tweet")
+				.creator(creator)
 				.buid();
 
 		tweet = em.merge(tweet);

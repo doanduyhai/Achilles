@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import info.archinnov.achilles.columnFamily.AchillesColumnFamilyHelper;
+import info.archinnov.achilles.columnFamily.AchillesTableHelper;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
@@ -84,7 +84,7 @@ public class JoinPropertyParser
 				joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass()
 						.getCanonicalName(), idMeta.getPropertyName());
 
-		joinPropertyMeta.setExternalCfName(AchillesColumnFamilyHelper
+		joinPropertyMeta.setExternalCfName(AchillesTableHelper
 				.normalizerAndValidateColumnFamilyName(externalTableName));
 		joinPropertyMeta.setIdClass(idMeta.getValueClass());
 		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);

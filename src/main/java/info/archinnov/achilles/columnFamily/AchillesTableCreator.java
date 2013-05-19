@@ -13,7 +13,7 @@ import java.util.Map.Entry;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesColumnFamilyCreator
+public abstract class AchillesTableCreator
 {
 
 	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta> entityMetaMap,

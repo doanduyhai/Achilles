@@ -46,7 +46,7 @@ public class EntryIteratorWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntryIteratorWrapper<Long, Integer, String> wrapper = new EntryIteratorWrapper<Long, Integer, String>(
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
 				map.entrySet().iterator());
 
 		assertThat(wrapper.hasNext()).isTrue();
@@ -61,7 +61,7 @@ public class EntryIteratorWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper<Long, Integer, String> wrapper = new EntryIteratorWrapper<Long, Integer, String>(
+		EntryIteratorWrapper<Integer, String> wrapper = new EntryIteratorWrapper<Integer, String>(
 				map.entrySet().iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);

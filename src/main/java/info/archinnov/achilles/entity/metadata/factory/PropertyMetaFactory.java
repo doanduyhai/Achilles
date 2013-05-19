@@ -35,7 +35,7 @@ public class PropertyMetaFactory
 	private MultiKeyProperties multiKeyProperties;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-	public static <K, V> PropertyMetaFactory factory()
+	public static PropertyMetaFactory factory()
 	{
 		return new PropertyMetaFactory();
 	}

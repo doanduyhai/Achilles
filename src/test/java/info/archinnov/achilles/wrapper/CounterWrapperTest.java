@@ -30,7 +30,7 @@ import org.powermock.reflect.Whitebox;
 public class CounterWrapperTest
 {
 	@InjectMocks
-	private CounterWrapper<Long> wrapper;
+	private CounterWrapper wrapper;
 
 	private Long key = RandomUtils.nextLong();
 
@@ -38,10 +38,10 @@ public class CounterWrapperTest
 	private Composite columnName;
 
 	@Mock
-	private ThriftAbstractDao<Long, Long> counterDao;
+	private ThriftAbstractDao counterDao;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
@@ -55,11 +55,11 @@ public class CounterWrapperTest
 	@Before
 	public void setUp()
 	{
+		wrapper = new CounterWrapper(context);
 		Whitebox.setInternalState(wrapper, "key", key);
 		Whitebox.setInternalState(wrapper, "validator", validator);
 		wrapper.setColumnName(columnName);
 		wrapper.setCounterDao(counterDao);
-		wrapper.setContext(context);
 		wrapper.setReadLevel(readLevel);
 		wrapper.setWriteLevel(writeLevel);
 		when(context.getPolicy()).thenReturn(policy);

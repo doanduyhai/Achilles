@@ -1,10 +1,10 @@
 package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.serializer.SerializerUtils;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -28,7 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ThriftAbstractDaoTest
 {
 
-	private ThriftGenericEntityDao<Long> abstractDao;
+	private ThriftGenericEntityDao abstractDao;
 
 	private Keyspace keyspace = ThriftCassandraDaoTest.getKeyspace();
 
@@ -43,7 +43,8 @@ public class ThriftAbstractDaoTest
 	@Before
 	public void setUp()
 	{
-		abstractDao = new ThriftGenericEntityDao<Long>(cluster, keyspace, LONG_SRZ, columnFamily, policy);
+		abstractDao = new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy,
+				new Pair<Class<Long>, Class<String>>(Long.class, String.class));
 	}
 
 	@Test

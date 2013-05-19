@@ -9,9 +9,9 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -64,69 +64,65 @@ public class ThriftJoinLoaderImplTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private Mutator<Long> mutator;
+	private Mutator<Object> mutator;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao> entityDaosMap;
 
 	@Mock
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> joinEntityDao;
+	private ThriftGenericEntityDao joinEntityDao;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Captor
 	private ArgumentCaptor<List<Long>> listCaptor;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Before
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity) //
-				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
-				.entityDao(entityDao) //
-				.entityDaosMap(entityDaosMap) //
+				.entity(entity)
+				.thriftImmediateFlushContext(thriftImmediateFlushContext)
+				.entityDao(entityDao)
+				.entityDaosMap(entityDaosMap)
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
-		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
-		when((ThriftGenericEntityDao<Long>) entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
+		when(thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when(entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
 
 	}
 
 	@Test
 	public void should_load_join_list() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId") //
-				.accesors() //
-				.type(PropertyType.SIMPLE) //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.accessors()
+				.type(PropertyType.SIMPLE)
 				.build();
+
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setColumnFamilyName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
@@ -142,9 +138,9 @@ public class ThriftJoinLoaderImplTest
 		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
 		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
-		columns.add(new Pair<Composite, String>(start, "11"));
-		columns.add(new Pair<Composite, String>(end, "12"));
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		columns.add(new Pair<Composite, Object>(start, "11"));
+		columns.add(new Pair<Composite, Object>(end, "12"));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -165,13 +161,14 @@ public class ThriftJoinLoaderImplTest
 	@Test
 	public void should_load_join_set() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId") //
-				.accesors() //
-				.type(PropertyType.SIMPLE) //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.accessors()
+				.type(PropertyType.SIMPLE)
 				.build();
+
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setColumnFamilyName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
@@ -187,9 +184,9 @@ public class ThriftJoinLoaderImplTest
 		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
 		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
-		columns.add(new Pair<Composite, String>(start, "11"));
-		columns.add(new Pair<Composite, String>(end, "12"));
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		columns.add(new Pair<Composite, Object>(start, "11"));
+		columns.add(new Pair<Composite, Object>(end, "12"));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -210,13 +207,14 @@ public class ThriftJoinLoaderImplTest
 	@Test
 	public void should_load_join_map() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId") //
-				.accesors() //
-				.type(PropertyType.SIMPLE) //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.accessors()
+				.type(PropertyType.SIMPLE)
 				.build();
+
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setColumnFamilyName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
@@ -234,10 +232,10 @@ public class ThriftJoinLoaderImplTest
 		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
 		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
 
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
-		columns.add(new Pair<Composite, String>(start, writeString(new KeyValue<Integer, String>(
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		columns.add(new Pair<Composite, Object>(start, writeString(new KeyValue<Integer, String>(
 				11, "11"))));
-		columns.add(new Pair<Composite, String>(end, writeString(new KeyValue<Integer, String>(12,
+		columns.add(new Pair<Composite, Object>(end, writeString(new KeyValue<Integer, String>(12,
 				"12"))));
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);

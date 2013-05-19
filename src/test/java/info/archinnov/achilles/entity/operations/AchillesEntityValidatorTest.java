@@ -2,9 +2,9 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -20,8 +20,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 /**
  * EntityValidatorTest
@@ -45,10 +45,10 @@ public class AchillesEntityValidatorTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
@@ -56,30 +56,29 @@ public class AchillesEntityValidatorTest
 	@Before
 	public void setUp()
 	{
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		Whitebox.setInternalState(achillesEntityValidator, "introspector", introspector);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_validate() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(introspector.getKey(bean, idMeta)).thenReturn(12L);
 
 		achillesEntityValidator.validateEntity(bean, entityMetaMap);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_no_id() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(introspector.getKey(bean, idMeta)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
@@ -89,27 +88,25 @@ public class AchillesEntityValidatorTest
 		achillesEntityValidator.validateEntity(bean, entityMetaMap);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_validate_not_wide_row() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(entityMeta.isWideRow()).thenReturn(false);
 
 		achillesEntityValidator.validateNotWideRow(bean, entityMetaMap);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_wide_row() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when((EntityMeta<Long>) entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(entityMeta.isWideRow()).thenReturn(true);
 
 		exception.expect(IllegalArgumentException.class);
@@ -122,10 +119,11 @@ public class AchillesEntityValidatorTest
 	@Test
 	public void should_check_no_pending_batch_with_persistence_context() throws Exception
 	{
-		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder //
-				.mockAll(entityMeta, CompleteBean.class, 10L)//
+		ThriftPersistenceContext context = PersistenceContextTestBuilder //
+				.mockAll(entityMeta, CompleteBean.class, 10L)
 				.build();
-		ThriftImmediateFlushContext thriftImmediateFlushContext = new ThriftImmediateFlushContext(null, null);
+		ThriftImmediateFlushContext thriftImmediateFlushContext = new ThriftImmediateFlushContext(
+				null, null);
 
 		Whitebox.setInternalState(context, "flushContext", thriftImmediateFlushContext);
 

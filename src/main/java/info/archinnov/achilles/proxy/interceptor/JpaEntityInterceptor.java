@@ -32,7 +32,7 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 	private IteratorFactory iteratorFactory = new IteratorFactory();
 	private CompositeFactory compositeFactory = new CompositeFactory();
 
-	protected JpaEntityInterceptor() {
+	public JpaEntityInterceptor() {
 		super.loader = new ThriftEntityLoader();
 		super.persister = new ThriftEntityPersister();
 		super.proxifier = new ThriftEntityProxifier();
@@ -48,11 +48,16 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 				counterProperties.getIdMeta());
 		Composite comp = compositeFactory.createBaseForCounterGet(propertyMeta);
 		result = CounterWrapperBuilder.builder(thriftContext) //
-				.counterDao(thriftContext.getCounterDao()) //
-				.columnName(comp) //
-				.readLevel(propertyMeta.getReadConsistencyLevel()) //
-				.writeLevel(propertyMeta.getWriteConsistencyLevel()) //
-				.key(keyComp) //
+				.counterDao(thriftContext.getCounterDao())
+				//
+				.columnName(comp)
+				//
+				.readLevel(propertyMeta.getReadConsistencyLevel())
+				//
+				.writeLevel(propertyMeta.getWriteConsistencyLevel())
+				//
+				.key(keyComp)
+				//
 				.build();
 		return result;
 	}
@@ -61,19 +66,27 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 	protected <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
-		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
+		String columnFamilyName = context.isWideRow() ? context
+				.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return WideMapWrapperBuilder //
-				.builder(key, wideRowDao, propertyMeta) //
-				.context(thriftContext) //
-				.interceptor(this) //
-				.compositeHelper(compositeHelper) //
-				.keyValueFactory(keyValueFactory)//
-				.iteratorFactory(iteratorFactory)//
-				.compositeFactory(compositeFactory) //
+				.builder(key, wideRowDao, propertyMeta)
+				//
+				.context(thriftContext)
+				//
+				.interceptor(this)
+				//
+				.compositeHelper(compositeHelper)
+				//
+				.keyValueFactory(keyValueFactory)
+				//
+				.iteratorFactory(iteratorFactory)
+				//
+				.compositeFactory(compositeFactory)
+				//
 				.build();
 	}
 
@@ -85,13 +98,20 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 				.getExternalCFName());
 
 		return CounterWideMapWrapperBuilder //
-				.builder(key, counterWideMapDao, propertyMeta)//
-				.interceptor(this) //
-				.context(thriftContext) //
-				.compositeHelper(compositeHelper) //
-				.keyValueFactory(keyValueFactory) //
-				.iteratorFactory(iteratorFactory) //
-				.compositeFactory(compositeFactory) //
+				.builder(key, counterWideMapDao, propertyMeta)
+				//
+				.interceptor(this)
+				//
+				.context(thriftContext)
+				//
+				.compositeHelper(compositeHelper)
+				//
+				.keyValueFactory(keyValueFactory)
+				//
+				.iteratorFactory(iteratorFactory)
+				//
+				.compositeFactory(compositeFactory)
+				//
 				.build();
 	}
 
@@ -100,21 +120,32 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 	{
 
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
-		String columnFamilyName = context.isWideRow() ? context.getEntityMeta()
+		String columnFamilyName = context.isWideRow() ? context
+				.getEntityMeta()
 				.getColumnFamilyName() : propertyMeta.getExternalCFName();
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return JoinWideMapWrapperBuilder //
-				.builder(key, wideRowDao, propertyMeta) //
-				.interceptor(this) //
-				.context(thriftContext) //
-				.compositeHelper(compositeHelper) //
-				.compositeFactory(compositeFactory) //
-				.proxifier(proxifier)//
-				.iteratorFactory(iteratorFactory) //
-				.keyValueFactory(keyValueFactory) //
-				.loader((ThriftEntityLoader) loader) //
-				.persister((ThriftEntityPersister) persister) //
+				.builder(key, wideRowDao, propertyMeta)
+				//
+				.interceptor(this)
+				//
+				.context(thriftContext)
+				//
+				.compositeHelper(compositeHelper)
+				//
+				.compositeFactory(compositeFactory)
+				//
+				.proxifier(proxifier)
+				//
+				.iteratorFactory(iteratorFactory)
+				//
+				.keyValueFactory(keyValueFactory)
+				//
+				.loader((ThriftEntityLoader) loader)
+				//
+				.persister((ThriftEntityPersister) persister)
+				//
 				.build();
 	}
 
@@ -122,16 +153,23 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 	protected <K, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta)
 	{
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
-		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(context.getEntityMeta()
+		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(context
+				.getEntityMeta()
 				.getColumnFamilyName());
 
 		return WideMapWrapperBuilder.builder(key, wideRowDao, propertyMeta) //
-				.interceptor(this) //
-				.context(thriftContext) //
-				.compositeHelper(compositeHelper) //
-				.keyValueFactory(keyValueFactory)//
-				.iteratorFactory(iteratorFactory)//
-				.compositeFactory(compositeFactory) //
+				.interceptor(this)
+				//
+				.context(thriftContext)
+				//
+				.compositeHelper(compositeHelper)
+				//
+				.keyValueFactory(keyValueFactory)
+				//
+				.iteratorFactory(iteratorFactory)
+				//
+				.compositeFactory(compositeFactory)
+				//
 				.build();
 	}
 

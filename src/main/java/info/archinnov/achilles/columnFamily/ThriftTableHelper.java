@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftColumnFamilyHelper extends AchillesColumnFamilyHelper
+public class ThriftTableHelper extends AchillesTableHelper
 {
 	public static final String ENTITY_COMPARATOR_TYPE_ALIAS = "(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)";
 	public static final String ENTITY_COMPARATOR_TYPE_CHECK = "CompositeType(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)";

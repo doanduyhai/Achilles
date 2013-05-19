@@ -54,7 +54,7 @@ public abstract class AchillesEntityManager implements EntityManager
 	protected AchillesEntityMerger merger;
 	protected AchillesEntityRefresher refresher;
 	protected AchillesEntityProxifier proxifier;
-	protected AchillesEntityValidator achillesEntityValidator;
+	protected AchillesEntityValidator entityValidator;
 	protected AchillesEntityInitializer initializer = new AchillesEntityInitializer();
 
 	AchillesEntityManager(AchillesEntityManagerFactory entityManagerFactory,
@@ -79,8 +79,8 @@ public abstract class AchillesEntityManager implements EntityManager
 	public void persist(Object entity)
 	{
 		log.debug("Persisting entity '{}'", entity);
-		achillesEntityValidator.validateEntity(entity, entityMetaMap);
-		achillesEntityValidator.validateNotWideRow(entity, entityMetaMap);
+		entityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
 
 		if (proxifier.isProxy(entity))
 		{
@@ -134,8 +134,8 @@ public abstract class AchillesEntityManager implements EntityManager
 		{
 			log.debug("Merging entity '{}' ", proxifier.unproxy(entity));
 		}
-		achillesEntityValidator.validateNotWideRow(entity, entityMetaMap);
-		achillesEntityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
+		entityValidator.validateEntity(entity, entityMetaMap);
 		AchillesPersistenceContext context = initPersistenceContext(entity);
 		T merged = merger.<T> mergeEntity(context, entity);
 		context.flush();
@@ -188,7 +188,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		{
 			log.debug("Removing entity '{}'", proxifier.unproxy(entity));
 		}
-		achillesEntityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		AchillesPersistenceContext context = initPersistenceContext(entity);
 		persister.remove(context);
@@ -302,8 +302,8 @@ public abstract class AchillesEntityManager implements EntityManager
 		{
 			log.debug("Refreshing entity '{}'", proxifier.unproxy(entity));
 		}
-		achillesEntityValidator.validateEntity(entity, entityMetaMap);
-		achillesEntityValidator.validateNotWideRow(entity, entityMetaMap);
+		entityValidator.validateEntity(entity, entityMetaMap);
+		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		AchillesPersistenceContext context = initPersistenceContext(entity);
 		refresher.refresh(context);

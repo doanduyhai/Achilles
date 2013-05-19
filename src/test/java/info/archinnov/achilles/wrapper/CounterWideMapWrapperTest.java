@@ -53,13 +53,13 @@ public class CounterWideMapWrapperTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private CounterWideMapWrapper<Long, Integer> wrapper;
+	private CounterWideMapWrapper<Integer> wrapper;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private ThriftGenericWideRowDao<Long, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao wideMapCounterDao;
 
 	@Mock
 	private PropertyMeta<Integer, Counter> propertyMeta;
@@ -80,7 +80,7 @@ public class CounterWideMapWrapperTest
 	private AchillesCounterSliceIterator<Long> achillesCounterSliceIterator;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
@@ -248,7 +248,7 @@ public class CounterWideMapWrapperTest
 		when(
 				wideMapCounterDao.getCounterColumnsIterator(id, start, end, DESCENDING.isReverse(),
 						100)).thenReturn(achillesCounterSliceIterator);
-		CounterKeyValueIteratorImpl<Long, Integer> expected = mock(CounterKeyValueIteratorImpl.class);
+		CounterKeyValueIteratorImpl<Integer> expected = mock(CounterKeyValueIteratorImpl.class);
 
 		when(
 				iteratorFactory.createCounterKeyValueIterator(context,

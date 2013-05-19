@@ -11,15 +11,15 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.KeyValue;
@@ -83,13 +83,13 @@ public class ThriftPersisterImplTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ThriftGenericWideRowDao<Long, String> columnFamilyDao;
+	private ThriftGenericWideRowDao columnFamilyDao;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private CompositeFactory compositeFactory;
@@ -98,22 +98,22 @@ public class ThriftPersisterImplTest
 	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private Mutator<Long> mutator;
+	private Mutator<Object> mutator;
 
 	@Mock
-	private Mutator<Long> cfMutator;
+	private Mutator<Object> cfMutator;
 
 	@Mock
-	private Mutator<Composite> counterMutator;
+	private Mutator<Object> counterMutator;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao> entityDaosMap;
 
 	@Mock
-	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap;
 
 	@Mock
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
@@ -125,29 +125,24 @@ public class ThriftPersisterImplTest
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
-	@SuppressWarnings(
-	{
-		"rawtypes"
-	})
 	@Before
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity) //
-				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
-				.entityDao(entityDao) //
-				.columnFamilyDao(columnFamilyDao) //
-				.columnFamilyDaosMap(columnFamilyDaosMap) //
-				.entityDaosMap(entityDaosMap) //
+				.entity(entity)
+				.thriftImmediateFlushContext(thriftImmediateFlushContext)
+				.entityDao(entityDao)
+				.columnFamilyDao(columnFamilyDao)
+				.columnFamilyDaosMap(columnFamilyDaosMap)
+				.entityDaosMap(entityDaosMap)
 				.build();
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_batch_persist_serialVersionUID() throws Exception
 	{
@@ -155,8 +150,9 @@ public class ThriftPersisterImplTest
 
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity) //
-				.thriftImmediateFlushContext(thriftImmediateFlushContext).entityDao(entityDao) //
+				.entity(entity)
+				.thriftImmediateFlushContext(thriftImmediateFlushContext)
+				.entityDao(entityDao)
 				.build();
 
 		thriftPersister.batchPersistVersionSerialUID(context);
@@ -189,9 +185,9 @@ public class ThriftPersisterImplTest
 	{
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("name") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
 				.build();
 
 		Composite comp = new Composite();
@@ -210,9 +206,9 @@ public class ThriftPersisterImplTest
 	public void should_batch_list_property() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("friends") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("friends")
+				.accessors()
 				.build();
 
 		Composite comp1 = new Composite();
@@ -232,9 +228,9 @@ public class ThriftPersisterImplTest
 	public void should_batch_set_property() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("followers") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("followers")
+				.accessors()
 				.build();
 
 		Composite comp1 = new Composite();
@@ -257,10 +253,10 @@ public class ThriftPersisterImplTest
 	public void should_batch_map_property() throws Exception
 	{
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, String.class) //
-				.field("preferences") //
-				.type(MAP) //
-				.accesors() //
+				.completeBean(Integer.class, String.class)
+				.field("preferences")
+				.type(MAP)
+				.accessors()
 				.build();
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
@@ -300,31 +296,26 @@ public class ThriftPersisterImplTest
 		assertThat(holder3.getValue()).isEqualTo("75014");
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Test
 	public void should_batch_persist_join_entity() throws Exception
 	{
 		Long joinId = 154654L;
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId")//
-				.type(SIMPLE) //
-				.accesors() //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.type(SIMPLE)
+				.accessors()
 				.build();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class) //
-				.field("user") //
-				.type(JOIN_SIMPLE) //
-				.joinMeta(joinMeta)//
-				.accesors() //
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.type(JOIN_SIMPLE)
+				.joinMeta(joinMeta)
+				.accessors()
 				.build();
 
 		UserBean user = new UserBean();
@@ -347,29 +338,24 @@ public class ThriftPersisterImplTest
 		assertThat(contextCaptor.getValue().getEntity()).isSameAs(user);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_batch_persist_join_collection() throws Exception
 	{
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId")//
-				.type(SIMPLE) //
-				.accesors() //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.type(SIMPLE)
+				.accessors()
 				.build();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class) //
-				.field("user") //
-				.joinMeta(joinMeta)//
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.joinMeta(joinMeta)
 				.build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
@@ -406,28 +392,23 @@ public class ThriftPersisterImplTest
 
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_batch_persist_join_map() throws Exception
 	{
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId")//
-				.type(SIMPLE) //
-				.accesors() //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.type(SIMPLE)
+				.accessors()
 				.build();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, UserBean.class) //
-				.joinMeta(joinMeta)//
+				.completeBean(Integer.class, UserBean.class)
+				.joinMeta(joinMeta)
 				.build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
@@ -468,7 +449,6 @@ public class ThriftPersisterImplTest
 		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_remove_wide_row() throws Exception
 	{
@@ -478,57 +458,52 @@ public class ThriftPersisterImplTest
 		verify(columnFamilyDao).removeRowBatch(entity.getId(), mutator);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Test
 	public void should_remove_entity_having_external_wide_map() throws Exception
 	{
 		when(entityMeta.isWideRow()).thenReturn(false);
 		PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(UUID.class, String.class) //
-				.field("geoPositions")//
-				.type(PropertyType.WIDE_MAP) //
-				.externalCf("external_cf") //
-				.idSerializer(SerializerUtils.LONG_SRZ) //
-				.accesors() //
+				.completeBean(UUID.class, String.class)
+				.field("geoPositions")
+				.type(PropertyType.WIDE_MAP)
+				.externalCf("external_cf")
+				.idClass(Long.class)
+				.accessors()
 				.build();
 
 		Map<String, PropertyMeta<UUID, String>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when((ThriftGenericWideRowDao<Long, String>) columnFamilyDaosMap.get("external_cf")).thenReturn(
-				columnFamilyDao);
-		when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf"))
-				.thenReturn(cfMutator);
+		when(columnFamilyDaosMap.get("external_cf")).thenReturn(columnFamilyDao);
+		when((Mutator) thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(
+				cfMutator);
 
 		thriftPersister.remove(context);
 		verify(entityDao).removeRowBatch(entity.getId(), mutator);
 		verify(columnFamilyDao).removeRowBatch(entity.getId(), cfMutator);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_remove_entity_having_simple_counter() throws Exception
 	{
 		String fqcn = CompleteBean.class.getCanonicalName();
 
 		PropertyMeta<Void, Long> counterIdMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
 				.build();
+
 		PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Counter.class) //
-				.field("count") //
-				.type(PropertyType.COUNTER) //
-				.accesors() //
-				.counterIdMeta(counterIdMeta) //
-				.fqcn(fqcn) //
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
+				.completeBean(Void.class, Counter.class)
+				.field("count")
+				.type(PropertyType.COUNTER)
+				.accessors()
+				.counterIdMeta(counterIdMeta)
+				.fqcn(fqcn)
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
 				.build();
+
 		when(entityMeta.isWideRow()).thenReturn(false);
 		Map<String, PropertyMeta<Void, Counter>> propertyMetas = ImmutableMap.of("geoPositions",
 				propertyMeta);
@@ -554,18 +529,28 @@ public class ThriftPersisterImplTest
 		String fqcn = CompleteBean.class.getCanonicalName();
 
 		PropertyMeta<Void, Long> counterIdMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
+				.completeBean(Void.class, Long.class)
+				//
+				.field("id")
+				//
+				.accessors()
+				//
 				.build();
 		PropertyMeta<String, Counter> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(String.class, Counter.class) //
-				.field("popularTopics") //
-				.type(PropertyType.COUNTER_WIDE_MAP) //
-				.accesors() //
-				.counterIdMeta(counterIdMeta) //
-				.fqcn(fqcn) //
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
+				.completeBean(String.class, Counter.class)
+				//
+				.field("popularTopics")
+				//
+				.type(PropertyType.COUNTER_WIDE_MAP)
+				//
+				.accessors()
+				//
+				.counterIdMeta(counterIdMeta)
+				//
+				.fqcn(fqcn)
+				//
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
+				//
 				.build();
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -588,10 +573,14 @@ public class ThriftPersisterImplTest
 	public void should_batch_remove_property() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("name") //
-				.type(PropertyType.SIMPLE) //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				//
+				.field("name")
+				//
+				.type(PropertyType.SIMPLE)
+				//
+				.accessors()
+				//
 				.build();
 
 		Composite start = new Composite(), end = new Composite();

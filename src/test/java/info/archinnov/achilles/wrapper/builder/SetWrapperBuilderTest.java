@@ -39,7 +39,7 @@ public class SetWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
@@ -54,12 +54,12 @@ public class SetWrapperBuilderTest
 	public void should_build() throws Exception
 	{
 		Set<String> target = new HashSet<String>();
-		SetWrapper<Long, String> wrapper = SetWrapperBuilder //
-				.builder(context, target) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		SetWrapper<String> wrapper = SetWrapperBuilder //
+				.builder(context, target)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(target);

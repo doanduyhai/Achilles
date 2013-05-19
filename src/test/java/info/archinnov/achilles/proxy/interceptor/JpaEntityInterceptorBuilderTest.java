@@ -6,8 +6,8 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.WideRowBean;
 import mapping.entity.CompleteBean;
+import mapping.entity.WideRowBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,13 +40,13 @@ import org.powermock.reflect.Whitebox;
 public class JpaEntityInterceptorBuilderTest
 {
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao dao;
 
 	@Mock
-	private ThriftGenericWideRowDao<Long, String> columnFamilyDao;
+	private ThriftGenericWideRowDao columnFamilyDao;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -63,7 +63,7 @@ public class JpaEntityInterceptorBuilderTest
 	@Mock
 	private Set<Method> lazyLoaded;
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -72,7 +72,7 @@ public class JpaEntityInterceptorBuilderTest
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -80,10 +80,10 @@ public class JpaEntityInterceptorBuilderTest
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
-				.entity(entity) //
-				.entityDao(entityDao) //
-				.columnFamilyDao(columnFamilyDao) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity)
+				.entityDao(entityDao)
+				.columnFamilyDao(columnFamilyDao)
 				.build();
 	}
 
@@ -92,7 +92,7 @@ public class JpaEntityInterceptorBuilderTest
 	{
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 
 		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
 		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
@@ -100,7 +100,7 @@ public class JpaEntityInterceptorBuilderTest
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = JpaEntityInterceptorBuilder.builder(
+		JpaEntityInterceptor<CompleteBean> interceptor = JpaEntityInterceptorBuilder.builder(
 				context, entity).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
@@ -137,11 +137,11 @@ public class JpaEntityInterceptorBuilderTest
 		idMeta.setGetter(idGetter);
 		idMeta.setSetter(idSetter);
 
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.isWideRow()).thenReturn(true);
 
-		JpaEntityInterceptor<Long, WideRowBean> interceptor = JpaEntityInterceptorBuilder
-				.builder(context, bean).build();
+		JpaEntityInterceptor<WideRowBean> interceptor = JpaEntityInterceptorBuilder.builder(
+				context, bean).build();
 
 		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
 		assertThat(interceptor.getTarget()).isEqualTo(bean);

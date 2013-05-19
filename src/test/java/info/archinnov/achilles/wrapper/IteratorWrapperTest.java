@@ -48,7 +48,7 @@ public class IteratorWrapperTest
 		list.add(1);
 		list.add(2);
 
-		IteratorWrapper<Long, Integer> wrapper = new IteratorWrapper<Long, Integer>(list.iterator());
+		IteratorWrapper<Integer> wrapper = new IteratorWrapper<Integer>(list.iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

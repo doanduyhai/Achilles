@@ -46,10 +46,10 @@ public class ThriftJoinEntityHelperTest
 	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao dao;
 
 	@Mock
-	private EntityMeta<Long> joinMeta;
+	private EntityMeta joinMeta;
 
 	@Mock
 	private PropertyMeta<Void, Long> joinIdMeta;
@@ -81,7 +81,7 @@ public class ThriftJoinEntityHelperTest
 
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
-		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
+		when((PropertyMeta<Void, Long>) joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
 		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta,

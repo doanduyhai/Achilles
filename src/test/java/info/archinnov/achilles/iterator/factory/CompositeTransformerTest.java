@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.PropertyHelper;
+import info.archinnov.achilles.entity.ThriftPropertyHelper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -50,16 +50,16 @@ public class CompositeTransformerTest
 	private CompositeTransformer transformer;
 
 	@Mock
-	private PropertyHelper helper;
+	private ThriftPropertyHelper helper;
 
 	@Mock
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
-	private ThriftPersistenceContext<Long> joinContext;
+	private ThriftPersistenceContext joinContext;
 
 	@Before
 	public void setUp()
@@ -67,7 +67,6 @@ public class CompositeTransformerTest
 		Whitebox.setInternalState(transformer, "helper", helper);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_single_key_transformer() throws Exception
 	{
@@ -77,9 +76,12 @@ public class CompositeTransformerTest
 		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
-				.noClass(Integer.class, String.class)//
-				.type(WIDE_MAP)//
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))//
+				.noClass(Integer.class, String.class)
+				//
+				.type(WIDE_MAP)
+				//
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+				//
 				.build();
 
 		List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
@@ -88,7 +90,6 @@ public class CompositeTransformerTest
 		assertThat(keys).containsExactly(45, 51);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_multi_key_transformer() throws Exception
 	{
@@ -113,7 +114,6 @@ public class CompositeTransformerTest
 		assertThat(keys).containsExactly(multiKey1, multiKey2);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_value_transformer() throws Exception
 	{
@@ -123,7 +123,9 @@ public class CompositeTransformerTest
 		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, String.class).type(WIDE_MAP).build();
+				.noClass(Integer.class, String.class)
+				.type(WIDE_MAP)
+				.build();
 
 		List<String> values = Lists.transform(Arrays.asList(hCol1, hCol2),
 				transformer.buildValueTransformer(propertyMeta));
@@ -149,12 +151,12 @@ public class CompositeTransformerTest
 	@Test
 	public void should_build_join_value_from_composite() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class) //
-				.field("user") //
-				.joinMeta(joinMeta) //
-				.type(PropertyType.JOIN_SIMPLE) //
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.joinMeta(joinMeta)
+				.type(PropertyType.JOIN_SIMPLE)
 				.build();
 
 		UserBean user = new UserBean();
@@ -168,7 +170,6 @@ public class CompositeTransformerTest
 		assertThat(actual).isSameAs(user);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_ttl_transformer() throws Exception
 	{
@@ -183,7 +184,6 @@ public class CompositeTransformerTest
 		assertThat(rawValues).containsExactly(12, 13);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_key_value_transformer() throws Exception
 	{
@@ -193,9 +193,9 @@ public class CompositeTransformerTest
 		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
 		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, String.class) //
-				.type(WIDE_MAP)//
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))//
+				.noClass(Integer.class, String.class)
+				.type(WIDE_MAP)
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
 				.build();
 
 		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),

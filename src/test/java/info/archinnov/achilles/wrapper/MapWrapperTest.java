@@ -51,10 +51,10 @@ public class MapWrapperTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
-	private ThriftPersistenceContext<Long> joinContext;
+	private ThriftPersistenceContext joinContext;
 
 	@Before
 	public void setUp() throws Exception
@@ -67,23 +67,22 @@ public class MapWrapperTest
 	public void should_get_value() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		assertThat(wrapper.get(1)).isEqualTo("FR");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_join_value() throws Exception
 	{
 		Map<Integer, UserBean> target = new HashMap<Integer, UserBean>();
 		UserBean bean = new UserBean();
 		target.put(1, bean);
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 
-		MapWrapper<Long, Integer, UserBean> wrapper = prepareJoinMapWrapper(target);
+		MapWrapper<Integer, UserBean> wrapper = prepareJoinMapWrapper(target);
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
-		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(joinMeta);
+		when(joinPropertyMeta.joinMeta()).thenReturn(joinMeta);
 		when(context.newPersistenceContext(joinMeta, bean)).thenReturn(joinContext);
 		when(proxifier.buildProxy(bean, joinContext)).thenReturn(bean);
 		assertThat(wrapper.get(1)).isSameAs(bean);
@@ -93,7 +92,7 @@ public class MapWrapperTest
 	public void should_contain_key() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		assertThat(wrapper.containsKey(1)).isTrue();
 	}
@@ -102,7 +101,7 @@ public class MapWrapperTest
 	public void should_contain_value() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		when(proxifier.unproxy("FR")).thenReturn("FR");
 		assertThat(wrapper.containsValue("FR")).isTrue();
@@ -112,7 +111,7 @@ public class MapWrapperTest
 	public void should_not_be_empty_and_get_size() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		assertThat(wrapper.isEmpty()).isFalse();
 		assertThat(wrapper.size()).isEqualTo(3);
@@ -123,7 +122,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_when_clear_on_full_map() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		wrapper.clear();
 
@@ -137,7 +136,7 @@ public class MapWrapperTest
 	{
 		Map<Integer, String> target = prepareMap();
 		target.clear();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		wrapper.clear();
 
@@ -148,7 +147,7 @@ public class MapWrapperTest
 	public void should_exception_on_add_new_entry_in_entrySet() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
@@ -160,7 +159,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_remove_from_entrySet() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
@@ -175,7 +174,7 @@ public class MapWrapperTest
 	public void should_not_mark_dirty_on_remove_non_existing_from_entrySet() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
@@ -189,7 +188,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_set_value_from_entry() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
@@ -202,7 +201,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_remove_from_keySet() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Integer> keySet = wrapper.keySet();
 		when(proxifier.unproxy(1)).thenReturn(1);
@@ -215,7 +214,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_remove_from_keySet_iterator() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Iterator<Integer> keyIterator = wrapper.keySet().iterator();
 		keyIterator.next();
@@ -228,7 +227,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_put() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		wrapper.put(4, "sdfs");
 
@@ -239,7 +238,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_put_all() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
@@ -254,7 +253,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_remove_existing() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 		when(proxifier.unproxy(1)).thenReturn(1);
 		wrapper.remove(1);
 
@@ -265,7 +264,7 @@ public class MapWrapperTest
 	public void should_not_mark_dirty_on_remove_non_existing() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		wrapper.remove(10);
 
@@ -276,7 +275,7 @@ public class MapWrapperTest
 	public void should_mark_dirty_on_collection_remove() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Collection<String> collectionWrapper = wrapper.values();
 		when(proxifier.unproxy("FR")).thenReturn("FR");
@@ -288,7 +287,7 @@ public class MapWrapperTest
 	public void should_not_mark_dirty_on_collection_remove_non_existing() throws Exception
 	{
 		Map<Integer, String> target = prepareMap();
-		MapWrapper<Long, Integer, String> wrapper = prepareMapWrapper(target);
+		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Collection<String> collectionWrapper = wrapper.values();
 
@@ -307,10 +306,9 @@ public class MapWrapperTest
 		return map;
 	}
 
-	private MapWrapper<Long, Integer, UserBean> prepareJoinMapWrapper(Map<Integer, UserBean> target)
+	private MapWrapper<Integer, UserBean> prepareJoinMapWrapper(Map<Integer, UserBean> target)
 	{
-		MapWrapper<Long, Integer, UserBean> wrapper = new MapWrapper<Long, Integer, UserBean>(
-				target);
+		MapWrapper<Integer, UserBean> wrapper = new MapWrapper<Integer, UserBean>(target);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(joinPropertyMeta);
@@ -319,9 +317,9 @@ public class MapWrapperTest
 		return wrapper;
 	}
 
-	private MapWrapper<Long, Integer, String> prepareMapWrapper(Map<Integer, String> target)
+	private MapWrapper<Integer, String> prepareMapWrapper(Map<Integer, String> target)
 	{
-		MapWrapper<Long, Integer, String> wrapper = new MapWrapper<Long, Integer, String>(target);
+		MapWrapper<Integer, String> wrapper = new MapWrapper<Integer, String>(target);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

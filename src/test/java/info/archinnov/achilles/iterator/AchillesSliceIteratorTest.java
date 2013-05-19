@@ -1,7 +1,7 @@
 package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import mapping.entity.UserBean;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -64,11 +63,6 @@ public class AchillesSliceIteratorTest
 
 	private String columnFamily = "cf";
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Before
 	public void setUp()
 	{
@@ -77,7 +71,6 @@ public class AchillesSliceIteratorTest
 		when(columnSlice.getColumns()).thenReturn(hColumns);
 		when(hColumns.iterator()).thenReturn(columnsIterator);
 		when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
-		when(propertyMeta.getValueSerializer()).thenReturn((Serializer) OBJECT_SRZ);
 
 	}
 

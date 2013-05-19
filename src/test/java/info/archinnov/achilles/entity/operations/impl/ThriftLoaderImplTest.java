@@ -10,9 +10,9 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
+import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -69,10 +69,10 @@ public class ThriftLoaderImplTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
@@ -87,7 +87,7 @@ public class ThriftLoaderImplTest
 	ArgumentCaptor<CompleteBean> beanCaptor;
 
 	@Captor
-	ArgumentCaptor<ThriftPersistenceContext<Long>> contextCaptor;
+	ArgumentCaptor<ThriftPersistenceContext> contextCaptor;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -95,22 +95,22 @@ public class ThriftLoaderImplTest
 
 	private PropertyMeta<Void, Long> idMeta;
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Throwable
 	{
 		idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
 				.build();
 
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity) //
-				.thriftImmediateFlushContext(thriftImmediateFlushContext) //
-				.entityDao(entityDao) //
+				.entity(entity)
+				.thriftImmediateFlushContext(thriftImmediateFlushContext)
+				.entityDao(entityDao)
 				.build();
 	}
 
@@ -123,9 +123,9 @@ public class ThriftLoaderImplTest
 		values.add(new Pair<Composite, String>(comp, "value"));
 
 		when(entityDao.eagerFetchEntity(entity.getId())).thenReturn(values);
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean actual = loaderImpl.load(context);
+		CompleteBean actual = loaderImpl.load(context, CompleteBean.class);
 
 		verify(mapper).setEagerPropertiesToEntity(eq(entity.getId()), eq(values), eq(entityMeta),
 				beanCaptor.capture());
@@ -148,9 +148,9 @@ public class ThriftLoaderImplTest
 	{
 
 		PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("name") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
 				.build();
 
 		Composite comp = new Composite();
@@ -165,15 +165,15 @@ public class ThriftLoaderImplTest
 	public void should_load_list() throws Exception
 	{
 		PropertyMeta<Void, String> listMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("friends") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("friends")
+				.accessors()
 				.build();
 
 		Composite start = new Composite(), end = new Composite();
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
-		columns.add(new Pair<Composite, String>(start, "foo"));
-		columns.add(new Pair<Composite, String>(end, "bar"));
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		columns.add(new Pair<Composite, Object>(start, "foo"));
+		columns.add(new Pair<Composite, Object>(end, "bar"));
 
 		when(compositeFactory.createBaseForQuery(listMeta, EQUAL)).thenReturn(start);
 		when(compositeFactory.createBaseForQuery(listMeta, GREATER_THAN_EQUAL)).thenReturn(end);
@@ -188,15 +188,15 @@ public class ThriftLoaderImplTest
 	public void should_load_set() throws Exception
 	{
 		PropertyMeta<Void, String> setMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class) //
-				.field("followers") //
-				.accesors() //
+				.completeBean(Void.class, String.class)
+				.field("followers")
+				.accessors()
 				.build();
 
 		Composite start = new Composite(), end = new Composite();
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
-		columns.add(new Pair<Composite, String>(start, "John"));
-		columns.add(new Pair<Composite, String>(end, "Helen"));
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
+		columns.add(new Pair<Composite, Object>(start, "John"));
+		columns.add(new Pair<Composite, Object>(end, "Helen"));
 
 		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
 		when(compositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL)).thenReturn(end);
@@ -211,22 +211,22 @@ public class ThriftLoaderImplTest
 	public void should_load_map() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> setMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, UserBean.class) //
-				.field("usersMap") //
-				.type(PropertyType.MAP) //
-				.accesors() //
+				.completeBean(Integer.class, UserBean.class)
+				.field("usersMap")
+				.type(PropertyType.MAP)
+				.accessors()
 				.build();
 
 		Composite start = new Composite(), end = new Composite();
-		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setName("user1");
 		user2.setName("user2");
 
-		columns.add(new Pair<Composite, String>(start,
+		columns.add(new Pair<Composite, Object>(start,
 				writeToString(new KeyValue<Integer, UserBean>(1, user1))));
-		columns.add(new Pair<Composite, String>(end, writeToString(new KeyValue<Integer, UserBean>(
+		columns.add(new Pair<Composite, Object>(end, writeToString(new KeyValue<Integer, UserBean>(
 				2, user2))));
 
 		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
@@ -244,22 +244,22 @@ public class ThriftLoaderImplTest
 	public void should_load_join_simple() throws Exception
 	{
 		String stringJoinId = RandomUtils.nextLong() + "";
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(idMeta);
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, UserBean.class) //
-				.field("user") //
-				.joinMeta(joinMeta) //
-				.type(PropertyType.JOIN_SIMPLE) //
-				.accesors() //
+				.completeBean(Integer.class, UserBean.class)
+				.field("user")
+				.joinMeta(joinMeta)
+				.type(PropertyType.JOIN_SIMPLE)
+				.accessors()
 				.build();
 
 		UserBean user = new UserBean();
 		Composite comp = new Composite();
 		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn(stringJoinId);
-		when(loader.load(contextCaptor.capture())).thenReturn(user);
+		when(loader.load(contextCaptor.capture(), eq(UserBean.class))).thenReturn(user);
 
 		UserBean actual = loaderImpl.loadJoinSimple(context, propertyMeta, loader);
 		assertThat(actual).isSameAs(user);
@@ -270,15 +270,15 @@ public class ThriftLoaderImplTest
 	@Test
 	public void should_return_null_when_no_join_entity() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(idMeta);
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, UserBean.class) //
-				.field("user") //
-				.joinMeta(joinMeta) //
-				.type(PropertyType.JOIN_SIMPLE) //
-				.accesors() //
+				.completeBean(Integer.class, UserBean.class)
+				.field("user")
+				.joinMeta(joinMeta)
+				.type(PropertyType.JOIN_SIMPLE)
+				.accessors()
 				.build();
 
 		Composite comp = new Composite();

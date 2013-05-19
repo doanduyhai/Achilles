@@ -6,13 +6,14 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -61,11 +62,11 @@ public class CollectionWrapperTest
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -76,17 +77,17 @@ public class CollectionWrapperTest
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.type(PropertyType.SIMPLE) //
-				.accesors() //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
+				.accessors()
 				.build();
 
-		entityMeta = new EntityMeta<Long>();
+		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
-				.entity(entity) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity)
 				.build();
 	}
 
@@ -94,7 +95,7 @@ public class CollectionWrapperTest
 	public void should_mark_dirty_on_element_add() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		when(proxifier.unproxy("a")).thenReturn("a");
 		wrapper.add("a");
 
@@ -108,7 +109,7 @@ public class CollectionWrapperTest
 	public void should_not_mark_dirty_on_element_add() throws Exception
 	{
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		when(proxifier.unproxy("a")).thenReturn("a");
 		when(dirtyMap.containsKey(setter)).thenReturn(true);
 		wrapper.add("a");
@@ -121,8 +122,8 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new AchillesEntityProxifier());
+		ListWrapper<String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new ThriftEntityProxifier());
 
 		wrapper.addAll(Arrays.asList("a", "b"));
 
@@ -138,7 +139,7 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.addAll(new ArrayList<String>());
 
 		assertThat(target).hasSize(0);
@@ -152,7 +153,7 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.clear();
 
 		assertThat(target).hasSize(0);
@@ -165,7 +166,7 @@ public class CollectionWrapperTest
 	{
 
 		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.clear();
 
 		assertThat(target).hasSize(0);
@@ -176,7 +177,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_true_on_contains() throws Exception
 	{
-		ListWrapper<Long, String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
+		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
 		when(proxifier.unproxy("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
@@ -184,7 +185,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_true_on_contains_all() throws Exception
 	{
-		ListWrapper<Long, String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
+		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
 
 		List<String> check = Arrays.asList("a", "c");
 		when(proxifier.unproxy(check)).thenReturn(check);
@@ -194,7 +195,7 @@ public class CollectionWrapperTest
 	@Test
 	public void should_return_true_on_empty_target() throws Exception
 	{
-		ListWrapper<Long, String> wrapper = prepareListWrapper(new ArrayList<String>());
+		ListWrapper<String> wrapper = prepareListWrapper(new ArrayList<String>());
 		assertThat(wrapper.isEmpty()).isTrue();
 	}
 
@@ -204,7 +205,7 @@ public class CollectionWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		when(proxifier.unproxy("a")).thenReturn("a");
 		wrapper.remove("a");
 
@@ -221,7 +222,7 @@ public class CollectionWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.remove("c");
 
 		assertThat(target).hasSize(2);
@@ -239,8 +240,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new AchillesEntityProxifier());
+		ListWrapper<String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new ThriftEntityProxifier());
 		wrapper.removeAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(1);
@@ -257,7 +258,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.removeAll(Arrays.asList("d", "e"));
 
 		assertThat(target).hasSize(3);
@@ -276,8 +277,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new AchillesEntityProxifier());
+		ListWrapper<String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new ThriftEntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "c"));
 
 		assertThat(target).hasSize(2);
@@ -295,8 +296,8 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new AchillesEntityProxifier());
+		ListWrapper<String> wrapper = prepareListWrapper(target);
+		wrapper.setProxifier(new ThriftEntityProxifier());
 		wrapper.retainAll(Arrays.asList("a", "b", "c"));
 
 		assertThat(target).hasSize(3);
@@ -314,7 +315,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 
 		Iterator<String> iteratorWrapper = wrapper.iterator();
 
@@ -333,11 +334,10 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 		assertThat(wrapper.size()).isEqualTo(3);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_for_join() throws Exception
 	{
@@ -349,13 +349,16 @@ public class CollectionWrapperTest
 		target.add(bean1);
 		target.add(bean2);
 		target.add(bean3);
-		ListWrapper<Long, CompleteBean> wrapper = prepareJoinListWrapper(target);
+		ListWrapper<CompleteBean> wrapper = prepareJoinListWrapper(target);
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class))).thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class))).thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class))).thenReturn(bean3);
+		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 	}
@@ -367,13 +370,12 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_with_argument_for_join() throws Exception
 	{
@@ -385,13 +387,16 @@ public class CollectionWrapperTest
 		target.add(bean1);
 		target.add(bean2);
 		target.add(bean3);
-		ListWrapper<Long, CompleteBean> wrapper = prepareJoinListWrapper(target);
+		ListWrapper<CompleteBean> wrapper = prepareJoinListWrapper(target);
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class))).thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class))).thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class))).thenReturn(bean3);
+		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean1);
+		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean2);
+		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class)))
+				.thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 
@@ -409,7 +414,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		target.add("c");
-		ListWrapper<Long, String> wrapper = prepareListWrapper(target);
+		ListWrapper<String> wrapper = prepareListWrapper(target);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 		assertThat(wrapper.toArray(new String[]
@@ -424,13 +429,13 @@ public class CollectionWrapperTest
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
-		CollectionWrapper<Long, String> wrapper = new CollectionWrapper<Long, String>(target);
+		CollectionWrapper<String> wrapper = new CollectionWrapper<String>(target);
 		assertThat(wrapper.getTarget()).isSameAs(target);
 	}
 
-	private ListWrapper<Long, String> prepareListWrapper(List<String> target)
+	private ListWrapper<String> prepareListWrapper(List<String> target)
 	{
-		ListWrapper<Long, String> wrapper = new ListWrapper<Long, String>(target);
+		ListWrapper<String> wrapper = new ListWrapper<String>(target);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
@@ -439,9 +444,9 @@ public class CollectionWrapperTest
 		return wrapper;
 	}
 
-	private ListWrapper<Long, CompleteBean> prepareJoinListWrapper(List<CompleteBean> target)
+	private ListWrapper<CompleteBean> prepareJoinListWrapper(List<CompleteBean> target)
 	{
-		ListWrapper<Long, CompleteBean> wrapper = new ListWrapper<Long, CompleteBean>(target);
+		ListWrapper<CompleteBean> wrapper = new ListWrapper<CompleteBean>(target);
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(joinPropertyMeta);

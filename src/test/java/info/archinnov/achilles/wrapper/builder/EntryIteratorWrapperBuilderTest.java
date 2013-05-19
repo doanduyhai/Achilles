@@ -43,7 +43,7 @@ public class EntryIteratorWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception
@@ -60,12 +60,12 @@ public class EntryIteratorWrapperBuilderTest
 		map.put(3, "75014");
 
 		Iterator<Entry<Integer, String>> target = map.entrySet().iterator();
-		EntryIteratorWrapper<Long, Integer, String> wrapper = EntryIteratorWrapperBuilder
-				.builder(context, target) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		EntryIteratorWrapper<Integer, String> wrapper = EntryIteratorWrapperBuilder
+				.builder(context, target)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);

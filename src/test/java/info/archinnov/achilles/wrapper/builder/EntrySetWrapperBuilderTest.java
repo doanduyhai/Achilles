@@ -41,7 +41,7 @@ public class EntrySetWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception
@@ -58,12 +58,12 @@ public class EntrySetWrapperBuilderTest
 		target.put(2, "Paris");
 		target.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = EntrySetWrapperBuilder
-				.builder(context, target.entrySet()) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		EntrySetWrapper<Integer, String> wrapper = EntrySetWrapperBuilder
+				.builder(context, target.entrySet())
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);

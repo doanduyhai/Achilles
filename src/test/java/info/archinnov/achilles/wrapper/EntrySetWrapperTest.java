@@ -6,8 +6,8 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -65,11 +65,11 @@ public class EntrySetWrapperTest
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -79,17 +79,17 @@ public class EntrySetWrapperTest
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 
 		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.type(PropertyType.SIMPLE) //
-				.accesors() //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
+				.accessors()
 				.build();
 
-		entityMeta = new EntityMeta<Long>();
+		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
 		context = PersistenceContextTestBuilder //
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()) //
-				.entity(entity) //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity)
 				.build();
 	}
 
@@ -101,7 +101,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.clear();
 
@@ -116,7 +116,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
 		when(proxifier.unproxy(any())).thenReturn(entry);
 
@@ -132,7 +132,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
 
 		Entry<Integer, String> entry1 = iterator.next();
@@ -147,7 +147,7 @@ public class EntrySetWrapperTest
 	@Test
 	public void should_return_true_on_isEmpty() throws Exception
 	{
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(new HashMap<Integer, String>());
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(new HashMap<Integer, String>());
 		assertThat(wrapper.isEmpty()).isTrue();
 	}
 
@@ -159,7 +159,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		assertThat(wrapper.iterator()).isNotNull();
 	}
@@ -172,7 +172,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
 		when(proxifier.unproxy(any())).thenReturn(entry);
 		wrapper.remove(entry);
@@ -188,7 +188,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		wrapper.remove(entry);
 
@@ -203,7 +203,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		Iterator<Entry<Integer, String>> iterator = map.entrySet().iterator();
 
@@ -229,7 +229,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(5, "csdf");
@@ -255,7 +255,7 @@ public class EntrySetWrapperTest
 
 		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -271,7 +271,7 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "FR");
 		List<Entry<Integer, String>> list = Arrays.asList(entry1);
 		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);
 
@@ -283,7 +283,7 @@ public class EntrySetWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		assertThat(wrapper.size()).isEqualTo(1);
 	}
 
@@ -293,7 +293,7 @@ public class EntrySetWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.SET);
 
 		Object[] array = wrapper.toArray();
@@ -308,7 +308,7 @@ public class EntrySetWrapperTest
 	{
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
 		Object[] array = wrapper.toArray();
@@ -325,7 +325,7 @@ public class EntrySetWrapperTest
 		map.put(1, "FR");
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		when(propertyMeta.type()).thenReturn(PropertyType.SET);
 
 		Object[] array = wrapper.toArray(new Entry[]
@@ -337,7 +337,6 @@ public class EntrySetWrapperTest
 		assertThat(((Entry<Integer, String>) array[0]).getValue()).isEqualTo("FR");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_with_argument_when_join_entity() throws Exception
 	{
@@ -345,11 +344,12 @@ public class EntrySetWrapperTest
 		map.put(1, entity);
 		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
 
-		EntrySetWrapper<Long, Integer, CompleteBean> wrapper = prepareJoinWrapper(map);
+		EntrySetWrapper<Integer, CompleteBean> wrapper = prepareJoinWrapper(map);
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
-		when((EntityMeta<Long>) joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(entity);
+		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
+		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(
+				entity);
 
 		Object[] array = wrapper.toArray(new Entry[]
 		{
@@ -368,7 +368,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 
@@ -384,7 +384,7 @@ public class EntrySetWrapperTest
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntrySetWrapper<Long, Integer, String> wrapper = prepareWrapper(map);
+		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
 		Map.Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(5, "csdf");
@@ -392,9 +392,9 @@ public class EntrySetWrapperTest
 		wrapper.addAll(Arrays.asList(entry1, entry2));
 	}
 
-	private EntrySetWrapper<Long, Integer, String> prepareWrapper(Map<Integer, String> map)
+	private EntrySetWrapper<Integer, String> prepareWrapper(Map<Integer, String> map)
 	{
-		EntrySetWrapper<Long, Integer, String> wrapper = new EntrySetWrapper<Long, Integer, String>(
+		EntrySetWrapper<Integer, String> wrapper = new EntrySetWrapper<Integer, String>(
 				map.entrySet());
 		wrapper.setContext(context);
 		wrapper.setDirtyMap(dirtyMap);
@@ -404,10 +404,9 @@ public class EntrySetWrapperTest
 		return wrapper;
 	}
 
-	private EntrySetWrapper<Long, Integer, CompleteBean> prepareJoinWrapper(
-			Map<Integer, CompleteBean> map)
+	private EntrySetWrapper<Integer, CompleteBean> prepareJoinWrapper(Map<Integer, CompleteBean> map)
 	{
-		EntrySetWrapper<Long, Integer, CompleteBean> wrapper = new EntrySetWrapper<Long, Integer, CompleteBean>(
+		EntrySetWrapper<Integer, CompleteBean> wrapper = new EntrySetWrapper<Integer, CompleteBean>(
 				map.entrySet());
 		wrapper.setContext(context);
 		wrapper.setDirtyMap(dirtyMap);

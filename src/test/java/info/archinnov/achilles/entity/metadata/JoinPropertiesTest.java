@@ -18,7 +18,7 @@ public class JoinPropertiesTest
 	@Test
 	public void should_to_string() throws Exception
 	{
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
+		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClassName("className");
 
 		JoinProperties props = new JoinProperties();
@@ -28,7 +28,8 @@ public class JoinPropertiesTest
 
 		StringBuilder toString = new StringBuilder();
 		toString.append("JoinProperties [entityMeta=className, ");
-		toString.append("cascadeTypes=[").append(StringUtils.join(props.getCascadeTypes(), ","))
+		toString.append("cascadeTypes=[")
+				.append(StringUtils.join(props.getCascadeTypes(), ","))
 				.append("]]");
 
 		assertThat(props.toString()).isEqualTo(toString.toString());

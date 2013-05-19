@@ -33,14 +33,14 @@ public class EntityMetaTestBuilder<ID>
 		return new EntityMetaTestBuilder<ID>(idMeta);
 	}
 
-	public EntityMeta<ID> build()
+	public EntityMeta build()
 	{
-		EntityMeta<ID> meta = new EntityMeta<ID>();
+		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setClassName(classname);
 		meta.setColumnFamilyName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
-		meta.setIdSerializer(idMeta.getValueSerializer());
+		meta.setIdClass(idMeta.getValueClass());
 		meta.setPropertyMetas(propertyMetas);
 		meta.setGetterMetas(getterMetas);
 		meta.setWideRow(columnFamilyDirectMapping);

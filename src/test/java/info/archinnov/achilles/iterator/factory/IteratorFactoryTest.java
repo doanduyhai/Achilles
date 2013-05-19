@@ -41,10 +41,10 @@ public class IteratorFactoryTest
 	private AchillesSliceIterator<?, String> columnSliceDynamicComposite;
 
 	@Mock
-	private AchillesJoinSliceIterator<Long, String, Long, Integer, UserBean> joinColumnSliceComposite;
+	private AchillesJoinSliceIterator<String, Integer, UserBean> joinColumnSliceComposite;
 
 	@Mock
-	private AchillesJoinSliceIterator<Long, String, Long, Integer, UserBean> joinColumnSliceDynamicComposite;
+	private AchillesJoinSliceIterator<String, Integer, UserBean> joinColumnSliceDynamicComposite;
 
 	@Mock
 	private AbstractAchillesSliceIterator<HCounterColumn<Composite>> counterSliceIterator;
@@ -65,7 +65,7 @@ public class IteratorFactoryTest
 	private PropertyMeta<Integer, Counter> counterWideMapMeta;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Test
 	public void should_create_composite_key_value_iterator() throws Exception

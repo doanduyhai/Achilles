@@ -21,7 +21,7 @@ public class SetWrapperTest
 	{
 		Set<String> target = new HashSet<String>();
 
-		SetWrapper<Long, String> setWrapper = new SetWrapper<Long, String>(target);
+		SetWrapper<String> setWrapper = new SetWrapper<String>(target);
 		assertThat(setWrapper.getTarget()).isSameAs(target);
 	}
 

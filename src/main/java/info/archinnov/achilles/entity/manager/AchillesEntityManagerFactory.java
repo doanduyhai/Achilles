@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.columnFamily.AchillesColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.AchillesTableCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
@@ -39,7 +39,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-	protected AchillesColumnFamilyCreator columnFamilyCreator;
+	protected AchillesTableCreator columnFamilyCreator;
 	protected AchillesConfigurationContext configContext;
 	protected List<String> entityPackages;
 

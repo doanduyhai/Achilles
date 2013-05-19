@@ -3,11 +3,12 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
 import java.util.ArrayList;
@@ -38,17 +39,16 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesEntityProxifierTest
+public class ThriftEntityProxifierTest
 {
-	private AchillesEntityProxifier proxifier = new AchillesEntityProxifier();
+	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_derive_base_class() throws Exception
 	{
@@ -56,18 +56,16 @@ public class AchillesEntityProxifierTest
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = new JpaEntityInterceptor<Long, CompleteBean>();
+		JpaEntityInterceptor<CompleteBean> interceptor = new JpaEntityInterceptor<CompleteBean>();
 		interceptor.setTarget(entity);
 
 		enhancer.setCallback(interceptor);
 
 		CompleteBean proxy = (CompleteBean) enhancer.create();
-
 		assertThat((Class<CompleteBean>) proxifier.deriveBaseClass(proxy)).isEqualTo(
 				CompleteBean.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_derive_base_class_from_transient() throws Exception
 	{
@@ -95,7 +93,6 @@ public class AchillesEntityProxifierTest
 		assertThat(proxifier.isProxy(bean)).isFalse();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_proxy() throws Exception
 	{
@@ -104,11 +101,12 @@ public class AchillesEntityProxifierTest
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
 
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder
+		ThriftPersistenceContext context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, primaryKey)
-				.entityDao(mock(ThriftGenericEntityDao.class)).build();
+				.entityDao(mock(ThriftGenericEntityDao.class))
+				.build();
 
 		CompleteBean proxy = proxifier.buildProxy(entity, context);
 
@@ -121,23 +119,22 @@ public class AchillesEntityProxifierTest
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_null_proxy() throws Exception
 	{
-		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder
+		ThriftPersistenceContext context = PersistenceContextTestBuilder
 				.mockAll(entityMeta, CompleteBean.class, 11L)
-				.entityDao(mock(ThriftGenericEntityDao.class)).build();
+				.entityDao(mock(ThriftGenericEntityDao.class))
+				.build();
 
 		assertThat(proxifier.buildProxy(null, context)).isNull();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_real_object_from_proxy() throws Exception
 	{
 		UserBean realObject = new UserBean();
-		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
 		when(interceptor.getTarget()).thenReturn(realObject);
 
 		Enhancer enhancer = new Enhancer();
@@ -150,28 +147,25 @@ public class AchillesEntityProxifierTest
 		assertThat(actual).isSameAs(realObject);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_get_interceptor_from_proxy() throws Exception
 	{
-		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(UserBean.class);
 		enhancer.setCallback(interceptor);
 		UserBean proxy = (UserBean) enhancer.create();
 
-		JpaEntityInterceptor<Long, UserBean> actual = proxifier.getInterceptor(proxy);
+		AchillesJpaEntityInterceptor<UserBean> actual = proxifier.getInterceptor(proxy);
 
 		assertThat(actual).isSameAs(interceptor);
 
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
 	public void should_ensure_proxy() throws Exception
 	{
-		JpaEntityInterceptor<Long, UserBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(UserBean.class);
@@ -187,13 +181,12 @@ public class AchillesEntityProxifierTest
 		proxifier.ensureProxy(new CompleteBean());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_unproxy_entity() throws Exception
 	{
 		CompleteBean realObject = new CompleteBean();
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(CompleteBean.class);
@@ -233,12 +226,11 @@ public class AchillesEntityProxifierTest
 		assertThat(proxifier.unproxy(entry)).isSameAs(entry);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_unproxy_entryset_containing_proxy() throws Exception
 	{
 		CompleteBean realObject = new CompleteBean();
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(CompleteBean.class);
 		enhancer.setCallback(interceptor);
@@ -253,14 +245,13 @@ public class AchillesEntityProxifierTest
 		assertThat(proxifier.unproxy(entry).getValue()).isSameAs(realObject);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_unproxy_collection_of_entities() throws Exception
 	{
 		CompleteBean realObject = new CompleteBean();
 		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(CompleteBean.class);
@@ -275,14 +266,13 @@ public class AchillesEntityProxifierTest
 		assertThat(actual).containsExactly(realObject);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_unproxy_list_of_entities() throws Exception
 	{
 		CompleteBean realObject = new CompleteBean();
 		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(CompleteBean.class);
@@ -297,14 +287,13 @@ public class AchillesEntityProxifierTest
 		assertThat(actual).containsExactly(realObject);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_unproxy_set_of_entities() throws Exception
 	{
 		CompleteBean realObject = new CompleteBean();
 		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
 
-		JpaEntityInterceptor<Long, CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
+		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(CompleteBean.class);

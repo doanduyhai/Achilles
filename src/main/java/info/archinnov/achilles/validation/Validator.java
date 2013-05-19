@@ -1,8 +1,8 @@
 package info.archinnov.achilles.validation;
 
 import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -57,7 +57,7 @@ public class Validator
 	{
 		if (arg == null || arg.isEmpty())
 		{
-			throw new AchillesException("The property '" + label + "' should not be null or empty");
+			throw new AchillesException(label);
 		}
 	}
 
@@ -134,7 +134,8 @@ public class Validator
 		}
 		catch (SecurityException e)
 		{
-			throw new AchillesBeanMappingException("Cannot instantiate the class '" + canonicalName + "'");
+			throw new AchillesBeanMappingException("Cannot instantiate the class '" + canonicalName
+					+ "'");
 		}
 	}
 

@@ -1,22 +1,9 @@
 package info.archinnov.achilles.entity.metadata.factory;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.serializer.SerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.OBJECT_SRZ;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -25,8 +12,6 @@ import info.archinnov.achilles.entity.type.Pair;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
-
-import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -60,20 +45,20 @@ public class PropertyMetaFactoryTest
 	public void should_build_simple() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SIMPLE)
-				.propertyName("prop") //
-				.accessors(accessors) //
-				.objectMapper(objectMapper) //
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)) //
-				.build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(SIMPLE)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -86,17 +71,19 @@ public class PropertyMetaFactoryTest
 	public void should_build_simple_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
-				.type(LAZY_SIMPLE).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(LAZY_SIMPLE)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LAZY_SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
@@ -106,8 +93,13 @@ public class PropertyMetaFactoryTest
 	@Test
 	public void should_build_simple_with_object_as_value() throws Exception
 	{
-		PropertyMeta<Void, Bean> built = PropertyMetaFactory.factory(Bean.class).type(SIMPLE)
-				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
+		PropertyMeta<Void, Bean> built = PropertyMetaFactory
+				.factory()
+				.type(SIMPLE)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, Bean.class);
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -115,8 +107,6 @@ public class PropertyMetaFactoryTest
 		Bean bean = new Bean();
 		assertThat(built.getValueFromString(writeString(bean))).isInstanceOf(Bean.class);
 		assertThat(built.getValueClass()).isEqualTo(Bean.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				OBJECT_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -127,16 +117,19 @@ public class PropertyMetaFactoryTest
 	public void should_build_list() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LIST)
-				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(LIST)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -147,17 +140,19 @@ public class PropertyMetaFactoryTest
 	public void should_build_list_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class)
-				.type(LAZY_LIST).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(LAZY_LIST)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LAZY_LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
@@ -168,16 +163,19 @@ public class PropertyMetaFactoryTest
 	public void should_build_set() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(SET)
-				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(SET)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -188,16 +186,19 @@ public class PropertyMetaFactoryTest
 	public void should_build_set_lazy() throws Exception
 	{
 
-		PropertyMeta<Void, String> built = PropertyMetaFactory.factory(String.class).type(LAZY_SET)
-				.propertyName("prop").accessors(accessors).objectMapper(objectMapper).build();
+		PropertyMeta<Void, String> built = PropertyMetaFactory
+				.factory()
+				.type(LAZY_SET)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LAZY_SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
@@ -209,21 +210,21 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
-				.factory(Integer.class, String.class).type(MAP).propertyName("prop")
-				.accessors(accessors).objectMapper(objectMapper).build();
+				.factory()
+				.type(MAP)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Integer.class, String.class);
 
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getKey((Object) 12)).isInstanceOf(Integer.class);
 		assertThat(built.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
-				INT_SRZ.getComparatorType());
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -233,9 +234,13 @@ public class PropertyMetaFactoryTest
 	@Test
 	public void should_build_map_with_object_as_key() throws Exception
 	{
-		PropertyMeta<Bean, String> built = PropertyMetaFactory.factory(Bean.class, String.class)
-				.type(MAP).propertyName("prop").accessors(accessors).objectMapper(objectMapper)
-				.build();
+		PropertyMeta<Bean, String> built = PropertyMetaFactory
+				.factory()
+				.type(MAP)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Bean.class, String.class);
 
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -243,13 +248,9 @@ public class PropertyMetaFactoryTest
 		Bean bean = new Bean();
 		assertThat(built.getKey((Object) bean)).isInstanceOf(Bean.class);
 		assertThat(built.getKeyClass()).isEqualTo(Bean.class);
-		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
-				OBJECT_SRZ.getComparatorType());
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isSingleKey()).isTrue();
@@ -261,21 +262,21 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
-				.factory(Integer.class, String.class).type(LAZY_MAP).propertyName("prop")
-				.accessors(accessors).objectMapper(objectMapper).build();
+				.factory()
+				.type(LAZY_MAP)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Integer.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LAZY_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getKey((Object) 12)).isInstanceOf(Integer.class);
 		assertThat(built.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
-				INT_SRZ.getComparatorType());
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
@@ -287,21 +288,21 @@ public class PropertyMetaFactoryTest
 	{
 
 		PropertyMeta<Integer, String> built = PropertyMetaFactory
-				.factory(Integer.class, String.class).type(WIDE_MAP).propertyName("prop")
-				.accessors(accessors).objectMapper(objectMapper).build();
+				.factory()
+				.type(WIDE_MAP)
+				.propertyName("prop")
+				.accessors(accessors)
+				.objectMapper(objectMapper)
+				.build(Integer.class, String.class);
 
 		assertThat(built.type()).isEqualTo(WIDE_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		assertThat(built.getKey((Object) 12)).isInstanceOf(Integer.class);
 		assertThat(built.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(built.getKeySerializer().getComparatorType()).isEqualTo(
-				INT_SRZ.getComparatorType());
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isTrue();
@@ -317,7 +318,6 @@ public class PropertyMetaFactoryTest
 		List<Class<?>> componentClasses = mock(List.class);
 		List<Method> componentGetters = mock(List.class);
 		List<Method> componentSetters = mock(List.class);
-		List<Serializer<?>> componentSerializers = mock(List.class);
 		when(componentClasses.size()).thenReturn(1);
 		when(componentClasses.iterator()).thenReturn(iterator);
 		when(iterator.hasNext()).thenReturn(false);
@@ -326,15 +326,15 @@ public class PropertyMetaFactoryTest
 		props.setComponentClasses(componentClasses);
 		props.setComponentGetters(componentGetters);
 		props.setComponentSetters(componentSetters);
-		props.setComponentSerializers(componentSerializers);
 
 		PropertyMeta<MyMultiKey, String> built = PropertyMetaFactory
-				.factory(MyMultiKey.class, String.class) //
-				.type(WIDE_MAP).propertyName("prop") //
-				.accessors(accessors) //
-				.multiKeyProperties(props) //
-				.objectMapper(objectMapper) //
-				.build();
+				.factory()
+				.type(WIDE_MAP)
+				.propertyName("prop")
+				.accessors(accessors)
+				.multiKeyProperties(props)
+				.objectMapper(objectMapper)
+				.build(MyMultiKey.class, String.class);
 
 		assertThat(built.type()).isEqualTo(WIDE_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -342,7 +342,6 @@ public class PropertyMetaFactoryTest
 		MyMultiKey multiKey = new MyMultiKey();
 		assertThat(built.getKey((Object) multiKey)).isInstanceOf(MyMultiKey.class);
 		assertThat(built.getKeyClass()).isEqualTo(MyMultiKey.class);
-		assertThat(built.getKeySerializer()).isNull();
 
 		assertThat(built.getMultiKeyProperties().getComponentClasses()).isSameAs(componentClasses);
 
@@ -352,8 +351,6 @@ public class PropertyMetaFactoryTest
 
 		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
 		assertThat(built.getValueClass()).isEqualTo(String.class);
-		assertThat(built.getValueSerializer().getComparatorType()).isEqualTo(
-				STRING_SRZ.getComparatorType());
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isSingleKey()).isFalse();

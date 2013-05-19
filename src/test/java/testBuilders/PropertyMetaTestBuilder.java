@@ -23,8 +23,6 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 
 import mapping.entity.CompleteBean;
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
-import me.prettyprint.hector.api.Serializer;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -44,19 +42,17 @@ public class PropertyMetaTestBuilder<T, K, V>
 	private PropertyType type;
 	private Class<K> keyClass;
 	private Class<V> valueClass;
-	private EntityMeta<?> joinMeta;
+	private EntityMeta joinMeta;
 	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
 	private List<Class<?>> componentClasses;
-	private List<Serializer<?>> componentSerializers;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
 	private String externalColumnFamilyName;
-	private Serializer<?> idSerializer;
 
 	private boolean buildAccessors;
-
+	private Class<?> idClass;
 	private ObjectMapper objectMapper;
 	private PropertyMeta<Void, ?> counterIdMeta;
 	private String fqcn;
@@ -92,7 +88,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 		this.valueClass = valueClass;
 	}
 
-	@SuppressWarnings("unchecked")
 	public PropertyMeta<K, V> build() throws Exception
 	{
 		PropertyMeta<K, V> propertyMeta = new PropertyMeta<K, V>();
@@ -101,11 +96,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 		propertyMeta.setPropertyName(field);
 		propertyMeta.setKeyClass(keyClass);
 		propertyMeta.setValueClass(valueClass);
-		propertyMeta
-				.setKeySerializer((Serializer<K>) SerializerTypeInferer.getSerializer(keyClass));
-		propertyMeta.setValueSerializer((Serializer<V>) SerializerTypeInferer
-				.getSerializer(valueClass));
-
+		propertyMeta.setIdClass(idClass);
 		if (buildAccessors)
 		{
 			Field declaredField = clazz.getDeclaredField(field);
@@ -126,12 +117,10 @@ public class PropertyMetaTestBuilder<T, K, V>
 			propertyMeta.setJoinProperties(joinProperties);
 		}
 
-		if (componentClasses != null || componentSerializers != null || componentGetters != null
-				|| componentSetters != null)
+		if (componentClasses != null || componentGetters != null || componentSetters != null)
 		{
 			MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
 			multiKeyProperties.setComponentClasses(componentClasses);
-			multiKeyProperties.setComponentSerializers(componentSerializers);
 			multiKeyProperties.setComponentGetters(componentGetters);
 			multiKeyProperties.setComponentSetters(componentSetters);
 
@@ -150,10 +139,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 		{
 			propertyMeta.setExternalCfName(externalColumnFamilyName);
 		}
-		if (idSerializer != null)
-		{
-			propertyMeta.setIdSerializer(idSerializer);
-		}
 
 		if (counterIdMeta != null || fqcn != null)
 		{
@@ -163,6 +148,11 @@ public class PropertyMetaTestBuilder<T, K, V>
 		}
 		objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
 		propertyMeta.setObjectMapper(objectMapper);
+		if (consistencyLevels == null)
+		{
+			consistencyLevels = new Pair<ConsistencyLevel, ConsistencyLevel>(ConsistencyLevel.ONE,
+					ConsistencyLevel.ONE);
+		}
 		propertyMeta.setConsistencyLevels(consistencyLevels);
 		return propertyMeta;
 	}
@@ -185,7 +175,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 		return this;
 	}
 
-	public PropertyMetaTestBuilder<T, K, V> joinMeta(EntityMeta<?> joinMeta)
+	public PropertyMetaTestBuilder<T, K, V> joinMeta(EntityMeta joinMeta)
 	{
 		this.joinMeta = joinMeta;
 		return this;
@@ -209,12 +199,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 		return this;
 	}
 
-	public PropertyMetaTestBuilder<T, K, V> idSerializer(Serializer<?> idSerializer)
-	{
-		this.idSerializer = idSerializer;
-		return this;
-	}
-
 	public PropertyMetaTestBuilder<T, K, V> compClasses(List<Class<?>> componentClasses)
 	{
 		this.componentClasses = componentClasses;
@@ -224,18 +208,6 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> compClasses(Class<?>... componentClasses)
 	{
 		this.componentClasses = Arrays.asList(componentClasses);
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> compSrz(List<Serializer<?>> componentSerializers)
-	{
-		this.componentSerializers = componentSerializers;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> compSrz(Serializer<?>... componentSerializers)
-	{
-		this.componentSerializers = Arrays.asList(componentSerializers);
 		return this;
 	}
 
@@ -263,7 +235,7 @@ public class PropertyMetaTestBuilder<T, K, V>
 		return this;
 	}
 
-	public PropertyMetaTestBuilder<T, K, V> accesors()
+	public PropertyMetaTestBuilder<T, K, V> accessors()
 	{
 		this.buildAccessors = true;
 		return this;
@@ -284,6 +256,12 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> fqcn(String fqcn)
 	{
 		this.fqcn = fqcn;
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> idClass(Class<?> idClass)
+	{
+		this.idClass = idClass;
 		return this;
 	}
 

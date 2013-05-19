@@ -27,7 +27,7 @@ import org.powermock.reflect.Whitebox;
 public class WideMapWrapperBuilderTest
 {
 	@Mock
-	private ThriftGenericWideRowDao<Integer, String> dao;
+	private ThriftGenericWideRowDao dao;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
@@ -50,17 +50,17 @@ public class WideMapWrapperBuilderTest
 	@Test
 	public void should_build() throws Exception
 	{
-		WideMapWrapper<Integer, Integer, String> wrapper = WideMapWrapperBuilder
-				.builder(1, dao, propertyMeta) //
-				.interceptor(interceptor) //
-				.compositeHelper(compositeHelper) //
-				.keyValueFactory(keyValueFactory) //
-				.iteratorFactory(iteratorFactory) //
-				.compositeFactory(compositeFactory) //
+		WideMapWrapper<Integer, String> wrapper = WideMapWrapperBuilder
+				.builder(1, dao, propertyMeta)
+				.interceptor(interceptor)
+				.compositeHelper(compositeHelper)
+				.keyValueFactory(keyValueFactory)
+				.iteratorFactory(iteratorFactory)
+				.compositeFactory(compositeFactory)
 				.build();
 
 		assertThat(wrapper).isNotNull();
-		assertThat(wrapper.getInterceptor()).isSameAs(interceptor);
+		assertThat(wrapper.getInterceptor()).isSameAs((AchillesJpaEntityInterceptor) interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "dao")).isSameAs(dao);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
 		assertThat(Whitebox.getInternalState(wrapper, "interceptor")).isSameAs(interceptor);

@@ -31,10 +31,10 @@ public class CounterWrapperBuilderTest
 	private Composite columnName;
 
 	@Mock
-	private ThriftAbstractDao<Long, Long> counterDao;
+	private ThriftAbstractDao counterDao;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	private ConsistencyLevel readLevel = ConsistencyLevel.ALL;
 	private ConsistencyLevel writeLevel = ConsistencyLevel.ANY;
@@ -42,12 +42,12 @@ public class CounterWrapperBuilderTest
 	@Test
 	public void should_build() throws Exception
 	{
-		CounterWrapper<Long> built = CounterWrapperBuilder.builder(key) //
-				.columnName(columnName) //
-				.context(context) //
-				.counterDao(counterDao) //
-				.readLevel(readLevel) //
-				.writeLevel(writeLevel) //
+		CounterWrapper built = CounterWrapperBuilder.builder(context) //
+				.columnName(columnName)
+				.key(key)
+				.counterDao(counterDao)
+				.readLevel(readLevel)
+				.writeLevel(writeLevel)
 				.build();
 
 		assertThat(Whitebox.getInternalState(built, "key")).isSameAs(key);

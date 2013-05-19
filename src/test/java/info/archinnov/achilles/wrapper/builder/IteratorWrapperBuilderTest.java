@@ -42,7 +42,7 @@ public class IteratorWrapperBuilderTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception
@@ -57,12 +57,12 @@ public class IteratorWrapperBuilderTest
 		target.add("a");
 
 		Iterator<String> iterator = target.iterator();
-		IteratorWrapper<Long, String> wrapper = IteratorWrapperBuilder //
-				.builder(context, iterator) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		IteratorWrapper<String> wrapper = IteratorWrapperBuilder //
+				.builder(context, iterator)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(iterator);

@@ -3,9 +3,9 @@ package info.archinnov.achilles.entity.manager;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftTableCreator;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.context.DaoContextBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -53,7 +53,10 @@ public class ThriftEntityManagerFactoryTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftEntityManagerFactory factory;
+	private ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory(
+			ImmutableMap.<String, Object> of("achilles.entity.packages", "testBuilders",
+					"achilles.cassandra.cluster", mock(Cluster.class),
+					"achilles.cassandra.keyspace", mock(Keyspace.class)));
 
 	@Mock
 	private AchillesConfigurationContext configContext;
@@ -68,7 +71,7 @@ public class ThriftEntityManagerFactoryTest
 	private EntityExplorer entityExplorer;
 
 	@Mock
-	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
+	private ThriftTableCreator thriftTableCreator;
 
 	@Mock
 	private ThriftArgumentExtractor argumentExtractor;
@@ -77,7 +80,7 @@ public class ThriftEntityManagerFactoryTest
 	private List<String> entityPackages;
 
 	@Mock
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
 	private DaoContextBuilder daoContextBuilder;
@@ -86,10 +89,10 @@ public class ThriftEntityManagerFactoryTest
 	private ArgumentCaptor<EntityParsingContext> contextCaptor;
 
 	@Mock
-	private EntityMeta<Object> entityMeta1;
+	private EntityMeta entityMeta1;
 
 	@Mock
-	private EntityMeta<Object> entityMeta2;
+	private EntityMeta entityMeta2;
 
 	@Mock
 	private PropertyMeta<Void, Long> longPropertyMeta;
@@ -113,7 +116,7 @@ public class ThriftEntityManagerFactoryTest
 		verify(entityMetaMap).put(Long.class, entityMeta1);
 		verify(entityMetaMap).put(String.class, entityMeta2);
 		verify(entityParser).fillJoinEntityMeta(contextCaptor.capture(), eq(entityMetaMap));
-		verify(thriftColumnFamilyCreator).validateOrCreateColumnFamilies(eq(entityMetaMap),
+		verify(thriftTableCreator).validateOrCreateColumnFamilies(eq(entityMetaMap),
 				eq(configContext), eq(false));
 		verify(daoContextBuilder).buildDao(any(Cluster.class), any(Keyspace.class),
 				eq(entityMetaMap), eq(configContext), any(boolean.class));
@@ -177,7 +180,7 @@ public class ThriftEntityManagerFactoryTest
 		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(readMap);
 		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(writeMap);
 
-		ThriftConsistencyLevelPolicy actual = factory.initConsistencyLevelPolicy(configMap,
+		AchillesConsistencyLevelPolicy actual = factory.initConsistencyLevelPolicy(configMap,
 				argumentExtractor);
 
 		assertThat(actual.getConsistencyLevelForRead("cf1")).isEqualTo(ConsistencyLevel.TWO);

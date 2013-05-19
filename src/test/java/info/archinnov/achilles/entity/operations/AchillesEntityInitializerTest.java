@@ -8,14 +8,13 @@ import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.CompleteBean;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * EntityInitializerTest
@@ -30,11 +29,6 @@ public class AchillesEntityInitializerTest
 
 	private AchillesEntityInitializer initializer = new AchillesEntityInitializer();
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_initialize_entity() throws Exception
 	{
@@ -53,19 +47,14 @@ public class AchillesEntityInitializerTest
 		PropertyMeta<Void, Long> propertyMeta = new PropertyMeta<Void, Long>();
 		propertyMeta.setType(PropertyType.LAZY_SIMPLE);
 		propertyMeta.setGetter(bean.getClass().getDeclaredMethod("getId"));
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setPropertyMetas((Map) ImmutableMap.of("id", propertyMeta));
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setPropertyMetas(buildPropertyMetaMaps("id", propertyMeta));
 
 		initializer.initializeEntity(bean, entityMeta);
 
 		assertThat(calledMethods).containsExactly("getId");
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_not_initialize_entity_if_not_lazy() throws Exception
 	{
@@ -84,19 +73,14 @@ public class AchillesEntityInitializerTest
 		PropertyMeta<Void, Long> propertyMeta = new PropertyMeta<Void, Long>();
 		propertyMeta.setType(PropertyType.SIMPLE);
 		propertyMeta.setGetter(bean.getClass().getDeclaredMethod("getId"));
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setPropertyMetas((Map) ImmutableMap.of("id", propertyMeta));
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setPropertyMetas(buildPropertyMetaMaps("id", propertyMeta));
 
 		initializer.initializeEntity(bean, entityMeta);
 
 		assertThat(calledMethods).isEmpty();
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_not_initialize_entity_if_widemap() throws Exception
 	{
@@ -114,19 +98,14 @@ public class AchillesEntityInitializerTest
 
 		PropertyMeta<Void, Long> propertyMeta = new PropertyMeta<Void, Long>();
 		propertyMeta.setType(PropertyType.WIDE_MAP);
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setPropertyMetas((Map) ImmutableMap.of("id", propertyMeta));
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setPropertyMetas(buildPropertyMetaMaps("id", propertyMeta));
 
 		initializer.initializeEntity(bean, entityMeta);
 
 		assertThat(calledMethods).isEmpty();
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_throw_exception_when_error_initializing() throws Exception
 	{
@@ -142,10 +121,18 @@ public class AchillesEntityInitializerTest
 
 		PropertyMeta<Void, Long> propertyMeta = new PropertyMeta<Void, Long>();
 		propertyMeta.setType(PropertyType.LAZY_SIMPLE);
-		EntityMeta<Long> entityMeta = new EntityMeta<Long>();
-		entityMeta.setPropertyMetas((Map) ImmutableMap.of("id", propertyMeta));
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setPropertyMetas(buildPropertyMetaMaps("id", propertyMeta));
 
 		exception.expect(AchillesException.class);
 		initializer.initializeEntity(bean, entityMeta);
+	}
+
+	private Map<String, PropertyMeta<?, ?>> buildPropertyMetaMaps(String prop,
+			PropertyMeta<?, ?> propertyMeta)
+	{
+		Map<String, PropertyMeta<?, ?>> map = new HashMap<String, PropertyMeta<?, ?>>();
+		map.put(prop, propertyMeta);
+		return map;
 	}
 }

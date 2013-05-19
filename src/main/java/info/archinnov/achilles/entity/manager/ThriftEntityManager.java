@@ -50,7 +50,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 		super.loader = new ThriftEntityLoader();
 		super.merger = new ThriftEntityMerger();
 		super.proxifier = new ThriftEntityProxifier();
-		super.achillesEntityValidator = new AchillesEntityValidator(super.proxifier);
+		super.entityValidator = new AchillesEntityValidator(super.proxifier);
 		super.refresher = new AchillesEntityRefresher(super.loader, super.proxifier);
 	}
 

@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
-import info.archinnov.achilles.columnFamily.ThriftColumnFamilyCreator;
+import info.archinnov.achilles.columnFamily.ThriftTableCreator;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -15,7 +15,6 @@ import info.archinnov.achilles.entity.type.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,10 +63,10 @@ public class ThriftEntityMapperTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
-	private ThriftColumnFamilyCreator thriftColumnFamilyCreator;
+	private ThriftTableCreator thriftTableCreator;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -89,7 +88,7 @@ public class ThriftEntityMapperTest
 	@Captor
 	ArgumentCaptor<Map<Integer, String>> mapCaptor;
 
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	private PropertyMeta<Void, Long> idMeta;
 
@@ -102,15 +101,14 @@ public class ThriftEntityMapperTest
 
 		Whitebox.setInternalState(mapper, "introspector", introspector);
 		idMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, Long.class) //
-				.field("id")//
+				.of(CompleteBean.class, Void.class, Long.class)
+				.field("id")
 				.build();
 	}
 
 	@Test
 	public void should_map_id_property() throws Exception
 	{
-
 		entityMeta = EntityMetaTestBuilder.builder(idMeta).build();
 
 		CompleteBean entity = new CompleteBean();
@@ -127,9 +125,9 @@ public class ThriftEntityMapperTest
 	{
 		CompleteBean entity = new CompleteBean();
 		PropertyMeta<Void, String> namePropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("name")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("name")
+				.accessors()
 				.build();
 
 		doNothing().when(introspector).setValueToField(eq(entity),
@@ -146,9 +144,12 @@ public class ThriftEntityMapperTest
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta<Void, String> listPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("friends")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				//
+				.field("friends")
+				//
+				.accessors()
+				//
 				.build();
 
 		doNothing().when(introspector).setValueToField(eq(entity),
@@ -166,9 +167,12 @@ public class ThriftEntityMapperTest
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta<Void, String> setPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("followers")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				//
+				.field("followers")
+				//
+				.accessors()
+				//
 				.build();
 
 		doNothing().when(introspector).setValueToField(eq(entity), eq(setPropertyMeta.getSetter()),
@@ -191,9 +195,12 @@ public class ThriftEntityMapperTest
 		preferences.put(3, "75014");
 
 		PropertyMeta<Integer, String> mapPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Integer.class, String.class) //
-				.field("preferences")//
-				.accesors() //
+				.of(CompleteBean.class, Integer.class, String.class)
+				//
+				.field("preferences")
+				//
+				.accessors()
+				//
 				.build();
 
 		doNothing().when(introspector).setValueToField(eq(entity), eq(mapPropertyMeta.getSetter()),
@@ -211,12 +218,12 @@ public class ThriftEntityMapperTest
 	public void should_add_to_empty_list() throws Exception
 	{
 
-		Map<String, List<String>> listProperties = new HashMap<String, List<String>>();
+		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
 
 		PropertyMeta<Void, String> listPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("friends")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("friends")
+				.accessors()
 				.build();
 
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
@@ -230,12 +237,12 @@ public class ThriftEntityMapperTest
 	public void should_add_to_not_empty_list() throws Exception
 	{
 
-		Map<String, List<String>> listProperties = new HashMap<String, List<String>>();
-		listProperties.put("test", Arrays.asList("test1", "test2"));
+		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
+		listProperties.put("test", Arrays.<Object> asList("test1", "test2"));
 		PropertyMeta<Void, String> listPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("friends")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("friends")
+				.accessors()
 				.build();
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
 
@@ -251,11 +258,11 @@ public class ThriftEntityMapperTest
 	public void should_add_to_empty_set() throws Exception
 	{
 
-		Map<String, Set<String>> setProperties = new HashMap<String, Set<String>>();
+		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
 		PropertyMeta<Void, String> setPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("followers")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("followers")
+				.accessors()
 				.build();
 
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
@@ -269,15 +276,15 @@ public class ThriftEntityMapperTest
 	public void should_add_to_not_empty_set() throws Exception
 	{
 
-		Map<String, Set<String>> setProperties = new HashMap<String, Set<String>>();
-		HashSet<String> set = Sets.newHashSet();
+		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
+		Set<Object> set = Sets.newHashSet();
 		set.addAll(Arrays.asList("test1", "test2"));
 		setProperties.put("test", set);
 
 		PropertyMeta<Void, String> setPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("followers")//
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("followers")
+				.accessors()
 				.build();
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
 
@@ -293,13 +300,13 @@ public class ThriftEntityMapperTest
 	public void should_add_to_empty_map() throws Exception
 	{
 
-		Map<String, Map<Integer, String>> mapProperties = new HashMap<String, Map<Integer, String>>();
+		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
 		PropertyMeta<Integer, String> mapPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Integer.class, String.class) //
-				.field("preferences")//
-				.type(MAP) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Integer.class, String.class)
+				.field("preferences")
+				.type(MAP)
+				.mapper(objectMapper)
+				.accessors()
 				.build();
 		mapper.addToMap(mapProperties, mapPropertyMeta, new KeyValue<Integer, String>(1, "FR"));
 
@@ -312,19 +319,19 @@ public class ThriftEntityMapperTest
 	public void should_add_to_not_empty_map() throws Exception
 	{
 
-		Map<String, Map<Integer, String>> mapProperties = new HashMap<String, Map<Integer, String>>();
+		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
 
-		HashMap<Integer, String> map = Maps.newHashMap();
+		HashMap<Object, Object> map = Maps.newHashMap();
 		map.put(2, "Paris");
 		map.put(3, "75014");
 		mapProperties.put("test", map);
 
 		PropertyMeta<Integer, String> mapPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Integer.class, String.class) //
-				.field("preferences")//
-				.type(MAP) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Integer.class, String.class)
+				.field("preferences")
+				.type(MAP)
+				.mapper(objectMapper)
+				.accessors()
 				.build();
 
 		mapper.addToMap(mapProperties, mapPropertyMeta, new KeyValue<Integer, String>(1, "FR"));
@@ -345,42 +352,66 @@ public class ThriftEntityMapperTest
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta<Void, String> namePropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("name")//
-				.type(SIMPLE) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				//
+				.field("name")
+				//
+				.type(SIMPLE)
+				//
+				.mapper(objectMapper)
+				//
+				.accessors()
+				//
 				.build();
 
 		PropertyMeta<Void, String> listPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("friends")//
-				.type(LIST) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				//
+				.field("friends")
+				//
+				.type(LIST)
+				//
+				.mapper(objectMapper)
+				//
+				.accessors()
+				//
 				.build();
 
 		PropertyMeta<Void, String> setPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Void.class, String.class) //
-				.field("followers")//
-				.type(SET) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Void.class, String.class)
+				//
+				.field("followers")
+				//
+				.type(SET)
+				//
+				.mapper(objectMapper)
+				//
+				.accessors()
+				//
 				.build();
 
 		PropertyMeta<Integer, String> mapPropertyMeta = PropertyMetaTestBuilder //
-				.of(CompleteBean.class, Integer.class, String.class) //
-				.field("preferences")//
-				.type(MAP) //
-				.mapper(objectMapper) //
-				.accesors() //
+				.of(CompleteBean.class, Integer.class, String.class)
+				//
+				.field("preferences")
+				//
+				.type(MAP)
+				//
+				.mapper(objectMapper)
+				//
+				.accessors()
+				//
 				.build();
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
-				.addPropertyMeta(namePropertyMeta) //
-				.addPropertyMeta(listPropertyMeta) //
-				.addPropertyMeta(setPropertyMeta) //
-				.addPropertyMeta(mapPropertyMeta) //
+				.addPropertyMeta(namePropertyMeta)
+				//
+				.addPropertyMeta(listPropertyMeta)
+				//
+				.addPropertyMeta(setPropertyMeta)
+				//
+				.addPropertyMeta(mapPropertyMeta)
+				//
 				.build();
 
 		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
@@ -443,8 +474,10 @@ public class ThriftEntityMapperTest
 						+ CompleteBean.class.getCanonicalName() + "'");
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
-				.serialVersionUID(2L) //
-				.classname(CompleteBean.class.getCanonicalName()) //
+				.serialVersionUID(2L)
+				//
+				.classname(CompleteBean.class.getCanonicalName())
+				//
 				.build();
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 	}

@@ -3,12 +3,6 @@ package info.archinnov.achilles.entity.metadata;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.type.KeyValue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import mapping.entity.UserBean;
@@ -29,35 +23,6 @@ public class PropertyMetaTest
 {
 
 	private ObjectMapper objectMapper = new ObjectMapper();
-
-	@Test
-	public void should_exception_when_cannot_instantiate_list() throws Exception
-	{
-		PropertyMeta<Void, String> listMeta = new PropertyMeta<Void, String>();
-		List<String> list = listMeta.newListInstance();
-
-		assertThat(list).isInstanceOf(ArrayList.class);
-	}
-
-	@Test
-	public void should_exception_when_cannot_instantiate_set() throws Exception
-	{
-
-		PropertyMeta<Void, String> setMeta = new PropertyMeta<Void, String>();
-		Set<String> set = setMeta.newSetInstance();
-
-		assertThat(set).isInstanceOf(HashSet.class);
-	}
-
-	@Test
-	public void should_exception_when_cannot_instantiate_map() throws Exception
-	{
-
-		PropertyMeta<Integer, String> mapMeta = new PropertyMeta<Integer, String>();
-		Map<?, String> map = mapMeta.newMapInstance();
-
-		assertThat(map).isInstanceOf(HashMap.class);
-	}
 
 	@Test
 	public void should_get_value_from_string_with_correct_type() throws Exception
@@ -206,8 +171,8 @@ public class PropertyMetaTest
 	public void should_cast_value_as_join_type() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.JOIN_WIDE_MAP) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_WIDE_MAP)
 				.build();
 
 		Object bean = new UserBean();
@@ -221,8 +186,8 @@ public class PropertyMetaTest
 	public void should_cast_value_as_supported_type() throws Exception
 	{
 		PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UUID.class) //
-				.type(PropertyType.WIDE_MAP) //
+				.noClass(Integer.class, UUID.class)
+				.type(PropertyType.WIDE_MAP)
 				.build();
 
 		Object uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
@@ -236,8 +201,8 @@ public class PropertyMetaTest
 	public void should_cast_value_as_map_value() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.MAP) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.MAP)
 				.build();
 
 		Object userBean = new UserBean();
@@ -251,8 +216,8 @@ public class PropertyMetaTest
 	public void should_cast_value_as_lazy_map_value() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.LAZY_MAP) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.LAZY_MAP)
 				.build();
 
 		Object userBean = new UserBean();
@@ -266,8 +231,8 @@ public class PropertyMetaTest
 	public void should_cast_value_as_string() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.WIDE_MAP) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.WIDE_MAP)
 				.build();
 
 		UserBean bean = new UserBean();
@@ -284,40 +249,39 @@ public class PropertyMetaTest
 	@Test
 	public void should_return_join_entity_meta() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.JOIN_WIDE_MAP) //
-				.joinMeta(joinMeta) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_WIDE_MAP)
+				.joinMeta(joinMeta)
 				.build();
 
-		assertThat((EntityMeta<Long>) propertyMeta.joinMeta()).isSameAs(joinMeta);
+		assertThat(propertyMeta.joinMeta()).isSameAs(joinMeta);
 	}
 
 	@Test
 	public void should_return_null_if_not_join_type() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.WIDE_MAP) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.WIDE_MAP)
 				.build();
 
 		assertThat(propertyMeta.joinMeta()).isNull();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_join_id_meta() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.JOIN_WIDE_MAP) //
-				.joinMeta(joinMeta) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_WIDE_MAP)
+				.joinMeta(joinMeta)
 				.build();
 
 		assertThat((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).isSameAs(joinIdMeta);
@@ -330,8 +294,10 @@ public class PropertyMetaTest
 		PropertyMeta<Void, String> idMeta = new PropertyMeta<Void, String>();
 
 		PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class) //
-				.type(PropertyType.COUNTER) //
-				.counterIdMeta(idMeta) //
+				.type(PropertyType.COUNTER)
+				//
+				.counterIdMeta(idMeta)
+				//
 				.build();
 
 		assertThat((PropertyMeta<Void, String>) propertyMeta.counterIdMeta()).isSameAs(idMeta);
@@ -341,8 +307,8 @@ public class PropertyMetaTest
 	{
 
 		PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class) //
-				.type(PropertyType.COUNTER) //
-				.fqcn("fqcn") //
+				.type(PropertyType.COUNTER)
+				.fqcn("fqcn")
 				.build();
 
 		assertThat(propertyMeta.fqcn()).isEqualTo("fqcn");
@@ -351,12 +317,12 @@ public class PropertyMetaTest
 	@Test
 	public void should_return_null_when_joinid_invoke() throws Exception
 	{
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.JOIN_WIDE_MAP) //
-				.joinMeta(joinMeta) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_WIDE_MAP)
+				.joinMeta(joinMeta)
 				.build();
 
 		assertThat(propertyMeta.joinIdMeta()).isNull();
@@ -366,8 +332,8 @@ public class PropertyMetaTest
 	public void should_return_true_when_join_type() throws Exception
 	{
 		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class) //
-				.type(PropertyType.JOIN_SIMPLE) //
+				.noClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_SIMPLE)
 				.build();
 
 		assertThat(propertyMeta.isJoin()).isTrue();
@@ -377,8 +343,8 @@ public class PropertyMetaTest
 	public void should_return_true_for_isJoinColumn() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.JOIN_SIMPLE) //
+				.noClass(Void.class, String.class)
+				.type(PropertyType.JOIN_SIMPLE)
 				.build();
 
 		assertThat(propertyMeta.isJoinColumn()).isTrue();
@@ -388,8 +354,8 @@ public class PropertyMetaTest
 	public void should_return_true_for_isLazy() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.LAZY_LIST) //
+				.noClass(Void.class, String.class)
+				.type(PropertyType.LAZY_LIST)
 				.build();
 
 		assertThat(propertyMeta.isLazy()).isTrue();
@@ -399,8 +365,10 @@ public class PropertyMetaTest
 	public void should_return_true_for_isWideMap() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.WIDE_MAP) //
+				.noClass(Void.class, String.class)
+				//
+				.type(PropertyType.WIDE_MAP)
+				//
 				.build();
 
 		assertThat(propertyMeta.isWideMap()).isTrue();
@@ -410,8 +378,8 @@ public class PropertyMetaTest
 	public void should_return_true_for_isCounter_when_type_is_counter() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.COUNTER) //
+				.noClass(Void.class, String.class)
+				.type(PropertyType.COUNTER)
 				.build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();
@@ -422,8 +390,8 @@ public class PropertyMetaTest
 			throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class) //
-				.type(PropertyType.COUNTER_WIDE_MAP) //
+				.noClass(Void.class, String.class)
+				.type(PropertyType.COUNTER_WIDE_MAP)
 				.build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();

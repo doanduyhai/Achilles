@@ -2,14 +2,12 @@ package info.archinnov.achilles.entity.metadata.builder;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.serializer.SerializerUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -38,16 +36,11 @@ public class EntityMetaBuilderTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private ThriftGenericEntityDao<?> dao;
+	private ThriftGenericEntityDao dao;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_build_meta() throws Exception
 	{
@@ -66,17 +59,17 @@ public class EntityMetaBuilderTest
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean") //
-				.serialVersionUID(1L) //
-				.columnFamilyName("cfName") //
-				.propertyMetas(propertyMetas) //
+		EntityMeta meta = entityMetaBuilder(idMeta)
+				.className("Bean")
+				.serialVersionUID(1L)
+				.columnFamilyName("cfName")
+				.propertyMetas(propertyMetas)
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("cfName");
-		assertThat(meta.getIdMeta()).isSameAs(idMeta);
-		assertThat(meta.getIdSerializer().getComparatorType()).isEqualTo(
-				SerializerUtils.LONG_SRZ.getComparatorType());
+		assertThat((PropertyMeta<Void, Long>) meta.getIdMeta()).isSameAs(idMeta);
+		assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
 		assertThat(meta.getPropertyMetas()).containsKey("name");
 		assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
 
@@ -101,8 +94,12 @@ public class EntityMetaBuilderTest
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto").build();
+		EntityMeta meta = entityMetaBuilder(idMeta)
+				.className("Bean")
+				.serialVersionUID(1L)
+				.propertyMetas(propertyMetas)
+				.columnFamilyName("toto")
+				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
@@ -114,15 +111,19 @@ public class EntityMetaBuilderTest
 
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
-		wideMapMeta.setValueSerializer(STRING_SRZ);
+		wideMapMeta.setValueClass(String.class);
 		wideMapMeta.setType(PropertyType.WIDE_MAP);
 		propertyMetas.put("name", wideMapMeta);
 
 		when(idMeta.getValueClass()).thenReturn(Long.class);
 
-		EntityMeta<Long> meta = entityMetaBuilder(idMeta).className("Bean").serialVersionUID(1L)
-				.propertyMetas(propertyMetas).columnFamilyName("toto")
-				.wideRow(true).build();
+		EntityMeta meta = entityMetaBuilder(idMeta)
+				.className("Bean")
+				.serialVersionUID(1L)
+				.propertyMetas(propertyMetas)
+				.columnFamilyName("toto")
+				.wideRow(true)
+				.build();
 
 		assertThat(meta.isWideRow()).isTrue();
 	}

@@ -25,17 +25,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
+public class ThriftTableCreator extends AchillesTableCreator
 {
-	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyCreator.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftTableCreator.class);
 	private Cluster cluster;
 	private Keyspace keyspace;
-	private ThriftColumnFamilyHelper thriftColumnFamilyHelper = new ThriftColumnFamilyHelper();
+	private ThriftTableHelper thriftTableHelper = new ThriftTableHelper();
 	private List<ColumnFamilyDefinition> cfDefs;
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 	private Set<String> columnFamilyNames = new HashSet<String>();
 
-	public ThriftColumnFamilyCreator(Cluster cluster, Keyspace keyspace) {
+	public ThriftTableCreator(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
 		this.keyspace = keyspace;
 		KeyspaceDefinition keyspaceDef = this.cluster.describeKeyspace(this.keyspace
@@ -80,15 +80,18 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 			if (entityMeta.isWideRow())
 			{
 
-				PropertyMeta<?, ?> propertyMeta = entityMeta.getPropertyMetas().values().iterator()
+				PropertyMeta<?, ?> propertyMeta = entityMeta
+						.getPropertyMetas()
+						.values()
+						.iterator()
 						.next();
-				cfDef = thriftColumnFamilyHelper.buildWideRowCF(keyspace.getKeyspaceName(),
-						propertyMeta, entityMeta.getIdMeta().getValueClass(), columnFamilyName,
+				cfDef = thriftTableHelper.buildWideRowCF(keyspace.getKeyspaceName(), propertyMeta,
+						entityMeta.getIdMeta().getValueClass(), columnFamilyName,
 						entityMeta.getClassName());
 			}
 			else
 			{
-				cfDef = this.thriftColumnFamilyHelper.buildEntityCF(entityMeta,
+				cfDef = this.thriftTableHelper.buildEntityCF(entityMeta,
 						this.keyspace.getKeyspaceName());
 
 			}
@@ -110,20 +113,21 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 				log.debug("Force creation of column family for propertyMeta {}",
 						propertyMeta.getPropertyName());
 
-				cfDef = thriftColumnFamilyHelper.buildWideRowCF(keyspace.getKeyspaceName(),
-						propertyMeta, keyClass, externalColumnFamilyName, entityName);
+				cfDef = thriftTableHelper.buildWideRowCF(keyspace.getKeyspaceName(), propertyMeta,
+						keyClass, externalColumnFamilyName, entityName);
 				this.addColumnFamily(cfDef);
 			}
 			else
 			{
 				throw new AchillesInvalidColumnFamilyException("The required column family '"
 						+ externalColumnFamilyName + "' does not exist for field '"
-						+ propertyMeta.getPropertyName() + "'");
+						+ propertyMeta.getPropertyName() + "' of entity '"
+						+ propertyMeta.getEntityClassName() + "'");
 			}
 		}
 		else
 		{
-			this.thriftColumnFamilyHelper.validateWideRowWithPropertyMeta(cfDef, propertyMeta,
+			this.thriftTableHelper.validateWideRowWithPropertyMeta(cfDef, propertyMeta,
 					externalColumnFamilyName);
 		}
 	}
@@ -151,7 +155,7 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 		}
 		else
 		{
-			this.thriftColumnFamilyHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+			this.thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
 		}
 	}
 
@@ -175,7 +179,7 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 		}
 		else
 		{
-			this.thriftColumnFamilyHelper.validateCounterCF(cfDef);
+			this.thriftTableHelper.validateCounterCF(cfDef);
 		}
 
 	}
@@ -185,7 +189,7 @@ public class ThriftColumnFamilyCreator extends AchillesColumnFamilyCreator
 		log.debug("Creating generic counter column family");
 		if (!columnFamilyNames.contains(COUNTER_CF))
 		{
-			ColumnFamilyDefinition cfDef = thriftColumnFamilyHelper.buildCounterCF(this.keyspace
+			ColumnFamilyDefinition cfDef = thriftTableHelper.buildCounterCF(this.keyspace
 					.getKeyspaceName());
 			this.addColumnFamily(cfDef);
 		}

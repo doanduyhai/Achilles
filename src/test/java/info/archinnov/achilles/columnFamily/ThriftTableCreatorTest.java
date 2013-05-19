@@ -3,17 +3,17 @@ package info.archinnov.achilles.columnFamily;
 import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.metadata.factory.PropertyMetaFactory;
+import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +28,7 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,14 +47,14 @@ import testBuilders.PropertyMetaTestBuilder;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftColumnFamilyCreatorTest
+public class ThriftTableCreatorTest
 {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftColumnFamilyCreator creator;
+	private ThriftTableCreator creator;
 
 	@Mock
 	private Cluster cluster;
@@ -65,17 +66,15 @@ public class ThriftColumnFamilyCreatorTest
 	private KeyspaceDefinition keyspaceDefinition;
 
 	@Mock
-	private ThriftColumnFamilyHelper thriftColumnFamilyHelper;
+	private ThriftTableHelper thriftTableHelper;
 
 	private Set<String> columnFamilyNames = new HashSet<String>();
 
-	private Map<Class<?>, EntityMeta<?>> entityMetaMap;
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
-	private EntityMeta<?> meta;
+	private EntityMeta meta;
 
 	private PropertyMeta<Void, String> simplePropertyMeta;
-
-	private final Method[] accessors = new Method[2];
 
 	private PropertyMeta<Void, Long> idMeta;
 
@@ -84,15 +83,19 @@ public class ThriftColumnFamilyCreatorTest
 	@Before
 	public void setUp() throws Exception
 	{
-		accessors[0] = TestBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
-		accessors[1] = TestBean.class.getDeclaredMethod("setId", Long.class);
-		idMeta = PropertyMetaFactory.factory(Void.class, Long.class).type(SIMPLE)
-				.propertyName("id").accessors(accessors).build();
+		idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.type(SIMPLE)
+				.field("id")
+				.accessors()
+				.build();
 
 		columnFamilyNames.clear();
-		Whitebox.setInternalState(creator, "thriftColumnFamilyHelper", thriftColumnFamilyHelper);
+		Whitebox.setInternalState(creator, "thriftTableHelper", thriftTableHelper);
 		Whitebox.setInternalState(creator, "columnFamilyNames", columnFamilyNames);
 		configContext.setForceColumnFamilyCreation(true);
+		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
+		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 	}
 
 	@Test
@@ -103,7 +106,7 @@ public class ThriftColumnFamilyCreatorTest
 		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 		when(keyspaceDefinition.getCfDefs()).thenReturn(cfDefs);
 
-		ThriftColumnFamilyCreator creator = new ThriftColumnFamilyCreator(cluster, keyspace);
+		ThriftTableCreator creator = new ThriftTableCreator(cluster, keyspace);
 
 		assertThat(Whitebox.getInternalState(creator, "cfDefs")).isSameAs(cfDefs);
 
@@ -154,11 +157,11 @@ public class ThriftColumnFamilyCreatorTest
 	{
 		prepareData();
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftTableHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
 
-		verify(thriftColumnFamilyHelper).buildEntityCF(meta, "keyspace");
+		verify(thriftTableHelper).buildEntityCF(meta, "keyspace");
 		verify(cluster).addColumnFamily(cfDef, true);
 
 	}
@@ -173,7 +176,7 @@ public class ThriftColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		meta.setClassName("entity");
 		when(
-				thriftColumnFamilyHelper.buildWideRowCF("keyspace", simplePropertyMeta, Long.class,
+				thriftTableHelper.buildWideRowCF("keyspace", simplePropertyMeta, Long.class,
 						"testCF", "entity")).thenReturn(cfDef);
 
 		creator.createColumnFamily(meta);
@@ -188,10 +191,9 @@ public class ThriftColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
 		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(thriftColumnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
+		when(thriftTableHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
 
-		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(),
-				configContext, true);
+		creator.validateOrCreateCFForCounter(true);
 
 		verify(cluster).addColumnFamily(cfDef, true);
 	}
@@ -199,27 +201,26 @@ public class ThriftColumnFamilyCreatorTest
 	@Test
 	public void should_validate_column_family() throws Exception
 	{
-		prepareData();
+		meta = new EntityMeta();
+		meta.setColumnFamilyName("testCF");
+
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		cfDef.setName("testCF");
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
-		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+		creator.validateOrCreateCFForEntity(meta, false);
+		verify(thriftTableHelper).validateCFWithEntityMeta(cfDef, meta);
 	}
 
 	@Test
-	public void should_validate_column_family_for_external_wide_map() throws Exception
+	public void should_validate_column_family_for_wide_map() throws Exception
 	{
-		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
-				.noClass(Integer.class, String.class) //
-				.field("externalWideMap") //
-				.externalCf("externalCF") //
-				.idSerializer(LONG_SRZ)//
-				.type(PropertyType.WIDE_MAP) //
+		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class)
+				.field("externalWideMap")
+				.externalCf("externalCF")
+				.type(PropertyType.WIDE_MAP)
 				.build();
-		prepareData(externalWideMapMeta);
-		idMeta.setValueClass(Long.class);
 
 		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
 		externalCFDef.setName("externalCF");
@@ -230,10 +231,10 @@ public class ThriftColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs",
 				Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
-		verify(thriftColumnFamilyHelper).validateWideRowWithPropertyMeta(externalCFDef,
-				externalWideMapMeta, "externalCF");
-		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
+		creator.validateOrCreateCFForWideMap(wideMapMeta, Long.class, false, "externalCF",
+				"TestBean");
+		verify(thriftTableHelper).validateWideRowWithPropertyMeta(externalCFDef, wideMapMeta,
+				"externalCF");
 	}
 
 	@Test
@@ -245,25 +246,26 @@ public class ThriftColumnFamilyCreatorTest
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList(cfDef));
 
 		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(thriftColumnFamilyHelper.buildCounterCF("keyspace")).thenReturn(cfDef);
 
-		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(),
-				configContext, true);
+		creator.validateOrCreateCFForCounter(true);
 
-		verify(thriftColumnFamilyHelper).validateCounterCF(cfDef);
+		verify(thriftTableHelper).validateCounterCF(cfDef);
 	}
 
 	@Test
 	public void should_validate_then_create_column_family_when_not_matching() throws Exception
 	{
-		prepareData();
+		meta = new EntityMeta();
+		meta.setColumnFamilyName("testCF");
+		meta.setWideRow(false);
+
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		cfDef.setName("testCF2");
 
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
-		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftTableHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
+		creator.validateOrCreateCFForEntity(meta, true);
 
 		verify(cluster).addColumnFamily(cfDef, true);
 		assertThat(columnFamilyNames).containsOnly("testCF2");
@@ -272,32 +274,33 @@ public class ThriftColumnFamilyCreatorTest
 	@Test
 	public void should_validate_then_create_column_family_when_null() throws Exception
 	{
-		prepareData();
+		meta = new EntityMeta();
+		meta.setColumnFamilyName("testCF");
+		meta.setWideRow(false);
 
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
 		when(cfDef.getName()).thenReturn("mocked_cfDef");
-		when(thriftColumnFamilyHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
+		when(thriftTableHelper.buildEntityCF(meta, "keyspace")).thenReturn(cfDef);
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
+		creator.validateOrCreateCFForEntity(meta, true);
 
 		verify(cluster).addColumnFamily(cfDef, true);
 		assertThat(columnFamilyNames).containsOnly("mocked_cfDef");
 	}
 
 	@Test
-	public void should_validate_then_create_column_family_for_external_wide_map_when_null()
-			throws Exception
+	public void should_create_column_family_for_wide_row_when_not_existing() throws Exception
 	{
-		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
-				.noClass(Integer.class, String.class) //
-				.field("externalWideMap") //
-				.externalCf("externalCF") //
-				.idSerializer(LONG_SRZ)//
-				.type(PropertyType.WIDE_MAP) //
+		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class)
+				.field("externalWideMap")
+				.externalCf("externalCF")
+				.type(PropertyType.WIDE_MAP)
+				.idClass(Long.class)
 				.build();
 
-		prepareData(externalWideMapMeta);
+		prepareData(wideMapMeta);
 		idMeta.setValueClass(Long.class);
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
@@ -307,12 +310,12 @@ public class ThriftColumnFamilyCreatorTest
 		BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
 		externalCFDef.setName("externalCF");
 		when(
-				thriftColumnFamilyHelper.buildWideRowCF("keyspace", externalWideMapMeta,
-						Long.class, "externalCF", meta.getClassName())).thenReturn(externalCFDef);
+				thriftTableHelper.buildWideRowCF("keyspace", wideMapMeta, Long.class, "externalCF",
+						meta.getClassName())).thenReturn(externalCFDef);
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
+		creator.validateOrCreateCFForWideMap(wideMapMeta, Long.class, true, "externalCF",
+				"TestBean");
 
-		verify(thriftColumnFamilyHelper).validateCFWithEntityMeta(cfDef, meta);
 		verify(cluster).addColumnFamily(externalCFDef, true);
 	}
 
@@ -326,19 +329,44 @@ public class ThriftColumnFamilyCreatorTest
 		exception
 				.expectMessage("The required column family 'testCF' does not exist for entity 'TestBean'");
 
-		creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
+		creator.validateOrCreateCFForEntity(meta, false);
 	}
 
+	@Test
+	public void should_exception_because_wide_row_not_found() throws Exception
+	{
+		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
+				.noClass(Integer.class, String.class)
+				.field("externalWideMap")
+				.externalCf("externalCF")
+				.type(PropertyType.WIDE_MAP)
+				.idClass(Long.class)
+				.entityClassName("testEntity")
+				.build();
+
+		prepareData();
+		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
+		configContext.setForceColumnFamilyCreation(false);
+		exception.expect(AchillesInvalidColumnFamilyException.class);
+		exception
+				.expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap' of entity 'testEntity'");
+
+		creator
+				.validateOrCreateCFForWideMap(wideMapMeta, Long.class, false, "externalCF",
+						"testCF");
+	}
+
+	@Ignore
 	@Test
 	public void should_exception_because_column_family_not_found_for_external_wide_map()
 			throws Exception
 	{
 		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
-				.noClass(Integer.class, String.class) //
-				.field("externalWideMap") //
-				.externalCf("externalCF") //
-				.idSerializer(LONG_SRZ)//
-				.type(PropertyType.WIDE_MAP) //
+				.noClass(Integer.class, String.class)
+				.field("externalWideMap")
+				.externalCf("externalCF")
+				.idClass(Long.class)
+				.type(PropertyType.WIDE_MAP)
 				.build();
 
 		prepareData(externalWideMapMeta);
@@ -366,12 +394,12 @@ public class ThriftColumnFamilyCreatorTest
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception.expectMessage("The required column family '" + COUNTER_CF + "' does not exist");
 
-		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta<?>>(),
-				configContext, true);
+		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta>(), configContext,
+				true);
 
 	}
 
-	private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas)
+	private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas) throws Exception
 	{
 		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
@@ -380,23 +408,24 @@ public class ThriftColumnFamilyCreatorTest
 			propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
 		}
 
-		simplePropertyMeta = PropertyMetaFactory.factory(Void.class, String.class).type(SIMPLE)
-				.propertyName("name").accessors(accessors).build();
+		simplePropertyMeta = PropertyMetaTestBuilder
+				.noClass(Void.class, String.class)
+				.type(SIMPLE)
+				.field("name")
+				.build();
 
 		propertyMetas.put("name", simplePropertyMeta);
 
-		meta = entityMetaBuilder(idMeta) //
-				.className("TestBean")//
-				.columnFamilyName("testCF") //
-				.serialVersionUID(1L) //
-				.propertyMetas(propertyMetas) //
+		meta = entityMetaBuilder(idMeta)
+				.className("TestBean")
+				.columnFamilyName("testCF")
+				.serialVersionUID(1L)
+				.propertyMetas(propertyMetas)
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE))
 				.build();
 
-		entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(this.getClass(), meta);
-
-		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
-		when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 	}
 
 	class TestBean

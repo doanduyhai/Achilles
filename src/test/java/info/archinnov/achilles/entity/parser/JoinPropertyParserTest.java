@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.LONG_SRZ;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
@@ -35,7 +34,6 @@ import javax.persistence.OneToOne;
 import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.Serializer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -405,15 +403,20 @@ public class JoinPropertyParserTest
 		parser.fillJoinWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
 		assertThat(propertyMeta.getExternalCFName()).isEqualTo("externalTableName");
-		assertThat((Serializer<Long>) propertyMeta.getIdSerializer()).isEqualTo(LONG_SRZ);
+		assertThat((Class<Long>) propertyMeta.getIdClass()).isEqualTo(Long.class);
 
 		assertThat(
-				(PropertyMeta<Integer, UserBean>) entityContext.getPropertyMetas().values()
-						.iterator().next()).isSameAs(propertyMeta);
+				(PropertyMeta<Integer, UserBean>) entityContext
+						.getPropertyMetas()
+						.values()
+						.iterator()
+						.next()).isSameAs(propertyMeta);
 
 		assertThat(joinPropertyMetaToBeFilled).hasSize(1);
 		assertThat(
-				(PropertyMeta<Integer, UserBean>) joinPropertyMetaToBeFilled.keySet().iterator()
+				(PropertyMeta<Integer, UserBean>) joinPropertyMetaToBeFilled
+						.keySet()
+						.iterator()
 						.next()).isSameAs(propertyMeta);
 	}
 

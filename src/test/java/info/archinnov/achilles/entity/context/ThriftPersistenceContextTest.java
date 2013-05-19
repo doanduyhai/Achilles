@@ -40,23 +40,23 @@ public class ThriftPersistenceContextTest
 	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
-	private EntityMeta<Long> joinMeta;
+	private EntityMeta joinMeta;
 
 	private PropertyMeta<Void, Long> idMeta;
 
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap;
+	private Map<String, ThriftGenericEntityDao> entityDaosMap;
 
 	@Mock
 	private DaoContext daoContext;
 
 	@Mock
-	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap;
+	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -67,10 +67,10 @@ public class ThriftPersistenceContextTest
 	private ThriftConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> entityDao;
+	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ThriftGenericWideRowDao<Long, String> columFamilyDao;
+	private ThriftGenericWideRowDao columFamilyDao;
 
 	@Mock
 	private Mutator<Long> mutator;
@@ -89,13 +89,12 @@ public class ThriftPersistenceContextTest
 		configContext.setConsistencyPolicy(policy);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_init_entity_dao_on_initialization() throws Exception
 	{
 		prepareContextWithEntityDao();
 
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, entity);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
@@ -104,29 +103,25 @@ public class ThriftPersistenceContextTest
 		assertThat(context.getEntityDao()).isSameAs(entityDao);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_init_wide_row_dao_on_initialization() throws Exception
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(true);
-		when((ThriftGenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
-				columFamilyDao);
+		when((ThriftGenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
 
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, entity);
 
-		assertThat((ThriftGenericWideRowDao<Long, String>) context.getColumnFamilyDao()).isSameAs(
-				columFamilyDao);
+		assertThat(context.getColumnFamilyDao()).isSameAs(columFamilyDao);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_init_with_primary_key() throws Exception
 	{
 		prepareContextWithEntityDao();
 		Long primaryKey = 150L;
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, CompleteBean.class, primaryKey);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(primaryKey);
@@ -135,17 +130,17 @@ public class ThriftPersistenceContextTest
 		assertThat(context.getEntityDao()).isSameAs(entityDao);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_spawn_child_context() throws Exception
 	{
 		prepareContextWithEntityDao();
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
-		ThriftPersistenceContext<Long> newContext = context.newPersistenceContext(joinMeta, bean);
+		ThriftPersistenceContext newContext = (ThriftPersistenceContext) context
+				.newPersistenceContext(joinMeta, bean);
 
 		assertThat(newContext.getPrimaryKey()).isEqualTo(bean.getUserId());
 		assertThat(newContext.getEntity()).isEqualTo(bean);
@@ -154,18 +149,17 @@ public class ThriftPersistenceContextTest
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_spawn_child_context_with_id() throws Exception
 	{
 		prepareContextWithEntityDao();
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
-		ThriftPersistenceContext<Long> newContext = context.newPersistenceContext(UserBean.class,
-				joinMeta, bean.getUserId());
+		ThriftPersistenceContext newContext = (ThriftPersistenceContext) context
+				.newPersistenceContext(UserBean.class, joinMeta, bean.getUserId());
 
 		assertThat(newContext.getPrimaryKey()).isEqualTo(bean.getUserId());
 		assertThat(newContext.getEntity()).isNull();
@@ -173,20 +167,14 @@ public class ThriftPersistenceContextTest
 		assertThat(newContext.getEntityDao()).isSameAs(entityDao);
 	}
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Test
 	public void should_find_wide_row_dao() throws Exception
 	{
 		prepareContextWithEntityDao();
-		ThriftPersistenceContext<Long> context = new ThriftPersistenceContext<Long>(entityMeta, configContext,
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, thriftImmediateFlushContext, entity);
 
-		when((ThriftGenericWideRowDao<Long, String>) daoContext.findWideRowDao("cf")).thenReturn(
-				columFamilyDao);
+		when(daoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
 
 		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("cf")).isSameAs(columFamilyDao);
 	}
@@ -195,43 +183,41 @@ public class ThriftPersistenceContextTest
 	private void prepareContext() throws Exception
 	{
 		idMeta = PropertyMetaTestBuilder//
-				.of(CompleteBean.class, Void.class, Long.class) //
-				.field("id") //
-				.accesors() //
-				.type(PropertyType.SIMPLE) //
+				.of(CompleteBean.class, Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.type(PropertyType.SIMPLE)
 				.build();
 
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(introspector.getKey(entity, idMeta)).thenReturn(entity.getId());
 		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
 	}
 
-	@SuppressWarnings("unchecked")
 	private void prepareContextWithEntityDao() throws Exception
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when((ThriftGenericEntityDao<Long>) daoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when(daoContext.findEntityDao("cf")).thenReturn(entityDao);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void prepareNewContext() throws Exception
 	{
 		bean = new UserBean();
 		bean.setUserId(123L);
 
 		joinIdMeta = PropertyMetaTestBuilder//
-				.of(UserBean.class, Void.class, Long.class) //
-				.field("userId") //
-				.accesors() //
-				.type(PropertyType.SIMPLE) //
+				.of(UserBean.class, Void.class, Long.class)
+				.field("userId")
+				.accessors()
+				.type(PropertyType.SIMPLE)
 				.build();
 
-		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
+		when((PropertyMeta<Void, Long>) joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
 		when(joinMeta.isWideRow()).thenReturn(false);
-		when((ThriftGenericEntityDao<Long>) daoContext.findEntityDao("cf2")).thenReturn(entityDao);
+		when(daoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}
 
 }

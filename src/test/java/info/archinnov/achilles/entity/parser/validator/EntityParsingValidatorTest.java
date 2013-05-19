@@ -81,8 +81,10 @@ public class EntityParsingValidatorTest
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.valueClass(String.class) // /
-				.type(PropertyType.SIMPLE) //
+				.valueClass(String.class)
+				// /
+				.type(PropertyType.SIMPLE)
+				//
 				.build();
 		propertyMetas.put("name", propertyMeta);
 		context.setPropertyMetas(propertyMetas);
@@ -99,12 +101,15 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_join_entity_is_wide_row() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-				.valueClass(String.class) //
-				.field("test") //
-				.entityClassName("entity") //
+				.valueClass(String.class)
+				//
+				.field("test")
+				//
+				.entityClassName("entity")
+				//
 				.build();
 
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setWideRow(true);
 		joinMeta.setClassName("class.name");
 		exception.expect(AchillesBeanMappingException.class);
@@ -118,7 +123,7 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_join_entity_does_not_exist_in_properties_map()
 			throws Exception
 	{
-		Map<Class<?>, EntityMeta<?>> entityMetaMap = new HashMap<Class<?>, EntityMeta<?>>();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(this.getClass(), null);
 
 		exception.expect(AchillesBeanMappingException.class);

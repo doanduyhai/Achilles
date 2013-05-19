@@ -40,7 +40,7 @@ public class MapEntryWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private PropertyMeta<Integer, String> propertyMeta;
@@ -60,12 +60,12 @@ public class MapEntryWrapperBuilderTest
 		map.put(3, "75014");
 		Entry<Integer, String> mapEntry = map.entrySet().iterator().next();
 
-		MapEntryWrapper<Long, Integer, String> wrapper = MapEntryWrapperBuilder //
-				.builder(context, mapEntry)//
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		MapEntryWrapper<Integer, String> wrapper = MapEntryWrapperBuilder //
+				.builder(context, mapEntry)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(mapEntry);

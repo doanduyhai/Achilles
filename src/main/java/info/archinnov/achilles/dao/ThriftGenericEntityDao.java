@@ -38,16 +38,22 @@ public class ThriftGenericEntityDao extends ThriftAbstractDao
 		this.initComposites();
 	}
 
+	protected <K, V> ThriftGenericEntityDao(Pair<K, V> rowkeyAndValueClasses) {
+		this.initComposites();
+		super.rowkeyAndValueClasses = rowkeyAndValueClasses;
+	}
+
 	public <K, V> ThriftGenericEntityDao(Cluster cluster, Keyspace keyspace, String cf,
 			AchillesConsistencyLevelPolicy consistencyPolicy, Pair<K, V> rowkeyAndValueClasses)
 	{
 		super(cluster, keyspace, cf, consistencyPolicy, rowkeyAndValueClasses);
 		this.initComposites();
 		columnNameSerializer = COMPOSITE_SRZ;
-		log.debug(
-				"Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
-				this.rowSrz().getComparatorType().getTypeName(), STRING_SRZ.getComparatorType()
-						.getTypeName());
+		log
+				.debug("Initializing GenericEntityDao for key serializer '{}', composite comparator and value serializer '{}'",
+						this.rowSrz().getComparatorType().getTypeName(), STRING_SRZ
+								.getComparatorType()
+								.getTypeName());
 
 	}
 

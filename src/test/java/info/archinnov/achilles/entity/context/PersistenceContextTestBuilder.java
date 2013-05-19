@@ -18,40 +18,40 @@ import org.powermock.reflect.Whitebox;
  * @author DuyHai DOAN
  * 
  */
-public class PersistenceContextTestBuilder<ID>
+public class PersistenceContextTestBuilder
 {
-	private EntityMeta<ID> entityMeta;
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
-	private Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao<?, ?>>();
+	private EntityMeta entityMeta;
+	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
+	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 	private ThriftCounterDao thriftCounterDao;
 	private ThriftConsistencyLevelPolicy policy;
 	private boolean ensureJoinConsistency;
 	private Object entity;
 	private Class<?> entityClass;
-	private ID primaryKey;
-	private ThriftGenericEntityDao<ID> entityDao;
-	private ThriftGenericWideRowDao<ID, ?> wideRowDao;
+	private Object primaryKey;
+	private ThriftGenericEntityDao entityDao;
+	private ThriftGenericWideRowDao wideRowDao;
 
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
-	public static <ID, T> PersistenceContextTestBuilder<ID> context(EntityMeta<ID> entityMeta,//
+	public static PersistenceContextTestBuilder context(EntityMeta entityMeta,//
 			ThriftCounterDao thriftCounterDao, //
 			ThriftConsistencyLevelPolicy policy, //
-			Class<T> entityClass, ID primaryKey)
+			Class<?> entityClass, Object primaryKey)
 	{
-		return new PersistenceContextTestBuilder<ID>(entityMeta, thriftCounterDao, policy, entityClass,
+		return new PersistenceContextTestBuilder(entityMeta, thriftCounterDao, policy, entityClass,
 				primaryKey);
 	}
 
-	public static <ID, T> PersistenceContextTestBuilder<ID> mockAll(EntityMeta<ID> entityMeta,
-			Class<T> entityClass, ID primaryKey)
+	public static PersistenceContextTestBuilder mockAll(EntityMeta entityMeta,
+			Class<?> entityClass, Object primaryKey)
 	{
-		return new PersistenceContextTestBuilder<ID>(entityMeta, mock(ThriftCounterDao.class),
+		return new PersistenceContextTestBuilder(entityMeta, mock(ThriftCounterDao.class),
 				mock(ThriftConsistencyLevelPolicy.class), entityClass, primaryKey);
 	}
 
-	public PersistenceContextTestBuilder(EntityMeta<ID> entityMeta, ThriftCounterDao thriftCounterDao,
-			ThriftConsistencyLevelPolicy policy, Class<?> entityClass, ID primaryKey)
+	public PersistenceContextTestBuilder(EntityMeta entityMeta, ThriftCounterDao thriftCounterDao,
+			ThriftConsistencyLevelPolicy policy, Class<?> entityClass, Object primaryKey)
 	{
 		this.entityMeta = entityMeta;
 		this.thriftCounterDao = thriftCounterDao;
@@ -60,13 +60,13 @@ public class PersistenceContextTestBuilder<ID>
 		this.primaryKey = primaryKey;
 	}
 
-	public ThriftPersistenceContext<ID> build()
+	public ThriftPersistenceContext build()
 	{
 		DaoContext daoContext = new DaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
 		AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
 		configContext.setEnsureJoinConsistency(ensureJoinConsistency);
-		ThriftPersistenceContext<ID> context = new ThriftPersistenceContext<ID>(//
+		ThriftPersistenceContext context = new ThriftPersistenceContext(//
 				entityMeta, //
 				configContext, //
 				daoContext, //
@@ -79,47 +79,46 @@ public class PersistenceContextTestBuilder<ID>
 		return context;
 	}
 
-	public PersistenceContextTestBuilder<ID> entityDaosMap(
-			Map<String, ThriftGenericEntityDao<?>> entityDaosMap)
+	public PersistenceContextTestBuilder entityDaosMap(
+			Map<String, ThriftGenericEntityDao> entityDaosMap)
 	{
 		this.entityDaosMap = entityDaosMap;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> columnFamilyDaosMap(
-			Map<String, ThriftGenericWideRowDao<?, ?>> columnFamilyDaosMap)
+	public PersistenceContextTestBuilder columnFamilyDaosMap(
+			Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> entity(Object entity)
+	public PersistenceContextTestBuilder entity(Object entity)
 	{
 		this.entity = entity;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> entityDao(ThriftGenericEntityDao<ID> entityDao)
+	public PersistenceContextTestBuilder entityDao(ThriftGenericEntityDao entityDao)
 	{
 		this.entityDao = entityDao;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> columnFamilyDao(
-			ThriftGenericWideRowDao<ID, ?> columnFamilyDao)
+	public PersistenceContextTestBuilder columnFamilyDao(ThriftGenericWideRowDao columnFamilyDao)
 	{
 		this.wideRowDao = columnFamilyDao;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> thriftImmediateFlushContext(
+	public PersistenceContextTestBuilder thriftImmediateFlushContext(
 			ThriftImmediateFlushContext thriftImmediateFlushContext)
 	{
 		this.thriftImmediateFlushContext = thriftImmediateFlushContext;
 		return this;
 	}
 
-	public PersistenceContextTestBuilder<ID> ensureJoinConsistency(boolean ensureJoinConsistency)
+	public PersistenceContextTestBuilder ensureJoinConsistency(boolean ensureJoinConsistency)
 	{
 		this.ensureJoinConsistency = ensureJoinConsistency;
 		return this;

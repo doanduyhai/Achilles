@@ -6,8 +6,8 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -66,7 +66,7 @@ public class ThriftEntityPersisterTest
 	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -76,9 +76,9 @@ public class ThriftEntityPersisterTest
 
 	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
-	private Map<String, ThriftGenericEntityDao<?>> entityDaosMap = new HashMap<String, ThriftGenericEntityDao<?>>();
+	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
 
 	@Before
 	public void setUp()
@@ -86,8 +86,10 @@ public class ThriftEntityPersisterTest
 		entityDaosMap.clear();
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
-				.entity(bean)//
-				.entityDaosMap(entityDaosMap) //
+				.entity(bean)
+				//
+				.entityDaosMap(entityDaosMap)
+				//
 				.build();
 	}
 
@@ -106,8 +108,10 @@ public class ThriftEntityPersisterTest
 	public void should_persist_simple_property() throws Exception
 	{
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.type(PropertyType.SIMPLE)
+				.build();
 		propertyMetas.put("simple", simpleMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -123,21 +127,21 @@ public class ThriftEntityPersisterTest
 	{
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.type(PropertyType.SIMPLE) //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
 				.build();
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class) //
-				.field("user") //
-				.accesors() //
-				.type(PropertyType.JOIN_SIMPLE)//
-				.joinMeta(joinMeta)//
-				.cascadeType(CascadeType.PERSIST) //
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL)) //
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(PropertyType.JOIN_SIMPLE)
+				.joinMeta(joinMeta)
+				.cascadeType(CascadeType.PERSIST)
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
 				.build();
 
 		propertyMetas.put("user", propertyMeta);
@@ -155,19 +159,18 @@ public class ThriftEntityPersisterTest
 		verify(persisterImpl).batchPersistJoinEntity(context, propertyMeta, user, persister);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_ensure_join_entity_exist() throws Exception
 	{
 		PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class) //
-				.field("id") //
-				.type(PropertyType.SIMPLE) //
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
 				.build();
-		EntityMeta<Long> joinMeta = new EntityMeta<Long>();
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setColumnFamilyName("cfName");
-		ThriftGenericEntityDao<Long> entityDao = mock(ThriftGenericEntityDao.class);
+		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
 		entityDaosMap.put("cfName", entityDao);
 		Long joinId = RandomUtils.nextLong();
 		JoinProperties joinProperties = new JoinProperties();
@@ -188,10 +191,14 @@ public class ThriftEntityPersisterTest
 		ArrayList<String> list = new ArrayList<String>();
 
 		PropertyMeta<Void, String> listMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class)//
-				.field("friends") //
-				.accesors() //
-				.type(PropertyType.LIST).build();
+				.completeBean(Void.class, String.class)
+				//
+				.field("friends")
+				//
+				.accessors()
+				//
+				.type(PropertyType.LIST)
+				.build();
 		propertyMetas.put("list", listMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -209,10 +216,11 @@ public class ThriftEntityPersisterTest
 		Set<String> set = new HashSet<String>();
 
 		PropertyMeta<Void, String> setMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class)//
-				.field("followers") //
-				.accesors() //
-				.type(PropertyType.SET).build();
+				.completeBean(Void.class, String.class)
+				.field("followers")
+				.accessors()
+				.type(PropertyType.SET)
+				.build();
 		propertyMetas.put("set", setMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -230,10 +238,11 @@ public class ThriftEntityPersisterTest
 		Map<Integer, String> map = new HashMap<Integer, String>();
 
 		PropertyMeta<Integer, String> mapMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, String.class)//
-				.field("preferences") //
-				.accesors() //
-				.type(PropertyType.MAP).build();
+				.completeBean(Integer.class, String.class)
+				.field("preferences")
+				.accessors()
+				.type(PropertyType.MAP)
+				.build();
 		propertyMetas.put("map", mapMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -251,10 +260,11 @@ public class ThriftEntityPersisterTest
 		UserBean user = new UserBean();
 
 		PropertyMeta<Void, UserBean> joinMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class)//
-				.field("user") //
-				.accesors() //
-				.type(PropertyType.JOIN_SIMPLE).build();
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(PropertyType.JOIN_SIMPLE)
+				.build();
 		propertyMetas.put("join", joinMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -272,10 +282,11 @@ public class ThriftEntityPersisterTest
 		Set<String> joinSet = new HashSet<String>();
 
 		PropertyMeta<Void, String> joinSetMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, String.class)//
-				.field("followers") //
-				.accesors() //
-				.type(PropertyType.JOIN_SET).build();
+				.completeBean(Void.class, String.class)
+				.field("followers")
+				.accessors()
+				.type(PropertyType.JOIN_SET)
+				.build();
 		propertyMetas.put("joinSet", joinSetMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
@@ -293,10 +304,11 @@ public class ThriftEntityPersisterTest
 		Map<Integer, String> joinMap = new HashMap<Integer, String>();
 
 		PropertyMeta<Integer, String> joinMapMeta = PropertyMetaTestBuilder //
-				.completeBean(Integer.class, String.class)//
-				.field("preferences") //
-				.accesors() //
-				.type(PropertyType.JOIN_MAP).build();
+				.completeBean(Integer.class, String.class)
+				.field("preferences")
+				.accessors()
+				.type(PropertyType.JOIN_MAP)
+				.build();
 		propertyMetas.put("joinMap", joinMapMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);

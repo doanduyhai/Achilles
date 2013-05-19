@@ -38,7 +38,7 @@ public class KeySetWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
@@ -49,11 +49,6 @@ public class KeySetWrapperBuilderTest
 		setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
 	}
 
-	@SuppressWarnings(
-	{
-			"rawtypes",
-			"unchecked"
-	})
 	@Test
 	public void should_build() throws Exception
 	{
@@ -62,12 +57,12 @@ public class KeySetWrapperBuilderTest
 		targetMap.put(2, "Paris");
 		targetMap.put(3, "75014");
 
-		ValueCollectionWrapper<Long, String> wrapper = ValueCollectionWrapperBuilder
-				.builder(context, targetMap.values()) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta((PropertyMeta) propertyMeta) //
-				.proxifier(proxifier) //
+		ValueCollectionWrapper<String> wrapper = ValueCollectionWrapperBuilder
+				.builder(context, targetMap.values())
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta((PropertyMeta) propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(targetMap.values());

@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import java.util.Iterator;
 import java.util.List;
 
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.CounterSlice;
 import me.prettyprint.hector.api.beans.HCounterColumn;
@@ -59,11 +58,6 @@ public class AchillesCounterSliceIteratorTest
 
 	private String columnFamily = "cf";
 
-	@SuppressWarnings(
-	{
-			"unchecked",
-			"rawtypes"
-	})
 	@Before
 	public void setUp()
 	{
@@ -72,11 +66,9 @@ public class AchillesCounterSliceIteratorTest
 		when(counterSlice.getColumns()).thenReturn(hCounterColumns);
 		when(hCounterColumns.iterator()).thenReturn(counterColumnsIterator);
 		when(propertyMeta.getValueClass()).thenReturn(Long.class);
-		when(propertyMeta.getValueSerializer()).thenReturn((Serializer) LONG_SRZ);
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_3_values() throws Exception
 	{
@@ -129,7 +121,6 @@ public class AchillesCounterSliceIteratorTest
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_reload_when_reaching_end_of_batch() throws Exception
 	{

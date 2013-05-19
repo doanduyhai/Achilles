@@ -42,7 +42,7 @@ public class ListWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception
@@ -54,12 +54,12 @@ public class ListWrapperBuilderTest
 	public void should_build() throws Exception
 	{
 		List<String> target = new ArrayList<String>();
-		ListWrapper<Long, String> wrapper = ListWrapperBuilder //
-				.builder(context, target) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		ListWrapper<String> wrapper = ListWrapperBuilder //
+				.builder(context, target)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(target);

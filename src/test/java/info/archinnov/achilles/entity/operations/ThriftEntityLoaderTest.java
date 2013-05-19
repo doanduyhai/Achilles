@@ -9,8 +9,8 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -53,7 +53,7 @@ public class ThriftEntityLoaderTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private EntityMeta<Long> entityMeta;
+	private EntityMeta entityMeta;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;
@@ -71,7 +71,7 @@ public class ThriftEntityLoaderTest
 	private PropertyMeta<Integer, String> mapMeta;
 
 	@Mock
-	private EntityMeta<Long> joinMeta;
+	private EntityMeta joinMeta;
 
 	@Mock
 	private PropertyMeta<Void, Long> joinIdMeta;
@@ -80,7 +80,7 @@ public class ThriftEntityLoaderTest
 	private ThriftEntityMapper mapper;
 
 	@Mock
-	private ThriftGenericEntityDao<Long> dao;
+	private ThriftGenericEntityDao dao;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -105,23 +105,24 @@ public class ThriftEntityLoaderTest
 
 	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp()
 	{
 		context = PersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
-				.entity(bean).build();
+				.entity(bean)
+				.build();
 	}
 
 	@Test
 	public void should_load_entity() throws Exception
 	{
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when(loaderImpl.load(context)).thenReturn(bean);
+		when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
 
-		Object actual = loader.load(context);
+		Object actual = loader.load(context, CompleteBean.class);
 
 		assertThat(actual).isSameAs(bean);
 	}
@@ -131,10 +132,10 @@ public class ThriftEntityLoaderTest
 	{
 		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 		when(entityMeta.isWideRow()).thenReturn(true);
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(idMeta.getSetter()).thenReturn(idSetter);
 
-		Object actual = loader.load(context);
+		Object actual = loader.load(context, CompleteBean.class);
 
 		assertThat(actual).isNotNull();
 		verify(introspector).setValueToField(any(CompleteBean.class), eq(idSetter),
@@ -146,13 +147,13 @@ public class ThriftEntityLoaderTest
 	public void should_throw_exception_on_load_error() throws Exception
 	{
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when(loaderImpl.load(context)).thenThrow(new RuntimeException("test"));
+		when(loaderImpl.load(context, CompleteBean.class)).thenThrow(new RuntimeException("test"));
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Error when loading entity type '"
 				+ CompleteBean.class.getCanonicalName() + "' with key '" + bean.getId()
 				+ "'. Cause : test");
 
-		loader.load(context);
+		loader.load(context, CompleteBean.class);
 	}
 }

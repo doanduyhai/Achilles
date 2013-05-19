@@ -39,7 +39,7 @@ public class ListIteratorWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Mock
 	private PropertyMeta<Void, String> propertyMeta;
@@ -57,12 +57,12 @@ public class ListIteratorWrapperBuilderTest
 		target.add("a");
 
 		ListIterator<String> iterator = target.listIterator();
-		ListIteratorWrapper<Long, String> wrapper = ListIteratorWrapperBuilder //
-				.builder(context, iterator) //
-				.dirtyMap(dirtyMap) //
-				.setter(setter) //
-				.propertyMeta(propertyMeta) //
-				.proxifier(proxifier) //
+		ListIteratorWrapper<String> wrapper = ListIteratorWrapperBuilder //
+				.builder(context, iterator)
+				.dirtyMap(dirtyMap)
+				.setter(setter)
+				.propertyMeta(propertyMeta)
+				.proxifier(proxifier)
 				.build();
 
 		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(iterator);

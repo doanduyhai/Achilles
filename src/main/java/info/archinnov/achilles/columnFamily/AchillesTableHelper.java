@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class AchillesColumnFamilyHelper
+public class AchillesTableHelper
 {
 	protected static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 

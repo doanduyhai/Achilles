@@ -1,10 +1,9 @@
 package info.archinnov.achilles.entity.operations;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -29,11 +28,6 @@ import org.mockito.runners.MockitoJUnitRunner;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings(
-{
-		"rawtypes",
-		"unchecked"
-})
 public class AchillesEntityRefresherTest
 {
 
@@ -53,7 +47,7 @@ public class AchillesEntityRefresherTest
 	private EntityMeta entityMeta;
 
 	@Mock
-	private JpaEntityInterceptor<Object, CompleteBean> jpaEntityInterceptor;
+	private JpaEntityInterceptor<CompleteBean> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
@@ -66,15 +60,16 @@ public class AchillesEntityRefresherTest
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		ThriftPersistenceContext<Long> context = PersistenceContextTestBuilder //
-				.mockAll(entityMeta, CompleteBean.class, bean.getId()) //
-				.entity(bean).build();
+		ThriftPersistenceContext context = PersistenceContextTestBuilder //
+				.mockAll(entityMeta, CompleteBean.class, bean.getId())
+				.entity(bean)
+				.build();
 		when(proxifier.getInterceptor(bean)).thenReturn(jpaEntityInterceptor);
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
 		when(jpaEntityInterceptor.getLazyAlreadyLoaded()).thenReturn(lazyLoaded);
-		when(loader.load(context)).thenReturn(bean);
+		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
 
 		achillesEntityRefresher.refresh(context);
 

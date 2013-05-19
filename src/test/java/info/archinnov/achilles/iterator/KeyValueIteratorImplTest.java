@@ -36,7 +36,7 @@ public class KeyValueIteratorImplTest
 {
 
 	@InjectMocks
-	private KeyValueIteratorImpl<Long, CorrectMultiKey, String> iterator;
+	private KeyValueIteratorImpl<CorrectMultiKey, String> iterator;
 
 	@Mock
 	private AchillesSliceIterator<CorrectMultiKey, String> achillesSliceIterator;
@@ -54,7 +54,7 @@ public class KeyValueIteratorImplTest
 	private KeyValueFactory factory;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp()
@@ -75,7 +75,6 @@ public class KeyValueIteratorImplTest
 
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_keyvalue() throws Exception
 	{
@@ -94,7 +93,6 @@ public class KeyValueIteratorImplTest
 		assertThat(result).isSameAs(keyValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_key() throws Exception
 	{
@@ -113,7 +111,6 @@ public class KeyValueIteratorImplTest
 		assertThat(result).isSameAs(key);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_value() throws Exception
 	{
@@ -132,7 +129,6 @@ public class KeyValueIteratorImplTest
 		assertThat(result).isSameAs(value);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_give_next_ttl() throws Exception
 	{

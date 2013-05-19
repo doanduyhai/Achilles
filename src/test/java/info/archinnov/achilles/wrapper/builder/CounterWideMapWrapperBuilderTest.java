@@ -25,7 +25,7 @@ import org.powermock.reflect.Whitebox;
 public class CounterWideMapWrapperBuilderTest
 {
 	@Mock
-	private ThriftGenericWideRowDao<Long, Long> wideMapCounterDao;
+	private ThriftGenericWideRowDao wideMapCounterDao;
 
 	@Mock
 	private PropertyMeta<Integer, Counter> propertyMeta;
@@ -46,22 +46,22 @@ public class CounterWideMapWrapperBuilderTest
 	private CompositeFactory compositeFactory;
 
 	@Mock
-	private ThriftPersistenceContext<Long> context;
+	private ThriftPersistenceContext context;
 
 	@Test
 	public void should_build() throws Exception
 	{
-		CounterWideMapWrapper<Long, Integer> wrapper = CounterWideMapWrapperBuilder
-				.builder(1L, wideMapCounterDao, propertyMeta) //
-				.interceptor(interceptor) //
-				.compositeHelper(compositeHelper) //
-				.iteratorFactory(iteratorFactory) //
-				.compositeFactory(compositeFactory) //
-				.context(context) //
+		CounterWideMapWrapper<Integer> wrapper = CounterWideMapWrapperBuilder
+				.builder(1L, wideMapCounterDao, propertyMeta)
+				.interceptor(interceptor)
+				.compositeHelper(compositeHelper)
+				.iteratorFactory(iteratorFactory)
+				.compositeFactory(compositeFactory)
+				.context(context)
 				.build();
 
 		assertThat(wrapper).isNotNull();
-		assertThat(wrapper.getInterceptor()).isSameAs(interceptor);
+		assertThat(wrapper.getInterceptor()).isSameAs((AchillesJpaEntityInterceptor) interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "wideMapCounterDao")).isSameAs(
 				wideMapCounterDao);
 		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
