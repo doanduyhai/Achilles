@@ -27,10 +27,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 	private ThriftBatchingFlushContext flushContext;
 
-	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, DaoContext daoContext,
+	ThriftBatchingEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+			Map<Class<?>, EntityMeta> entityMetaMap, DaoContext daoContext,
 			AchillesConfigurationContext configContext)
 	{
-		super(entityMetaMap, daoContext, configContext);
+		super(entityManagerFactory, entityMetaMap, daoContext, configContext);
 		this.flushContext = new ThriftBatchingFlushContext(daoContext, consistencyPolicy);
 	}
 

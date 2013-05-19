@@ -152,9 +152,9 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(),
 				configurationMap);
 
-		log.info(
-				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
-				cluster.getName(), keyspace.getKeyspaceName());
+		log
+				.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
+						cluster.getName(), keyspace.getKeyspaceName());
 
 		super.columnFamilyCreator = new ThriftColumnFamilyCreator(cluster, keyspace);
 		boolean hasSimpleCounter = bootstrap();
@@ -172,8 +172,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	{
 		log.info("Create new Thrift-based Entity Manager ");
 
-		return new ThriftEntityManager(//
-				Collections.unmodifiableMap(entityMetaMap), //
+		return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap), //
 				daoContext, configContext);
 	}
 
@@ -187,8 +186,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	{
 		log.info("Create new Thrift-based Entity Manager ");
 
-		return new ThriftEntityManager(//
-				Collections.unmodifiableMap(entityMetaMap), //
+		return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap),
 				daoContext, configContext);
 	}
 
@@ -228,5 +226,4 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 		return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
 				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
 	}
-
 }

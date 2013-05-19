@@ -18,7 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Cache;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnitUtil;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.metamodel.Metamodel;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -119,5 +123,53 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 				.initObjectMapperFactory(configurationMap));
 
 		return configContext;
+	}
+
+	/**
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
+	 */
+	@Override
+	public CriteriaBuilder getCriteriaBuilder()
+	{
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
+	}
+
+	/**
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
+	 */
+	@Override
+	public Metamodel getMetamodel()
+	{
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
+	}
+
+	@Override
+	public Map<String, Object> getProperties()
+	{
+		// TODO Implement
+		return new HashMap<String, Object>();
+	}
+
+	/**
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
+	 */
+	@Override
+	public Cache getCache()
+	{
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
+	}
+
+	/**
+	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
+	 */
+	@Override
+	public PersistenceUnitUtil getPersistenceUnitUtil()
+	{
+		// TODO provide a PersistenceUnitUtil, easy
+		throw new UnsupportedOperationException(
+				"This operation is not supported for this Cassandra");
 	}
 }

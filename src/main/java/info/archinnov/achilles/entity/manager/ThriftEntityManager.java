@@ -39,11 +39,12 @@ public class ThriftEntityManager extends AchillesEntityManager
 
 	protected final DaoContext daoContext;
 
-	ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+	ThriftEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+			Map<Class<?>, EntityMeta> entityMetaMap, //
 			DaoContext daoContext, //
 			AchillesConfigurationContext configContext)
 	{
-		super(entityMetaMap, configContext);
+		super(entityManagerFactory, entityMetaMap, configContext);
 		this.daoContext = daoContext;
 		super.persister = new ThriftEntityPersister();
 		super.loader = new ThriftEntityLoader();
@@ -127,9 +128,9 @@ public class ThriftEntityManager extends AchillesEntityManager
 	public <T> T getReference(final Class<T> entityClass, final Object primaryKey,
 			ConsistencyLevel readLevel)
 	{
-		log.debug(
-				"Get reference for entity class '{}' with primary key {} and read consistency level {}",
-				entityClass, primaryKey, readLevel.name());
+		log
+				.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
+						entityClass, primaryKey, readLevel.name());
 
 		consistencyPolicy.setCurrentReadLevel(readLevel);
 		return reinitConsistencyLevels(new SafeExecutionContext<T>()
@@ -171,7 +172,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 	 */
 	public ThriftBatchingEntityManager batchingEntityManager()
 	{
-		return new ThriftBatchingEntityManager(entityMetaMap, daoContext, configContext);
+		return new ThriftBatchingEntityManager(entityManagerFactory, entityMetaMap, daoContext,
+				configContext);
 	}
 
 	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
@@ -207,4 +209,5 @@ public class ThriftEntityManager extends AchillesEntityManager
 			consistencyPolicy.reinitDefaultConsistencyLevels();
 		}
 	}
+
 }
