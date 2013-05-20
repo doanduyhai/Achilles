@@ -3,11 +3,8 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -59,17 +56,12 @@ public class EntrySetWrapperTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftCounterDao thriftCounterDao;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftConsistencyLevelPolicy policy;
-
-	@Mock
-	private ThriftGenericEntityDao entityDao;
+	private AchillesPersistenceContext context;
 
 	private EntityMeta entityMeta;
-
-	private ThriftPersistenceContext context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -87,10 +79,6 @@ public class EntrySetWrapperTest
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
-		context = PersistenceContextTestBuilder //
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity)
-				.build();
 	}
 
 	@Test
@@ -348,7 +336,7 @@ public class EntrySetWrapperTest
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(
+		when(proxifier.buildProxy(eq(entity), any(AchillesPersistenceContext.class))).thenReturn(
 				entity);
 
 		Object[] array = wrapper.toArray(new Entry[]

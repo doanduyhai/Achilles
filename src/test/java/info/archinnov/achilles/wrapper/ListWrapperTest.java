@@ -4,11 +4,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
-import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -70,8 +70,12 @@ public class ListWrapperTest
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		listWrapper.setProxifier(new ThriftEntityProxifier());
-		listWrapper.addAll(1, Arrays.asList("b", "c"));
+		listWrapper.setProxifier(proxifier);
+
+		Collection<String> list = Arrays.asList("b", "c");
+		when(proxifier.unproxy(list)).thenReturn(list);
+
+		listWrapper.addAll(1, list);
 
 		assertThat(target).hasSize(3);
 		assertThat(target.get(1)).isEqualTo("b");

@@ -6,7 +6,6 @@ import info.archinnov.achilles.entity.type.KeyValue;
 import java.util.UUID;
 
 import mapping.entity.UserBean;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
@@ -87,7 +86,7 @@ public class PropertyMetaTest
 		propertyMeta.setValueClass(UUID.class);
 		propertyMeta.setObjectMapper(objectMapper);
 
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID uuid = new UUID(10L, 100L);
 
 		Object test = objectMapper.writeValueAsString(uuid);
 
@@ -117,7 +116,7 @@ public class PropertyMetaTest
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
 		propertyMeta.setObjectMapper(objectMapper);
 
-		UUID timeUUID = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID timeUUID = new UUID(10L, 100L);
 
 		String uuidString = objectMapper.writeValueAsString(timeUUID);
 
@@ -190,7 +189,7 @@ public class PropertyMetaTest
 				.type(PropertyType.WIDE_MAP)
 				.build();
 
-		Object uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		Object uuid = new UUID(10L, 100L);
 
 		Object cast = propertyMeta.castValue(uuid);
 

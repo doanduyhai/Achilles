@@ -2,7 +2,7 @@ package info.archinnov.achilles.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -44,10 +44,10 @@ public class MapEntryWrapperTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private ThriftPersistenceContext context;
+	private AchillesPersistenceContext context;
 
 	@Mock
-	private ThriftPersistenceContext joinContext;
+	private AchillesPersistenceContext joinContext;
 
 	@Before
 	public void setUp() throws Exception

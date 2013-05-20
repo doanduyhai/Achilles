@@ -4,7 +4,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.entity.metadata.builder.EntityMetaBuilder.entityMetaBuilder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -12,8 +11,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
-import me.prettyprint.cassandra.model.ExecutingKeyspace;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,12 +28,6 @@ import parser.entity.Bean;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaBuilderTest
 {
-
-	@Mock
-	private ExecutingKeyspace keyspace;
-
-	@Mock
-	private ThriftGenericEntityDao dao;
 
 	@Mock
 	private PropertyMeta<Void, Long> idMeta;

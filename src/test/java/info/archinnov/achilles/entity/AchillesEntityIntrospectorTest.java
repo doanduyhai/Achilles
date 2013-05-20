@@ -6,8 +6,7 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
@@ -28,7 +27,6 @@ import javax.persistence.Table;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.TweetMultiKey;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +45,6 @@ import testBuilders.PropertyMetaTestBuilder;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings("unused")
 @RunWith(MockitoJUnitRunner.class)
 public class AchillesEntityIntrospectorTest
 {
@@ -70,13 +67,10 @@ public class AchillesEntityIntrospectorTest
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 
-	@Mock
-	private ThriftGenericEntityDao dao;
-
 	private final AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
 
 	@Mock
-	private ThriftConsistencyLevelPolicy policy;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Test
 	public void should_derive_getter() throws Exception
@@ -520,7 +514,7 @@ public class AchillesEntityIntrospectorTest
 		Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
 
 		TweetMultiKey multiKey = new TweetMultiKey();
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID uuid = new UUID(10L, 100L);
 
 		multiKey.setId(uuid);
 		multiKey.setAuthor("author");
@@ -543,7 +537,7 @@ public class AchillesEntityIntrospectorTest
 		Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
 
 		TweetMultiKey multiKey = new TweetMultiKey();
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		UUID uuid = new UUID(10L, 100L);
 
 		multiKey.setId(uuid);
 		multiKey.setRetweetCount(12);

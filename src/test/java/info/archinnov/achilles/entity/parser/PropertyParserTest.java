@@ -3,10 +3,10 @@ package info.archinnov.achilles.entity.parser;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -17,7 +17,6 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Counter;
 import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -32,8 +31,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
 import mapping.entity.CompleteBean;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,7 +53,6 @@ import testBuilders.PropertyMetaTestBuilder;
  * @author DuyHai DOAN
  * 
  */
-@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParserTest
 {
@@ -67,32 +63,21 @@ public class PropertyParserTest
 	private PropertyParser parser = new PropertyParser();
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, ConsistencyLevel> readConsistencyMap = new HashMap<String, ConsistencyLevel>();
-	private Map<String, ConsistencyLevel> writeConsistencyMap = new HashMap<String, ConsistencyLevel>();
 	private EntityParsingContext entityContext;
 	private AchillesConfigurationContext configContext;
-	private ThriftConsistencyLevelPolicy configurableCLPolicy = new ThriftConsistencyLevelPolicy(
-			ConsistencyLevel.ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
 
 	@Mock
-	private Cluster cluster;
-
-	@Mock
-	private Keyspace keyspace;
-
-	@Mock
-	private ObjectMapperFactory objectMapperFactory;
-
-	@Mock
-	private ThriftCounterDao thriftCounterDao;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Before
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
 		configContext = new AchillesConfigurationContext();
-		configContext.setConsistencyPolicy(configurableCLPolicy);
-		configContext.setObjectMapperFactory(objectMapperFactory);
+		configContext.setConsistencyPolicy(policy);
+
+		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 	}
 
 	@Test

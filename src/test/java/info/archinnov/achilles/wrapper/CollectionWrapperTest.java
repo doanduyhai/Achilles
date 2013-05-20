@@ -3,21 +3,18 @@ package info.archinnov.achilles.wrapper;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
-import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,17 +53,15 @@ public class CollectionWrapperTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftCounterDao thriftCounterDao;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
-	private ThriftConsistencyLevelPolicy policy;
+	private AchillesPersistenceContext context;
 
 	@Mock
-	private ThriftGenericEntityDao entityDao;
+	private AchillesPersistenceContext joinContext;
 
 	private EntityMeta entityMeta;
-
-	private ThriftPersistenceContext context;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -85,10 +80,6 @@ public class CollectionWrapperTest
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
-		context = PersistenceContextTestBuilder //
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
-				.entity(entity)
-				.build();
 	}
 
 	@Test
@@ -123,9 +114,15 @@ public class CollectionWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new ThriftEntityProxifier());
+		Collection<String> list = Arrays.asList("a", "b");
 
-		wrapper.addAll(Arrays.asList("a", "b"));
+		wrapper.setProxifier(proxifier);
+
+		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+
+		wrapper.addAll(list);
+
+		verify(proxifier).unproxy(list);
 
 		assertThat(target).hasSize(2);
 		assertThat(target.get(0)).isEqualTo("a");
@@ -236,13 +233,17 @@ public class CollectionWrapperTest
 	public void should_mark_dirty_on_remove_all() throws Exception
 	{
 
-		ArrayList<String> target = new ArrayList<String>();
+		List<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new ThriftEntityProxifier());
-		wrapper.removeAll(Arrays.asList("a", "c"));
+		wrapper.setProxifier(proxifier);
+
+		Collection<String> list = Arrays.asList("a", "c");
+		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+
+		wrapper.removeAll(list);
 
 		assertThat(target).hasSize(1);
 		assertThat(target.get(0)).isEqualTo("b");
@@ -278,8 +279,11 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new ThriftEntityProxifier());
-		wrapper.retainAll(Arrays.asList("a", "c"));
+		wrapper.setProxifier(proxifier);
+		Collection<String> list = Arrays.asList("a", "c");
+		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+
+		wrapper.retainAll(list);
 
 		assertThat(target).hasSize(2);
 		assertThat(target.get(0)).isEqualTo("a");
@@ -297,8 +301,11 @@ public class CollectionWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		wrapper.setProxifier(new ThriftEntityProxifier());
-		wrapper.retainAll(Arrays.asList("a", "b", "c"));
+		wrapper.setProxifier(proxifier);
+		Collection<String> list = Arrays.asList("a", "b", "c");
+		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+
+		wrapper.retainAll(list);
 
 		assertThat(target).hasSize(3);
 		assertThat(target.get(0)).isEqualTo("a");
@@ -353,12 +360,12 @@ public class CollectionWrapperTest
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean3);
+
+		when(context.newPersistenceContext(eq(entityMeta), any())).thenReturn(joinContext);
+
+		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
+		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);
+		when(proxifier.buildProxy(bean3, joinContext)).thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 	}
@@ -391,12 +398,12 @@ public class CollectionWrapperTest
 
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(bean1), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean1);
-		when(proxifier.buildProxy(eq(bean2), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean2);
-		when(proxifier.buildProxy(eq(bean3), any(ThriftPersistenceContext.class)))
-				.thenReturn(bean3);
+
+		when(context.newPersistenceContext(eq(entityMeta), any())).thenReturn(joinContext);
+
+		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
+		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);
+		when(proxifier.buildProxy(bean3, joinContext)).thenReturn(bean3);
 
 		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
 

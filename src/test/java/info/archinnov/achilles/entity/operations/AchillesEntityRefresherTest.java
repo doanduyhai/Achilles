@@ -2,12 +2,11 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -41,13 +40,13 @@ public class AchillesEntityRefresherTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftEntityLoader loader;
+	private AchillesEntityLoader loader;
 
 	@Mock
 	private EntityMeta entityMeta;
 
 	@Mock
-	private JpaEntityInterceptor<CompleteBean> jpaEntityInterceptor;
+	private AchillesJpaEntityInterceptor<CompleteBean> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
@@ -55,15 +54,18 @@ public class AchillesEntityRefresherTest
 	@Mock
 	private Set<Method> lazyLoaded;
 
+	@Mock
+	private AchillesPersistenceContext context;
+
 	@Test
 	public void should_refresh() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		ThriftPersistenceContext context = PersistenceContextTestBuilder //
-				.mockAll(entityMeta, CompleteBean.class, bean.getId())
-				.entity(bean)
-				.build();
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.getPrimaryKey()).thenReturn(bean.getId());
+		when(context.getEntity()).thenReturn(bean);
+
 		when(proxifier.getInterceptor(bean)).thenReturn(jpaEntityInterceptor);
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);

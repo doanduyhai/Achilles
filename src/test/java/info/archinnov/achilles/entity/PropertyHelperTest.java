@@ -5,7 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Pair;
@@ -48,7 +48,7 @@ public class PropertyHelperTest
 	private PropertyHelper helper;
 
 	@Mock
-	private ThriftConsistencyLevelPolicy policy;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Test
 	public void should_parse_multi_key() throws Exception

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.wrapper.IteratorWrapper;
@@ -42,7 +42,7 @@ public class IteratorWrapperBuilderTest
 	private PropertyMeta<Void, String> propertyMeta;
 
 	@Mock
-	private ThriftPersistenceContext context;
+	private AchillesPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception

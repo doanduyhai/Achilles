@@ -1,12 +1,11 @@
 package info.archinnov.achilles.entity.parser;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ONE;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.columnFamily.ThriftTableCreator;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.dao.ThriftCounterDao;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.columnFamily.AchillesTableCreator;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -22,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.CascadeType;
-
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -66,22 +62,12 @@ public class EntityParserTest
 	private EntityParser parser;
 
 	private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
-	private Map<String, ConsistencyLevel> readConsistencyMap = new HashMap<String, ConsistencyLevel>();
-	private Map<String, ConsistencyLevel> writeConsistencyMap = new HashMap<String, ConsistencyLevel>();
-	private ThriftConsistencyLevelPolicy configurableCLPolicy = new ThriftConsistencyLevelPolicy(
-			ONE, ConsistencyLevel.ALL, readConsistencyMap, writeConsistencyMap);
 
 	@Mock
-	private ThriftTableCreator thriftTableCreator;
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
-	private Cluster cluster;
-
-	@Mock
-	private Keyspace keyspace;
-
-	@Mock
-	private ThriftCounterDao thriftCounterDao;
+	private AchillesTableCreator thriftTableCreator;
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
@@ -105,8 +91,11 @@ public class EntityParserTest
 	public void setUp()
 	{
 		joinPropertyMetaToBeFilled.clear();
-		configContext.setConsistencyPolicy(configurableCLPolicy);
+		configContext.setConsistencyPolicy(policy);
 		configContext.setObjectMapperFactory(objectMapperFactory);
+
+		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -199,10 +188,8 @@ public class EntityParserTest
 		assertThat(meta.getConsistencyLevels().left).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(configurableCLPolicy.getConsistencyLevelForRead(meta.getTableName()))
-				.isEqualTo(ConsistencyLevel.ONE);
-		assertThat(configurableCLPolicy.getConsistencyLevelForWrite(meta.getTableName()))
-				.isEqualTo(ConsistencyLevel.ALL);
+		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE, meta.getTableName());
+		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL, meta.getTableName());
 	}
 
 	@Test
