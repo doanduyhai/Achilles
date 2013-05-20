@@ -3,33 +3,26 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
 import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.Factory;
-import net.sf.cglib.proxy.NoOp;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityProxifierTest
@@ -41,271 +34,69 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftEntityProxifierTest
 {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	@Mock
-	private EntityMeta entityMeta;
-
-	@Mock
-	private PropertyMeta<Void, Long> idMeta;
+	private ThriftPersistenceContext context;
 
 	@Test
-	public void should_derive_base_class() throws Exception
+	public void should_build_interceptor() throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(entity.getClass());
+		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
+		CompleteBean entity = new CompleteBean();
+		Object primaryKey = 11L;
 
-		JpaEntityInterceptor<CompleteBean> interceptor = new JpaEntityInterceptor<CompleteBean>();
-		interceptor.setTarget(entity);
-
-		enhancer.setCallback(interceptor);
-
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-		assertThat((Class<CompleteBean>) proxifier.deriveBaseClass(proxy)).isEqualTo(
-				CompleteBean.class);
-	}
-
-	@Test
-	public void should_derive_base_class_from_transient() throws Exception
-	{
-		assertThat((Class<CompleteBean>) proxifier.deriveBaseClass(new CompleteBean())).isEqualTo(
-				CompleteBean.class);
-	}
-
-	@Test
-	public void should_proxy_true() throws Exception
-	{
-		Enhancer enhancer = new Enhancer();
-
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(NoOp.INSTANCE);
-
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-
-		assertThat(proxifier.isProxy(proxy)).isTrue();
-	}
-
-	@Test
-	public void should_proxy_false() throws Exception
-	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().id(1L).buid();
-		assertThat(proxifier.isProxy(bean)).isFalse();
-	}
-
-	@Test
-	public void should_build_proxy() throws Exception
-	{
-
-		long primaryKey = 1L;
-
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
-
-		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
-
-		ThriftPersistenceContext context = PersistenceContextTestBuilder
-				.mockAll(entityMeta, CompleteBean.class, primaryKey)
-				.entityDao(mock(ThriftGenericEntityDao.class))
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
 				.build();
 
-		CompleteBean proxy = proxifier.buildProxy(entity, context);
+		EntityMeta meta = new EntityMeta();
+		meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+		meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+		meta.setClassName("CompleteBean");
+		meta.setIdMeta(idMeta);
 
-		assertThat(proxy).isNotNull();
-		assertThat(proxy).isInstanceOf(Factory.class);
-		Factory factory = (Factory) proxy;
+		when(context.getEntityMeta()).thenReturn(meta);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.getEntityDao()).thenReturn(entityDao);
+		when(context.getPrimaryKey()).thenReturn(primaryKey);
 
-		assertThat(factory.getCallbacks()).hasSize(1);
-		assertThat(factory.getCallback(0)).isInstanceOf(JpaEntityInterceptor.class);
+		AchillesJpaEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(
+				context, entity);
 
+		assertThat(interceptor).isInstanceOf(JpaEntityInterceptor.class);
+		assertThat(interceptor.getTarget()).isSameAs(entity);
+		assertThat(interceptor.getContext()).isSameAs(context);
+
+		assertThat(interceptor.getDirtyMap()).isNotNull();
+		assertThat(interceptor.getDirtyMap()).isEmpty();
+
+		assertThat(interceptor.getKey()).isSameAs(primaryKey);
+		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getLazyAlreadyLoaded()).isEmpty();
 	}
 
 	@Test
-	public void should_build_null_proxy() throws Exception
+	public void should_exception_when_no_wide_row_dao_found() throws Exception
 	{
-		ThriftPersistenceContext context = PersistenceContextTestBuilder
-				.mockAll(entityMeta, CompleteBean.class, 11L)
-				.entityDao(mock(ThriftGenericEntityDao.class))
-				.build();
+		CompleteBean entity = new CompleteBean();
 
-		assertThat(proxifier.buildProxy(null, context)).isNull();
+		EntityMeta meta = new EntityMeta();
+		meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+		meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+		meta.setClassName("CompleteBean");
+		meta.setWideRow(true);
+
+		when(context.getEntityMeta()).thenReturn(meta);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+
+		exception.expect(AchillesException.class);
+
+		proxifier.buildInterceptor(context, entity);
 	}
-
-	@Test
-	public void should_get_real_object_from_proxy() throws Exception
-	{
-		UserBean realObject = new UserBean();
-		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(UserBean.class);
-		enhancer.setCallback(interceptor);
-		UserBean proxy = (UserBean) enhancer.create();
-
-		UserBean actual = proxifier.getRealObject(proxy);
-
-		assertThat(actual).isSameAs(realObject);
-	}
-
-	@Test
-	public void should_get_interceptor_from_proxy() throws Exception
-	{
-		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(UserBean.class);
-		enhancer.setCallback(interceptor);
-		UserBean proxy = (UserBean) enhancer.create();
-
-		AchillesJpaEntityInterceptor<UserBean> actual = proxifier.getInterceptor(proxy);
-
-		assertThat(actual).isSameAs(interceptor);
-
-	}
-
-	public void should_ensure_proxy() throws Exception
-	{
-		JpaEntityInterceptor<UserBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(UserBean.class);
-		enhancer.setCallback(interceptor);
-		UserBean proxy = (UserBean) enhancer.create();
-
-		proxifier.ensureProxy(proxy);
-	}
-
-	@Test(expected = IllegalStateException.class)
-	public void should_exception_when_not_proxy() throws Exception
-	{
-		proxifier.ensureProxy(new CompleteBean());
-	}
-
-	@Test
-	public void should_unproxy_entity() throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-
-		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(interceptor);
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		CompleteBean actual = proxifier.unproxy(proxy);
-
-		assertThat(actual).isSameAs(realObject);
-	}
-
-	@Test
-	public void should_return_null_when_unproxying_null() throws Exception
-	{
-		assertThat(proxifier.unproxy((Object) null)).isNull();
-	}
-
-	@Test
-	public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity()
-			throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-		CompleteBean actual = proxifier.unproxy(realObject);
-
-		assertThat(actual).isSameAs(realObject);
-	}
-
-	@Test
-	public void should_unproxy_real_entryset() throws Exception
-	{
-		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
-		map.put(1, new CompleteBean());
-		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
-
-		assertThat(proxifier.unproxy(entry)).isSameAs(entry);
-	}
-
-	@Test
-	public void should_unproxy_entryset_containing_proxy() throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(interceptor);
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-
-		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
-		map.put(1, proxy);
-		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
-
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		assertThat(proxifier.unproxy(entry).getValue()).isSameAs(realObject);
-	}
-
-	@Test
-	public void should_unproxy_collection_of_entities() throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
-
-		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(interceptor);
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-		proxies.add(proxy);
-
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		Collection<CompleteBean> actual = proxifier.unproxy(proxies);
-
-		assertThat(actual).containsExactly(realObject);
-	}
-
-	@Test
-	public void should_unproxy_list_of_entities() throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
-
-		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(interceptor);
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-		proxies.add(proxy);
-
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		List<CompleteBean> actual = proxifier.unproxy(proxies);
-
-		assertThat(actual).containsExactly(realObject);
-	}
-
-	@Test
-	public void should_unproxy_set_of_entities() throws Exception
-	{
-		CompleteBean realObject = new CompleteBean();
-		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
-
-		JpaEntityInterceptor<CompleteBean> interceptor = mock(JpaEntityInterceptor.class);
-
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(interceptor);
-		CompleteBean proxy = (CompleteBean) enhancer.create();
-		proxies.add(proxy);
-
-		when(interceptor.getTarget()).thenReturn(realObject);
-
-		Set<CompleteBean> actual = proxifier.unproxy(proxies);
-
-		assertThat(actual).containsExactly(realObject);
-	}
-
 }

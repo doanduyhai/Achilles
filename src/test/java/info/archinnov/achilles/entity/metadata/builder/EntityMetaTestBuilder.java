@@ -38,7 +38,7 @@ public class EntityMetaTestBuilder<ID>
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setClassName(classname);
-		meta.setColumnFamilyName(columnFamilyName);
+		meta.setTableName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
 		meta.setIdClass(idMeta.getValueClass());
 		meta.setPropertyMetas(propertyMetas);

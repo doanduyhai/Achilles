@@ -1,19 +1,12 @@
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
@@ -21,12 +14,6 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,8 +21,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * ArgumentExtractorForThriftEMFTest
@@ -59,12 +44,6 @@ public class ThriftArgumentExtractorTest
 	private Keyspace keyspace;
 
 	@Mock
-	private ObjectMapperFactory factory;
-
-	@Mock
-	private ObjectMapper mapper;
-
-	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
 	private Map<String, Object> configMap = new HashMap<String, Object>();
@@ -73,27 +52,6 @@ public class ThriftArgumentExtractorTest
 	public void setUp()
 	{
 		configMap.clear();
-	}
-
-	@Test
-	public void should_init_entity_packages() throws Exception
-	{
-		configMap.put(ENTITY_PACKAGES_PARAM,
-				"my.package.entity,another.package.entity,third.package");
-
-		List<String> actual = extractor.initEntityPackages(configMap);
-
-		assertThat(actual).containsExactly("my.package.entity", "another.package.entity",
-				"third.package");
-	}
-
-	@Test
-	public void should_exception_when_entity_packages_not_set() throws Exception
-	{
-		exception.expect(AchillesException.class);
-		exception.expectMessage("'" + ENTITY_PACKAGES_PARAM
-				+ "' property should be set for Achilles ThrifEntityManagerFactory bootstraping");
-		extractor.initEntityPackages(configMap);
 	}
 
 	@Test
@@ -188,157 +146,5 @@ public class ThriftArgumentExtractorTest
 						+ KEYSPACE_NAME_PARAM
 						+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
 		extractor.initKeyspace(null, policy, configMap);
-	}
-
-	@Test
-	public void should_init_forceCFCreation() throws Exception
-	{
-		configMap.put(FORCE_CF_CREATION_PARAM, true);
-
-		boolean actual = extractor.initForceCFCreation(configMap);
-
-		assertThat(actual).isTrue();
-
-	}
-
-	@Test
-	public void should_init_forceCFCreation_to_default_value() throws Exception
-	{
-		boolean actual = extractor.initForceCFCreation(configMap);
-
-		assertThat(actual).isFalse();
-	}
-
-	@Test
-	public void should_init_object_mapper_factory() throws Exception
-	{
-		configMap.put(OBJECT_MAPPER_FACTORY_PARAM, factory);
-
-		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
-
-		assertThat(actual).isSameAs(factory);
-	}
-
-	@Test
-	public void should_init_object_mapper_factory_from_mapper() throws Exception
-	{
-		configMap.put(OBJECT_MAPPER_PARAM, mapper);
-
-		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
-
-		assertThat(actual).isNotNull();
-		assertThat(actual.getMapper(Long.class)).isSameAs(mapper);
-	}
-
-	@Test
-	public void should_init_default_object_factory_mapper() throws Exception
-	{
-		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
-
-		assertThat(actual).isNotNull();
-
-		ObjectMapper mapper = actual.getMapper(Integer.class);
-
-		assertThat(mapper).isNotNull();
-		assertThat(mapper.getSerializationConfig().getSerializationInclusion()).isEqualTo(
-				Inclusion.NON_NULL);
-		assertThat(
-				mapper.getDeserializationConfig().isEnabled(
-						DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES)).isFalse();
-		Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig()
-				.getAnnotationIntrospector().allIntrospectors();
-
-		assertThat(ais).hasSize(2);
-		Iterator<AnnotationIntrospector> iterator = ais.iterator();
-
-		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
-		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
-	}
-
-	@Test
-	public void should_init_default_read_consistency_level() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, "ONE");
-		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
-	}
-
-	@Test
-	public void should_init_default_write_consistency_level() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, "LOCAL_QUORUM");
-		assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_return_default_one_level_when_no_parameter() throws Exception
-	{
-		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
-	}
-
-	@Test
-	public void should_exception_when_invalid_consistency_lvel() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, "wrong_value");
-
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("'wrong_value' is not a valid Consistency Level");
-		extractor.initDefaultReadConsistencyLevel(configMap);
-	}
-
-	@Test
-	public void should_init_read_consistency_level_map() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
-				ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
-
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
-
-		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.ONE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_init_write_consistency_level_map() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
-				ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
-
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
-
-		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.THREE);
-		assertThat(consistencyMap.get("cf2")).isEqualTo(ConsistencyLevel.EACH_QUORUM);
-	}
-
-	@Test
-	public void should_return_empty_consistency_map_when_no_parameter() throws Exception
-	{
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
-
-		assertThat(consistencyMap).isEmpty();
-	}
-
-	@Test
-	public void should_return_empty_consistency_map_when_empty_map_parameter() throws Exception
-	{
-		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, new HashMap<String, String>());
-
-		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
-
-		assertThat(consistencyMap).isEmpty();
-	}
-
-	@Test
-	public void should_ensure_join_consistency() throws Exception
-	{
-		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
-		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isTrue();
-	}
-
-	@Test
-	public void should_not_ensure_join_consistency_by_default() throws Exception
-	{
-		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isFalse();
 	}
 }

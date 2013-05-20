@@ -191,7 +191,7 @@ public class ThriftPersistenceContextTest
 
 		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(introspector.getKey(entity, idMeta)).thenReturn(entity.getId());
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 	}
 
 	private void prepareContextWithEntityDao() throws Exception
@@ -215,7 +215,7 @@ public class ThriftPersistenceContextTest
 
 		when((PropertyMeta<Void, Long>) joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
-		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
+		when(joinMeta.getTableName()).thenReturn("cf2");
 		when(joinMeta.isWideRow()).thenReturn(false);
 		when(thriftDaoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}

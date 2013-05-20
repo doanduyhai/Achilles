@@ -139,7 +139,7 @@ public class ThriftPersisterImplTest
 				.columnFamilyDaosMap(columnFamilyDaosMap)
 				.entityDaosMap(entityDaosMap)
 				.build();
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 	}
 

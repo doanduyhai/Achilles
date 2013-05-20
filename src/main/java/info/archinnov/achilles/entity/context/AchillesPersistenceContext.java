@@ -16,11 +16,11 @@ import info.archinnov.achilles.validation.Validator;
 public abstract class AchillesPersistenceContext
 {
 	protected final AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	protected final EntityMeta entityMeta;
 	protected final AchillesConfigurationContext configContext;
 	protected final AchillesConsistencyLevelPolicy policy;
 	protected final Class<?> entityClass;
 
+	protected EntityMeta entityMeta;
 	protected Object entity;
 	protected Object primaryKey;
 	protected AchillesFlushContext flushContext;
@@ -69,9 +69,9 @@ public abstract class AchillesPersistenceContext
 		return this.entityMeta.isWideRow();
 	}
 
-	public String getColumnFamilyName()
+	public String getTableName()
 	{
-		return entityMeta.getColumnFamilyName();
+		return entityMeta.getTableName();
 	}
 
 	public boolean isBatchMode()
@@ -147,6 +147,16 @@ public abstract class AchillesPersistenceContext
 	public AchillesConsistencyLevelPolicy getPolicy()
 	{
 		return policy;
+	}
+
+	public void setEntityMeta(EntityMeta entityMeta)
+	{
+		this.entityMeta = entityMeta;
+	}
+
+	public void setFlushContext(AchillesFlushContext flushContext)
+	{
+		this.flushContext = flushContext;
 	}
 
 }

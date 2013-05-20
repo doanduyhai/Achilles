@@ -202,7 +202,7 @@ public class ThriftTableCreatorTest
 	public void should_validate_column_family() throws Exception
 	{
 		meta = new EntityMeta();
-		meta.setColumnFamilyName("testCF");
+		meta.setTableName("testCF");
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
 		cfDef.setName("testCF");
@@ -256,7 +256,7 @@ public class ThriftTableCreatorTest
 	public void should_validate_then_create_column_family_when_not_matching() throws Exception
 	{
 		meta = new EntityMeta();
-		meta.setColumnFamilyName("testCF");
+		meta.setTableName("testCF");
 		meta.setWideRow(false);
 
 		BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
@@ -275,7 +275,7 @@ public class ThriftTableCreatorTest
 	public void should_validate_then_create_column_family_when_null() throws Exception
 	{
 		meta = new EntityMeta();
-		meta.setColumnFamilyName("testCF");
+		meta.setTableName("testCF");
 		meta.setWideRow(false);
 
 		Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());

@@ -172,7 +172,7 @@ public class JoinWideMapWrapper<K, V> extends AbstractWideMapWrapper<K, V>
 		}
 
 		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
-				.getColumnFamilyName());
+				.getTableName());
 
 		AchillesJoinSliceIterator<?, K, V> joinColumnSliceIterator = dao.getJoinColumnsIterator(
 				joinEntityDao, propertyMeta, id, composites[0], composites[1],

@@ -56,7 +56,7 @@ public class EntityMetaBuilder
 		meta.setIdMeta(idMeta);
 		meta.setIdClass(idMeta.getValueClass());
 		meta.setClassName(className);
-		meta.setColumnFamilyName(columnFamilyName);
+		meta.setTableName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
 		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));

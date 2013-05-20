@@ -41,22 +41,17 @@ public class JpaEntityInterceptorBuilder<T>
 		this.target = entity;
 	}
 
-	public JpaEntityInterceptorBuilder<T> lazyLoaded(Set<Method> lazyLoaded)
-	{
-		this.lazyLoaded = lazyLoaded;
-		return this;
-	}
-
 	public JpaEntityInterceptor<T> build()
 	{
-		log.debug("Build interceptor for entity of class {}", context.getEntityMeta()
+		log.debug("Build interceptor for entity of class {}", context
+				.getEntityMeta()
 				.getClassName());
 
 		JpaEntityInterceptor<T> interceptor = new JpaEntityInterceptor<T>();
 
 		EntityMeta entityMeta = context.getEntityMeta();
 
-		Validator.validateNotNull(this.target, "Target object for interceptor of '"
+		Validator.validateNotNull(target, "Target object for interceptor of '"
 				+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		Validator.validateNotNull(entityMeta.getGetterMetas(),
 				"Getters metadata for interceptor of '"
@@ -83,12 +78,7 @@ public class JpaEntityInterceptorBuilder<T>
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
-
-		if (this.lazyLoaded == null)
-		{
-			this.lazyLoaded = new HashSet<Method>();
-		}
-		interceptor.setLazyLoaded(this.lazyLoaded);
+		interceptor.setLazyLoaded(lazyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
 		interceptor.setKey(context.getPrimaryKey());
 

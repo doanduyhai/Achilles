@@ -33,7 +33,7 @@ public abstract class AchillesEntityProxifier
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			AchillesJpaEntityInterceptor<?> interceptor = this.getInterceptor(entity);
+			AchillesJpaEntityInterceptor<?> interceptor = getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 
@@ -85,7 +85,7 @@ public abstract class AchillesEntityProxifier
 
 	public <T> void ensureProxy(T proxy)
 	{
-		if (!this.isProxy(proxy))
+		if (!isProxy(proxy))
 		{
 			throw new IllegalStateException("The entity '" + proxy + "' is not in 'managed' state.");
 		}
@@ -98,9 +98,9 @@ public abstract class AchillesEntityProxifier
 		if (proxy != null)
 		{
 
-			if (this.isProxy(proxy))
+			if (isProxy(proxy))
 			{
-				return this.getRealObject(proxy);
+				return getRealObject(proxy);
 			}
 			else
 			{
@@ -116,9 +116,9 @@ public abstract class AchillesEntityProxifier
 	public <K, V> Entry<K, V> unproxy(Entry<K, V> entry)
 	{
 		V value = entry.getValue();
-		if (this.isProxy(value))
+		if (isProxy(value))
 		{
-			value = this.getRealObject(value);
+			value = getRealObject(value);
 			entry.setValue(value);
 		}
 		return entry;
@@ -129,7 +129,7 @@ public abstract class AchillesEntityProxifier
 		Collection<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{
-			result.add(this.unproxy(proxy));
+			result.add(unproxy(proxy));
 		}
 		return result;
 	}

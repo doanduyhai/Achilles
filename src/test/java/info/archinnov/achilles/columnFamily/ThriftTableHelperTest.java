@@ -75,7 +75,7 @@ public class ThriftTableHelperTest
 
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("myCF");
+		when(entityMeta.getTableName()).thenReturn("myCF");
 		when(entityMeta.getClassName()).thenReturn("fr.doan.test.bean");
 
 		ColumnFamilyDefinition cfDef = thriftTableHelper.buildEntityCF(entityMeta, "keyspace");
@@ -170,16 +170,6 @@ public class ThriftTableHelperTest
 	}
 
 	@Test
-	public void should_normalize_canonical_classname() throws Exception
-	{
-		String canonicalName = "org.achilles.entity.ClassName";
-
-		String normalized = ThriftTableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
-
-		assertThat(normalized).isEqualTo("ClassName");
-	}
-
-	@Test
 	public void should_exception_when_wrong_key_class_on_counter_column_family() throws Exception
 	{
 
@@ -266,18 +256,6 @@ public class ThriftTableHelperTest
 	}
 
 	@Test
-	public void should_exception_when_even_class_name_exceeeds_48_characters() throws Exception
-	{
-		String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
-
-		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception
-				.expectMessage("The column family name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
-		ThriftTableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
-
-	}
-
-	@Test
 	public void should_validate() throws Exception
 	{
 
@@ -327,7 +305,7 @@ public class ThriftTableHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
 		exception
@@ -341,7 +319,7 @@ public class ThriftTableHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(null);
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
@@ -356,7 +334,7 @@ public class ThriftTableHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
@@ -374,7 +352,7 @@ public class ThriftTableHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when(entityMeta.isWideRow()).thenReturn(true);
 		Map<String, PropertyMeta<Long, String>> propertyMetaMap = ImmutableMap.of("any",
 				propertyMeta);
@@ -408,7 +386,7 @@ public class ThriftTableHelperTest
 	{
 		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
 

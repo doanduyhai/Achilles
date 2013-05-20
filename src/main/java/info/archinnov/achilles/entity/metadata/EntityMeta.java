@@ -19,7 +19,7 @@ public class EntityMeta
 
 	public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";
 	private String className;
-	private String columnFamilyName;
+	private String tableName;
 	private Long serialVersionUID;
 	private Class<?> idClass;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
@@ -39,14 +39,14 @@ public class EntityMeta
 		this.className = className;
 	}
 
-	public String getColumnFamilyName()
+	public String getTableName()
 	{
-		return columnFamilyName;
+		return tableName;
 	}
 
-	public void setColumnFamilyName(String columnFamilyName)
+	public void setTableName(String tableName)
 	{
-		this.columnFamilyName = columnFamilyName;
+		this.tableName = tableName;
 	}
 
 	public Long getSerialVersionUID()
@@ -134,14 +134,20 @@ public class EntityMeta
 	{
 		StringBuilder description = new StringBuilder();
 		description.append("EntityMeta [className=").append(className).append(", ");
-		description.append("columnFamilyName=").append(columnFamilyName).append(", ");
+		description.append("columnFamilyName=").append(tableName).append(", ");
 		description.append("serialVersionUID=").append(serialVersionUID).append(", ");
-		description.append("propertyMetas=[").append(StringUtils.join(propertyMetas.keySet(), ","))
+		description
+				.append("propertyMetas=[")
+				.append(StringUtils.join(propertyMetas.keySet(), ","))
 				.append("], ");
 		description.append("idMeta=").append(idMeta.toString()).append(", ");
 		description.append("wideRow=").append(wideRow).append(", ");
-		description.append("consistencyLevels=[").append(consistencyLevels.left.name()).append(",")
-				.append(consistencyLevels.right.name()).append("]]");
+		description
+				.append("consistencyLevels=[")
+				.append(consistencyLevels.left.name())
+				.append(",")
+				.append(consistencyLevels.right.name())
+				.append("]]");
 		return description.toString();
 	}
 }

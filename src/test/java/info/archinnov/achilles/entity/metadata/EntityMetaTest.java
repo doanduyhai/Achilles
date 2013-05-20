@@ -36,7 +36,7 @@ public class EntityMetaTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClassName("className");
-		entityMeta.setColumnFamilyName("cfName");
+		entityMeta.setTableName("cfName");
 		entityMeta.setSerialVersionUID(10L);
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(propertyMetas);

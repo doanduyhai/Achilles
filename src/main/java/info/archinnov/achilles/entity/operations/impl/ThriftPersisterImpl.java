@@ -67,7 +67,7 @@ public class ThriftPersisterImpl
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
 					serialVersionUID.toString(),
-					context.getEntityMutator(context.getColumnFamilyName()));
+					context.getEntityMutator(context.getTableName()));
 		}
 		else
 		{
@@ -93,7 +93,7 @@ public class ThriftPersisterImpl
 						format(name));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-					context.getEntityMutator(context.getColumnFamilyName()));
+					context.getEntityMutator(context.getTableName()));
 		}
 	}
 
@@ -116,7 +116,7 @@ public class ThriftPersisterImpl
 									.getCanonicalName(), context.getPrimaryKey(), format(name));
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-						stringValue, context.getEntityMutator(context.getColumnFamilyName()));
+						stringValue, context.getEntityMutator(context.getTableName()));
 			}
 			count++;
 		}
@@ -141,7 +141,7 @@ public class ThriftPersisterImpl
 									.getCanonicalName(), context.getPrimaryKey(), format(name));
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-						stringValue, context.getEntityMutator(context.getColumnFamilyName()));
+						stringValue, context.getEntityMutator(context.getTableName()));
 			}
 		}
 	}
@@ -166,7 +166,7 @@ public class ThriftPersisterImpl
 						format(name));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-					context.getEntityMutator(context.getColumnFamilyName()));
+					context.getEntityMutator(context.getTableName()));
 		}
 	}
 
@@ -183,7 +183,7 @@ public class ThriftPersisterImpl
 
 		Composite joinComposite = compositeFactory.createForBatchInsertSingleValue(propertyMeta);
 		context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinComposite,
-				joinIdString, context.getEntityMutator(context.getColumnFamilyName()));
+				joinIdString, context.getEntityMutator(context.getTableName()));
 
 		ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context
 				.newPersistenceContext(propertyMeta.joinMeta(), proxifier.unproxy(joinEntity));
@@ -225,7 +225,7 @@ public class ThriftPersisterImpl
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
 						joinEntityIdStringValue,
-						context.getEntityMutator(context.getColumnFamilyName()));
+						context.getEntityMutator(context.getTableName()));
 
 				ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context
 						.newPersistenceContext(propertyMeta.joinMeta(),
@@ -257,7 +257,7 @@ public class ThriftPersisterImpl
 			String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry.getKey(),
 					joinEntityIdStringValue));
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
-					context.getEntityMutator(context.getColumnFamilyName()));
+					context.getEntityMutator(context.getTableName()));
 
 			ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context
 					.newPersistenceContext(propertyMeta.joinMeta(), proxifier.unproxy(joinEntity));
@@ -285,7 +285,7 @@ public class ThriftPersisterImpl
 			log.trace("Batch removing wide row of class {} and primary key {}", context
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 			Mutator<Object> wideRowMutator = context.getWideRowMutator(entityMeta
-					.getColumnFamilyName());
+					.getTableName());
 			context.getColumnFamilyDao().removeRowBatch(primaryKey, wideRowMutator);
 		}
 		else
@@ -295,7 +295,7 @@ public class ThriftPersisterImpl
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
 			Mutator<Object> entityMutator = context.getEntityMutator(entityMeta
-					.getColumnFamilyName());
+					.getTableName());
 			context.getEntityDao().removeRowBatch(primaryKey, entityMutator);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
@@ -349,7 +349,7 @@ public class ThriftPersisterImpl
 					context.getPrimaryKey(), format(start), format(end));
 		}
 		context.getEntityDao().removeColumnRangeBatch(context.getPrimaryKey(), start, end,
-				context.getEntityMutator(context.getColumnFamilyName()));
+				context.getEntityMutator(context.getTableName()));
 	}
 
 	private void removeSimpleCounter(ThriftPersistenceContext context,

@@ -92,7 +92,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 
 	public Mutator<Object> getCurrentColumnFamilyMutator()
 	{
-		return thriftFlushContext.getWideRowMutator(entityMeta.getColumnFamilyName());
+		return thriftFlushContext.getWideRowMutator(entityMeta.getTableName());
 	}
 
 	public Mutator<Object> getWideRowMutator(String columnFamilyName)
@@ -122,7 +122,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 
 	private void initDaos()
 	{
-		String columnFamilyName = entityMeta.getColumnFamilyName();
+		String columnFamilyName = entityMeta.getTableName();
 		if (entityMeta.isWideRow())
 		{
 			this.wideRowDao = thriftDaoContext.findWideRowDao(columnFamilyName);

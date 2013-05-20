@@ -81,4 +81,28 @@ public abstract class AchillesConsistencyLevelPolicy
 	public abstract void setCurrentWriteLevel(ConsistencyLevel writeLevel);
 
 	public abstract void removeCurrentWriteLevel();
+
+	protected void setDefaultGlobalReadConsistencyLevel(
+			ConsistencyLevel defaultGlobalReadConsistencyLevel)
+	{
+		this.defaultGlobalReadConsistencyLevel = defaultGlobalReadConsistencyLevel;
+	}
+
+	protected void setDefaultGlobalWriteConsistencyLevel(
+			ConsistencyLevel defaultGlobalWriteConsistencyLevel)
+	{
+		this.defaultGlobalWriteConsistencyLevel = defaultGlobalWriteConsistencyLevel;
+	}
+
+	protected void setReadCfConsistencyLevels(Map<String, ConsistencyLevel> readCfConsistencyLevels)
+	{
+		this.readCfConsistencyLevels = readCfConsistencyLevels;
+	}
+
+	protected void setWriteCfConsistencyLevels(
+			Map<String, ConsistencyLevel> writeCfConsistencyLevels)
+	{
+		this.writeCfConsistencyLevels = writeCfConsistencyLevels;
+	}
+
 }

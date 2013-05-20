@@ -72,7 +72,7 @@ public class ThriftTableCreator extends AchillesTableCreator
 	protected void createColumnFamily(EntityMeta entityMeta)
 	{
 		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
-		String columnFamilyName = entityMeta.getColumnFamilyName();
+		String columnFamilyName = entityMeta.getTableName();
 		if (!columnFamilyNames.contains(columnFamilyName))
 		{
 			ColumnFamilyDefinition cfDef;
@@ -135,7 +135,7 @@ public class ThriftTableCreator extends AchillesTableCreator
 	protected void validateOrCreateCFForEntity(EntityMeta entityMeta,
 			boolean forceColumnFamilyCreation)
 	{
-		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getColumnFamilyName());
+		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getTableName());
 		if (cfDef == null)
 		{
 			if (forceColumnFamilyCreation)
@@ -148,7 +148,7 @@ public class ThriftTableCreator extends AchillesTableCreator
 			else
 			{
 				throw new AchillesInvalidColumnFamilyException("The required column family '"
-						+ entityMeta.getColumnFamilyName() + "' does not exist for entity '"
+						+ entityMeta.getTableName() + "' does not exist for entity '"
 						+ entityMeta.getClassName() + "'");
 			}
 		}

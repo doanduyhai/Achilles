@@ -47,7 +47,7 @@ public class ThriftJoinLoaderImpl
 				.getValueClass().getCanonicalName(), joinIds);
 
 		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getColumnFamilyName());
+				.findEntityDao(joinMeta.getTableName());
 		List<V> joinEntities = new ArrayList<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -60,7 +60,7 @@ public class ThriftJoinLoaderImpl
 		EntityMeta joinMeta = propertyMeta.joinMeta();
 		List<Object> joinIds = fetchColumns(context, propertyMeta);
 		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getColumnFamilyName());
+				.findEntityDao(joinMeta.getTableName());
 		Set<V> joinEntities = new HashSet<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -73,7 +73,7 @@ public class ThriftJoinLoaderImpl
 
 		EntityMeta joinMeta = propertyMeta.joinMeta();
 		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getColumnFamilyName());
+				.findEntityDao(joinMeta.getTableName());
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
 		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);

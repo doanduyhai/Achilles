@@ -37,7 +37,7 @@ public class ThriftTableHelper extends AchillesTableHelper
 	{
 
 		String entityName = entityMeta.getClassName();
-		String columnFamilyName = entityMeta.getColumnFamilyName();
+		String columnFamilyName = entityMeta.getTableName();
 
 		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
 				columnFamilyName, ComparatorType.COMPOSITETYPE);
@@ -170,7 +170,7 @@ public class ThriftTableHelper extends AchillesTableHelper
 				.getClassName()))
 		{
 			throw new AchillesInvalidColumnFamilyException("The column family '"
-					+ entityMeta.getColumnFamilyName() + "' key class '"
+					+ entityMeta.getTableName() + "' key class '"
 					+ cfDef.getKeyValidationClass()
 					+ "' does not correspond to the entity id class '"
 					+ idSerializer.getComparatorType().getClassName() + "'");
@@ -179,7 +179,7 @@ public class ThriftTableHelper extends AchillesTableHelper
 		if (entityMeta.isWideRow())
 		{
 			this.validateWideRowWithPropertyMeta(cfDef, entityMeta.getPropertyMetas().values()
-					.iterator().next(), entityMeta.getColumnFamilyName());
+					.iterator().next(), entityMeta.getTableName());
 		}
 		else
 		{
@@ -194,7 +194,7 @@ public class ThriftTableHelper extends AchillesTableHelper
 			if (!StringUtils.equals(comparatorType, ENTITY_COMPARATOR_TYPE_CHECK))
 			{
 				throw new AchillesInvalidColumnFamilyException("The column family '"
-						+ entityMeta.getColumnFamilyName() + "' comparator type '" + comparatorType
+						+ entityMeta.getTableName() + "' comparator type '" + comparatorType
 						+ "' should be '" + ENTITY_COMPARATOR_TYPE_CHECK + "'");
 			}
 		}

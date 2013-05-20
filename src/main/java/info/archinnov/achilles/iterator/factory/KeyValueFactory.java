@@ -210,7 +210,7 @@ public class KeyValueFactory
 			PropertyMeta<K, V> propertyMeta, EntityMeta joinMeta, List<Object> joinIds)
 	{
 		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getColumnFamilyName());
+				.findEntityDao(joinMeta.getTableName());
 
 		Map<Object, V> joinEntities = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 				joinIds, joinMeta, joinEntityDao);

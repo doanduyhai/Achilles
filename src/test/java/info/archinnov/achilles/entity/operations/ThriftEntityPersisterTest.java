@@ -169,7 +169,7 @@ public class ThriftEntityPersisterTest
 				.build();
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setColumnFamilyName("cfName");
+		joinMeta.setTableName("cfName");
 		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
 		entityDaosMap.put("cfName", entityDao);
 		Long joinId = RandomUtils.nextLong();

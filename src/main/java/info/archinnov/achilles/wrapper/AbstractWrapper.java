@@ -43,9 +43,9 @@ public abstract class AbstractWrapper<K, V>
 
 	protected void markDirty()
 	{
-		if (!dirtyMap.containsKey(this.setter))
+		if (!dirtyMap.containsKey(setter))
 		{
-			dirtyMap.put(this.setter, this.propertyMeta);
+			dirtyMap.put(setter, propertyMeta);
 		}
 	}
 

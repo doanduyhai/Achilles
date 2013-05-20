@@ -63,15 +63,6 @@ public class ThriftConsistencyLevelPolicyTest
 	}
 
 	@Test
-	public void should_get_default_consistency_level_for_read_and_write_and_cf() throws Exception
-	{
-		policy.setConsistencyLevelForRead(ConsistencyLevel.QUORUM, "cf");
-		policy.setConsistencyLevelForWrite(ConsistencyLevel.THREE, "cf");
-		assertThat(policy.get(READ, "cf")).isEqualTo(QUORUM);
-		assertThat(policy.get(WRITE, "cf")).isEqualTo(THREE);
-	}
-
-	@Test
 	public void should_get_consistency_level_for_read_and_write_from_thread_local_and_cf()
 			throws Exception
 	{
@@ -134,16 +125,6 @@ public class ThriftConsistencyLevelPolicyTest
 
 		assertThat(defaultReadConsistencyLevelTL.get()).isNull();
 		assertThat(defaultWriteConsistencyLevelTL.get()).isNull();
-	}
-
-	@Test
-	public void should_get_consistency_for_read_and_write_from_map() throws Exception
-	{
-		policy.setConsistencyLevelForRead(ConsistencyLevel.QUORUM, "cf4");
-		policy.setConsistencyLevelForWrite(ConsistencyLevel.THREE, "cf4");
-
-		assertThat(policy.getConsistencyLevelForRead("cf4")).isEqualTo(ConsistencyLevel.QUORUM);
-		assertThat(policy.getConsistencyLevelForWrite("cf4")).isEqualTo(ConsistencyLevel.THREE);
 	}
 
 	@Test

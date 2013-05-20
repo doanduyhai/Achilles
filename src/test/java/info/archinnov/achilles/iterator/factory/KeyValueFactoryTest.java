@@ -107,7 +107,7 @@ public class KeyValueFactoryTest
 		when(multiKeyWideMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
 		when((ThriftGenericEntityDao) context.findEntityDao("join_cf")).thenReturn(joinEntityDao);
 
-		joinMeta.setColumnFamilyName("join_cf");
+		joinMeta.setTableName("join_cf");
 		propertyMeta = noClass(Integer.class, UserBean.class) //
 				.joinMeta(joinMeta)
 				//

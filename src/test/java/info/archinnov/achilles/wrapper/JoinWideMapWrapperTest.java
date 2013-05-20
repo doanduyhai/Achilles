@@ -146,7 +146,7 @@ public class JoinWideMapWrapperTest
 
 		joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(idMeta);
-		joinMeta.setColumnFamilyName("join_cf");
+		joinMeta.setTableName("join_cf");
 
 		entityDaosMap.clear();
 		context = PersistenceContextTestBuilder //

@@ -67,7 +67,7 @@ public class EntityMetaBuilderTest
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("cfName");
+		assertThat(meta.getTableName()).isEqualTo("cfName");
 		assertThat((PropertyMeta<Void, Long>) meta.getIdMeta()).isSameAs(idMeta);
 		assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
 		assertThat(meta.getPropertyMetas()).containsKey("name");
@@ -102,7 +102,7 @@ public class EntityMetaBuilderTest
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("toto");
+		assertThat(meta.getTableName()).isEqualTo("toto");
 	}
 
 	@Test

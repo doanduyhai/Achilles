@@ -117,7 +117,7 @@ public class EntityParserTest
 		EntityMeta meta = parser.parseEntity(entityContext);
 
 		assertThat(meta.getClassName()).isEqualTo("parser.entity.Bean");
-		assertThat(meta.getColumnFamilyName()).isEqualTo("Bean");
+		assertThat(meta.getTableName()).isEqualTo("Bean");
 		assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
 		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
@@ -199,9 +199,9 @@ public class EntityParserTest
 		assertThat(meta.getConsistencyLevels().left).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(configurableCLPolicy.getConsistencyLevelForRead(meta.getColumnFamilyName()))
+		assertThat(configurableCLPolicy.getConsistencyLevelForRead(meta.getTableName()))
 				.isEqualTo(ConsistencyLevel.ONE);
-		assertThat(configurableCLPolicy.getConsistencyLevelForWrite(meta.getColumnFamilyName()))
+		assertThat(configurableCLPolicy.getConsistencyLevelForWrite(meta.getTableName()))
 				.isEqualTo(ConsistencyLevel.ALL);
 	}
 
@@ -214,7 +214,7 @@ public class EntityParserTest
 		EntityMeta meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(meta.getColumnFamilyName()).isEqualTo("myOwnCF");
+		assertThat(meta.getTableName()).isEqualTo("myOwnCF");
 	}
 
 	@Test

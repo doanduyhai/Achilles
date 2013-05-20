@@ -106,7 +106,7 @@ public class ThriftJoinLoaderImplTest
 				.entityDao(entityDao)
 				.entityDaosMap(entityDaosMap)
 				.build();
-		when(entityMeta.getColumnFamilyName()).thenReturn("cf");
+		when(entityMeta.getTableName()).thenReturn("cf");
 		when(thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 		when(entityDaosMap.get("join_cf")).thenReturn(joinEntityDao);
 
@@ -124,7 +124,7 @@ public class ThriftJoinLoaderImplTest
 				.build();
 
 		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setColumnFamilyName("join_cf");
+		joinMeta.setTableName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
@@ -170,7 +170,7 @@ public class ThriftJoinLoaderImplTest
 				.build();
 
 		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setColumnFamilyName("join_cf");
+		joinMeta.setTableName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
@@ -216,7 +216,7 @@ public class ThriftJoinLoaderImplTest
 				.build();
 
 		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setColumnFamilyName("join_cf");
+		joinMeta.setTableName("join_cf");
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 

@@ -95,7 +95,7 @@ public class ThriftLoaderImpl
 			log.trace(
 					"Loading simple property {} of class {} from column family {} with primary key {} and composite column name {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey(),
+							.getEntityMeta().getTableName(), context.getPrimaryKey(),
 					format(composite));
 		}
 		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
@@ -107,7 +107,7 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading list property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+						.getEntityMeta().getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		List<V> list = null;
 		if (columns.size() > 0)
@@ -126,7 +126,7 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading set property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+						.getEntityMeta().getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<V> set = null;
 		if (columns.size() > 0)
@@ -145,7 +145,7 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading map property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey());
+						.getEntityMeta().getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Class<K> keyClass = propertyMeta.getKeyClass();
 		Map<K, V> map = null;
@@ -191,7 +191,7 @@ public class ThriftLoaderImpl
 			log.trace(
 					"Loading join primary key for property {} of class {} from column family {} with primary key {} and column name {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getColumnFamilyName(), context.getPrimaryKey(),
+							.getEntityMeta().getTableName(), context.getPrimaryKey(),
 					format(composite));
 		}
 		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);

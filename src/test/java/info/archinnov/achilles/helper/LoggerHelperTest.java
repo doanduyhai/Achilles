@@ -1,16 +1,15 @@
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.metadata.PropertyType;
+import integration.tests.entity.CompleteBean;
 
-import java.util.UUID;
-
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
-import me.prettyprint.hector.api.beans.Composite;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 /**
  * LoggerHelperTest
@@ -22,58 +21,22 @@ public class LoggerHelperTest
 {
 
 	@Test
-	public void should_format_null_composite() throws Exception
+	public void should_transform_class_list_to_canonical_class_name_list() throws Exception
 	{
-		assertThat(format((Composite) null)).isEqualTo("null");
+		List<Class<?>> classes = new ArrayList<Class<?>>();
+		classes.add(Long.class);
+
+		assertThat(Lists.transform(classes, LoggerHelper.fqcnToStringFn)).contains(
+				Long.class.getCanonicalName());
 	}
 
 	@Test
-	public void should_format_multi_components() throws Exception
+	public void should_transform_field_list_to_field_name_list() throws Exception
 	{
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-		Composite comp = new Composite();
-		comp.add(0, "text");
-		comp.add(1, 12L);
-		comp.add(2, uuid);
+		Field field = CompleteBean.class.getDeclaredField("id");
+		List<Field> fields = new ArrayList<Field>();
+		fields.add(field);
 
-		assertThat(format(comp)).isEqualTo("[text:12:" + uuid + "(EQUAL)]");
-
-	}
-
-	@Test
-	public void should_format_single_component() throws Exception
-	{
-		Composite comp = new Composite();
-		comp.add(0, "text");
-		assertThat(format(comp)).isEqualTo("[text(EQUAL)]");
-	}
-
-	@Test
-	public void should_format_empty_composite() throws Exception
-	{
-		Composite comp = new Composite();
-		assertThat(format(comp)).isEqualTo("[]");
-	}
-
-	@Test
-	public void should_format_with_component_equality() throws Exception
-	{
-		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-		Composite comp = new Composite();
-		comp.addComponent(0, "text", LESS_THAN_EQUAL);
-		comp.addComponent(1, 12L, GREATER_THAN_EQUAL);
-		comp.addComponent(2, uuid, GREATER_THAN_EQUAL);
-
-		assertThat(format(comp)).isEqualTo("[text:12:" + uuid + "(GREATER_THAN_EQUAL)]");
-	}
-
-	@Test
-	public void should_format_with_byte_array() throws Exception
-	{
-		Composite comp = new Composite();
-		comp.addComponent(0, PropertyType.COUNTER.flag(), EQUAL);
-		comp.addComponent(1, "test", GREATER_THAN_EQUAL);
-
-		assertThat(format(comp)).isEqualTo("[70:test(GREATER_THAN_EQUAL)]");
+		assertThat(Lists.transform(fields, LoggerHelper.fieldToStringFn)).contains("id");
 	}
 }

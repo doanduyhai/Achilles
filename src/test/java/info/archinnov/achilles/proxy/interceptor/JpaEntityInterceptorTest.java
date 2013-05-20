@@ -160,10 +160,8 @@ public class JpaEntityInterceptorTest
 				.columnFamilyDaosMap(columnFamilyDaosMap)
 				.build();
 
-		interceptor = JpaEntityInterceptorBuilder
-				.builder(context, entity)
-				.lazyLoaded(lazyLoaded)
-				.build();
+		interceptor = JpaEntityInterceptorBuilder.builder(context, entity).build();
+		Whitebox.setInternalState(interceptor, "lazyAlreadyLoaded", lazyLoaded);
 
 		interceptor.setKey(key);
 		Whitebox.setInternalState(interceptor, "loader", loader);
@@ -269,7 +267,7 @@ public class JpaEntityInterceptorTest
 		joinEntityMeta.setIdMeta(joinIdMeta);
 		joinEntityMeta.setGetterMetas(getterMetas);
 		joinEntityMeta.setSetterMetas(setterMetas);
-		joinEntityMeta.setColumnFamilyName("join_cf");
+		joinEntityMeta.setTableName("join_cf");
 
 		when(getterMetas.containsKey(userMeta.getGetter())).thenReturn(true);
 		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);
@@ -293,7 +291,7 @@ public class JpaEntityInterceptorTest
 		joinEntityMeta.setIdMeta(joinIdMeta);
 		joinEntityMeta.setGetterMetas(getterMetas);
 		joinEntityMeta.setSetterMetas(setterMetas);
-		joinEntityMeta.setColumnFamilyName("join_cf");
+		joinEntityMeta.setTableName("join_cf");
 
 		when(getterMetas.containsKey(userMeta.getGetter())).thenReturn(true);
 		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);

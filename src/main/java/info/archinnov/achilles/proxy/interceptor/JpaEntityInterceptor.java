@@ -68,7 +68,7 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context
 				.getEntityMeta()
-				.getColumnFamilyName() : propertyMeta.getExternalCFName();
+				.getTableName() : propertyMeta.getExternalCFName();
 
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
@@ -122,7 +122,7 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context
 				.getEntityMeta()
-				.getColumnFamilyName() : propertyMeta.getExternalCFName();
+				.getTableName() : propertyMeta.getExternalCFName();
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return JoinWideMapWrapperBuilder //
@@ -155,7 +155,7 @@ public class JpaEntityInterceptor<T> extends AchillesJpaEntityInterceptor<T>
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(context
 				.getEntityMeta()
-				.getColumnFamilyName());
+				.getTableName());
 
 		return WideMapWrapperBuilder.builder(key, wideRowDao, propertyMeta) //
 				.interceptor(this)

@@ -96,7 +96,7 @@ public class ThriftDaoContextBuilderTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setWideRow(false);
-		entityMeta.setColumnFamilyName("cf");
+		entityMeta.setTableName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
@@ -137,7 +137,7 @@ public class ThriftDaoContextBuilderTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setWideRow(true);
-		entityMeta.setColumnFamilyName("cf");
+		entityMeta.setTableName("cf");
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(propertyMetas);
 
@@ -178,7 +178,7 @@ public class ThriftDaoContextBuilderTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setWideRow(true);
-		entityMeta.setColumnFamilyName("cf");
+		entityMeta.setTableName("cf");
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(propertyMetas);
 
@@ -219,7 +219,7 @@ public class ThriftDaoContextBuilderTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setWideRow(true);
-		entityMeta.setColumnFamilyName("cf");
+		entityMeta.setTableName("cf");
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(propertyMetas);
 
@@ -270,7 +270,7 @@ public class ThriftDaoContextBuilderTest
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setWideRow(true);
-		entityMeta.setColumnFamilyName("cf");
+		entityMeta.setTableName("cf");
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(propertyMetas);
 

@@ -58,11 +58,11 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 				.getClass()
 				.getCanonicalName());
 
-		if (this.idGetter == method)
+		if (idGetter == method)
 		{
-			return this.key;
+			return key;
 		}
-		else if (this.idSetter == method)
+		else if (idSetter == method)
 		{
 			throw new IllegalAccessException("Cannot change id value for existing entity ");
 		}
@@ -94,8 +94,8 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 		{
 			log.trace("Loading property {}", propertyMeta.getPropertyName());
 
-			this.loader.loadPropertyIntoObject(target, key, context, propertyMeta);
-			this.lazyAlreadyLoaded.add(method);
+			loader.loadPropertyIntoObject(target, key, context, propertyMeta);
+			lazyAlreadyLoaded.add(method);
 		}
 
 		log.trace("Invoking getter {} on real object", method.getName());
@@ -169,15 +169,10 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 					Map<K, V> map = (Map<K, V>) rawValue;
 					result = MapWrapperBuilder //
 							.builder(context, map)
-							//
 							.dirtyMap(dirtyMap)
-							//
 							.setter(propertyMeta.getSetter())
-							//
 							.propertyMeta(this.<K, V> getPropertyMetaByProperty(method))
-							//
 							.proxifier(proxifier)
-							//
 							.build();
 				}
 				break;
@@ -258,7 +253,7 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 		}
 		log.trace("Flaging property {}", propertyMeta.getPropertyName());
 
-		this.dirtyMap.put(method, propertyMeta);
+		dirtyMap.put(method, propertyMeta);
 		result = proxy.invoke(target, args);
 		return result;
 	}
@@ -331,5 +326,20 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 	private <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(Method method)
 	{
 		return (PropertyMeta<K, V>) getterMetas.get(method);
+	}
+
+	protected void setLoader(AchillesEntityLoader loader)
+	{
+		this.loader = loader;
+	}
+
+	protected void setPersister(AchillesEntityPersister persister)
+	{
+		this.persister = persister;
+	}
+
+	protected void setProxifier(AchillesEntityProxifier proxifier)
+	{
+		this.proxifier = proxifier;
 	}
 }

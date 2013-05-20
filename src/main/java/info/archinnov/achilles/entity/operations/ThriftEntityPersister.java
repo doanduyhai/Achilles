@@ -136,7 +136,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
 			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
-					context.findEntityDao(joinMeta.getColumnFamilyName()));
+					context.findEntityDao(joinMeta.getTableName()));
 			Validator
 					.validateNotNull(
 							joinVersionSerialUID,

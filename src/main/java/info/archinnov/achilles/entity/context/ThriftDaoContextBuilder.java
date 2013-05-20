@@ -78,7 +78,7 @@ public class ThriftDaoContextBuilder
 	private void buildEntityDao(Cluster cluster, Keyspace keyspace,
 			AchillesConfigurationContext configContext, EntityMeta entityMeta)
 	{
-		String columnFamilyName = entityMeta.getColumnFamilyName();
+		String columnFamilyName = entityMeta.getTableName();
 		ThriftGenericEntityDao entityDao = new ThriftGenericEntityDao(//
 				cluster, //
 				keyspace, //
