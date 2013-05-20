@@ -5,8 +5,8 @@ import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.DaoContext;
-import info.archinnov.achilles.entity.context.DaoContextBuilder;
+import info.archinnov.achilles.entity.context.ThriftDaoContext;
+import info.archinnov.achilles.entity.context.ThriftDaoContextBuilder;
 import info.archinnov.achilles.entity.type.ConsistencyLevel;
 
 import java.util.Collections;
@@ -34,7 +34,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	private Cluster cluster;
 	private Keyspace keyspace;
 
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	/**
 	 * Create a new ThriftEntityManagerFactoryImpl with a configuration map
@@ -156,9 +156,9 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 				.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 						cluster.getName(), keyspace.getKeyspaceName());
 
-		super.columnFamilyCreator = new ThriftTableCreator(cluster, keyspace);
+		super.tableCreator = new ThriftTableCreator(cluster, keyspace);
 		boolean hasSimpleCounter = bootstrap();
-		daoContext = new DaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap,
+		thriftDaoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap,
 				configContext, hasSimpleCounter);
 	}
 
@@ -173,7 +173,7 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 		log.info("Create new Thrift-based Entity Manager ");
 
 		return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap), //
-				daoContext, configContext);
+				thriftDaoContext, configContext);
 	}
 
 	/**
@@ -184,28 +184,10 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 	@Override
 	public EntityManager createEntityManager(Map map)
 	{
-		log.info("Create new Thrift-based Entity Manager ");
-
+		log.info("Create new Thrift-based Entity Manager with properties");
+		// TODO override configContext with provided properties
 		return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap),
-				daoContext, configContext);
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public void close()
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public boolean isOpen()
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
+				thriftDaoContext, configContext);
 	}
 
 	@Override
@@ -226,4 +208,10 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
 		return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
 				defaultWriteConsistencyLevel, readConsistencyMap, writeConsistencyMap);
 	}
+
+	protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext)
+	{
+		this.thriftDaoContext = thriftDaoContext;
+	}
+
 }

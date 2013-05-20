@@ -28,15 +28,15 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 {
 	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 
-	protected DaoContext daoContext;
+	protected ThriftDaoContext thriftDaoContext;
 
 	protected Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>();
 	protected boolean hasCustomConsistencyLevels = false;
 
-	protected ThriftAbstractFlushContext(DaoContext daoContext,
+	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
 			AchillesConsistencyLevelPolicy policy)
 	{
-		this.daoContext = daoContext;
+		this.thriftDaoContext = thriftDaoContext;
 		this.consistencyContext = new ThriftConsistencyContext(policy);
 	}
 
@@ -100,7 +100,7 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 		else
 		{
-			ThriftGenericEntityDao entityDao = daoContext.findEntityDao(columnFamilyName);
+			ThriftGenericEntityDao entityDao = thriftDaoContext.findEntityDao(columnFamilyName);
 
 			if (entityDao != null)
 			{
@@ -121,7 +121,7 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 		else
 		{
-			ThriftGenericWideRowDao columnFamilyDao = daoContext.findWideRowDao(columnFamilyName);
+			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext.findWideRowDao(columnFamilyName);
 
 			if (columnFamilyDao != null)
 			{
@@ -142,7 +142,7 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 		else
 		{
-			ThriftCounterDao thriftCounterDao = daoContext.getCounterDao();
+			ThriftCounterDao thriftCounterDao = thriftDaoContext.getCounterDao();
 			mutator = thriftCounterDao.buildMutator();
 			mutatorMap.put(COUNTER_CF, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
 					thriftCounterDao));

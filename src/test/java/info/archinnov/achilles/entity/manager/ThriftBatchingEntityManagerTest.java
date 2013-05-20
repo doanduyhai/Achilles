@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.DaoContext;
+import info.archinnov.achilles.entity.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.CompleteBean;
@@ -35,7 +35,7 @@ public class ThriftBatchingEntityManagerTest
 	private ThriftBatchingEntityManager em;
 
 	@Mock
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	@Mock
 	private AchillesConfigurationContext configContext;
@@ -53,7 +53,7 @@ public class ThriftBatchingEntityManagerTest
 	public void setUp()
 	{
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-		em = new ThriftBatchingEntityManager(emf, null, daoContext, configContext);
+		em = new ThriftBatchingEntityManager(emf, null, thriftDaoContext, configContext);
 		Whitebox.setInternalState(em, "flushContext", flushContext);
 	}
 

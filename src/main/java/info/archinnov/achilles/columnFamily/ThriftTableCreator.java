@@ -38,8 +38,7 @@ public class ThriftTableCreator extends AchillesTableCreator
 	public ThriftTableCreator(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
 		this.keyspace = keyspace;
-		KeyspaceDefinition keyspaceDef = this.cluster.describeKeyspace(this.keyspace
-				.getKeyspaceName());
+		KeyspaceDefinition keyspaceDef = cluster.describeKeyspace(keyspace.getKeyspaceName());
 		if (keyspaceDef != null && keyspaceDef.getCfDefs() != null)
 		{
 			cfDefs = keyspaceDef.getCfDefs();

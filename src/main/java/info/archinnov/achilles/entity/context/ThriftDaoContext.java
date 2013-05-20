@@ -12,13 +12,13 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class DaoContext
+public class ThriftDaoContext
 {
 	private final Map<String, ThriftGenericEntityDao> entityDaosMap;
 	private final Map<String, ThriftGenericWideRowDao> wideRowDaosMap;
 	private final ThriftCounterDao thriftCounterDao;
 
-	public DaoContext(Map<String, ThriftGenericEntityDao> entityDaosMap,
+	public ThriftDaoContext(Map<String, ThriftGenericEntityDao> entityDaosMap,
 			Map<String, ThriftGenericWideRowDao> wideRowDaosMap, ThriftCounterDao thriftCounterDao)
 	{
 		this.entityDaosMap = entityDaosMap;

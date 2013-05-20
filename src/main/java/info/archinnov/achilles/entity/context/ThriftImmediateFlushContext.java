@@ -16,9 +16,9 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftImmediateFlushContext.class);
 
-	public ThriftImmediateFlushContext(DaoContext daoContext, AchillesConsistencyLevelPolicy policy)
+	public ThriftImmediateFlushContext(ThriftDaoContext thriftDaoContext, AchillesConsistencyLevelPolicy policy)
 	{
-		super(daoContext, policy);
+		super(thriftDaoContext, policy);
 	}
 
 	@Override

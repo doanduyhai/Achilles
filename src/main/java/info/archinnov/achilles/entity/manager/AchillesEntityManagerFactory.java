@@ -39,7 +39,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-	protected AchillesTableCreator columnFamilyCreator;
+	protected AchillesTableCreator tableCreator;
 	protected AchillesConfigurationContext configContext;
 	protected List<String> entityPackages;
 
@@ -73,8 +73,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
 		}
 
-		columnFamilyCreator.validateOrCreateColumnFamilies(entityMetaMap, configContext,
-				hasSimpleCounter);
+		tableCreator.validateOrCreateColumnFamilies(entityMetaMap, configContext, hasSimpleCounter);
 
 		return hasSimpleCounter;
 	}
@@ -131,8 +130,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	@Override
 	public CriteriaBuilder getCriteriaBuilder()
 	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
 	}
 
 	/**
@@ -141,8 +139,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	@Override
 	public Metamodel getMetamodel()
 	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
 	}
 
 	@Override
@@ -158,8 +155,25 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	@Override
 	public Cache getCache()
 	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
+	}
+
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
+	@Override
+	public void close()
+	{
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
+	}
+
+	/**
+	 * Not supported operation. Will throw UnsupportedOperationException
+	 */
+	@Override
+	public boolean isOpen()
+	{
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
 	}
 
 	/**
@@ -169,7 +183,42 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	public PersistenceUnitUtil getPersistenceUnitUtil()
 	{
 		// TODO provide a PersistenceUnitUtil, easy
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
+		throw new UnsupportedOperationException("This operation is not supported by Achilles");
 	}
+
+	protected void setTableCreator(AchillesTableCreator tableCreator)
+	{
+		this.tableCreator = tableCreator;
+	}
+
+	protected void setEntityPackages(List<String> entityPackages)
+	{
+		this.entityPackages = entityPackages;
+	}
+
+	protected void setEntityParser(EntityParser entityParser)
+	{
+		this.entityParser = entityParser;
+	}
+
+	protected void setEntityExplorer(EntityExplorer entityExplorer)
+	{
+		this.entityExplorer = entityExplorer;
+	}
+
+	protected void setValidator(EntityParsingValidator validator)
+	{
+		this.validator = validator;
+	}
+
+	protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap)
+	{
+		this.entityMetaMap = entityMetaMap;
+	}
+
+	protected void setConfigContext(AchillesConfigurationContext configContext)
+	{
+		this.configContext = configContext;
+	}
+
 }

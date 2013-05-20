@@ -27,15 +27,15 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class DaoContextBuilder
+public class ThriftDaoContextBuilder
 {
-	private static final Logger log = LoggerFactory.getLogger(DaoContextBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftDaoContextBuilder.class);
 
 	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
 	private Map<String, ThriftGenericWideRowDao> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 	private ThriftCounterDao thriftCounterDao;
 
-	public DaoContext buildDao(Cluster cluster, Keyspace keyspace,
+	public ThriftDaoContext buildDao(Cluster cluster, Keyspace keyspace,
 			Map<Class<?>, EntityMeta> entityMetaMap, AchillesConfigurationContext configContext,
 			boolean hasSimpleCounter)
 	{
@@ -72,7 +72,7 @@ public class DaoContextBuilder
 				}
 			}
 		}
-		return new DaoContext(entityDaosMap, wideRowDaosMap, thriftCounterDao);
+		return new ThriftDaoContext(entityDaosMap, wideRowDaosMap, thriftCounterDao);
 	}
 
 	private void buildEntityDao(Cluster cluster, Keyspace keyspace,

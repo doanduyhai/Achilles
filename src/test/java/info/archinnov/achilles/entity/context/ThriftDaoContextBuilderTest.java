@@ -40,11 +40,11 @@ import testBuilders.PropertyMetaTestBuilder;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class DaoContextBuilderTest
+public class ThriftDaoContextBuilderTest
 {
 
 	@InjectMocks
-	private DaoContextBuilder builder;
+	private ThriftDaoContextBuilder builder;
 
 	@Mock
 	private Cluster cluster;
@@ -69,7 +69,7 @@ public class DaoContextBuilderTest
 	@Test
 	public void should_build_counter_dao() throws Exception
 	{
-		DaoContext context = builder
+		ThriftDaoContext context = builder
 				.buildDao(cluster, keyspace, entityMetaMap, configContext, true);
 
 		ThriftCounterDao thriftCounterDao = context.getCounterDao();
@@ -103,7 +103,7 @@ public class DaoContextBuilderTest
 
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
 		ThriftGenericEntityDao entityDao = context.findEntityDao("cf");
@@ -143,7 +143,7 @@ public class DaoContextBuilderTest
 
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
 		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
@@ -184,7 +184,7 @@ public class DaoContextBuilderTest
 
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
 		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
@@ -225,7 +225,7 @@ public class DaoContextBuilderTest
 
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
 		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
@@ -276,7 +276,7 @@ public class DaoContextBuilderTest
 
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		DaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext,
 				false);
 
 		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.DaoContext;
+import info.archinnov.achilles.entity.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
@@ -37,15 +37,15 @@ public class ThriftEntityManager extends AchillesEntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
-	protected final DaoContext daoContext;
+	protected final ThriftDaoContext thriftDaoContext;
 
 	ThriftEntityManager(AchillesEntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, //
-			DaoContext daoContext, //
+			ThriftDaoContext thriftDaoContext, //
 			AchillesConfigurationContext configContext)
 	{
 		super(entityManagerFactory, entityMetaMap, configContext);
-		this.daoContext = daoContext;
+		this.thriftDaoContext = thriftDaoContext;
 		super.persister = new ThriftEntityPersister();
 		super.loader = new ThriftEntityLoader();
 		super.merger = new ThriftEntityMerger();
@@ -172,7 +172,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 	 */
 	public ThriftBatchingEntityManager batchingEntityManager()
 	{
-		return new ThriftBatchingEntityManager(entityManagerFactory, entityMetaMap, daoContext,
+		return new ThriftBatchingEntityManager(entityManagerFactory, entityMetaMap, thriftDaoContext,
 				configContext);
 	}
 
@@ -183,8 +183,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
-				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entityClass,
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+				new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entityClass,
 				primaryKey);
 	}
 
@@ -193,8 +193,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
-		return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
-				new ThriftImmediateFlushContext(daoContext, consistencyPolicy), entity);
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+				new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entity);
 	}
 
 	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)

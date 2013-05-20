@@ -60,7 +60,7 @@ public class ThriftImmediateFlushContextTest
 	private ThriftConsistencyContext thriftConsistencyContext;
 
 	@Mock
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	private Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao>>();
 
@@ -69,7 +69,7 @@ public class ThriftImmediateFlushContextTest
 	{
 		Whitebox.setInternalState(context, "consistencyContext", thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, "daoContext", daoContext);
+		Whitebox.setInternalState(context, "thriftDaoContext", thriftDaoContext);
 		mutatorMap.clear();
 	}
 
@@ -142,7 +142,7 @@ public class ThriftImmediateFlushContextTest
 	@Test
 	public void should_get_new_entity_mutator() throws Exception
 	{
-		when((ThriftGenericEntityDao) daoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when((ThriftGenericEntityDao) thriftDaoContext.findEntityDao("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getEntityMutator("cf");
@@ -165,7 +165,7 @@ public class ThriftImmediateFlushContextTest
 	@Test
 	public void should_get_new_cf_mutator() throws Exception
 	{
-		when((ThriftGenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(cfDao);
+		when((ThriftGenericWideRowDao) thriftDaoContext.findWideRowDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getWideRowMutator("cf");
@@ -188,7 +188,7 @@ public class ThriftImmediateFlushContextTest
 	@Test
 	public void should_get_new_counter_mutator() throws Exception
 	{
-		when(daoContext.getCounterDao()).thenReturn(thriftCounterDao);
+		when(thriftDaoContext.getCounterDao()).thenReturn(thriftCounterDao);
 		when(thriftCounterDao.buildMutator()).thenReturn(counterMutator);
 
 		Mutator<Object> actual = context.getCounterMutator();

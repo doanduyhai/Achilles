@@ -22,9 +22,9 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class DaoContextTest
+public class ThriftDaoContextTest
 {
-	private DaoContext context;
+	private ThriftDaoContext context;
 
 	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
 	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
@@ -41,7 +41,7 @@ public class DaoContextTest
 	@Before
 	public void setUp()
 	{
-		context = new DaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
+		context = new ThriftDaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
 	}
 
 	@Test

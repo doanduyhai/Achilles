@@ -19,14 +19,14 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContext.class);
 
-	private final DaoContext daoContext;
+	private final ThriftDaoContext thriftDaoContext;
 	private ThriftGenericEntityDao entityDao;
 	private ThriftGenericWideRowDao wideRowDao;
 	private ThriftAbstractFlushContext thriftFlushContext;
 
 	public ThriftPersistenceContext(EntityMeta entityMeta, //
 			AchillesConfigurationContext configContext, //
-			DaoContext daoContext, //
+			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
 			Object entity)
 	{
@@ -34,7 +34,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		log.trace("Create new persistence context for instance {} of class {}", entity,
 				entityMeta.getClassName());
 
-		this.daoContext = daoContext;
+		this.thriftDaoContext = thriftDaoContext;
 		this.thriftFlushContext = flushContext;
 		this.primaryKey = introspector.getKey(entity, entityMeta.getIdMeta());
 		this.initDaos();
@@ -42,7 +42,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 
 	public ThriftPersistenceContext(EntityMeta entityMeta, //
 			AchillesConfigurationContext configContext, //
-			DaoContext daoContext, //
+			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
 			Class<?> entityClass, Object primaryKey)
 	{
@@ -50,7 +50,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		log.trace("Create new persistence context for instance {} of class {}", entity,
 				entityMeta.getClassName());
 
-		this.daoContext = daoContext;
+		this.thriftDaoContext = thriftDaoContext;
 		this.thriftFlushContext = flushContext;
 		this.initDaos();
 	}
@@ -60,7 +60,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	{
 		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
 				joinMeta.getClassName());
-		return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
+		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
 				thriftFlushContext, joinEntity);
 	}
 
@@ -71,23 +71,23 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
 				joinMeta.getClassName());
 
-		return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
+		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
 				thriftFlushContext, entityClass, joinId);
 	}
 
 	public ThriftGenericEntityDao findEntityDao(String columnFamilyName)
 	{
-		return daoContext.findEntityDao(columnFamilyName);
+		return thriftDaoContext.findEntityDao(columnFamilyName);
 	}
 
 	public ThriftGenericWideRowDao findWideRowDao(String columnFamilyName)
 	{
-		return daoContext.findWideRowDao(columnFamilyName);
+		return thriftDaoContext.findWideRowDao(columnFamilyName);
 	}
 
 	public ThriftCounterDao getCounterDao()
 	{
-		return daoContext.getCounterDao();
+		return thriftDaoContext.getCounterDao();
 	}
 
 	public Mutator<Object> getCurrentColumnFamilyMutator()
@@ -125,11 +125,11 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		String columnFamilyName = entityMeta.getColumnFamilyName();
 		if (entityMeta.isWideRow())
 		{
-			this.wideRowDao = daoContext.findWideRowDao(columnFamilyName);
+			this.wideRowDao = thriftDaoContext.findWideRowDao(columnFamilyName);
 		}
 		else
 		{
-			this.entityDao = daoContext.findEntityDao(columnFamilyName);
+			this.entityDao = thriftDaoContext.findEntityDao(columnFamilyName);
 		}
 	}
 }

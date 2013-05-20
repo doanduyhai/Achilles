@@ -55,7 +55,7 @@ public class ThriftBatchingFlushContextTest
 	private ThriftConsistencyContext thriftConsistencyContext;
 
 	@Mock
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	private Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao>>();
 
@@ -64,7 +64,7 @@ public class ThriftBatchingFlushContextTest
 	{
 		Whitebox.setInternalState(context, "consistencyContext", thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, "daoContext", daoContext);
+		Whitebox.setInternalState(context, "thriftDaoContext", thriftDaoContext);
 		mutatorMap.clear();
 	}
 

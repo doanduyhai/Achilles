@@ -62,14 +62,14 @@ public class PersistenceContextTestBuilder
 
 	public ThriftPersistenceContext build()
 	{
-		DaoContext daoContext = new DaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
+		ThriftDaoContext thriftDaoContext = new ThriftDaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
 		AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
 		configContext.setEnsureJoinConsistency(ensureJoinConsistency);
 		ThriftPersistenceContext context = new ThriftPersistenceContext(//
 				entityMeta, //
 				configContext, //
-				daoContext, //
+				thriftDaoContext, //
 				thriftImmediateFlushContext, //
 				entityClass, primaryKey);
 

@@ -53,7 +53,7 @@ public class ThriftPersistenceContextTest
 	private Map<String, ThriftGenericEntityDao> entityDaosMap;
 
 	@Mock
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	@Mock
 	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap;
@@ -85,7 +85,7 @@ public class ThriftPersistenceContextTest
 	@Before
 	public void setUp()
 	{
-		when(daoContext.getCounterDao()).thenReturn(thriftCounterDao);
+		when(thriftDaoContext.getCounterDao()).thenReturn(thriftCounterDao);
 		configContext.setConsistencyPolicy(policy);
 	}
 
@@ -95,7 +95,7 @@ public class ThriftPersistenceContextTest
 		prepareContextWithEntityDao();
 
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, entity);
+				thriftDaoContext, thriftImmediateFlushContext, entity);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isEqualTo(entity);
@@ -108,10 +108,10 @@ public class ThriftPersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(true);
-		when((ThriftGenericWideRowDao) daoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
+		when((ThriftGenericWideRowDao) thriftDaoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
 
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, entity);
+				thriftDaoContext, thriftImmediateFlushContext, entity);
 
 		assertThat(context.getColumnFamilyDao()).isSameAs(columFamilyDao);
 	}
@@ -122,7 +122,7 @@ public class ThriftPersistenceContextTest
 		prepareContextWithEntityDao();
 		Long primaryKey = 150L;
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, CompleteBean.class, primaryKey);
+				thriftDaoContext, thriftImmediateFlushContext, CompleteBean.class, primaryKey);
 
 		assertThat(context.getPrimaryKey()).isEqualTo(primaryKey);
 		assertThat(context.getEntity()).isNull();
@@ -135,7 +135,7 @@ public class ThriftPersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, entity);
+				thriftDaoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
@@ -154,7 +154,7 @@ public class ThriftPersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, entity);
+				thriftDaoContext, thriftImmediateFlushContext, entity);
 
 		prepareNewContext();
 
@@ -172,9 +172,9 @@ public class ThriftPersistenceContextTest
 	{
 		prepareContextWithEntityDao();
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, thriftImmediateFlushContext, entity);
+				thriftDaoContext, thriftImmediateFlushContext, entity);
 
-		when(daoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
+		when(thriftDaoContext.findWideRowDao("cf")).thenReturn(columFamilyDao);
 
 		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("cf")).isSameAs(columFamilyDao);
 	}
@@ -198,7 +198,7 @@ public class ThriftPersistenceContextTest
 	{
 		prepareContext();
 		when(entityMeta.isWideRow()).thenReturn(false);
-		when(daoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when(thriftDaoContext.findEntityDao("cf")).thenReturn(entityDao);
 	}
 
 	private void prepareNewContext() throws Exception
@@ -217,7 +217,7 @@ public class ThriftPersistenceContextTest
 		when(introspector.getKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getColumnFamilyName()).thenReturn("cf2");
 		when(joinMeta.isWideRow()).thenReturn(false);
-		when(daoContext.findEntityDao("cf2")).thenReturn(entityDao);
+		when(thriftDaoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}
 
 }

@@ -8,7 +8,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.DaoContext;
+import info.archinnov.achilles.entity.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -110,7 +110,7 @@ public class ThriftEntityManagerTest
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
-	private DaoContext daoContext;
+	private ThriftDaoContext thriftDaoContext;
 
 	@Mock
 	private AchillesConfigurationContext configContext;
@@ -138,7 +138,7 @@ public class ThriftEntityManagerTest
 	public void setUp() throws Exception
 	{
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-		em = new ThriftEntityManager(emf, entityMetaMap, daoContext, configContext);
+		em = new ThriftEntityManager(emf, entityMetaMap, thriftDaoContext, configContext);
 
 		Whitebox.setInternalState(em, "persister", persister);
 		merger.setPersister(persister);

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.DaoContext;
+import info.archinnov.achilles.entity.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
@@ -28,11 +28,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	private ThriftBatchingFlushContext flushContext;
 
 	ThriftBatchingEntityManager(AchillesEntityManagerFactory entityManagerFactory,
-			Map<Class<?>, EntityMeta> entityMetaMap, DaoContext daoContext,
+			Map<Class<?>, EntityMeta> entityMetaMap, ThriftDaoContext thriftDaoContext,
 			AchillesConfigurationContext configContext)
 	{
-		super(entityManagerFactory, entityMetaMap, daoContext, configContext);
-		this.flushContext = new ThriftBatchingFlushContext(daoContext, consistencyPolicy);
+		super(entityManagerFactory, entityMetaMap, thriftDaoContext, configContext);
+		this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy);
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext(entityMeta, configContext, daoContext, flushContext,
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext,
 				entityClass, primaryKey);
 	}
 
@@ -258,7 +258,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
-		return new ThriftPersistenceContext(entityMeta, configContext, daoContext, flushContext,
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext,
 				entity);
 	}
 
