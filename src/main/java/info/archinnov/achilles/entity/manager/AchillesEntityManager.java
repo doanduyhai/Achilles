@@ -45,9 +45,9 @@ public abstract class AchillesEntityManager implements EntityManager
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
 
 	protected final AchillesEntityManagerFactory entityManagerFactory;
-	protected final Map<Class<?>, EntityMeta> entityMetaMap;
-	protected final AchillesConsistencyLevelPolicy consistencyPolicy;
-	protected final AchillesConfigurationContext configContext;
+	protected Map<Class<?>, EntityMeta> entityMetaMap;
+	protected AchillesConsistencyLevelPolicy consistencyPolicy;
+	protected AchillesConfigurationContext configContext;
 
 	protected AchillesEntityPersister persister;
 	protected AchillesEntityLoader loader;
@@ -269,7 +269,16 @@ public abstract class AchillesEntityManager implements EntityManager
 		log.debug("Get reference for entity class '{}' with primary key {}", entityClass,
 				primaryKey);
 
-		return find(entityClass, primaryKey);
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
+		AchillesPersistenceContext context = initPersistenceContext(entityClass, primaryKey);
+		context.setLoadEagerFields(false);
+		T entity = loader.<T> load(context, entityClass);
+		if (entity != null)
+		{
+			entity = proxifier.buildProxy(entity, context);
+		}
+		return entity;
 	}
 
 	/**
@@ -362,7 +371,7 @@ public abstract class AchillesEntityManager implements EntityManager
 	{
 		log.debug("Unproxying entity {}", proxy);
 
-		T realObject = this.proxifier.unproxy(proxy);
+		T realObject = proxifier.unproxy(proxy);
 
 		return realObject;
 	}
@@ -754,4 +763,70 @@ public abstract class AchillesEntityManager implements EntityManager
 		EntityMeta entityMeta = entityMetaMap.get(realObject.getClass());
 		return entityMeta;
 	}
+
+	protected Map<Class<?>, EntityMeta> getEntityMetaMap()
+	{
+		return entityMetaMap;
+	}
+
+	protected AchillesConsistencyLevelPolicy getConsistencyPolicy()
+	{
+		return consistencyPolicy;
+	}
+
+	protected AchillesConfigurationContext getConfigContext()
+	{
+		return configContext;
+	}
+
+	protected void setPersister(AchillesEntityPersister persister)
+	{
+		this.persister = persister;
+	}
+
+	protected void setLoader(AchillesEntityLoader loader)
+	{
+		this.loader = loader;
+	}
+
+	protected void setMerger(AchillesEntityMerger merger)
+	{
+		this.merger = merger;
+	}
+
+	protected void setRefresher(AchillesEntityRefresher refresher)
+	{
+		this.refresher = refresher;
+	}
+
+	protected void setProxifier(AchillesEntityProxifier proxifier)
+	{
+		this.proxifier = proxifier;
+	}
+
+	protected void setEntityValidator(AchillesEntityValidator entityValidator)
+	{
+		this.entityValidator = entityValidator;
+	}
+
+	protected void setInitializer(AchillesEntityInitializer initializer)
+	{
+		this.initializer = initializer;
+	}
+
+	protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap)
+	{
+		this.entityMetaMap = entityMetaMap;
+	}
+
+	protected void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy)
+	{
+		this.consistencyPolicy = consistencyPolicy;
+	}
+
+	protected void setConfigContext(AchillesConfigurationContext configContext)
+	{
+		this.configContext = configContext;
+	}
+
 }

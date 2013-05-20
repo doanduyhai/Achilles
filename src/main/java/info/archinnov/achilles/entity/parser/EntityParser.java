@@ -70,12 +70,21 @@ public class EntityParser
 			}
 			else if (filter.hasAnnotation(field, Column.class))
 			{
-				parser.parse(propertyContext);
+				PropertyMeta<?, ?> propertyMeta = parser.parse(propertyContext);
+				if (!propertyMeta.isLazy())
+				{
+					context.getEagerMetas().add(propertyMeta);
+				}
 			}
 			else if (filter.hasAnnotation(field, JoinColumn.class))
 			{
 				propertyContext.setJoinColumn(true);
 				joinParser.parseJoin(propertyContext);
+			}
+			else
+			{
+				log.trace("Un-mapped field {} of entity {} will not be managed by Achilles",
+						field.getName(), context.getCurrentEntityClass().getCanonicalName());
 			}
 		}
 
@@ -96,17 +105,18 @@ public class EntityParser
 		validator.validateWideRows(context);
 
 		EntityMeta entityMeta = entityMetaBuilder(idMeta).className(entityClass.getCanonicalName()) //
-				.columnFamilyName(columnFamilyName) //
-				.serialVersionUID(serialVersionUID) //
-				.propertyMetas(context.getPropertyMetas()) //
-				.wideRow(context.isWideRow()) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
+				.columnFamilyName(columnFamilyName)
+				.serialVersionUID(serialVersionUID)
+				.propertyMetas(context.getPropertyMetas())
+				.eagerMetas(context.getEagerMetas())
+				.wideRow(context.isWideRow())
+				.consistencyLevels(context.getCurrentConsistencyLevels())
 				.build();
 
-		// buildDao(context, columnFamilyName, idMeta);
 		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
-		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass()
+		log.trace("Entity meta built for entity class {} : {}", context
+				.getCurrentEntityClass()
 				.getCanonicalName(), entityMeta);
 		return entityMeta;
 	}
@@ -117,7 +127,8 @@ public class EntityParser
 		log.debug("Fill in join entity meta into property meta of join type");
 
 		// Retrieve EntityMeta objects for join columns after entities parsing
-		for (Entry<PropertyMeta<?, ?>, Class<?>> entry : context.getJoinPropertyMetaToBeFilled()
+		for (Entry<PropertyMeta<?, ?>, Class<?>> entry : context
+				.getJoinPropertyMetaToBeFilled()
 				.entrySet())
 		{
 			Class<?> clazz = entry.getValue();
@@ -149,7 +160,8 @@ public class EntityParser
 		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '"
 				+ entityClass.getCanonicalName() + "'");
 
-		log.debug("Set default object mapper {} for entity {}", objectMapper.getClass()
+		log.debug("Set default object mapper {} for entity {}", objectMapper
+				.getClass()
 				.getCanonicalName(), entityClass.getCanonicalName());
 		context.setCurrentObjectMapper(objectMapper);
 	}
@@ -188,7 +200,8 @@ public class EntityParser
 
 			log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta
 					.getPropertyName(), counterMeta.getPropertyName(), context
-					.getCurrentEntityClass().getCanonicalName());
+					.getCurrentEntityClass()
+					.getCanonicalName());
 
 			counterMeta.getCounterProperties().setIdMeta(idMeta);
 		}

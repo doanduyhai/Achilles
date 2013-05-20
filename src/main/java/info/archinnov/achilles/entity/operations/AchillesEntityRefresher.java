@@ -28,7 +28,8 @@ public class AchillesEntityRefresher
 
 	public <T> void refresh(AchillesPersistenceContext context)
 	{
-		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass()
+		log.debug("Refreshing entity of class {} and primary key {}", context
+				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		Object entity = context.getEntity();
@@ -38,7 +39,7 @@ public class AchillesEntityRefresher
 		Object freshEntity = loader.load(context, context.getEntityClass());
 
 		interceptor.getDirtyMap().clear();
-		interceptor.getLazyAlreadyLoaded().clear();
+		interceptor.getAlreadyLoaded().clear();
 		interceptor.setTarget(freshEntity);
 	}
 }

@@ -148,6 +148,7 @@ public class PropertyParserTest
 
 		assertThat((PropertyMeta<Void, String>) context.getPropertyMetas().get("name")).isSameAs(
 				meta);
+
 	}
 
 	@Test
@@ -375,6 +376,8 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("friends"));
 		PropertyMeta<?, ?> meta = parser.parse(context);
 		assertThat(meta.type().isLazy()).isTrue();
+
+		assertThat(entityContext.getEagerMetas()).isEmpty();
 	}
 
 	@SuppressWarnings("rawtypes")

@@ -76,7 +76,7 @@ public class AchillesJpaEntityInterceptorTest
 
 	private Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
 	private Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
-	private Set<Method> lazyAlreadyLoaded = new HashSet<Method>();
+	private Set<Method> alreadyLoaded = new HashSet<Method>();
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
 	private CompleteBean bean;
 	private Long key = RandomUtils.nextLong();
@@ -109,9 +109,9 @@ public class AchillesJpaEntityInterceptorTest
 		doCallRealMethod().when(interceptor).setContext(context);
 		interceptor.setContext(context);
 
-		lazyAlreadyLoaded.clear();
-		doCallRealMethod().when(interceptor).setLazyLoaded(lazyAlreadyLoaded);
-		interceptor.setLazyLoaded(lazyAlreadyLoaded);
+		alreadyLoaded.clear();
+		doCallRealMethod().when(interceptor).setAlreadyLoaded(alreadyLoaded);
+		interceptor.setAlreadyLoaded(alreadyLoaded);
 
 		dirtyMap.clear();
 		doCallRealMethod().when(interceptor).setDirtyMap(dirtyMap);
@@ -189,7 +189,7 @@ public class AchillesJpaEntityInterceptorTest
 				.type(PropertyType.LAZY_SIMPLE)
 				.build();
 
-		lazyAlreadyLoaded.add(propertyMeta.getGetter());
+		alreadyLoaded.add(propertyMeta.getGetter());
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		when(proxy.invoke(bean, args)).thenReturn(rawValue);
 		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
@@ -208,7 +208,7 @@ public class AchillesJpaEntityInterceptorTest
 				.type(PropertyType.SIMPLE)
 				.build();
 
-		lazyAlreadyLoaded.add(propertyMeta.getGetter());
+		alreadyLoaded.add(propertyMeta.getGetter());
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		when(proxy.invoke(bean, args)).thenReturn(rawValue);
 
@@ -623,7 +623,7 @@ public class AchillesJpaEntityInterceptorTest
 
 		Object actual = interceptor.intercept(bean, propertyMeta.getSetter(), args, proxy);
 
-		assertThat(lazyAlreadyLoaded).isEmpty();
+		assertThat(alreadyLoaded).isEmpty();
 		assertThat(dirtyMap).containsKey(propertyMeta.getSetter());
 		assertThat(dirtyMap).containsValue(propertyMeta);
 		assertThat(actual).isSameAs(rawValue);
@@ -643,7 +643,7 @@ public class AchillesJpaEntityInterceptorTest
 
 		Object actual = interceptor.intercept(bean, propertyMeta.getSetter(), args, proxy);
 
-		assertThat(lazyAlreadyLoaded).contains(propertyMeta.getGetter());
+		assertThat(alreadyLoaded).contains(propertyMeta.getGetter());
 		assertThat(dirtyMap).containsKey(propertyMeta.getSetter());
 		assertThat(dirtyMap).containsValue(propertyMeta);
 		assertThat(actual).isSameAs(rawValue);

@@ -77,4 +77,46 @@ public class PropertyTypeTest
 		assertThat(PropertyType.JOIN_MAP.isWideMap()).isFalse();
 		assertThat(PropertyType.JOIN_WIDE_MAP.isWideMap()).isTrue();
 	}
+
+	@Test
+	public void should_test_is_counter() throws Exception
+	{
+		assertThat(PropertyType.SERIAL_VERSION_UID.isCounter()).isFalse();
+		assertThat(PropertyType.SIMPLE.isCounter()).isFalse();
+		assertThat(PropertyType.LIST.isCounter()).isFalse();
+		assertThat(PropertyType.MAP.isCounter()).isFalse();
+		assertThat(PropertyType.COUNTER.isCounter()).isTrue();
+		assertThat(PropertyType.LAZY_SIMPLE.isCounter()).isFalse();
+		assertThat(PropertyType.LAZY_LIST.isCounter()).isFalse();
+		assertThat(PropertyType.LAZY_SET.isCounter()).isFalse();
+		assertThat(PropertyType.LAZY_MAP.isCounter()).isFalse();
+		assertThat(PropertyType.WIDE_MAP.isCounter()).isFalse();
+		assertThat(PropertyType.COUNTER_WIDE_MAP.isCounter()).isTrue();
+		assertThat(PropertyType.JOIN_SIMPLE.isCounter()).isFalse();
+		assertThat(PropertyType.JOIN_LIST.isCounter()).isFalse();
+		assertThat(PropertyType.JOIN_SET.isCounter()).isFalse();
+		assertThat(PropertyType.JOIN_MAP.isCounter()).isFalse();
+		assertThat(PropertyType.JOIN_WIDE_MAP.isCounter()).isFalse();
+	}
+
+	@Test
+	public void should_test_is_proxy_type() throws Exception
+	{
+		assertThat(PropertyType.SERIAL_VERSION_UID.isProxyType()).isFalse();
+		assertThat(PropertyType.SIMPLE.isProxyType()).isFalse();
+		assertThat(PropertyType.LIST.isProxyType()).isFalse();
+		assertThat(PropertyType.MAP.isProxyType()).isFalse();
+		assertThat(PropertyType.COUNTER.isProxyType()).isTrue();
+		assertThat(PropertyType.LAZY_SIMPLE.isProxyType()).isFalse();
+		assertThat(PropertyType.LAZY_LIST.isProxyType()).isFalse();
+		assertThat(PropertyType.LAZY_SET.isProxyType()).isFalse();
+		assertThat(PropertyType.LAZY_MAP.isProxyType()).isFalse();
+		assertThat(PropertyType.WIDE_MAP.isProxyType()).isTrue();
+		assertThat(PropertyType.COUNTER_WIDE_MAP.isProxyType()).isTrue();
+		assertThat(PropertyType.JOIN_SIMPLE.isProxyType()).isFalse();
+		assertThat(PropertyType.JOIN_LIST.isProxyType()).isFalse();
+		assertThat(PropertyType.JOIN_SET.isProxyType()).isFalse();
+		assertThat(PropertyType.JOIN_MAP.isProxyType()).isFalse();
+		assertThat(PropertyType.JOIN_WIDE_MAP.isProxyType()).isTrue();
+	}
 }

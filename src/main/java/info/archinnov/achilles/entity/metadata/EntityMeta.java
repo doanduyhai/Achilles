@@ -4,6 +4,7 @@ import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -23,6 +24,8 @@ public class EntityMeta
 	private Long serialVersionUID;
 	private Class<?> idClass;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
+	private List<PropertyMeta<?, ?>> eagerMetas;
+	private List<Method> eagerGetters;
 	private PropertyMeta<?, ?> idMeta;
 	private Map<Method, PropertyMeta<?, ?>> getterMetas;
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
@@ -127,6 +130,26 @@ public class EntityMeta
 	public void setIdClass(Class<?> idClass)
 	{
 		this.idClass = idClass;
+	}
+
+	public List<PropertyMeta<?, ?>> getEagerMetas()
+	{
+		return eagerMetas;
+	}
+
+	public void setEagerMetas(List<PropertyMeta<?, ?>> eagerMetas)
+	{
+		this.eagerMetas = eagerMetas;
+	}
+
+	public List<Method> getEagerGetters()
+	{
+		return eagerGetters;
+	}
+
+	public void setEagerGetters(List<Method> eagerGetters)
+	{
+		this.eagerGetters = eagerGetters;
 	}
 
 	@Override

@@ -15,8 +15,10 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,11 +92,19 @@ public class JpaEntityInterceptorBuilderTest
 	@Test
 	public void should_build_entity() throws Exception
 	{
+		List<Method> eagerMethods = new ArrayList<Method>();
+		Method nameGetter = CompleteBean.class.getDeclaredMethod("getName");
+		Method ageGetter = CompleteBean.class.getDeclaredMethod("getAge");
+		eagerMethods.add(nameGetter);
+		eagerMethods.add(ageGetter);
+
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
+		when(entityMeta.getEagerGetters()).thenReturn(eagerMethods);
+
 		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		Method idGetter = CompleteBean.class.getDeclaredMethod("getId", (Class<?>[]) null);
+		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
 		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
 
 		when(idMeta.getGetter()).thenReturn(idGetter);
@@ -108,8 +118,9 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
 
-		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
+		assertThat(interceptor.getAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getAlreadyLoaded()).isInstanceOf(HashSet.class);
+		assertThat(interceptor.getAlreadyLoaded()).containsOnly(nameGetter, ageGetter);
 
 		assertThat(context.isWideRow()).isFalse();
 
@@ -117,6 +128,32 @@ public class JpaEntityInterceptorBuilderTest
 
 		assertThat(entityLoader).isNotNull();
 		assertThat(entityLoader).isInstanceOf(ThriftEntityLoader.class);
+	}
+
+	@Test
+	public void should_not_load_eager_fields() throws Exception
+	{
+		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
+		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
+		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
+
+		Method idGetter = CompleteBean.class.getDeclaredMethod("getId");
+		Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
+
+		when(idMeta.getGetter()).thenReturn(idGetter);
+		when(idMeta.getSetter()).thenReturn(idSetter);
+		context.setLoadEagerFields(false);
+
+		JpaEntityInterceptor<CompleteBean> interceptor = JpaEntityInterceptorBuilder.builder(
+				context, entity).build();
+
+		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+		assertThat(interceptor.getTarget()).isEqualTo(entity);
+		assertThat(interceptor.getDirtyMap()).isNotNull();
+		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
+
+		assertThat(interceptor.getAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getAlreadyLoaded()).isEmpty();
 	}
 
 	@Test
@@ -148,8 +185,8 @@ public class JpaEntityInterceptorBuilderTest
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
 
-		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyAlreadyLoaded()).isInstanceOf(HashSet.class);
+		assertThat(interceptor.getAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getAlreadyLoaded()).isInstanceOf(HashSet.class);
 
 		assertThat(context.isWideRow()).isTrue();
 

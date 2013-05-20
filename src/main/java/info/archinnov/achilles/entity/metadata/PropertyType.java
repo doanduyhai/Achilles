@@ -74,4 +74,18 @@ public enum PropertyType
 				|| this == COUNTER_WIDE_MAP //
 		|| this == JOIN_WIDE_MAP);
 	}
+
+	public boolean isCounter()
+	{
+		return (this == COUNTER //
+		|| this == COUNTER_WIDE_MAP);
+	}
+
+	public boolean isProxyType()
+	{
+		return (this == COUNTER //
+				|| this == COUNTER_WIDE_MAP //
+				|| this == WIDE_MAP //
+		|| this == JOIN_WIDE_MAP);
+	}
 }

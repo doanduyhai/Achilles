@@ -70,7 +70,7 @@ public class AchillesEntityRefresherTest
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(jpaEntityInterceptor.getLazyAlreadyLoaded()).thenReturn(lazyLoaded);
+		when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(lazyLoaded);
 		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
 
 		achillesEntityRefresher.refresh(context);

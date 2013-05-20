@@ -165,13 +165,14 @@ public class JoinWideMapWrapper<K, V> extends AbstractWideMapWrapper<K, V>
 
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Iterate in range {} / {} with bounding {} and ordering {} and batch of {} elements",
-					format(composites[0]), format(composites[1]), bounds.name(), ordering.name(),
-					count);
+			log
+					.trace("Iterate in range {} / {} with bounding {} and ordering {} and batch of {} elements",
+							format(composites[0]), format(composites[1]), bounds.name(),
+							ordering.name(), count);
 		}
 
-		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(propertyMeta.joinMeta()
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(propertyMeta
+				.joinMeta()
 				.getTableName());
 
 		AchillesJoinSliceIterator<?, K, V> joinColumnSliceIterator = dao.getJoinColumnsIterator(

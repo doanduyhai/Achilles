@@ -78,7 +78,12 @@ public class JpaEntityInterceptorBuilder<T>
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
-		interceptor.setLazyLoaded(lazyLoaded);
+
+		if (context.isLoadEagerFields())
+		{
+			lazyLoaded.addAll(entityMeta.getEagerGetters());
+		}
+		interceptor.setAlreadyLoaded(lazyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
 		interceptor.setKey(context.getPrimaryKey());
 

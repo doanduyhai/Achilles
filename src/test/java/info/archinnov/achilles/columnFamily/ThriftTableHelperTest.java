@@ -93,6 +93,7 @@ public class ThriftTableHelperTest
 	{
 		PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
 		wideMapMeta.setValueClass(String.class);
+		wideMapMeta.setType(PropertyType.WIDE_MAP);
 
 		when(helper.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
 				"typeAlias");

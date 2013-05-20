@@ -39,6 +39,9 @@ public class Bean implements Serializable
 	@Column(name = "age_in_year")
 	private Long age;
 
+	// un-mapped field
+	private String label;
+
 	@Lazy
 	@Column
 	private List<String> friends;
@@ -135,4 +138,15 @@ public class Bean implements Serializable
 	{
 		return users;
 	}
+
+	public String getLabel()
+	{
+		return label;
+	}
+
+	public void setLabel(String label)
+	{
+		this.label = label;
+	}
+
 }

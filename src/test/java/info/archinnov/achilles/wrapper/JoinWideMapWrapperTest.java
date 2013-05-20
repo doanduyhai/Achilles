@@ -171,8 +171,8 @@ public class JoinWideMapWrapperTest
 		when(propertyMeta.getValueClass()).thenReturn(CompleteBean.class);
 
 		when(dao.getValue(id, comp)).thenReturn(entity.getId());
-		when(loader.load(any(ThriftPersistenceContext.class), eq(CompleteBean.class))).thenReturn(
-				entity);
+		when(loader.load(any(ThriftPersistenceContext.class), eq(CompleteBean.class)))
+				.thenReturn(entity);
 		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class))).thenReturn(
 				entity);
 
@@ -192,8 +192,8 @@ public class JoinWideMapWrapperTest
 		when(propertyMeta.getValueClass()).thenReturn(CompleteBean.class);
 
 		when(dao.getValue(id, comp)).thenReturn(entity.getId());
-		when(loader.load(any(ThriftPersistenceContext.class), eq(CompleteBean.class))).thenReturn(
-				null);
+		when(loader.load(any(ThriftPersistenceContext.class), eq(CompleteBean.class)))
+				.thenReturn(null);
 		when(proxifier.buildProxy(eq(null), any(ThriftPersistenceContext.class))).thenReturn(null);
 
 		assertThat(wrapper.get(key)).isNull();

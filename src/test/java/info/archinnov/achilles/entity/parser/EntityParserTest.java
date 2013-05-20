@@ -188,6 +188,10 @@ public class EntityParserTest
 		assertThat(meta.getConsistencyLevels().left).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
 
+		assertThat(meta.getEagerMetas()).containsOnly(name, age, followers, preferences);
+		assertThat(meta.getEagerGetters()).containsOnly(name.getGetter(), age.getGetter(),
+				followers.getGetter(), preferences.getGetter());
+
 		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE, meta.getTableName());
 		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL, meta.getTableName());
 	}

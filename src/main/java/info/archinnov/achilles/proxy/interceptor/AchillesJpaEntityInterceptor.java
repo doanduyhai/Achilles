@@ -42,7 +42,7 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 	protected Map<Method, PropertyMeta<?, ?>> getterMetas;
 	protected Map<Method, PropertyMeta<?, ?>> setterMetas;
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
-	protected Set<Method> lazyAlreadyLoaded;
+	protected Set<Method> alreadyLoaded;
 	protected AchillesPersistenceContext context;
 
 	public Object getTarget()
@@ -89,13 +89,13 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 		Object result = null;
 		PropertyMeta<?, ?> propertyMeta = this.getterMetas.get(method);
 
-		// Load lazy into target object
-		if (propertyMeta.type().isLazy() && !this.lazyAlreadyLoaded.contains(method))
+		// Load fields into target object
+		if (!propertyMeta.type().isProxyType() && !this.alreadyLoaded.contains(method))
 		{
 			log.trace("Loading property {}", propertyMeta.getPropertyName());
 
 			loader.loadPropertyIntoObject(target, key, context, propertyMeta);
-			lazyAlreadyLoaded.add(method);
+			alreadyLoaded.add(method);
 		}
 
 		log.trace("Invoking getter {} on real object", method.getName());
@@ -249,7 +249,7 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 
 		if (propertyMeta.type().isLazy())
 		{
-			this.lazyAlreadyLoaded.add(propertyMeta.getGetter());
+			this.alreadyLoaded.add(propertyMeta.getGetter());
 		}
 		log.trace("Flaging property {}", propertyMeta.getPropertyName());
 
@@ -263,9 +263,9 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 		return dirtyMap;
 	}
 
-	public Set<Method> getLazyAlreadyLoaded()
+	public Set<Method> getAlreadyLoaded()
 	{
-		return lazyAlreadyLoaded;
+		return alreadyLoaded;
 	}
 
 	public Object getKey()
@@ -308,9 +308,9 @@ public abstract class AchillesJpaEntityInterceptor<T> implements MethodIntercept
 		this.dirtyMap = dirtyMap;
 	}
 
-	void setLazyLoaded(Set<Method> lazyLoaded)
+	void setAlreadyLoaded(Set<Method> lazyLoaded)
 	{
-		this.lazyAlreadyLoaded = lazyLoaded;
+		this.alreadyLoaded = lazyLoaded;
 	}
 
 	public AchillesPersistenceContext getContext()

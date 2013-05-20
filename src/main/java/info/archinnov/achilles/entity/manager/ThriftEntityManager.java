@@ -37,7 +37,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
-	protected final ThriftDaoContext thriftDaoContext;
+	protected ThriftDaoContext thriftDaoContext;
 
 	ThriftEntityManager(AchillesEntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, //
@@ -111,6 +111,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 	public <T> T find(final Class<T> entityClass, final Object primaryKey,
 			ConsistencyLevel readLevel)
 	{
+
 		log.debug("Find entity class '{}' with primary key {} and read consistency level {}",
 				entityClass, primaryKey, readLevel.name());
 
@@ -138,7 +139,7 @@ public class ThriftEntityManager extends AchillesEntityManager
 			@Override
 			public T execute()
 			{
-				return find(entityClass, primaryKey);
+				return getReference(entityClass, primaryKey);
 			}
 		});
 	}
@@ -172,8 +173,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 	 */
 	public ThriftBatchingEntityManager batchingEntityManager()
 	{
-		return new ThriftBatchingEntityManager(entityManagerFactory, entityMetaMap, thriftDaoContext,
-				configContext);
+		return new ThriftBatchingEntityManager(entityManagerFactory, entityMetaMap,
+				thriftDaoContext, configContext);
 	}
 
 	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
@@ -210,4 +211,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 		}
 	}
 
+	protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext)
+	{
+		this.thriftDaoContext = thriftDaoContext;
+	}
 }

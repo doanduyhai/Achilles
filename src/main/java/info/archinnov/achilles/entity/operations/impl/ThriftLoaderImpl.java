@@ -45,7 +45,8 @@ public class ThriftLoaderImpl
 
 	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) throws Exception
 	{
-		log.trace("Loading entity of class {} with primary key {}", context.getEntityClass()
+		log.trace("Loading entity of class {} with primary key {}", context
+				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
@@ -92,11 +93,11 @@ public class ThriftLoaderImpl
 		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Loading simple property {} of class {} from column family {} with primary key {} and composite column name {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getTableName(), context.getPrimaryKey(),
-					format(composite));
+			log
+					.trace("Loading simple property {} of class {} from column family {} with primary key {} and composite column name {}",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(),
+							context.getEntityMeta().getTableName(), context.getPrimaryKey(),
+							format(composite));
 		}
 		return propertyMeta.getValueFromString(context.getEntityDao().getValue(
 				context.getPrimaryKey(), composite));
@@ -107,7 +108,8 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading list property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getTableName(), context.getPrimaryKey());
+						.getEntityMeta()
+						.getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		List<V> list = null;
 		if (columns.size() > 0)
@@ -126,7 +128,8 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading set property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getTableName(), context.getPrimaryKey());
+						.getEntityMeta()
+						.getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<V> set = null;
 		if (columns.size() > 0)
@@ -145,7 +148,8 @@ public class ThriftLoaderImpl
 	{
 		log.trace("Loading map property {} of class {} from column family {} with primary key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-						.getEntityMeta().getTableName(), context.getPrimaryKey());
+						.getEntityMeta()
+						.getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Class<K> keyClass = propertyMeta.getKeyClass();
 		Map<K, V> map = null;
@@ -188,11 +192,11 @@ public class ThriftLoaderImpl
 
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Loading join primary key for property {} of class {} from column family {} with primary key {} and column name {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context
-							.getEntityMeta().getTableName(), context.getPrimaryKey(),
-					format(composite));
+			log
+					.trace("Loading join primary key for property {} of class {} from column family {} with primary key {} and column name {}",
+							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(),
+							context.getEntityMeta().getTableName(), context.getPrimaryKey(),
+							format(composite));
 		}
 		String stringJoinId = context.getEntityDao().getValue(context.getPrimaryKey(), composite);
 

@@ -22,9 +22,11 @@ import info.archinnov.achilles.wrapper.SetWrapper;
 import info.archinnov.achilles.wrapper.WideMapWrapper;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -73,7 +75,9 @@ public class JpaEntityInterceptorTest
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
 
 	@Mock
-	private Set<Method> lazyLoaded;
+	private Set<Method> alreadyLoaded;
+
+	private List<Method> eagerGetters = new ArrayList<Method>();
 
 	@Mock
 	private ThriftEntityLoader loader;
@@ -151,6 +155,7 @@ public class JpaEntityInterceptorTest
 		entityMeta.setGetterMetas(getterMetas);
 		entityMeta.setSetterMetas(setterMetas);
 		entityMeta.setWideRow(false);
+		entityMeta.setEagerGetters(eagerGetters);
 
 		context = PersistenceContextTestBuilder //
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
@@ -161,12 +166,12 @@ public class JpaEntityInterceptorTest
 				.build();
 
 		interceptor = JpaEntityInterceptorBuilder.builder(context, entity).build();
-		Whitebox.setInternalState(interceptor, "lazyAlreadyLoaded", lazyLoaded);
+		Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
 
 		interceptor.setKey(key);
 		Whitebox.setInternalState(interceptor, "loader", loader);
 		interceptor.setDirtyMap(dirtyMap);
-
+		interceptor.setContext(context);
 		when(entityDaosMap.get("join_cf")).thenReturn(entityDao);
 	}
 
@@ -205,7 +210,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.containsKey(nameMeta.getGetter())).thenReturn(true);
 		when(getterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
-		when(lazyLoaded.contains(nameMeta.getGetter())).thenReturn(false);
+		when(alreadyLoaded.contains(nameMeta.getGetter())).thenReturn(false);
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
 		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null,
@@ -214,7 +219,7 @@ public class JpaEntityInterceptorTest
 		assertThat(name).isEqualTo("name");
 
 		verify(loader).loadPropertyIntoObject(entity, key, context, propertyMeta);
-		verify(lazyLoaded).add(nameMeta.getGetter());
+		verify(alreadyLoaded).add(nameMeta.getGetter());
 	}
 
 	@Test
@@ -224,7 +229,7 @@ public class JpaEntityInterceptorTest
 		when(getterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
 
-		when(lazyLoaded.contains(nameMeta.getGetter())).thenReturn(true);
+		when(alreadyLoaded.contains(nameMeta.getGetter())).thenReturn(true);
 
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
@@ -234,7 +239,7 @@ public class JpaEntityInterceptorTest
 		assertThat(name).isEqualTo("name");
 
 		verifyZeroInteractions(loader);
-		verify(lazyLoaded, never()).add(nameMeta.getGetter());
+		verify(alreadyLoaded, never()).add(nameMeta.getGetter());
 	}
 
 	@Test
@@ -268,6 +273,7 @@ public class JpaEntityInterceptorTest
 		joinEntityMeta.setGetterMetas(getterMetas);
 		joinEntityMeta.setSetterMetas(setterMetas);
 		joinEntityMeta.setTableName("join_cf");
+		joinEntityMeta.setEagerGetters(eagerGetters);
 
 		when(getterMetas.containsKey(userMeta.getGetter())).thenReturn(true);
 		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);

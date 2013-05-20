@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.type.Pair;
 
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
@@ -316,7 +317,12 @@ public class PropertyMeta<K, V>
 
 	public boolean isCounter()
 	{
-		return this.type == COUNTER || this.type == COUNTER_WIDE_MAP;
+		return this.type.isCounter();
+	}
+
+	public boolean isProxyType()
+	{
+		return this.type.isProxyType();
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel()
@@ -357,12 +363,38 @@ public class PropertyMeta<K, V>
 	@Override
 	public String toString()
 	{
-		return "PropertyMeta [type=" + type + ", propertyName=" + propertyName
-				+ ", entityClassName=" + entityClassName + ", keyClass="
-				+ keyClass.getCanonicalName() + ", valueClass=" + valueClass.getCanonicalName()
-				+ ", counterProperties=" + counterProperties + ", joinProperties=" + joinProperties
-				+ ", multiKeyProperties=" + multiKeyProperties + ", externalCfName="
-				+ ", consistencyLevels=[" + consistencyLevels.left.name() + ","
-				+ consistencyLevels.right.name() + "], singleKey=" + singleKey + "]";
+		StringBuilder description = new StringBuilder();
+		description.append("PropertyMeta [type=").append(type).append(", ");
+		description.append("propertyName=").append(propertyName).append(", ");
+		description.append("entityClassName=").append(entityClassName).append(", ");
+		if (keyClass != null)
+			description.append("keyClass=").append(keyClass.getCanonicalName()).append(", ");
+
+		description.append("valueClass=").append(valueClass.getCanonicalName()).append(", ");
+
+		if (counterProperties != null)
+			description.append("counterProperties=").append(counterProperties).append(", ");
+
+		if (joinProperties != null)
+			description.append("joinProperties=").append(joinProperties).append(", ");
+
+		if (multiKeyProperties != null)
+			description.append("multiKeyProperties=").append(multiKeyProperties).append(", ");
+
+		if (StringUtils.isNotBlank(externalCfName))
+			description.append("externalCfName=").append(externalCfName).append(", ");
+
+		if (consistencyLevels != null)
+		{
+			description
+					.append("consistencyLevels=[")
+					.append(consistencyLevels.left.name())
+					.append(",");
+			description.append(consistencyLevels.right.name()).append("], ");
+		}
+		description.append("singleKey=").append(singleKey).append("]");
+
+		return description.toString();
+
 	}
 }

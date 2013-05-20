@@ -58,9 +58,17 @@ public class JPAOperationsIT
 	@Test
 	public void should_persist() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("DuyHai")
+				.age(35L)
+				.addFriends("foo", "bar")
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		em.persist(bean);
 
@@ -203,8 +211,12 @@ public class JPAOperationsIT
 	@Test
 	public void should_find_lazy_simple() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan")
-				.label("label").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("Jonathan")
+				.label("label")
+				.buid();
 
 		em.persist(bean);
 
@@ -232,9 +244,16 @@ public class JPAOperationsIT
 	@Test
 	public void should_find_lazy_list() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("Jonathan")
+				.age(40L)
+				.addFriends("bob", "alice")
+				.addFollowers("Billy", "Stephen", "Jacky")
+				.addPreference(1, "US")
+				.addPreference(2, "New York")
+				.buid();
 
 		em.persist(bean);
 
@@ -258,9 +277,16 @@ public class JPAOperationsIT
 	@Test
 	public void should_merge_modifications() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("Jonathan")
+				.age(40L)
+				.addFriends("bob", "alice")
+				.addFollowers("Billy", "Stephen", "Jacky")
+				.addPreference(1, "US")
+				.addPreference(2, "New York")
+				.buid();
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
@@ -359,9 +385,17 @@ public class JPAOperationsIT
 	@Test
 	public void should_remove() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("DuyHai")
+				.age(35L)
+				.addFriends("foo", "bar")
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		bean = em.merge(bean);
 
@@ -381,9 +415,17 @@ public class JPAOperationsIT
 	@Test(expected = IllegalStateException.class)
 	public void should_exception_when_removing_transient_entity() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("DuyHai")
+				.age(35L)
+				.addFriends("foo", "bar")
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		em.remove(bean);
 	}
@@ -391,17 +433,47 @@ public class JPAOperationsIT
 	@Test
 	public void should_get_reference() throws Exception
 	{
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("DuyHai")
+				.age(35L)
+				.addFriends("foo", "bar")
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		em.persist(bean);
 
 		CompleteBean foundBean = em.getReference(CompleteBean.class, bean.getId());
 
 		assertThat(foundBean).isNotNull();
-		assertThat(foundBean.getId()).isEqualTo(bean.getId());
 
+		// Real object should be empty
+		CompleteBean realObject = em.unproxy(foundBean);
+
+		assertThat(realObject.getId()).isEqualTo(bean.getId());
+		assertThat(realObject.getName()).isNull();
+		assertThat(realObject.getAge()).isNull();
+		assertThat(realObject.getFriends()).isNull();
+		assertThat(realObject.getFollowers()).isNull();
+		assertThat(realObject.getPreferences()).isNull();
+
+		assertThat(foundBean.getId()).isEqualTo(bean.getId());
+		assertThat(foundBean.getName()).isEqualTo("DuyHai");
+		assertThat(foundBean.getAge()).isEqualTo(35L);
+		assertThat(foundBean.getFriends()).containsExactly("foo", "bar");
+		assertThat(foundBean.getFollowers()).contains("George", "Paul");
+
+		assertThat(foundBean.getPreferences()).containsKey(1);
+		assertThat(foundBean.getPreferences()).containsKey(2);
+		assertThat(foundBean.getPreferences()).containsKey(3);
+
+		assertThat(foundBean.getPreferences()).containsValue("FR");
+		assertThat(foundBean.getPreferences()).containsValue("Paris");
+		assertThat(foundBean.getPreferences()).containsValue("75014");
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -427,7 +499,10 @@ public class JPAOperationsIT
 	@Test
 	public void should_exception_refreshing_non_managed_entity() throws Exception
 	{
-		CompleteBean completeBean = CompleteBeanTestBuilder.builder().randomId().name("name")
+		CompleteBean completeBean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("name")
 				.buid();
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("The entity '" + completeBean + "' is not in 'managed' state");
@@ -438,9 +513,17 @@ public class JPAOperationsIT
 	public void should_refresh() throws Exception
 	{
 
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("DuyHai")
+				.age(35L)
+				.addFriends("foo", "bar")
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		bean = em.merge(bean);
 
@@ -474,9 +557,16 @@ public class JPAOperationsIT
 	public void should_find_unmapped_field() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
-				.label("label").age(35L).addFriends("foo", "bar") //
-				.addFollowers("George", "Paul").addPreference(1, "FR") //
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+				.label("label")
+				.age(35L)
+				.addFriends("foo", "bar")
+				//
+				.addFollowers("George", "Paul")
+				.addPreference(1, "FR")
+				//
+				.addPreference(2, "Paris")
+				.addPreference(3, "75014")
+				.buid();
 
 		bean = em.merge(bean);
 

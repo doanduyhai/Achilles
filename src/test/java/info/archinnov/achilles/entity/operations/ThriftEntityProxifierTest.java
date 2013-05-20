@@ -77,8 +77,8 @@ public class ThriftEntityProxifierTest
 		assertThat(interceptor.getDirtyMap()).isEmpty();
 
 		assertThat(interceptor.getKey()).isSameAs(primaryKey);
-		assertThat(interceptor.getLazyAlreadyLoaded()).isNotNull();
-		assertThat(interceptor.getLazyAlreadyLoaded()).isEmpty();
+		assertThat(interceptor.getAlreadyLoaded()).isNotNull();
+		assertThat(interceptor.getAlreadyLoaded()).isEmpty();
 	}
 
 	@Test

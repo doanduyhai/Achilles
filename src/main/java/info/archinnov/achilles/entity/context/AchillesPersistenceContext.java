@@ -24,6 +24,7 @@ public abstract class AchillesPersistenceContext
 	protected Object entity;
 	protected Object primaryKey;
 	protected AchillesFlushContext flushContext;
+	protected boolean loadEagerFields = true;
 
 	protected AchillesPersistenceContext(EntityMeta entityMeta,
 			AchillesConfigurationContext configContext, Object entity,
@@ -159,4 +160,13 @@ public abstract class AchillesPersistenceContext
 		this.flushContext = flushContext;
 	}
 
+	public boolean isLoadEagerFields()
+	{
+		return loadEagerFields;
+	}
+
+	public void setLoadEagerFields(boolean loadEagerFields)
+	{
+		this.loadEagerFields = loadEagerFields;
+	}
 }

@@ -7,8 +7,10 @@ import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ public class EntityMetaBuilder
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+	private List<PropertyMeta<?, ?>> eagerMetas;
 
 	public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
 	{
@@ -59,10 +62,15 @@ public class EntityMetaBuilder
 		meta.setTableName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
-		meta.setGetterMetas(Collections.unmodifiableMap(this.extractGetterMetas(propertyMetas)));
-		meta.setSetterMetas(Collections.unmodifiableMap(this.extractSetterMetas(propertyMetas)));
+		meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
+		meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
 		meta.setWideRow(wideRow);
 		meta.setConsistencyLevels(consistencyLevels);
+		if (eagerMetas != null)
+		{
+			meta.setEagerMetas(Collections.unmodifiableList(eagerMetas));
+			meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
+		}
 
 		return meta;
 	}
@@ -87,6 +95,17 @@ public class EntityMetaBuilder
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
 		}
 		return setterMetas;
+	}
+
+	private List<Method> extractEagerGetters(List<PropertyMeta<?, ?>> eagerMetas)
+	{
+		List<Method> eagerMethods = new ArrayList<Method>();
+		for (PropertyMeta<?, ?> propertyMeta : eagerMetas)
+		{
+			eagerMethods.add(propertyMeta.getGetter());
+		}
+		return eagerMethods;
+
 	}
 
 	public EntityMetaBuilder className(String className)
@@ -123,6 +142,12 @@ public class EntityMetaBuilder
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		this.consistencyLevels = consistencyLevels;
+		return this;
+	}
+
+	public EntityMetaBuilder eagerMetas(List<PropertyMeta<?, ?>> eagerMetas)
+	{
+		this.eagerMetas = eagerMetas;
 		return this;
 	}
 }

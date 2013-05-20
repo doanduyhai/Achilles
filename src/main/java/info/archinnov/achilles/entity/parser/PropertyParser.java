@@ -95,6 +95,7 @@ public class PropertyParser
 		{
 			context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		}
+
 		return propertyMeta;
 	}
 
@@ -112,12 +113,18 @@ public class PropertyParser
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
 		PropertyMeta<Void, ?> propertyMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
-				.accessors(accessors) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				//
+				.accessors(accessors)
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
 				.build(Void.class, field.getType());
 
 		log.trace("Built simple property meta for property {} of entity class {} : {}",
@@ -136,17 +143,25 @@ public class PropertyParser
 
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = PropertyType.COUNTER;
-		CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass()
+		CounterProperties counterProperties = new CounterProperties(context
+				.getCurrentEntityClass()
 				.getCanonicalName());
 
 		PropertyMeta<Void, ?> propertyMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
-				.accessors(accessors) //
-				.counterProperties(counterProperties) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				//
+				.accessors(accessors)
+				//
+				.counterProperties(counterProperties)
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
 				.build(Void.class, field.getType());
 
 		context.hasSimpleCounterType();
@@ -181,12 +196,18 @@ public class PropertyParser
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
 		PropertyMeta<Void, V> listMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors)//
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
+				.accessors(accessors)
+				//
 				.build(Void.class, valueClass);
 
 		log.trace("Built list property meta for property {} of entity class {} : {}",
@@ -215,12 +236,18 @@ public class PropertyParser
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
 		PropertyMeta<Void, V> setMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors)//
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
+				.accessors(accessors)
+				//
 				.build(Void.class, valueClass);
 
 		log.trace("Built set property meta for property {} of  entity class {} : {}",
@@ -253,12 +280,18 @@ public class PropertyParser
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
 		PropertyMeta<K, V> mapMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
-				.accessors(accessors)//
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
+				.accessors(accessors)
+				//
 				.build(keyClass, valueClass);
 
 		log.trace("Built map property meta for property {} of entity class {} : {}",
@@ -301,14 +334,22 @@ public class PropertyParser
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 
 		PropertyMeta<K, V> propertyMeta = factory() //
-				.objectMapper(context.getCurrentObjectMapper()) //
-				.type(type) //
-				.propertyName(context.getCurrentPropertyName()) //
-				.entityClassName(entityClass.getCanonicalName()) //
-				.accessors(accessors) //
-				.multiKeyProperties(multiKeyProperties) //
-				.counterProperties(counterProperties) //
-				.consistencyLevels(context.getCurrentConsistencyLevels()) //
+				.objectMapper(context.getCurrentObjectMapper())
+				//
+				.type(type)
+				//
+				.propertyName(context.getCurrentPropertyName())
+				//
+				.entityClassName(entityClass.getCanonicalName())
+				//
+				.accessors(accessors)
+				//
+				.multiKeyProperties(multiKeyProperties)
+				//
+				.counterProperties(counterProperties)
+				//
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+				//
 				.build(keyClass, valueClass);
 
 		if (isCounterValueType)

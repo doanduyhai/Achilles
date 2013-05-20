@@ -31,7 +31,8 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 	@Override
 	public <T> T load(AchillesPersistenceContext context, Class<T> entityClass)
 	{
-		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass()
+		log.debug("Loading entity of class {} with primary key {}", context
+				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		EntityMeta entityMeta = context.getEntityMeta();
@@ -47,7 +48,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 		try
 		{
 
-			if (entityMeta.isWideRow())
+			if (entityMeta.isWideRow() || !context.isLoadEagerFields())
 			{
 				log.debug("Entity is a wide row, just set the primary key");
 
@@ -75,7 +76,8 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Loading eager properties into entity of class {} with primary key {}", context
-				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+				.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
 
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		Object value = null;

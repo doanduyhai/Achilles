@@ -29,6 +29,7 @@ public class EntityParsingContext
 
 	private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 	private List<PropertyMeta<?, ?>> counterMetas = new ArrayList<PropertyMeta<?, ?>>();
+	private List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
 	private Map<PropertyMeta<?, ?>, String> wideMaps = new HashMap<PropertyMeta<?, ?>, String>();
 	private Map<PropertyMeta<?, ?>, String> joinWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
 	private Class<?> currentEntityClass;
@@ -159,5 +160,10 @@ public class EntityParsingContext
 	public AchillesConsistencyLevelPolicy getConfigurableCLPolicy()
 	{
 		return configContext.getConsistencyPolicy();
+	}
+
+	public List<PropertyMeta<?, ?>> getEagerMetas()
+	{
+		return eagerMetas;
 	}
 }
