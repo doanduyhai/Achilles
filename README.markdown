@@ -39,7 +39,7 @@
  1. Cassandra 1.2.0
  2. Hector-core 1.1-2 ( **Achilles** ThriftEntityManager is built upon Hector API)
  3. CGLIB nodep 2.2.2 for proxy building
- 4. Persistence-api 1.0.2
+ 4. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
  5. Jackson asl, mapper & xc 1.9.3 
    
   
@@ -66,6 +66,10 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **1.7.3**:
+    * Rework of em.getReference() to avoid hitting the database
+    * Refactor generics
+    * Migrate to JPA 2
 * **1.7.2**:
     * Add commons-collections 3.2.1 to compile dependency
     * Enhance error message for entity mapping
