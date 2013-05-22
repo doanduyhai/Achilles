@@ -4,12 +4,9 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
-import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
-import info.archinnov.achilles.table.ThriftTableCreator;
 import info.archinnov.achilles.type.KeyValue;
 
 import java.util.Arrays;
@@ -19,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import mapping.entity.CompleteBean;
-import me.prettyprint.cassandra.model.ExecutingKeyspace;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -33,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.EntityMetaTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.Maps;
@@ -57,16 +54,7 @@ public class AchillesEntityMapperTest
 	private AchillesMethodInvoker invoker;
 
 	@Mock
-	private ExecutingKeyspace keyspace;
-
-	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
-
-	@Mock
-	private ThriftTableCreator thriftTableCreator;
-
-	@Mock
-	private ThriftCounterDao thriftCounterDao;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

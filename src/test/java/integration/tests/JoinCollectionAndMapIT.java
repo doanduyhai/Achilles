@@ -13,7 +13,6 @@ import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.BeanWithJoinCollectionAndMap;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 
@@ -37,6 +36,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import testBuilders.CompositeTestBuilder;
+import testBuilders.TweetTestBuilder;
 
 /**
  * JoinColumnIT

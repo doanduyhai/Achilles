@@ -12,7 +12,6 @@ import info.archinnov.achilles.type.KeyValueIterator;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 
@@ -27,6 +26,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * ExternalJoinWideMapIT

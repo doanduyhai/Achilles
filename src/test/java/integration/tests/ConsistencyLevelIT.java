@@ -26,7 +26,6 @@ import integration.tests.entity.BeanWithWriteOneAndReadLocalQuorumConsistency;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 import integration.tests.utils.CassandraLogAsserter;
@@ -45,6 +44,8 @@ import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * ConsistencyLevelIT

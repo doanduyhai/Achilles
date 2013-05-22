@@ -23,7 +23,6 @@ import info.archinnov.achilles.type.WideMap;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 import integration.tests.utils.CassandraLogAsserter;
@@ -44,6 +43,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * BatchModeIT

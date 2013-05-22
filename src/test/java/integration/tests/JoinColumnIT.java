@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;
 import integration.tests.entity.UserTestBuilder;
 
@@ -28,6 +27,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * JoinColumnIT

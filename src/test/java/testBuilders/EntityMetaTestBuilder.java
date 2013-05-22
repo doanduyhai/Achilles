@@ -1,4 +1,4 @@
-package info.archinnov.achilles.entity.metadata.builder;
+package testBuilders;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;

@@ -1,8 +1,11 @@
-package integration.tests.entity;
+package testBuilders;
+
+import integration.tests.entity.Tweet;
+import integration.tests.entity.User;
 
 import java.util.UUID;
 
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import org.apache.commons.lang.math.RandomUtils;
 
 /**
  * TweetTestBuilder
@@ -42,7 +45,7 @@ public class TweetTestBuilder
 
 	public TweetTestBuilder randomId()
 	{
-		this.id = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+		this.id = new UUID(RandomUtils.nextLong(), RandomUtils.nextLong());
 		return this;
 	}
 

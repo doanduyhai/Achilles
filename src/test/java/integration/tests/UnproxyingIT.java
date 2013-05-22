@@ -9,11 +9,12 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 import net.sf.cglib.proxy.Factory;
 
 import org.junit.After;
 import org.junit.Test;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * UnproxyingIT

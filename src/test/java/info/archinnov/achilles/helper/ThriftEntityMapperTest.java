@@ -6,7 +6,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.builder.EntityMetaTestBuilder;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
@@ -31,6 +30,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.EntityMetaTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**

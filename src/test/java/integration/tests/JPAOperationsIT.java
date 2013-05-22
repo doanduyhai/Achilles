@@ -17,7 +17,6 @@ import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -34,6 +33,8 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * JPAOperationsIT

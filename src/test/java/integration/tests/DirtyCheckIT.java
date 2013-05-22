@@ -13,7 +13,6 @@ import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
-import integration.tests.entity.TweetTestBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +29,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import testBuilders.TweetTestBuilder;
 
 /**
  * DirtyCheckIT
