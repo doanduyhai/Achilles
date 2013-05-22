@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * ArgumentExtractorForThriftEMFTest
+ * ThriftArgumentExtractorTest
  * 
  * @author DuyHai DOAN
  * 

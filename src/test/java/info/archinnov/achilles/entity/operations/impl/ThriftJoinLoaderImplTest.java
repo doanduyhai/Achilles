@@ -4,21 +4,20 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +39,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 
 /**
- * JoinEntityLoaderTest
+ * ThriftJoinLoaderImplTest
  * 
  * @author DuyHai DOAN
  * 
@@ -61,7 +61,7 @@ public class ThriftJoinLoaderImplTest
 	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
-	private CompositeFactory compositeFactory;
+	private ThriftCompositeFactory thriftCompositeFactory;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -99,7 +99,7 @@ public class ThriftJoinLoaderImplTest
 	@Before
 	public void setUp()
 	{
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.thriftImmediateFlushContext(thriftImmediateFlushContext)
@@ -135,8 +135,9 @@ public class ThriftJoinLoaderImplTest
 		Composite start = new Composite();
 		Composite end = new Composite();
 
-		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL))
+				.thenReturn(end);
 
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 		columns.add(new Pair<Composite, Object>(start, "11"));
@@ -181,8 +182,9 @@ public class ThriftJoinLoaderImplTest
 		Composite start = new Composite();
 		Composite end = new Composite();
 
-		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL))
+				.thenReturn(end);
 
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 		columns.add(new Pair<Composite, Object>(start, "11"));
@@ -229,8 +231,9 @@ public class ThriftJoinLoaderImplTest
 		Composite start = new Composite();
 		Composite end = new Composite();
 
-		when(compositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL))
+				.thenReturn(end);
 
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 		columns.add(new Pair<Composite, Object>(start, writeString(new KeyValue<Integer, String>(

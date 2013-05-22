@@ -1,8 +1,8 @@
 package info.archinnov.achilles.consistency;
 
 import static info.archinnov.achilles.helper.ThriftConsistencyHelper.getHectorLevel;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.helper.ThriftConsistencyHelper;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AchillesConfigurableConsistencyLevelPolicy
+ * ThriftConsistencyLevelPolicy
  * 
  * @author DuyHai DOAN
  * 
@@ -35,9 +35,10 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 	{
 		super(defaultReadLevel, defaultWriteLevel, readConsistencyMap, writeConsistencyMap);
 
-		log.debug(
-				"Initializing Achilles Configurable Consistency Level Policy with default read/write levels {}/{} and read/write level maps {}/{}",
-				defaultReadLevel, defaultWriteLevel, readConsistencyMap, writeConsistencyMap);
+		log
+				.debug("Initializing Achilles Configurable Consistency Level Policy with default read/write levels {}/{} and read/write level maps {}/{}",
+						defaultReadLevel, defaultWriteLevel, readConsistencyMap,
+						writeConsistencyMap);
 
 	}
 
@@ -80,16 +81,16 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 			case READ:
 				result = defaultReadConsistencyLevelTL.get() != null ? defaultReadConsistencyLevelTL
 						.get() : getHectorLevel(getConsistencyLevelForRead(columnFamily));
-				log.trace(
-						"Set default read consistency of column family {} level to {} in the thread {}",
-						result.name(), columnFamily, Thread.currentThread());
+				log
+						.trace("Set default read consistency of column family {} level to {} in the thread {}",
+								result.name(), columnFamily, Thread.currentThread());
 				break;
 			case WRITE:
 				result = defaultWriteConsistencyLevelTL.get() != null ? defaultWriteConsistencyLevelTL
 						.get() : getHectorLevel(getConsistencyLevelForWrite(columnFamily));
-				log.trace(
-						"Set default write consistency of column family {} level to {} in the thread {}",
-						result.name(), columnFamily, Thread.currentThread());
+				log
+						.trace("Set default write consistency of column family {} level to {} in the thread {}",
+								result.name(), columnFamily, Thread.currentThread());
 				break;
 			default:
 				result = HConsistencyLevel.ONE;
@@ -103,17 +104,17 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 		if (currentLevel != null)
 		{
 			defaultReadConsistencyLevelTL.set(getHectorLevel(currentLevel));
-			log.trace(
-					"Load default read consistency of column family {} level to {} in the thread {}",
-					currentLevel.name(), columnFamily, Thread.currentThread());
+			log
+					.trace("Load default read consistency of column family {} level to {} in the thread {}",
+							currentLevel.name(), columnFamily, Thread.currentThread());
 		}
 		else
 		{
 			HConsistencyLevel level = this.get(OperationType.READ, columnFamily);
 			defaultReadConsistencyLevelTL.set(level);
-			log.trace(
-					"Load default read consistency of column family {} level to {} in the thread {}",
-					level.name(), columnFamily, Thread.currentThread());
+			log
+					.trace("Load default read consistency of column family {} level to {} in the thread {}",
+							level.name(), columnFamily, Thread.currentThread());
 		}
 	}
 
@@ -123,17 +124,17 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 		if (currentLevel != null)
 		{
 			defaultWriteConsistencyLevelTL.set(getHectorLevel(currentLevel));
-			log.trace(
-					"Load default write consistency of column family {} level to {} in the thread {}",
-					currentLevel.name(), columnFamily, Thread.currentThread());
+			log
+					.trace("Load default write consistency of column family {} level to {} in the thread {}",
+							currentLevel.name(), columnFamily, Thread.currentThread());
 		}
 		else
 		{
 			HConsistencyLevel level = this.get(OperationType.WRITE, columnFamily);
 			defaultWriteConsistencyLevelTL.set(level);
-			log.trace(
-					"Load default write consistency of column family {} level to {} in the thread {}",
-					level.name(), columnFamily, Thread.currentThread());
+			log
+					.trace("Load default write consistency of column family {} level to {} in the thread {}",
+							level.name(), columnFamily, Thread.currentThread());
 		}
 	}
 
@@ -169,7 +170,9 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 
 	public void removeCurrentReadLevel()
 	{
-		log.trace("Remove current read consistency level  in the thread {}", Thread.currentThread());
+		log
+				.trace("Remove current read consistency level  in the thread {}",
+						Thread.currentThread());
 		currentReadConsistencyLevel.remove();
 	}
 

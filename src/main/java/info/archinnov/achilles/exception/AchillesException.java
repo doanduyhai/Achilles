@@ -1,7 +1,7 @@
 package info.archinnov.achilles.exception;
 
 /**
- * ValidationException
+ * AchillesException
  * 
  * @author DuyHai DOAN
  * 

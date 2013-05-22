@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EntityValidator
+ * AchillesEntityValidator
  * 
  * @author DuyHai DOAN
  * 
@@ -20,7 +20,7 @@ public class AchillesEntityValidator
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityValidator.class);
 
-	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 	private AchillesEntityProxifier proxifier;
 
 	public AchillesEntityValidator(AchillesEntityProxifier proxifier) {
@@ -44,7 +44,7 @@ public class AchillesEntityValidator
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed by Achilles");
 
-		Object id = introspector.getKey(entity, entityMeta.getIdMeta());
+		Object id = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
 		if (id == null)
 		{
 			throw new IllegalArgumentException("Cannot get primary key for entity "

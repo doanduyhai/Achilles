@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 
 /**
  * AchillesEntityPersister

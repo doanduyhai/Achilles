@@ -1,22 +1,22 @@
 package integration.tests;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.KeyValueIterator;
-import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
-import info.archinnov.achilles.entity.type.WideMap.OrderingMode;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.serializer.SerializerUtils;
-import info.archinnov.achilles.wrapper.CounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.KeyValueIterator;
+import info.archinnov.achilles.type.WideMap;
+import info.archinnov.achilles.type.WideMap.BoundingMode;
+import info.archinnov.achilles.type.WideMap.OrderingMode;
 import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
 import integration.tests.entity.BeanWithLocalQuorumConsistency;
 import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForWidemap;
@@ -659,7 +659,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, CounterBuilder.incr(ALL));
+		counterWideMap.insert(10, AchillesCounterBuilder.incr(ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -674,7 +674,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, CounterBuilder.incr(15L, ALL));
+		counterWideMap.insert(10, AchillesCounterBuilder.incr(15L, ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -689,7 +689,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, CounterBuilder.decr(ALL));
+		counterWideMap.insert(10, AchillesCounterBuilder.decr(ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -704,7 +704,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, CounterBuilder.decr(15L, ALL));
+		counterWideMap.insert(10, AchillesCounterBuilder.decr(15L, ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -725,7 +725,7 @@ public class ConsistencyLevelIT
 	private Composite prepareCounterWideMapName(Integer index)
 	{
 		Composite comp = new Composite();
-		comp.addComponent(10, SerializerUtils.INT_SRZ);
+		comp.addComponent(10, ThriftSerializerUtils.INT_SRZ);
 		return comp;
 	}
 

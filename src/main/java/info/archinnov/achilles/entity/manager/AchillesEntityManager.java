@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
 import info.archinnov.achilles.entity.operations.AchillesEntityLoader;
@@ -11,7 +11,7 @@ import info.archinnov.achilles.entity.operations.AchillesEntityPersister;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
 import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;

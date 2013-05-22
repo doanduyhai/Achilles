@@ -1,9 +1,9 @@
 package integration.tests.entity;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.WideMap;
 
 import java.io.Serializable;
 

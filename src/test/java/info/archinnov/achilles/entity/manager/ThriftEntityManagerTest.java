@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.TWO;
+import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ThriftDaoContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.ThriftDaoContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**

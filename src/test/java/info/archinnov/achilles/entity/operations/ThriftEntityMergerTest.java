@@ -5,17 +5,16 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -37,10 +36,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
- * EntityMergerTest
+ * ThriftEntityMergerTest
  * 
  * @author DuyHai DOAN
  * 
@@ -56,7 +56,7 @@ public class ThriftEntityMergerTest
 	private ThriftEntityPersister persister;
 
 	@Mock
-	private JpaEntityInterceptor<CompleteBean> interceptor;
+	private ThriftEntityInterceptor<CompleteBean> interceptor;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -68,7 +68,7 @@ public class ThriftEntityMergerTest
 	private ThriftGenericEntityDao dao;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
 	private AchillesEntityProxifier proxifier;
@@ -101,14 +101,14 @@ public class ThriftEntityMergerTest
 	@Before
 	public void setUp()
 	{
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.build();
 
 		when(proxifier.isProxy(entity)).thenReturn(true);
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when((JpaEntityInterceptor) proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		when((ThriftEntityInterceptor) proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 		dirtyMap.clear();
 	}
@@ -158,8 +158,7 @@ public class ThriftEntityMergerTest
 		UserBean userBean = new UserBean();
 		userBean.setUserId(10L);
 
-		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
-				userBean);
+		when(invoker.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(userBean);
 		when(proxifier.isProxy(userBean)).thenReturn(false);
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
@@ -168,7 +167,7 @@ public class ThriftEntityMergerTest
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
-		verify(introspector).setValueToField(entity, joinPropertyMeta.getSetter(), userBean);
+		verify(invoker).setValueToField(entity, joinPropertyMeta.getSetter(), userBean);
 		verify(interceptor).setTarget(entity);
 		ThriftPersistenceContext joinContext = contextCaptor.getValue();
 		assertThat(joinContext.getEntity()).isSameAs(userBean);
@@ -185,8 +184,7 @@ public class ThriftEntityMergerTest
 		userBean.setUserId(10L);
 
 		List<UserBean> userBeans = Arrays.asList(userBean);
-		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
-				userBeans);
+		when(invoker.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(userBeans);
 		when(proxifier.isProxy(userBean)).thenReturn(false);
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
@@ -195,7 +193,7 @@ public class ThriftEntityMergerTest
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
-		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+		verify(invoker).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
 				listUserBeanCaptor.capture());
 		verify(interceptor).setTarget(entity);
 		ThriftPersistenceContext joinContext = contextCaptor.getValue();
@@ -216,8 +214,7 @@ public class ThriftEntityMergerTest
 		Set<UserBean> userBeans = new HashSet<UserBean>();
 		userBeans.add(userBean);
 
-		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
-				userBeans);
+		when(invoker.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(userBeans);
 		when(proxifier.isProxy(userBean)).thenReturn(false);
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
@@ -226,7 +223,7 @@ public class ThriftEntityMergerTest
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
-		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+		verify(invoker).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
 				setUserBeanCaptor.capture());
 		verify(interceptor).setTarget(entity);
 		ThriftPersistenceContext joinContext = contextCaptor.getValue();
@@ -246,8 +243,7 @@ public class ThriftEntityMergerTest
 		Set<UserBean> userBeans = new HashSet<UserBean>();
 		userBeans.add(userBean);
 
-		when(introspector.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(
-				userBeans);
+		when(invoker.getValueFromField(entity, joinPropertyMeta.getGetter())).thenReturn(userBeans);
 		when(proxifier.isProxy(userBean)).thenReturn(false);
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
@@ -256,7 +252,7 @@ public class ThriftEntityMergerTest
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
-		verify(introspector).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
+		verify(invoker).setValueToField(eq(entity), eq(joinPropertyMeta.getSetter()),
 				setUserBeanCaptor.capture());
 		verify(interceptor).setTarget(entity);
 		ThriftPersistenceContext joinContext = contextCaptor.getValue();

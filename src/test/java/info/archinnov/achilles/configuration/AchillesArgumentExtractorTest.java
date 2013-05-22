@@ -1,12 +1,12 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collection;
 import java.util.HashMap;

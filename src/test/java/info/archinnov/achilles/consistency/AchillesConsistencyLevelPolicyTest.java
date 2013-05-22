@@ -1,10 +1,10 @@
 package info.archinnov.achilles.consistency;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +28,6 @@ public class AchillesConsistencyLevelPolicyTest
 
 	@Mock
 	private AchillesConsistencyLevelPolicy policy;
-
-	private ConsistencyLevel defaultGlobalReadConsistencyLevel;
-	private ConsistencyLevel defaultGlobalWriteConsistencyLevel;
 
 	private Map<String, ConsistencyLevel> readCfConsistencyLevels = new HashMap<String, ConsistencyLevel>();
 	private Map<String, ConsistencyLevel> writeCfConsistencyLevels = new HashMap<String, ConsistencyLevel>();

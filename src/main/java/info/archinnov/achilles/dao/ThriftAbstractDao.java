@@ -3,13 +3,13 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
+import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.iterator.AchillesCounterSliceIterator;
-import info.archinnov.achilles.iterator.AchillesJoinSliceIterator;
-import info.archinnov.achilles.iterator.AchillesSliceIterator;
-import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
+import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
+import info.archinnov.achilles.iterator.ThriftSliceIterator;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Iterator;
@@ -40,7 +40,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
- * AbstractDao
+ * ThriftAbstractDao
  * 
  * @author DuyHai DOAN
  * 
@@ -74,7 +74,7 @@ public abstract class ThriftAbstractDao
 		this.rowkeyAndValueClasses = rowkeyAndValueClasses;
 	}
 
-	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
+	private <T> T reinitConsistencyLevels(ThriftSafeExecutionContext<T> context)
 	{
 		log.trace("Execute safely and reinit consistency level in thread {}",
 				Thread.currentThread());
@@ -134,7 +134,7 @@ public abstract class ThriftAbstractDao
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		V result = null;
-		HColumn<Composite, V> column = reinitConsistencyLevels(new SafeExecutionContext<HColumn<Composite, V>>()
+		HColumn<Composite, V> column = reinitConsistencyLevels(new ThriftSafeExecutionContext<HColumn<Composite, V>>()
 		{
 			@Override
 			public HColumn<Composite, V> execute()
@@ -142,7 +142,11 @@ public abstract class ThriftAbstractDao
 				return HFactory
 						.createColumnQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 								columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
-						.setColumnFamily(columnFamily).setKey(key).setName(name).execute().get();
+						.setColumnFamily(columnFamily)
+						.setKey(key)
+						.setName(name)
+						.execute()
+						.get();
 			}
 		});
 
@@ -167,9 +171,9 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Set value {} as batch mutation to column family {} with key {} , column name {}",
-					value, columnFamily, key, format(name));
+			log
+					.trace("Set value {} as batch mutation to column family {} with key {} , column name {}",
+							value, columnFamily, key, format(name));
 		}
 		mutator.addInsertion(key, columnFamily,
 				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()));
@@ -177,9 +181,9 @@ public abstract class ThriftAbstractDao
 
 	public <K, V> void setValueBatch(K key, Composite name, V value, int ttl, Mutator<K> mutator)
 	{
-		log.trace(
-				"Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
-				value, columnFamily, key, name, ttl);
+		log
+				.trace("Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
+						value, columnFamily, key, name, ttl);
 		mutator.addInsertion(
 				key,
 				columnFamily,
@@ -202,9 +206,9 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Remove column slice within range having inclusive start/end {}/{} column names as batch mutation from column family {} with key {} ",
-					format(start), format(end), columnFamily, key);
+			log
+					.trace("Remove column slice within range having inclusive start/end {}/{} column names as batch mutation from column family {} with key {} ",
+							format(start), format(end), columnFamily, key);
 		}
 		this.removeColumnRangeBatch(key, start, end, false, Integer.MAX_VALUE, mutator);
 	}
@@ -214,13 +218,18 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Remove {} columns slice within range having inclusive start/end {}/{} column names as batch mutation from column family {} with key {} and reserver {}",
-					count, format(start), format(end), columnFamily, key, reverse);
+			log
+					.trace("Remove {} columns slice within range having inclusive start/end {}/{} column names as batch mutation from column family {} with key {} and reserver {}",
+							count, format(start), format(end), columnFamily, key, reverse);
 		}
 		List<HColumn<Composite, V>> columns = createSliceQuery(keyspace, this.<K> rowSrz(),
-				columnNameSerializer, this.<V> valSrz()).setColumnFamily(columnFamily).setKey(key)
-				.setRange(start, end, reverse, count).execute().get().getColumns();
+				columnNameSerializer, this.<V> valSrz())
+				.setColumnFamily(columnFamily)
+				.setKey(key)
+				.setRange(start, end, reverse, count)
+				.execute()
+				.get()
+				.getColumns();
 
 		for (HColumn<Composite, V> column : columns)
 		{
@@ -233,20 +242,24 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Find {} values slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
-					count, format(start), format(end), columnFamily, key, reverse);
+			log
+					.trace("Find {} values slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
+							count, format(start), format(end), columnFamily, key, reverse);
 		}
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
-						.setColumnFamily(columnFamily).setKey(key)
-						.setRange(start, end, reverse, count).execute().get().getColumns();
+						.setColumnFamily(columnFamily)
+						.setKey(key)
+						.setRange(start, end, reverse, count)
+						.execute()
+						.get()
+						.getColumns();
 			}
 		});
 		return Lists.transform(columns, this.<V> getHColumnToValueFn());
@@ -257,20 +270,24 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Find {} columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
-					count, format(start), format(end), columnFamily, key, reverse);
+			log
+					.trace("Find {} columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
+							count, format(start), format(end), columnFamily, key, reverse);
 		}
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
-						.setColumnFamily(columnFamily).setKey(key)
-						.setRange(start, end, reverse, count).execute().get().getColumns();
+						.setColumnFamily(columnFamily)
+						.setKey(key)
+						.setRange(start, end, reverse, count)
+						.execute()
+						.get()
+						.getColumns();
 			}
 		});
 		return Lists.transform(columns, this.<V> getHColumnToPairFn());
@@ -281,21 +298,25 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Find raw {} columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
-					count, format(start), format(end), columnFamily, key, reverse);
+			log
+					.trace("Find raw {} columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
+							count, format(start), format(end), columnFamily, key, reverse);
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
+		return reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
 			{
 				return createSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 						columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
-						.setColumnFamily(columnFamily).setKey(key)
-						.setRange(start, end, reverse, count).execute().get().getColumns();
+						.setColumnFamily(columnFamily)
+						.setKey(key)
+						.setRange(start, end, reverse, count)
+						.execute()
+						.get()
+						.getColumns();
 			}
 		});
 	}
@@ -305,78 +326,83 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Find {} counter columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
-					count, format(start), format(end), columnFamily, key, reverse);
+			log
+					.trace("Find {} counter columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {}",
+							count, format(start), format(end), columnFamily, key, reverse);
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<List<HCounterColumn<Composite>>>()
+		return reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HCounterColumn<Composite>>>()
 		{
 			@Override
 			public List<HCounterColumn<Composite>> execute()
 			{
 				return HFactory
 						.createCounterSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
-								columnNameSerializer).setColumnFamily(columnFamily).setKey(key)
-						.setRange(start, end, reverse, count).execute().get().getColumns();
+								columnNameSerializer)
+						.setColumnFamily(columnFamily)
+						.setKey(key)
+						.setRange(start, end, reverse, count)
+						.execute()
+						.get()
+						.getColumns();
 			}
 		});
 	}
 
-	public <K, V> AchillesSliceIterator<K, V> getColumnsIterator(K key, Composite start,
+	public <K, V> ThriftSliceIterator<K, V> getColumnsIterator(K key, Composite start,
 			Composite end, boolean reverse, int length)
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Get columns slice iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements",
-					format(start), format(end), columnFamily, key, reverse, length);
+			log
+					.trace("Get columns slice iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements",
+							format(start), format(end), columnFamily, key, reverse, length);
 		}
 
 		SliceQuery<K, Composite, V> query = createSliceQuery(keyspace,
 				ThriftAbstractDao.this.<K> rowSrz(), columnNameSerializer,
 				ThriftAbstractDao.this.<V> valSrz()).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesSliceIterator<K, V>(policy, columnFamily, query, start, end, reverse,
+		return new ThriftSliceIterator<K, V>(policy, columnFamily, query, start, end, reverse,
 				length);
 	}
 
-	public <K, V> AchillesCounterSliceIterator<K> getCounterColumnsIterator(K key, Composite start,
+	public <K, V> ThriftCounterSliceIterator<K> getCounterColumnsIterator(K key, Composite start,
 			Composite end, boolean reverse, int length)
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Get counter columns slice iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements",
-					format(start), format(end), columnFamily, key, reverse, length);
+			log
+					.trace("Get counter columns slice iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements",
+							format(start), format(end), columnFamily, key, reverse, length);
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		SliceCounterQuery<K, Composite> query = createCounterSliceQuery(keyspace,
 				this.<K> rowSrz(), columnNameSerializer).setColumnFamily(columnFamily).setKey(key);
 
-		return new AchillesCounterSliceIterator<K>(policy, columnFamily, query, start, end,
-				reverse, length);
+		return new ThriftCounterSliceIterator<K>(policy, columnFamily, query, start, end, reverse,
+				length);
 	}
 
-	public <K, KEY, VALUE> AchillesJoinSliceIterator<K, KEY, VALUE> getJoinColumnsIterator(
+	public <K, KEY, VALUE> ThriftJoinSliceIterator<K, KEY, VALUE> getJoinColumnsIterator(
 			ThriftGenericEntityDao joinEntityDao, PropertyMeta<KEY, VALUE> propertyMeta, K key,
 			Composite start, Composite end, boolean reversed, int count)
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Get join columns iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements; for property {}",
-					format(start), format(end), columnFamily, key, reversed, count,
-					propertyMeta.getPropertyName());
+			log
+					.trace("Get join columns iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements; for property {}",
+							format(start), format(end), columnFamily, key, reversed, count,
+							propertyMeta.getPropertyName());
 		}
 
 		SliceQuery<K, Composite, Object> query = createSliceQuery(keyspace, this.<K> rowSrz(),
 				columnNameSerializer, this.<Object> valSrz()).setColumnFamily(columnFamily).setKey(
 				key);
 
-		return new AchillesJoinSliceIterator<K, KEY, VALUE>(policy, joinEntityDao, columnFamily,
+		return new ThriftJoinSliceIterator<K, KEY, VALUE>(policy, joinEntityDao, columnFamily,
 				propertyMeta, query, start, end, reversed, count);
 	}
 
@@ -385,14 +411,14 @@ public abstract class ThriftAbstractDao
 	{
 		if (log.isTraceEnabled())
 		{
-			log.trace(
-					"Multi get columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements; for property {}",
-					format(start), format(end), columnFamily, StringUtils.join(keys, ","), reverse,
-					size);
+			log
+					.trace("Multi get columns slice within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements; for property {}",
+							format(start), format(end), columnFamily, StringUtils.join(keys, ","),
+							reverse, size);
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<Rows<K, Composite, V>>()
+		return reinitConsistencyLevels(new ThriftSafeExecutionContext<Rows<K, Composite, V>>()
 		{
 			@Override
 			public Rows<K, Composite, V> execute()
@@ -400,8 +426,11 @@ public abstract class ThriftAbstractDao
 				return HFactory
 						.createMultigetSliceQuery(keyspace, ThriftAbstractDao.this.<K> rowSrz(),
 								columnNameSerializer, ThriftAbstractDao.this.<V> valSrz())
-						.setColumnFamily(columnFamily).setKeys(keys)
-						.setRange(start, end, reverse, size).execute().get();
+						.setColumnFamily(columnFamily)
+						.setKeys(keys)
+						.setRange(start, end, reverse, size)
+						.execute()
+						.get();
 			}
 		});
 	}
@@ -423,7 +452,7 @@ public abstract class ThriftAbstractDao
 		}
 		Mutator<K> mutator = buildMutator();
 		mutator.addCounter(key, columnFamily, new HCounterColumnImpl<Composite>(name, value,
-				SerializerUtils.COMPOSITE_SRZ));
+				ThriftSerializerUtils.COMPOSITE_SRZ));
 		executeMutator(mutator);
 	}
 
@@ -436,7 +465,7 @@ public abstract class ThriftAbstractDao
 		}
 		Mutator<K> mutator = buildMutator();
 		mutator.addCounter(key, columnFamily, new HCounterColumnImpl<Composite>(name, value * -1L,
-				SerializerUtils.COMPOSITE_SRZ));
+				ThriftSerializerUtils.COMPOSITE_SRZ));
 		executeMutator(mutator);
 	}
 
@@ -449,11 +478,13 @@ public abstract class ThriftAbstractDao
 		}
 
 		final CounterQuery<K, Composite> counter = new ThriftCounterColumnQuery<K, Composite>(
-				keyspace, this.<K> rowSrz(), columnNameSerializer).setColumnFamily(columnFamily)
-				.setKey(key).setName(name);
+				keyspace, this.<K> rowSrz(), columnNameSerializer)
+				.setColumnFamily(columnFamily)
+				.setKey(key)
+				.setName(name);
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
+		return reinitConsistencyLevels(new ThriftSafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -488,9 +519,10 @@ public abstract class ThriftAbstractDao
 
 		SliceCounterQuery<K, Composite> query = HFactory
 				.createCounterSliceQuery(keyspace, this.<K> rowSrz(), columnNameSerializer)
-				.setColumnFamily(columnFamily).setKey(key);
+				.setColumnFamily(columnFamily)
+				.setKey(key);
 
-		AchillesCounterSliceIterator<K> iterator = new AchillesCounterSliceIterator<K>(policy,
+		ThriftCounterSliceIterator<K> iterator = new ThriftCounterSliceIterator<K>(policy,
 				columnFamily, query, (Composite) null, (Composite) null, false, DEFAULT_LENGTH);
 
 		while (iterator.hasNext())
@@ -529,7 +561,7 @@ public abstract class ThriftAbstractDao
 				mutator.getPendingMutationCount(), columnFamily);
 
 		this.policy.loadConsistencyLevelForWrite(this.columnFamily);
-		reinitConsistencyLevels(new SafeExecutionContext<Void>()
+		reinitConsistencyLevels(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()

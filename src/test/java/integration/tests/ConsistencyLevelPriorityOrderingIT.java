@@ -1,16 +1,16 @@
 package integration.tests;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.WideMap;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.wrapper.CounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.WideMap;
 import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
 import integration.tests.utils.CassandraLogAsserter;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
@@ -274,7 +274,7 @@ public class ConsistencyLevelPriorityOrderingIT
 
 		entity = em.merge(entity);
 
-		entity.getCounterWideMap().insert(11, CounterBuilder.incr());
+		entity.getCounterWideMap().insert(11, AchillesCounterBuilder.incr());
 		expectedEx.expect(HInvalidRequestException.class);
 		expectedEx
 				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
@@ -298,7 +298,7 @@ public class ConsistencyLevelPriorityOrderingIT
 		expectedEx
 				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
-		entity.getCounterWideMap().insert(11, CounterBuilder.incr());
+		entity.getCounterWideMap().insert(11, AchillesCounterBuilder.incr());
 	}
 
 	private void assertThatConsistencyLevelsAreReinitialized()

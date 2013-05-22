@@ -1,14 +1,14 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.ThriftJoinEntityHelper;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JoinEntityLoader
+ * ThriftJoinLoaderImpl
  * 
  * @author DuyHai DOAN
  * 
@@ -34,7 +34,7 @@ public class ThriftJoinLoaderImpl
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftJoinLoaderImpl.class);
 
-	private CompositeFactory compositeFactory = new CompositeFactory();
+	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
 
 	public <V> List<V> loadJoinListProperty(ThriftPersistenceContext context,
@@ -44,10 +44,10 @@ public class ThriftJoinLoaderImpl
 		EntityMeta joinMeta = propertyMeta.joinMeta();
 		List<Object> joinIds = fetchColumns(context, propertyMeta);
 		log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
-				.getValueClass().getCanonicalName(), joinIds);
+				.getValueClass()
+				.getCanonicalName(), joinIds);
 
-		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getTableName());
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta.getTableName());
 		List<V> joinEntities = new ArrayList<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -59,8 +59,7 @@ public class ThriftJoinLoaderImpl
 	{
 		EntityMeta joinMeta = propertyMeta.joinMeta();
 		List<Object> joinIds = fetchColumns(context, propertyMeta);
-		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getTableName());
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta.getTableName());
 		Set<V> joinEntities = new HashSet<V>();
 		fillCollectionWithJoinEntities(propertyMeta, joinMeta, joinIds, joinEntityDao, joinEntities);
 
@@ -72,11 +71,10 @@ public class ThriftJoinLoaderImpl
 	{
 
 		EntityMeta joinMeta = propertyMeta.joinMeta();
-		ThriftGenericEntityDao joinEntityDao = context
-				.findEntityDao(joinMeta.getTableName());
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta.getTableName());
 
-		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
-		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		Composite start = thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 
@@ -101,7 +99,8 @@ public class ThriftJoinLoaderImpl
 		if (joinIds.size() > 0)
 		{
 			log.trace("Loading join entities of class {} having primary keys {}", propertyMeta
-					.getValueClass().getCanonicalName(), joinIds);
+					.getValueClass()
+					.getCanonicalName(), joinIds);
 
 			Map<Object, V> entitiesMap = joinHelper.loadJoinEntities(propertyMeta.getValueClass(),
 					joinIds, joinMeta, joinEntityDao);
@@ -122,8 +121,8 @@ public class ThriftJoinLoaderImpl
 		log.trace("Fetching join keys for property {} of class {} ",
 				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName());
 
-		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
-		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		Composite start = thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(
 				context.getPrimaryKey(), start, end, false, Integer.MAX_VALUE);
 		List<Object> joinIds = new ArrayList<Object>();

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.annotations;
 
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ConsistencyLevel
+ * Consistency
  * 
  * @author DuyHai DOAN
  * 

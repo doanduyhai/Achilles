@@ -1,6 +1,6 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.WideMap;
 
 import java.io.Serializable;
 

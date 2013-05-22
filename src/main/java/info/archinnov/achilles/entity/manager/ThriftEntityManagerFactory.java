@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.columnFamily.ThriftTableCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.ThriftDaoContext;
-import info.archinnov.achilles.entity.context.ThriftDaoContextBuilder;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.context.ThriftDaoContext;
+import info.archinnov.achilles.context.ThriftDaoContextBuilder;
+import info.archinnov.achilles.table.ThriftTableCreator;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ThriftEntityManagerFactoryImpl
+ * ThriftEntityManagerFactory
  * 
  * @author DuyHai DOAN
  * 

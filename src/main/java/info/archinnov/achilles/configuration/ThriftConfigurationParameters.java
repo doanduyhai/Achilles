@@ -1,8 +1,7 @@
 package info.archinnov.achilles.configuration;
 
-
 /**
- * ConfigurationParameters
+ * ThriftConfigurationParameters
  * 
  * @author DuyHai DOAN
  * 

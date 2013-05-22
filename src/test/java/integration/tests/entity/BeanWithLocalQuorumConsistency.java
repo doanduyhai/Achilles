@@ -1,6 +1,6 @@
 package integration.tests.entity;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import info.archinnov.achilles.annotations.Consistency;
 
 import java.io.Serializable;

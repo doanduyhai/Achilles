@@ -1,21 +1,21 @@
 package info.archinnov.achilles.entity.operations;
 
+import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EntityLoader
+ * ThriftEntityLoader
  * 
  * @author DuyHai DOAN
  * 
@@ -24,7 +24,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityLoader.class);
 
-	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
@@ -53,8 +53,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 				log.debug("Entity is a wide row, just set the primary key");
 
 				entity = entityClass.newInstance();
-				introspector
-						.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
+				invoker.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 			}
 			else
 			{
@@ -114,7 +113,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			default:
 				return;
 		}
-		introspector.setValueToField(realObject, propertyMeta.getSetter(), value);
+		invoker.setValueToField(realObject, propertyMeta.getSetter(), value);
 	}
 
 	protected Long loadVersionSerialUID(Object key, ThriftGenericEntityDao dao)

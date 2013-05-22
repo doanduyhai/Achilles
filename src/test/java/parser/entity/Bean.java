@@ -3,8 +3,8 @@ package parser.entity;
 import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.WideMap;
 
 import java.io.Serializable;
 import java.util.List;

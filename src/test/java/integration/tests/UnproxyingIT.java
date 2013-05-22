@@ -1,7 +1,7 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
+import static info.archinnov.achilles.table.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;

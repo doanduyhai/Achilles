@@ -4,22 +4,21 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.ThriftEntityMapper;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.helper.ThriftEntityMapper;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +40,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
@@ -63,10 +63,10 @@ public class ThriftLoaderImplTest
 	private ThriftEntityMapper mapper;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
-	private CompositeFactory compositeFactory;
+	private ThriftCompositeFactory thriftCompositeFactory;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -106,7 +106,7 @@ public class ThriftLoaderImplTest
 				.accessors()
 				.build();
 
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.thriftImmediateFlushContext(thriftImmediateFlushContext)
@@ -129,7 +129,7 @@ public class ThriftLoaderImplTest
 
 		verify(mapper).setEagerPropertiesToEntity(eq(entity.getId()), eq(values), eq(entityMeta),
 				beanCaptor.capture());
-		verify(introspector).setValueToField(beanCaptor.capture(), eq(idMeta.getSetter()),
+		verify(invoker).setValueToField(beanCaptor.capture(), eq(idMeta.getSetter()),
 				eq(entity.getId()));
 
 		assertThat(beanCaptor.getAllValues()).containsExactly(actual, actual);
@@ -154,7 +154,7 @@ public class ThriftLoaderImplTest
 				.build();
 
 		Composite comp = new Composite();
-		when(compositeFactory.createBaseForGet(nameMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createBaseForGet(nameMeta)).thenReturn(comp);
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn("name_xyz");
 
 		String actual = loaderImpl.loadSimpleProperty(context, nameMeta);
@@ -175,8 +175,9 @@ public class ThriftLoaderImplTest
 		columns.add(new Pair<Composite, Object>(start, "foo"));
 		columns.add(new Pair<Composite, Object>(end, "bar"));
 
-		when(compositeFactory.createBaseForQuery(listMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(listMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(listMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(listMeta, GREATER_THAN_EQUAL)).thenReturn(
+				end);
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -198,8 +199,9 @@ public class ThriftLoaderImplTest
 		columns.add(new Pair<Composite, Object>(start, "John"));
 		columns.add(new Pair<Composite, Object>(end, "Helen"));
 
-		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL))
+				.thenReturn(end);
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -229,8 +231,9 @@ public class ThriftLoaderImplTest
 		columns.add(new Pair<Composite, Object>(end, writeToString(new KeyValue<Integer, UserBean>(
 				2, user2))));
 
-		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
-		when(compositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL)).thenReturn(end);
+		when(thriftCompositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(start);
+		when(thriftCompositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL))
+				.thenReturn(end);
 		when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
 				.thenReturn(columns);
 
@@ -257,7 +260,7 @@ public class ThriftLoaderImplTest
 
 		UserBean user = new UserBean();
 		Composite comp = new Composite();
-		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn(stringJoinId);
 		when(loader.load(contextCaptor.capture(), eq(UserBean.class))).thenReturn(user);
 
@@ -282,7 +285,7 @@ public class ThriftLoaderImplTest
 				.build();
 
 		Composite comp = new Composite();
-		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn(null);
 
 		UserBean actual = loaderImpl.loadJoinSimple(context, propertyMeta, loader);

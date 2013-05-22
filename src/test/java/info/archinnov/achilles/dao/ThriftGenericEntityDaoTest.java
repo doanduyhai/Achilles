@@ -2,8 +2,8 @@ package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.Pair;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -18,7 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 /**
- * GenericEntityDaoTest
+ * ThriftGenericEntityDaoTest
  * 
  * @author DuyHai DOAN
  * 
@@ -34,7 +34,7 @@ public class ThriftGenericEntityDaoTest
 	private ExecutingKeyspace keyspace;
 
 	@Mock
-	private final Serializer<Long> serializer = SerializerUtils.LONG_SRZ;
+	private final Serializer<Long> serializer = ThriftSerializerUtils.LONG_SRZ;
 
 	@Test
 	public void should_build_mutator() throws Exception

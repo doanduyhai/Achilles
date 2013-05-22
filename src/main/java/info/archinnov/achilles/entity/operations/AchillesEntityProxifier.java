@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EntityProxifier
+ * AchillesEntityProxifier
  * 
  * @author DuyHai DOAN
  * 
@@ -33,7 +33,7 @@ public abstract class AchillesEntityProxifier
 		Class<?> baseClass = entity.getClass();
 		if (isProxy(entity))
 		{
-			AchillesJpaEntityInterceptor<?> interceptor = getInterceptor(entity);
+			AchillesEntityInterceptor<?> interceptor = getInterceptor(entity);
 			baseClass = interceptor.getTarget().getClass();
 		}
 
@@ -63,7 +63,7 @@ public abstract class AchillesEntityProxifier
 		log.debug("Get real entity from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		AchillesJpaEntityInterceptor<?> interceptor = (AchillesJpaEntityInterceptor<?>) factory
+		AchillesEntityInterceptor<?> interceptor = (AchillesEntityInterceptor<?>) factory
 				.getCallback(0);
 		return (T) interceptor.getTarget();
 	}
@@ -73,12 +73,12 @@ public abstract class AchillesEntityProxifier
 		return Factory.class.isAssignableFrom(entity.getClass());
 	}
 
-	public <T> AchillesJpaEntityInterceptor<T> getInterceptor(T proxy)
+	public <T> AchillesEntityInterceptor<T> getInterceptor(T proxy)
 	{
 		log.debug("Get JPA interceptor from proxy {} ", proxy);
 
 		Factory factory = (Factory) proxy;
-		AchillesJpaEntityInterceptor<T> interceptor = (AchillesJpaEntityInterceptor<T>) factory
+		AchillesEntityInterceptor<T> interceptor = (AchillesEntityInterceptor<T>) factory
 				.getCallback(0);
 		return interceptor;
 	}
@@ -156,6 +156,6 @@ public abstract class AchillesEntityProxifier
 		return result;
 	}
 
-	public abstract <T> AchillesJpaEntityInterceptor<T> buildInterceptor(
+	public abstract <T> AchillesEntityInterceptor<T> buildInterceptor(
 			AchillesPersistenceContext context, T entity);
 }

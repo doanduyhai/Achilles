@@ -1,7 +1,7 @@
 package info.archinnov.achilles.helper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import me.prettyprint.hector.api.HConsistencyLevel;
 
 import org.junit.Test;

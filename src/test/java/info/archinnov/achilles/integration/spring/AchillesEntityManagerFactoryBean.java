@@ -1,11 +1,12 @@
 package info.archinnov.achilles.integration.spring;
 
+import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;

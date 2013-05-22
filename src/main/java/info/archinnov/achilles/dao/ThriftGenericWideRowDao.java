@@ -1,8 +1,8 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.type.Pair;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 
@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GenericColumnFamilyDao
+ * ThriftGenericWideRowDao
  * 
  * @author DuyHai DOAN
  * 
@@ -27,9 +27,11 @@ public class ThriftGenericWideRowDao extends ThriftAbstractDao
 
 		super(cluster, keyspace, cf, consistencyPolicy, rowkeyAndValueClasses);
 		columnNameSerializer = COMPOSITE_SRZ;
-		log.debug(
-				"Initializing GenericColumnFamilyDao for key serializer '{}', composite comparator and value serializer '{}'",
-				this.rowSrz().getComparatorType().getTypeName(), this.valSrz().getComparatorType()
-						.getTypeName());
+		log
+				.debug("Initializing GenericColumnFamilyDao for key serializer '{}', composite comparator and value serializer '{}'",
+						this.rowSrz().getComparatorType().getTypeName(), this
+								.valSrz()
+								.getComparatorType()
+								.getTypeName());
 	}
 }

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.configuration;
 
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 /**
  * AchillesConfigurationParameters

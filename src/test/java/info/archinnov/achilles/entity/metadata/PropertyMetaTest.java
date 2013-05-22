@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.KeyValue;
+import info.archinnov.achilles.type.KeyValue;
 
 import java.util.UUID;
 

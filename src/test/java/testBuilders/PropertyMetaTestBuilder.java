@@ -1,17 +1,17 @@
 package testBuilders;
 
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.MultiKey;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.helper.AchillesEntityIntrospector;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.MultiKey;
+import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.type.WideMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

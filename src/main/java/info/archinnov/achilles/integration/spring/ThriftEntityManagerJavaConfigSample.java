@@ -1,5 +1,6 @@
 package info.archinnov.achilles.integration.spring;
 
+import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * ThriftEntityManagerJavaConfig
+ * ThriftEntityManagerJavaConfigSample
  * 
  * @author DuyHai DOAN
  * 

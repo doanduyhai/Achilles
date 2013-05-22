@@ -2,13 +2,13 @@ package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
- * EntityProxifierTest
+ * ThriftEntityProxifierTest
  * 
  * @author DuyHai DOAN
  * 
@@ -66,10 +66,10 @@ public class ThriftEntityProxifierTest
 		when(context.getEntityDao()).thenReturn(entityDao);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 
-		AchillesJpaEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(
-				context, entity);
+		AchillesEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(context,
+				entity);
 
-		assertThat(interceptor).isInstanceOf(JpaEntityInterceptor.class);
+		assertThat(interceptor).isInstanceOf(ThriftEntityInterceptor.class);
 		assertThat(interceptor.getTarget()).isSameAs(entity);
 		assertThat(interceptor.getContext()).isSameAs(context);
 

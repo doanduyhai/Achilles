@@ -1,14 +1,14 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static info.archinnov.achilles.table.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.TweetTestBuilder;
 import integration.tests.entity.User;

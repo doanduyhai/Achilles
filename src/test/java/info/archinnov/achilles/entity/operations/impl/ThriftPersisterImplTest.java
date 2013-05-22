@@ -1,31 +1,30 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftImmediateFlushContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftImmediateFlushContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,6 +52,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
@@ -77,7 +77,7 @@ public class ThriftPersisterImplTest
 	private ThriftEntityPersister persister;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
 	private AchillesEntityProxifier proxifier;
@@ -92,7 +92,7 @@ public class ThriftPersisterImplTest
 	private EntityMeta entityMeta;
 
 	@Mock
-	private CompositeFactory compositeFactory;
+	private ThriftCompositeFactory thriftCompositeFactory;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -130,7 +130,7 @@ public class ThriftPersisterImplTest
 	@Before
 	public void setUp()
 	{
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.thriftImmediateFlushContext(thriftImmediateFlushContext)
@@ -140,15 +140,15 @@ public class ThriftPersisterImplTest
 				.entityDaosMap(entityDaosMap)
 				.build();
 		when(entityMeta.getTableName()).thenReturn("cf");
-		when((Mutator) thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
+		when(thriftImmediateFlushContext.getEntityMutator("cf")).thenReturn(mutator);
 	}
 
 	@Test
 	public void should_batch_persist_serialVersionUID() throws Exception
 	{
-		when(introspector.findSerialVersionUID(entity.getClass())).thenReturn(151L);
+		when(entityMeta.getSerialVersionUID()).thenReturn(151L);
 
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.thriftImmediateFlushContext(thriftImmediateFlushContext)
@@ -162,9 +162,9 @@ public class ThriftPersisterImplTest
 
 		Composite captured = compositeCaptor.getValue();
 
-		assertThat(captured.getComponent(0).getValue(SerializerUtils.BYTE_SRZ)).isEqualTo(
+		assertThat(captured.getComponent(0).getValue(ThriftSerializerUtils.BYTE_SRZ)).isEqualTo(
 				PropertyType.SERIAL_VERSION_UID.flag());
-		assertThat(captured.getComponent(1).getValue(SerializerUtils.STRING_SRZ)).isEqualTo(
+		assertThat(captured.getComponent(1).getValue(ThriftSerializerUtils.STRING_SRZ)).isEqualTo(
 				PropertyType.SERIAL_VERSION_UID.name());
 	}
 
@@ -172,7 +172,7 @@ public class ThriftPersisterImplTest
 	public void should_exception_when_serialVersionUID_not_found_while_persisting_entity()
 			throws Exception
 	{
-		when(introspector.findSerialVersionUID(entity.getClass())).thenReturn(null);
+		when(entityMeta.getSerialVersionUID()).thenReturn(null);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Cannot find 'serialVersionUID' field for entity class '"
@@ -191,10 +191,9 @@ public class ThriftPersisterImplTest
 				.build();
 
 		Composite comp = new Composite();
-		when(compositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
 
-		when(introspector.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(
-				"testValue");
+		when(invoker.getValueFromField(entity, propertyMeta.getGetter())).thenReturn("testValue");
 
 		thriftPersister.batchPersistSimpleProperty(context, propertyMeta);
 
@@ -213,8 +212,10 @@ public class ThriftPersisterImplTest
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(
+				comp1);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(
+				comp2);
 
 		thriftPersister.batchPersistList(Arrays.asList("foo", "bar"), context, propertyMeta);
 
@@ -235,10 +236,11 @@ public class ThriftPersisterImplTest
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, "John".hashCode()))
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, "John".hashCode()))
 				.thenReturn(comp1);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, "Helen".hashCode()))
-				.thenReturn(comp2);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta,
+						"Helen".hashCode())).thenReturn(comp2);
 
 		Set<String> followers = ImmutableSet.of("John", "Helen");
 		thriftPersister.batchPersistSet(followers, context, propertyMeta);
@@ -267,9 +269,12 @@ public class ThriftPersisterImplTest
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
 		Composite comp3 = new Composite();
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(comp3);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(
+				comp1);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(
+				comp2);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(
+				comp3);
 
 		thriftPersister.batchPersistMap(map, context, propertyMeta);
 
@@ -321,9 +326,9 @@ public class ThriftPersisterImplTest
 		UserBean user = new UserBean();
 		user.setUserId(joinId);
 
-		when(introspector.getKey(user, joinIdMeta)).thenReturn(joinId);
+		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(joinId);
 		Composite comp = new Composite();
-		when(compositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
 
 		when(proxifier.unproxy(user)).thenReturn(user);
 
@@ -364,10 +369,12 @@ public class ThriftPersisterImplTest
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
-		when(introspector.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
-		when(introspector.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(
+				comp1);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(
+				comp2);
+		when(invoker.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
+		when(invoker.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
 
 		when(proxifier.unproxy(user1)).thenReturn(user1);
 		when(proxifier.unproxy(user2)).thenReturn(user2);
@@ -422,10 +429,12 @@ public class ThriftPersisterImplTest
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
 
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
-		when(compositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
-		when(introspector.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
-		when(introspector.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(
+				comp1);
+		when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(
+				comp2);
+		when(invoker.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
+		when(invoker.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
 
 		when(proxifier.unproxy(user1)).thenReturn(user1);
 		when(proxifier.unproxy(user2)).thenReturn(user2);
@@ -511,9 +520,10 @@ public class ThriftPersisterImplTest
 
 		Composite keyComp = new Composite();
 		Composite comp = new Composite();
-		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
-				keyComp);
-		when(compositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
+		when(thriftCompositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta))
+				.thenReturn(keyComp);
+		when(thriftCompositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(
+				comp);
 		when(thriftImmediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
@@ -559,8 +569,8 @@ public class ThriftPersisterImplTest
 		when((Map) entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
 
 		Composite keyComp = new Composite();
-		when(compositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(
-				keyComp);
+		when(thriftCompositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta))
+				.thenReturn(keyComp);
 		when(thriftImmediateFlushContext.getCounterMutator()).thenReturn(counterMutator);
 
 		thriftPersister.remove(context);
@@ -584,10 +594,10 @@ public class ThriftPersisterImplTest
 				.build();
 
 		Composite start = new Composite(), end = new Composite();
-		when(compositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL))
+		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL))
 				.thenReturn(start);
 		when(
-				compositeFactory.createBaseForQuery(propertyMeta,
+				thriftCompositeFactory.createBaseForQuery(propertyMeta,
 						ComponentEquality.GREATER_THAN_EQUAL)).thenReturn(end);
 
 		thriftPersister.removePropertyBatch(context, propertyMeta);

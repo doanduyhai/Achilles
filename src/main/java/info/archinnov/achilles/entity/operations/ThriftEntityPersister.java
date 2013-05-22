@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EntityPersister
+ * ThriftEntityPersister
  * 
  * @author DuyHai DOAN
  * 
@@ -32,7 +32,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityPersister.class);
 
-	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
+	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 	private ThriftEntityLoader loader = new ThriftEntityLoader();
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
@@ -96,7 +96,8 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	@Override
 	public void remove(AchillesPersistenceContext context)
 	{
-		log.debug("Removing entity of class {} and primary key {} ", context.getEntityClass()
+		log.debug("Removing entity of class {} and primary key {} ", context
+				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
 		persisterImpl.remove((ThriftPersistenceContext) context);
@@ -117,7 +118,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	{
 
 		EntityMeta joinMeta = joinProperties.getEntityMeta();
-		Object joinId = introspector.getKey(joinEntity, joinMeta.getIdMeta());
+		Object joinId = invoker.getPrimaryKey(joinEntity, joinMeta.getIdMeta());
 		Validate.notNull(joinId, "key value for entity '" + joinMeta.getClassName()
 				+ "' should not be null");
 
@@ -125,7 +126,8 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 		if (cascadeTypes.contains(ALL) || cascadeTypes.contains(PERSIST))
 		{
 			log.debug("Cascade-persisting entity of class {} and primary key {} ", context
-					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+					.getEntityClass()
+					.getCanonicalName(), context.getPrimaryKey());
 
 			persist(context);
 		}
@@ -133,7 +135,8 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 		{
 
 			log.debug("Consistency check for join entity of class {} and primary key {} ", context
-					.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+					.getEntityClass()
+					.getCanonicalName(), context.getPrimaryKey());
 
 			Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
 					context.findEntityDao(joinMeta.getTableName()));
@@ -154,7 +157,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	private void batchPersistListProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		List<?> list = (List<?>) introspector.getValueFromField(context.getEntity(),
+		List<?> list = (List<?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (list != null)
 		{
@@ -165,7 +168,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	private void batchPersistSetProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		Set<?> set = (Set<?>) introspector.getValueFromField(context.getEntity(),
+		Set<?> set = (Set<?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (set != null)
 		{
@@ -177,7 +180,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
-		Map<?, ?> map = (Map<?, ?>) introspector.getValueFromField(context.getEntity(),
+		Map<?, ?> map = (Map<?, ?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (map != null)
 		{
@@ -188,8 +191,8 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	private void batchPersistJoinEntity(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		Object joinEntity = introspector.getValueFromField(context.getEntity(),
-				propertyMeta.getGetter());
+		Object joinEntity = invoker
+				.getValueFromField(context.getEntity(), propertyMeta.getGetter());
 
 		if (joinEntity != null)
 		{
@@ -201,7 +204,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 			PropertyMeta<?, ?> propertyMeta)
 	{
 
-		Collection<?> joinCollection = (Collection<?>) introspector.getValueFromField(
+		Collection<?> joinCollection = (Collection<?>) invoker.getValueFromField(
 				context.getEntity(), propertyMeta.getGetter());
 		if (joinCollection != null)
 		{
@@ -212,7 +215,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	private void batchPersistJoinMapProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-		Map<?, ?> joinMap = (Map<?, ?>) introspector.getValueFromField(context.getEntity(),
+		Map<?, ?> joinMap = (Map<?, ?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 
 		if (joinMap != null)

@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ColumnFamily
+ * WideRow
  * 
  * @author DuyHai DOAN
  * 

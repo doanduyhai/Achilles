@@ -1,11 +1,10 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 
 import java.util.Map;
 
@@ -21,8 +20,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
+import testBuilders.CompleteBeanTestBuilder;
+
 /**
- * EntityValidatorTest
+ * AchillesEntityValidatorTest
  * 
  * @author DuyHai DOAN
  * 
@@ -37,7 +38,7 @@ public class AchillesEntityValidatorTest
 	private AchillesEntityValidator achillesEntityValidator;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
 	private AchillesEntityProxifier proxifier;
@@ -57,7 +58,7 @@ public class AchillesEntityValidatorTest
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(achillesEntityValidator, "introspector", introspector);
+		Whitebox.setInternalState(achillesEntityValidator, "invoker", invoker);
 		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 	}
 
@@ -68,7 +69,7 @@ public class AchillesEntityValidatorTest
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(introspector.getKey(bean, idMeta)).thenReturn(12L);
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
 
 		achillesEntityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -80,7 +81,7 @@ public class AchillesEntityValidatorTest
 
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(introspector.getKey(bean, idMeta)).thenReturn(null);
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Cannot get primary key for entity "

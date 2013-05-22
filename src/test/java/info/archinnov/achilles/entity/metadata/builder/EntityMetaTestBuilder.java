@@ -2,8 +2,8 @@ package info.archinnov.achilles.entity.metadata.builder;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

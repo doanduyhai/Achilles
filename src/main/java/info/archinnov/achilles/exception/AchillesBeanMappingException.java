@@ -1,7 +1,7 @@
 package info.archinnov.achilles.exception;
 
 /**
- * BeanMappingException
+ * AchillesBeanMappingException
  * 
  * @author DuyHai DOAN
  * 

@@ -1,6 +1,6 @@
 package testBuilders;
 
-import static info.archinnov.achilles.serializer.SerializerUtils.COMPOSITE_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.Composite;

@@ -1,6 +1,6 @@
 package parser.entity;
 
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.WideMap;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

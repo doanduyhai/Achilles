@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.ThriftDaoContext;
-import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.context.execution.SafeExecutionContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.context.ThriftDaoContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collection;
 import java.util.Map;
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * BatchingThriftEntityManager
+ * ThriftBatchingEntityManager
  * 
  * @author DuyHai DOAN
  * 
@@ -87,7 +87,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public void persist(final Object entity)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
+		reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -109,7 +109,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public <T> T merge(final T entity)
 	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
+		return reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<T>()
 		{
 			@Override
 			public T execute()
@@ -130,7 +130,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public void remove(final Object entity)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
+		reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -152,7 +152,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public <T> T find(final Class<T> entityClass, final Object primaryKey)
 	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
+		return reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<T>()
 		{
 			@Override
 			public T execute()
@@ -174,7 +174,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public <T> T getReference(final Class<T> entityClass, final Object primaryKey)
 	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
+		return reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<T>()
 		{
 			@Override
 			public T execute()
@@ -196,7 +196,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public void refresh(final Object entity)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
+		reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -210,7 +210,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public <T> void initialize(final T entity)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
+		reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -224,7 +224,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	@Override
 	public <T> void initialize(final Collection<T> entities)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
+		reinitConsistencyLevelsOnError(new ThriftSafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -249,8 +249,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext,
-				entityClass, primaryKey);
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+				flushContext, entityClass, primaryKey);
 	}
 
 	protected ThriftPersistenceContext initPersistenceContext(Object entity)
@@ -258,11 +258,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
-		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext,
-				entity);
+		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+				flushContext, entity);
 	}
 
-	private <T> T reinitConsistencyLevelsOnError(SafeExecutionContext<T> context)
+	private <T> T reinitConsistencyLevelsOnError(ThriftSafeExecutionContext<T> context)
 	{
 		try
 		{

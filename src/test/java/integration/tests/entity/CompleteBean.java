@@ -2,9 +2,9 @@ package integration.tests.entity;
 
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.MultiKey;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.MultiKey;
+import info.archinnov.achilles.type.WideMap;
 
 import java.io.Serializable;
 import java.util.List;

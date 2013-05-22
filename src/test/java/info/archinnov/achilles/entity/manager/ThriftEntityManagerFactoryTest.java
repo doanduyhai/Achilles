@@ -1,15 +1,15 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.ThriftDaoContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 /**
- * ThriftEntityManagerFactoryImplTest
+ * ThriftEntityManagerFactoryTest
  * 
  * @author DuyHai DOAN
  * 

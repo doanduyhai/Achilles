@@ -1,19 +1,19 @@
 package integration.tests;
 
-import static info.archinnov.achilles.entity.type.WideMap.BoundingMode.*;
-import static info.archinnov.achilles.entity.type.WideMap.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.type.WideMap.BoundingMode.*;
+import static info.archinnov.achilles.type.WideMap.OrderingMode.ASCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.type.Counter;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.WideMap;
-import info.archinnov.achilles.entity.type.WideMap.BoundingMode;
-import info.archinnov.achilles.serializer.SerializerUtils;
-import info.archinnov.achilles.wrapper.CounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.WideMap;
+import info.archinnov.achilles.type.WideMap.BoundingMode;
 import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
@@ -115,8 +115,8 @@ public class CounterIT
 
 		bean = em.merge(bean);
 
-		bean.getPopularTopics().insert("cassandra", CounterBuilder.incr(cassandraCount));
-		bean.getPopularTopics().insert("java", CounterBuilder.incr(javaCount));
+		bean.getPopularTopics().insert("cassandra", AchillesCounterBuilder.incr(cassandraCount));
+		bean.getPopularTopics().insert("java", AchillesCounterBuilder.incr(javaCount));
 
 		Composite comp = createWideMapCounterName("java");
 
@@ -137,9 +137,9 @@ public class CounterIT
 
 		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
-		popularTopics.insert("java", CounterBuilder.incr(javaCount));
-		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
+		popularTopics.insert("cassandra", AchillesCounterBuilder.incr(cassandraCount));
+		popularTopics.insert("java", AchillesCounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", AchillesCounterBuilder.incr(scalaCount));
 
 		List<KeyValue<String, Counter>> foundKeyValues = popularTopics.find("cassandra", null, 10,
 				INCLUSIVE_BOUNDS, ASCENDING);
@@ -180,12 +180,12 @@ public class CounterIT
 
 		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
-		popularTopics.insert("groovy", CounterBuilder.incr(groovyCount));
-		popularTopics.insert("hibernate", CounterBuilder.incr(hibernateCount));
-		popularTopics.insert("java", CounterBuilder.incr(javaCount));
-		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
-		popularTopics.insert("spring", CounterBuilder.incr(springCount));
+		popularTopics.insert("cassandra", AchillesCounterBuilder.incr(cassandraCount));
+		popularTopics.insert("groovy", AchillesCounterBuilder.incr(groovyCount));
+		popularTopics.insert("hibernate", AchillesCounterBuilder.incr(hibernateCount));
+		popularTopics.insert("java", AchillesCounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", AchillesCounterBuilder.incr(scalaCount));
+		popularTopics.insert("spring", AchillesCounterBuilder.incr(springCount));
 
 		Iterator<KeyValue<String, Counter>> iterator = popularTopics.iterator("groovy", "spring",
 				2, INCLUSIVE_START_BOUND_ONLY, ASCENDING);
@@ -215,7 +215,7 @@ public class CounterIT
 
 		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", CounterBuilder.incr(44654L));
+		popularTopics.insert("cassandra", AchillesCounterBuilder.incr(44654L));
 
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("Cannot remove counter value");
@@ -239,12 +239,12 @@ public class CounterIT
 
 		WideMap<String, Counter> popularTopics = bean.getPopularTopics();
 
-		popularTopics.insert("cassandra", CounterBuilder.incr(cassandraCount));
-		popularTopics.insert("groovy", CounterBuilder.incr(groovyCount));
-		popularTopics.insert("hibernate", CounterBuilder.incr(hibernateCount));
-		popularTopics.insert("java", CounterBuilder.incr(javaCount));
-		popularTopics.insert("scala", CounterBuilder.incr(scalaCount));
-		popularTopics.insert("spring", CounterBuilder.incr(springCount));
+		popularTopics.insert("cassandra", AchillesCounterBuilder.incr(cassandraCount));
+		popularTopics.insert("groovy", AchillesCounterBuilder.incr(groovyCount));
+		popularTopics.insert("hibernate", AchillesCounterBuilder.incr(hibernateCount));
+		popularTopics.insert("java", AchillesCounterBuilder.incr(javaCount));
+		popularTopics.insert("scala", AchillesCounterBuilder.incr(scalaCount));
+		popularTopics.insert("spring", AchillesCounterBuilder.incr(springCount));
 
 		// Pause required to let Cassandra remove counter columns
 		Thread.sleep(1000);
@@ -279,7 +279,7 @@ public class CounterIT
 		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
-		counterWideMap.insert(10, CounterBuilder.incr());
+		counterWideMap.insert(10, AchillesCounterBuilder.incr());
 		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
 				.isEqualTo(1L);
 	}
@@ -290,7 +290,7 @@ public class CounterIT
 		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
-		counterWideMap.insert(10, CounterBuilder.incr(15L));
+		counterWideMap.insert(10, AchillesCounterBuilder.incr(15L));
 		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
 				.isEqualTo(15L);
 	}
@@ -301,7 +301,7 @@ public class CounterIT
 		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
-		counterWideMap.insert(10, CounterBuilder.decr());
+		counterWideMap.insert(10, AchillesCounterBuilder.decr());
 		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
 				.isEqualTo(-1L);
 	}
@@ -312,7 +312,7 @@ public class CounterIT
 		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
-		counterWideMap.insert(10, CounterBuilder.decr(15L));
+		counterWideMap.insert(10, AchillesCounterBuilder.decr(15L));
 		assertThat(counterWideMapDao.getCounterValue(entity.getId(), prepareCounterWideMapName(10)))
 				.isEqualTo(-15L);
 	}
@@ -330,7 +330,7 @@ public class CounterIT
 	private Composite prepareCounterWideMapName(Integer index)
 	{
 		Composite comp = new Composite();
-		comp.addComponent(10, SerializerUtils.INT_SRZ);
+		comp.addComponent(10, ThriftSerializerUtils.INT_SRZ);
 		return comp;
 	}
 

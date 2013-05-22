@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
- * EntityInitializerTest
+ * AchillesEntityInitializerTest
  * 
  * @author DuyHai DOAN
  * 

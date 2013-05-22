@@ -3,11 +3,10 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
+import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +29,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
+
 /**
  * AchillesEntityProxifierTest
  * 
@@ -44,7 +45,7 @@ public class AchillesEntityProxifierTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private AchillesJpaEntityInterceptor<CompleteBean> interceptor;
+	private AchillesEntityInterceptor<CompleteBean> interceptor;
 
 	@Mock
 	private AchillesPersistenceContext context;
@@ -107,7 +108,7 @@ public class AchillesEntityProxifierTest
 		Factory factory = (Factory) proxy;
 
 		assertThat(factory.getCallbacks()).hasSize(1);
-		assertThat(factory.getCallback(0)).isInstanceOf(AchillesJpaEntityInterceptor.class);
+		assertThat(factory.getCallback(0)).isInstanceOf(AchillesEntityInterceptor.class);
 	}
 
 	@Test
@@ -165,7 +166,7 @@ public class AchillesEntityProxifierTest
 		CompleteBean proxy = (CompleteBean) enhancer.create();
 
 		doCallRealMethod().when(proxifier).getInterceptor(any());
-		AchillesJpaEntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
+		AchillesEntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
 
 		assertThat(actual).isSameAs(interceptor);
 	}

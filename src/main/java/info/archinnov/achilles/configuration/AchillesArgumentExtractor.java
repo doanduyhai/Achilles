@@ -1,10 +1,10 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Arrays;
 import java.util.HashMap;

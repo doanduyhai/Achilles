@@ -1,7 +1,7 @@
 package parser.entity;
 
 import info.archinnov.achilles.annotations.WideRow;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.WideMap;
 
 import java.io.Serializable;
 

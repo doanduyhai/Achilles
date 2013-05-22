@@ -1,6 +1,6 @@
 package info.archinnov.achilles.helper;
 
-import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import com.google.common.base.Function;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftLoggerHelper extends LoggerHelper
+public class ThriftLoggerHelper extends AchillesLoggerHelper
 {
 	public static Function<Serializer<?>, String> srzToStringFn = new Function<Serializer<?>, String>()
 	{
@@ -51,7 +51,7 @@ public class ThriftLoggerHelper extends LoggerHelper
 			{
 				Component<?> component = components.get(i);
 				String componentValue;
-				if (component.getSerializer() == SerializerUtils.BYTE_SRZ)
+				if (component.getSerializer() == ThriftSerializerUtils.BYTE_SRZ)
 				{
 					componentValue = ByteBufferUtil.getArray(component.getBytes())[0] + "";
 				}

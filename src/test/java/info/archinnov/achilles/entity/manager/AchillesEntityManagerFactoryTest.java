@@ -3,17 +3,17 @@ package info.archinnov.achilles.entity.manager;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.columnFamily.AchillesTableCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.parser.EntityExplorer;
-import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
-import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
+import info.archinnov.achilles.entity.parsing.AchillesEntityExplorer;
+import info.archinnov.achilles.entity.parsing.AchillesEntityParser;
+import info.archinnov.achilles.entity.parsing.context.AchillesEntityParsingContext;
+import info.archinnov.achilles.entity.parsing.validator.AchillesEntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.table.AchillesTableCreator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,13 +48,13 @@ public class AchillesEntityManagerFactoryTest
 	private AchillesTableCreator tableCreator;
 
 	@Mock
-	private EntityExplorer entityExplorer;
+	private AchillesEntityExplorer achillesEntityExplorer;
 
 	@Mock
-	private EntityParsingValidator validator;
+	private AchillesEntityParsingValidator validator;
 
 	@Mock
-	private EntityParser entityParser;
+	private AchillesEntityParser achillesEntityParser;
 
 	@Mock
 	private AchillesArgumentExtractor extractor;
@@ -70,15 +70,15 @@ public class AchillesEntityManagerFactoryTest
 		doCallRealMethod().when(factory).setEntityMetaMap(
 				(Map<Class<?>, EntityMeta>) any(Map.class));
 		doCallRealMethod().when(factory).setEntityPackages((List<String>) any(List.class));
-		doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
-		doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
-		doCallRealMethod().when(factory).setValidator(any(EntityParsingValidator.class));
+		doCallRealMethod().when(factory).setEntityParser(any(AchillesEntityParser.class));
+		doCallRealMethod().when(factory).setEntityExplorer(any(AchillesEntityExplorer.class));
+		doCallRealMethod().when(factory).setValidator(any(AchillesEntityParsingValidator.class));
 
 		factory.setTableCreator(tableCreator);
 		factory.setEntityMetaMap(entityMetaMap);
 		factory.setEntityPackages(entityPackages);
-		factory.setEntityParser(entityParser);
-		factory.setEntityExplorer(entityExplorer);
+		factory.setEntityParser(achillesEntityParser);
+		factory.setEntityExplorer(achillesEntityExplorer);
 		factory.setValidator(validator);
 	}
 
@@ -112,8 +112,8 @@ public class AchillesEntityManagerFactoryTest
 		entities.add(Long.class);
 		EntityMeta entityMeta = new EntityMeta();
 
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		when(entityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
+		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
+		when(achillesEntityParser.parseEntity(any(AchillesEntityParsingContext.class))).thenReturn(entityMeta);
 
 		doCallRealMethod().when(factory).discoverEntities();
 		factory.discoverEntities();
@@ -121,7 +121,7 @@ public class AchillesEntityManagerFactoryTest
 		assertThat(entityMetaMap).containsKey(Long.class);
 		assertThat(entityMetaMap).containsValue(entityMeta);
 		verify(validator).validateAtLeastOneEntity(entities, entityPackages);
-		verify(entityParser).fillJoinEntityMeta(any(EntityParsingContext.class), eq(entityMetaMap));
+		verify(achillesEntityParser).fillJoinEntityMeta(any(AchillesEntityParsingContext.class), eq(entityMetaMap));
 
 	}
 

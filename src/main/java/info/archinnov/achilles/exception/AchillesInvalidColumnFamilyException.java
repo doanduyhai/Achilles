@@ -1,7 +1,7 @@
 package info.archinnov.achilles.exception;
 
 /**
- * InvalidColumnFamilyException
+ * AchillesInvalidColumnFamilyException
  * 
  * @author DuyHai DOAN
  * 

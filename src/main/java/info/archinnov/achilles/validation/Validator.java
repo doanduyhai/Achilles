@@ -1,6 +1,6 @@
 package info.archinnov.achilles.validation;
 
-import static info.archinnov.achilles.entity.PropertyHelper.isSupportedType;
+import static info.archinnov.achilles.helper.AchillesPropertyHelper.isSupportedType;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
 

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
-import static info.archinnov.achilles.serializer.SerializerUtils.TIMEUUID_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.TIMEUUID_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.PropertyType;

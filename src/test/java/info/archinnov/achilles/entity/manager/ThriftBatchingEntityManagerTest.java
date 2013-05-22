@@ -1,11 +1,11 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
-import info.archinnov.achilles.entity.context.ThriftDaoContext;
-import info.archinnov.achilles.entity.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.exception.AchillesException;
 import integration.tests.entity.CompleteBean;
 
@@ -21,7 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 /**
- * BatchingThriftEntityManagerTest
+ * ThriftBatchingEntityManagerTest
  * 
  * @author DuyHai DOAN
  * 

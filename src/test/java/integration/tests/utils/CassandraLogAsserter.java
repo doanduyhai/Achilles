@@ -1,7 +1,7 @@
 package integration.tests.utils;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;

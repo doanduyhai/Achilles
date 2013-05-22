@@ -1,6 +1,6 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.entity.type.Counter;
+import info.archinnov.achilles.type.Counter;
 
 import java.io.Serializable;
 import java.util.UUID;

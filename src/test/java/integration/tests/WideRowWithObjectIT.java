@@ -1,13 +1,13 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.entity.type.WideMap;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.type.WideMap;
 import integration.tests.entity.WideRowBeanWithObject;
 import integration.tests.entity.WideRowBeanWithObject.Holder;
 

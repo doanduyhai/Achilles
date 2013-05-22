@@ -1,21 +1,20 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,10 +37,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
- * EntityPersisterTest
+ * ThriftEntityPersisterTest
  * 
  * @author DuyHai DOAN
  * 
@@ -63,7 +63,7 @@ public class ThriftEntityPersisterTest
 	private ThriftPersisterImpl persisterImpl;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -84,7 +84,7 @@ public class ThriftEntityPersisterTest
 	public void setUp()
 	{
 		entityDaosMap.clear();
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
 				.entity(bean)
 				//
@@ -150,10 +150,10 @@ public class ThriftEntityPersisterTest
 
 		UserBean user = new UserBean();
 
-		when(introspector.getKey(bean, joinIdMeta)).thenReturn(joinId);
+		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(joinId);
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, propertyMeta.getGetter())).thenReturn(user);
+		when(invoker.getValueFromField(bean, propertyMeta.getGetter())).thenReturn(user);
 
 		persister.cascadePersistOrEnsureExists(context, bean, propertyMeta.getJoinProperties());
 		verify(persisterImpl).batchPersistJoinEntity(context, propertyMeta, user, persister);
@@ -176,7 +176,7 @@ public class ThriftEntityPersisterTest
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
-		when(introspector.getKey(bean, joinIdMeta)).thenReturn(joinId);
+		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(joinId);
 		when(loader.loadVersionSerialUID(bean.getId(), entityDao)).thenReturn(joinId);
 		context.getConfigContext().setEnsureJoinConsistency(true);
 
@@ -203,7 +203,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, listMeta.getGetter())).thenReturn(list);
+		when(invoker.getValueFromField(bean, listMeta.getGetter())).thenReturn(list);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistList(list, context, listMeta);
@@ -225,7 +225,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, setMeta.getGetter())).thenReturn(set);
+		when(invoker.getValueFromField(bean, setMeta.getGetter())).thenReturn(set);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistSet(set, context, setMeta);
@@ -247,7 +247,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, mapMeta.getGetter())).thenReturn(map);
+		when(invoker.getValueFromField(bean, mapMeta.getGetter())).thenReturn(map);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistMap(map, context, mapMeta);
@@ -269,7 +269,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, joinMeta.getGetter())).thenReturn(user);
+		when(invoker.getValueFromField(bean, joinMeta.getGetter())).thenReturn(user);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinEntity(context, joinMeta, user, persister);
@@ -291,7 +291,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, joinSetMeta.getGetter())).thenReturn(joinSet);
+		when(invoker.getValueFromField(bean, joinSetMeta.getGetter())).thenReturn(joinSet);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinCollection(context, joinSetMeta, joinSet, persister);
@@ -313,7 +313,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(introspector.getValueFromField(bean, joinMapMeta.getGetter())).thenReturn(joinMap);
+		when(invoker.getValueFromField(bean, joinMapMeta.getGetter())).thenReturn(joinMap);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinMap(context, joinMapMeta, joinMap, persister);

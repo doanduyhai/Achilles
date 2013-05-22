@@ -3,13 +3,13 @@ package info.archinnov.achilles.common;
 import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * CassandraDaoTest
+ * ThriftCassandraDaoTest
  * 
  * @author DuyHai DOAN
  * 

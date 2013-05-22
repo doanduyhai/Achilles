@@ -2,18 +2,18 @@ package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.ThriftEntityMapper;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.helper.ThriftEntityMapper;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +40,8 @@ public class ThriftLoaderImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
-	private AchillesEntityIntrospector introspector = new AchillesEntityIntrospector();
-	private CompositeFactory compositeFactory = new CompositeFactory();
+	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
 	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) throws Exception
 	{
@@ -59,7 +59,7 @@ public class ThriftLoaderImpl
 
 			entity = entityClass.newInstance();
 			mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
-			introspector.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
+			invoker.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 		}
 
 		return (T) entity;
@@ -90,7 +90,7 @@ public class ThriftLoaderImpl
 	public <V> V loadSimpleProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, V> propertyMeta)
 	{
-		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
+		Composite composite = thriftCompositeFactory.createBaseForGet(propertyMeta);
 		if (log.isTraceEnabled())
 		{
 			log
@@ -170,8 +170,8 @@ public class ThriftLoaderImpl
 			PropertyMeta<?, V> propertyMeta)
 	{
 
-		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
-		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
+		Composite start = thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		if (log.isTraceEnabled())
 		{
 			log.trace("Fetching columns from Cassandra with column names {} / {}", format(start),
@@ -188,7 +188,7 @@ public class ThriftLoaderImpl
 		EntityMeta joinMeta = propertyMeta.joinMeta();
 		PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
-		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
+		Composite composite = thriftCompositeFactory.createBaseForGet(propertyMeta);
 
 		if (log.isTraceEnabled())
 		{

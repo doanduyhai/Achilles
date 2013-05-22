@@ -1,19 +1,19 @@
 package integration.tests;
 
-import static info.archinnov.achilles.columnFamily.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.table.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.type.KeyValue;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.proxy.interceptor.JpaEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
@@ -51,7 +51,7 @@ public class JPAOperationsIT
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private CompositeFactory compositeFactory = new CompositeFactory();
+	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -223,7 +223,7 @@ public class JPAOperationsIT
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
-		JpaEntityInterceptor interceptor = (JpaEntityInterceptor) factory.getCallback(0);
+		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
 		Method getLabel = CompleteBean.class.getDeclaredMethod("getLabel");
 		String label = (String) getLabel.invoke(interceptor.getTarget());
@@ -260,7 +260,7 @@ public class JPAOperationsIT
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
-		JpaEntityInterceptor interceptor = (JpaEntityInterceptor) factory.getCallback(0);
+		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
 		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
@@ -534,14 +534,14 @@ public class JPAOperationsIT
 
 		nameMeta.setPropertyName("name");
 
-		Composite nameComposite = compositeFactory.createForBatchInsertSingleValue(nameMeta);
+		Composite nameComposite = thriftCompositeFactory.createForBatchInsertSingleValue(nameMeta);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
 		listLazyMeta.setType(LAZY_LIST);
 		listLazyMeta.setPropertyName("friends");
 
-		Composite friend3Composite = compositeFactory.createForBatchInsertMultiValue(listLazyMeta,
+		Composite friend3Composite = thriftCompositeFactory.createForBatchInsertMultiValue(listLazyMeta,
 				2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 

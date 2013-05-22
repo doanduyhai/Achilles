@@ -1,12 +1,11 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
+import info.archinnov.achilles.helper.AchillesEntityIntrospector;
+import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -20,8 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
+
 /**
- * EntityRefresherTest
+ * AchillesEntityRefresherTest
  * 
  * @author DuyHai DOAN
  * 
@@ -46,7 +47,7 @@ public class AchillesEntityRefresherTest
 	private EntityMeta entityMeta;
 
 	@Mock
-	private AchillesJpaEntityInterceptor<CompleteBean> jpaEntityInterceptor;
+	private AchillesEntityInterceptor<CompleteBean> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;

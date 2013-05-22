@@ -1,9 +1,9 @@
 package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.serializer.SerializerUtils.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.type.Pair;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GenericEntityDao
+ * ThriftGenericEntityDao
  * 
  * @author DuyHai DOAN
  * 

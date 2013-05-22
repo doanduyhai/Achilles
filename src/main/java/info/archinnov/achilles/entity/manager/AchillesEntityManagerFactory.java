@@ -1,16 +1,16 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.columnFamily.AchillesTableCreator;
 import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.parser.EntityExplorer;
-import info.archinnov.achilles.entity.parser.EntityParser;
-import info.archinnov.achilles.entity.parser.context.EntityParsingContext;
-import info.archinnov.achilles.entity.parser.validator.EntityParsingValidator;
+import info.archinnov.achilles.entity.parsing.AchillesEntityExplorer;
+import info.archinnov.achilles.entity.parsing.AchillesEntityParser;
+import info.archinnov.achilles.entity.parsing.context.AchillesEntityParsingContext;
+import info.archinnov.achilles.entity.parsing.validator.AchillesEntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.table.AchillesTableCreator;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.IOException;
@@ -43,9 +43,9 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	protected AchillesConfigurationContext configContext;
 	protected List<String> entityPackages;
 
-	private EntityParser entityParser = new EntityParser();
-	private EntityExplorer entityExplorer = new EntityExplorer();
-	private EntityParsingValidator validator = new EntityParsingValidator();
+	private AchillesEntityParser achillesEntityParser = new AchillesEntityParser();
+	private AchillesEntityExplorer achillesEntityExplorer = new AchillesEntityExplorer();
+	private AchillesEntityParsingValidator validator = new AchillesEntityParsingValidator();
 
 	protected AchillesEntityManagerFactory(Map<String, Object> configurationMap,
 			AchillesArgumentExtractor argumentExtractor)
@@ -84,21 +84,21 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 				StringUtils.join(entityPackages, ","));
 		Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
 
-		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
+		List<Class<?>> entities = achillesEntityExplorer.discoverEntities(entityPackages);
 		validator.validateAtLeastOneEntity(entities, entityPackages);
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities)
 		{
-			EntityParsingContext context = new EntityParsingContext(//
+			AchillesEntityParsingContext context = new AchillesEntityParsingContext(//
 					joinPropertyMetaToBeFilled, //
 					configContext, entityClass);
 
-			EntityMeta entityMeta = entityParser.parseEntity(context);
+			EntityMeta entityMeta = achillesEntityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
 			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
 		}
 
-		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
+		achillesEntityParser.fillJoinEntityMeta(new AchillesEntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
 				configContext), entityMetaMap);
 
@@ -196,17 +196,17 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		this.entityPackages = entityPackages;
 	}
 
-	protected void setEntityParser(EntityParser entityParser)
+	protected void setEntityParser(AchillesEntityParser achillesEntityParser)
 	{
-		this.entityParser = entityParser;
+		this.achillesEntityParser = achillesEntityParser;
 	}
 
-	protected void setEntityExplorer(EntityExplorer entityExplorer)
+	protected void setEntityExplorer(AchillesEntityExplorer achillesEntityExplorer)
 	{
-		this.entityExplorer = entityExplorer;
+		this.achillesEntityExplorer = achillesEntityExplorer;
 	}
 
-	protected void setValidator(EntityParsingValidator validator)
+	protected void setValidator(AchillesEntityParsingValidator validator)
 	{
 		this.validator = validator;
 	}

@@ -4,8 +4,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.type.Pair;
-import info.archinnov.achilles.serializer.SerializerUtils;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.type.Pair;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
@@ -18,7 +18,7 @@ import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * AbstractDaoTest
+ * ThriftAbstractDaoTest
  * 
  * @author DuyHai DOAN
  * 
@@ -52,8 +52,8 @@ public class ThriftAbstractDaoTest
 	{
 
 		Composite composite = new Composite();
-		composite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
-		composite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
+		composite.setComponent(0, SIMPLE.flag(), ThriftSerializerUtils.BYTE_SRZ);
+		composite.setComponent(1, "name", ThriftSerializerUtils.STRING_SRZ);
 		abstractDao.getValue(123L, composite);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
 		verify(policy).reinitDefaultConsistencyLevels();
@@ -66,8 +66,8 @@ public class ThriftAbstractDaoTest
 		try
 		{
 			Composite composite = new Composite();
-			composite.setComponent(0, SIMPLE.flag(), SerializerUtils.BYTE_SRZ);
-			composite.setComponent(1, "name", SerializerUtils.STRING_SRZ);
+			composite.setComponent(0, SIMPLE.flag(), ThriftSerializerUtils.BYTE_SRZ);
+			composite.setComponent(1, "name", ThriftSerializerUtils.STRING_SRZ);
 			abstractDao.getValue(123L, composite);
 		}
 		catch (RuntimeException e)

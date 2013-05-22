@@ -1,13 +1,13 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.entity.context.AchillesPersistenceContext;
-import info.archinnov.achilles.proxy.interceptor.AchillesJpaEntityInterceptor;
+import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * EntityRefresher
+ * AchillesEntityRefresher
  * 
  * @author DuyHai DOAN
  * 
@@ -34,7 +34,7 @@ public class AchillesEntityRefresher
 
 		Object entity = context.getEntity();
 
-		AchillesJpaEntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+		AchillesEntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
 
 		Object freshEntity = loader.load(context, context.getEntityClass());
 

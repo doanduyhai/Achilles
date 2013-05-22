@@ -3,21 +3,20 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.composite.factory.CompositeFactory;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.AchillesEntityIntrospector;
-import info.archinnov.achilles.entity.ThriftEntityMapper;
-import info.archinnov.achilles.entity.context.PersistenceContextTestBuilder;
-import info.archinnov.achilles.entity.context.ThriftPersistenceContext;
-import info.archinnov.achilles.entity.manager.CompleteBeanTestBuilder;
+import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.helper.AchillesEntityMapper;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -39,13 +38,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 /**
- * EntityLoaderTest
+ * ThriftEntityLoaderTest
  * 
  * @author DuyHai DOAN
  * 
@@ -78,7 +78,7 @@ public class ThriftEntityLoaderTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private ThriftEntityMapper mapper;
+	private AchillesEntityMapper mapper;
 
 	@Mock
 	private ThriftGenericEntityDao dao;
@@ -87,10 +87,10 @@ public class ThriftEntityLoaderTest
 	private ThriftCounterDao thriftCounterDao;
 
 	@Mock
-	private CompositeFactory compositeFactory;
+	private ThriftCompositeFactory thriftCompositeFactory;
 
 	@Mock
-	private AchillesEntityIntrospector introspector;
+	private AchillesMethodInvoker invoker;
 
 	@Mock
 	private ThriftJoinLoaderImpl joinLoaderImpl;
@@ -111,7 +111,7 @@ public class ThriftEntityLoaderTest
 	@Before
 	public void setUp() throws Exception
 	{
-		context = PersistenceContextTestBuilder
+		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
 				.entity(bean)
 				.build();
@@ -143,8 +143,7 @@ public class ThriftEntityLoaderTest
 
 		assertThat(actual).isNotSameAs(bean);
 
-		verify(introspector).setValueToField(any(CompleteBean.class), eq(idSetter),
-				eq(bean.getId()));
+		verify(invoker).setValueToField(any(CompleteBean.class), eq(idSetter), eq(bean.getId()));
 		verifyZeroInteractions(loaderImpl);
 
 	}
@@ -160,8 +159,7 @@ public class ThriftEntityLoaderTest
 		Object actual = loader.load(context, CompleteBean.class);
 
 		assertThat(actual).isNotNull();
-		verify(introspector).setValueToField(any(CompleteBean.class), eq(idSetter),
-				eq(bean.getId()));
+		verify(invoker).setValueToField(any(CompleteBean.class), eq(idSetter), eq(bean.getId()));
 		verifyZeroInteractions(loaderImpl);
 	}
 
@@ -198,7 +196,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -211,7 +209,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -224,7 +222,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -237,7 +235,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -250,7 +248,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -263,7 +261,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -278,7 +276,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -293,7 +291,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -307,7 +305,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -321,7 +319,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -335,7 +333,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -350,7 +348,7 @@ public class ThriftEntityLoaderTest
 
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verify(introspector).setValueToField(bean, setter, value);
+		verify(invoker).setValueToField(bean, setter, value);
 	}
 
 	@Test
@@ -360,7 +358,7 @@ public class ThriftEntityLoaderTest
 		Method setter = prepareSetter();
 		loader.loadPropertyIntoObject(bean, bean.getId(), context, propertyMeta);
 
-		verifyZeroInteractions(loaderImpl, joinLoaderImpl, introspector);
+		verifyZeroInteractions(loaderImpl, joinLoaderImpl, invoker);
 	}
 
 	private Method prepareSetter() throws Exception

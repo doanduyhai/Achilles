@@ -4,7 +4,7 @@ import static info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy.*
 import static me.prettyprint.cassandra.service.OperationType.*;
 import static me.prettyprint.hector.api.HConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.type.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 
@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * AchillesConfigurableConsistencyLevelPolicyTest
+ * ThriftConsistencyLevelPolicyTest
  * 
  * @author DuyHai DOAN
  * 
