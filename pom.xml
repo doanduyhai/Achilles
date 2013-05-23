@@ -8,7 +8,7 @@
   <groupId>info.archinnov</groupId>
   <artifactId>achilles</artifactId>
   <version>1.7.4-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <description>A fully featured EntityManager for Cassandra</description>
   <inceptionYear>2012</inceptionYear>
   <name>achilles</name>
@@ -36,181 +36,107 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
     <cassandra.version>1.2.0</cassandra.version>
     <hector.version>1.1-2</hector.version>
     <cglib.version>2.2.2</cglib.version>
     <jackson.version>1.9.3</jackson.version>
-            <!-- Maven plugins -->
-     <maven.compiler.version>2.4</maven.compiler.version>
-     <maven.enforcer.version>1.0.1</maven.enforcer.version>
-     <maven.surefire.version>2.12</maven.surefire.version>
+    <commons.io.version>2.4</commons.io.version>
+    <commons.collections.version>3.2.1</commons.collections.version>
+    <guava.version>13.0</guava.version>
+    <slf4j.version>1.7.2</slf4j.version>
+    
+    <fest.assert.version>2.0M8</fest.assert.version>
+    <fest.util.version>1.2.3</fest.util.version>
+    <junit.version>4.10</junit.version>
+    <mockito.version>1.9.5</mockito.version>
+    <powermock.version>1.5</powermock.version>
+    
+    <cassandra.unit.version>1.1.2.1</cassandra.unit.version>
+    
+    <!-- Maven plugins -->
+    <maven.compiler.version>2.4</maven.compiler.version>
+    <maven.enforcer.version>1.0.1</maven.enforcer.version>
+    <maven.surefire.version>2.12</maven.surefire.version>
   </properties>
 
-  <dependencies>        
-        <dependency>
-        	<groupId>org.apache.cassandra</groupId>
-        	<artifactId>cassandra-all</artifactId>
-        	<version>${cassandra.version}</version>
-        	<exclusions>
-        		<exclusion>
-        			<artifactId>guava</artifactId>
-        			<groupId>com.google.guava</groupId>
-        		</exclusion>
-        		<exclusion>
-        			<artifactId>slf4j-api</artifactId>
-        			<groupId>org.slf4j</groupId>
-        		</exclusion>
-        		<exclusion>
-        			<artifactId>jackson-core-asl</artifactId>
-        			<groupId>org.codehaus.jackson</groupId>
-        		</exclusion>
-        		<exclusion>
-        			<artifactId>jackson-mapper-asl</artifactId>
-        			<groupId>org.codehaus.jackson</groupId>
-        		</exclusion>
-        	</exclusions>
+  <dependencyManagement>
+  	<dependencies>
+		<dependency>
+        	<groupId>info.archinnov</groupId>
+            <artifactId>achilles-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
-        <dependency>
-        	<groupId>org.apache.cassandra</groupId>
-        	<artifactId>cassandra-thrift</artifactId>
-        	<version>${cassandra.version}</version>
-        </dependency>          
- 		 <dependency>
- 		 	<groupId>org.hectorclient</groupId>
- 		 	<artifactId>hector-core</artifactId>
- 		 	<version>${hector.version}</version>
- 		 	<exclusions>
- 		 		<exclusion>
- 		 			<groupId>org.apache.cassandra</groupId>
- 		 			<artifactId>cassandra-thrift</artifactId>
- 		 		</exclusion>
-        		<exclusion>
-        			<groupId>org.slf4j</groupId>
-        			<artifactId>slf4j-api</artifactId>
-        		</exclusion>
- 		 		<exclusion>
- 		 			<groupId>com.google.guava</groupId>
- 		 			<artifactId>guava</artifactId>
- 		 		</exclusion>        		
- 		 	</exclusions>	
- 		 </dependency>
- 		 <dependency>
-		  <groupId>com.datastax.cassandra</groupId>
-		  <artifactId>cassandra-driver-core</artifactId>
-		  <version>1.0.0-beta2</version>
-		  <exclusions>
-			  <exclusion>
-	 		 	<groupId>com.google.guava</groupId>
-	 		 	<artifactId>guava</artifactId>
-	 		  </exclusion>
- 		  </exclusions>
-		 </dependency>
- 		 <dependency>
- 		 	<groupId>commons-io</groupId>
- 		 	<artifactId>commons-io</artifactId>
- 		 	<version>2.4</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>cglib</groupId>
- 		 	<artifactId>cglib-nodep</artifactId>
- 		 	<version>${cglib.version}</version>
- 		 </dependency>
-
+		<dependency>
+        	<groupId>info.archinnov</groupId>
+            <artifactId>achilles-core</artifactId>
+            <classifier>tests</classifier>
+            <version>${project.version}</version>
+        </dependency>        
+		<dependency>
+        	<groupId>info.archinnov</groupId>
+            <artifactId>achilles-thrift</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+  	</dependencies>
+  </dependencyManagement>
+  
+	<dependencies>  	
 		<!-- TEST  -->
         <dependency>
         	<groupId>org.easytesting</groupId>
         	<artifactId>fest-assert-core</artifactId>
-        	<version>2.0M8</version>
+        	<version>${fest.assert.version}</version>
         	<scope>test</scope>
-        </dependency>        
-	  	<dependency>
-	  		<groupId>org.mockito</groupId>
-	  		<artifactId>mockito-core</artifactId>
-	  		<version>1.9.5</version>
-	  		<scope>test</scope>
-	  	</dependency>
- 		 <dependency>
-            <groupId>org.cassandraunit</groupId>
-            <artifactId>cassandra-unit</artifactId>
-            <version>1.1.2.1</version>
-            <scope>test</scope>
-            <exclusions>
-            	<exclusion>
-            		<artifactId>cassandra-all</artifactId>
-            		<groupId>org.apache.cassandra</groupId>
-            	</exclusion>
-            	<exclusion>
-            		<artifactId>hector-core</artifactId>
-            		<groupId>org.hectorclient</groupId>
-            	</exclusion>
-            	<exclusion>
-            		<artifactId>hector-core</artifactId>
-            		<groupId>org.hectorclient</groupId>
-            	</exclusion>
-            </exclusions>
         </dependency>
- 		 <dependency>
- 		 	<groupId>junit</groupId>
- 		 	<artifactId>junit</artifactId>
- 		 	<version>4.10</version>
- 		 	<scope>test</scope>
- 		 </dependency>
  		 <dependency>
  		 	<groupId>org.easytesting</groupId>
  		 	<artifactId>fest-util</artifactId>
- 		 	<version>1.2.3</version>
+ 		 	<version>${fest.util.version}</version>
  		 	<scope>test</scope>
  		 </dependency>
+ 		<dependency>
+ 		 	<groupId>junit</groupId>
+ 		 	<artifactId>junit</artifactId>
+ 		 	<version>${junit.version}</version>
+ 		 	<scope>test</scope>
+ 		 </dependency>
+	  	<dependency>
+	  		<groupId>org.mockito</groupId>
+	  		<artifactId>mockito-core</artifactId>
+	  		<version>${mockito.version}</version>
+	  		<scope>test</scope>
+	  	</dependency>
  		 <dependency>
  		 	<groupId>org.powermock</groupId>
  		 	<artifactId>powermock-api-mockito</artifactId>
- 		 	<version>1.5</version>
+ 		 	<version>${powermock.version}</version>
  		 	<scope>test</scope>
  		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.codehaus.jackson</groupId>
- 		 	<artifactId>jackson-core-asl</artifactId>
- 		 	<version>${jackson.version}</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.codehaus.jackson</groupId>
- 		 	<artifactId>jackson-mapper-asl</artifactId>
- 		 	<version>${jackson.version}</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.codehaus.jackson</groupId>
- 		 	<artifactId>jackson-xc</artifactId>
- 		 	<version>${jackson.version}</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>commons-collections</groupId>
- 		 	<artifactId>commons-collections</artifactId>
- 		 	<version>3.2.1</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>com.google.guava</groupId>
- 		 	<artifactId>guava</artifactId>
- 		 	<version>13.0</version>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.springframework</groupId>
- 		 	<artifactId>spring-beans</artifactId>
- 		 	<version>3.2.0.RELEASE</version>
- 		 	<scope>provided</scope>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.springframework</groupId>
- 		 	<artifactId>spring-context</artifactId>
- 		 	<version>3.2.0.RELEASE</version>
- 		 	<scope>provided</scope>
- 		 </dependency>
- 		 <dependency>
- 		 	<groupId>org.hibernate.javax.persistence</groupId>
- 		 	<artifactId>hibernate-jpa-2.0-api</artifactId>
- 		 	<version>1.0.1.Final</version>
- 		 </dependency>
-  </dependencies>
-<build>
+ 		
+ 		<!-- Cassandra Unit --> 
+		<dependency>
+          <groupId>org.cassandraunit</groupId>
+          <artifactId>cassandra-unit</artifactId>
+          <version>${cassandra.unit.version}</version>
+          <scope>test</scope>
+          <exclusions>
+          	<exclusion>
+          		<artifactId>cassandra-all</artifactId>
+          		<groupId>org.apache.cassandra</groupId>
+          	</exclusion>
+          	<exclusion>
+          		<artifactId>hector-core</artifactId>
+          		<groupId>org.hectorclient</groupId>
+          	</exclusion>
+          	<exclusion>
+          		<artifactId>hector-core</artifactId>
+          		<groupId>org.hectorclient</groupId>
+          	</exclusion>
+          </exclusions>
+      </dependency>  		 
+	</dependencies> 		   	
+ <build>
   	<finalName>achilles</finalName>
     <plugins>
           <plugin>
@@ -321,4 +247,9 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
+	<modules>
+		<module>achilles-core</module>
+		<module>achilles-thrift</module>
+		<module>achilles-cql</module>
+	</modules>
 </project>

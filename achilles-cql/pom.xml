@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>info.archinnov</groupId>
+    <artifactId>achilles</artifactId>
+    <version>1.7.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>achilles-cql</artifactId>
+  <name>Achilles CQL</name>
+  <description>CQL implementation for Achilles using Datastax Java driver</description>
+  
+  <dependencies>
+	<!-- Achilles Core -->
+	<dependency>
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles-core</artifactId>
+	</dependency>
+
+	 <!-- Datastax Java driver -->
+	 <dependency>
+	 <groupId>com.datastax.cassandra</groupId>
+	 <artifactId>cassandra-driver-core</artifactId>
+	 <version>1.0.0-beta2</version>
+	 <exclusions>
+	  	<exclusion>
+		 	<groupId>com.google.guava</groupId>
+		 	<artifactId>guava</artifactId>
+		</exclusion>
+	  </exclusions>
+	 </dependency>
+
+	<!--  TEST -->
+	<dependency>
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles-core</artifactId>
+		<classifier>tests</classifier>
+		<scope>test</scope>  		
+	</dependency>
+	
+	<!-- Hector for Cassandra Unit -->
+	<dependency>
+	 	<groupId>org.hectorclient</groupId>
+	 	<artifactId>hector-core</artifactId>
+	 	<version>${hector.version}</version>
+	 	<exclusions>
+	 		<exclusion>
+	 			<groupId>org.apache.cassandra</groupId>
+	 			<artifactId>cassandra-thrift</artifactId>
+	 		</exclusion>
+	     		<exclusion>
+	     			<groupId>org.slf4j</groupId>
+	     			<artifactId>slf4j-api</artifactId>
+	     		</exclusion>
+	 		<exclusion>
+	 			<groupId>com.google.guava</groupId>
+	 			<artifactId>guava</artifactId>
+	 		</exclusion>        		
+	 	</exclusions>
+ 	</dependency>	    	
+  </dependencies>
+</project>

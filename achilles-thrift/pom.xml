@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>info.archinnov</groupId>
+    <artifactId>achilles</artifactId>
+    <version>1.7.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>achilles-thrift</artifactId>
+  <name>Achilles Thrift</name>
+  <description>Thrift implementation for Achilles using Hector library</description>
+  <dependencies>
+  	<!-- Achilles Core -->
+  	<dependency>
+  		<groupId>info.archinnov</groupId>
+  		<artifactId>achilles-core</artifactId>
+  	</dependency>
+	
+	<!--  Cassandra & Hector -->
+    <dependency>
+    	<groupId>org.apache.cassandra</groupId>
+    	<artifactId>cassandra-thrift</artifactId>
+    	<version>${cassandra.version}</version>
+    </dependency> 	
+	<dependency>
+	 	<groupId>org.hectorclient</groupId>
+	 	<artifactId>hector-core</artifactId>
+	 	<version>${hector.version}</version>
+	 	<exclusions>
+	 		<exclusion>
+	 			<groupId>org.apache.cassandra</groupId>
+	 			<artifactId>cassandra-thrift</artifactId>
+	 		</exclusion>
+	     		<exclusion>
+	     			<groupId>org.slf4j</groupId>
+	     			<artifactId>slf4j-api</artifactId>
+	     		</exclusion>
+	 		<exclusion>
+	 			<groupId>com.google.guava</groupId>
+	 			<artifactId>guava</artifactId>
+	 		</exclusion>        		
+	 	</exclusions>
+ 	</dependency>
+ 	
+ 	<!--  Spring Integration -->
+	 <dependency>
+	 	<groupId>org.springframework</groupId>
+	 	<artifactId>spring-beans</artifactId>
+	 	<version>3.2.0.RELEASE</version>
+	 	<scope>provided</scope>
+	 </dependency>
+	 <dependency>
+	 	<groupId>org.springframework</groupId>
+	 	<artifactId>spring-context</artifactId>
+	 	<version>3.2.0.RELEASE</version>
+	 	<scope>provided</scope>
+	 </dependency> 	  
+	 	
+  	<!--  TEST -->
+  	<dependency>
+  		<groupId>info.archinnov</groupId>
+  		<artifactId>achilles-core</artifactId>
+		<classifier>tests</classifier>
+		<scope>test</scope>  		
+  	</dependency> 	
+  </dependencies>
+</project>
