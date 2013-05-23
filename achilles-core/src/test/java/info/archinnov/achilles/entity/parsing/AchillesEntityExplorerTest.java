@@ -35,30 +35,12 @@ public class AchillesEntityExplorerTest
 	}
 
 	@Test
-	public void should_find_classes_from_single_package() throws Exception
+	public void should_find_entity_from_one_package() throws Exception
 	{
-		List<Class<?>> entities = explorer.listCandidateClassesFromPackage("sample.entity",
-				javax.persistence.Entity.class);
+		List<Class<?>> entities = explorer.discoverEntities(Arrays.asList("more.entity"));
+		assertThat(entities).hasSize(1);
+		assertThat(entities).contains(Entity3.class);
 
-		assertThat(entities).hasSize(2);
-		assertThat(entities).contains(Entity1.class, Entity2.class);
 	}
 
-	@Test
-	public void should_not_find_classes_when_not_matching_annotation() throws Exception
-	{
-		List<Class<?>> entities = explorer.listCandidateClassesFromPackage("sample.entity",
-				javax.persistence.Column.class);
-
-		assertThat(entities).isEmpty();
-	}
-
-	@Test
-	public void should_not_find_classes_when_no_annotation_found() throws Exception
-	{
-		List<Class<?>> entities = explorer.listCandidateClassesFromPackage("fr.doan.achilles.dao",
-				javax.persistence.Entity.class);
-
-		assertThat(entities).isEmpty();
-	}
 }

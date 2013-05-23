@@ -1,6 +1,6 @@
 package sample.entity;
 
-import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * Entity2
@@ -8,7 +8,7 @@ import javax.persistence.Entity;
  * @author DuyHai DOAN
  * 
  */
-@Entity
+@Table
 public class Entity2
 {
 

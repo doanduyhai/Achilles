@@ -43,6 +43,7 @@
     <jackson.version>1.9.3</jackson.version>
     <commons.io.version>2.4</commons.io.version>
     <commons.collections.version>3.2.1</commons.collections.version>
+    <reflections.version>0.9.9-RC1</reflections.version>
     <guava.version>13.0</guava.version>
     <slf4j.version>1.7.2</slf4j.version>
     
@@ -81,96 +82,183 @@
   	</dependencies>
   </dependencyManagement>
   
-	<dependencies>  	
-		<!-- TEST  -->
-        <dependency>
-        	<groupId>org.easytesting</groupId>
-        	<artifactId>fest-assert-core</artifactId>
-        	<version>${fest.assert.version}</version>
-        	<scope>test</scope>
-        </dependency>
- 		 <dependency>
- 		 	<groupId>org.easytesting</groupId>
- 		 	<artifactId>fest-util</artifactId>
- 		 	<version>${fest.util.version}</version>
- 		 	<scope>test</scope>
- 		 </dependency>
- 		<dependency>
- 		 	<groupId>junit</groupId>
- 		 	<artifactId>junit</artifactId>
- 		 	<version>${junit.version}</version>
- 		 	<scope>test</scope>
- 		 </dependency>
-	  	<dependency>
-	  		<groupId>org.mockito</groupId>
-	  		<artifactId>mockito-core</artifactId>
-	  		<version>${mockito.version}</version>
-	  		<scope>test</scope>
-	  	</dependency>
- 		 <dependency>
- 		 	<groupId>org.powermock</groupId>
- 		 	<artifactId>powermock-api-mockito</artifactId>
- 		 	<version>${powermock.version}</version>
- 		 	<scope>test</scope>
- 		 </dependency>
- 		
- 		<!-- Cassandra Unit --> 
+  <dependencies>
+	<!-- JPA -->
+	<dependency>
+		<groupId>org.hibernate.javax.persistence</groupId>
+		<artifactId>hibernate-jpa-2.0-api</artifactId>
+		<version>${hibernate.jpa2.version}</version>
+	</dependency>
+	<!-- Cassandra -->        
+	<dependency>
+		<groupId>org.apache.cassandra</groupId>
+		<artifactId>cassandra-all</artifactId>
+		<version>${cassandra.version}</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>guava</artifactId>
+				<groupId>com.google.guava</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>slf4j-api</artifactId>
+				<groupId>org.slf4j</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-core-asl</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-mapper-asl</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+	
+	<!-- Utils -->
+	 <dependency>
+	 	<groupId>commons-io</groupId>
+	 	<artifactId>commons-io</artifactId>
+	 	<version>${commons.io.version}</version>
+	 </dependency>
+	<dependency>
+	 	<groupId>commons-collections</groupId>
+	 	<artifactId>commons-collections</artifactId>
+	 	<version>${commons.collections.version}</version>
+	 </dependency>
+	 <dependency>
+	 	<groupId>com.google.guava</groupId>
+	 	<artifactId>guava</artifactId>
+	 	<version>${guava.version}</version>
+	 </dependency>
+ 	<dependency>
+         <groupId>org.reflections</groupId>
+         <artifactId>reflections</artifactId>
+         <version>${reflections.version}</version>
+    </dependency>	  		 
+	 <!-- Jackson Serializer -->
+	<dependency>
+		<groupId>org.codehaus.jackson</groupId>
+		<artifactId>jackson-core-asl</artifactId>
+		<version>${jackson.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.codehaus.jackson</groupId>
+		<artifactId>jackson-mapper-asl</artifactId>
+		<version>${jackson.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.codehaus.jackson</groupId>
+		<artifactId>jackson-xc</artifactId>
+		<version>${jackson.version}</version>
+	</dependency>
+	
+	<!-- CGLIB --> 		 
+	<dependency>
+		<groupId>cglib</groupId>
+		<artifactId>cglib-nodep</artifactId>
+		<version>${cglib.version}</version>
+	</dependency>
+
+	<!-- Logging -->
+	<dependency>
+	 	<groupId>org.slf4j</groupId>
+	 	<artifactId>slf4j-api</artifactId>
+	 	<version>${slf4j.version}</version>
+	</dependency>
+	<dependency>
+	 	<groupId>org.slf4j</groupId>
+	 	<artifactId>slf4j-log4j12</artifactId>
+	 	<version>${slf4j.version}</version>
+	</dependency>	  	
+	<!-- TEST  -->
+       <dependency>
+       	<groupId>org.easytesting</groupId>
+       	<artifactId>fest-assert-core</artifactId>
+       	<version>${fest.assert.version}</version>
+       	<scope>test</scope>
+       </dependency>
+		 <dependency>
+		 	<groupId>org.easytesting</groupId>
+		 	<artifactId>fest-util</artifactId>
+		 	<version>${fest.util.version}</version>
+		 	<scope>test</scope>
+		 </dependency>
 		<dependency>
-          <groupId>org.cassandraunit</groupId>
-          <artifactId>cassandra-unit</artifactId>
-          <version>${cassandra.unit.version}</version>
-          <scope>test</scope>
-          <exclusions>
-          	<exclusion>
-          		<artifactId>cassandra-all</artifactId>
-          		<groupId>org.apache.cassandra</groupId>
-          	</exclusion>
-          	<exclusion>
-          		<artifactId>hector-core</artifactId>
-          		<groupId>org.hectorclient</groupId>
-          	</exclusion>
-          	<exclusion>
-          		<artifactId>hector-core</artifactId>
-          		<groupId>org.hectorclient</groupId>
-          	</exclusion>
-          </exclusions>
-      </dependency>  		 
-	</dependencies> 		   	
+		 	<groupId>junit</groupId>
+		 	<artifactId>junit</artifactId>
+		 	<version>${junit.version}</version>
+		 	<scope>test</scope>
+		 </dependency>
+  	<dependency>
+  		<groupId>org.mockito</groupId>
+  		<artifactId>mockito-core</artifactId>
+  		<version>${mockito.version}</version>
+  		<scope>test</scope>
+  	</dependency>
+		 <dependency>
+		 	<groupId>org.powermock</groupId>
+		 	<artifactId>powermock-api-mockito</artifactId>
+		 	<version>${powermock.version}</version>
+		 	<scope>test</scope>
+		 </dependency>
+		
+		<!-- Cassandra Unit --> 
+	<dependency>
+         <groupId>org.cassandraunit</groupId>
+         <artifactId>cassandra-unit</artifactId>
+         <version>${cassandra.unit.version}</version>
+         <scope>test</scope>
+         <exclusions>
+         	<exclusion>
+         		<artifactId>cassandra-all</artifactId>
+         		<groupId>org.apache.cassandra</groupId>
+         	</exclusion>
+         	<exclusion>
+         		<artifactId>hector-core</artifactId>
+         		<groupId>org.hectorclient</groupId>
+         	</exclusion>
+         	<exclusion>
+         		<artifactId>hector-core</artifactId>
+         		<groupId>org.hectorclient</groupId>
+         	</exclusion>
+         </exclusions>
+     </dependency>  		 
+ </dependencies> 		   	
  <build>
   	<finalName>achilles</finalName>
     <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>${maven.compiler.version}</version>
-              <configuration>
-                  <source>1.6</source>
-                  <target>1.6</target>
-              </configuration>
-          </plugin>
-  			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${maven.enforcer.version}</version>
-                <executions>
-                    <execution>
-                        <id>enforce-versions</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>[3.0.4,)</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>[1.6.0,)</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>      
+	   <plugin>
+	       <groupId>org.apache.maven.plugins</groupId>
+	       <artifactId>maven-compiler-plugin</artifactId>
+	       <version>${maven.compiler.version}</version>
+	       <configuration>
+	           <source>1.6</source>
+	           <target>1.6</target>
+	       </configuration>
+	   </plugin>
+		<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-enforcer-plugin</artifactId>
+	            <version>${maven.enforcer.version}</version>
+	            <executions>
+	                <execution>
+	                    <id>enforce-versions</id>
+	                    <goals>
+	                        <goal>enforce</goal>
+	                    </goals>
+	                    <configuration>
+	                        <rules>
+	                            <requireMavenVersion>
+	                                <version>[3.0.4,)</version>
+	                            </requireMavenVersion>
+	                            <requireJavaVersion>
+	                                <version>[1.6.0,)</version>
+	                            </requireJavaVersion>
+	                        </rules>
+	                    </configuration>
+	                </execution>
+	            </executions>
+	        </plugin>      
 			 <plugin>
 			        <groupId>org.apache.maven.plugins</groupId>
 			        <artifactId>maven-gpg-plugin</artifactId>
