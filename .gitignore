@@ -22,3 +22,5 @@ release.properties
 .cache
 .springBeans
 test-output
+target
+target/*
