@@ -21,9 +21,12 @@
  
 	<dependency>	
 		<groupId>info.archinnov</groupId>
-		<artifactId>achilles</artifactId>
-		<version>1.7.2</version>
+		<artifactId>achilles-thrift</artifactId>
+		<version>1.8.0</version>
 	</dependency>  
+ 
+ Right now, only the **Thrift** implementation is available. The **CQL** version is in progress and relies on 
+ **[Datastax Java Driver]** which is still in beta.
  
  The framework has been released on **Sonatype OSS** repository so make sure you have the following
  entry in your **pom.xml**:
@@ -66,6 +69,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **1.8.0**:
+    * Use the `org.reflections.reflections` package for entity parsing
+    * Split the project into 3 modules: `core`, `thrift` and `cql`
 * **1.7.3**:
     * Rework of em.getReference() to avoid hitting the database
     * Refactor generics
@@ -84,3 +90,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
+[Datastax Java Driver]: https://github.com/datastax/java-driver
