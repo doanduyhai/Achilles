@@ -1,5 +1,4 @@
-# Achilles #
-
+![Achilles logo](assets/Achilles_Logo_Reversed.png)
 # Presentation #
 
  Achilles is an open source Entity Manager for Apache Cassandra. Among all the features:
