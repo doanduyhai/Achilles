@@ -12,7 +12,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftCounterKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
@@ -65,7 +65,7 @@ public class ThriftCounterWideMapWrapperTest
 	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -178,7 +178,7 @@ public class ThriftCounterWideMapWrapperTest
 				DESCENDING);
 
 		assertThat(actual).isSameAs(expected);
-		verify(thriftCompositeHelper).checkBounds(propertyMeta, 11, 12, DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -206,7 +206,7 @@ public class ThriftCounterWideMapWrapperTest
 		List<Counter> actual = wrapper.findValues(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
 
 		assertThat(actual).isSameAs(expected);
-		verify(thriftCompositeHelper).checkBounds(propertyMeta, 11, 12, DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -234,7 +234,7 @@ public class ThriftCounterWideMapWrapperTest
 		List<Integer> actual = wrapper.findKeys(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
 
 		assertThat(actual).isSameAs(expected);
-		verify(thriftCompositeHelper).checkBounds(propertyMeta, 11, 12, DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
 	@SuppressWarnings("unchecked")

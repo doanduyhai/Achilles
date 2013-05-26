@@ -4,7 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
@@ -36,7 +36,7 @@ public class ThriftWideMapWrapperBuilderTest
 	private AchillesEntityInterceptor<Integer> interceptor;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -53,7 +53,7 @@ public class ThriftWideMapWrapperBuilderTest
 		ThriftWideMapWrapper<Integer, String> wrapper = ThriftWideMapWrapperBuilder
 				.builder(1, dao, propertyMeta)
 				.interceptor(interceptor)
-				.thriftCompositeHelper(thriftCompositeHelper)
+				.thriftPropertyHelper(thriftPropertyHelper)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
 				.thriftIteratorFactory(thriftIteratorFactory)
 				.thriftCompositeFactory(thriftCompositeFactory)
@@ -64,8 +64,8 @@ public class ThriftWideMapWrapperBuilderTest
 		assertThat(Whitebox.getInternalState(wrapper, "dao")).isSameAs(dao);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
 		assertThat(Whitebox.getInternalState(wrapper, "interceptor")).isSameAs(interceptor);
-		assertThat(Whitebox.getInternalState(wrapper, "thriftCompositeHelper")).isSameAs(
-				thriftCompositeHelper);
+		assertThat(Whitebox.getInternalState(wrapper, "thriftPropertyHelper")).isSameAs(
+				thriftPropertyHelper);
 		assertThat(Whitebox.getInternalState(wrapper, "thriftKeyValueFactory")).isSameAs(
 				thriftKeyValueFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "thriftIteratorFactory")).isSameAs(

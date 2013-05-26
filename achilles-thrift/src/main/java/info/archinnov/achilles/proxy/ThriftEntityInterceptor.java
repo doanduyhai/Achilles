@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.wrapper.builder.ThriftCounterWideMapWrapperBuilder;
@@ -27,7 +27,7 @@ import me.prettyprint.hector.api.beans.Composite;
 public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 {
 
-	private ThriftCompositeHelper thriftCompositeHelper = new ThriftCompositeHelper();
+	private ThriftPropertyHelper thriftCompositeHelper = new ThriftPropertyHelper();
 	private ThriftKeyValueFactory thriftKeyValueFactory = new ThriftKeyValueFactory();
 	private ThriftIteratorFactory thriftIteratorFactory = new ThriftIteratorFactory();
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
@@ -73,19 +73,12 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 
 		return ThriftWideMapWrapperBuilder //
 				.builder(key, wideRowDao, propertyMeta)
-				//
 				.context(thriftContext)
-				//
 				.interceptor(this)
-				//
-				.thriftCompositeHelper(thriftCompositeHelper)
-				//
+				.thriftPropertyHelper(thriftCompositeHelper)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
-				//
 				.thriftIteratorFactory(thriftIteratorFactory)
-				//
 				.thriftCompositeFactory(thriftCompositeFactory)
-				//
 				.build();
 	}
 
@@ -98,19 +91,12 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 
 		return ThriftCounterWideMapWrapperBuilder //
 				.builder(key, counterWideMapDao, propertyMeta)
-				//
 				.interceptor(this)
-				//
 				.context(thriftContext)
-				//
-				.thriftCompositeHelper(thriftCompositeHelper)
-				//
+				.thriftPropertyHelper(thriftCompositeHelper)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
-				//
 				.thriftIteratorFactory(thriftIteratorFactory)
-				//
 				.thriftCompositeFactory(thriftCompositeFactory)
-				//
 				.build();
 	}
 
@@ -125,25 +111,15 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 
 		return ThriftJoinWideMapWrapperBuilder //
 				.builder(key, wideRowDao, propertyMeta)
-				//
 				.interceptor(this)
-				//
 				.context(thriftContext)
-				//
-				.thriftCompositeHelper(thriftCompositeHelper)
-				//
+				.thriftPropertyHelper(thriftCompositeHelper)
 				.thriftCompositeFactory(thriftCompositeFactory)
-				//
 				.proxifier(proxifier)
-				//
 				.thriftIteratorFactory(thriftIteratorFactory)
-				//
 				.thriftKeyValueFactory(thriftKeyValueFactory)
-				//
 				.loader((ThriftEntityLoader) loader)
-				//
 				.persister((ThriftEntityPersister) persister)
-				//
 				.build();
 	}
 
@@ -157,17 +133,11 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 
 		return ThriftWideMapWrapperBuilder.builder(key, wideRowDao, propertyMeta) //
 				.interceptor(this)
-				//
 				.context(thriftContext)
-				//
-				.thriftCompositeHelper(thriftCompositeHelper)
-				//
+				.thriftPropertyHelper(thriftCompositeHelper)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
-				//
 				.thriftIteratorFactory(thriftIteratorFactory)
-				//
 				.thriftCompositeFactory(thriftCompositeFactory)
-				//
 				.build();
 	}
 

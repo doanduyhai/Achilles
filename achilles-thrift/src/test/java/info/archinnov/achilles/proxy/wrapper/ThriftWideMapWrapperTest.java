@@ -6,7 +6,7 @@ import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
@@ -53,7 +53,7 @@ public class ThriftWideMapWrapperTest
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;

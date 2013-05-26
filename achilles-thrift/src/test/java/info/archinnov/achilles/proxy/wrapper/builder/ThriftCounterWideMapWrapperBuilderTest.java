@@ -5,7 +5,7 @@ import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
@@ -34,7 +34,7 @@ public class ThriftCounterWideMapWrapperBuilderTest
 	private AchillesEntityInterceptor<Long> interceptor;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -54,7 +54,7 @@ public class ThriftCounterWideMapWrapperBuilderTest
 		ThriftCounterWideMapWrapper<Integer> wrapper = ThriftCounterWideMapWrapperBuilder
 				.builder(1L, wideMapCounterDao, propertyMeta)
 				.interceptor(interceptor)
-				.thriftCompositeHelper(thriftCompositeHelper)
+				.thriftPropertyHelper(thriftPropertyHelper)
 				.thriftIteratorFactory(thriftIteratorFactory)
 				.thriftCompositeFactory(thriftCompositeFactory)
 				.context(context)
@@ -65,8 +65,8 @@ public class ThriftCounterWideMapWrapperBuilderTest
 		assertThat(Whitebox.getInternalState(wrapper, "wideMapCounterDao")).isSameAs(
 				wideMapCounterDao);
 		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
-		assertThat(Whitebox.getInternalState(wrapper, "thriftCompositeHelper")).isSameAs(
-				thriftCompositeHelper);
+		assertThat(Whitebox.getInternalState(wrapper, "thriftPropertyHelper")).isSameAs(
+				thriftPropertyHelper);
 		assertThat(Whitebox.getInternalState(wrapper, "thriftIteratorFactory")).isSameAs(
 				thriftIteratorFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "thriftKeyValueFactory")).isSameAs(

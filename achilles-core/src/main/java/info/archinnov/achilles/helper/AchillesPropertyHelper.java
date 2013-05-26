@@ -5,10 +5,13 @@ import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.validator.AchillesPropertyParsingValidator;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -42,6 +45,7 @@ public class AchillesPropertyHelper
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
 	protected AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
+	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 
 	static
 	{
@@ -164,6 +168,117 @@ public class AchillesPropertyHelper
 
 		log.trace("Built multi key properties : {}", multiKeyProperties);
 		return multiKeyProperties;
+	}
+
+	public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
+	{
+		boolean nullFlag = false;
+		int lastNotNullIndex = 0;
+		for (Object keyValue : keyValues)
+		{
+			if (keyValue != null)
+			{
+				if (nullFlag)
+				{
+					throw new IllegalArgumentException(
+							"There should not be any null value between two non-null keys of WideMap '"
+									+ propertyName + "'");
+				}
+				lastNotNullIndex++;
+			}
+			else
+			{
+				nullFlag = true;
+			}
+		}
+		lastNotNullIndex--;
+
+		log.trace("Last non null index for components of property {} : {}", propertyName,
+				lastNotNullIndex);
+		return lastNotNullIndex;
+	}
+
+	public <K> void checkBounds(PropertyMeta<?, ?> wideMapMeta, K start, K end,
+			WideMap.OrderingMode ordering, boolean clusteringId)
+	{
+		log.trace("Check composites {} / {} with respect to ordering mode {}", start, end,
+				ordering.name());
+		if (start != null && end != null)
+		{
+			if (wideMapMeta.isSingleKey())
+			{
+				Comparable<K> startComp = (Comparable<K>) start;
+
+				if (WideMap.OrderingMode.DESCENDING.equals(ordering))
+				{
+					Validator
+							.validateTrue(startComp.compareTo(end) >= 0,
+									"For reverse range query, start value should be greater or equal to end value");
+				}
+				else
+				{
+					Validator.validateTrue(startComp.compareTo(end) <= 0,
+							"For range query, start value should be lesser or equal to end value");
+				}
+			}
+			else
+			{
+				List<Method> componentGetters = wideMapMeta
+						.getMultiKeyProperties()
+						.getComponentGetters();
+				String propertyName = wideMapMeta.getPropertyName();
+
+				List<Object> startComponentValues = invoker.determineMultiKeyValues(start,
+						componentGetters);
+				List<Object> endComponentValues = invoker.determineMultiKeyValues(end,
+						componentGetters);
+
+				if (clusteringId)
+				{
+					Validator.validateNotNull(startComponentValues.get(0),
+							"Partition key should not be null for start clustering key : "
+									+ startComponentValues);
+					Validator.validateNotNull(endComponentValues.get(0),
+							"Partition key should not be null for end clustering key : "
+									+ endComponentValues);
+					Validator.validateTrue(
+							startComponentValues.get(0).equals(endComponentValues.get(0)),
+							"Partition key should be equals for start and end clustering keys : ["
+									+ startComponentValues + "," + endComponentValues + "]");
+				}
+
+				findLastNonNullIndexForComponents(propertyName, startComponentValues);
+				findLastNonNullIndexForComponents(propertyName, endComponentValues);
+
+				for (int i = 0; i < startComponentValues.size(); i++)
+				{
+
+					Comparable<Object> startValue = (Comparable<Object>) startComponentValues
+							.get(i);
+					Object endValue = endComponentValues.get(i);
+
+					if (WideMap.OrderingMode.DESCENDING.equals(ordering))
+					{
+						if (startValue != null && endValue != null)
+						{
+							Validator
+									.validateTrue(startValue.compareTo(endValue) >= 0,
+											"For multiKey descending range query, startKey value should be greater or equal to end endKey");
+						}
+
+					}
+					else
+					{
+						if (startValue != null && endValue != null)
+						{
+							Validator
+									.validateTrue(startValue.compareTo(endValue) <= 0,
+											"For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)

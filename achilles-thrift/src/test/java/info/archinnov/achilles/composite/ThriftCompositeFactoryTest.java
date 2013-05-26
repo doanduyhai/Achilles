@@ -8,7 +8,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
@@ -50,7 +50,7 @@ public class ThriftCompositeFactoryTest
 	private ThriftCompositeFactory factory;
 
 	@Mock
-	private ThriftCompositeHelper helper;
+	private ThriftPropertyHelper helper;
 
 	@Mock
 	private AchillesMethodInvoker invoker;

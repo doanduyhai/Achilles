@@ -19,7 +19,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
@@ -89,7 +89,7 @@ public class ThriftJoinWideMapWrapperTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -290,8 +290,7 @@ public class ThriftJoinWideMapWrapperTest
 		List<KeyValue<Integer, CompleteBean>> expected = wrapper.find(start, end, count,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
-		verify(thriftCompositeHelper)
-				.checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING, false);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -326,8 +325,7 @@ public class ThriftJoinWideMapWrapperTest
 		List<CompleteBean> expected = wrapper.findValues(start, end, count,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
-		verify(thriftCompositeHelper)
-				.checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING, false);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -361,8 +359,7 @@ public class ThriftJoinWideMapWrapperTest
 		List<Integer> expected = wrapper.findKeys(start, end, count,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
 
-		verify(thriftCompositeHelper)
-				.checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, start, end, OrderingMode.DESCENDING, false);
 		assertThat(expected).isSameAs(values);
 	}
 
@@ -433,7 +430,7 @@ public class ThriftJoinWideMapWrapperTest
 
 		wrapper.remove(start, end, BoundingMode.INCLUSIVE_END_BOUND_ONLY);
 
-		verify(thriftCompositeHelper).checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+		verify(thriftPropertyHelper).checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING, false);
 		verify(dao).removeColumnRangeBatch(id, startComp, endComp, mutator);
 
 	}

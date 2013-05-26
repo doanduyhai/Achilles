@@ -9,6 +9,7 @@ import info.archinnov.achilles.context.AchillesConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
+import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.AchillesEntityParsingContext;
@@ -33,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import parser.entity.Bean;
+import parser.entity.BeanWithClusteredId;
 import parser.entity.BeanWithColumnFamilyName;
 import parser.entity.BeanWithDuplicatedColumnName;
 import parser.entity.BeanWithDuplicatedJoinColumnName;
@@ -45,6 +47,7 @@ import parser.entity.BeanWithNotSerializableId;
 import parser.entity.BeanWithSimpleCounter;
 import parser.entity.BeanWithWideMapCounter;
 import parser.entity.ChildBean;
+import parser.entity.ClusteredId;
 import parser.entity.UserBean;
 import parser.entity.WideRowBean;
 import parser.entity.WideRowBeanWithJoinEntity;
@@ -200,6 +203,26 @@ public class AchillesEntityParserTest
 
 		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE, meta.getTableName());
 		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL, meta.getTableName());
+	}
+
+	@Test
+	public void should_parse_entity_with_embedded_id() throws Exception
+	{
+		initEntityParsingContext(BeanWithClusteredId.class);
+
+		EntityMeta meta = parser.parseEntity(entityContext);
+
+		assertThat(meta).isNotNull();
+
+		assertThat((Class<ClusteredId>) meta.getIdClass()).isEqualTo(ClusteredId.class);
+		PropertyMeta<Void, ClusteredId> idMeta = (PropertyMeta<Void, ClusteredId>) meta.getIdMeta();
+
+		assertThat(idMeta.isSingleKey()).isFalse();
+		MultiKeyProperties multiKeyProperties = idMeta.getMultiKeyProperties();
+		assertThat(multiKeyProperties).isNotNull();
+		assertThat(multiKeyProperties.getComponentClasses()).containsExactly(Long.class,
+				String.class);
+
 	}
 
 	@Test

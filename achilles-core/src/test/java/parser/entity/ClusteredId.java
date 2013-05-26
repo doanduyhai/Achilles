@@ -3,27 +3,39 @@ package parser.entity;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.type.MultiKey;
 
-public class ClusteredId implements MultiKey {
+public class ClusteredId implements MultiKey
+{
 
-    @Key(order = 1)
-    private Long userId;
+	@Key(order = 1)
+	private Long userId;
 
-    @Key(order = 2)
-    private String name;
+	@Key(order = 2)
+	private String name;
 
-    public Long getUserId() {
-        return userId;
-    }
+	public ClusteredId() {}
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+	public ClusteredId(Long userId, String name) {
+		this.userId = userId;
+		this.name = name;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public Long getUserId()
+	{
+		return userId;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setUserId(Long userId)
+	{
+		this.userId = userId;
+	}
+
+	public String getName()
+	{
+		return name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 }

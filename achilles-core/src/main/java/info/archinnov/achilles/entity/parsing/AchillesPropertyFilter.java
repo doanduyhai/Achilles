@@ -23,6 +23,7 @@ public class AchillesPropertyFilter
 	static
 	{
 		acceptedAnnotations.add(javax.persistence.Id.class);
+		acceptedAnnotations.add(javax.persistence.EmbeddedId.class);
 		acceptedAnnotations.add(javax.persistence.Column.class);
 		acceptedAnnotations.add(javax.persistence.JoinColumn.class);
 	}

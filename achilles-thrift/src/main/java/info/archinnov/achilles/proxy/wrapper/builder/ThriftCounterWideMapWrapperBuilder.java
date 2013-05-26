@@ -4,7 +4,7 @@ import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
@@ -24,7 +24,7 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 	private PropertyMeta<K, Counter> propertyMeta;
 
 	private AchillesEntityInterceptor<?> interceptor;
-	protected ThriftCompositeHelper thriftCompositeHelper;
+	protected ThriftPropertyHelper thriftPropertyHelper;
 	protected ThriftKeyValueFactory thriftKeyValueFactory;
 	protected ThriftIteratorFactory thriftIteratorFactory;
 	protected ThriftCompositeFactory thriftCompositeFactory;
@@ -57,10 +57,10 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 		return this;
 	}
 
-	public ThriftCounterWideMapWrapperBuilder<K> thriftCompositeHelper(
-			ThriftCompositeHelper thriftCompositeHelper)
+	public ThriftCounterWideMapWrapperBuilder<K> thriftPropertyHelper(
+			ThriftPropertyHelper thriftPropertyHelper)
 	{
-		this.thriftCompositeHelper = thriftCompositeHelper;
+		this.thriftPropertyHelper = thriftPropertyHelper;
 		return this;
 	}
 
@@ -92,7 +92,7 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 		wrapper.setWideMapCounterDao(wideMapCounterDao);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setInterceptor(interceptor);
-		wrapper.setCompositeHelper(thriftCompositeHelper);
+		wrapper.setCompositeHelper(thriftPropertyHelper);
 		wrapper.setIteratorFactory(thriftIteratorFactory);
 		wrapper.setCompositeKeyFactory(thriftCompositeFactory);
 		wrapper.setKeyValueFactory(thriftKeyValueFactory);

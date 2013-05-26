@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
@@ -44,7 +44,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 	private ThriftEntityPersister persister;
 	private ThriftEntityLoader loader;
 	private AchillesEntityProxifier proxifier;
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 	private ThriftCompositeFactory thriftCompositeFactory;
 	private ThriftKeyValueFactory thriftKeyValueFactory;
 	private ThriftIteratorFactory thriftIteratorFactory;
@@ -100,7 +100,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 			OrderingMode ordering)
 	{
 
-		thriftCompositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
 
 		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
@@ -121,7 +121,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		thriftCompositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
 
 		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
@@ -139,7 +139,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
 	{
-		thriftCompositeHelper.checkBounds(propertyMeta, start, end, ordering);
+		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
 
 		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
@@ -196,7 +196,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 	@Override
 	public void remove(K start, K end, BoundingMode bounds)
 	{
-		thriftCompositeHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING);
+		thriftPropertyHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING, false);
 
 		Composite[] queryComps = thriftCompositeFactory.createForQuery(//
 				propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
@@ -278,9 +278,9 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 		this.loader = loader;
 	}
 
-	public void setCompositeHelper(ThriftCompositeHelper thriftCompositeHelper)
+	public void setCompositeHelper(ThriftPropertyHelper thriftPropertyHelper)
 	{
-		this.thriftCompositeHelper = thriftCompositeHelper;
+		this.thriftPropertyHelper = thriftPropertyHelper;
 	}
 
 	public void setCompositeKeyFactory(ThriftCompositeFactory thriftCompositeFactory)

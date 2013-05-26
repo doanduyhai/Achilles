@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
@@ -48,7 +48,7 @@ public class ThriftJoinWideMapWrapperBuilderTest
 	private AchillesEntityProxifier proxifier;
 
 	@Mock
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 
 	@Mock
 	private ThriftCompositeFactory thriftCompositeFactory;
@@ -66,7 +66,7 @@ public class ThriftJoinWideMapWrapperBuilderTest
 				.builder(1, dao, propertyMeta)
 				.interceptor(interceptor)
 				.proxifier(proxifier)
-				.thriftCompositeHelper(thriftCompositeHelper)
+				.thriftPropertyHelper(thriftPropertyHelper)
 				.thriftCompositeFactory(thriftCompositeFactory)
 				.thriftIteratorFactory(thriftIteratorFactory)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
@@ -79,8 +79,8 @@ public class ThriftJoinWideMapWrapperBuilderTest
 		assertThat(Whitebox.getInternalState(wrapper, "dao")).isSameAs(dao);
 		assertThat(Whitebox.getInternalState(wrapper, "interceptor")).isSameAs(interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "thriftCompositeHelper")).isSameAs(
-				thriftCompositeHelper);
+		assertThat(Whitebox.getInternalState(wrapper, "thriftPropertyHelper")).isSameAs(
+				thriftPropertyHelper);
 		assertThat(Whitebox.getInternalState(wrapper, "thriftCompositeFactory")).isSameAs(
 				thriftCompositeFactory);
 		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);

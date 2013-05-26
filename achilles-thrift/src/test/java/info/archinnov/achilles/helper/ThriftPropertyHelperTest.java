@@ -1,13 +1,15 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
+import info.archinnov.achilles.type.WideMap.BoundingMode;
+import info.archinnov.achilles.type.WideMap.OrderingMode;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import java.util.UUID;
 import mapping.entity.TweetMultiKey;
 import me.prettyprint.cassandra.model.HColumnImpl;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 
@@ -148,6 +151,88 @@ public class ThriftPropertyHelperTest
 		assertThat(multiKey.getAuthor()).isEqualTo("author1");
 		assertThat(multiKey.getId()).isEqualTo(uuid1);
 		assertThat(multiKey.getRetweetCount()).isEqualTo(11);
+	}
+
+	// Ascending order
+	@Test
+	public void should_return_determine_equalities_for_inclusive_start_and_end_asc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS,
+				OrderingMode.ASCENDING);
+		assertThat(equality[0]).isEqualTo(EQUAL);
+		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_exclusive_start_and_end_asc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.EXCLUSIVE_BOUNDS,
+				OrderingMode.ASCENDING);
+		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(LESS_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_inclusive_start_exclusive_end_asc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
+		assertThat(equality[0]).isEqualTo(EQUAL);
+		assertThat(equality[1]).isEqualTo(LESS_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_exclusive_start_inclusive_end_asc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.ASCENDING);
+		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
+	}
+
+	// Descending order
+	@Test
+	public void should_return_determine_equalities_for_inclusive_start_and_end_desc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.INCLUSIVE_BOUNDS,
+				OrderingMode.DESCENDING);
+		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_exclusive_start_and_end_desc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(BoundingMode.EXCLUSIVE_BOUNDS,
+				OrderingMode.DESCENDING);
+		assertThat(equality[0]).isEqualTo(LESS_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_inclusive_start_exclusive_end_desc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(
+				BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.DESCENDING);
+		assertThat(equality[0]).isEqualTo(GREATER_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(GREATER_THAN_EQUAL);
+	}
+
+	@Test
+	public void should_return_determine_equalities_for_exclusive_start_inclusive_end_desc()
+			throws Exception
+	{
+		ComponentEquality[] equality = helper.determineEquality(
+				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
+		assertThat(equality[0]).isEqualTo(LESS_THAN_EQUAL);
+		assertThat(equality[1]).isEqualTo(EQUAL);
 	}
 
 	private Composite buildComposite(String author, UUID uuid, int retweetCount)

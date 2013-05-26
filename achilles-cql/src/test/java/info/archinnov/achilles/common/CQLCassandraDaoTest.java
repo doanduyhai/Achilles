@@ -25,16 +25,20 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
 			assert fullHostName.length == 2;
 
 			cqlCluster = com.datastax.driver.core.Cluster.builder() //
-					.addContactPoints(fullHostName[0])//
-					.withPort(Integer.parseInt(fullHostName[1])) //
+					.addContactPoints(fullHostName[0])
+					//
+					.withPort(Integer.parseInt(fullHostName[1]))
+					//
 					.build();
 
 		}
 		else
 		{
 			cqlCluster = com.datastax.driver.core.Cluster.builder() //
-					.addContactPoints(CASSANDRA_TEST_HOST)//
-					.withPort(CASSANDRA_CQL_TEST_PORT) //
+					.addContactPoints(CASSANDRA_TEST_HOST)
+					//
+					.withPort(CASSANDRA_CQL_TEST_PORT)
+					//
 					.build();
 		}
 		cqlSession = cqlCluster.connect(CASSANDRA_KEYSPACE_NAME);
@@ -49,5 +53,10 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
 	public static Session getCqlSession()
 	{
 		return cqlSession;
+	}
+
+	public static int getCqlPort()
+	{
+		return CASSANDRA_CQL_TEST_PORT;
 	}
 }

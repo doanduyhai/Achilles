@@ -1,11 +1,13 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.type.MultiKey;
+import info.archinnov.achilles.type.WideMap;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.List;
 import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -132,5 +135,65 @@ public class ThriftPropertyHelper extends AchillesPropertyHelper
 		log.trace("Built multi key : {}", key);
 
 		return key;
+	}
+
+	public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds,
+			WideMap.OrderingMode ordering)
+	{
+		log
+				.trace("Determine component equality with respect to bounding mode {} and ordering mode {}",
+						bounds.name(), ordering.name());
+		ComponentEquality[] result = new ComponentEquality[2];
+		if (WideMap.OrderingMode.DESCENDING.equals(ordering))
+		{
+			if (WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds))
+			{
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = EQUAL;
+			}
+			else if (WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds))
+			{
+				result[0] = LESS_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds))
+			{
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds))
+			{
+				result[0] = LESS_THAN_EQUAL;
+				result[1] = EQUAL;
+			}
+		}
+		else
+		{
+			if (WideMap.BoundingMode.INCLUSIVE_BOUNDS.equals(bounds))
+			{
+				result[0] = EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			}
+			else if (WideMap.BoundingMode.EXCLUSIVE_BOUNDS.equals(bounds))
+			{
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = LESS_THAN_EQUAL;
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_START_BOUND_ONLY.equals(bounds))
+			{
+				result[0] = EQUAL;
+				result[1] = LESS_THAN_EQUAL;
+			}
+			else if (WideMap.BoundingMode.INCLUSIVE_END_BOUND_ONLY.equals(bounds))
+			{
+				result[0] = GREATER_THAN_EQUAL;
+				result[1] = GREATER_THAN_EQUAL;
+			}
+		}
+
+		log
+				.trace("For the to bounding mode {} and ordering mode {}, the component equalities should be : {} - {}",
+						bounds.name(), ordering.name(), result[0].name(), result[1].name());
+		return result;
 	}
 }

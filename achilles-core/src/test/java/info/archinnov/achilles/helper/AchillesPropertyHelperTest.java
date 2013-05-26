@@ -7,16 +7,22 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
+import info.archinnov.achilles.type.WideMap.OrderingMode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import parser.entity.ClusteredId;
 import parser.entity.CorrectMultiKey;
 import parser.entity.MultiKeyIncorrectType;
 import parser.entity.MultiKeyNotInstantiable;
@@ -48,7 +55,29 @@ public class AchillesPropertyHelperTest
 	private AchillesPropertyHelper helper;
 
 	@Mock
+	private AchillesMethodInvoker invoker;
+
+	@Mock
 	private AchillesConsistencyLevelPolicy policy;
+
+	@Mock
+	private List<Method> componentGetters;
+
+	@Mock
+	private PropertyMeta<Integer, String> wideMapMeta;
+
+	@Mock
+	private PropertyMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
+
+	@Mock
+	MultiKeyProperties multiKeyProperties;
+
+	@Before
+	public void setUp()
+	{
+		when(wideMapMeta.isSingleKey()).thenReturn(true);
+		when(multiKeyWideMapMeta.isSingleKey()).thenReturn(false);
+	}
 
 	@Test
 	public void should_parse_multi_key() throws Exception
@@ -237,4 +266,245 @@ public class AchillesPropertyHelperTest
 		assertThat(AchillesPropertyHelper.isSupportedType(Long.class)).isTrue();
 	}
 
+	@Test
+	public void should_validate_no_hole() throws Exception
+	{
+		List<Object> keyValues = Arrays.asList((Object) "a", "b", null, null);
+
+		int lastNotNullIndex = helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
+
+		assertThat(lastNotNullIndex).isEqualTo(1);
+
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void should_exception_when_hole() throws Exception
+	{
+		List<Object> keyValues = Arrays.asList((Object) "a", null, "b");
+
+		helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void should_exception_when_starting_with_hole() throws Exception
+	{
+		List<Object> keyValues = Arrays.asList((Object) null, "a", "b");
+
+		helper.findLastNonNullIndexForComponents("sdfsdf", keyValues);
+	}
+
+	@Test
+	public void should_validate_bounds() throws Exception
+	{
+		helper.checkBounds(wideMapMeta, 12, 15, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_validate_asc_bounds_with_start_null() throws Exception
+	{
+		helper.checkBounds(wideMapMeta, null, 15, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_validate_asc_bounds_with_end_null() throws Exception
+	{
+		helper.checkBounds(wideMapMeta, 12, null, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_asc_start_greater_than_end() throws Exception
+	{
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx.expectMessage("For range query, start value should be lesser or equal to end");
+
+		helper.checkBounds(wideMapMeta, 15, 12, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_desc_start_lesser_than_end() throws Exception
+	{
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("For reverse range query, start value should be greater or equal to end value");
+
+		helper.checkBounds(wideMapMeta, 12, 15, OrderingMode.DESCENDING, false);
+	}
+
+	@Test
+	public void should_validate_multi_key_bounds() throws Exception
+	{
+		CorrectMultiKey start = new CorrectMultiKey();
+		CorrectMultiKey end = new CorrectMultiKey();
+
+		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
+		List<Object> endComponentValues = Arrays.asList((Object) "abc", 20);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_validate_multi_key_asc_bounds_with_nulls() throws Exception
+	{
+		CorrectMultiKey start = new CorrectMultiKey();
+		CorrectMultiKey end = new CorrectMultiKey();
+
+		List<Object> startComponentValues = Arrays.asList((Object) "abc", null);
+		List<Object> endComponentValues = Arrays.asList((Object) "abd", null);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_multi_key_asc_start_greater_than_end() throws Exception
+	{
+		CorrectMultiKey start = new CorrectMultiKey();
+		CorrectMultiKey end = new CorrectMultiKey();
+
+		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
+		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_multi_key_asc_hole_in_start() throws Exception
+	{
+		CorrectMultiKey start = new CorrectMultiKey();
+		CorrectMultiKey end = new CorrectMultiKey();
+
+		List<Object> startComponentValues = Arrays.asList((Object) null, 10);
+		List<Object> endComponentValues = Arrays.asList((Object) "abc", 10);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+		expectedEx.expect(IllegalArgumentException.class);
+		expectedEx
+				.expectMessage("There should not be any null value between two non-null keys of WideMap 'any_property'");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_multi_key_desc_start_lesser_than_end() throws Exception
+	{
+		CorrectMultiKey start = new CorrectMultiKey();
+		CorrectMultiKey end = new CorrectMultiKey();
+
+		List<Object> startComponentValues = Arrays.asList((Object) "abc", 12);
+		List<Object> endComponentValues = Arrays.asList((Object) "def", 10);
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("For multiKey descending range query, startKey value should be greater or equal to end endKey");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.DESCENDING, false);
+	}
+
+	@Test
+	public void should_exception_when_null_partition_key_for_start_clustering_key()
+			throws Exception
+	{
+		ClusteredId start = new ClusteredId(null, "name1");
+		ClusteredId end = new ClusteredId(10L, "name2");
+
+		List<Object> startComponentValues = Arrays.asList((Object) null, "name1");
+		List<Object> endComponentValues = Arrays.asList((Object) 10L, "name2");
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("Partition key should not be null for start clustering key : [null, name1]");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, true);
+	}
+
+	@Test
+	public void should_exception_when_null_partition_key_for_end_clustering_key() throws Exception
+	{
+		ClusteredId start = new ClusteredId(10L, "name1");
+		ClusteredId end = new ClusteredId(null, "name2");
+
+		List<Object> startComponentValues = Arrays.asList((Object) 10L, "name1");
+		List<Object> endComponentValues = Arrays.asList((Object) null, "name2");
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("Partition key should not be null for end clustering key : [null, name2]");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, true);
+	}
+
+	@Test
+	public void should_exception_when_partition_keys_not_equal() throws Exception
+	{
+		ClusteredId start = new ClusteredId(10L, "name1");
+		ClusteredId end = new ClusteredId(11L, "name2");
+
+		List<Object> startComponentValues = Arrays.asList((Object) 10L, "name1");
+		List<Object> endComponentValues = Arrays.asList((Object) 11L, "name2");
+
+		when(multiKeyWideMapMeta.getMultiKeyProperties()).thenReturn(multiKeyProperties);
+		when(multiKeyProperties.getComponentGetters()).thenReturn(componentGetters);
+		when(multiKeyWideMapMeta.getPropertyName()).thenReturn("any_property");
+		when(invoker.determineMultiKeyValues(start, componentGetters)).thenReturn(
+				startComponentValues);
+		when(invoker.determineMultiKeyValues(end, componentGetters)).thenReturn(endComponentValues);
+
+		expectedEx.expect(AchillesException.class);
+		expectedEx
+				.expectMessage("Partition key should be equals for start and end clustering keys : [[10, name1],[11, name2]]");
+
+		helper.checkBounds(multiKeyWideMapMeta, start, end, OrderingMode.ASCENDING, true);
+	}
 }

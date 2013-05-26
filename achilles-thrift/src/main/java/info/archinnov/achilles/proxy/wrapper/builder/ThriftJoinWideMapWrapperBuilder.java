@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.helper.ThriftCompositeHelper;
+import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
@@ -28,7 +28,7 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 	private ThriftEntityPersister persister;
 	private ThriftEntityLoader loader;
 	private AchillesEntityProxifier proxifier;
-	private ThriftCompositeHelper thriftCompositeHelper;
+	private ThriftPropertyHelper thriftPropertyHelper;
 	private ThriftCompositeFactory thriftCompositeFactory;
 	private ThriftKeyValueFactory thriftKeyValueFactory;
 	private ThriftIteratorFactory thriftIteratorFactory;
@@ -79,10 +79,10 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 		return this;
 	}
 
-	public ThriftJoinWideMapWrapperBuilder<K, V> thriftCompositeHelper(
-			ThriftCompositeHelper thriftCompositeHelper)
+	public ThriftJoinWideMapWrapperBuilder<K, V> thriftPropertyHelper(
+			ThriftPropertyHelper thriftPropertyHelper)
 	{
-		this.thriftCompositeHelper = thriftCompositeHelper;
+		this.thriftPropertyHelper = thriftPropertyHelper;
 		return this;
 	}
 
@@ -116,7 +116,7 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 		wrapper.setExternalWideMapMeta(joinExternalWideMapMeta);
 		wrapper.setInterceptor(interceptor);
 		wrapper.setEntityProxifier(proxifier);
-		wrapper.setCompositeHelper(thriftCompositeHelper);
+		wrapper.setCompositeHelper(thriftPropertyHelper);
 		wrapper.setCompositeKeyFactory(thriftCompositeFactory);
 		wrapper.setIteratorFactory(thriftIteratorFactory);
 		wrapper.setKeyValueFactory(thriftKeyValueFactory);
