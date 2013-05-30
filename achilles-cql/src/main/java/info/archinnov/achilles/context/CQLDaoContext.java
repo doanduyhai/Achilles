@@ -10,6 +10,10 @@ import com.datastax.driver.core.Session;
  */
 public class CQLDaoContext
 {
+	public static final String ACHILLES_COUNTER_TABLE = "achillesCounterTable";
+	public static final String ACHILLES_COUNTER_FQCN = "fqcn";
+	public static final String ACHILLES_COUNTER_PK = "pk";
+
 	private Session session;
 
 	public CQLDaoContext(Session session) {

@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
@@ -21,7 +22,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.collect.ImmutableMap;
@@ -37,6 +37,7 @@ public class Cql3Test
 {
 
 	private Session session = CQLCassandraDaoTest.getCqlSession();
+	private Cluster cluster = CQLCassandraDaoTest.getCqlCluster();
 
 	@Before
 	public void setUp()
@@ -107,7 +108,7 @@ public class Cql3Test
 		Row row = session.execute(select).one();
 
 		List<String> myList = row.getList("myList", String.class);
-		assertThat(myList).hasSize(3);
+		assertThat(myList).hasSize(2);
 		assertThat(myList).containsExactly("a", "b");
 	}
 
@@ -219,36 +220,22 @@ public class Cql3Test
 		String insert = QueryBuilder.insertInto("cql3_user") //
 				.value("id", userId)
 				.value("firstname", "FN")
-				.value("lastname", "LN")
-				.value("age", 35)
+				// .value("lastname", null)
 				.toString();
 
 		session.execute(insert);
 
-		insert = QueryBuilder.insertInto("cql3_user") //
-				.value("id", userId)
-				.value("firstname", "FN2")
-				.toString();
-
-		session.execute(insert);
-		Update update = QueryBuilder.update("cql3_user");
-		update.with(QueryBuilder.set("lastname", "LN2"));
-		update.where(QueryBuilder.eq("id", userId));
-
-		session.execute(update);
-
-		Clause filterById = QueryBuilder.eq("id", userId);
 		String select = QueryBuilder
 				.select("firstname", "lastname", "age")
 				.from("cql3_user")
-				.where(filterById)
+				.where(QueryBuilder.eq("id", userId))
 				.toString();
 
 		Row row = session.execute(select).all().get(0);
 
-		assertThat(row.getString("firstname")).isEqualTo("FN2");
-		assertThat(row.getString("lastname")).isEqualTo("LN2");
-		assertThat(row.getInt("age")).isEqualTo(35);
+		assertThat(row.getString("firstname")).isEqualTo("FN");
+		assertThat(row.getString("lastname")).isNull();
+		assertThat(row.getInt("age")).isEqualTo(0);
 
 	}
 
@@ -294,6 +281,7 @@ public class Cql3Test
 
 		PreparedStatement preparedStatement = session
 				.prepare("INSERT INTO cql3_user(id,firstname,lastname,age) VALUES (?,?,?,?)");
+
 		BoundStatement boundStatement = preparedStatement.bind(100004L, "FN4", "LN4", new Integer(
 				34));
 		boundStatement.setConsistencyLevel(ConsistencyLevel.ANY);

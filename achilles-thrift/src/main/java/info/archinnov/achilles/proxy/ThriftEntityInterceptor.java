@@ -49,15 +49,10 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 		Composite comp = thriftCompositeFactory.createBaseForCounterGet(propertyMeta);
 		result = ThriftCounterWrapperBuilder.builder(thriftContext) //
 				.counterDao(thriftContext.getCounterDao())
-				//
 				.columnName(comp)
-				//
 				.readLevel(propertyMeta.getReadConsistencyLevel())
-				//
 				.writeLevel(propertyMeta.getWriteConsistencyLevel())
-				//
 				.key(keyComp)
-				//
 				.build();
 		return result;
 	}
