@@ -339,17 +339,6 @@ public class PropertyMetaTest
 	}
 
 	@Test
-	public void should_return_true_for_isJoinColumn() throws Exception
-	{
-		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Void.class, String.class)
-				.type(PropertyType.JOIN_SIMPLE)
-				.build();
-
-		assertThat(propertyMeta.isJoinColumn()).isTrue();
-	}
-
-	@Test
 	public void should_return_true_for_isLazy() throws Exception
 	{
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder

@@ -300,11 +300,6 @@ public class PropertyMeta<K, V>
 		this.counterProperties = counterProperties;
 	}
 
-	public boolean isJoinColumn()
-	{
-		return this.type.isJoinColumn();
-	}
-
 	public boolean isLazy()
 	{
 		return this.type.isLazy();
