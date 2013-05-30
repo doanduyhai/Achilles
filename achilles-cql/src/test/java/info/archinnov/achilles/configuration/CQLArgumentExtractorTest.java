@@ -44,7 +44,8 @@ public class CQLArgumentExtractorTest
 	public void should_init_cluster() throws Exception
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(HOSTNAME_PARAM, "localhost:1234");
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+		params.put(CONNECTION_PORT_PARAM, "9111");
 
 		extractor.initCluster(params);
 	}
@@ -55,33 +56,32 @@ public class CQLArgumentExtractorTest
 		Map<String, Object> params = new HashMap<String, Object>();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage(HOSTNAME_PARAM + " property should be provided");
+		exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
 
 		extractor.initCluster(params);
 	}
 
 	@Test
-	public void should_exception_when_hostname_contains_no_port() throws Exception
+	public void should_exception_when_no_port_property() throws Exception
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(HOSTNAME_PARAM, "localhost");
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cassandra hostname property localhost should provide a port. Use : as separator");
+		exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
 
 		extractor.initCluster(params);
 	}
 
 	@Test
-	public void should_exception_when_hostname_has_wrong_format() throws Exception
+	public void should_exception_when_port_is_not_a_number() throws Exception
 	{
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(HOSTNAME_PARAM, "localhost:1234:5678");
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+		params.put(CONNECTION_PORT_PARAM, "12s");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cassandra hostname property localhost:1234:5678 should contain at most one : separator");
+		exception.expectMessage(CONNECTION_PORT_PARAM + " property should be a number");
 
 		extractor.initCluster(params);
 	}

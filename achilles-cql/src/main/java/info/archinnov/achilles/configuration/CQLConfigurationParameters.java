@@ -8,6 +8,7 @@ package info.archinnov.achilles.configuration;
  */
 public interface CQLConfigurationParameters
 {
-	String HOSTNAME_PARAM = "achilles.cassandra.host";
+	String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
+	String CONNECTION_PORT_PARAM = "achilles.cassandra.connection.port";
 	String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
 }

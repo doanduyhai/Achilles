@@ -2,6 +2,7 @@ package info.archinnov.achilles.common;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 /**
@@ -12,8 +13,8 @@ import com.datastax.driver.core.Session;
  */
 public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
 {
-	private static com.datastax.driver.core.Cluster cqlCluster;
-	private static com.datastax.driver.core.Session cqlSession;
+	private static Cluster cqlCluster;
+	private static Session cqlSession;
 
 	static
 	{
@@ -24,21 +25,17 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
 
 			assert fullHostName.length == 2;
 
-			cqlCluster = com.datastax.driver.core.Cluster.builder() //
+			cqlCluster = Cluster.builder() //
 					.addContactPoints(fullHostName[0])
-					//
 					.withPort(Integer.parseInt(fullHostName[1]))
-					//
 					.build();
 
 		}
 		else
 		{
-			cqlCluster = com.datastax.driver.core.Cluster.builder() //
+			cqlCluster = Cluster.builder() //
 					.addContactPoints(CASSANDRA_TEST_HOST)
-					//
 					.withPort(CASSANDRA_CQL_TEST_PORT)
-					//
 					.build();
 		}
 		cqlSession = cqlCluster.connect(CASSANDRA_KEYSPACE_NAME);

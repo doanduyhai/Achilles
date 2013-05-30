@@ -12,8 +12,6 @@
 		</layout>
 	</appender>
 	
-	<appender name="NullAppender" class="org.apache.log4j.varia.NullAppender" />
-	
 	<logger name="ACHILLES_DDL_SCRIPT">
 		<level value="DEBUG" />
 	</logger>
@@ -23,10 +21,6 @@
 		<level value="INFO" />
 	</logger>	
 	
-	<logger name="org.apache.cassandra.service.StorageProxy" additivity="false">
-		<level value="WARN" />
-		<appender-ref ref="NullAppender" />
-	</logger>
 	
 	<logger name="info.archinnov.achilles">
 		<level value="WARN" />

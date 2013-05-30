@@ -1,15 +1,17 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static org.apache.commons.lang.StringUtils.contains;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.policies.Policies;
 
 /**
  * CQLArgumentExtractor
@@ -22,19 +24,27 @@ public class CQLArgumentExtractor extends AchillesArgumentExtractor
 
 	public Cluster initCluster(Map<String, Object> configurationMap)
 	{
-		String cassandraHost = (String) configurationMap.get(HOSTNAME_PARAM);
-		Validator.validateNotBlank(cassandraHost, HOSTNAME_PARAM + " property should be provided");
-		Validator.validateTrue(contains(cassandraHost, ":"), "Cassandra hostname property "
-				+ cassandraHost + " should provide a port. Use : as separator");
-		String[] fullHostName = StringUtils.split(cassandraHost, ":");
+		String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
+		String port = (String) configurationMap.get(CONNECTION_PORT_PARAM);
+		Validator.validateNotBlank(contactPoints, CONNECTION_CONTACT_POINTS_PARAM
+				+ " property should be provided");
+		Validator.validateNotBlank(port, CONNECTION_PORT_PARAM + " property should be provided");
+		Validator.validateTrue(NumberUtils.isNumber(port), CONNECTION_PORT_PARAM
+				+ " property should be a number");
 
-		Validator.validateTrue(fullHostName.length == 2, "Cassandra hostname property "
-				+ cassandraHost + " should contain at most one : separator");
+		String[] contactPointsList = StringUtils.split(contactPoints, ",");
 
-		return Cluster.builder() //
-				.addContactPoints(fullHostName[0])
-				.withPort(Integer.parseInt(fullHostName[1]))
+		Cluster cluster = Cluster.builder() //
+				.addContactPoints(contactPointsList)
+				.withPort(Integer.parseInt(port))
+				.withCompression(Compression.SNAPPY)
+				.withRetryPolicy(Policies.DEFAULT_RETRY_POLICY)
+				.withLoadBalancingPolicy(Policies.DEFAULT_LOAD_BALANCING_POLICY)
+				.withReconnectionPolicy(Policies.DEFAULT_RECONNECTION_POLICY)
 				.build();
+
+		return cluster;
+
 	}
 
 	public Session initSession(Cluster cluster, Map<String, Object> configurationMap)

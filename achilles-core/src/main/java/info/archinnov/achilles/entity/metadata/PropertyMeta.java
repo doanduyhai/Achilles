@@ -395,6 +395,5 @@ public class PropertyMeta<K, V>
 		description.append("singleKey=").append(singleKey).append("]");
 
 		return description.toString();
-
 	}
 }
