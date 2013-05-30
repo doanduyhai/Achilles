@@ -5,20 +5,19 @@ import info.archinnov.achilles.type.MultiKey;
 
 import javax.persistence.Column;
 
-public class ClusteredId implements MultiKey
+public class MissingAnnotationClusteredId implements MultiKey
 {
 
 	@Key(order = 1)
-	@Column(name = "id")
 	private Long userId;
 
 	@Key(order = 2)
 	@Column
 	private String name;
 
-	public ClusteredId() {}
+	public MissingAnnotationClusteredId() {}
 
-	public ClusteredId(Long userId, String name) {
+	public MissingAnnotationClusteredId(Long userId, String name) {
 		this.userId = userId;
 		this.name = name;
 	}

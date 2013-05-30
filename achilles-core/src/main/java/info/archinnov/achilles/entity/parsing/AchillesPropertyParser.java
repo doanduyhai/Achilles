@@ -97,7 +97,7 @@ public class AchillesPropertyParser {
         Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
         PropertyType type = MULTIKEY;
 
-        MultiKeyProperties multiKeyProperties = parseWideMapMultiKey(field.getType());
+        MultiKeyProperties multiKeyProperties = parseMultiKey(field.getType());
 
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
@@ -293,7 +293,7 @@ public class AchillesPropertyParser {
         boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
 
         // Multi Key
-        multiKeyProperties = parseWideMapMultiKey(keyClass);
+        multiKeyProperties = parseMultiKey(keyClass);
 
         if (isCounterValueType) {
             counterProperties = new CounterProperties(entityClass.getCanonicalName());
@@ -379,7 +379,7 @@ public class AchillesPropertyParser {
         return new Pair<Class<K>, Class<V>>((Class<K>) actualTypeArguments[0], (Class<V>) actualTypeArguments[1]);
     }
 
-    private MultiKeyProperties parseWideMapMultiKey(Class<?> keyClass) {
+    private MultiKeyProperties parseMultiKey(Class<?> keyClass) {
         log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
         MultiKeyProperties multiKeyProperties = null;
         if (MultiKey.class.isAssignableFrom(keyClass)) {

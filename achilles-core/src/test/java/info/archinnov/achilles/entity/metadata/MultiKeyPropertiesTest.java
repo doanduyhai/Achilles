@@ -21,10 +21,11 @@ public class MultiKeyPropertiesTest
 		List<Class<?>> componentClasses = Arrays.<Class<?>> asList(Integer.class, String.class);
 		MultiKeyProperties props = new MultiKeyProperties();
 		props.setComponentClasses(componentClasses);
+		props.setComponentNames(Arrays.asList("id", "age"));
 
 		StringBuilder toString = new StringBuilder();
 		toString.append("MultiKeyProperties [componentClasses=[");
-		toString.append("java.lang.Integer,java.lang.String]]");
+		toString.append("java.lang.Integer,java.lang.String], componentNames=[id, age]]");
 
 		assertThat(props.toString()).isEqualTo(toString.toString());
 	}

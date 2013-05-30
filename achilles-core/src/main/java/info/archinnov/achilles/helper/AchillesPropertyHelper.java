@@ -1,5 +1,6 @@
 package info.archinnov.achilles.helper;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.persistence.Column;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +102,7 @@ public class AchillesPropertyHelper
 		log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
 
 		List<Class<?>> componentClasses = new ArrayList<Class<?>>();
+		List<String> componentNames = new ArrayList<String>();
 		List<Method> componentGetters = new ArrayList<Method>();
 		List<Method> componentSetters = new ArrayList<Method>();
 
@@ -112,6 +116,19 @@ public class AchillesPropertyHelper
 			Key keyAnnotation = multiKeyField.getAnnotation(Key.class);
 			if (keyAnnotation != null)
 			{
+				Column column = multiKeyField.getAnnotation(Column.class);
+				if (column != null)
+				{
+					if (isNotBlank(column.name()))
+					{
+						componentNames.add(column.name());
+					}
+					else
+					{
+						componentNames.add(multiKeyField.getName());
+					}
+				}
+
 				keyCount++;
 				int order = keyAnnotation.order();
 				if (orders.contains(order))
@@ -160,9 +177,16 @@ public class AchillesPropertyHelper
 				"No field with @Key annotation found in the class '" + keyClass.getCanonicalName()
 						+ "'");
 		Validator.validateInstantiable(keyClass);
+		if (componentNames.size() > 0)
+		{
+			Validator.validateBeanMappingTrue(componentClasses.size() == componentNames.size(),
+					"There should be the same number of @Key than @Column annotation in the class '"
+							+ keyClass.getCanonicalName() + "'");
+		}
 
 		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
 		multiKeyProperties.setComponentClasses(componentClasses);
+		multiKeyProperties.setComponentNames(componentNames);
 		multiKeyProperties.setComponentGetters(componentGetters);
 		multiKeyProperties.setComponentSetters(componentSetters);
 
