@@ -3,7 +3,7 @@ package info.archinnov.achilles.context;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.helper.CQLPreparedStatementHelper;
+import info.archinnov.achilles.helper.CQLQueryGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class CQLDaoContextBuilderTest
 	private Session session;
 
 	@Mock
-	private CQLPreparedStatementHelper helper;
+	private CQLQueryGenerator queryGenerator;
 
 	@Mock
 	private PreparedStatement insertPS;
@@ -55,7 +55,7 @@ public class CQLDaoContextBuilderTest
 	@Before
 	public void setUp()
 	{
-		Whitebox.setInternalState(builder, "preparedStatementHelper", helper);
+		Whitebox.setInternalState(builder, "queryGenerator", queryGenerator);
 	}
 
 	@Test
@@ -65,11 +65,11 @@ public class CQLDaoContextBuilderTest
 		EntityMeta meta = new EntityMeta();
 		entityMetaMap.put(CompleteBean.class, meta);
 
-		when(helper.prepareInsertPS(session, meta)).thenReturn(insertPS);
-		when(helper.prepareSelectForExistenceCheckPS(session, meta)).thenReturn(
+		when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);
+		when(queryGenerator.prepareSelectForExistenceCheckPS(session, meta)).thenReturn(
 				selectForExistenceCheckPS);
-		when(helper.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
-		when(helper.prepareRemovePSs(session, meta)).thenReturn(removePSs);
+		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
+		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
 
 		CQLDaoContext actual = builder.build(session, entityMetaMap);
 

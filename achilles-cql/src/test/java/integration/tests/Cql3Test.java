@@ -287,6 +287,11 @@ public class Cql3Test
 		boundStatement.setConsistencyLevel(ConsistencyLevel.ANY);
 
 		session.execute(boundStatement);
+	}
+
+	@Test
+	public void should_query_with_clustered_id() throws Exception
+	{
 		for (int i = 1; i <= 5; i++)
 		{
 			for (int j = 1; j <= 5; j++)
@@ -312,6 +317,26 @@ public class Cql3Test
 		BoundStatement boundStatement2 = preparedStatement1.bind(1, 1, 3);
 		List<Row> rows = session.execute(boundStatement2).all();
 		assertThat(rows.size()).isEqualTo(10);
+	}
+
+	@Test
+	public void should_insert_twice_with_prepared_statement() throws Exception
+	{
+		long id = RandomUtils.nextLong();
+		PreparedStatement preparedStatement = session
+				.prepare("INSERT INTO cql3_user(id,firstname,lastname,age) VALUES (?,?,?,?)");
+
+		BoundStatement boundStatement = preparedStatement.bind(id, "FN1", "LN1", 11);
+		session.execute(boundStatement);
+
+		BoundStatement boundStatement2 = preparedStatement.bind(id, "FN1", null, null);
+		session.execute(boundStatement2);
+
+		Row row = session.execute("select * from cql3_user where id=" + id).one();
+
+		assertThat(row.getString("firstname")).isEqualTo("FN1");
+		assertThat(row.isNull("lastname")).isTrue();
+		assertThat(row.isNull("age")).isTrue();
 	}
 
 	@Test

@@ -248,7 +248,7 @@ public class CQLPersisterImplTest
 		when(entityMeta.getTableName()).thenReturn("table");
 
 		BoundStatement boundStatement = mock(BoundStatement.class);
-		when(daoContext.bindForRemove(context, "table")).thenReturn(boundStatement);
+		when(daoContext.bindForRemoval(context, "table")).thenReturn(boundStatement);
 
 		CQLAbstractFlushContext flushContext = mock(CQLAbstractFlushContext.class);
 		when(context.getFlushContext()).thenReturn(flushContext);
@@ -274,7 +274,7 @@ public class CQLPersisterImplTest
 		when(context.getFlushContext()).thenReturn(flushContext);
 
 		BoundStatement boundStatement = mock(BoundStatement.class);
-		when(daoContext.bindForRemove(context, "external_table")).thenReturn(boundStatement);
+		when(daoContext.bindForRemoval(context, "external_table")).thenReturn(boundStatement);
 
 		persisterImpl.removeLinkedTables(context);
 

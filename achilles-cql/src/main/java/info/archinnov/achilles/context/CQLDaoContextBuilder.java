@@ -1,7 +1,7 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.helper.CQLPreparedStatementHelper;
+import info.archinnov.achilles.helper.CQLQueryGenerator;
 
 import java.util.Map;
 
@@ -18,7 +18,7 @@ import com.google.common.collect.Maps;
  */
 public class CQLDaoContextBuilder
 {
-	private CQLPreparedStatementHelper preparedStatementHelper = new CQLPreparedStatementHelper();
+	private CQLQueryGenerator queryGenerator = new CQLQueryGenerator();
 	private Session session;
 
 	private Function<EntityMeta, PreparedStatement> insertPSTransformer = new Function<EntityMeta, PreparedStatement>()
@@ -26,7 +26,7 @@ public class CQLDaoContextBuilder
 		@Override
 		public PreparedStatement apply(EntityMeta meta)
 		{
-			return preparedStatementHelper.prepareInsertPS(session, meta);
+			return queryGenerator.prepareInsertPS(session, meta);
 		}
 	};
 
@@ -35,16 +35,24 @@ public class CQLDaoContextBuilder
 		@Override
 		public PreparedStatement apply(EntityMeta meta)
 		{
-			return preparedStatementHelper.prepareSelectForExistenceCheckPS(session, meta);
+			return queryGenerator.prepareSelectForExistenceCheckPS(session, meta);
 		}
 	};
 
+	private Function<EntityMeta, Map<String, PreparedStatement>> selectFieldPSTransformer = new Function<EntityMeta, Map<String, PreparedStatement>>()
+	{
+		@Override
+		public Map<String, PreparedStatement> apply(EntityMeta meta)
+		{
+			return queryGenerator.prepareSelectFieldPS(session, meta);
+		}
+	};
 	private Function<EntityMeta, PreparedStatement> selectEagerPSTransformer = new Function<EntityMeta, PreparedStatement>()
 	{
 		@Override
 		public PreparedStatement apply(EntityMeta meta)
 		{
-			return preparedStatementHelper.prepareSelectEagerPS(session, meta);
+			return queryGenerator.prepareSelectEagerPS(session, meta);
 		}
 	};
 
@@ -53,7 +61,7 @@ public class CQLDaoContextBuilder
 		@Override
 		public Map<String, PreparedStatement> apply(EntityMeta meta)
 		{
-			return preparedStatementHelper.prepareRemovePSs(session, meta);
+			return queryGenerator.prepareRemovePSs(session, meta);
 		}
 
 	};
@@ -66,16 +74,21 @@ public class CQLDaoContextBuilder
 	{
 		Map<Class<?>, PreparedStatement> insertPSMap = Maps.transformValues(entityMetaMap,
 				insertPSTransformer);
+
 		Map<Class<?>, PreparedStatement> selectForExistenceCheckPSMap = Maps.transformValues(
 				entityMetaMap, selectForExistenceCheckPSTransformer);
 
+		Map<Class<?>, Map<String, PreparedStatement>> selectFieldPSMap = Maps.transformValues(
+				entityMetaMap, selectFieldPSTransformer);
+
 		Map<Class<?>, PreparedStatement> selectEagerPSMap = Maps.transformValues(entityMetaMap,
 				selectEagerPSTransformer);
+
 		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = Maps.transformValues(
 				entityMetaMap, removePSTransformer);
 
-		return new CQLDaoContext(insertPSMap, selectForExistenceCheckPSMap, selectEagerPSMap,
-				removePSMap, session);
+		return new CQLDaoContext(insertPSMap, selectForExistenceCheckPSMap, selectFieldPSMap,
+				selectEagerPSMap, removePSMap, session);
 	}
 
 }

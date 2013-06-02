@@ -25,9 +25,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompleteBeanTestBuilder;
 
@@ -47,8 +47,7 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEntityPersisterTest
 {
-
-	@Mock(answer = Answers.CALLS_REAL_METHODS)
+	@InjectMocks
 	private CQLEntityPersister persister;
 
 	@Mock
@@ -92,18 +91,9 @@ public class CQLEntityPersisterTest
 	@Before
 	public void setUp() throws Exception
 	{
-		Whitebox.setInternalState(persister, "persisterImpl", persisterImpl);
-
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
-
-		// when(context.getEntity()).thenReturn(entity);
-		// when(context.getConfigContext()).thenReturn(configContext);
-		// when(entityMeta.getTableName()).thenReturn("table");
-		// when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
-		// when(entityMeta.getPropertyMetas()).thenReturn(metaMap);
-		// metaMap.clear();
 	}
 
 	@Test

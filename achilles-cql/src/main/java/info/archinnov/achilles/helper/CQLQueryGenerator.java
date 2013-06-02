@@ -23,12 +23,15 @@ import com.datastax.driver.core.querybuilder.Select.Selection;
  * @author DuyHai DOAN
  * 
  */
-public class CQLPreparedStatementHelper
+public class CQLQueryGenerator
 {
-	public PreparedStatement prepareInsertPS(Session session, EntityMeta meta)
+	public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta)
 	{
-		Insert insert = insertInto(meta.getTableName());
-		for (PropertyMeta<?, ?> pm : meta.getAllMetas())
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		Insert insert = insertInto(entityMeta.getTableName());
+		prepareInsertPrimaryKey(idMeta, insert);
+
+		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
 		{
 			if (!pm.type().isProxyType())
 			{
@@ -38,28 +41,61 @@ public class CQLPreparedStatementHelper
 		return session.prepare(insert.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectForExistenceCheckPS(Session session, EntityMeta meta)
+	public PreparedStatement prepareSelectForExistenceCheckPS(Session session, EntityMeta entityMeta)
 	{
-		PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-		Select select = select().column(idMeta.getPropertyName()).from(meta.getTableName());
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		Select select = select().column(idMeta.getPropertyName()).from(entityMeta.getTableName());
 		Statement statement = prepareWhereClauseForSelect(idMeta, select);
 		return session.prepare(statement.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta meta)
+	public Map<String, PreparedStatement> prepareSelectFieldPS(Session session,
+			EntityMeta entityMeta)
 	{
-		PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+
+		Map<String, PreparedStatement> selectMap = new HashMap<String, PreparedStatement>();
+		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
+		{
+			if (!pm.isProxyType())
+			{
+				Select from = select().column(pm.getPropertyName()).from(entityMeta.getTableName());
+				Statement statement = prepareWhereClauseForSelect(idMeta, from);
+				selectMap.put(pm.getPropertyName(), session.prepare(statement.getQueryString()));
+			}
+		}
+		return selectMap;
+	}
+
+	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta)
+	{
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
 		Selection select = select();
 
-		for (PropertyMeta<?, ?> pm : meta.getEagerMetas())
+		for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas())
 		{
 			select.column(pm.getPropertyName());
 		}
-		Select from = select.from(meta.getTableName());
+		Select from = select.from(entityMeta.getTableName());
 
 		Statement statement = prepareWhereClauseForSelect(idMeta, from);
 		return session.prepare(statement.getQueryString());
+	}
+
+	private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
+	{
+		if (idMeta.type().isClusteredKey())
+		{
+			for (String component : idMeta.getMultiKeyProperties().getComponentNames())
+			{
+				insert.value(component, bindMarker());
+			}
+		}
+		else
+		{
+			insert.value(idMeta.getPropertyName(), bindMarker());
+		}
 	}
 
 	private Statement prepareWhereClauseForSelect(PropertyMeta<?, ?> idMeta, Select from)
@@ -90,16 +126,16 @@ public class CQLPreparedStatementHelper
 		return statement;
 	}
 
-	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta meta)
+	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta)
 	{
-		PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
 		Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
 
-		Delete mainFrom = QueryBuilder.delete().from(meta.getTableName());
+		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
 		Statement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
-		removePSs.put(meta.getTableName(), session.prepare(mainStatement.getQueryString()));
-		for (PropertyMeta<?, ?> pm : meta.getAllMetas())
+		removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
+		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
 		{
 			switch (pm.type())
 			{

@@ -32,9 +32,9 @@ import com.datastax.driver.core.Session;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLPreparedStatementHelperTest
+public class CQLQueryGeneratorTest
 {
-	private CQLPreparedStatementHelper helper = new CQLPreparedStatementHelper();
+	private CQLQueryGenerator helper = new CQLQueryGenerator();
 
 	@Mock
 	private Session session;
@@ -53,6 +53,12 @@ public class CQLPreparedStatementHelperTest
 	{
 		List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
 
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
+				.build();
+
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class)
 				.field("name")
@@ -68,6 +74,7 @@ public class CQLPreparedStatementHelperTest
 		allMetas.add(nameMeta);
 		allMetas.add(proxyTypeMeta);
 		EntityMeta meta = new EntityMeta();
+		meta.setIdMeta(idMeta);
 		meta.setTableName("table");
 		meta.setAllMetas(allMetas);
 
@@ -76,12 +83,46 @@ public class CQLPreparedStatementHelperTest
 		PreparedStatement actual = helper.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(name) VALUES (?);");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?);");
+	}
+
+	@Test
+	public void should_prepare_insert_ps_with_clustered_id() throws Exception
+	{
+		List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.compNames("id", "a", "b")
+				.type(PropertyType.CLUSTERED_KEY)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		allMetas.add(nameMeta);
+		EntityMeta meta = new EntityMeta();
+		meta.setIdMeta(idMeta);
+		meta.setTableName("table");
+		meta.setAllMetas(allMetas);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+		PreparedStatement actual = helper.prepareInsertPS(session, meta);
+
+		assertThat(actual).isSameAs(ps);
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"INSERT INTO table(id,a,b,name) VALUES (?,?,?,?);");
 	}
 
 	@Test
 	public void should_prepare_select_for_existence_check() throws Exception
 	{
+
 		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
 				.field("id")
@@ -97,6 +138,57 @@ public class CQLPreparedStatementHelperTest
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id FROM table WHERE id=?;");
+	}
+
+	@Test
+	public void should_orepare_select_ps_map_for_all_fields() throws Exception
+	{
+		List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("age")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> proxyTypeMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("proxyType")
+				.type(PropertyType.WIDE_MAP)
+				.build();
+
+		allMetas.add(nameMeta);
+		allMetas.add(ageMeta);
+		allMetas.add(proxyTypeMeta);
+
+		EntityMeta meta = new EntityMeta();
+		meta.setTableName("table");
+		meta.setIdMeta(idMeta);
+		meta.setAllMetas(allMetas);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+		Map<String, PreparedStatement> actual = helper.prepareSelectFieldPS(session, meta);
+
+		assertThat(actual).hasSize(2);
+		assertThat(actual).containsKey("name");
+		assertThat(actual).containsKey("age");
+		assertThat(actual).containsValue(ps);
+
+		assertThat(queryCaptor.getAllValues()).containsOnly("SELECT name FROM table WHERE id=?;",
+				"SELECT age FROM table WHERE id=?;");
 	}
 
 	@Test

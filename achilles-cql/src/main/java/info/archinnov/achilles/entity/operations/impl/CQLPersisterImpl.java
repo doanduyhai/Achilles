@@ -66,7 +66,7 @@ public class CQLPersisterImpl
 		EntityMeta entityMeta = context.getEntityMeta();
 		CQLDaoContext daoContext = context.getDaoContext();
 		BoundStatement boundStatement = daoContext
-				.bindForRemove(context, entityMeta.getTableName());
+				.bindForRemoval(context, entityMeta.getTableName());
 
 		context.getFlushContext().pushBoundStatement(boundStatement, context.getEntityMeta());
 		removeLinkedTables(context);
@@ -110,7 +110,7 @@ public class CQLPersisterImpl
 		Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, proxyFilter);
 		for (PropertyMeta<?, ?> pm : proxyMetas)
 		{
-			BoundStatement boundStatement = daoContext.bindForRemove(context,
+			BoundStatement boundStatement = daoContext.bindForRemoval(context,
 					pm.getExternalTableName());
 
 			flushContext.pushBoundStatement(boundStatement, pm);
