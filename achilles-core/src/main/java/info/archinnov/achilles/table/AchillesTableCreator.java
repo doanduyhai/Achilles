@@ -15,6 +15,7 @@ import java.util.Map.Entry;
  */
 public abstract class AchillesTableCreator
 {
+	public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
 
 	public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta> entityMetaMap,
 			AchillesConfigurationContext configContext, boolean hasCounter)

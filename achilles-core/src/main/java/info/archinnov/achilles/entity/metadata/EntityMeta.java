@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 public class EntityMeta
 {
 
-	public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
 	private String className;
 	private String tableName;
 	private Long serialVersionUID;

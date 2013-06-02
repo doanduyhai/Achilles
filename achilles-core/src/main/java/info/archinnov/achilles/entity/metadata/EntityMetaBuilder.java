@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.table.AchillesTableCreator.TABLE_PATTERN;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
@@ -50,7 +51,7 @@ public class EntityMetaBuilder
 		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
-		Validator.validateRegExp(columnFamilyName, EntityMeta.TABLE_PATTERN, "columnFamilyName");
+		Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName");
 
 		EntityMeta meta = new EntityMeta();
 
