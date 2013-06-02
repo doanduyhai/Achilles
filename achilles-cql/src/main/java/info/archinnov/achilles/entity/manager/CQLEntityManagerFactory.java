@@ -36,7 +36,7 @@ public class CQLEntityManagerFactory extends AchillesEntityManagerFactory
 		cluster = extractor.initCluster(configurationMap);
 		session = extractor.initSession(cluster, configurationMap);
 		boolean hasSimpleCounter = bootstrap();
-		daoContext = new CQLDaoContext(session);
+
 	}
 
 	@Override

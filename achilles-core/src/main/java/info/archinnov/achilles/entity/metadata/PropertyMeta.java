@@ -35,7 +35,7 @@ public class PropertyMeta<K, V>
 	private CounterProperties counterProperties;
 	private JoinProperties joinProperties;
 	private MultiKeyProperties multiKeyProperties;
-	private String externalCfName;
+	private String externalTableName;
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
@@ -335,14 +335,14 @@ public class PropertyMeta<K, V>
 		this.consistencyLevels = consistencyLevels;
 	}
 
-	public String getExternalCFName()
+	public String getExternalTableName()
 	{
-		return externalCfName;
+		return externalTableName;
 	}
 
-	public void setExternalCfName(String externalCfName)
+	public void setExternalTableName(String externalCfName)
 	{
-		this.externalCfName = externalCfName;
+		this.externalTableName = externalCfName;
 	}
 
 	public String getEntityClassName()
@@ -376,8 +376,8 @@ public class PropertyMeta<K, V>
 		if (multiKeyProperties != null)
 			description.append("multiKeyProperties=").append(multiKeyProperties).append(", ");
 
-		if (StringUtils.isNotBlank(externalCfName))
-			description.append("externalCfName=").append(externalCfName).append(", ");
+		if (StringUtils.isNotBlank(externalTableName))
+			description.append("externalCfName=").append(externalTableName).append(", ");
 
 		if (consistencyLevels != null)
 		{

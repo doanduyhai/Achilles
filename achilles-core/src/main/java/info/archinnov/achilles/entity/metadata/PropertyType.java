@@ -27,7 +27,7 @@ public enum PropertyType {
     JOIN_SET(70), //
     JOIN_MAP(70), //
     JOIN_WIDE_MAP(70), //
-    MULTIKEY(80);
+    CLUSTERED_KEY(80);
 
     private final int flag;
 
@@ -80,7 +80,7 @@ public enum PropertyType {
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isMultiKey() {
-        return this == MULTIKEY;
+    public boolean isClusteredKey() {
+        return this == CLUSTERED_KEY;
     }
 }

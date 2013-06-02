@@ -475,7 +475,7 @@ public class ThriftPersisterImplTest
 				.completeBean(UUID.class, String.class)
 				.field("geoPositions")
 				.type(PropertyType.WIDE_MAP)
-				.externalCf("external_cf")
+				.externalTable("external_cf")
 				.idClass(Long.class)
 				.accessors()
 				.build();

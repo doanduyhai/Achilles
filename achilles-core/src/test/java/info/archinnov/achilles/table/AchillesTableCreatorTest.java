@@ -61,7 +61,7 @@ public class AchillesTableCreatorTest
 		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class)
 				.field("externalWideMap")
-				.externalCf("externalCF")
+				.externalTable("externalCF")
 				.type(PropertyType.WIDE_MAP)
 				.build();
 		prepareData(wideMapMeta);

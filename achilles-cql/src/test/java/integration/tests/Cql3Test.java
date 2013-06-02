@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
@@ -37,7 +36,6 @@ public class Cql3Test
 {
 
 	private Session session = CQLCassandraDaoTest.getCqlSession();
-	private Cluster cluster = CQLCassandraDaoTest.getCqlCluster();
 
 	@Before
 	public void setUp()
@@ -47,11 +45,13 @@ public class Cql3Test
 		String tableSet = "create table cql3_set(id bigint,mySet set<text>, primary key(id))";
 		String tableMap = "create table cql3_map(id bigint,myMap map<int,text>, primary key(id))";
 		String wideRow = "create table widerow(id bigint,key text,value text, primary key(id,key))";
+		String clustering = "create table clustering(a int,b int,c int,d int, primary key (a,b,c))";
 		session.execute(tableUser);
 		session.execute(tableList);
 		session.execute(tableSet);
 		session.execute(tableMap);
 		session.execute(wideRow);
+		session.execute(clustering);
 	}
 
 	@Test
@@ -286,9 +286,52 @@ public class Cql3Test
 				34));
 		boundStatement.setConsistencyLevel(ConsistencyLevel.ANY);
 
-		ResultSet result = session.execute(boundStatement);
+		session.execute(boundStatement);
+		for (int i = 1; i <= 5; i++)
+		{
+			for (int j = 1; j <= 5; j++)
+			{
+				for (int k = 1; k <= 5; k++)
+				{
+					for (int l = 1; l <= 2; l++)
+					{
+						String insert = QueryBuilder.insertInto("clustering") //
+								.value("a", i)
+								.value("b", j)
+								.value("c", k)
+								.value("d", l)
+								.toString();
+						session.execute(insert);
+					}
+				}
+			}
+		}
 
-		System.out.println(result.getExecutionInfo().getQueriedHost());
+		PreparedStatement preparedStatement1 = session
+				.prepare("select * from clustering where a=? and b>? and b<=?");
+		BoundStatement boundStatement2 = preparedStatement1.bind(1, 1, 3);
+		List<Row> rows = session.execute(boundStatement2).all();
+		assertThat(rows.size()).isEqualTo(10);
+	}
+
+	@Test
+	public void should_find_primary_key() throws Exception
+	{
+		long id = RandomUtils.nextLong();
+		String insert = QueryBuilder.insertInto("widerow") //
+				.value("id", id)
+				.value("key", "k1")
+				.value("value", "v1")
+				.toString();
+		session.execute(insert);
+
+		String select = QueryBuilder
+				.select("id")
+				.from("widerow")
+				.where(QueryBuilder.eq("id", id))
+				.toString();
+
+		assertThat(session.execute(select).all()).hasSize(1);
 	}
 
 	@Test

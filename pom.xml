@@ -40,7 +40,7 @@
     <cassandra.version>1.2.0</cassandra.version>
     <hector.version>1.1-2</hector.version>
     <cglib.version>2.2.2</cglib.version>
-    <jackson.version>1.9.3</jackson.version>
+    <jackson.version>1.9.2</jackson.version>
     <commons.io.version>2.4</commons.io.version>
     <commons.collections.version>3.2.1</commons.collections.version>
     <reflections.version>0.9.9-RC1</reflections.version>

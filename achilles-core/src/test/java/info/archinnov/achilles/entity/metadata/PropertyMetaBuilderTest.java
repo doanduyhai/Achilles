@@ -64,14 +64,14 @@ public class PropertyMetaBuilderTest {
 
         PropertyMeta<Void, String> built = PropertyMetaBuilder
                 .factory()
-                .type(MULTIKEY)
+                .type(CLUSTERED_KEY)
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
                 .build(Void.class, String.class);
 
-        assertThat(built.type()).isEqualTo(MULTIKEY);
+        assertThat(built.type()).isEqualTo(CLUSTERED_KEY);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);

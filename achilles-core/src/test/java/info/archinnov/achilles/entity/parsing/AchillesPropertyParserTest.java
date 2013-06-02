@@ -599,7 +599,7 @@ public class AchillesPropertyParserTest
 		PropertyMeta<?, ?> meta = parser.parse(context);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
-		assertThat(meta.getExternalCFName()).isEqualTo("xxx");
+		assertThat(meta.getExternalTableName()).isEqualTo("xxx");
 		assertThat(meta.getPropertyName()).isEqualTo("tweets");
 		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
 
@@ -653,7 +653,7 @@ public class AchillesPropertyParserTest
 
 		assertThat(meta.type()).isEqualTo(COUNTER_WIDE_MAP);
 		assertThat(meta.getPropertyName()).isEqualTo("counters");
-		assertThat(meta.getExternalCFName()).isEqualTo("counter_xxx");
+		assertThat(meta.getExternalTableName()).isEqualTo("counter_xxx");
 		assertThat(meta.getValueClass()).isEqualTo(Counter.class);
 		assertThat(meta.getKeyClass()).isEqualTo(UUID.class);
 

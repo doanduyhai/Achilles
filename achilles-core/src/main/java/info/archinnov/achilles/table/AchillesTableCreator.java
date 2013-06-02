@@ -34,7 +34,7 @@ public abstract class AchillesTableCreator
 					validateOrCreateCFForWideMap(propertyMeta, entityMeta
 							.getIdMeta()
 							.getValueClass(), configContext.isForceColumnFamilyCreation(),
-							propertyMeta.getExternalCFName(), entityMeta.getClassName());
+							propertyMeta.getExternalTableName(), entityMeta.getClassName());
 				}
 			}
 

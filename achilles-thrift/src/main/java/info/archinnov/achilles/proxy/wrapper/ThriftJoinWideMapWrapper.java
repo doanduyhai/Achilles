@@ -250,7 +250,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 
 	private String getExternalCFName()
 	{
-		return propertyMeta.getExternalCFName();
+		return propertyMeta.getExternalTableName();
 	}
 
 	public void setId(Object id)

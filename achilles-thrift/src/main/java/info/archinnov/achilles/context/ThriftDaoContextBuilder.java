@@ -98,7 +98,7 @@ public class ThriftDaoContextBuilder
 		Class<?> valueClass = propertyMeta.getValueClass();
 		ThriftGenericWideRowDao dao;
 
-		String externalCFName = propertyMeta.getExternalCFName();
+		String externalCFName = propertyMeta.getExternalTableName();
 		AchillesConsistencyLevelPolicy consistencyPolicy = configContext.getConsistencyPolicy();
 		if (isSupportedType(valueClass))
 		{
@@ -132,12 +132,12 @@ public class ThriftDaoContextBuilder
 		ThriftGenericWideRowDao joinDao = new ThriftGenericWideRowDao(
 				cluster, //
 				keyspace, //
-				propertyMeta.getExternalCFName(),//
+				propertyMeta.getExternalTableName(),//
 				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(),//
 				new Pair<Class<?>, Class<?>>(propertyMeta.getIdClass(), joinEntityMeta.getIdClass()));
 
-		log.debug("Building join dao for wide row {}", propertyMeta.getExternalCFName());
+		log.debug("Building join dao for wide row {}", propertyMeta.getExternalTableName());
 
-		wideRowDaosMap.put(propertyMeta.getExternalCFName(), joinDao);
+		wideRowDaosMap.put(propertyMeta.getExternalTableName(), joinDao);
 	}
 }

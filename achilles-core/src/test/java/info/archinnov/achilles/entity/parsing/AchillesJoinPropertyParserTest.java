@@ -395,7 +395,7 @@ public class AchillesJoinPropertyParserTest
 
 		parser.fillJoinWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
 
-		assertThat(propertyMeta.getExternalCFName()).isEqualTo("externalTableName");
+		assertThat(propertyMeta.getExternalTableName()).isEqualTo("externalTableName");
 		assertThat((Class<Long>) propertyMeta.getIdClass()).isEqualTo(Long.class);
 
 		assertThat(

@@ -77,7 +77,7 @@ public class ThriftWideMapWrapperTest
 	@Before
 	public void setUp()
 	{
-		when(wideMapMeta.getExternalCFName()).thenReturn("external_cf");
+		when(wideMapMeta.getExternalTableName()).thenReturn("external_cf");
 		when((Class<Long>) wideMapMeta.getIdClass()).thenReturn(Long.class);
 		when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
 		when(thriftCompositeFactory.createBaseComposite(wideMapMeta, 12)).thenReturn(comp);

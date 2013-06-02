@@ -201,7 +201,7 @@ public class ThriftCompositeTransformer
 		return ThriftCounterWrapperBuilder.builder(context) //
 				.columnName(hColumn.getName())
 				//
-				.counterDao(context.findWideRowDao(propertyMeta.getExternalCFName()))
+				.counterDao(context.findWideRowDao(propertyMeta.getExternalTableName()))
 				//
 				.readLevel(propertyMeta.getReadConsistencyLevel())
 				//

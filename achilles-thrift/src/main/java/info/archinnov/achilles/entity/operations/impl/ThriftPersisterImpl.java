@@ -337,7 +337,7 @@ public class ThriftPersisterImpl
 				propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
 				context.getPrimaryKey());
 
-		String externalColumnFamilyName = propertyMeta.getExternalCFName();
+		String externalColumnFamilyName = propertyMeta.getExternalTableName();
 		ThriftGenericWideRowDao findColumnFamilyDao = context
 				.findWideRowDao(externalColumnFamilyName);
 		findColumnFamilyDao.removeRowBatch(primaryKey,

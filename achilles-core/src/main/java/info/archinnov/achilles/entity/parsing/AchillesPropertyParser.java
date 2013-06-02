@@ -95,7 +95,7 @@ public class AchillesPropertyParser {
         Field field = context.getCurrentField();
 
         Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = MULTIKEY;
+        PropertyType type = CLUSTERED_KEY;
 
         MultiKeyProperties multiKeyProperties = parseMultiKey(field.getType());
 
@@ -416,7 +416,7 @@ public class AchillesPropertyParser {
                             + "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
 
         }
-        propertyMeta.setExternalCfName(externalCFName);
+        propertyMeta.setExternalTableName(externalCFName);
         if (context.isJoinColumn()) {
             context.getJoinWideMaps().put(propertyMeta, externalCFName);
         } else {

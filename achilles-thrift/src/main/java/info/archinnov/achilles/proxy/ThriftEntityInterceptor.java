@@ -62,7 +62,7 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 	{
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context.getEntityMeta().getTableName()
-				: propertyMeta.getExternalCFName();
+				: propertyMeta.getExternalTableName();
 
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
@@ -82,7 +82,7 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 	{
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		ThriftGenericWideRowDao counterWideMapDao = thriftContext.findWideRowDao(propertyMeta
-				.getExternalCFName());
+				.getExternalTableName());
 
 		return ThriftCounterWideMapWrapperBuilder //
 				.builder(key, counterWideMapDao, propertyMeta)
@@ -101,7 +101,7 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 
 		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		String columnFamilyName = context.isWideRow() ? context.getEntityMeta().getTableName()
-				: propertyMeta.getExternalCFName();
+				: propertyMeta.getExternalTableName();
 		ThriftGenericWideRowDao wideRowDao = thriftContext.findWideRowDao(columnFamilyName);
 
 		return ThriftJoinWideMapWrapperBuilder //

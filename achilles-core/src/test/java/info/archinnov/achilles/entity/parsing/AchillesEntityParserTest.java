@@ -194,8 +194,8 @@ public class AchillesEntityParserTest
 		assertThat((Class) joinPropertyMetaToBeFilled.get(creator)).isEqualTo(UserBean.class);
 		assertThat((Class) joinPropertyMetaToBeFilled.get(linkedUsers)).isEqualTo(UserBean.class);
 
-		assertThat(meta.getConsistencyLevels().left).isEqualTo(ConsistencyLevel.ONE);
-		assertThat(meta.getConsistencyLevels().right).isEqualTo(ConsistencyLevel.ALL);
+		assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(meta.getEagerMetas()).containsOnly(name, age, followers, preferences);
 		assertThat(meta.getEagerGetters()).containsOnly(name.getGetter(), age.getGetter(),
@@ -301,7 +301,7 @@ public class AchillesEntityParserTest
 		assertThat(meta).isNotNull();
 		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
 		assertThat(usersPropertyMeta.type()).isEqualTo(WIDE_MAP);
-		assertThat(usersPropertyMeta.getExternalCFName()).isEqualTo("external_users");
+		assertThat(usersPropertyMeta.getExternalTableName()).isEqualTo("external_users");
 		assertThat((Class<Long>) usersPropertyMeta.getIdClass()).isEqualTo(Long.class);
 	}
 
@@ -314,7 +314,7 @@ public class AchillesEntityParserTest
 		assertThat(meta).isNotNull();
 		PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
 		assertThat(usersPropertyMeta.type()).isEqualTo(JOIN_WIDE_MAP);
-		assertThat(usersPropertyMeta.getExternalCFName()).isEqualTo("external_users");
+		assertThat(usersPropertyMeta.getExternalTableName()).isEqualTo("external_users");
 		assertThat((Class<Long>) usersPropertyMeta.getIdClass()).isEqualTo(Long.class);
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(usersPropertyMeta)).isEqualTo(
 				UserBean.class);

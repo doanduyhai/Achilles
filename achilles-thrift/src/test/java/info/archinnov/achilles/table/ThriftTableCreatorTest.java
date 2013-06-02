@@ -218,7 +218,7 @@ public class ThriftTableCreatorTest
 		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class)
 				.field("externalWideMap")
-				.externalCf("externalCF")
+				.externalTable("externalCF")
 				.type(PropertyType.WIDE_MAP)
 				.build();
 
@@ -295,7 +295,7 @@ public class ThriftTableCreatorTest
 		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class)
 				.field("externalWideMap")
-				.externalCf("externalCF")
+				.externalTable("externalCF")
 				.type(PropertyType.WIDE_MAP)
 				.idClass(Long.class)
 				.build();
@@ -338,7 +338,7 @@ public class ThriftTableCreatorTest
 		PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class)
 				.field("externalWideMap")
-				.externalCf("externalCF")
+				.externalTable("externalCF")
 				.type(PropertyType.WIDE_MAP)
 				.idClass(Long.class)
 				.entityClassName("testEntity")
@@ -364,7 +364,7 @@ public class ThriftTableCreatorTest
 		PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder //
 				.noClass(Integer.class, String.class)
 				.field("externalWideMap")
-				.externalCf("externalCF")
+				.externalTable("externalCF")
 				.idClass(Long.class)
 				.type(PropertyType.WIDE_MAP)
 				.build();

@@ -477,7 +477,7 @@ public class ThriftEntityInterceptorTest
 		when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
 		when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(WIDE_MAP);
-		when(propertyMeta.getExternalCFName()).thenReturn("geo_positions");
+		when(propertyMeta.getExternalTableName()).thenReturn("geo_positions");
 		when(propertyMeta.getIdClass()).thenReturn(Long.class);
 
 		when(columnFamilyDaosMap.get("geo_positions")).thenReturn(externalWideMapDao);
@@ -502,7 +502,7 @@ public class ThriftEntityInterceptorTest
 		when(getterMetas.containsKey(joinUsersGetter)).thenReturn(true);
 		when(getterMetas.get(joinUsersGetter)).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-		when(propertyMeta.getExternalCFName()).thenReturn("join_users");
+		when(propertyMeta.getExternalTableName()).thenReturn("join_users");
 		when(propertyMeta.getIdClass()).thenReturn(Long.class);
 
 		Object name = this.interceptor.intercept(bean, joinUsersGetter, (Object[]) null, proxy);

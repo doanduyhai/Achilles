@@ -86,7 +86,7 @@ public class AchillesJoinPropertyParser
 						.getCurrentEntityClass()
 						.getCanonicalName(), idMeta.getPropertyName());
 
-		joinPropertyMeta.setExternalCfName(AchillesTableHelper
+		joinPropertyMeta.setExternalTableName(AchillesTableHelper
 				.normalizerAndValidateColumnFamilyName(externalTableName));
 		joinPropertyMeta.setIdClass(idMeta.getValueClass());
 		context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);

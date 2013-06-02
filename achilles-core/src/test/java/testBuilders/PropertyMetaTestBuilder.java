@@ -46,10 +46,11 @@ public class PropertyMetaTestBuilder<T, K, V>
 	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
 	private List<Class<?>> componentClasses;
+	private List<String> componentNames;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
-	private String externalColumnFamilyName;
+	private String externalTableName;
 
 	private boolean buildAccessors;
 	private Class<?> idClass;
@@ -117,10 +118,12 @@ public class PropertyMetaTestBuilder<T, K, V>
 			propertyMeta.setJoinProperties(joinProperties);
 		}
 
-		if (componentClasses != null || componentGetters != null || componentSetters != null)
+		if (componentClasses != null || componentNames != null || componentGetters != null
+				|| componentSetters != null)
 		{
 			MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
 			multiKeyProperties.setComponentClasses(componentClasses);
+			multiKeyProperties.setComponentNames(componentNames);
 			multiKeyProperties.setComponentGetters(componentGetters);
 			multiKeyProperties.setComponentSetters(componentSetters);
 
@@ -135,9 +138,9 @@ public class PropertyMetaTestBuilder<T, K, V>
 			propertyMeta.setSingleKey(true);
 		}
 
-		if (externalColumnFamilyName != null)
+		if (externalTableName != null)
 		{
-			propertyMeta.setExternalCfName(externalColumnFamilyName);
+			propertyMeta.setExternalTableName(externalTableName);
 		}
 
 		if (counterIdMeta != null || fqcn != null)
@@ -193,9 +196,9 @@ public class PropertyMetaTestBuilder<T, K, V>
 		return this;
 	}
 
-	public PropertyMetaTestBuilder<T, K, V> externalCf(String externalCf)
+	public PropertyMetaTestBuilder<T, K, V> externalTable(String externalTableName)
 	{
-		this.externalColumnFamilyName = externalCf;
+		this.externalTableName = externalTableName;
 		return this;
 	}
 
@@ -208,6 +211,18 @@ public class PropertyMetaTestBuilder<T, K, V>
 	public PropertyMetaTestBuilder<T, K, V> compClasses(Class<?>... componentClasses)
 	{
 		this.componentClasses = Arrays.asList(componentClasses);
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> compNames(List<String> componentNames)
+	{
+		this.componentNames = componentNames;
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> compNames(String... componentNames)
+	{
+		this.componentNames = Arrays.asList(componentNames);
 		return this;
 	}
 

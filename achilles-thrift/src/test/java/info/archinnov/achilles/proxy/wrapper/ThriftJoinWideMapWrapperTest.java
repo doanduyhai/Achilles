@@ -158,7 +158,7 @@ public class ThriftJoinWideMapWrapperTest
 				.thriftImmediateFlushContext(thriftImmediateFlushContext)
 				.build();
 		wrapper.setContext(context);
-		when(propertyMeta.getExternalCFName()).thenReturn("external_cf");
+		when(propertyMeta.getExternalTableName()).thenReturn("external_cf");
 		when((Class<Long>) propertyMeta.getIdClass()).thenReturn(Long.class);
 	}
 

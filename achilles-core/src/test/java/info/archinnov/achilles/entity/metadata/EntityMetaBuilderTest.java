@@ -4,9 +4,6 @@ import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMe
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -84,6 +81,7 @@ public class EntityMetaBuilderTest
 		assertThat(meta.getEagerMetas()).containsOnly(simpleMeta);
 		assertThat(meta.getEagerGetters()).containsOnly(simpleMeta.getGetter());
 
+		assertThat(meta.getAllMetas()).contains(idMeta, simpleMeta);
 	}
 
 	@Test

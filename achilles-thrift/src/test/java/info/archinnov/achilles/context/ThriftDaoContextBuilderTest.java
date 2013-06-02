@@ -128,7 +128,7 @@ public class ThriftDaoContextBuilderTest
 		PropertyMeta<UUID, String> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, String.class)
 				.field("id")
-				.externalCf("externalCf")
+				.externalTable("externalCf")
 				.type(PropertyType.WIDE_MAP)
 				.build();
 
@@ -169,7 +169,7 @@ public class ThriftDaoContextBuilderTest
 		PropertyMeta<UUID, UserBean> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(UUID.class, UserBean.class)
 				.field("friendsWideMap")
-				.externalCf("externalCf")
+				.externalTable("externalCf")
 				.type(PropertyType.WIDE_MAP)
 				.build();
 
@@ -210,7 +210,7 @@ public class ThriftDaoContextBuilderTest
 		PropertyMeta<String, Counter> geoPositionsMeta = PropertyMetaTestBuilder //
 				.completeBean(String.class, Counter.class)
 				.field("popularTopics")
-				.externalCf("externalCf")
+				.externalTable("externalCf")
 				.type(PropertyType.COUNTER_WIDE_MAP)
 				.build();
 
@@ -254,7 +254,7 @@ public class ThriftDaoContextBuilderTest
 		PropertyMeta<Long, UserBean> joinUsersMeta = PropertyMetaTestBuilder //
 				.completeBean(Long.class, UserBean.class)
 				.field("joinUsers")
-				.externalCf("externalCf")
+				.externalTable("externalCf")
 				.joinMeta(joinMeta)
 				.type(PropertyType.JOIN_WIDE_MAP)
 				.idClass(Long.class)
