@@ -56,9 +56,6 @@ public class ThriftEntityMapper extends AchillesEntityMapper
 				continue;
 			}
 
-			// PropertyMeta<K, V> propertyMeta = entityMeta
-			// .<K, V> getPropertyMetaByProperty(propertyName);
-
 			PropertyMeta<?, ?> propertyMeta = propertyMetas.get(propertyName);
 
 			if (propertyMeta.type() == PropertyType.SIMPLE)
