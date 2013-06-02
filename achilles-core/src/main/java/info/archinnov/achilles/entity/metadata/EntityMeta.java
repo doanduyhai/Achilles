@@ -18,12 +18,13 @@ import org.apache.commons.lang.StringUtils;
 public class EntityMeta
 {
 
-	public static final String COLUMN_FAMILY_PATTERN = "[a-zA-Z0-9_]+";
+	public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
 	private String className;
 	private String tableName;
 	private Long serialVersionUID;
 	private Class<?> idClass;
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
+	private List<PropertyMeta<?, ?>> allMetas;
 	private List<PropertyMeta<?, ?>> eagerMetas;
 	private List<Method> eagerGetters;
 	private PropertyMeta<?, ?> idMeta;
@@ -112,6 +113,16 @@ public class EntityMeta
 		this.wideRow = wideRow;
 	}
 
+	public ConsistencyLevel getReadConsistencyLevel()
+	{
+		return this.consistencyLevels.left;
+	}
+
+	public ConsistencyLevel getWriteConsistencyLevel()
+	{
+		return this.consistencyLevels.right;
+	}
+
 	public Pair<ConsistencyLevel, ConsistencyLevel> getConsistencyLevels()
 	{
 		return this.consistencyLevels;
@@ -150,6 +161,16 @@ public class EntityMeta
 	public void setEagerGetters(List<Method> eagerGetters)
 	{
 		this.eagerGetters = eagerGetters;
+	}
+
+	public List<PropertyMeta<?, ?>> getAllMetas()
+	{
+		return allMetas;
+	}
+
+	public void setAllMetas(List<PropertyMeta<?, ?>> allMetas)
+	{
+		this.allMetas = allMetas;
 	}
 
 	@Override

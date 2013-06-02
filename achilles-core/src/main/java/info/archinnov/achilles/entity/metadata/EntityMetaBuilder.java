@@ -32,6 +32,7 @@ public class EntityMetaBuilder
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private List<PropertyMeta<?, ?>> eagerMetas;
+	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
 
 	public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
 	{
@@ -49,8 +50,7 @@ public class EntityMetaBuilder
 		Validator.validateNotNull(idMeta, "idMeta should not be null");
 		Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
 		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
-		Validator.validateRegExp(columnFamilyName, EntityMeta.COLUMN_FAMILY_PATTERN,
-				"columnFamilyName");
+		Validator.validateRegExp(columnFamilyName, EntityMeta.TABLE_PATTERN, "columnFamilyName");
 
 		EntityMeta meta = new EntityMeta();
 
@@ -69,6 +69,10 @@ public class EntityMetaBuilder
 			meta.setEagerMetas(Collections.unmodifiableList(eagerMetas));
 			meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
 		}
+
+		allMetas.add(idMeta);
+		allMetas.addAll(propertyMetas.values());
+		meta.setAllMetas(allMetas);
 
 		return meta;
 	}
