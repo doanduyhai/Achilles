@@ -26,7 +26,7 @@ public class AchillesEntityMapper
 
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityMapper.class);
 
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	protected AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 
 	protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta<?, ?> listMeta,
 			Object value)

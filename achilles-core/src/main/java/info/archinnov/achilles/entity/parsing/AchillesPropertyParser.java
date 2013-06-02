@@ -74,7 +74,7 @@ public class AchillesPropertyParser {
         } else if (WideMap.class.isAssignableFrom(fieldType)) {
             propertyMeta = parseWideMapProperty(context);
         } else if (context.isMultiKeyPrimaryKey()) {
-            propertyMeta = parseMultiKeyId(context);
+            propertyMeta = parseClusteredId(context);
         } else {
             propertyMeta = parseSimpleProperty(context);
         }
@@ -86,7 +86,7 @@ public class AchillesPropertyParser {
         return propertyMeta;
     }
 
-    protected PropertyMeta<?, ?> parseMultiKeyId(AchillesPropertyParsingContext context) {
+    protected PropertyMeta<?, ?> parseClusteredId(AchillesPropertyParsingContext context) {
         log.debug("Parsing property {} as multikey id of entity class {}", context.getCurrentPropertyName(), context
                 .getCurrentEntityClass()
                 .getCanonicalName());
