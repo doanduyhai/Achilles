@@ -37,7 +37,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
-    <cassandra.version>1.2.0</cassandra.version>
+    <cassandra.version>1.2.4</cassandra.version>
     <hector.version>1.1-2</hector.version>
     <cglib.version>2.2.2</cglib.version>
     <jackson.version>1.9.2</jackson.version>
