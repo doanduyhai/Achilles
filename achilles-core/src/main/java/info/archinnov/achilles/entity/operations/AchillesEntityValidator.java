@@ -2,9 +2,11 @@ package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -40,15 +42,26 @@ public class AchillesEntityValidator
 	public void validateEntity(Object entity, EntityMeta entityMeta)
 	{
 		log.debug("Validate entity {}", entity);
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
 		Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
 				+ " is not managed by Achilles");
 
-		Object id = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
+		Object id = invoker.getPrimaryKey(entity, idMeta);
 		if (id == null)
 		{
 			throw new IllegalArgumentException("Cannot get primary key for entity "
 					+ entity.getClass().getCanonicalName());
+		}
+		if (!idMeta.isSingleKey())
+		{
+			for (Method getter : idMeta.getMultiKeyProperties().getComponentGetters())
+			{
+				Object component = invoker.getValueFromField(id, getter);
+				Validator.validateNotNull(component,
+						"The entity " + entity.getClass().getCanonicalName() + " clustered key '"
+								+ idMeta.getPropertyName() + "' components should not be null");
+			}
 		}
 	}
 

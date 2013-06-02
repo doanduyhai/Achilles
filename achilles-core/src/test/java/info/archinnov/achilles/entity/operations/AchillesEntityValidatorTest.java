@@ -6,6 +6,8 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
@@ -15,11 +17,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
+import parser.entity.ClusteredId;
 import testBuilders.CompleteBeanTestBuilder;
 
 /**
@@ -49,7 +53,7 @@ public class AchillesEntityValidatorTest
 	@Mock
 	private EntityMeta entityMeta;
 
-	@Mock
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
@@ -88,6 +92,38 @@ public class AchillesEntityValidatorTest
 				+ CompleteBean.class.getCanonicalName());
 
 		achillesEntityValidator.validateEntity(bean, entityMetaMap);
+	}
+
+	@Test
+	public void should_validate_clustered_id() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		ClusteredId clusteredId = new ClusteredId(11L, "name");
+
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(clusteredId);
+		when(idMeta.isSingleKey()).thenReturn(false);
+
+		Method userIdGetter = ClusteredId.class.getMethod("getUserId");
+		Method nameGetter = ClusteredId.class.getMethod("getName");
+
+		when(idMeta.getMultiKeyProperties().getComponentGetters()).thenReturn(
+				Arrays.asList(userIdGetter, nameGetter));
+
+		when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
+		when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
+
+		achillesEntityValidator.validateEntity(bean, entityMeta);
+	}
+
+	@Test
+	public void should_validate_simple_id() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
+		when(idMeta.isSingleKey()).thenReturn(true);
+
+		achillesEntityValidator.validateEntity(bean, entityMeta);
+
 	}
 
 	@Test
