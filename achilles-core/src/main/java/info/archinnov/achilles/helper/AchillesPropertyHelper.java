@@ -116,19 +116,6 @@ public class AchillesPropertyHelper
 			Key keyAnnotation = multiKeyField.getAnnotation(Key.class);
 			if (keyAnnotation != null)
 			{
-				Column column = multiKeyField.getAnnotation(Column.class);
-				if (column != null)
-				{
-					if (isNotBlank(column.name()))
-					{
-						componentNames.add(column.name());
-					}
-					else
-					{
-						componentNames.add(multiKeyField.getName());
-					}
-				}
-
 				keyCount++;
 				int order = keyAnnotation.order();
 				if (orders.contains(order))
@@ -168,6 +155,18 @@ public class AchillesPropertyHelper
 		for (Integer order : orderList)
 		{
 			Field multiKeyField = components.get(order);
+			Column column = multiKeyField.getAnnotation(Column.class);
+			if (column != null)
+			{
+				if (isNotBlank(column.name()))
+				{
+					componentNames.add(column.name());
+				}
+				else
+				{
+					componentNames.add(multiKeyField.getName());
+				}
+			}
 			componentGetters.add(achillesEntityIntrospector.findGetter(keyClass, multiKeyField));
 			componentSetters.add(achillesEntityIntrospector.findSetter(keyClass, multiKeyField));
 			componentClasses.add(multiKeyField.getType());
