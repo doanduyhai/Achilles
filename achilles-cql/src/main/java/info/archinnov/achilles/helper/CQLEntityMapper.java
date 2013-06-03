@@ -27,11 +27,14 @@ public class CQLEntityMapper extends AchillesEntityMapper
 
 	public void setPropertyToEntity(Row row, PropertyMeta<?, ?> pm, Object entity)
 	{
-		String propertyName = pm.getPropertyName();
-		if (!row.isNull(propertyName))
+		if (row != null)
 		{
-			Object value = cqlRowInvoker.invokeOnRowForEagerFields(row, pm);
-			invoker.setValueToField(entity, pm.getSetter(), value);
+			String propertyName = pm.getPropertyName();
+			if (!row.isNull(propertyName))
+			{
+				Object value = cqlRowInvoker.invokeOnRowForEagerFields(row, pm);
+				invoker.setValueToField(entity, pm.getSetter(), value);
+			}
 		}
 	}
 

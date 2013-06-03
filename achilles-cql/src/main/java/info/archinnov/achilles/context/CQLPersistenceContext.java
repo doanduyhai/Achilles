@@ -1,7 +1,14 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
+
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 
 /**
  * CQLPersistenceContext
@@ -51,14 +58,38 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 				entityClass, joinId);
 	}
 
-	public CQLDaoContext getDaoContext()
+	public boolean checkForEntityExistence()
 	{
-		return daoContext;
+		return daoContext.checkForEntityExistence(this);
 	}
 
-	public CQLAbstractFlushContext getFlushContext()
+	public Row eagerLoadEntity()
 	{
-		return flushContext;
+		return daoContext.eagerLoadEntity(this);
 	}
 
+	public Row loadProperty(PropertyMeta<?, ?> pm)
+	{
+		return daoContext.loadProperty(this, pm);
+	}
+
+	public void bindForInsert()
+	{
+		daoContext.bindForInsert(this);
+	}
+
+	public void bindForRemoval(String tableName, ConsistencyLevel writeLevel)
+	{
+		daoContext.bindForRemoval(this, tableName, writeLevel);
+	}
+
+	public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
+	{
+		flushContext.pushBoundStatement(boundStatement, writeLevel);
+	}
+
+	public ResultSet executeImmediateWithConsistency(Session session, BoundStatement bs)
+	{
+		return flushContext.executeImmediateWithConsistency(session, bs, entityMeta);
+	}
 }

@@ -3,7 +3,8 @@ package info.archinnov.achilles.context;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.helper.CQLQueryGenerator;
+import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.cache.StatementCacheKey;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +16,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
+import com.google.common.cache.Cache;
 
 /**
  * CQLDaoContextBuilderTest
@@ -38,7 +40,7 @@ public class CQLDaoContextBuilderTest
 	private Session session;
 
 	@Mock
-	private CQLQueryGenerator queryGenerator;
+	private CQLPreparedStatementGenerator queryGenerator;
 
 	@Mock
 	private PreparedStatement insertPS;
@@ -66,16 +68,23 @@ public class CQLDaoContextBuilderTest
 		entityMetaMap.put(CompleteBean.class, meta);
 
 		when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);
-		when(queryGenerator.prepareSelectForExistenceCheckPS(session, meta)).thenReturn(
-				selectForExistenceCheckPS);
 		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
 		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
 
 		CQLDaoContext actual = builder.build(session, entityMetaMap);
 
-		assertThat(actual.getInsertPSs()).containsValue(insertPS);
-		assertThat(actual.getSelectForExistenceCheckPSs()).containsValue(selectForExistenceCheckPS);
-		assertThat(actual.getSelectEagerPSs()).containsValue(selectEagerPS);
-		assertThat(actual.getRemovePSs()).containsValue(removePSs);
+		assertThat(
+				(Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs"))
+				.containsValue(insertPS);
+		assertThat(
+				(Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual,
+						"selectEagerPSs")).containsValue(selectEagerPS);
+		assertThat(
+				(Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual,
+						"removePSs")).containsKey(CompleteBean.class);
+
+		assertThat(
+				(Cache<StatementCacheKey, PreparedStatement>) Whitebox.getInternalState(actual,
+						"dynamicPSCache")).isInstanceOf(Cache.class);
 	}
 }

@@ -1,15 +1,16 @@
 package info.archinnov.achilles.entity.operations.impl;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLAbstractFlushContext;
-import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +22,6 @@ import javax.persistence.CascadeType;
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
 
-import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
-import com.datastax.driver.core.BoundStatement;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -58,9 +57,6 @@ public class CQLPersisterImplTest
 	private CQLPersistenceContext context;
 
 	@Mock
-	private CQLDaoContext daoContext;
-
-	@Mock
 	private CQLPersistenceContext joinContext;
 
 	@Mock
@@ -71,17 +67,13 @@ public class CQLPersisterImplTest
 
 	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
 
-	private Long primaryKey = RandomUtils.nextLong();
-
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Before
 	public void setUp()
 	{
 		when(context.getEntity()).thenReturn(entity);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
-		when(context.getDaoContext()).thenReturn(daoContext);
 
 		when(entityMeta.getAllMetas()).thenReturn(allMetas);
 		allMetas.clear();
@@ -91,16 +83,8 @@ public class CQLPersisterImplTest
 	public void should_persist() throws Exception
 	{
 
-		BoundStatement boundStatement = mock(BoundStatement.class);
-		when(daoContext.bindForInsert(context)).thenReturn(boundStatement);
-
-		CQLAbstractFlushContext flushContext = mock(CQLAbstractFlushContext.class);
-		when(context.getFlushContext()).thenReturn(flushContext);
-
 		persisterImpl.persist(entityPersister, context);
-
-		verify(flushContext).pushBoundStatement(boundStatement, entityMeta);
-
+		verify(context).bindForInsert();
 	}
 
 	@Test
@@ -235,7 +219,7 @@ public class CQLPersisterImplTest
 	public void should_check_for_entity_existence() throws Exception
 	{
 
-		when(daoContext.checkForEntityExistence(context)).thenReturn(true);
+		when(context.checkForEntityExistence()).thenReturn(true);
 
 		boolean actual = persisterImpl.doesEntityExist(context);
 
@@ -246,16 +230,11 @@ public class CQLPersisterImplTest
 	public void should_remove() throws Exception
 	{
 		when(entityMeta.getTableName()).thenReturn("table");
-
-		BoundStatement boundStatement = mock(BoundStatement.class);
-		when(daoContext.bindForRemoval(context, "table")).thenReturn(boundStatement);
-
-		CQLAbstractFlushContext flushContext = mock(CQLAbstractFlushContext.class);
-		when(context.getFlushContext()).thenReturn(flushContext);
+		when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		persisterImpl.remove(context);
 
-		verify(flushContext).pushBoundStatement(boundStatement, entityMeta);
+		verify(context).bindForRemoval("table", EACH_QUORUM);
 	}
 
 	@Test
@@ -266,18 +245,13 @@ public class CQLPersisterImplTest
 				.field("user")
 				.type(PropertyType.WIDE_MAP)
 				.externalTable("external_table")
+				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
 				.build();
 
 		allMetas.add(wideMapMeta);
 
-		CQLAbstractFlushContext flushContext = mock(CQLAbstractFlushContext.class);
-		when(context.getFlushContext()).thenReturn(flushContext);
-
-		BoundStatement boundStatement = mock(BoundStatement.class);
-		when(daoContext.bindForRemoval(context, "external_table")).thenReturn(boundStatement);
-
 		persisterImpl.removeLinkedTables(context);
 
-		verify(flushContext).pushBoundStatement(boundStatement, wideMapMeta);
+		verify(context).bindForRemoval("external_table", EACH_QUORUM);
 	}
 }

@@ -129,7 +129,9 @@ public class PropertyMetaTestBuilder<T, K, V>
 
 			propertyMeta.setMultiKeyProperties(multiKeyProperties);
 		}
-		if (MultiKey.class.isAssignableFrom(keyClass))
+
+		if (propertyMeta.getMultiKeyProperties() != null
+				|| MultiKey.class.isAssignableFrom(keyClass))
 		{
 			propertyMeta.setSingleKey(false);
 		}

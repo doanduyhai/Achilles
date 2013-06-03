@@ -95,6 +95,21 @@ public class CQLEntityMapperTest
 	}
 
 	@Test
+	public void should_do_nothing_when_null_row() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		mapper.setPropertyToEntity((Row) null, pm, entity);
+
+		verifyZeroInteractions(cqlRowInvoker, invoker);
+	}
+
+	@Test
 	public void should_set_property_to_entity() throws Exception
 	{
 		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder

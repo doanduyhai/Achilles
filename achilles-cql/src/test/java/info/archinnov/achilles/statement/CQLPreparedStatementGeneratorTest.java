@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.statement;
 
 import static info.archinnov.achilles.context.CQLDaoContext.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -32,9 +34,12 @@ import com.datastax.driver.core.Session;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLQueryGeneratorTest
+public class CQLPreparedStatementGeneratorTest
 {
-	private CQLQueryGenerator helper = new CQLQueryGenerator();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
+	private CQLPreparedStatementGenerator helper = new CQLPreparedStatementGenerator();
 
 	@Mock
 	private Session session;
@@ -120,30 +125,8 @@ public class CQLQueryGeneratorTest
 	}
 
 	@Test
-	public void should_prepare_select_for_existence_check() throws Exception
+	public void should_prepare_select_field_ps() throws Exception
 	{
-
-		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.type(PropertyType.SIMPLE)
-				.build();
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
-		meta.setIdMeta(idMeta);
-
-		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-		PreparedStatement actual = helper.prepareSelectForExistenceCheckPS(session, meta);
-
-		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id FROM table WHERE id=?;");
-	}
-
-	@Test
-	public void should_orepare_select_ps_map_for_all_fields() throws Exception
-	{
-		List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
 
 		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
@@ -157,38 +140,63 @@ public class CQLQueryGeneratorTest
 				.type(PropertyType.SIMPLE)
 				.build();
 
-		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+		EntityMeta meta = new EntityMeta();
+		meta.setTableName("table");
+		meta.setIdMeta(idMeta);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+		PreparedStatement actual = helper.prepareSelectFieldPS(session, meta, nameMeta);
+
+		assertThat(actual).isSameAs(ps);
+
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
+	}
+
+	@Test
+	public void should_prepare_select_field_ps_for_clustered_id() throws Exception
+	{
+
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
-				.field("age")
-				.type(PropertyType.SIMPLE)
+				.field("id")
+				.type(PropertyType.CLUSTERED_KEY)
+				.compNames("id", "a", "b")
 				.build();
-
-		PropertyMeta<?, ?> proxyTypeMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class)
-				.field("proxyType")
-				.type(PropertyType.WIDE_MAP)
-				.build();
-
-		allMetas.add(nameMeta);
-		allMetas.add(ageMeta);
-		allMetas.add(proxyTypeMeta);
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-		meta.setAllMetas(allMetas);
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		Map<String, PreparedStatement> actual = helper.prepareSelectFieldPS(session, meta);
+		PreparedStatement actual = helper.prepareSelectFieldPS(session, meta, idMeta);
 
-		assertThat(actual).hasSize(2);
-		assertThat(actual).containsKey("name");
-		assertThat(actual).containsKey("age");
-		assertThat(actual).containsValue(ps);
+		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getAllValues()).containsOnly("SELECT name FROM table WHERE id=?;",
-				"SELECT age FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"SELECT id,a,b FROM table WHERE id=? AND a=? AND b=?;");
+	}
+
+	@Test
+	public void should_exception_when_preparing_select_for_proxy_type() throws Exception
+	{
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("widemap")
+				.type(PropertyType.WIDE_MAP)
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setClassName("entity");
+
+		exception.expect(IllegalArgumentException.class);
+		exception
+				.expectMessage("Cannot prepare statement for property 'widemap' of entity 'entity' because it is of proxy type");
+
+		helper.prepareSelectFieldPS(session, meta, nameMeta);
+
 	}
 
 	@Test

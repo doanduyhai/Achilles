@@ -396,6 +396,21 @@ public class Cql3Test
 
 	}
 
+	@Test
+	public void should_return_empty_row_when_no_entity_found() throws Exception
+	{
+		long id = RandomUtils.nextLong();
+		String select = QueryBuilder
+				.select("myList")
+				.from("cql3_list")
+				.where(QueryBuilder.eq("id", id))
+				.toString();
+
+		List<Row> rows = session.execute(select).all();
+
+		assertThat(rows).isEmpty();
+	}
+
 	@After
 	public void cleanUp()
 	{

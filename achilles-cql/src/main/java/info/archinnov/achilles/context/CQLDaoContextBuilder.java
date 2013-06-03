@@ -1,13 +1,16 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.helper.CQLQueryGenerator;
+import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.cache.StatementCacheKey;
 
 import java.util.Map;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Function;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 
 /**
@@ -18,7 +21,8 @@ import com.google.common.collect.Maps;
  */
 public class CQLDaoContextBuilder
 {
-	private CQLQueryGenerator queryGenerator = new CQLQueryGenerator();
+	private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
+	private CQLPreparedStatementGenerator queryGenerator = new CQLPreparedStatementGenerator();
 	private Session session;
 
 	private Function<EntityMeta, PreparedStatement> insertPSTransformer = new Function<EntityMeta, PreparedStatement>()
@@ -30,23 +34,6 @@ public class CQLDaoContextBuilder
 		}
 	};
 
-	private Function<EntityMeta, PreparedStatement> selectForExistenceCheckPSTransformer = new Function<EntityMeta, PreparedStatement>()
-	{
-		@Override
-		public PreparedStatement apply(EntityMeta meta)
-		{
-			return queryGenerator.prepareSelectForExistenceCheckPS(session, meta);
-		}
-	};
-
-	private Function<EntityMeta, Map<String, PreparedStatement>> selectFieldPSTransformer = new Function<EntityMeta, Map<String, PreparedStatement>>()
-	{
-		@Override
-		public Map<String, PreparedStatement> apply(EntityMeta meta)
-		{
-			return queryGenerator.prepareSelectFieldPS(session, meta);
-		}
-	};
 	private Function<EntityMeta, PreparedStatement> selectEagerPSTransformer = new Function<EntityMeta, PreparedStatement>()
 	{
 		@Override
@@ -75,20 +62,17 @@ public class CQLDaoContextBuilder
 		Map<Class<?>, PreparedStatement> insertPSMap = Maps.transformValues(entityMetaMap,
 				insertPSTransformer);
 
-		Map<Class<?>, PreparedStatement> selectForExistenceCheckPSMap = Maps.transformValues(
-				entityMetaMap, selectForExistenceCheckPSTransformer);
-
-		Map<Class<?>, Map<String, PreparedStatement>> selectFieldPSMap = Maps.transformValues(
-				entityMetaMap, selectFieldPSTransformer);
-
 		Map<Class<?>, PreparedStatement> selectEagerPSMap = Maps.transformValues(entityMetaMap,
 				selectEagerPSTransformer);
 
 		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = Maps.transformValues(
 				entityMetaMap, removePSTransformer);
+		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder
+				.newBuilder()
+				.maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE)
+				.build();
 
-		return new CQLDaoContext(insertPSMap, selectForExistenceCheckPSMap, selectFieldPSMap,
-				selectEagerPSMap, removePSMap, session);
+		return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap,
+				session);
 	}
-
 }

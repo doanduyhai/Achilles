@@ -23,7 +23,7 @@ public class CQLRowMethodInvoker
 	{
 		String propertyName = pm.getPropertyName();
 		Object value = null;
-		if (!row.isNull(propertyName))
+		if (row != null && !row.isNull(propertyName))
 		{
 			switch (pm.type())
 			{

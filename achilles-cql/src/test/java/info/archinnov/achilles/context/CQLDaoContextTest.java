@@ -1,13 +1,18 @@
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.CQLPreparedStatementBinder;
+import info.archinnov.achilles.statement.cache.CacheManager;
+import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
@@ -30,7 +35,9 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * CQLDaoContextTest
@@ -47,15 +54,17 @@ public class CQLDaoContextTest
 	@InjectMocks
 	private CQLDaoContext daoContext;
 
-	private Map<Class<?>, PreparedStatement> insertPSs = new HashMap<Class<?>, PreparedStatement>();
+	@Mock
+	private Map<Class<?>, PreparedStatement> insertPSs;
 
-	private Map<Class<?>, PreparedStatement> selectForExistenceCheckPSs = new HashMap<Class<?>, PreparedStatement>();
+	@Mock
+	private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
 
-	private Map<Class<?>, Map<String, PreparedStatement>> selectFieldPSs = new HashMap<Class<?>, Map<String, PreparedStatement>>();
+	@Mock
+	private Map<Class<?>, PreparedStatement> selectEagerPSs;
 
-	private Map<Class<?>, PreparedStatement> selectEagerPSs = new HashMap<Class<?>, PreparedStatement>();
-
-	private Map<Class<?>, Map<String, PreparedStatement>> removePSs = new HashMap<Class<?>, Map<String, PreparedStatement>>();
+	@Mock
+	private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 
 	@Mock
 	private Session session;
@@ -64,10 +73,10 @@ public class CQLDaoContextTest
 	private CQLPreparedStatementBinder binder;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private CacheManager cacheManager;
 
 	@Mock
-	private CQLAbstractFlushContext flushContext;
+	private CQLPersistenceContext context;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -84,45 +93,53 @@ public class CQLDaoContextTest
 	public void setUp()
 	{
 		Whitebox.setInternalState(daoContext, "binder", binder);
+		Whitebox.setInternalState(daoContext, "cacheManager", cacheManager);
 		Whitebox.setInternalState(daoContext, "insertPSs", insertPSs);
-		Whitebox.setInternalState(daoContext, "selectForExistenceCheckPSs",
-				selectForExistenceCheckPSs);
-		Whitebox.setInternalState(daoContext, "selectFieldPSs", selectFieldPSs);
+		Whitebox.setInternalState(daoContext, "dynamicPSCache", dynamicPSCache);
 		Whitebox.setInternalState(daoContext, "selectEagerPSs", selectEagerPSs);
 		Whitebox.setInternalState(daoContext, "removePSs", removePSs);
+		Whitebox.setInternalState(daoContext, "session", session);
+
+		entityMeta = new EntityMeta();
+		entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE,
+				EACH_QUORUM));
 
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntity()).thenReturn(entity);
-		when(context.getFlushContext()).thenReturn(flushContext);
 
 		insertPSs.clear();
 		selectEagerPSs.clear();
-		selectForExistenceCheckPSs.clear();
 		removePSs.clear();
 	}
 
 	@Test
 	public void should_bind_for_insert() throws Exception
 	{
-		insertPSs.put(CompleteBean.class, ps);
+		when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
 		when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bs);
 
-		BoundStatement actual = daoContext.bindForInsert(context);
-
-		assertThat(actual).isSameAs(bs);
+		daoContext.bindForInsert(context);
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
 	}
 
 	@Test
 	public void should_check_for_entity_existence() throws Exception
 	{
-		selectForExistenceCheckPSs.put(CompleteBean.class, ps);
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.field("id")
+				.build();
+		entityMeta.setIdMeta(idMeta);
 
-		ResultSet resultSet = mock(ResultSet.class, RETURNS_DEEP_STUBS);
-		when(flushContext.executeImmediateWithConsistency(session, bs, entityMeta)).thenReturn(
-				resultSet);
-		when(resultSet.all().size()).thenReturn(1);
+		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, idMeta))
+				.thenReturn(ps);
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, context.getEntity()))
+				.thenReturn(bs);
+
+		ResultSet resultSet = mock(ResultSet.class);
+		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+		when(resultSet.all()).thenReturn(Arrays.asList(mock(Row.class)));
 
 		boolean actual = daoContext.checkForEntityExistence(context);
 
@@ -132,37 +149,35 @@ public class CQLDaoContextTest
 	@Test
 	public void should_bind_for_removal() throws Exception
 	{
-		removePSs.put(CompleteBean.class, ImmutableMap.of("table", ps));
+		when(removePSs.get(CompleteBean.class)).thenReturn(ImmutableMap.of("table", ps));
 		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
 
-		BoundStatement actual = daoContext.bindForRemoval(context, "table");
+		daoContext.bindForRemoval(context, "table", EACH_QUORUM);
 
-		assertThat(actual).isSameAs(bs);
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
 	}
 
 	@Test
 	public void should_exception_when_removal_ps_not_found_for_a_table() throws Exception
 	{
-		removePSs.put(CompleteBean.class, ImmutableMap.of("some_table", ps));
+		when(removePSs.get(CompleteBean.class)).thenReturn(ImmutableMap.of("some_table", ps));
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Cannot find prepared statement for deletion for table 'table'");
 
-		daoContext.bindForRemoval(context, "table");
+		daoContext.bindForRemoval(context, "table", EACH_QUORUM);
 	}
 
 	@Test
 	public void should_eager_load_entity() throws Exception
 	{
-		selectEagerPSs.put(CompleteBean.class, ps);
+		when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
 		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
-		ResultSet resultSet = mock(ResultSet.class, RETURNS_DEEP_STUBS);
 
-		when(flushContext.executeImmediateWithConsistency(session, bs, entityMeta)).thenReturn(
-				resultSet);
-
+		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
-		when(resultSet.one()).thenReturn(row);
+		when(resultSet.all()).thenReturn(Arrays.asList(row));
+		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
 
 		Row actual = daoContext.eagerLoadEntity(context);
 
@@ -178,23 +193,37 @@ public class CQLDaoContextTest
 				.field("name")
 				.build();
 
-		Map<String, PreparedStatement> mapPs = new HashMap<String, PreparedStatement>();
-		mapPs.put("name", ps);
+		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
+				ps);
 
-		selectFieldPSs.put(CompleteBean.class, mapPs);
 		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
-		ResultSet resultSet = mock(ResultSet.class, RETURNS_DEEP_STUBS);
-
-		when(flushContext.executeImmediateWithConsistency(session, bs, entityMeta)).thenReturn(
-				resultSet);
-
+		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
-		when(resultSet.one()).thenReturn(row);
+		when(resultSet.all()).thenReturn(Arrays.asList(row));
+		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
 
 		Row actual = daoContext.loadProperty(context, pm);
 
 		assertThat(actual).isSameAs(row);
+	}
 
+	@Test
+	public void should_return_null_when_loading_property() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.build();
+
+		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
+				ps);
+
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		ResultSet resultSet = mock(ResultSet.class);
+		when(resultSet.all()).thenReturn(Lists.<Row> newLinkedList());
+		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+
+		assertThat(daoContext.loadProperty(context, pm)).isNull();
 	}
 
 }

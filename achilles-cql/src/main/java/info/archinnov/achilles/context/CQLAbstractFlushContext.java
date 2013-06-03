@@ -2,7 +2,6 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.helper.CQLConsistencyHelper.getCQLLevel;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
@@ -75,29 +74,15 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 
 	}
 
-	public void pushBoundStatement(BoundStatement boundStatement, EntityMeta entityMeta)
+	public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
 	{
-		if (writeLevel != null)
+		if (this.writeLevel != null)
 		{
 			boundStatement.setConsistencyLevel(getCQLLevel(writeLevel));
 		}
 		else
 		{
-			boundStatement.setConsistencyLevel(getCQLLevel(entityMeta.getWriteConsistencyLevel()));
-		}
-		boundStatements.add(boundStatement);
-	}
-
-	public void pushBoundStatement(BoundStatement boundStatement, PropertyMeta<?, ?> propertyMeta)
-	{
-		if (writeLevel != null)
-		{
 			boundStatement.setConsistencyLevel(getCQLLevel(writeLevel));
-		}
-		else
-		{
-			boundStatement
-					.setConsistencyLevel(getCQLLevel(propertyMeta.getWriteConsistencyLevel()));
 		}
 		boundStatements.add(boundStatement);
 	}

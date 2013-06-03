@@ -68,6 +68,12 @@ public class CQLRowMethodInvokerTest
 	}
 
 	@Test
+	public void should_return_null_when_get_value_from_null_row() throws Exception
+	{
+		assertThat(invoker.invokeOnRowForEagerFields(null, pm)).isNull();
+	}
+
+	@Test
 	public void should_get_set_value_from_row() throws Exception
 	{
 		when(pm.type()).thenReturn(PropertyType.SET);

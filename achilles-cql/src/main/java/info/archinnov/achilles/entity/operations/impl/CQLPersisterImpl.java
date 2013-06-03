@@ -1,8 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static com.google.common.collect.Collections2.filter;
-import info.archinnov.achilles.context.CQLAbstractFlushContext;
-import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -14,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.datastax.driver.core.BoundStatement;
 import com.google.common.base.Predicate;
 
 /**
@@ -47,28 +44,19 @@ public class CQLPersisterImpl
 
 	public void persist(CQLEntityPersister entityPersister, CQLPersistenceContext context)
 	{
-		CQLDaoContext daoContext = context.getDaoContext();
-
-		BoundStatement boundStatement = daoContext.bindForInsert(context);
-
-		context.getFlushContext().pushBoundStatement(boundStatement, context.getEntityMeta());
+		context.bindForInsert();
 		cascadePersist(entityPersister, context);
 	}
 
 	public boolean doesEntityExist(CQLPersistenceContext context)
 	{
-		CQLDaoContext daoContext = context.getDaoContext();
-		return daoContext.checkForEntityExistence(context);
+		return context.checkForEntityExistence();
 	}
 
 	public void remove(CQLPersistenceContext context)
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
-		CQLDaoContext daoContext = context.getDaoContext();
-		BoundStatement boundStatement = daoContext
-				.bindForRemoval(context, entityMeta.getTableName());
-
-		context.getFlushContext().pushBoundStatement(boundStatement, context.getEntityMeta());
+		context.bindForRemoval(entityMeta.getTableName(), entityMeta.getWriteConsistencyLevel());
 		removeLinkedTables(context);
 	}
 
@@ -103,17 +91,13 @@ public class CQLPersisterImpl
 	protected void removeLinkedTables(CQLPersistenceContext context)
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
-		CQLDaoContext daoContext = context.getDaoContext();
-		CQLAbstractFlushContext flushContext = context.getFlushContext();
 
 		List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetas();
 		Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, proxyFilter);
 		for (PropertyMeta<?, ?> pm : proxyMetas)
 		{
-			BoundStatement boundStatement = daoContext.bindForRemoval(context,
-					pm.getExternalTableName());
+			context.bindForRemoval(pm.getExternalTableName(), pm.getWriteConsistencyLevel());
 
-			flushContext.pushBoundStatement(boundStatement, pm);
 		}
 	}
 

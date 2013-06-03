@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.context.CQLDaoContext.*;
@@ -23,7 +23,7 @@ import com.datastax.driver.core.querybuilder.Select.Selection;
  * @author DuyHai DOAN
  * 
  */
-public class CQLQueryGenerator
+public class CQLPreparedStatementGenerator
 {
 	public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta)
 	{
@@ -41,30 +41,36 @@ public class CQLQueryGenerator
 		return session.prepare(insert.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectForExistenceCheckPS(Session session, EntityMeta entityMeta)
-	{
-		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		Select select = select().column(idMeta.getPropertyName()).from(entityMeta.getTableName());
-		Statement statement = prepareWhereClauseForSelect(idMeta, select);
-		return session.prepare(statement.getQueryString());
-	}
-
-	public Map<String, PreparedStatement> prepareSelectFieldPS(Session session,
-			EntityMeta entityMeta)
+	public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta,
+			PropertyMeta<?, ?> pm)
 	{
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
-		Map<String, PreparedStatement> selectMap = new HashMap<String, PreparedStatement>();
-		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
+		if (!pm.isProxyType())
 		{
-			if (!pm.isProxyType())
+			Selection select;
+			if (pm.isSingleKey())
 			{
-				Select from = select().column(pm.getPropertyName()).from(entityMeta.getTableName());
-				Statement statement = prepareWhereClauseForSelect(idMeta, from);
-				selectMap.put(pm.getPropertyName(), session.prepare(statement.getQueryString()));
+				select = select().column(pm.getPropertyName());
 			}
+			else
+			{
+				select = select();
+				for (String component : pm.getMultiKeyProperties().getComponentNames())
+				{
+					select = select.column(component);
+				}
+			}
+			Select from = select.from(entityMeta.getTableName());
+			Statement statement = prepareWhereClauseForSelect(idMeta, from);
+			return session.prepare(statement.getQueryString());
 		}
-		return selectMap;
+		else
+		{
+			throw new IllegalArgumentException("Cannot prepare statement for property '"
+					+ pm.getPropertyName() + "' of entity '" + entityMeta.getClassName()
+					+ "' because it is of proxy type");
+		}
 	}
 
 	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta)

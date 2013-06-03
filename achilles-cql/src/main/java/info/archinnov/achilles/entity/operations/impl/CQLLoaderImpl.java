@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -33,9 +32,8 @@ public class CQLLoaderImpl
 	public <T> T eagerLoadEntity(CQLPersistenceContext context, Class<T> entityClass)
 			throws Exception
 	{
-		CQLDaoContext daoContext = context.getDaoContext();
 		T entity = entityClass.newInstance();
-		Row row = daoContext.eagerLoadEntity(context);
+		Row row = context.eagerLoadEntity();
 		mapper.setEagerPropertiesToEntity(row, context.getEntityMeta(), entity);
 		return entity;
 	}
@@ -43,16 +41,14 @@ public class CQLLoaderImpl
 	public void loadPropertyIntoEntity(CQLPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta, Object entity)
 	{
-		CQLDaoContext daoContext = context.getDaoContext();
-		Row row = daoContext.loadProperty(context, propertyMeta);
+		Row row = context.loadProperty(propertyMeta);
 		mapper.setPropertyToEntity(row, propertyMeta, entity);
 	}
 
 	public void loadJoinPropertyIntoEntity(CQLEntityLoader loader, CQLPersistenceContext context,
 			PropertyMeta<?, ?> pm, Object entity) throws Exception
 	{
-		CQLDaoContext daoContext = context.getDaoContext();
-		Row row = daoContext.loadProperty(context, pm);
+		Row row = context.loadProperty(pm);
 		EntityMeta joinMeta = pm.getJoinProperties().getEntityMeta();
 		PropertyMeta<?, ?> joinIdMeta = joinMeta.getIdMeta();
 

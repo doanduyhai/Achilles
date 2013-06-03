@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity.operations.impl;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -68,9 +67,6 @@ public class CQLLoaderImplTest
 	private CQLPersistenceContext context;
 
 	@Mock
-	private CQLDaoContext daoContext;
-
-	@Mock
 	private EntityMeta entityMeta;
 
 	@Captor
@@ -89,7 +85,6 @@ public class CQLLoaderImplTest
 	@Before
 	public void setUp() throws Exception
 	{
-		when(context.getDaoContext()).thenReturn(daoContext);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		joinIdMeta = PropertyMetaTestBuilder
 				.valueClass(Long.class)
@@ -104,7 +99,7 @@ public class CQLLoaderImplTest
 	@Test
 	public void should_eager_load_entity() throws Exception
 	{
-		when(daoContext.eagerLoadEntity(context)).thenReturn(row);
+		when(context.eagerLoadEntity()).thenReturn(row);
 
 		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
@@ -123,7 +118,7 @@ public class CQLLoaderImplTest
 				.build();
 
 		CompleteBean entity = new CompleteBean();
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 
 		loaderImpl.loadPropertyIntoEntity(context, pm, entity);
 
@@ -140,7 +135,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForProperty(row, "name", Long.class)).thenReturn(11L);
 
 		UserBean userBean = new UserBean();
@@ -162,7 +157,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForProperty(row, "name", Long.class)).thenReturn(null);
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
@@ -180,7 +175,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		List<Long> joinIds = Arrays.asList(11L);
 		when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(joinIds);
 
@@ -204,7 +199,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(null);
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
@@ -222,7 +217,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(
 				new ArrayList<Long>());
 
@@ -241,7 +236,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		Set<Long> joinIds = Sets.newHashSet(11L);
 		when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(joinIds);
 
@@ -265,7 +260,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(null);
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
@@ -283,7 +278,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(
 				new HashSet<Long>());
 
@@ -302,7 +297,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		Map<Integer, Long> joinIds = ImmutableMap.of(11, 11L);
 		when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
 				joinIds);
@@ -328,7 +323,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
 				null);
 
@@ -347,7 +342,7 @@ public class CQLLoaderImplTest
 				.joinMeta(entityMeta)
 				.build();
 
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 		when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
 				new HashMap<Integer, Long>());
 
@@ -365,7 +360,7 @@ public class CQLLoaderImplTest
 				.type(PropertyType.SIMPLE)
 				.joinMeta(entityMeta)
 				.build();
-		when(daoContext.loadProperty(context, pm)).thenReturn(row);
+		when(context.loadProperty(pm)).thenReturn(row);
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
