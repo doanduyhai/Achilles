@@ -1,5 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.type.KeyValue;
 
@@ -383,5 +385,83 @@ public class PropertyMetaTest
 				.build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();
+	}
+
+	@Test
+	public void should_have_cascade_type() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.cascadeType(MERGE)
+				.build();
+
+		assertThat(pm.hasCascadeType(MERGE)).isTrue();
+	}
+
+	@Test
+	public void should_not_have_cascade_type() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.cascadeType(MERGE)
+				.build();
+
+		assertThat(pm.hasCascadeType(ALL)).isFalse();
+	}
+
+	@Test
+	public void should_not_have_cascade_type_because_not_join() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.build();
+
+		assertThat(pm.hasCascadeType(ALL)).isFalse();
+	}
+
+	@Test
+	public void should_have_any_cascade_type() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.cascadeTypes(MERGE, ALL)
+				.build();
+
+		assertThat(pm.hasAnyCascadeType(MERGE, PERSIST, REMOVE)).isTrue();
+		assertThat(pm.getJoinProperties().getCascadeTypes()).containsOnly(MERGE, ALL);
+		assertThat(pm.hasAnyCascadeType(PERSIST, REMOVE)).isFalse();
+
+	}
+
+	@Test
+	public void should_return_true_if_type_is_join_collection() throws Exception
+	{
+		PropertyMeta<?, ?> pm1 = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.type(JOIN_LIST)
+				.build();
+
+		PropertyMeta<?, ?> pm2 = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.type(JOIN_SET)
+				.build();
+
+		assertThat(pm1.isJoinCollection()).isTrue();
+		assertThat(pm2.isJoinCollection()).isTrue();
+	}
+
+	@Test
+	public void should_return_true_if_type_is_join_map() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.type(JOIN_MAP)
+				.build();
+		assertThat(pm.isJoinMap()).isTrue();
+
 	}
 }

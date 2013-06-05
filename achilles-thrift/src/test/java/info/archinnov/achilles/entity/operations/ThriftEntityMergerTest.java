@@ -101,6 +101,7 @@ public class ThriftEntityMergerTest
 	@Before
 	public void setUp()
 	{
+		when((Class) entityMeta.getEntityClass()).thenReturn(CompleteBean.class);
 		context = ThriftPersistenceContextTestBuilder
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
@@ -128,7 +129,7 @@ public class ThriftEntityMergerTest
 
 		dirtyMap.put(friendsMeta.getGetter(), friendsMeta);
 
-		CompleteBean mergedEntity = merger.mergeEntity(context, entity);
+		CompleteBean mergedEntity = merger.merge(context, entity);
 
 		assertThat(mergedEntity).isSameAs(entity);
 
@@ -142,7 +143,7 @@ public class ThriftEntityMergerTest
 	{
 		when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
 
-		CompleteBean mergedEntity = merger.mergeEntity(context, entity);
+		CompleteBean mergedEntity = merger.merge(context, entity);
 
 		assertThat(mergedEntity).isSameAs(entity);
 		verifyZeroInteractions(persister);
@@ -163,7 +164,7 @@ public class ThriftEntityMergerTest
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
 
-		CompleteBean actual = merger.mergeEntity(context, entity);
+		CompleteBean actual = merger.merge(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
@@ -189,7 +190,7 @@ public class ThriftEntityMergerTest
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
 
-		CompleteBean actual = merger.mergeEntity(context, entity);
+		CompleteBean actual = merger.merge(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
@@ -219,7 +220,7 @@ public class ThriftEntityMergerTest
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
 
-		CompleteBean actual = merger.mergeEntity(context, entity);
+		CompleteBean actual = merger.merge(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
@@ -248,7 +249,7 @@ public class ThriftEntityMergerTest
 		when(proxifier.buildProxy(eq(userBean), any(ThriftPersistenceContext.class))).thenReturn(
 				userBean);
 
-		CompleteBean actual = merger.mergeEntity(context, entity);
+		CompleteBean actual = merger.merge(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(contextCaptor.capture());
@@ -273,6 +274,7 @@ public class ThriftEntityMergerTest
 
 		EntityMeta joinEntityMeta = new EntityMeta();
 		joinEntityMeta.setIdMeta(joinIdMeta);
+		joinEntityMeta.setEntityClass(CompleteBean.class);
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinEntityMeta);
 		joinProperties.addCascadeType(MERGE);

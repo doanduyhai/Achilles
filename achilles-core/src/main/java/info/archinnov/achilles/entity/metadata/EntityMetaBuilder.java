@@ -26,6 +26,7 @@ public class EntityMetaBuilder
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
 	private PropertyMeta<?, ?> idMeta;
+	private Class<?> entityClass;
 	private String className;
 	private String columnFamilyName;
 	private Long serialVersionUID;
@@ -57,6 +58,7 @@ public class EntityMetaBuilder
 
 		meta.setIdMeta(idMeta);
 		meta.setIdClass(idMeta.getValueClass());
+		meta.setEntityClass(entityClass);
 		meta.setClassName(className);
 		meta.setTableName(columnFamilyName);
 		meta.setSerialVersionUID(serialVersionUID);
@@ -109,6 +111,12 @@ public class EntityMetaBuilder
 		}
 		return eagerMethods;
 
+	}
+
+	public EntityMetaBuilder entityClass(Class<?> entityClass)
+	{
+		this.entityClass = entityClass;
+		return this;
 	}
 
 	public EntityMetaBuilder className(String className)

@@ -1,7 +1,6 @@
 package info.archinnov.achilles.consistency;
 
-import static info.archinnov.achilles.helper.ThriftConsistencyHelper.getHectorLevel;
-import info.archinnov.achilles.helper.ThriftConsistencyHelper;
+import static info.archinnov.achilles.consistency.ThriftConsistencyConvertor.getHectorLevel;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
@@ -46,9 +45,9 @@ public class ThriftConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
 	public HConsistencyLevel get(OperationType op)
 	{
 		HConsistencyLevel result;
-		HConsistencyLevel defaultRead = ThriftConsistencyHelper
+		HConsistencyLevel defaultRead = ThriftConsistencyConvertor
 				.getHectorLevel(defaultGlobalReadConsistencyLevel);
-		HConsistencyLevel defaultWrite = ThriftConsistencyHelper
+		HConsistencyLevel defaultWrite = ThriftConsistencyConvertor
 				.getHectorLevel(defaultGlobalWriteConsistencyLevel);
 
 		switch (op)

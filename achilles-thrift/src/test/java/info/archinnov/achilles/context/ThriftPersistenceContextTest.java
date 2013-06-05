@@ -9,6 +9,7 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
 
 import java.util.Map;
@@ -61,8 +62,6 @@ public class ThriftPersistenceContextTest
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
 
-	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
-
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
@@ -77,6 +76,11 @@ public class ThriftPersistenceContextTest
 
 	@Mock
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
+
+	@Mock
+	private AchillesEntityProxifier proxifier;
+
+	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -193,6 +197,7 @@ public class ThriftPersistenceContextTest
 		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(introspector.getPrimaryKey(entity, idMeta)).thenReturn(entity.getId());
 		when(entityMeta.getTableName()).thenReturn("cf");
+		when((Class) entityMeta.getEntityClass()).thenReturn(CompleteBean.class);
 	}
 
 	private void prepareContextWithEntityDao() throws Exception
@@ -217,6 +222,7 @@ public class ThriftPersistenceContextTest
 		when((PropertyMeta<Void, Long>) joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(introspector.getPrimaryKey(bean, joinIdMeta)).thenReturn(bean.getUserId());
 		when(joinMeta.getTableName()).thenReturn("cf2");
+		when((Class) joinMeta.getEntityClass()).thenReturn(UserBean.class);
 		when(joinMeta.isWideRow()).thenReturn(false);
 		when(thriftDaoContext.findEntityDao("cf2")).thenReturn(entityDao);
 	}

@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.entity;
 
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -119,7 +119,7 @@ public class CQLEntityMapperTest
 				.type(PropertyType.SIMPLE)
 				.build();
 
-		mapper.setPropertyToEntity("name", pm, entity);
+		mapper.setJoinValueToEntity("name", pm, entity);
 
 		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
 	}

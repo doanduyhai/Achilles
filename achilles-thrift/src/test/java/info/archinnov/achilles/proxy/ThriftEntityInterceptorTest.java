@@ -269,6 +269,7 @@ public class ThriftEntityInterceptorTest
 		UserBean user = new UserBean();
 		user.setUserId(123L);
 		EntityMeta joinEntityMeta = new EntityMeta();
+		joinEntityMeta.setEntityClass(UserBean.class);
 		joinEntityMeta.setIdMeta(joinIdMeta);
 		joinEntityMeta.setGetterMetas(getterMetas);
 		joinEntityMeta.setSetterMetas(setterMetas);

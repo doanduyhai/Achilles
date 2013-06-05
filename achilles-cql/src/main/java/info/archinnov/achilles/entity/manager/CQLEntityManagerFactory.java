@@ -9,8 +9,6 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,14 +38,14 @@ public class CQLEntityManagerFactory extends AchillesEntityManagerFactory
 	}
 
 	@Override
-	public EntityManager createEntityManager()
+	public CqlEntityManager createEntityManager()
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public EntityManager createEntityManager(Map map)
+	public CqlEntityManager createEntityManager(Map map)
 	{
 		// TODO Auto-generated method stub
 		return null;

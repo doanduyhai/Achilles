@@ -4,11 +4,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
-import info.archinnov.achilles.helper.CQLEntityMapper;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 
 import java.util.ArrayList;
@@ -144,7 +144,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(userBean, pm, entity);
+		verify(mapper).setJoinValueToEntity(userBean, pm, entity);
 	}
 
 	@Test
@@ -162,7 +162,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -185,7 +185,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(listCaptor.capture(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(listCaptor.capture(), eq(pm), eq(entity));
 		assertThat(listCaptor.getValue()).containsExactly(userBean);
 	}
 
@@ -204,7 +204,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -223,7 +223,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -246,7 +246,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(setCaptor.capture(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(setCaptor.capture(), eq(pm), eq(entity));
 		assertThat(setCaptor.getValue()).containsExactly(userBean);
 	}
 
@@ -265,7 +265,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -284,7 +284,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -308,7 +308,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(mapCaptor.capture(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(mapCaptor.capture(), eq(pm), eq(entity));
 		assertThat(mapCaptor.getValue()).containsKey(11);
 		assertThat(mapCaptor.getValue()).containsValue(userBean);
 	}
@@ -329,7 +329,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -348,7 +348,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 	}
 
 	@Test
@@ -364,7 +364,7 @@ public class CQLLoaderImplTest
 
 		loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
-		verify(mapper).setPropertyToEntity(isNull(), eq(pm), eq(entity));
+		verify(mapper).setJoinValueToEntity(isNull(), eq(pm), eq(entity));
 
 		verifyZeroInteractions(cqlRowInvoker);
 	}

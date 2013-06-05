@@ -1,7 +1,8 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.entity;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.helper.AchillesEntityMapper;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 
 import com.datastax.driver.core.Row;
@@ -33,12 +34,12 @@ public class CQLEntityMapper extends AchillesEntityMapper
 			if (!row.isNull(propertyName))
 			{
 				Object value = cqlRowInvoker.invokeOnRowForEagerFields(row, pm);
-				invoker.setValueToField(entity, pm.getSetter(), value);
+				invoker.setValueToField(entity, pm.getSetter(), pm.castValue(value));
 			}
 		}
 	}
 
-	public void setPropertyToEntity(Object value, PropertyMeta<?, ?> pm, Object entity)
+	public void setJoinValueToEntity(Object value, PropertyMeta<?, ?> pm, Object entity)
 	{
 		invoker.setValueToField(entity, pm.getSetter(), value);
 	}

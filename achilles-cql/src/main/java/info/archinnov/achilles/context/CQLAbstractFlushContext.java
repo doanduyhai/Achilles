@@ -1,6 +1,6 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.helper.CQLConsistencyHelper.getCQLLevel;
+import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -26,6 +26,15 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	private List<Statement> statements = new ArrayList<Statement>();
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
+	private Session session;
+
+	public CQLAbstractFlushContext(ConsistencyLevel readLevel, ConsistencyLevel writeLevel,
+			Session session)
+	{
+		this.readLevel = readLevel;
+		this.writeLevel = writeLevel;
+		this.session = session;
+	}
 
 	@Override
 	public void startBatch()
@@ -53,6 +62,14 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	{
 		// TODO Auto-generated method stub
 
+	}
+
+	protected void doFlush()
+	{
+		for (BoundStatement bs : boundStatements)
+		{
+			session.execute(bs);
+		}
 	}
 
 	@Override

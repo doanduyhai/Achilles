@@ -1,5 +1,8 @@
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.entity.metadata.util.CascadeMergeFilter;
+import info.archinnov.achilles.entity.metadata.util.CascadePersistFilter;
+import info.archinnov.achilles.entity.metadata.util.CascadeRefreshFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.Collection;
@@ -18,6 +21,9 @@ import org.apache.commons.lang.StringUtils;
  */
 public class JoinProperties
 {
+	public static CascadePersistFilter cascadePersistFilter = new CascadePersistFilter();
+	public static CascadeMergeFilter hasCascadeMerge = new CascadeMergeFilter();
+	public static CascadeRefreshFilter cascadeRefreshFilter = new CascadeRefreshFilter();
 
 	private EntityMeta entityMeta;
 	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();

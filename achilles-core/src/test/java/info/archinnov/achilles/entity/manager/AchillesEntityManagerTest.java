@@ -127,7 +127,7 @@ public class AchillesEntityManagerTest
 	public void should_merge() throws Exception
 	{
 
-		when(merger.mergeEntity(context, entity)).thenReturn(entity);
+		when(merger.merge(context, entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity);
 
 		CompleteBean mergedEntity = em.merge(entity);

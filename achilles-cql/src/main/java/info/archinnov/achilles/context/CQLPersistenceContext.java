@@ -5,6 +5,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.List;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -24,24 +26,24 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	private CQLAbstractFlushContext flushContext;
 
 	public CQLPersistenceContext(EntityMeta entityMeta, AchillesConfigurationContext configContext,
-			CQLDaoContext daoContext, AchillesFlushContext flushContext, Class<?> entityClass,
+			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Class<?> entityClass,
 			Object primaryKey)
 	{
 		super(entityMeta, configContext, entityClass, primaryKey, flushContext);
 		this.daoContext = daoContext;
-		this.flushContext = (CQLAbstractFlushContext) flushContext;
+		this.flushContext = flushContext;
 	}
 
 	public CQLPersistenceContext(EntityMeta entityMeta, AchillesConfigurationContext configContext,
-			CQLDaoContext daoContext, AchillesFlushContext flushContext, Object entity)
+			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Object entity)
 	{
 		super(entityMeta, configContext, entity, flushContext);
 		this.daoContext = daoContext;
-		this.flushContext = (CQLAbstractFlushContext) flushContext;
+		this.flushContext = flushContext;
 	}
 
 	@Override
-	public AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
+	public CQLPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
 	{
 		Validator.validateNotNull(joinEntity, "join entity should not be null");
 		return new CQLPersistenceContext(joinMeta, configContext, daoContext, flushContext,
@@ -49,8 +51,8 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public AchillesPersistenceContext newPersistenceContext(Class<?> entityClass,
-			EntityMeta joinMeta, Object joinId)
+	public CQLPersistenceContext newPersistenceContext(Class<?> entityClass, EntityMeta joinMeta,
+			Object joinId)
 	{
 		Validator.validateNotNull(entityClass, "entityClass should not be null");
 		Validator.validateNotNull(joinId, "joinId should not be null");
@@ -76,6 +78,11 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	public void bindForInsert()
 	{
 		daoContext.bindForInsert(this);
+	}
+
+	public void bindForUpdate(List<PropertyMeta<?, ?>> pms)
+	{
+		daoContext.bindForUpdate(this, pms);
 	}
 
 	public void bindForRemoval(String tableName, ConsistencyLevel writeLevel)

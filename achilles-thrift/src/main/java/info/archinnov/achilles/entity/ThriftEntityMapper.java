@@ -1,9 +1,10 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.helper.AchillesEntityMapper;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.HashMap;

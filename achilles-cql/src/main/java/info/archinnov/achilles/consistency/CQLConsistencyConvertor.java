@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.consistency;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -11,7 +11,7 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class CQLConsistencyHelper
+public class CQLConsistencyConvertor
 {
 	private final static Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> fromAchillesToCQL = new HashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
 

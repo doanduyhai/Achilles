@@ -3,7 +3,7 @@ package info.archinnov.achilles.context;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.helper.CQLPreparedStatementBinder;
+import info.archinnov.achilles.statement.CQLPreparedStatementBinder;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -56,6 +56,15 @@ public class CQLDaoContext
 		Class<?> entityClass = context.getEntityClass();
 		PreparedStatement ps = insertPSs.get(entityClass);
 		BoundStatement bs = binder.bindForInsert(ps, entityMeta, context.getEntity());
+		context.pushBoundStatement(bs, entityMeta.getWriteConsistencyLevel());
+	}
+
+	public void bindForUpdate(CQLPersistenceContext context, List<PropertyMeta<?, ?>> pms)
+	{
+		EntityMeta entityMeta = context.getEntityMeta();
+		PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache,
+				context, pms);
+		BoundStatement bs = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
 		context.pushBoundStatement(bs, entityMeta.getWriteConsistencyLevel());
 	}
 

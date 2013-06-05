@@ -8,11 +8,15 @@ import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
 
+import javax.persistence.CascadeType;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
 
 /**
  * PropertyMeta<K, V>
@@ -193,7 +197,7 @@ public class PropertyMeta<K, V>
 		}
 	}
 
-	public Object writeValueAsSupportedTypeOrString(V value)
+	public Object writeValueAsSupportedTypeOrString(Object value)
 	{
 		log.trace("Writing value {} as native type or string for property {} of entity class {}",
 				value, propertyName, entityClassName);
@@ -318,6 +322,35 @@ public class PropertyMeta<K, V>
 	public boolean isProxyType()
 	{
 		return this.type.isProxyType();
+	}
+
+	public boolean hasCascadeType(CascadeType type)
+	{
+		if (joinProperties != null && joinProperties.getCascadeTypes().contains(type))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public boolean hasAnyCascadeType(CascadeType... types)
+	{
+		return joinProperties != null
+				&& !Sets.intersection(joinProperties.getCascadeTypes(), Sets.newHashSet(types))
+						.isEmpty();
+	}
+
+	public boolean isJoinCollection()
+	{
+		return type == JOIN_LIST || type == JOIN_SET;
+	}
+
+	public boolean isJoinMap()
+	{
+		return type == JOIN_MAP;
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel()

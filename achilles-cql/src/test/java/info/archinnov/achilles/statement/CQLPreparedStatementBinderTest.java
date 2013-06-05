@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.statement;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -155,5 +155,43 @@ public class CQLPreparedStatementBinderTest
 
 		assertThat(actual).isSameAs(bs);
 		assertThat(valuesCaptor.getValue()).containsExactly(11L);
+	}
+
+	@Test
+	public void should_bind_for_update() throws Exception
+	{
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("age")
+				.accessors()
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+
+		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(11L);
+		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn("name");
+		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(30L);
+
+		when(ps.bind(valuesCaptor.capture())).thenReturn(bs);
+
+		BoundStatement actual = binder.bindForUpdate(ps, entityMeta,
+				Arrays.asList(nameMeta, ageMeta), entity);
+
+		assertThat(actual).isSameAs(bs);
+		assertThat(valuesCaptor.getValue()).containsExactly("name", 30L, 11L);
+
 	}
 }

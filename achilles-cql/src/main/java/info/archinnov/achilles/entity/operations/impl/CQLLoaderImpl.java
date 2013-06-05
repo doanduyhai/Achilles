@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
-import info.archinnov.achilles.helper.CQLEntityMapper;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class CQLLoaderImpl
 				break;
 		}
 
-		mapper.setPropertyToEntity(joinValue, pm, entity);
+		mapper.setJoinValueToEntity(joinValue, pm, entity);
 	}
 
 	private Object loadJoinList(CQLEntityLoader loader, CQLPersistenceContext context,

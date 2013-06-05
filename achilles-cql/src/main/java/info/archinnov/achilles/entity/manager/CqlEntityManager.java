@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.context.AchillesConfigurationContext;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.CQLDaoContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -104,7 +104,7 @@ public class CqlEntityManager extends AchillesEntityManager
 	 * @see info.archinnov.achilles.entity.manager.AchillesEntityManager#initPersistenceContext(java.lang.Object)
 	 */
 	@Override
-	protected AchillesPersistenceContext initPersistenceContext(Object entity)
+	protected CQLPersistenceContext initPersistenceContext(Object entity)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -116,8 +116,7 @@ public class CqlEntityManager extends AchillesEntityManager
 	 * @see info.archinnov.achilles.entity.manager.AchillesEntityManager#initPersistenceContext(java.lang.Class, java.lang.Object)
 	 */
 	@Override
-	protected AchillesPersistenceContext initPersistenceContext(Class<?> entityClass,
-			Object primaryKey)
+	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey)
 	{
 		// TODO Auto-generated method stub
 		return null;

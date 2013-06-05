@@ -1,4 +1,4 @@
-package info.archinnov.achilles.helper;
+package info.archinnov.achilles.consistency;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -13,7 +13,7 @@ import me.prettyprint.hector.api.HConsistencyLevel;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftConsistencyHelper
+public class ThriftConsistencyConvertor
 {
 	private final static Map<ConsistencyLevel, HConsistencyLevel> fromAchillesToHector = new HashMap<ConsistencyLevel, HConsistencyLevel>();
 

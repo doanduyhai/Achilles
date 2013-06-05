@@ -10,7 +10,6 @@ import info.archinnov.achilles.context.AchillesPersistenceContext;
  */
 public interface AchillesEntityMerger
 {
-
-	public <T> T mergeEntity(AchillesPersistenceContext context, T entity);
+	public <T> T merge(AchillesPersistenceContext context, T entity);
 
 }

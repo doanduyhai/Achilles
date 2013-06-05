@@ -1,19 +1,18 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.CQLEntityPersister;
+import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +24,8 @@ import mapping.entity.UserBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -35,23 +36,23 @@ import testBuilders.PropertyMetaTestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * CQLPersisterImplTest
+ * CQLMergerImplTest
  * 
  * @author DuyHai DOAN
  * 
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLPersisterImplTest
+public class CQLMergerImplTest
 {
 	@InjectMocks
-	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
+	private CQLMergerImpl mergerImpl = new CQLMergerImpl();
 
 	@Mock
 	private AchillesMethodInvoker invoker;
 
 	@Mock
-	private CQLEntityPersister entityPersister;
+	private CQLEntityMerger entityMerger;
 
 	@Mock
 	private CQLPersistenceContext context;
@@ -65,26 +66,58 @@ public class CQLPersisterImplTest
 	@Mock
 	private EntityMeta joinMeta;
 
-	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+	@Captor
+	private ArgumentCaptor<List<PropertyMeta<?, ?>>> pmCaptor;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
+	private List<PropertyMeta<?, ?>> joinPMs = new ArrayList<PropertyMeta<?, ?>>();
+
+	private PropertyMeta<?, ?> idMeta;
+
 	@Before
-	public void setUp()
+	public void setUp() throws Exception
 	{
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 
-		when(entityMeta.getAllMetas()).thenReturn(allMetas);
-		allMetas.clear();
+		idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.build();
+
+		joinPMs.clear();
 	}
 
 	@Test
-	public void should_persist() throws Exception
+	public void should_merge() throws Exception
 	{
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("age")
+				.accessors()
+				.build();
+		Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+		dirtyMap.put(idMeta.getGetter(), idMeta);
+		dirtyMap.put(ageMeta.getGetter(), ageMeta);
 
-		persisterImpl.persist(entityPersister, context);
-		verify(context).bindForInsert();
+		mergerImpl.merge(context, dirtyMap);
+
+		assertThat(dirtyMap).isEmpty();
+
+		verify(context).bindForUpdate(pmCaptor.capture());
+
+		assertThat(pmCaptor.getValue()).containsExactly(ageMeta, idMeta);
+	}
+
+	@Test
+	public void should_not_merge_when_empty_dirty_map() throws Exception
+	{
+		Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+		mergerImpl.merge(context, dirtyMap);
+
+		verifyZeroInteractions(context);
 	}
 
 	@Test
@@ -98,17 +131,16 @@ public class CQLPersisterImplTest
 				.cascadeType(CascadeType.ALL)
 				.build();
 
-		allMetas.add(joinSimpleMeta);
+		joinPMs.add(joinSimpleMeta);
 
 		Object user = new UserBean();
 		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
 		when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
 
-		persisterImpl.cascadePersist(entityPersister, context);
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-		verify(entityPersister).cascadePersistOrEnsureExist(joinContext,
-				joinSimpleMeta.getJoinProperties());
+		verify(entityMerger).merge(joinContext, user);
 	}
 
 	@Test
@@ -122,7 +154,7 @@ public class CQLPersisterImplTest
 				.joinMeta(joinMeta)
 				.build();
 
-		allMetas.add(joinListMeta);
+		joinPMs.add(joinListMeta);
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
@@ -132,10 +164,10 @@ public class CQLPersisterImplTest
 		when(context.newPersistenceContext(joinMeta, user1)).thenReturn(joinContext);
 		when(context.newPersistenceContext(joinMeta, user2)).thenReturn(joinContext);
 
-		persisterImpl.cascadePersist(entityPersister, context);
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-		verify(entityPersister, times(2)).cascadePersistOrEnsureExist(joinContext,
-				joinListMeta.getJoinProperties());
+		verify(entityMerger).merge(joinContext, user1);
+		verify(entityMerger).merge(joinContext, user2);
 	}
 
 	@Test
@@ -149,7 +181,7 @@ public class CQLPersisterImplTest
 				.joinMeta(joinMeta)
 				.build();
 
-		allMetas.add(joinMapMeta);
+		joinPMs.add(joinMapMeta);
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
@@ -159,10 +191,10 @@ public class CQLPersisterImplTest
 		when(context.newPersistenceContext(joinMeta, user1)).thenReturn(joinContext);
 		when(context.newPersistenceContext(joinMeta, user2)).thenReturn(joinContext);
 
-		persisterImpl.cascadePersist(entityPersister, context);
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-		verify(entityPersister, times(2)).cascadePersistOrEnsureExist(joinContext,
-				joinMapMeta.getJoinProperties());
+		verify(entityMerger).merge(joinContext, user1);
+		verify(entityMerger).merge(joinContext, user2);
 	}
 
 	@Test
@@ -175,50 +207,11 @@ public class CQLPersisterImplTest
 				.joinMeta(joinMeta)
 				.build();
 
-		allMetas.add(joinSimpleMeta);
+		joinPMs.add(joinSimpleMeta);
 
-		persisterImpl.cascadePersist(entityPersister, context);
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-		verifyZeroInteractions(entityPersister);
+		verifyZeroInteractions(entityMerger);
 	}
 
-	@Test
-	public void should_check_for_entity_existence() throws Exception
-	{
-
-		when(context.checkForEntityExistence()).thenReturn(true);
-
-		boolean actual = persisterImpl.doesEntityExist(context);
-
-		assertThat(actual).isTrue();
-	}
-
-	@Test
-	public void should_remove() throws Exception
-	{
-		when(entityMeta.getTableName()).thenReturn("table");
-		when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
-
-		persisterImpl.remove(context);
-
-		verify(context).bindForRemoval("table", EACH_QUORUM);
-	}
-
-	@Test
-	public void should_remove_linked_tables() throws Exception
-	{
-		PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.type(PropertyType.WIDE_MAP)
-				.externalTable("external_table")
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
-				.build();
-
-		allMetas.add(wideMapMeta);
-
-		persisterImpl.removeLinkedTables(context);
-
-		verify(context).bindForRemoval("external_table", EACH_QUORUM);
-	}
 }

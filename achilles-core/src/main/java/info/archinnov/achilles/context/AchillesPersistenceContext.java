@@ -1,6 +1,5 @@
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
@@ -15,10 +14,9 @@ import info.archinnov.achilles.validation.Validator;
  */
 public abstract class AchillesPersistenceContext
 {
-	protected final AchillesMethodInvoker invoker = new AchillesMethodInvoker();
-	protected final AchillesConfigurationContext configContext;
-	protected final AchillesConsistencyLevelPolicy policy;
-	protected final Class<?> entityClass;
+	protected AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	protected AchillesConfigurationContext configContext;
+	protected Class<?> entityClass;
 
 	protected EntityMeta entityMeta;
 	protected Object entity;
@@ -36,8 +34,7 @@ public abstract class AchillesPersistenceContext
 		this.configContext = configContext;
 		this.entity = entity;
 		this.flushContext = flushContext;
-		this.policy = configContext.getConsistencyPolicy();
-		this.entityClass = entity.getClass();
+		this.entityClass = entityMeta.getEntityClass();
 		this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
 
 		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
@@ -53,7 +50,6 @@ public abstract class AchillesPersistenceContext
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
 		this.flushContext = flushContext;
-		this.policy = configContext.getConsistencyPolicy();
 
 		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
 				+ "' should not be null");
@@ -143,11 +139,6 @@ public abstract class AchillesPersistenceContext
 	public AchillesConfigurationContext getConfigContext()
 	{
 		return configContext;
-	}
-
-	public AchillesConsistencyLevelPolicy getPolicy()
-	{
-		return policy;
 	}
 
 	public void setEntityMeta(EntityMeta entityMeta)

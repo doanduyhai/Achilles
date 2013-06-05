@@ -232,6 +232,7 @@ public class ThriftEntityManagerTest
 
 		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
+		when((Class) entityMeta.getEntityClass()).thenReturn(CompleteBean.class);
 		when(entityMeta.getTableName()).thenReturn("table");
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);

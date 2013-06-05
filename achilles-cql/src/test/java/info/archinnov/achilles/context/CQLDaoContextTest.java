@@ -6,13 +6,14 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.helper.CQLPreparedStatementBinder;
+import info.archinnov.achilles.statement.CQLPreparedStatementBinder;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import mapping.entity.CompleteBean;
@@ -120,6 +121,28 @@ public class CQLDaoContextTest
 		when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bs);
 
 		daoContext.bindForInsert(context);
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_bind_for_update() throws Exception
+	{
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class)
+				.field("age")
+				.build();
+
+		List<PropertyMeta<?, ?>> pms = Arrays.asList(nameMeta, ageMeta);
+		when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms))
+				.thenReturn(ps);
+		when(binder.bindForUpdate(ps, entityMeta, pms, entity)).thenReturn(bs);
+
+		daoContext.bindForUpdate(context, pms);
 		verify(context).pushBoundStatement(bs, EACH_QUORUM);
 	}
 

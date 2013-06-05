@@ -1,5 +1,6 @@
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
@@ -23,6 +24,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	private ThriftGenericEntityDao entityDao;
 	private ThriftGenericWideRowDao wideRowDao;
 	private ThriftAbstractFlushContext thriftFlushContext;
+	private AchillesConsistencyLevelPolicy policy;
 
 	public ThriftPersistenceContext(EntityMeta entityMeta, //
 			AchillesConfigurationContext configContext, //
@@ -36,6 +38,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 
 		this.thriftDaoContext = thriftDaoContext;
 		this.thriftFlushContext = flushContext;
+		this.policy = configContext.getConsistencyPolicy();
 		this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
 		this.initDaos();
 	}
@@ -52,6 +55,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 
 		this.thriftDaoContext = thriftDaoContext;
 		this.thriftFlushContext = flushContext;
+		this.policy = configContext.getConsistencyPolicy();
 		this.initDaos();
 	}
 
@@ -118,6 +122,11 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	public ThriftGenericWideRowDao getColumnFamilyDao()
 	{
 		return wideRowDao;
+	}
+
+	public AchillesConsistencyLevelPolicy getPolicy()
+	{
+		return policy;
 	}
 
 	private void initDaos()

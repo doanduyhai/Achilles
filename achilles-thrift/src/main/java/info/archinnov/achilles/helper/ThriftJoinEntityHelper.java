@@ -1,6 +1,7 @@
 package info.archinnov.achilles.helper;
 
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;

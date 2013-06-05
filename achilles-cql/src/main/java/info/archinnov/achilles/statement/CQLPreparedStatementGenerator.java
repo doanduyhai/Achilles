@@ -6,6 +6,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.datastax.driver.core.PreparedStatement;
@@ -16,6 +17,8 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
+import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Update.Assignments;
 
 /**
  * CQLPreparedStatementHelper
@@ -73,6 +76,30 @@ public class CQLPreparedStatementGenerator
 		}
 	}
 
+	public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta,
+			List<PropertyMeta<?, ?>> pms)
+	{
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		Update update = update(entityMeta.getTableName());
+
+		int i = 0;
+		Assignments assignments = null;
+		for (PropertyMeta<?, ?> pm : pms)
+		{
+			if (i == 0)
+			{
+				assignments = update.with(set(pm.getPropertyName(), bindMarker()));
+			}
+			else
+			{
+				assignments.and(set(pm.getPropertyName(), bindMarker()));
+			}
+			i++;
+		}
+		Statement statement = prepareWhereClauseForUpdate(idMeta, assignments);
+		return session.prepare(statement.getQueryString());
+	}
+
 	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta)
 	{
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
@@ -128,6 +155,34 @@ public class CQLPreparedStatementGenerator
 		else
 		{
 			statement = from.where(eq(idMeta.getPropertyName(), bindMarker()));
+		}
+		return statement;
+	}
+
+	private Statement prepareWhereClauseForUpdate(PropertyMeta<?, ?> idMeta, Assignments update)
+	{
+		Statement statement;
+		if (idMeta.type().isClusteredKey())
+		{
+			Update.Where where = null;
+			int i = 0;
+			for (String clusteredId : idMeta.getMultiKeyProperties().getComponentNames())
+			{
+				if (i == 0)
+				{
+					where = update.where(eq(clusteredId, bindMarker()));
+				}
+				else
+				{
+					where.and(eq(clusteredId, bindMarker()));
+				}
+				i++;
+			}
+			statement = where;
+		}
+		else
+		{
+			statement = update.where(eq(idMeta.getPropertyName(), bindMarker()));
 		}
 		return statement;
 	}

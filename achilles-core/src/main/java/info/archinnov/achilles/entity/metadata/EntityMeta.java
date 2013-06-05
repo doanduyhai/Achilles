@@ -17,7 +17,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EntityMeta
 {
-
+	private Class<?> entityClass;
 	private String className;
 	private String tableName;
 	private Long serialVersionUID;
@@ -31,6 +31,16 @@ public class EntityMeta
 	private Map<Method, PropertyMeta<?, ?>> setterMetas;
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+
+	public Class<?> getEntityClass()
+	{
+		return entityClass;
+	}
+
+	public void setEntityClass(Class<?> entityClass)
+	{
+		this.entityClass = entityClass;
+	}
 
 	public String getClassName()
 	{

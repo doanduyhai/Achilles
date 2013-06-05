@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mapping.entity.CompleteBean;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -56,6 +58,7 @@ public class EntityMetaBuilderTest
 		eagerMetas.add(simpleMeta);
 
 		EntityMeta meta = entityMetaBuilder(idMeta)
+				.entityClass(CompleteBean.class)
 				.className("Bean")
 				.serialVersionUID(1L)
 				.columnFamilyName("cfName")
@@ -63,6 +66,7 @@ public class EntityMetaBuilderTest
 				.eagerMetas(eagerMetas)
 				.build();
 
+		assertThat((Class) meta.getEntityClass()).isEqualTo(CompleteBean.class);
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getTableName()).isEqualTo("cfName");
 		assertThat((PropertyMeta<Void, Long>) meta.getIdMeta()).isSameAs(idMeta);

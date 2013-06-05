@@ -46,7 +46,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			MAP, LAZY_MAP);
 
 	@Override
-	public <T> T mergeEntity(AchillesPersistenceContext context, T entity)
+	public <T> T merge(AchillesPersistenceContext context, T entity)
 	{
 		log.debug("Merging entity of class {} with primary key {}", context
 				.getEntityClass()
@@ -146,7 +146,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 		if (joinEntity != null)
 		{
 			log.debug("Merging join entity {} ", joinEntity);
-			Object mergedEntity = mergeEntity(
+			Object mergedEntity = merge(
 					context.newPersistenceContext(joinProperties.getEntityMeta(), joinEntity),
 					joinEntity);
 			invoker.setValueToField(entity, propertyMeta.getSetter(), mergedEntity);
@@ -183,7 +183,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Merging join collection of entity {} ", joinEntities);
 			for (Object joinEntity : joinEntities)
 			{
-				Object mergedEntity = mergeEntity(
+				Object mergedEntity = merge(
 						context.newPersistenceContext(joinProperties.getEntityMeta(), joinEntity),
 						joinEntity);
 				mergedEntities.add(mergedEntity);
@@ -203,7 +203,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Merging join map of entity {} ", joinEntitiesMap);
 			for (Entry<?, ?> joinEntityEntry : joinEntitiesMap.entrySet())
 			{
-				Object mergedEntity = this.mergeEntity(context.newPersistenceContext(
+				Object mergedEntity = this.merge(context.newPersistenceContext(
 						joinProperties.getEntityMeta(), joinEntityEntry.getValue()),
 						joinEntityEntry.getValue());
 				mergedEntitiesMap.put(joinEntityEntry.getKey(), mergedEntity);

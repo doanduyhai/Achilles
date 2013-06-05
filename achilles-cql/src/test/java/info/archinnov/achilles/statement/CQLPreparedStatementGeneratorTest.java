@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -176,6 +177,80 @@ public class CQLPreparedStatementGeneratorTest
 
 		assertThat(queryCaptor.getValue()).isEqualTo(
 				"SELECT id,a,b FROM table WHERE id=? AND a=? AND b=?;");
+	}
+
+	@Test
+	public void should_prepare_update_fields_ps() throws Exception
+	{
+
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("age")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setTableName("table");
+		meta.setIdMeta(idMeta);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+		PreparedStatement actual = helper.prepareUpdateFields(session, meta,
+				Arrays.asList(nameMeta, ageMeta));
+
+		assertThat(actual).isSameAs(ps);
+
+		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table SET name=?,age=? WHERE id=?;");
+	}
+
+	@Test
+	public void should_prepare_update_fields_with_clustered_id_ps() throws Exception
+	{
+
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.compNames("id", "a", "b")
+				.type(PropertyType.CLUSTERED_KEY)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("age")
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setTableName("table");
+		meta.setIdMeta(idMeta);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+		PreparedStatement actual = helper.prepareUpdateFields(session, meta,
+				Arrays.asList(nameMeta, ageMeta));
+
+		assertThat(actual).isSameAs(ps);
+
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"UPDATE table SET name=?,age=? WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test

@@ -137,7 +137,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
 		AchillesPersistenceContext context = initPersistenceContext(entity);
-		T merged = merger.<T> mergeEntity(context, entity);
+		T merged = merger.<T> merge(context, entity);
 		context.flush();
 		return merged;
 	}

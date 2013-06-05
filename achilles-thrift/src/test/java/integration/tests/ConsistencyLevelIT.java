@@ -221,7 +221,10 @@ public class ConsistencyLevelIT
 	public void should_persist_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zerferg")
+		CompleteBean entity = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("name zerferg")
 				.buid();
 
 		try
@@ -248,7 +251,10 @@ public class ConsistencyLevelIT
 	public void should_merge_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zeruioze")
+		CompleteBean entity = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("name zeruioze")
 				.buid();
 
 		try
@@ -274,7 +280,10 @@ public class ConsistencyLevelIT
 	public void should_find_with_runtime_consistency_level_overriding_predefined_one()
 			throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name rtprt")
+		CompleteBean entity = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("name rtprt")
 				.buid();
 		em.persist(entity);
 
@@ -315,7 +324,7 @@ public class ConsistencyLevelIT
 			assertThat(e)
 					.hasMessage(
 							"Error when loading entity type '"
-									+ entity.getClass().getCanonicalName()
+									+ CompleteBean.class.getCanonicalName()
 									+ "' with key '"
 									+ entity.getId()
 									+ "'. Cause : InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
@@ -353,7 +362,10 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_reinit_consistency_level_after_exception() throws Exception
 	{
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name qzerferf")
+		CompleteBean entity = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("name qzerferf")
 				.buid();
 		try
 		{
