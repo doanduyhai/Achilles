@@ -4,7 +4,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
 import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
@@ -26,7 +26,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	private static final Logger log = LoggerFactory.getLogger(ThriftAbstractWideMapWrapper.class);
 
 	protected ThriftPersistenceContext context;
-	protected AchillesEntityInterceptor<?> interceptor;
+	protected ThriftEntityInterceptor<?> interceptor;
 	protected AchillesEntityValidator validator = new AchillesEntityValidator(
 			new ThriftEntityProxifier());
 
@@ -1153,12 +1153,12 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 		}
 	}
 
-	public AchillesEntityInterceptor<?> getInterceptor()
+	public ThriftEntityInterceptor<?> getInterceptor()
 	{
 		return interceptor;
 	}
 
-	public void setInterceptor(final AchillesEntityInterceptor<?> interceptor)
+	public void setInterceptor(final ThriftEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 	}

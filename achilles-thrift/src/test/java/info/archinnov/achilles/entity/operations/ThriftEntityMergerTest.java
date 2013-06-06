@@ -71,7 +71,7 @@ public class ThriftEntityMergerTest
 	private AchillesMethodInvoker invoker;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;

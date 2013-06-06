@@ -40,7 +40,8 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesEntityManager implements EntityManager
+public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceContext> implements
+		EntityManager
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
 
@@ -49,11 +50,11 @@ public abstract class AchillesEntityManager implements EntityManager
 	protected AchillesConsistencyLevelPolicy consistencyPolicy;
 	protected AchillesConfigurationContext configContext;
 
-	protected AchillesEntityPersister persister;
-	protected AchillesEntityLoader loader;
-	protected AchillesEntityMerger merger;
+	protected AchillesEntityPersister<CONTEXT> persister;
+	protected AchillesEntityLoader<CONTEXT> loader;
+	protected AchillesEntityMerger<CONTEXT> merger;
 	protected AchillesEntityRefresher refresher;
-	protected AchillesEntityProxifier proxifier;
+	protected AchillesEntityProxifier<CONTEXT> proxifier;
 	protected AchillesEntityValidator entityValidator;
 	protected AchillesEntityInitializer initializer = new AchillesEntityInitializer();
 
@@ -87,7 +88,7 @@ public abstract class AchillesEntityManager implements EntityManager
 			throw new IllegalStateException(
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
-		AchillesPersistenceContext context = initPersistenceContext(entity);
+		CONTEXT context = initPersistenceContext(entity);
 		persister.persist(context);
 		context.flush();
 	}
@@ -136,7 +137,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		}
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
-		AchillesPersistenceContext context = initPersistenceContext(entity);
+		CONTEXT context = initPersistenceContext(entity);
 		T merged = merger.<T> merge(context, entity);
 		context.flush();
 		return merged;
@@ -190,7 +191,7 @@ public abstract class AchillesEntityManager implements EntityManager
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		AchillesPersistenceContext context = initPersistenceContext(entity);
+		CONTEXT context = initPersistenceContext(entity);
 		persister.remove(context);
 		context.flush();
 	}
@@ -228,7 +229,7 @@ public abstract class AchillesEntityManager implements EntityManager
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		AchillesPersistenceContext context = initPersistenceContext(entityClass, primaryKey);
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey);
 
 		T entity = loader.<T> load(context, entityClass);
 		if (entity != null)
@@ -271,7 +272,7 @@ public abstract class AchillesEntityManager implements EntityManager
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		AchillesPersistenceContext context = initPersistenceContext(entityClass, primaryKey);
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey);
 		context.setLoadEagerFields(false);
 		T entity = loader.<T> load(context, entityClass);
 		if (entity != null)
@@ -751,10 +752,9 @@ public abstract class AchillesEntityManager implements EntityManager
 				"This operation is not supported for this Cassandra");
 	}
 
-	protected abstract AchillesPersistenceContext initPersistenceContext(Object entity);
+	protected abstract CONTEXT initPersistenceContext(Object entity);
 
-	protected abstract AchillesPersistenceContext initPersistenceContext(Class<?> entityClass,
-			Object primaryKey);
+	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey);
 
 	private EntityMeta prepareEntityForInitialization(Object entity)
 	{

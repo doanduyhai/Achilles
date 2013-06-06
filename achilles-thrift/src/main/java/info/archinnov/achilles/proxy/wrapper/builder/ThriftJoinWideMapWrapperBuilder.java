@@ -4,13 +4,13 @@ import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.ThriftJoinWideMapWrapper;
 
 /**
@@ -24,10 +24,10 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 	private Object id;
 	private ThriftGenericWideRowDao dao;
 	private PropertyMeta<K, V> joinExternalWideMapMeta;
-	private AchillesEntityInterceptor<?> interceptor;
+	private ThriftEntityInterceptor<?> interceptor;
 	private ThriftEntityPersister persister;
 	private ThriftEntityLoader loader;
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 	private ThriftPropertyHelper thriftPropertyHelper;
 	private ThriftCompositeFactory thriftCompositeFactory;
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -48,8 +48,7 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 		return new ThriftJoinWideMapWrapperBuilder<K, V>(id, dao, joinExternalWideMapMeta);
 	}
 
-	public ThriftJoinWideMapWrapperBuilder<K, V> interceptor(
-			AchillesEntityInterceptor<?> interceptor)
+	public ThriftJoinWideMapWrapperBuilder<K, V> interceptor(ThriftEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;
@@ -61,7 +60,7 @@ public class ThriftJoinWideMapWrapperBuilder<K, V>
 		return this;
 	}
 
-	public ThriftJoinWideMapWrapperBuilder<K, V> proxifier(AchillesEntityProxifier proxifier)
+	public ThriftJoinWideMapWrapperBuilder<K, V> proxifier(ThriftEntityProxifier proxifier)
 	{
 		this.proxifier = proxifier;
 		return this;

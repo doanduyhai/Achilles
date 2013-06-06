@@ -14,7 +14,7 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class CqlEntityManager extends AchillesEntityManager
+public class CqlEntityManager extends AchillesEntityManager<CQLPersistenceContext>
 {
 	private CQLDaoContext daoContext;
 
@@ -23,7 +23,7 @@ public class CqlEntityManager extends AchillesEntityManager
 			AchillesConfigurationContext configContext, CQLDaoContext daoContext)
 	{
 		super(entityManagerFactory, entityMetaMap, configContext);
-		daoContext = daoContext;
+		this.daoContext = daoContext;
 	}
 
 	/*

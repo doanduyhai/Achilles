@@ -8,11 +8,11 @@ import info.archinnov.achilles.context.AchillesPersistenceContext;
  * @author DuyHai DOAN
  * 
  */
-public interface AchillesEntityPersister
+public interface AchillesEntityPersister<CONTEXT extends AchillesPersistenceContext>
 {
 
-	public void persist(AchillesPersistenceContext context);
+	public void persist(CONTEXT context);
 
-	public void remove(AchillesPersistenceContext context);
+	public void remove(CONTEXT context);
 
 }

@@ -52,16 +52,16 @@ public class AchillesEntityInterceptorTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private AchillesEntityInterceptor<CompleteBean> interceptor;
+	private AchillesEntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
 
 	@Mock
-	private AchillesEntityLoader loader;
+	private AchillesEntityLoader<AchillesPersistenceContext> loader;
 
 	@Mock
-	private AchillesEntityPersister persister;
+	private AchillesEntityPersister<AchillesPersistenceContext> persister;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
 
 	@Mock
 	private MethodProxy proxy;

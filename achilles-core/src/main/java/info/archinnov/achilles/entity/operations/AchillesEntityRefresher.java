@@ -12,21 +12,23 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class AchillesEntityRefresher
+public class AchillesEntityRefresher<CONTEXT extends AchillesPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityRefresher.class);
 
-	private AchillesEntityProxifier proxifier;
-	private AchillesEntityLoader loader;
+	private AchillesEntityProxifier<CONTEXT> proxifier;
+	private AchillesEntityLoader<CONTEXT> loader;
 
 	public AchillesEntityRefresher() {}
 
-	public AchillesEntityRefresher(AchillesEntityLoader loader, AchillesEntityProxifier proxifier) {
+	public AchillesEntityRefresher(AchillesEntityLoader<CONTEXT> loader,
+			AchillesEntityProxifier<CONTEXT> proxifier)
+	{
 		this.loader = loader;
 		this.proxifier = proxifier;
 	}
 
-	public <T> void refresh(AchillesPersistenceContext context)
+	public <T> void refresh(CONTEXT context)
 	{
 		log.debug("Refreshing entity of class {} and primary key {}", context
 				.getEntityClass()
@@ -34,7 +36,7 @@ public class AchillesEntityRefresher
 
 		Object entity = context.getEntity();
 
-		AchillesEntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+		AchillesEntityInterceptor<CONTEXT, Object> interceptor = proxifier.getInterceptor(entity);
 
 		Object freshEntity = loader.load(context, context.getEntityClass());
 

@@ -1,10 +1,8 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.proxy.wrapper.builder.ThriftCounterWrapperBuilder;
@@ -32,7 +30,7 @@ public class ThriftCompositeTransformer
 	private static final Logger log = LoggerFactory.getLogger(ThriftCompositeTransformer.class);
 
 	private ThriftPropertyHelper helper = new ThriftPropertyHelper();
-	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
+	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
 			final PropertyMeta<K, V> propertyMeta)
@@ -114,7 +112,7 @@ public class ThriftCompositeTransformer
 		V value = hColumn.getValue();
 		if (propertyMeta.isJoin())
 		{
-			AchillesPersistenceContext joinContext = context.newPersistenceContext(
+			ThriftPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.joinMeta(), value);
 			value = proxifier.buildProxy((V) hColumn.getValue(), joinContext);
 		}

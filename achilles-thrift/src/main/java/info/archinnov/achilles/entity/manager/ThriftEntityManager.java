@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManager extends AchillesEntityManager
+public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
@@ -51,7 +51,8 @@ public class ThriftEntityManager extends AchillesEntityManager
 		super.merger = new ThriftEntityMerger();
 		super.proxifier = new ThriftEntityProxifier();
 		super.entityValidator = new AchillesEntityValidator(super.proxifier);
-		super.refresher = new AchillesEntityRefresher(super.loader, super.proxifier);
+		super.refresher = new AchillesEntityRefresher<ThriftPersistenceContext>(super.loader,
+				super.proxifier);
 	}
 
 	public void persist(final Object entity, ConsistencyLevel writeLevel)

@@ -21,9 +21,9 @@ import org.apache.commons.lang.StringUtils;
  */
 public class JoinProperties
 {
-	public static CascadePersistFilter cascadePersistFilter = new CascadePersistFilter();
+	public static CascadePersistFilter hasCascadePersist = new CascadePersistFilter();
 	public static CascadeMergeFilter hasCascadeMerge = new CascadeMergeFilter();
-	public static CascadeRefreshFilter cascadeRefreshFilter = new CascadeRefreshFilter();
+	public static CascadeRefreshFilter hasCascadeRefresh = new CascadeRefreshFilter();
 
 	private EntityMeta entityMeta;
 	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();

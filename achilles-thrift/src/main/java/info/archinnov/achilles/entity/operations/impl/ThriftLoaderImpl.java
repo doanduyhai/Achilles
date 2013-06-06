@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity.operations.impl;
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
@@ -203,7 +202,7 @@ public class ThriftLoaderImpl
 		if (stringJoinId != null)
 		{
 			Object joinId = joinIdMeta.getValueFromString(stringJoinId);
-			AchillesPersistenceContext joinContext = context.newPersistenceContext(
+			ThriftPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 			return loader.<V> load(joinContext, propertyMeta.getValueClass());
 

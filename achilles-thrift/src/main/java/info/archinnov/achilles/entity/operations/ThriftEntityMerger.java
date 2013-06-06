@@ -2,7 +2,6 @@ package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -35,24 +34,23 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityMerger implements AchillesEntityMerger
+public class ThriftEntityMerger implements AchillesEntityMerger<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMerger.class);
 
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
 	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
-	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
+	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
 
 	@Override
-	public <T> T merge(AchillesPersistenceContext context, T entity)
+	public <T> T merge(ThriftPersistenceContext context, T entity)
 	{
 		log.debug("Merging entity of class {} with primary key {}", context
 				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		Validator.validateNotNull(entity, "Proxy object should not be null");
@@ -64,7 +62,8 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 			log.debug("Checking for dirty fields before merging");
 
 			T realObject = proxifier.getRealObject(entity);
-			AchillesEntityInterceptor<T> interceptor = proxifier.getInterceptor(entity);
+			AchillesEntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
+					.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
 			if (dirtyMap.size() > 0)
@@ -76,7 +75,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 					{
 						log.debug("Removing dirty collection/map {} before merging",
 								propertyMeta.getPropertyName());
-						persister.removePropertyBatch(thriftContext, propertyMeta);
+						persister.removePropertyBatch(context, propertyMeta);
 					}
 					persister.persistProperty(context, propertyMeta);
 				}
@@ -100,16 +99,16 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 						switch (propertyMeta.type())
 						{
 							case JOIN_SIMPLE:
-								mergeJoinProperty(thriftContext, realObject, propertyMeta);
+								mergeJoinProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_LIST:
-								mergeJoinListProperty(thriftContext, realObject, propertyMeta);
+								mergeJoinListProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_SET:
-								mergeJoinSetProperty(thriftContext, realObject, propertyMeta);
+								mergeJoinSetProperty(context, realObject, propertyMeta);
 								break;
 							case JOIN_MAP:
-								mergeJoinMapProperty(thriftContext, realObject, propertyMeta);
+								mergeJoinMapProperty(context, realObject, propertyMeta);
 								break;
 							default:
 								break;
@@ -117,7 +116,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger
 					}
 				}
 			}
-			interceptor.setContext(thriftContext);
+			interceptor.setContext(context);
 			interceptor.setTarget(realObject);
 			proxy = entity;
 		}

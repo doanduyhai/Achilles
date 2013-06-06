@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityPersister implements AchillesEntityPersister
+public class ThriftEntityPersister implements AchillesEntityPersister<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityPersister.class);
 
@@ -37,7 +37,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
 	@Override
-	public void persist(AchillesPersistenceContext context)
+	public void persist(ThriftPersistenceContext context)
 	{
 
 		EntityMeta entityMeta = context.getEntityMeta();
@@ -94,7 +94,7 @@ public class ThriftEntityPersister implements AchillesEntityPersister
 	}
 
 	@Override
-	public void remove(AchillesPersistenceContext context)
+	public void remove(ThriftPersistenceContext context)
 	{
 		log.debug("Removing entity of class {} and primary key {} ", context
 				.getEntityClass()

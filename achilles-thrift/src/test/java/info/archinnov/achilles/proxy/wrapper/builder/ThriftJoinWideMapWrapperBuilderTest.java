@@ -4,13 +4,13 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.ThriftJoinWideMapWrapper;
 
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class ThriftJoinWideMapWrapperBuilderTest
 	private PropertyMeta<Integer, String> propertyMeta;
 
 	@Mock
-	private AchillesEntityInterceptor<Integer> interceptor;
+	private ThriftEntityInterceptor<Integer> interceptor;
 
 	@Mock
 	private ThriftEntityPersister persister;
@@ -45,7 +45,7 @@ public class ThriftJoinWideMapWrapperBuilderTest
 	private ThriftEntityLoader loader;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 
 	@Mock
 	private ThriftPropertyHelper thriftPropertyHelper;
@@ -75,7 +75,7 @@ public class ThriftJoinWideMapWrapperBuilderTest
 				.build();
 
 		assertThat(wrapper).isNotNull();
-		assertThat(wrapper.getInterceptor()).isSameAs((AchillesEntityInterceptor) interceptor);
+		assertThat(wrapper.getInterceptor()).isSameAs((ThriftEntityInterceptor) interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "dao")).isSameAs(dao);
 		assertThat(Whitebox.getInternalState(wrapper, "interceptor")).isSameAs(interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);

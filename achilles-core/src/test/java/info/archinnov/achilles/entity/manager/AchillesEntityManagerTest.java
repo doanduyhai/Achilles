@@ -47,16 +47,16 @@ public class AchillesEntityManagerTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private AchillesEntityManager em;
+	private AchillesEntityManager<AchillesPersistenceContext> em;
 
 	@Mock
-	private AchillesEntityPersister persister;
+	private AchillesEntityPersister<AchillesPersistenceContext> persister;
 
 	@Mock
-	private AchillesEntityLoader loader;
+	private AchillesEntityLoader<AchillesPersistenceContext> loader;
 
 	@Mock
-	private AchillesEntityMerger merger;
+	private AchillesEntityMerger<AchillesPersistenceContext> merger;
 
 	@Mock
 	private AchillesEntityRefresher refresher;
@@ -65,7 +65,7 @@ public class AchillesEntityManagerTest
 	private AchillesEntityInitializer initializer;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
 
 	@Mock
 	private AchillesEntityValidator entityValidator;

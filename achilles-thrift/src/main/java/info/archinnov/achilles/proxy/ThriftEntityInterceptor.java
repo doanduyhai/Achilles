@@ -24,18 +24,21 @@ import me.prettyprint.hector.api.beans.Composite;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
+public class ThriftEntityInterceptor<T> extends
+		AchillesEntityInterceptor<ThriftPersistenceContext, T>
 {
 
 	private ThriftPropertyHelper thriftCompositeHelper = new ThriftPropertyHelper();
 	private ThriftKeyValueFactory thriftKeyValueFactory = new ThriftKeyValueFactory();
 	private ThriftIteratorFactory thriftIteratorFactory = new ThriftIteratorFactory();
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
+	private ThriftEntityProxifier thriftProxifier;
 
 	public ThriftEntityInterceptor() {
 		super.loader = new ThriftEntityLoader();
 		super.persister = new ThriftEntityPersister();
-		super.proxifier = new ThriftEntityProxifier();
+		this.thriftProxifier = new ThriftEntityProxifier();
+		super.proxifier = this.thriftProxifier;
 	}
 
 	@Override
@@ -110,7 +113,7 @@ public class ThriftEntityInterceptor<T> extends AchillesEntityInterceptor<T>
 				.context(thriftContext)
 				.thriftPropertyHelper(thriftCompositeHelper)
 				.thriftCompositeFactory(thriftCompositeFactory)
-				.proxifier(proxifier)
+				.proxifier(this.thriftProxifier)
 				.thriftIteratorFactory(thriftIteratorFactory)
 				.thriftKeyValueFactory(thriftKeyValueFactory)
 				.loader((ThriftEntityLoader) loader)

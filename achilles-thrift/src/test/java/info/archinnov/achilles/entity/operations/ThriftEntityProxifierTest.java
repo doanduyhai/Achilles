@@ -7,7 +7,6 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 
 import java.lang.reflect.Method;
@@ -66,7 +65,7 @@ public class ThriftEntityProxifierTest
 		when(context.getEntityDao()).thenReturn(entityDao);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 
-		AchillesEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(context,
+		ThriftEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(context,
 				entity);
 
 		assertThat(interceptor).isInstanceOf(ThriftEntityInterceptor.class);

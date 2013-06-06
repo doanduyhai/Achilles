@@ -1,20 +1,17 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AchillesConfigurationContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLPersisterImpl;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.persistence.CascadeType;
+import java.util.Set;
 
 import mapping.entity.CompleteBean;
 
@@ -35,7 +32,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.Insert;
-import com.google.common.collect.Sets;
 
 /**
  * CQLEntityPersisterTest
@@ -77,7 +73,9 @@ public class CQLEntityPersisterTest
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 
-	private Map<String, PropertyMeta<?, ?>> metaMap = new HashMap<String, PropertyMeta<?, ?>>();
+	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+	@Captor
+	private ArgumentCaptor<Set<PropertyMeta<?, ?>>> metaSetCaptor;
 
 	@Captor
 	private ArgumentCaptor<Insert> insertCaptor;
@@ -94,6 +92,7 @@ public class CQLEntityPersisterTest
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(entityMeta.getAllMetas()).thenReturn(allMetas);
 	}
 
 	@Test
@@ -103,7 +102,10 @@ public class CQLEntityPersisterTest
 
 		persister.persist(context);
 
-		verify(persisterImpl).persist(persister, context);
+		verify(persisterImpl).persist(context);
+		verify(persisterImpl).cascadePersist(eq(persister), eq(context), metaSetCaptor.capture());
+
+		assertThat(metaSetCaptor.getValue()).isEmpty();
 	}
 
 	@Test
@@ -117,62 +119,16 @@ public class CQLEntityPersisterTest
 	}
 
 	@Test
-	public void should_cascade_persist_on_cascade_ALL() throws Exception
-	{
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setCascadeTypes(Sets.newHashSet(CascadeType.ALL));
-
-		when(entityMeta.isWideRow()).thenReturn(false);
-
-		Object actual = persister.cascadePersistOrEnsureExist(context, joinProperties);
-
-		assertThat(actual).isSameAs(primaryKey);
-		verify(persisterImpl).persist(persister, context);
-	}
-
-	@Test
-	public void should_cascade_persist_on_cascade_PERSIST() throws Exception
-	{
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setCascadeTypes(Sets.newHashSet(CascadeType.PERSIST));
-
-		when(entityMeta.isWideRow()).thenReturn(false);
-
-		Object actual = persister.cascadePersistOrEnsureExist(context, joinProperties);
-
-		assertThat(actual).isSameAs(primaryKey);
-		verify(persisterImpl).persist(persister, context);
-	}
-
-	@Test
 	public void should_ensure_entity_exist() throws Exception
 	{
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setCascadeTypes(new HashSet<CascadeType>());
-		joinProperties.setEntityMeta(entityMeta);
 
 		when(context.getConfigContext().isEnsureJoinConsistency()).thenReturn(true);
 
-		when(persisterImpl.doesEntityExist(context)).thenReturn(true);
+		persister.persist(context);
+		verify(persisterImpl).persist(context);
+		verify(persisterImpl).ensureEntitiesExist(eq(context), metaSetCaptor.capture());
 
-		Object actual = persister.cascadePersistOrEnsureExist(context, joinProperties);
-
-		assertThat(actual).isSameAs(primaryKey);
-	}
-
-	@Test
-	public void should_not_check_for_entity_existence_on_cascade() throws Exception
-	{
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setCascadeTypes(new HashSet<CascadeType>());
-		joinProperties.setEntityMeta(entityMeta);
-
-		when(context.getConfigContext().isEnsureJoinConsistency()).thenReturn(false);
-
-		Object actual = persister.cascadePersistOrEnsureExist(context, joinProperties);
-		assertThat(actual).isSameAs(primaryKey);
-
-		verifyZeroInteractions(persisterImpl);
+		assertThat(metaSetCaptor.getValue()).isEmpty();
 	}
 
 	@Test

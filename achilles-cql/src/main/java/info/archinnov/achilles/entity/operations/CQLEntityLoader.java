@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -16,13 +15,13 @@ import info.archinnov.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityLoader implements AchillesEntityLoader
+public class CQLEntityLoader implements AchillesEntityLoader<CQLPersistenceContext>
 {
 	private CQLLoaderImpl loaderImpl;
 	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 
 	@Override
-	public <T> T load(AchillesPersistenceContext context, Class<T> entityClass)
+	public <T> T load(CQLPersistenceContext context, Class<T> entityClass)
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
@@ -43,7 +42,7 @@ public class CQLEntityLoader implements AchillesEntityLoader
 			}
 			else
 			{
-				entity = loaderImpl.eagerLoadEntity((CQLPersistenceContext) context, entityClass);
+				entity = loaderImpl.eagerLoadEntity(context, entityClass);
 			}
 			invoker.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
 
@@ -59,7 +58,7 @@ public class CQLEntityLoader implements AchillesEntityLoader
 
 	@Override
 	public <V> void loadPropertyIntoObject(Object realObject, Object key,
-			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta)
+			CQLPersistenceContext context, PropertyMeta<?, V> propertyMeta)
 	{
 		CQLPersistenceContext cqlContext = (CQLPersistenceContext) context;
 		PropertyType type = propertyMeta.type();

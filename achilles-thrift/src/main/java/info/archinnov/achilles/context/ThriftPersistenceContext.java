@@ -60,7 +60,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
+	public ThriftPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
 	{
 		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
 				joinMeta.getClassName());
@@ -69,7 +69,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public AchillesPersistenceContext newPersistenceContext(Class<?> entityClass,
+	public ThriftPersistenceContext newPersistenceContext(Class<?> entityClass,
 			EntityMeta joinMeta, Object joinId)
 	{
 		log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,

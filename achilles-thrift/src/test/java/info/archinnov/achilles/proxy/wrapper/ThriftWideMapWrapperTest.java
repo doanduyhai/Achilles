@@ -11,7 +11,7 @@ import info.archinnov.achilles.iterator.ThriftKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
@@ -69,7 +69,7 @@ public class ThriftWideMapWrapperTest
 	private Composite comp = new Composite();
 
 	@Mock
-	private AchillesEntityInterceptor<Long> interceptor;
+	private ThriftEntityInterceptor<Long> interceptor;
 
 	@Mock
 	private Mutator<Object> mutator;

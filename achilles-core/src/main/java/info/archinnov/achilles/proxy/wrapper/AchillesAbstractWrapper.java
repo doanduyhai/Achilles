@@ -18,7 +18,7 @@ public abstract class AchillesAbstractWrapper<K, V>
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta<K, V> propertyMeta;
-	protected AchillesEntityProxifier proxifier;
+	protected AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
 	protected AchillesPersistenceContext context;
 
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()

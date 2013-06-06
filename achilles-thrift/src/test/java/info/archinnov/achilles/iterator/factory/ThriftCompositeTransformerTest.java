@@ -8,7 +8,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
@@ -53,7 +53,7 @@ public class ThriftCompositeTransformerTest
 	private ThriftPropertyHelper helper;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 
 	@Mock
 	private ThriftPersistenceContext context;

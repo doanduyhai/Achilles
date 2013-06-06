@@ -1,16 +1,21 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static com.google.common.collect.Collections2.filter;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.isProxyType;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+
+import org.apache.cassandra.utils.Pair;
+
+import com.google.common.collect.FluentIterable;
 
 /**
  * CQLPersisterImpl
@@ -22,15 +27,38 @@ public class CQLPersisterImpl
 {
 	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
 
-	public void persist(CQLEntityPersister entityPersister, CQLPersistenceContext context)
+	public void persist(CQLPersistenceContext context)
 	{
 		context.bindForInsert();
-		cascadePersist(entityPersister, context);
 	}
 
-	public boolean doesEntityExist(CQLPersistenceContext context)
+	public void cascadePersist(CQLEntityPersister entityPersister, CQLPersistenceContext context,
+			Set<PropertyMeta<?, ?>> joinPMs)
 	{
-		return context.checkForEntityExistence();
+		Object entity = context.getEntity();
+		JoinExtractorAndNullFilter extractorAndFilter = new JoinExtractorAndNullFilter(entity);
+
+		List<Pair<List<?>, PropertyMeta<?, ?>>> pairList = FluentIterable
+				.from(joinPMs)
+				.transform(extractorAndFilter)
+				.filter(extractorAndFilter)
+				.toImmutableList();
+
+		doCascade(entityPersister, context, pairList);
+	}
+
+	public void ensureEntitiesExist(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> joinPMs)
+	{
+		Object entity = context.getEntity();
+		JoinExtractorAndNullFilter extractorAndFilter = new JoinExtractorAndNullFilter(entity);
+
+		List<Pair<List<?>, PropertyMeta<?, ?>>> pairList = FluentIterable
+				.from(joinPMs)
+				.transform(extractorAndFilter)
+				.filter(extractorAndFilter)
+				.toImmutableList();
+
+		checkForExistence(context, pairList);
 	}
 
 	public void remove(CQLPersistenceContext context)
@@ -53,49 +81,47 @@ public class CQLPersisterImpl
 		}
 	}
 
-	protected void cascadePersist(CQLEntityPersister entityPersister, CQLPersistenceContext context)
+	private void doCascade(CQLEntityPersister entityPersister, CQLPersistenceContext context,
+			List<Pair<List<?>, PropertyMeta<?, ?>>> pairList)
 	{
-		Object entity = context.getEntity();
-		List<PropertyMeta<?, ?>> allMetas = context.getEntityMeta().getAllMetas();
-
-		Collection<PropertyMeta<?, ?>> joinPMs = filter(allMetas, joinPropertyType);
-		for (PropertyMeta<?, ?> pm : joinPMs)
+		for (Pair<List<?>, PropertyMeta<?, ?>> pair : pairList)
 		{
-			Object joinValue = invoker.getValueFromField(entity, pm.getGetter());
-			if (joinValue != null)
+			List<?> joinValues = pair.left;
+			PropertyMeta<?, ?> joinPM = pair.right;
+			for (Object joinEntity : joinValues)
 			{
-				if (pm.isJoinCollection())
-				{
-					doCascadeCollection(entityPersister, context, pm, (Collection<?>) joinValue);
-				}
-				else if (pm.isJoinMap())
-				{
-					Map<?, ?> joinMap = (Map<?, ?>) joinValue;
-					doCascadeCollection(entityPersister, context, pm, joinMap.values());
-				}
-				else
-				{
-					doCascade(entityPersister, context, pm, joinValue);
-				}
+				CQLPersistenceContext joinContext = context.newPersistenceContext(joinPM
+						.getJoinProperties()
+						.getEntityMeta(), joinEntity);
+				entityPersister.persist(joinContext);
 			}
 		}
 	}
 
-	private void doCascadeCollection(CQLEntityPersister entityPersister,
-			CQLPersistenceContext context, PropertyMeta<?, ?> pm, Collection<?> joinCollection)
+	private void checkForExistence(CQLPersistenceContext context,
+			List<Pair<List<?>, PropertyMeta<?, ?>>> pairList)
 	{
-		for (Object joinEntity : joinCollection)
+		for (Pair<List<?>, PropertyMeta<?, ?>> pair : pairList)
 		{
-			doCascade(entityPersister, context, pm, joinEntity);
-		}
-	}
+			List<?> joinValues = pair.left;
+			PropertyMeta<?, ?> joinPM = pair.right;
+			for (Object joinEntity : joinValues)
+			{
+				EntityMeta joinMeta = joinPM.getJoinProperties().getEntityMeta();
+				CQLPersistenceContext joinContext = context.newPersistenceContext(joinMeta,
+						joinEntity);
+				boolean entityExist = joinContext.checkForEntityExistence();
 
-	private void doCascade(CQLEntityPersister entityPersister, CQLPersistenceContext context,
-			PropertyMeta<?, ?> pm, Object joinEntity)
-	{
-		CQLPersistenceContext joinContext = context.newPersistenceContext(pm
-				.getJoinProperties()
-				.getEntityMeta(), joinEntity);
-		entityPersister.cascadePersistOrEnsureExist(joinContext, pm.getJoinProperties());
+				Validator
+						.validateTrue(
+								entityExist,
+								"The entity '"
+										+ joinMeta.getClassName()
+										+ "' with id '"
+										+ invoker.getPrimaryKey(joinEntity, joinMeta.getIdMeta())
+										+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
+			}
+		}
+
 	}
 }

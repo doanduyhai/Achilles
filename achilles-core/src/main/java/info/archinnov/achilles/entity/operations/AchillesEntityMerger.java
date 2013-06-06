@@ -8,8 +8,8 @@ import info.archinnov.achilles.context.AchillesPersistenceContext;
  * @author DuyHai DOAN
  * 
  */
-public interface AchillesEntityMerger
+public interface AchillesEntityMerger<CONTEXT extends AchillesPersistenceContext>
 {
-	public <T> T merge(AchillesPersistenceContext context, T entity);
+	public <T> T merge(CONTEXT context, T entity);
 
 }

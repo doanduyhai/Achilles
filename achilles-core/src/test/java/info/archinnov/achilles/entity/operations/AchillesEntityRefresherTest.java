@@ -32,22 +32,22 @@ public class AchillesEntityRefresherTest
 {
 
 	@InjectMocks
-	private AchillesEntityRefresher achillesEntityRefresher;
+	private AchillesEntityRefresher<AchillesPersistenceContext> achillesEntityRefresher;
 
 	@Mock
 	private AchillesEntityIntrospector introspector;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
 
 	@Mock
-	private AchillesEntityLoader loader;
+	private AchillesEntityLoader<AchillesPersistenceContext> loader;
 
 	@Mock
 	private EntityMeta entityMeta;
 
 	@Mock
-	private AchillesEntityInterceptor<CompleteBean> jpaEntityInterceptor;
+	private AchillesEntityInterceptor<AchillesPersistenceContext, CompleteBean> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;

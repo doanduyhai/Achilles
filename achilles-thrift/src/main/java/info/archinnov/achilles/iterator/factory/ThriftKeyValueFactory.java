@@ -1,12 +1,10 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
 import info.archinnov.achilles.type.Counter;
@@ -37,7 +35,7 @@ public class ThriftKeyValueFactory
 	private static final Logger log = LoggerFactory.getLogger(ThriftKeyValueFactory.class);
 
 	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
-	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
+	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 	private ThriftCompositeTransformer thriftCompositeTransformer = new ThriftCompositeTransformer();
 
 	public <K, V> KeyValue<K, V> createKeyValue(ThriftPersistenceContext context,
@@ -222,8 +220,7 @@ public class ThriftKeyValueFactory
 			Map<Object, V> joinEntities, Object joinId)
 	{
 		V joinEntity = joinEntities.get(joinId);
-		AchillesPersistenceContext joinContext = context
-				.newPersistenceContext(joinMeta, joinEntity);
+		ThriftPersistenceContext joinContext = context.newPersistenceContext(joinMeta, joinEntity);
 		V proxy = proxifier.buildProxy(joinEntity, joinContext);
 		return proxy;
 	}

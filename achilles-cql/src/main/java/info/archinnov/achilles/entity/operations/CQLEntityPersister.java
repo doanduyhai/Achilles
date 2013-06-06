@@ -1,19 +1,20 @@
 package info.archinnov.achilles.entity.operations;
 
-import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadePersist;
+import static info.archinnov.achilles.entity.metadata.PropertyType.joinPropertyType;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLPersisterImpl;
-import info.archinnov.achilles.validation.Validator;
 
+import java.util.List;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 
 /**
  * CQLPersisterImpl
@@ -21,63 +22,53 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityPersister implements AchillesEntityPersister
+public class CQLEntityPersister implements AchillesEntityPersister<CQLPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
 
 	private CQLPersisterImpl persisterImpl;
 
 	@Override
-	public void persist(AchillesPersistenceContext context)
+	public void persist(CQLPersistenceContext context)
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
-		CQLPersistenceContext cqlContext = (CQLPersistenceContext) context;
 
 		if (!entityMeta.isWideRow())
 		{
 			log.debug("Persisting transient entity {}", context.getEntity());
 
-			persisterImpl.persist(this, cqlContext);
+			persisterImpl.persist(context);
+
+			List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetas();
+
+			Set<PropertyMeta<?, ?>> joinPMsWithCascade = FluentIterable
+					.from(allMetas)
+					.filter(joinPropertyType)
+					.filter(hasCascadePersist)
+					.toImmutableSet();
+
+			persisterImpl.cascadePersist(this, context, joinPMsWithCascade);
+
+			if (context.getConfigContext().isEnsureJoinConsistency())
+			{
+				Set<PropertyMeta<?, ?>> joinPMs = FluentIterable
+						.from(allMetas)
+						.filter(joinPropertyType)
+						.toImmutableSet();
+
+				Set<PropertyMeta<?, ?>> ensureExistsPMs = Sets.difference(joinPMs,
+						joinPMsWithCascade);
+
+				log.debug("Consistency check for join entity of class {} and primary key {} ",
+						context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+
+				persisterImpl.ensureEntitiesExist(context, ensureExistsPMs);
+			}
 		}
-	}
-
-	public Object cascadePersistOrEnsureExist(CQLPersistenceContext context,
-			JoinProperties joinProperties)
-	{
-		Object joinId = context.getPrimaryKey();
-
-		Set<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
-		if (cascadeTypes.contains(ALL) || cascadeTypes.contains(PERSIST))
-		{
-			log.debug("Cascade-persisting entity of class {} and primary key {} ", context
-					.getEntityClass()
-					.getCanonicalName(), context.getPrimaryKey());
-
-			persist(context);
-		}
-		else if (context.getConfigContext().isEnsureJoinConsistency())
-		{
-
-			log.debug("Consistency check for join entity of class {} and primary key {} ", context
-					.getEntityClass()
-					.getCanonicalName(), context.getPrimaryKey());
-
-			boolean entityExist = persisterImpl.doesEntityExist(context);
-			Validator
-					.validateTrue(
-							entityExist,
-							"The entity '"
-									+ joinProperties.getEntityMeta().getClassName()
-									+ "' with id '"
-									+ joinId
-									+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
-		}
-
-		return joinId;
 	}
 
 	@Override
-	public void remove(AchillesPersistenceContext context)
+	public void remove(CQLPersistenceContext context)
 	{
 		CQLPersistenceContext cqlContext = (CQLPersistenceContext) context;
 		persisterImpl.remove(cqlContext);

@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWideMapWrapper;
 import info.archinnov.achilles.type.Counter;
 
@@ -23,7 +23,7 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 	private ThriftGenericWideRowDao wideMapCounterDao;
 	private PropertyMeta<K, Counter> propertyMeta;
 
-	private AchillesEntityInterceptor<?> interceptor;
+	private ThriftEntityInterceptor<?> interceptor;
 	protected ThriftPropertyHelper thriftPropertyHelper;
 	protected ThriftKeyValueFactory thriftKeyValueFactory;
 	protected ThriftIteratorFactory thriftIteratorFactory;
@@ -44,8 +44,7 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 		return new ThriftCounterWideMapWrapperBuilder<K>(id, wideMapCounterDao, propertyMeta);
 	}
 
-	public ThriftCounterWideMapWrapperBuilder<K> interceptor(
-			AchillesEntityInterceptor<?> interceptor)
+	public ThriftCounterWideMapWrapperBuilder<K> interceptor(ThriftEntityInterceptor<?> interceptor)
 	{
 		this.interceptor = interceptor;
 		return this;

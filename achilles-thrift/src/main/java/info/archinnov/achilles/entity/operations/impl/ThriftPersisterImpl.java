@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.exception.AchillesException;
@@ -42,7 +41,7 @@ public class ThriftPersisterImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftPersisterImpl.class);
 
 	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
-	private AchillesEntityProxifier proxifier = new ThriftEntityProxifier();
+	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 

@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWideMapWrapper;
 import info.archinnov.achilles.type.Counter;
 
@@ -31,7 +31,7 @@ public class ThriftCounterWideMapWrapperBuilderTest
 	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
-	private AchillesEntityInterceptor<Long> interceptor;
+	private ThriftEntityInterceptor<Long> interceptor;
 
 	@Mock
 	private ThriftPropertyHelper thriftPropertyHelper;
@@ -61,7 +61,7 @@ public class ThriftCounterWideMapWrapperBuilderTest
 				.build();
 
 		assertThat(wrapper).isNotNull();
-		assertThat(wrapper.getInterceptor()).isSameAs((AchillesEntityInterceptor) interceptor);
+		assertThat(wrapper.getInterceptor()).isSameAs((ThriftEntityInterceptor) interceptor);
 		assertThat(Whitebox.getInternalState(wrapper, "wideMapCounterDao")).isSameAs(
 				wideMapCounterDao);
 		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);

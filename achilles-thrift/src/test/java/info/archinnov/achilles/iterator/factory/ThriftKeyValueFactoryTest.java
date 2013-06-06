@@ -10,7 +10,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
 import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
@@ -76,7 +76,7 @@ public class ThriftKeyValueFactoryTest
 	private ThriftJoinEntityHelper joinHelper;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 
 	@Mock
 	private ThriftCompositeTransformer thriftCompositeTransformer;

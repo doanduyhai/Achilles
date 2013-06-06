@@ -42,10 +42,10 @@ import testBuilders.CompleteBeanTestBuilder;
 public class AchillesEntityProxifierTest
 {
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
 
 	@Mock
-	private AchillesEntityInterceptor<CompleteBean> interceptor;
+	private AchillesEntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
 
 	@Mock
 	private AchillesPersistenceContext context;
@@ -166,7 +166,8 @@ public class AchillesEntityProxifierTest
 		CompleteBean proxy = (CompleteBean) enhancer.create();
 
 		doCallRealMethod().when(proxifier).getInterceptor(any());
-		AchillesEntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
+		AchillesEntityInterceptor<AchillesPersistenceContext, CompleteBean> actual = proxifier
+				.getInterceptor(proxy);
 
 		assertThat(actual).isSameAs(interceptor);
 	}

@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -20,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityLoader implements AchillesEntityLoader
+public class ThriftEntityLoader implements AchillesEntityLoader<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityLoader.class);
 
@@ -29,7 +28,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@Override
-	public <T> T load(AchillesPersistenceContext context, Class<T> entityClass)
+	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass)
 	{
 		log.debug("Loading entity of class {} with primary key {}", context
 				.getEntityClass()
@@ -57,7 +56,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 			}
 			else
 			{
-				entity = loaderImpl.load((ThriftPersistenceContext) context, entityClass);
+				entity = loaderImpl.load(context, entityClass);
 			}
 
 		}
@@ -72,43 +71,42 @@ public class ThriftEntityLoader implements AchillesEntityLoader
 
 	@Override
 	public <V> void loadPropertyIntoObject(Object realObject, Object key,
-			AchillesPersistenceContext context, PropertyMeta<?, V> propertyMeta)
+			ThriftPersistenceContext context, PropertyMeta<?, V> propertyMeta)
 	{
 		log.debug("Loading eager properties into entity of class {} with primary key {}", context
 				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		Object value = null;
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				value = loaderImpl.loadSimpleProperty(thriftContext, propertyMeta);
+				value = loaderImpl.loadSimpleProperty(context, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				value = loaderImpl.loadListProperty(thriftContext, propertyMeta);
+				value = loaderImpl.loadListProperty(context, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				value = loaderImpl.loadSetProperty(thriftContext, propertyMeta);
+				value = loaderImpl.loadSetProperty(context, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				value = loaderImpl.loadMapProperty(thriftContext, propertyMeta);
+				value = loaderImpl.loadMapProperty(context, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				value = loaderImpl.loadJoinSimple(thriftContext, propertyMeta, this);
+				value = loaderImpl.loadJoinSimple(context, propertyMeta, this);
 				break;
 			case JOIN_LIST:
-				value = joinLoaderImpl.loadJoinListProperty(thriftContext, propertyMeta);
+				value = joinLoaderImpl.loadJoinListProperty(context, propertyMeta);
 				break;
 			case JOIN_SET:
-				value = joinLoaderImpl.loadJoinSetProperty(thriftContext, propertyMeta);
+				value = joinLoaderImpl.loadJoinSetProperty(context, propertyMeta);
 				break;
 			case JOIN_MAP:
-				value = joinLoaderImpl.loadJoinMapProperty(thriftContext, propertyMeta);
+				value = joinLoaderImpl.loadJoinMapProperty(context, propertyMeta);
 				break;
 			default:
 				return;

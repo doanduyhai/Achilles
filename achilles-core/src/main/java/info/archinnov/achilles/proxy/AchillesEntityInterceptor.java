@@ -27,13 +27,14 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesEntityInterceptor<T> implements MethodInterceptor
+public abstract class AchillesEntityInterceptor<CONTEXT extends AchillesPersistenceContext, T>
+		implements MethodInterceptor
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityInterceptor.class);
 
-	protected AchillesEntityLoader loader;
-	protected AchillesEntityPersister persister;
-	protected AchillesEntityProxifier proxifier;
+	protected AchillesEntityLoader<CONTEXT> loader;
+	protected AchillesEntityPersister<CONTEXT> persister;
+	protected AchillesEntityProxifier<CONTEXT> proxifier;
 
 	protected T target;
 	protected Object key;
@@ -43,7 +44,7 @@ public abstract class AchillesEntityInterceptor<T> implements MethodInterceptor
 	protected Map<Method, PropertyMeta<?, ?>> setterMetas;
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Set<Method> alreadyLoaded;
-	protected AchillesPersistenceContext context;
+	protected CONTEXT context;
 
 	public Object getTarget()
 	{
@@ -117,7 +118,7 @@ public abstract class AchillesEntityInterceptor<T> implements MethodInterceptor
 									propertyMeta.getPropertyName(),
 									propertyMeta.getEntityClassName());
 
-					AchillesPersistenceContext joinContext = context.newPersistenceContext(
+					CONTEXT joinContext = (CONTEXT) context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
 					result = proxifier.buildProxy(rawValue, joinContext);
 				}
@@ -313,12 +314,12 @@ public abstract class AchillesEntityInterceptor<T> implements MethodInterceptor
 		this.alreadyLoaded = lazyLoaded;
 	}
 
-	public AchillesPersistenceContext getContext()
+	public CONTEXT getContext()
 	{
 		return context;
 	}
 
-	public void setContext(AchillesPersistenceContext context)
+	public void setContext(CONTEXT context)
 	{
 		this.context = context;
 	}
@@ -328,17 +329,17 @@ public abstract class AchillesEntityInterceptor<T> implements MethodInterceptor
 		return (PropertyMeta<K, V>) getterMetas.get(method);
 	}
 
-	protected void setLoader(AchillesEntityLoader loader)
+	protected void setLoader(AchillesEntityLoader<CONTEXT> loader)
 	{
 		this.loader = loader;
 	}
 
-	protected void setPersister(AchillesEntityPersister persister)
+	protected void setPersister(AchillesEntityPersister<CONTEXT> persister)
 	{
 		this.persister = persister;
 	}
 
-	protected void setProxifier(AchillesEntityProxifier proxifier)
+	protected void setProxifier(AchillesEntityProxifier<CONTEXT> proxifier)
 	{
 		this.proxifier = proxifier;
 	}

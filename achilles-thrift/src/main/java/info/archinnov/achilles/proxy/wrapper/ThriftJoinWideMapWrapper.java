@@ -2,16 +2,15 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
@@ -43,7 +42,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 	private ThriftGenericWideRowDao dao;
 	private ThriftEntityPersister persister;
 	private ThriftEntityLoader loader;
-	private AchillesEntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 	private ThriftPropertyHelper thriftPropertyHelper;
 	private ThriftCompositeFactory thriftCompositeFactory;
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -64,7 +63,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 		{
 			EntityMeta joinMeta = propertyMeta.joinMeta();
 
-			AchillesPersistenceContext joinContext = context.newPersistenceContext(
+			ThriftPersistenceContext joinContext = context.newPersistenceContext(
 					propertyMeta.getValueClass(), joinMeta, joinId);
 
 			result = loader.<V> load(joinContext, propertyMeta.getValueClass());
@@ -263,7 +262,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 		this.propertyMeta = externalWideMapMeta;
 	}
 
-	public void setEntityProxifier(AchillesEntityProxifier proxifier)
+	public void setEntityProxifier(ThriftEntityProxifier proxifier)
 	{
 		this.proxifier = proxifier;
 	}
