@@ -14,24 +14,30 @@ import info.archinnov.achilles.validation.Validator;
  */
 public abstract class AchillesPersistenceContext {
     protected MethodInvoker invoker = new MethodInvoker();
+
     protected ConfigurationContext configContext;
     protected Class<?> entityClass;
-
     protected EntityMeta entityMeta;
     protected Object entity;
     protected Object primaryKey;
     protected AchillesFlushContext flushContext;
     protected boolean eagerFieldsLoaded = true;
 
-    protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Object entity,
-            AchillesFlushContext flushContext) {
-        Validator.validateNotNull(entity, "The entity '" + entity + "' should not be null");
-
+    private AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+            AchillesFlushContext flushContext, Class<?> entityClass) {
         this.entityMeta = entityMeta;
         this.configContext = configContext;
-        this.entity = entity;
         this.flushContext = flushContext;
-        this.entityClass = entityMeta.getEntityClass();
+        this.entityClass = entityClass;
+
+    }
+
+    protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Object entity,
+            AchillesFlushContext flushContext) {
+        this(entityMeta, configContext, flushContext, entityMeta.getEntityClass());
+
+        Validator.validateNotNull(entity, "The entity '" + entity + "' should not be null");
+        this.entity = entity;
         this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
 
         Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity + "' should not be null");
@@ -39,24 +45,23 @@ public abstract class AchillesPersistenceContext {
 
     protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
             Class<?> entityClass, Object primaryKey, AchillesFlushContext flushContext) {
-        this.entityMeta = entityMeta;
-        this.configContext = configContext;
-        this.entityClass = entityClass;
+        this(entityMeta, configContext, flushContext, entityClass);
+
         this.primaryKey = primaryKey;
         this.flushContext = flushContext;
 
         Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity + "' should not be null");
     }
 
-    //    public abstract void persist(Object entity);
-    //
-    //    public abstract <T> T find(Class<T> entityClass, Object primaryKey);
-    //
-    //    public abstract <T> T getReference(Class<T> entityClass, Object primaryKey);
-    //
-    //    public abstract <T> T merge(T entity);
-    //
-    //    public abstract void remove(Object entity);
+    public abstract void persist(Object entity);
+
+    public abstract <T> T find(Class<T> entityClass, Object primaryKey);
+
+    public abstract <T> T getReference(Class<T> entityClass, Object primaryKey);
+
+    public abstract <T> T merge(T entity);
+
+    public abstract void remove(Object entity);
 
     public abstract AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity);
 
