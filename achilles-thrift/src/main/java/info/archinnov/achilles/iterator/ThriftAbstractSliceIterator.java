@@ -2,7 +2,7 @@ package info.archinnov.achilles.iterator;
 
 import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -57,7 +57,7 @@ public abstract class ThriftAbstractSliceIterator<HCOLUMN> implements Iterator<H
 	{
 		if (iterator == null)
 		{
-			iterator = executeSafely(new ThriftSafeExecutionContext<Iterator<HCOLUMN>>()
+			iterator = executeSafely(new SafeExecutionContext<Iterator<HCOLUMN>>()
 			{
 				@Override
 				public Iterator<HCOLUMN> execute()
@@ -81,7 +81,7 @@ public abstract class ThriftAbstractSliceIterator<HCOLUMN> implements Iterator<H
 				start.setEquality(ComponentEquality.GREATER_THAN_EQUAL);
 			}
 			changeQueryRange();
-			iterator = executeSafely(new ThriftSafeExecutionContext<Iterator<HCOLUMN>>()
+			iterator = executeSafely(new SafeExecutionContext<Iterator<HCOLUMN>>()
 			{
 				@Override
 				public Iterator<HCOLUMN> execute()
@@ -120,7 +120,7 @@ public abstract class ThriftAbstractSliceIterator<HCOLUMN> implements Iterator<H
 
 	public abstract IteratorType type();
 
-	protected <T> T executeWithInitialConsistencyLevel(ThriftSafeExecutionContext<T> context)
+	protected <T> T executeWithInitialConsistencyLevel(SafeExecutionContext<T> context)
 	{
 		log.trace(
 				"Fetching next {} elements with consistency level {} from {}",
@@ -160,7 +160,7 @@ public abstract class ThriftAbstractSliceIterator<HCOLUMN> implements Iterator<H
 
 	}
 
-	private <T> T executeSafely(ThriftSafeExecutionContext<T> context)
+	private <T> T executeSafely(SafeExecutionContext<T> context)
 	{
 		try
 		{

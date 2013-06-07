@@ -3,7 +3,7 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.ThriftAbstractSliceIterator.IteratorType.THRIFT_JOIN_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
@@ -90,7 +90,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 	protected Iterator<HColumn<Composite, VALUE>> fetchData()
 	{
 
-		Iterator<HColumn<Composite, Object>> iter = executeWithInitialConsistencyLevel(new ThriftSafeExecutionContext<Iterator<HColumn<Composite, Object>>>()
+		Iterator<HColumn<Composite, Object>> iter = executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, Object>>>()
 		{
 			@Override
 			public Iterator<HColumn<Composite, Object>> execute()

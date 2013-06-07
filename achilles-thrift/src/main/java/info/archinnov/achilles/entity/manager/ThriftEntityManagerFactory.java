@@ -10,7 +10,6 @@ import info.archinnov.achilles.table.ThriftTableCreator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Collections;
 import java.util.Map;
-import javax.persistence.EntityManager;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import org.slf4j.Logger;
@@ -166,8 +165,10 @@ public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory {
         log.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
                 cluster.getName(), keyspace.getKeyspaceName());
 
-        super.tableCreator = new ThriftTableCreator(cluster, keyspace);
         boolean hasSimpleCounter = bootstrap();
+        new ThriftTableCreator(cluster, keyspace).validateOrCreateColumnFamilies(entityMetaMap, configContext,
+                hasSimpleCounter);
+
         thriftDaoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap, configContext,
                 hasSimpleCounter);
     }

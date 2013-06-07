@@ -48,6 +48,16 @@ public abstract class AchillesPersistenceContext {
         Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity + "' should not be null");
     }
 
+    //    public abstract void persist(Object entity);
+    //
+    //    public abstract <T> T find(Class<T> entityClass, Object primaryKey);
+    //
+    //    public abstract <T> T getReference(Class<T> entityClass, Object primaryKey);
+    //
+    //    public abstract <T> T merge(T entity);
+    //
+    //    public abstract void remove(Object entity);
+
     public abstract AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity);
 
     public abstract AchillesPersistenceContext newPersistenceContext(Class<?> entityClass, EntityMeta joinMeta,

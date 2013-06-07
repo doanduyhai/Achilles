@@ -2,7 +2,7 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
@@ -41,7 +41,7 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public Long get()
 	{
-		return executeWithReadConsistencyLevel(new ThriftSafeExecutionContext<Long>()
+		return executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -55,7 +55,7 @@ public class ThriftCounterWrapper implements Counter
 	public Long get(ConsistencyLevel readLevel)
 	{
 		validator.validateNoPendingBatch(context);
-		return executeWithReadConsistencyLevel(new ThriftSafeExecutionContext<Long>()
+		return executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -68,7 +68,7 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void incr()
 	{
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -83,7 +83,7 @@ public class ThriftCounterWrapper implements Counter
 	public void incr(ConsistencyLevel writeLevel)
 	{
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -98,7 +98,7 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void incr(final Long increment)
 	{
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -113,7 +113,7 @@ public class ThriftCounterWrapper implements Counter
 	public void incr(final Long increment, ConsistencyLevel writeLevel)
 	{
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -127,7 +127,7 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr()
 	{
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -143,7 +143,7 @@ public class ThriftCounterWrapper implements Counter
 	public void decr(ConsistencyLevel writeLevel)
 	{
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -157,7 +157,7 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr(final Long decrement)
 	{
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -172,7 +172,7 @@ public class ThriftCounterWrapper implements Counter
 	public void decr(final Long decrement, ConsistencyLevel writeLevel)
 	{
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -183,7 +183,7 @@ public class ThriftCounterWrapper implements Counter
 		}, writeLevel);
 	}
 
-	private <T> T executeWithWriteConsistencyLevel(ThriftSafeExecutionContext<T> context,
+	private <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context,
 			final ConsistencyLevel writeLevel)
 	{
 		log.trace("Execute write with runtime consistency level {}", writeLevel.name());
@@ -209,7 +209,7 @@ public class ThriftCounterWrapper implements Counter
 		}
 	}
 
-	private <T> T executeWithReadConsistencyLevel(ThriftSafeExecutionContext<T> context,
+	private <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,
 			final ConsistencyLevel readLevel)
 	{
 		log.trace("Execute read with runtime consistency level {}", readLevel.name());

@@ -12,7 +12,7 @@ package info.archinnov.achilles.iterator;
 import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
 import static info.archinnov.achilles.iterator.ThriftAbstractSliceIterator.IteratorType.THRIFT_SLICE_ITERATOR;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 
 import java.util.Iterator;
 
@@ -64,7 +64,7 @@ public class ThriftSliceIterator<K, V> extends ThriftAbstractSliceIterator<HColu
 	@Override
 	protected Iterator<HColumn<Composite, V>> fetchData()
 	{
-		return executeWithInitialConsistencyLevel(new ThriftSafeExecutionContext<Iterator<HColumn<Composite, V>>>()
+		return executeWithInitialConsistencyLevel(new SafeExecutionContext<Iterator<HColumn<Composite, V>>>()
 		{
 			@Override
 			public Iterator<HColumn<Composite, V>> execute()

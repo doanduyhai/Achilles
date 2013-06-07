@@ -30,8 +30,8 @@ public class CQLEntityManagerFactory extends AchillesEntityManagerFactory {
         CQLArgumentExtractor extractor = new CQLArgumentExtractor();
         cluster = extractor.initCluster(configurationMap);
         session = extractor.initSession(cluster, configurationMap);
-        boolean hasSimpleCounter = bootstrap();
 
+        boolean hasSimpleCounter = bootstrap();
         daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap);
 
     }

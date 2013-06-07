@@ -4,7 +4,7 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
@@ -53,7 +53,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
     public void persist(final Object entity, ConsistencyLevel writeLevel) {
         log.debug("Persisting entity '{}' with write consistency level {}", entity, writeLevel.name());
         consistencyPolicy.setCurrentWriteLevel(writeLevel);
-        reinitConsistencyLevels(new ThriftSafeExecutionContext<Void>() {
+        reinitConsistencyLevels(new SafeExecutionContext<Void>() {
             @Override
             public Void execute() {
                 persist(entity);
@@ -69,7 +69,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                     writeLevel.name());
         }
         consistencyPolicy.setCurrentWriteLevel(writeLevel);
-        return reinitConsistencyLevels(new ThriftSafeExecutionContext<T>() {
+        return reinitConsistencyLevels(new SafeExecutionContext<T>() {
             @Override
             public T execute() {
                 return merge(entity);
@@ -84,7 +84,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                     writeLevel.name());
         }
         consistencyPolicy.setCurrentWriteLevel(writeLevel);
-        reinitConsistencyLevels(new ThriftSafeExecutionContext<Void>() {
+        reinitConsistencyLevels(new SafeExecutionContext<Void>() {
             @Override
             public Void execute() {
                 remove(entity);
@@ -101,7 +101,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                 primaryKey, readLevel.name());
 
         consistencyPolicy.setCurrentReadLevel(readLevel);
-        return reinitConsistencyLevels(new ThriftSafeExecutionContext<T>() {
+        return reinitConsistencyLevels(new SafeExecutionContext<T>() {
             @Override
             public T execute() {
                 return find(entityClass, primaryKey);
@@ -115,7 +115,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                 entityClass, primaryKey, readLevel.name());
 
         consistencyPolicy.setCurrentReadLevel(readLevel);
-        return reinitConsistencyLevels(new ThriftSafeExecutionContext<T>() {
+        return reinitConsistencyLevels(new SafeExecutionContext<T>() {
             @Override
             public T execute() {
                 return getReference(entityClass, primaryKey);
@@ -130,7 +130,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                     readLevel.name());
         }
         consistencyPolicy.setCurrentReadLevel(readLevel);
-        reinitConsistencyLevels(new ThriftSafeExecutionContext<Void>() {
+        reinitConsistencyLevels(new SafeExecutionContext<Void>() {
             @Override
             public Void execute() {
                 refresh(entity);
@@ -171,7 +171,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
                 new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entity);
     }
 
-    private <T> T reinitConsistencyLevels(ThriftSafeExecutionContext<T> context) {
+    private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context) {
         try {
             return context.execute();
         } finally {

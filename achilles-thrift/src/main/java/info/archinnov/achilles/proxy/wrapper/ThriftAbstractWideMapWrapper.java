@@ -1,7 +1,7 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
@@ -32,7 +32,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 
 	protected static final int DEFAULT_COUNT = 100;
 
-	private <T> T reinitConsistencyLevel(final ThriftSafeExecutionContext<T> executionContext)
+	private <T> T reinitConsistencyLevel(final SafeExecutionContext<T> executionContext)
 	{
 		log.trace("Execute safely");
 		try
@@ -50,7 +50,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public V get(final K key, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<V>()
+		return reinitConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
@@ -64,7 +64,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void insert(final K key, final V value, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -79,7 +79,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void insert(final K key, final V value, final int ttl, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -103,7 +103,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValue<K, V> findFirstMatching(final K key, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValue<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
@@ -126,7 +126,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValue<K, V> findLastMatching(final K key, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValue<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
@@ -147,7 +147,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -164,7 +164,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -185,7 +185,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -208,7 +208,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -231,7 +231,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -260,7 +260,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValue<K, V> findFirst(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValue<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
@@ -280,7 +280,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> findFirst(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -308,7 +308,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValue<K, V> findLast(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValue<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
@@ -328,7 +328,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> findLast(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<KeyValue<K, V>>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
 		{
 			@Override
 			public List<KeyValue<K, V>> execute()
@@ -351,7 +351,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public V findValue(final K key, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<V>()
+		return reinitConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
@@ -372,7 +372,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -388,7 +388,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -410,7 +410,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -432,7 +432,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -454,7 +454,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -483,7 +483,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public V findFirstValue(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<V>()
+		return reinitConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
@@ -503,7 +503,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findFirstValues(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -531,7 +531,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public V findLastValue(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<V>()
+		return reinitConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
@@ -551,7 +551,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findLastValues(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -573,7 +573,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public K findKey(final K key, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<K>()
+		return reinitConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
@@ -594,7 +594,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -610,7 +610,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -631,7 +631,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -653,7 +653,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -675,7 +675,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -704,7 +704,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public K findFirstKey(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<K>()
+		return reinitConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
@@ -724,7 +724,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findFirstKeys(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -752,7 +752,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public K findLastKey(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<K>()
+		return reinitConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
@@ -772,7 +772,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findLastKeys(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<List<K>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -793,7 +793,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iterator(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -809,7 +809,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -829,7 +829,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iterator(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -851,7 +851,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -874,7 +874,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -896,7 +896,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iteratorReverse(final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -917,7 +917,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iteratorReverse(final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -939,7 +939,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -962,7 +962,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final int count, final ConsistencyLevel readLevel)
 	{
 		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new ThriftSafeExecutionContext<KeyValueIterator<K, V>>()
+		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
 		{
 			@Override
 			public KeyValueIterator<K, V> execute()
@@ -977,7 +977,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void remove(final K key, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -999,7 +999,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void remove(final K start, final K end, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1015,7 +1015,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 			final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1036,7 +1036,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void removeBoundsExclusive(final K start, final K end, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1057,7 +1057,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void removeFirst(final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1072,7 +1072,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void removeFirst(final int count, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1093,7 +1093,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void removeLast(final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1108,7 +1108,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public void removeLast(final int count, final ConsistencyLevel writeLevel)
 	{
 		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()

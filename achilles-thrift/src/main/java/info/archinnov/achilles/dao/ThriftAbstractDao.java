@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
@@ -74,7 +74,7 @@ public abstract class ThriftAbstractDao
 		this.rowkeyAndValueClasses = rowkeyAndValueClasses;
 	}
 
-	private <T> T reinitConsistencyLevels(ThriftSafeExecutionContext<T> context)
+	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
 	{
 		log.trace("Execute safely and reinit consistency level in thread {}",
 				Thread.currentThread());
@@ -134,7 +134,7 @@ public abstract class ThriftAbstractDao
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
 		V result = null;
-		HColumn<Composite, V> column = reinitConsistencyLevels(new ThriftSafeExecutionContext<HColumn<Composite, V>>()
+		HColumn<Composite, V> column = reinitConsistencyLevels(new SafeExecutionContext<HColumn<Composite, V>>()
 		{
 			@Override
 			public HColumn<Composite, V> execute()
@@ -247,7 +247,7 @@ public abstract class ThriftAbstractDao
 							count, format(start), format(end), columnFamily, key, reverse);
 		}
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
@@ -275,7 +275,7 @@ public abstract class ThriftAbstractDao
 							count, format(start), format(end), columnFamily, key, reverse);
 		}
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
+		List<HColumn<Composite, V>> columns = reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
@@ -304,7 +304,7 @@ public abstract class ThriftAbstractDao
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HColumn<Composite, V>>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<List<HColumn<Composite, V>>>()
 		{
 			@Override
 			public List<HColumn<Composite, V>> execute()
@@ -332,7 +332,7 @@ public abstract class ThriftAbstractDao
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new ThriftSafeExecutionContext<List<HCounterColumn<Composite>>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<List<HCounterColumn<Composite>>>()
 		{
 			@Override
 			public List<HCounterColumn<Composite>> execute()
@@ -418,7 +418,7 @@ public abstract class ThriftAbstractDao
 		}
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new ThriftSafeExecutionContext<Rows<K, Composite, V>>()
+		return reinitConsistencyLevels(new SafeExecutionContext<Rows<K, Composite, V>>()
 		{
 			@Override
 			public Rows<K, Composite, V> execute()
@@ -484,7 +484,7 @@ public abstract class ThriftAbstractDao
 				.setName(name);
 
 		this.policy.loadConsistencyLevelForRead(columnFamily);
-		return reinitConsistencyLevels(new ThriftSafeExecutionContext<Long>()
+		return reinitConsistencyLevels(new SafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -561,7 +561,7 @@ public abstract class ThriftAbstractDao
 				mutator.getPendingMutationCount(), columnFamily);
 
 		this.policy.loadConsistencyLevelForWrite(this.columnFamily);
-		reinitConsistencyLevels(new ThriftSafeExecutionContext<Void>()
+		reinitConsistencyLevels(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
