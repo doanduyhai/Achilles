@@ -1,6 +1,6 @@
 package info.archinnov.achilles.integration.spring;
 
-import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;

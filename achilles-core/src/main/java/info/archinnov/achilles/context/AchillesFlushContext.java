@@ -10,7 +10,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
  */
 public abstract class AchillesFlushContext
 {
-	protected AchillesConsistencyContext consistencyContext;
+	protected ConsistencyContext consistencyContext;
 
 	public abstract void startBatch();
 

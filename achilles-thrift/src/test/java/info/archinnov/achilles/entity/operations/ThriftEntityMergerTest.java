@@ -13,7 +13,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 
 import java.lang.reflect.Method;
@@ -68,7 +68,7 @@ public class ThriftEntityMergerTest
 	private ThriftGenericEntityDao dao;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
 	private ThriftEntityProxifier proxifier;

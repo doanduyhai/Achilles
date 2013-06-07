@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import org.slf4j.Logger;
@@ -19,11 +19,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityLoader implements AchillesEntityLoader<ThriftPersistenceContext>
+public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityLoader.class);
 
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
@@ -47,7 +47,7 @@ public class ThriftEntityLoader implements AchillesEntityLoader<ThriftPersistenc
 		try
 		{
 
-			if (entityMeta.isWideRow() || !context.isLoadEagerFields())
+			if (entityMeta.isWideRow() || !context.isEagerFieldsLoaded())
 			{
 				log.debug("Entity is a wide row, just set the primary key");
 

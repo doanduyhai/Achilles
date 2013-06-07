@@ -79,7 +79,7 @@ public class ThriftEntityInterceptorBuilder<T>
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 
-		if (context.isLoadEagerFields())
+		if (context.isEagerFieldsLoaded())
 		{
 			lazyLoaded.addAll(entityMeta.getEagerGetters());
 		}

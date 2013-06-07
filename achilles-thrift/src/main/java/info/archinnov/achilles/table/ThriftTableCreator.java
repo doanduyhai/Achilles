@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftTableCreator extends AchillesTableCreator
+public class ThriftTableCreator extends TableCreator
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftTableCreator.class);
 	private Cluster cluster;

@@ -5,7 +5,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
 
@@ -31,7 +31,7 @@ public class ThriftCompositeFactory
 	private static final Logger log = LoggerFactory.getLogger(ThriftCompositeFactory.class);
 
 	private ThriftPropertyHelper helper = new ThriftPropertyHelper();
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T keyValue)
 	{

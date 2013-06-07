@@ -16,10 +16,10 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilde
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -77,10 +77,10 @@ public class ThriftPersisterImplTest
 	private ThriftEntityPersister persister;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private EntityProxifier proxifier;
 
 	@Mock
 	private ThriftGenericEntityDao entityDao;

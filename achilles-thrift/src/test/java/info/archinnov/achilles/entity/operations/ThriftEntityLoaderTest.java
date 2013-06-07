@@ -15,8 +15,8 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.helper.AchillesEntityMapper;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.helper.EntityMapper;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -78,7 +78,7 @@ public class ThriftEntityLoaderTest
 	private PropertyMeta<Void, Long> joinIdMeta;
 
 	@Mock
-	private AchillesEntityMapper mapper;
+	private EntityMapper mapper;
 
 	@Mock
 	private ThriftGenericEntityDao dao;
@@ -90,7 +90,7 @@ public class ThriftEntityLoaderTest
 	private ThriftCompositeFactory thriftCompositeFactory;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
 	private ThriftJoinLoaderImpl joinLoaderImpl;
@@ -137,7 +137,7 @@ public class ThriftEntityLoaderTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
-		context.setLoadEagerFields(false);
+		context.setEagerFieldsLoaded(false);
 
 		Object actual = loader.load(context, CompleteBean.class);
 

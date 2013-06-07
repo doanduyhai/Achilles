@@ -22,7 +22,7 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityPersister implements AchillesEntityPersister<CQLPersistenceContext>
+public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
 

@@ -6,7 +6,7 @@ import static info.archinnov.achilles.type.WideMap.OrderingMode.ASCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
@@ -40,7 +40,7 @@ public class ThriftAbstractWideMapWrapperTest
 	private ThriftEntityInterceptor<Long> interceptor;
 
 	@Mock
-	private AchillesEntityValidator validator;
+	private EntityValidator validator;
 
 	@Mock
 	private ThriftPersistenceContext context;

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +23,7 @@ public class JoinExtractorAndNullFilter implements
 		Function<PropertyMeta<?, ?>, Pair<List<?>, PropertyMeta<?, ?>>>,
 		Predicate<Pair<List<?>, PropertyMeta<?, ?>>>
 {
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	private Object entity;
 

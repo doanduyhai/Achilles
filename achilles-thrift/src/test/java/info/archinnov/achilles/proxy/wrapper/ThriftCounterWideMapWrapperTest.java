@@ -123,7 +123,7 @@ public class ThriftCounterWideMapWrapperTest
 	{
 		when(thriftCompositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 
-		wrapper.insert(key, AchillesCounterBuilder.incr(150L));
+		wrapper.insert(key, CounterBuilder.incr(150L));
 
 		verify(wideMapCounterDao).incrementCounter(id, comp, 150L);
 		verify(context, never()).flush();
@@ -137,7 +137,7 @@ public class ThriftCounterWideMapWrapperTest
 		doThrow(new RuntimeException()).when(wideMapCounterDao).incrementCounter(id, comp, 150L);
 		try
 		{
-			wrapper.insert(key, AchillesCounterBuilder.incr(150L));
+			wrapper.insert(key, CounterBuilder.incr(150L));
 		}
 		catch (AchillesException e)
 		{
@@ -150,7 +150,7 @@ public class ThriftCounterWideMapWrapperTest
 	{
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("Cannot insert counter value with ttl");
-		wrapper.insert(key, AchillesCounterBuilder.incr(150L), 3600);
+		wrapper.insert(key, CounterBuilder.incr(150L), 3600);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -311,7 +311,7 @@ public class ThriftCounterWideMapWrapperTest
 	public void should_not_insert_with_consistency_level() throws Exception
 	{
 		when(thriftCompositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-		wrapper.insert(10, AchillesCounterBuilder.incr());
+		wrapper.insert(10, CounterBuilder.incr());
 		verifyZeroInteractions(policy);
 	}
 
@@ -321,7 +321,7 @@ public class ThriftCounterWideMapWrapperTest
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("Cannot insert counter value with ttl");
 
-		wrapper.insert(15, AchillesCounterBuilder.incr(), 10, EACH_QUORUM);
+		wrapper.insert(15, CounterBuilder.incr(), 10, EACH_QUORUM);
 	}
 
 	@Test

@@ -6,7 +6,7 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.helper.AchillesEntityIntrospector;
+import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.MultiKey;
@@ -34,7 +34,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class PropertyMetaTestBuilder<T, K, V>
 {
-	private AchillesEntityIntrospector achillesEntityIntrospector = new AchillesEntityIntrospector();
+	private EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();
 
 	private Class<T> clazz;
 	private String field;

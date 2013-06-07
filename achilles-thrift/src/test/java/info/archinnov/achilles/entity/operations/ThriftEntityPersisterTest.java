@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -63,7 +63,7 @@ public class ThriftEntityPersisterTest
 	private ThriftPersisterImpl persisterImpl;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
 	private EntityMeta entityMeta;

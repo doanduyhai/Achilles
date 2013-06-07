@@ -6,7 +6,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -78,7 +78,7 @@ public class ThriftTableCreatorTest
 
 	private PropertyMeta<Void, Long> idMeta;
 
-	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+	private ConfigurationContext configContext = new ConfigurationContext();
 
 	@Before
 	public void setUp() throws Exception

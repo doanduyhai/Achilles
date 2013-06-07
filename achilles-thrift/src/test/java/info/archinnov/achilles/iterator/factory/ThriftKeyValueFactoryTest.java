@@ -12,7 +12,7 @@ import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
-import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
@@ -399,7 +399,7 @@ public class ThriftKeyValueFactoryTest
 		HCounterColumn<Composite> hColumn = HColumnTestBuilder.counter(comp, 150L);
 
 		KeyValue<Integer, Counter> keyValue = new KeyValue<Integer, Counter>(12,
-				AchillesCounterBuilder.incr(150L));
+				CounterBuilder.incr(150L));
 		when(thriftCompositeTransformer.buildCounterKeyValue(context, counterMeta, hColumn))
 				.thenReturn(keyValue);
 		KeyValue<Integer, Counter> built = factory.createCounterKeyValue(context, counterMeta,
@@ -428,7 +428,7 @@ public class ThriftKeyValueFactoryTest
 		Composite dynComp = CompositeTestBuilder.builder().buildSimple();
 		HCounterColumn<Composite> hColumn = HColumnTestBuilder.counter(dynComp, value);
 
-		Counter counter = AchillesCounterBuilder.incr(value);
+		Counter counter = CounterBuilder.incr(value);
 		when(thriftCompositeTransformer.buildCounterValue(context, counterMeta, hColumn))
 				.thenReturn(counter);
 		Counter built = factory.createCounterValue(context, counterMeta, hColumn);
@@ -454,7 +454,7 @@ public class ThriftKeyValueFactoryTest
 						.getName()
 						.getComponent(2)
 						.getValue(ThriftSerializerUtils.INT_SRZ);
-				Counter value = AchillesCounterBuilder.incr(hCol.getValue());
+				Counter value = CounterBuilder.incr(hCol.getValue());
 
 				return new KeyValue<Integer, Counter>(key, value, 0);
 			}
@@ -491,7 +491,7 @@ public class ThriftKeyValueFactoryTest
 			@Override
 			public Counter apply(HCounterColumn<Composite> hCol)
 			{
-				return AchillesCounterBuilder.incr(hCol.getValue());
+				return CounterBuilder.incr(hCol.getValue());
 			}
 		};
 

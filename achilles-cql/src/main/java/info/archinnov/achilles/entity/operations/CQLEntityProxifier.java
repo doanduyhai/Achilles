@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.CQLEntityInterceptorBuilder;
 
 /**
  * CQLEntityProxifier
@@ -10,14 +10,11 @@ import info.archinnov.achilles.proxy.CQLEntityInterceptor;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityProxifier extends AchillesEntityProxifier<CQLPersistenceContext>
-{
+public class CQLEntityProxifier extends EntityProxifier<CQLPersistenceContext> {
 
-	@Override
-	public <T> CQLEntityInterceptor<T> buildInterceptor(AchillesPersistenceContext context, T entity)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public <T> CQLEntityInterceptor<T> buildInterceptor(CQLPersistenceContext context, T entity) {
+        return new CQLEntityInterceptorBuilder<T>(context, entity).build();
+    }
 
 }

@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -59,7 +59,7 @@ public class CQLEntityPersisterTest
 	private CQLPersistenceContext joinContext;
 
 	@Mock
-	private AchillesConfigurationContext configContext;
+	private ConfigurationContext configContext;
 
 	@Mock
 	private EntityMeta entityMeta;

@@ -4,7 +4,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class CQLEntityMapperTest
 	private CQLEntityMapper mapper;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
 	private CQLRowMethodInvoker cqlRowInvoker;

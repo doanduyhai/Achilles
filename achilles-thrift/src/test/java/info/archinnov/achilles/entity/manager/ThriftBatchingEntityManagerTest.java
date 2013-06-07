@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.exception.AchillesException;
@@ -38,7 +38,7 @@ public class ThriftBatchingEntityManagerTest
 	private ThriftDaoContext thriftDaoContext;
 
 	@Mock
-	private AchillesConfigurationContext configContext;
+	private ConfigurationContext configContext;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy consistencyPolicy;

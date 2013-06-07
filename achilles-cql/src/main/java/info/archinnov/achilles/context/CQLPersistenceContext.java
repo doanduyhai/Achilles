@@ -25,7 +25,7 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 
 	private CQLAbstractFlushContext flushContext;
 
-	public CQLPersistenceContext(EntityMeta entityMeta, AchillesConfigurationContext configContext,
+	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
 			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Class<?> entityClass,
 			Object primaryKey)
 	{
@@ -34,7 +34,7 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 		this.flushContext = flushContext;
 	}
 
-	public CQLPersistenceContext(EntityMeta entityMeta, AchillesConfigurationContext configContext,
+	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
 			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Object entity)
 	{
 		super(entityMeta, configContext, entity, flushContext);

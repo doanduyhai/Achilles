@@ -17,7 +17,7 @@ import me.prettyprint.hector.api.factory.HFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftArgumentExtractor extends AchillesArgumentExtractor
+public class ThriftArgumentExtractor extends ArgumentExtractor
 {
 
 	public Cluster initCluster(Map<String, Object> configurationMap)

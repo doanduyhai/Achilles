@@ -6,7 +6,7 @@ package info.archinnov.achilles.configuration;
  * @author DuyHai DOAN
  * 
  */
-public interface ThriftConfigurationParameters extends AchillesConfigurationParameters
+public interface ThriftConfigurationParameters extends ConfigurationParameters
 {
 
 	String HOSTNAME_PARAM = "achilles.cassandra.host";

@@ -5,7 +5,7 @@ import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEqualit
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.MultiKey;
 import info.archinnov.achilles.type.WideMap;
 
@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftPropertyHelper extends AchillesPropertyHelper
+public class ThriftPropertyHelper extends PropertyHelper
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftPropertyHelper.class);
 
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta<?, ?> propertyMeta,
 			boolean forCreation)

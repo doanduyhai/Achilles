@@ -8,7 +8,7 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -672,7 +672,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, AchillesCounterBuilder.incr(ALL));
+		counterWideMap.insert(10, CounterBuilder.incr(ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -687,7 +687,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, AchillesCounterBuilder.incr(15L, ALL));
+		counterWideMap.insert(10, CounterBuilder.incr(15L, ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -702,7 +702,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, AchillesCounterBuilder.decr(ALL));
+		counterWideMap.insert(10, CounterBuilder.decr(ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 
@@ -717,7 +717,7 @@ public class ConsistencyLevelIT
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
-		counterWideMap.insert(10, AchillesCounterBuilder.decr(15L, ALL));
+		counterWideMap.insert(10, CounterBuilder.decr(15L, ALL));
 		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatConsistencyLevelsAreReinitialized();
 

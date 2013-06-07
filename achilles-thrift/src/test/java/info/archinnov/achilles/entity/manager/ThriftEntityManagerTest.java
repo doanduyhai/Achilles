@@ -4,14 +4,14 @@ import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 import java.util.Map;
 
@@ -58,13 +58,13 @@ public class ThriftEntityManagerTest
 	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private EntityProxifier proxifier;
 
 	@Mock
 	private ThriftDaoContext thriftDaoContext;
 
 	@Mock
-	private AchillesConfigurationContext configContext;
+	private ConfigurationContext configContext;
 
 	@Mock
 	private ThriftConsistencyLevelPolicy consistencyPolicy;

@@ -4,7 +4,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.helper.AchillesEntityMapper;
+import info.archinnov.achilles.helper.EntityMapper;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityMapper extends AchillesEntityMapper
+public class ThriftEntityMapper extends EntityMapper
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMapper.class);
 

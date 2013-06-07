@@ -55,7 +55,7 @@ public class ThriftDaoContextBuilderTest
 	@Mock
 	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
-	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+	private ConfigurationContext configContext = new ConfigurationContext();
 
 	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 

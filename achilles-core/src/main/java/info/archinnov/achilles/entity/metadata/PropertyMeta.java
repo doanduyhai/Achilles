@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.helper.AchillesPropertyHelper.isSupportedType;
+import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;

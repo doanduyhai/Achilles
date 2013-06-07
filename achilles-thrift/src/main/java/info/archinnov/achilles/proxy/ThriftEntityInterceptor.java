@@ -25,7 +25,7 @@ import me.prettyprint.hector.api.beans.Composite;
  * 
  */
 public class ThriftEntityInterceptor<T> extends
-		AchillesEntityInterceptor<ThriftPersistenceContext, T>
+		EntityInterceptor<ThriftPersistenceContext, T>
 {
 
 	private ThriftPropertyHelper thriftCompositeHelper = new ThriftPropertyHelper();

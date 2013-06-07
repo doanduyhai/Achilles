@@ -4,7 +4,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
-import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -31,7 +31,7 @@ public class ThriftCounterWrapper implements Counter
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
-	private AchillesEntityValidator validator = new AchillesEntityValidator(
+	private EntityValidator validator = new EntityValidator(
 			new ThriftEntityProxifier());
 
 	public ThriftCounterWrapper(ThriftPersistenceContext context) {

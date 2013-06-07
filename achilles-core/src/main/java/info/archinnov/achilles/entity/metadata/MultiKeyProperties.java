@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.helper.AchillesLoggerHelper.fqcnToStringFn;
+import static info.archinnov.achilles.helper.LoggerHelper.fqcnToStringFn;
 
 import java.lang.reflect.Method;
 import java.util.List;

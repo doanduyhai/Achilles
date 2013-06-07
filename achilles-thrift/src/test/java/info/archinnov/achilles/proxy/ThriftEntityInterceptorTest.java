@@ -13,9 +13,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.proxy.wrapper.AchillesListWrapper;
-import info.archinnov.achilles.proxy.wrapper.AchillesMapWrapper;
-import info.archinnov.achilles.proxy.wrapper.AchillesSetWrapper;
+import info.archinnov.achilles.proxy.wrapper.ListWrapper;
+import info.archinnov.achilles.proxy.wrapper.MapWrapper;
+import info.archinnov.achilles.proxy.wrapper.SetWrapper;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWideMapWrapper;
 import info.archinnov.achilles.proxy.wrapper.ThriftJoinWideMapWrapper;
 import info.archinnov.achilles.proxy.wrapper.ThriftWideMapWrapper;
@@ -323,7 +323,7 @@ public class ThriftEntityInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null,
 				proxy);
 
-		assertThat(name).isInstanceOf(AchillesListWrapper.class);
+		assertThat(name).isInstanceOf(ListWrapper.class);
 	}
 
 	@Test
@@ -353,7 +353,7 @@ public class ThriftEntityInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null,
 				proxy);
 
-		assertThat(name).isInstanceOf(AchillesSetWrapper.class);
+		assertThat(name).isInstanceOf(SetWrapper.class);
 	}
 
 	@Test
@@ -383,7 +383,7 @@ public class ThriftEntityInterceptorTest
 		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null,
 				proxy);
 
-		assertThat(name).isInstanceOf(AchillesMapWrapper.class);
+		assertThat(name).isInstanceOf(MapWrapper.class);
 	}
 
 	@Test

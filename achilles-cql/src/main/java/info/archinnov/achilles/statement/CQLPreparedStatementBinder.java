@@ -2,7 +2,7 @@ package info.archinnov.achilles.statement;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import com.datastax.driver.core.PreparedStatement;
  */
 public class CQLPreparedStatementBinder
 {
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
 	{

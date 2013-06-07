@@ -6,7 +6,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 
@@ -50,7 +50,7 @@ public class ThriftEntityMapperTest
 	private ThriftEntityMapper mapper;
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 

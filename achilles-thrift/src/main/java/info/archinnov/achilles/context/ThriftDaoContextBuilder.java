@@ -1,6 +1,6 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.helper.AchillesPropertyHelper.isSupportedType;
+import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -36,7 +36,7 @@ public class ThriftDaoContextBuilder
 	private ThriftCounterDao thriftCounterDao;
 
 	public ThriftDaoContext buildDao(Cluster cluster, Keyspace keyspace,
-			Map<Class<?>, EntityMeta> entityMetaMap, AchillesConfigurationContext configContext,
+			Map<Class<?>, EntityMeta> entityMetaMap, ConfigurationContext configContext,
 			boolean hasSimpleCounter)
 	{
 		if (hasSimpleCounter)
@@ -77,7 +77,7 @@ public class ThriftDaoContextBuilder
 	}
 
 	private void buildEntityDao(Cluster cluster, Keyspace keyspace,
-			AchillesConfigurationContext configContext, EntityMeta entityMeta)
+			ConfigurationContext configContext, EntityMeta entityMeta)
 	{
 		String columnFamilyName = entityMeta.getTableName();
 		ThriftGenericEntityDao entityDao = new ThriftGenericEntityDao(//
@@ -92,7 +92,7 @@ public class ThriftDaoContextBuilder
 	}
 
 	private <K, V> void buildWideRowDao(Cluster cluster, Keyspace keyspace,
-			AchillesConfigurationContext configContext, EntityMeta entityMeta,
+			ConfigurationContext configContext, EntityMeta entityMeta,
 			PropertyMeta<K, V> propertyMeta)
 	{
 		Class<?> valueClass = propertyMeta.getValueClass();
@@ -125,7 +125,7 @@ public class ThriftDaoContextBuilder
 	}
 
 	private <K, V> void buildWideRowDaoForJoinWideMap(Cluster cluster, Keyspace keyspace,
-			AchillesConfigurationContext configContext, PropertyMeta<K, V> propertyMeta,
+			ConfigurationContext configContext, PropertyMeta<K, V> propertyMeta,
 			EntityMeta joinEntityMeta)
 	{
 

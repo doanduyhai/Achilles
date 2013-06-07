@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class CQLMergerImplTest
 	private CQLMergerImpl mergerImpl = new CQLMergerImpl();
 
 	@Mock
-	private AchillesMethodInvoker invoker;
+	private MethodInvoker invoker;
 
 	@Mock
 	private CQLEntityMerger entityMerger;

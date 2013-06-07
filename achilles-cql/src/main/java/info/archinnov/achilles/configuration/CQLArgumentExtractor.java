@@ -19,7 +19,7 @@ import com.datastax.driver.core.policies.Policies;
  * @author DuyHai DOAN
  * 
  */
-public class CQLArgumentExtractor extends AchillesArgumentExtractor
+public class CQLArgumentExtractor extends ArgumentExtractor
 {
 
 	public Cluster initCluster(Map<String, Object> configurationMap)

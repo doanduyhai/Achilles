@@ -1,9 +1,9 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.AchillesConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
@@ -66,7 +66,7 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 				FORCE_CF_CREATION_PARAM, true, ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
-		AchillesConfigurationContext configContext = Whitebox
+		ConfigurationContext configContext = Whitebox
 				.getInternalState(emf, "configContext");
 		policy = (ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy();
 	}

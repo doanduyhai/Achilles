@@ -3,7 +3,7 @@ package integration.tests;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.AchillesTableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
 import integration.tests.entity.CompleteBean;
@@ -169,8 +169,8 @@ public class BatchModeIT
 		entity.setWelcomeTweet(welcomeTweet);
 
 		entity.getVersion().incr(10L);
-		entity.getPopularTopics().insert("java", AchillesCounterBuilder.incr(100L));
-		entity.getPopularTopics().insert("scala", AchillesCounterBuilder.incr(35L));
+		entity.getPopularTopics().insert("java", CounterBuilder.incr(100L));
+		entity.getPopularTopics().insert("scala", CounterBuilder.incr(35L));
 		batchEm.merge(entity);
 
 		Composite labelComposite = new Composite();

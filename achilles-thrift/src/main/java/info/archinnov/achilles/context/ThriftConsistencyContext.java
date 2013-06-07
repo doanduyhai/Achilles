@@ -10,7 +10,7 @@ import info.archinnov.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftConsistencyContext implements AchillesConsistencyContext
+public class ThriftConsistencyContext implements ConsistencyContext
 {
 	private final AchillesConsistencyLevelPolicy policy;
 

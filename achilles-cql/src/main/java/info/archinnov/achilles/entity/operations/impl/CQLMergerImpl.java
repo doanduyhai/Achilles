@@ -4,7 +4,7 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger.PropertyMetaComparator;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class CQLMergerImpl
 {
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
 	public void merge(CQLPersistenceContext context, Map<Method, PropertyMeta<?, ?>> dirtyMap)

@@ -20,7 +20,7 @@ import com.google.common.base.Function;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftLoggerHelper extends AchillesLoggerHelper
+public class ThriftLoggerHelper extends LoggerHelper
 {
 	public static Function<Serializer<?>, String> srzToStringFn = new Function<Serializer<?>, String>()
 	{

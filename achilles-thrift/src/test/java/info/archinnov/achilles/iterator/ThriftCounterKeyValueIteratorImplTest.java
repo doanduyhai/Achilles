@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftAbstractSliceIterator.IteratorType;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
-import info.archinnov.achilles.proxy.wrapper.AchillesCounterBuilder;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
 
@@ -112,7 +112,7 @@ public class ThriftCounterKeyValueIteratorImplTest
 		when(achillesSliceIterator.hasNext()).thenReturn(true);
 		HCounterColumn<Composite> hColumn = mock(HCounterColumn.class);
 		when(achillesSliceIterator.next()).thenReturn(hColumn);
-		Counter counter = AchillesCounterBuilder.incr(12L);
+		Counter counter = CounterBuilder.incr(12L);
 		when(factory.createCounterValue(context, propertyMeta, hColumn)).thenReturn(counter);
 
 		assertThat(iterator.nextValue()).isEqualTo(counter);

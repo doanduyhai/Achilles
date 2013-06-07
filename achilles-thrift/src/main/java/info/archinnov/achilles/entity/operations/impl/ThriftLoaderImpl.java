@@ -10,7 +10,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 
@@ -39,7 +39,7 @@ public class ThriftLoaderImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
 	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) throws Exception

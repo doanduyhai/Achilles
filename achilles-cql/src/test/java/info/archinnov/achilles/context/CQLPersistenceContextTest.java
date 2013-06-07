@@ -49,7 +49,7 @@ public class CQLPersistenceContextTest
 	private CQLAbstractFlushContext flushContext;
 
 	@Mock
-	private AchillesConfigurationContext configurationContext;
+	private ConfigurationContext configurationContext;
 
 	private EntityMeta meta;
 

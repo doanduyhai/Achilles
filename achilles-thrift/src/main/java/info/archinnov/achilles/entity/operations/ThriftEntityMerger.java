@@ -7,8 +7,8 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
@@ -34,12 +34,12 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityMerger implements AchillesEntityMerger<ThriftPersistenceContext>
+public class ThriftEntityMerger implements EntityMerger<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMerger.class);
 
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 	private Set<PropertyType> multiValueTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET,
 			MAP, LAZY_MAP);
@@ -62,7 +62,7 @@ public class ThriftEntityMerger implements AchillesEntityMerger<ThriftPersistenc
 			log.debug("Checking for dirty fields before merging");
 
 			T realObject = proxifier.getRealObject(entity);
-			AchillesEntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
+			EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
 					.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 

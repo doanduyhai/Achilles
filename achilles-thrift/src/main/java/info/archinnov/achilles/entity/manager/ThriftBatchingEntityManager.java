@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -29,7 +29,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 	ThriftBatchingEntityManager(AchillesEntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, ThriftDaoContext thriftDaoContext,
-			AchillesConfigurationContext configContext)
+			ConfigurationContext configContext)
 	{
 		super(entityManagerFactory, entityMetaMap, thriftDaoContext, configContext);
 		this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy);

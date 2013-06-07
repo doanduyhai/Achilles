@@ -3,17 +3,17 @@ package info.archinnov.achilles.entity.manager;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
+import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.parsing.AchillesEntityExplorer;
-import info.archinnov.achilles.entity.parsing.AchillesEntityParser;
-import info.archinnov.achilles.entity.parsing.context.AchillesEntityParsingContext;
-import info.archinnov.achilles.entity.parsing.validator.AchillesEntityParsingValidator;
+import info.archinnov.achilles.entity.parsing.EntityExplorer;
+import info.archinnov.achilles.entity.parsing.EntityParser;
+import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.table.AchillesTableCreator;
+import info.archinnov.achilles.table.TableCreator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,19 +45,19 @@ public class AchillesEntityManagerFactoryTest
 	private AchillesEntityManagerFactory factory;
 
 	@Mock
-	private AchillesTableCreator tableCreator;
+	private TableCreator tableCreator;
 
 	@Mock
-	private AchillesEntityExplorer achillesEntityExplorer;
+	private EntityExplorer achillesEntityExplorer;
 
 	@Mock
-	private AchillesEntityParsingValidator validator;
+	private EntityParsingValidator validator;
 
 	@Mock
-	private AchillesEntityParser achillesEntityParser;
+	private EntityParser achillesEntityParser;
 
 	@Mock
-	private AchillesArgumentExtractor extractor;
+	private ArgumentExtractor extractor;
 
 	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
@@ -66,13 +66,13 @@ public class AchillesEntityManagerFactoryTest
 	@Before
 	public void setUp()
 	{
-		doCallRealMethod().when(factory).setTableCreator(any(AchillesTableCreator.class));
+		doCallRealMethod().when(factory).setTableCreator(any(TableCreator.class));
 		doCallRealMethod().when(factory).setEntityMetaMap(
 				(Map<Class<?>, EntityMeta>) any(Map.class));
 		doCallRealMethod().when(factory).setEntityPackages((List<String>) any(List.class));
-		doCallRealMethod().when(factory).setEntityParser(any(AchillesEntityParser.class));
-		doCallRealMethod().when(factory).setEntityExplorer(any(AchillesEntityExplorer.class));
-		doCallRealMethod().when(factory).setValidator(any(AchillesEntityParsingValidator.class));
+		doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
+		doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
+		doCallRealMethod().when(factory).setValidator(any(EntityParsingValidator.class));
 
 		factory.setTableCreator(tableCreator);
 		factory.setEntityMetaMap(entityMetaMap);
@@ -90,7 +90,7 @@ public class AchillesEntityManagerFactoryTest
 		doCallRealMethod().when(factory).bootstrap();
 		factory.bootstrap();
 		verify(tableCreator).validateOrCreateColumnFamilies(eq(entityMetaMap),
-				any(AchillesConfigurationContext.class), eq(true));
+				any(ConfigurationContext.class), eq(true));
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class AchillesEntityManagerFactoryTest
 		EntityMeta entityMeta = new EntityMeta();
 
 		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		when(achillesEntityParser.parseEntity(any(AchillesEntityParsingContext.class))).thenReturn(entityMeta);
+		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
 
 		doCallRealMethod().when(factory).discoverEntities();
 		factory.discoverEntities();
@@ -121,7 +121,7 @@ public class AchillesEntityManagerFactoryTest
 		assertThat(entityMetaMap).containsKey(Long.class);
 		assertThat(entityMetaMap).containsValue(entityMeta);
 		verify(validator).validateAtLeastOneEntity(entities, entityPackages);
-		verify(achillesEntityParser).fillJoinEntityMeta(any(AchillesEntityParsingContext.class), eq(entityMetaMap));
+		verify(achillesEntityParser).fillJoinEntityMeta(any(EntityParsingContext.class), eq(entityMetaMap));
 
 	}
 
@@ -139,7 +139,7 @@ public class AchillesEntityManagerFactoryTest
 
 		doCallRealMethod().when(factory).parseConfiguration(configurationMap, extractor);
 
-		AchillesConfigurationContext builtContext = factory.parseConfiguration(configurationMap,
+		ConfigurationContext builtContext = factory.parseConfiguration(configurationMap,
 				extractor);
 
 		assertThat(builtContext).isNotNull();

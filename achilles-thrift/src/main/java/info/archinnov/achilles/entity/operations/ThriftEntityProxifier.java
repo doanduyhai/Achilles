@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptorBuilder;
@@ -11,14 +10,11 @@ import info.archinnov.achilles.proxy.ThriftEntityInterceptorBuilder;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityProxifier extends AchillesEntityProxifier<ThriftPersistenceContext>
-{
+public class ThriftEntityProxifier extends EntityProxifier<ThriftPersistenceContext> {
 
-	@Override
-	public <T> ThriftEntityInterceptor<T> buildInterceptor(AchillesPersistenceContext context,
-			T entity)
-	{
-		return ThriftEntityInterceptorBuilder.builder(context, entity).build();
-	}
+    @Override
+    public <T> ThriftEntityInterceptor<T> buildInterceptor(ThriftPersistenceContext context, T entity) {
+        return ThriftEntityInterceptorBuilder.builder(context, entity).build();
+    }
 
 }

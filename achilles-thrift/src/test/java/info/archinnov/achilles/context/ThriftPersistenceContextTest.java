@@ -9,8 +9,8 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.util.Map;
 
@@ -38,7 +38,7 @@ import testBuilders.PropertyMetaTestBuilder;
 public class ThriftPersistenceContextTest
 {
 	@Mock
-	private AchillesMethodInvoker introspector;
+	private MethodInvoker introspector;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -78,9 +78,9 @@ public class ThriftPersistenceContextTest
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
 	@Mock
-	private AchillesEntityProxifier proxifier;
+	private EntityProxifier proxifier;
 
-	private AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+	private ConfigurationContext configContext = new ConfigurationContext();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 

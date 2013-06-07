@@ -6,7 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -41,11 +41,11 @@ public class ThriftEntityManagerFactoryTest
 	public void should_create_entity_manager() throws Exception
 	{
 		ThriftDaoContext daoContext = mock(ThriftDaoContext.class);
-		AchillesConfigurationContext configContext = mock(AchillesConfigurationContext.class);
+		ConfigurationContext configContext = mock(ConfigurationContext.class);
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
 		doCallRealMethod().when(factory).setThriftDaoContext(any(ThriftDaoContext.class));
-		doCallRealMethod().when(factory).setConfigContext(any(AchillesConfigurationContext.class));
+		doCallRealMethod().when(factory).setConfigContext(any(ConfigurationContext.class));
 		doCallRealMethod().when(factory).setEntityMetaMap(
 				(Map<Class<?>, EntityMeta>) any(Map.class));
 
@@ -70,12 +70,12 @@ public class ThriftEntityManagerFactoryTest
 	public void should_create_entity_manager_with_properties() throws Exception
 	{
 		ThriftDaoContext daoContext = mock(ThriftDaoContext.class);
-		AchillesConfigurationContext configContext = mock(AchillesConfigurationContext.class);
+		ConfigurationContext configContext = mock(ConfigurationContext.class);
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		Map map = mock(Map.class);
 
 		doCallRealMethod().when(factory).setThriftDaoContext(any(ThriftDaoContext.class));
-		doCallRealMethod().when(factory).setConfigContext(any(AchillesConfigurationContext.class));
+		doCallRealMethod().when(factory).setConfigContext(any(ConfigurationContext.class));
 		doCallRealMethod().when(factory).setEntityMetaMap(
 				(Map<Class<?>, EntityMeta>) any(Map.class));
 

@@ -6,7 +6,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.CQLLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 /**
@@ -15,10 +15,10 @@ import info.archinnov.achilles.validation.Validator;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityLoader implements AchillesEntityLoader<CQLPersistenceContext>
+public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
 {
 	private CQLLoaderImpl loaderImpl;
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	@Override
 	public <T> T load(CQLPersistenceContext context, Class<T> entityClass)
@@ -36,7 +36,7 @@ public class CQLEntityLoader implements AchillesEntityLoader<CQLPersistenceConte
 		try
 		{
 
-			if (entityMeta.isWideRow() || !context.isLoadEagerFields())
+			if (entityMeta.isWideRow() || !context.isEagerFieldsLoaded())
 			{
 				entity = entityClass.newInstance();
 			}

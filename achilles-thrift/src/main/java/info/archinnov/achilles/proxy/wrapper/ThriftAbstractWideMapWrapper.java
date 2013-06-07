@@ -2,7 +2,7 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.ThriftSafeExecutionContext;
-import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -27,7 +27,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 
 	protected ThriftPersistenceContext context;
 	protected ThriftEntityInterceptor<?> interceptor;
-	protected AchillesEntityValidator validator = new AchillesEntityValidator(
+	protected EntityValidator validator = new EntityValidator(
 			new ThriftEntityProxifier());
 
 	protected static final int DEFAULT_COUNT = 100;

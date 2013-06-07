@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLMergerImpl;
-import info.archinnov.achilles.proxy.AchillesEntityInterceptor;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
@@ -22,7 +22,7 @@ import com.google.common.collect.FluentIterable;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityMerger implements AchillesEntityMerger<CQLPersistenceContext>
+public class CQLEntityMerger implements EntityMerger<CQLPersistenceContext>
 {
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 	private CQLEntityPersister persister = new CQLEntityPersister();
@@ -40,7 +40,7 @@ public class CQLEntityMerger implements AchillesEntityMerger<CQLPersistenceConte
 		if (proxifier.isProxy(entity))
 		{
 			T realObject = proxifier.getRealObject(entity);
-			AchillesEntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier
+			EntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier
 					.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 

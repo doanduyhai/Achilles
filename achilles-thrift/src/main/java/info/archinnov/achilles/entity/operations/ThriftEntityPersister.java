@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityPersister implements AchillesEntityPersister<ThriftPersistenceContext>
+public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityPersister.class);
 
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 	private ThriftEntityLoader loader = new ThriftEntityLoader();
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 

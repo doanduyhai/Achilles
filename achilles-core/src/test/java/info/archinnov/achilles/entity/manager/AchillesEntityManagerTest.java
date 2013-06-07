@@ -4,13 +4,13 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.AchillesEntityInitializer;
-import info.archinnov.achilles.entity.operations.AchillesEntityLoader;
-import info.archinnov.achilles.entity.operations.AchillesEntityMerger;
-import info.archinnov.achilles.entity.operations.AchillesEntityPersister;
-import info.archinnov.achilles.entity.operations.AchillesEntityProxifier;
-import info.archinnov.achilles.entity.operations.AchillesEntityRefresher;
-import info.archinnov.achilles.entity.operations.AchillesEntityValidator;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
+import info.archinnov.achilles.entity.operations.EntityLoader;
+import info.archinnov.achilles.entity.operations.EntityMerger;
+import info.archinnov.achilles.entity.operations.EntityPersister;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.entity.operations.EntityValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,25 +50,25 @@ public class AchillesEntityManagerTest
 	private AchillesEntityManager<AchillesPersistenceContext> em;
 
 	@Mock
-	private AchillesEntityPersister<AchillesPersistenceContext> persister;
+	private EntityPersister<AchillesPersistenceContext> persister;
 
 	@Mock
-	private AchillesEntityLoader<AchillesPersistenceContext> loader;
+	private EntityLoader<AchillesPersistenceContext> loader;
 
 	@Mock
-	private AchillesEntityMerger<AchillesPersistenceContext> merger;
+	private EntityMerger<AchillesPersistenceContext> merger;
 
 	@Mock
-	private AchillesEntityRefresher refresher;
+	private EntityRefresher refresher;
 
 	@Mock
-	private AchillesEntityInitializer initializer;
+	private EntityInitializer initializer;
 
 	@Mock
-	private AchillesEntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<AchillesPersistenceContext> proxifier;
 
 	@Mock
-	private AchillesEntityValidator entityValidator;
+	private EntityValidator entityValidator;
 
 	@Mock
 	private AchillesPersistenceContext context;
@@ -183,7 +183,7 @@ public class AchillesEntityManagerTest
 		CompleteBean bean = em.getReference(CompleteBean.class, primaryKey);
 
 		assertThat(bean).isSameAs(entity);
-		verify(context).setLoadEagerFields(false);
+		verify(context).setEagerFieldsLoaded(false);
 	}
 
 	@Test

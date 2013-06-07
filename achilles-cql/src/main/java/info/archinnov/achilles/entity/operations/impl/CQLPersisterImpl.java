@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
@@ -25,7 +25,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class CQLPersisterImpl
 {
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	public void persist(CQLPersistenceContext context)
 	{

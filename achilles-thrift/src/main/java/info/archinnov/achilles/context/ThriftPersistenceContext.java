@@ -27,7 +27,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	private AchillesConsistencyLevelPolicy policy;
 
 	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			AchillesConfigurationContext configContext, //
+			ConfigurationContext configContext, //
 			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
 			Object entity)
@@ -44,7 +44,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	}
 
 	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			AchillesConfigurationContext configContext, //
+			ConfigurationContext configContext, //
 			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
 			Class<?> entityClass, Object primaryKey)

@@ -4,7 +4,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.AchillesMethodInvoker;
+import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
@@ -30,7 +30,7 @@ public class ThriftJoinEntityHelper
 	private static final Logger log = LoggerFactory.getLogger(ThriftJoinEntityHelper.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
-	private AchillesMethodInvoker invoker = new AchillesMethodInvoker();
+	private MethodInvoker invoker = new MethodInvoker();
 
 	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass, List<ID> keys,
 			EntityMeta entityMeta, ThriftGenericEntityDao joinEntityDao)

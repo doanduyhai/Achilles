@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.context;
 
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -69,7 +69,7 @@ public class ThriftPersistenceContextTestBuilder
 	{
 		ThriftDaoContext thriftDaoContext = new ThriftDaoContext(entityDaosMap,
 				columnFamilyDaosMap, thriftCounterDao);
-		AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
 		configContext.setEnsureJoinConsistency(ensureJoinConsistency);
 		ThriftPersistenceContext context = new ThriftPersistenceContext(//

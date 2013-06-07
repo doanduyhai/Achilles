@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.AchillesEntityMapper;
+import info.archinnov.achilles.helper.EntityMapper;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 
 import com.datastax.driver.core.Row;
@@ -13,7 +13,7 @@ import com.datastax.driver.core.Row;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityMapper extends AchillesEntityMapper
+public class CQLEntityMapper extends EntityMapper
 {
 
 	private CQLRowMethodInvoker cqlRowInvoker = new CQLRowMethodInvoker();

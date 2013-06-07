@@ -1,16 +1,16 @@
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.configuration.AchillesArgumentExtractor;
+import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesConfigurationContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.parsing.AchillesEntityExplorer;
-import info.archinnov.achilles.entity.parsing.AchillesEntityParser;
-import info.archinnov.achilles.entity.parsing.context.AchillesEntityParsingContext;
-import info.archinnov.achilles.entity.parsing.validator.AchillesEntityParsingValidator;
+import info.archinnov.achilles.entity.parsing.EntityExplorer;
+import info.archinnov.achilles.entity.parsing.EntityParser;
+import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.table.AchillesTableCreator;
+import info.archinnov.achilles.table.TableCreator;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.IOException;
@@ -39,16 +39,16 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-	protected AchillesTableCreator tableCreator;
-	protected AchillesConfigurationContext configContext;
+	protected TableCreator tableCreator;
+	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
 
-	private AchillesEntityParser achillesEntityParser = new AchillesEntityParser();
-	private AchillesEntityExplorer achillesEntityExplorer = new AchillesEntityExplorer();
-	private AchillesEntityParsingValidator validator = new AchillesEntityParsingValidator();
+	private EntityParser achillesEntityParser = new EntityParser();
+	private EntityExplorer achillesEntityExplorer = new EntityExplorer();
+	private EntityParsingValidator validator = new EntityParsingValidator();
 
 	protected AchillesEntityManagerFactory(Map<String, Object> configurationMap,
-			AchillesArgumentExtractor argumentExtractor)
+			ArgumentExtractor argumentExtractor)
 	{
 		Validator.validateNotNull(configurationMap,
 				"Configuration map for AchillesEntityManagerFactory should not be null");
@@ -89,7 +89,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities)
 		{
-			AchillesEntityParsingContext context = new AchillesEntityParsingContext(//
+			EntityParsingContext context = new EntityParsingContext(//
 					joinPropertyMetaToBeFilled, //
 					configContext, entityClass);
 
@@ -98,7 +98,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
 		}
 
-		achillesEntityParser.fillJoinEntityMeta(new AchillesEntityParsingContext( //
+		achillesEntityParser.fillJoinEntityMeta(new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
 				configContext), entityMetaMap);
 
@@ -106,12 +106,12 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 	}
 
 	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
-			Map<String, Object> configurationMap, AchillesArgumentExtractor argumentExtractor);
+			Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor);
 
-	protected AchillesConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
-			AchillesArgumentExtractor argumentExtractor)
+	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
+			ArgumentExtractor argumentExtractor)
 	{
-		AchillesConfigurationContext configContext = new AchillesConfigurationContext();
+		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setEnsureJoinConsistency(argumentExtractor
 				.ensureConsistencyOnJoin(configurationMap));
 		configContext.setForceColumnFamilyCreation(argumentExtractor
@@ -186,7 +186,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		throw new UnsupportedOperationException("This operation is not supported by Achilles");
 	}
 
-	protected void setTableCreator(AchillesTableCreator tableCreator)
+	protected void setTableCreator(TableCreator tableCreator)
 	{
 		this.tableCreator = tableCreator;
 	}
@@ -196,17 +196,17 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		this.entityPackages = entityPackages;
 	}
 
-	protected void setEntityParser(AchillesEntityParser achillesEntityParser)
+	protected void setEntityParser(EntityParser achillesEntityParser)
 	{
 		this.achillesEntityParser = achillesEntityParser;
 	}
 
-	protected void setEntityExplorer(AchillesEntityExplorer achillesEntityExplorer)
+	protected void setEntityExplorer(EntityExplorer achillesEntityExplorer)
 	{
 		this.achillesEntityExplorer = achillesEntityExplorer;
 	}
 
-	protected void setValidator(AchillesEntityParsingValidator validator)
+	protected void setValidator(EntityParsingValidator validator)
 	{
 		this.validator = validator;
 	}
@@ -216,7 +216,7 @@ public abstract class AchillesEntityManagerFactory implements EntityManagerFacto
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	protected void setConfigContext(AchillesConfigurationContext configContext)
+	protected void setConfigContext(ConfigurationContext configContext)
 	{
 		this.configContext = configContext;
 	}
