@@ -15,6 +15,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+
 /**
  * ThriftBatchingEntityManager
  * 
@@ -92,7 +94,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.persist(entity);
+				ThriftBatchingEntityManager.super.persist(entity,
+						Optional.<ConsistencyLevel> absent());
 				return null;
 			}
 		});
@@ -114,7 +117,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public T execute()
 			{
-				return ThriftBatchingEntityManager.super.merge(entity);
+				return ThriftBatchingEntityManager.super.merge(entity,
+						Optional.<ConsistencyLevel> absent());
 			}
 		});
 	}
@@ -135,7 +139,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.remove(entity);
+				ThriftBatchingEntityManager.super.remove(entity,
+						Optional.<ConsistencyLevel> absent());
 				return null;
 			}
 		});
@@ -157,7 +162,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public T execute()
 			{
-				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey);
+				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey,
+						(ConsistencyLevel) null);
 			}
 		});
 	}
@@ -179,7 +185,8 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public T execute()
 			{
-				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey);
+				return ThriftBatchingEntityManager.super.getReference(entityClass, primaryKey,
+						Optional.<ConsistencyLevel> absent());
 			}
 		});
 	}
@@ -201,7 +208,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.refresh(entity);
+				ThriftBatchingEntityManager.super.refresh(entity, (ConsistencyLevel) null);
 				return null;
 			}
 		});

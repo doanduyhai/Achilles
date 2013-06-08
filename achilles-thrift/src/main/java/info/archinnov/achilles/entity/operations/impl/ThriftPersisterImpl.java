@@ -295,7 +295,7 @@ public class ThriftPersisterImpl
 					.getEntityClass()
 					.getCanonicalName(), context.getPrimaryKey());
 			Mutator<Object> wideRowMutator = context.getWideRowMutator(entityMeta.getTableName());
-			context.getColumnFamilyDao().removeRowBatch(primaryKey, wideRowMutator);
+			context.getWideRowDao().removeRowBatch(primaryKey, wideRowMutator);
 		}
 		else
 		{

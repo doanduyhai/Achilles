@@ -1,6 +1,5 @@
 package info.archinnov.achilles.type;
 
-
 /**
  * ConsistencyLevel
  * 

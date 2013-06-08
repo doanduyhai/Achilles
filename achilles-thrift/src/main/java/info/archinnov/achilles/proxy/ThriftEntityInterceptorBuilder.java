@@ -61,7 +61,7 @@ public class ThriftEntityInterceptorBuilder<T>
 						+ context.getEntityClass().getCanonicalName() + "'should not be null");
 		if (entityMeta.isWideRow())
 		{
-			Validator.validateNotNull(context.getColumnFamilyDao(), "Column Family Dao for '"
+			Validator.validateNotNull(context.getWideRowDao(), "Column Family Dao for '"
 					+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		}
 		else
@@ -79,7 +79,7 @@ public class ThriftEntityInterceptorBuilder<T>
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 
-		if (context.isEagerFieldsLoaded())
+		if (context.isLoadEagerFields())
 		{
 			lazyLoaded.addAll(entityMeta.getEagerGetters());
 		}

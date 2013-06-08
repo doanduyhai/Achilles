@@ -137,7 +137,7 @@ public class ThriftEntityLoaderTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
-		context.setEagerFieldsLoaded(false);
+		context.setLoadEagerFields(false);
 
 		Object actual = loader.load(context, CompleteBean.class);
 

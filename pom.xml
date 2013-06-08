@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
   <description>A fully featured EntityManager for Cassandra</description>
   <inceptionYear>2012</inceptionYear>
-  <name>achilles</name>
+  <name>Achilles</name>
   <url>https://github.com/doanduyhai/achilles</url>
 
   <licenses>
@@ -231,7 +231,7 @@
      </dependency>  		 
  </dependencies> 		   	
  <build>
-  	<finalName>achilles</finalName>
+  	<finalName>Achilles</finalName>
     <plugins>
 	   	<plugin>
 	       <groupId>org.apache.maven.plugins</groupId>

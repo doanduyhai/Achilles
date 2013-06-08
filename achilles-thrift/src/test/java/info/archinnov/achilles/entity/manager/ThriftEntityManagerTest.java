@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -11,7 +10,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 
 import java.util.Map;
 
@@ -58,7 +57,7 @@ public class ThriftEntityManagerTest
 	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private ThriftEntityProxifier proxifier;
 
 	@Mock
 	private ThriftDaoContext thriftDaoContext;
@@ -81,87 +80,6 @@ public class ThriftEntityManagerTest
 	{
 		doCallRealMethod().when(em).setConsistencyPolicy(consistencyPolicy);
 		em.setConsistencyPolicy(consistencyPolicy);
-	}
-
-	@Test
-	public void should_persist_with_consistency() throws Exception
-	{
-		doCallRealMethod().when(em).persist(entity, TWO);
-		em.persist(entity, TWO);
-
-		verify(consistencyPolicy).setCurrentWriteLevel(TWO);
-		verify(em).persist(entity);
-
-		verify(consistencyPolicy).reinitCurrentConsistencyLevels();
-		verify(consistencyPolicy).reinitDefaultConsistencyLevels();
-	}
-
-	@Test
-	public void should_merge_with_consistency() throws Exception
-	{
-		when(em.merge(entity)).thenReturn(entity);
-
-		doCallRealMethod().when(em).merge(entity, TWO);
-		CompleteBean actual = em.merge(entity, TWO);
-
-		verify(consistencyPolicy).setCurrentWriteLevel(TWO);
-		assertThat(actual).isSameAs(entity);
-	}
-
-	@Test
-	public void should_remove_with_consistency() throws Exception
-	{
-		doCallRealMethod().when(em).remove(entity, TWO);
-		em.remove(entity, TWO);
-
-		verify(consistencyPolicy).setCurrentWriteLevel(TWO);
-		verify(em).remove(entity);
-
-		verify(consistencyPolicy).reinitCurrentConsistencyLevels();
-		verify(consistencyPolicy).reinitDefaultConsistencyLevels();
-	}
-
-	@Test
-	public void should_find_with_consistency() throws Exception
-	{
-		when(em.find(CompleteBean.class, entity.getId())).thenReturn(entity);
-
-		doCallRealMethod().when(em).find(CompleteBean.class, entity.getId(), TWO);
-		CompleteBean actual = em.find(CompleteBean.class, entity.getId(), TWO);
-
-		verify(consistencyPolicy).setCurrentReadLevel(TWO);
-		assertThat(actual).isSameAs(entity);
-
-		verify(consistencyPolicy).reinitCurrentConsistencyLevels();
-		verify(consistencyPolicy).reinitDefaultConsistencyLevels();
-	}
-
-	@Test
-	public void should_get_reference_with_consistency() throws Exception
-	{
-		when(em.getReference(CompleteBean.class, entity.getId())).thenReturn(entity);
-
-		doCallRealMethod().when(em).getReference(CompleteBean.class, entity.getId(), TWO);
-		CompleteBean actual = em.getReference(CompleteBean.class, entity.getId(), TWO);
-
-		verify(consistencyPolicy).setCurrentReadLevel(TWO);
-		assertThat(actual).isSameAs(entity);
-
-		verify(consistencyPolicy).reinitCurrentConsistencyLevels();
-		verify(consistencyPolicy).reinitDefaultConsistencyLevels();
-	}
-
-	@Test
-	public void should_refresh_with_consistency() throws Exception
-	{
-		doCallRealMethod().when(em).refresh(entity, TWO);
-		em.refresh(entity, TWO);
-
-		verify(consistencyPolicy).setCurrentReadLevel(TWO);
-		verify(em).refresh(entity);
-
-		verify(consistencyPolicy).reinitCurrentConsistencyLevels();
-		verify(consistencyPolicy).reinitDefaultConsistencyLevels();
 	}
 
 	@Test

@@ -47,7 +47,7 @@ public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext
 		try
 		{
 
-			if (entityMeta.isWideRow() || !context.isEagerFieldsLoaded())
+			if (entityMeta.isWideRow() || !context.isLoadEagerFields())
 			{
 				log.debug("Entity is a wide row, just set the primary key");
 

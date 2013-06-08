@@ -6,7 +6,7 @@ package info.archinnov.achilles.context.execution;
  * @author DuyHai DOAN
  * 
  */
-public interface ThriftSafeVoidExecutionContext
+public interface SafeVoidExecutionContext
 {
 	public void execute();
 }

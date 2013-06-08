@@ -143,7 +143,7 @@ public class ThriftEntityInterceptorBuilderTest
 
 		when(idMeta.getGetter()).thenReturn(idGetter);
 		when(idMeta.getSetter()).thenReturn(idSetter);
-		context.setEagerFieldsLoaded(false);
+		context.setLoadEagerFields(false);
 
 		ThriftEntityInterceptor<CompleteBean> interceptor = ThriftEntityInterceptorBuilder.builder(
 				context, entity).build();

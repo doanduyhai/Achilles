@@ -41,7 +41,7 @@ public class CQLEntityInterceptorBuilderTest {
         when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
-        when(context.isEagerFieldsLoaded()).thenReturn(true);
+        when(context.isLoadEagerFields()).thenReturn(true);
 
         CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder.<CompleteBean> builder(context,
                 entity).build();
@@ -70,7 +70,7 @@ public class CQLEntityInterceptorBuilderTest {
         when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
-        when(context.isEagerFieldsLoaded()).thenReturn(false);
+        when(context.isLoadEagerFields()).thenReturn(false);
 
         CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder.<CompleteBean> builder(context,
                 entity).build();

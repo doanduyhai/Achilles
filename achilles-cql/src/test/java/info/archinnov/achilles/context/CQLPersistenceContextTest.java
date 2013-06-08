@@ -6,6 +6,12 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.CQLEntityLoader;
+import info.archinnov.achilles.entity.operations.CQLEntityMerger;
+import info.archinnov.achilles.entity.operations.CQLEntityPersister;
+import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +34,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.google.common.base.Optional;
 
 /**
  * CQLPersistenceContextTest
@@ -51,6 +58,21 @@ public class CQLPersistenceContextTest
 	@Mock
 	private ConfigurationContext configurationContext;
 
+	@Mock
+	private CQLEntityLoader loader;
+
+	@Mock
+	private CQLEntityPersister persister;
+
+	@Mock
+	private CQLEntityMerger merger;
+
+	@Mock
+	private CQLEntityProxifier proxifier;
+
+	@Mock
+	private EntityRefresher<CQLPersistenceContext> refresher;
+
 	private EntityMeta meta;
 
 	private PropertyMeta<?, ?> idMeta;
@@ -58,6 +80,8 @@ public class CQLPersistenceContextTest
 	private Long primaryKey = RandomUtils.nextLong();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
+
+	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 
 	@Before
 	public void setUp() throws Exception
@@ -74,6 +98,11 @@ public class CQLPersistenceContextTest
 		meta.setEntityClass(CompleteBean.class);
 
 		Whitebox.setInternalState(context, "entityMeta", meta);
+		Whitebox.setInternalState(context, "loader", loader);
+		Whitebox.setInternalState(context, "merger", merger);
+		Whitebox.setInternalState(context, "persister", persister);
+		Whitebox.setInternalState(context, "refresher", refresher);
+		Whitebox.setInternalState(context, "proxifier", proxifier);
 	}
 
 	@Test
@@ -173,4 +202,69 @@ public class CQLPersistenceContextTest
 
 		assertThat(actual).isSameAs(resultSet);
 	}
+
+	@Test
+	public void should_persist() throws Exception
+	{
+		context.persist(noConsistency);
+		verify(flushContext).setWriteConsistencyLevel(null);
+		verify(persister).persist(context);
+		verify(flushContext).flush();
+	}
+
+	@Test
+	public void should_merge() throws Exception
+	{
+		when(merger.merge(context, entity)).thenReturn(entity);
+
+		CompleteBean merged = context.merge(entity, noConsistency);
+
+		verify(flushContext).setWriteConsistencyLevel(null);
+		assertThat(merged).isSameAs(entity);
+		verify(flushContext).flush();
+	}
+
+	@Test
+	public void should_remove() throws Exception
+	{
+		context.remove(noConsistency);
+		verify(flushContext).setWriteConsistencyLevel(null);
+		verify(persister).remove(context);
+		verify(flushContext).flush();
+	}
+
+	@Test
+	public void should_find() throws Exception
+	{
+		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+
+		CompleteBean found = context.find(CompleteBean.class, noConsistency);
+
+		verify(flushContext).setReadConsistencyLevel(null);
+		assertThat(context.isLoadEagerFields()).isTrue();
+		assertThat(found).isSameAs(entity);
+	}
+
+	@Test
+	public void should_get_reference() throws Exception
+	{
+		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+
+		CompleteBean found = context.getReference(CompleteBean.class, noConsistency);
+
+		verify(flushContext).setReadConsistencyLevel(null);
+		assertThat(context.isLoadEagerFields()).isFalse();
+		assertThat(found).isSameAs(entity);
+	}
+
+	@Test
+	public void should_refresh() throws Exception
+	{
+		context.refresh(noConsistency);
+		verify(flushContext).setReadConsistencyLevel(null);
+		verify(refresher).refresh(context);
+	}
+
 }

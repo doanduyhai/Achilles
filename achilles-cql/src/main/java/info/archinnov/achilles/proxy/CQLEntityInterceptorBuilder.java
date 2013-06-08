@@ -59,7 +59,7 @@ public class CQLEntityInterceptorBuilder<T> {
         interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
         interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 
-        if (context.isEagerFieldsLoaded()) {
+        if (context.isLoadEagerFields()) {
             lazyLoaded.addAll(entityMeta.getEagerGetters());
         }
         interceptor.setAlreadyLoaded(lazyLoaded);

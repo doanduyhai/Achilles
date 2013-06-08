@@ -36,7 +36,7 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
 		try
 		{
 
-			if (entityMeta.isWideRow() || !context.isEagerFieldsLoaded())
+			if (entityMeta.isWideRow() || !context.isLoadEagerFields())
 			{
 				entity = entityClass.newInstance();
 			}

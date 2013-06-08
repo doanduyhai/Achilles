@@ -91,43 +91,43 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 	}
 
-	public Mutator<Object> getEntityMutator(String columnFamilyName)
+	public Mutator<Object> getEntityMutator(String tableName)
 	{
 		Mutator<Object> mutator = null;
-		if (mutatorMap.containsKey(columnFamilyName))
+		if (mutatorMap.containsKey(tableName))
 		{
-			mutator = mutatorMap.get(columnFamilyName).left;
+			mutator = mutatorMap.get(tableName).left;
 		}
 		else
 		{
-			ThriftGenericEntityDao entityDao = thriftDaoContext.findEntityDao(columnFamilyName);
+			ThriftGenericEntityDao entityDao = thriftDaoContext.findEntityDao(tableName);
 
 			if (entityDao != null)
 			{
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<Object>, ThriftAbstractDao>(
+				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(
 						mutator, entityDao));
 			}
 		}
 		return mutator;
 	}
 
-	public Mutator<Object> getWideRowMutator(String columnFamilyName)
+	public Mutator<Object> getWideRowMutator(String tableName)
 	{
 		Mutator<Object> mutator = null;
-		if (mutatorMap.containsKey(columnFamilyName))
+		if (mutatorMap.containsKey(tableName))
 		{
-			mutator = mutatorMap.get(columnFamilyName).left;
+			mutator = mutatorMap.get(tableName).left;
 		}
 		else
 		{
 			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext
-					.findWideRowDao(columnFamilyName);
+					.findWideRowDao(tableName);
 
 			if (columnFamilyDao != null)
 			{
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(columnFamilyName, new Pair<Mutator<Object>, ThriftAbstractDao>(
+				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(
 						mutator, columnFamilyDao));
 			}
 		}
