@@ -63,7 +63,6 @@ public class EntityMetaBuilderTest
 				.serialVersionUID(1L)
 				.columnFamilyName("cfName")
 				.propertyMetas(propertyMetas)
-				.eagerMetas(eagerMetas)
 				.build();
 
 		assertThat((Class) meta.getEntityClass()).isEqualTo(CompleteBean.class);
@@ -107,7 +106,6 @@ public class EntityMetaBuilderTest
 				.serialVersionUID(1L)
 				.propertyMetas(propertyMetas)
 				.columnFamilyName("toto")
-				.eagerMetas(eagerMetas)
 				.build();
 
 		assertThat(meta.getClassName()).isEqualTo("Bean");
@@ -132,7 +130,6 @@ public class EntityMetaBuilderTest
 				.className("Bean")
 				.serialVersionUID(1L)
 				.propertyMetas(propertyMetas)
-				.eagerMetas(eagerMetas)
 				.columnFamilyName("toto")
 				.wideRow(true)
 				.build();
@@ -160,7 +157,6 @@ public class EntityMetaBuilderTest
 				.className("Bean")
 				.serialVersionUID(1L)
 				.propertyMetas(propertyMetas)
-				.eagerMetas(eagerMetas)
 				.columnFamilyName("toto")
 				.consistencyLevels(consistencyLevels)
 				.build();

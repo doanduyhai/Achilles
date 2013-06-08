@@ -39,10 +39,10 @@ public class CQLLoaderImpl
 	}
 
 	public void loadPropertyIntoEntity(CQLPersistenceContext context,
-			PropertyMeta<?, ?> propertyMeta, Object entity)
+			PropertyMeta<?, ?> pm, Object entity)
 	{
-		Row row = context.loadProperty(propertyMeta);
-		mapper.setPropertyToEntity(row, propertyMeta, entity);
+		Row row = context.loadProperty(pm);
+		mapper.setPropertyToEntity(row, pm, entity);
 	}
 
 	public void loadJoinPropertyIntoEntity(CQLEntityLoader loader, CQLPersistenceContext context,

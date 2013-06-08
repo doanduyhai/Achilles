@@ -66,7 +66,7 @@ public class CQLEntityMapperTest
 		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
 
 		when(row.isNull("name")).thenReturn(false);
-		when(cqlRowInvoker.invokeOnRowForEagerFields(row, pm)).thenReturn("value");
+		when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
 
 		mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 

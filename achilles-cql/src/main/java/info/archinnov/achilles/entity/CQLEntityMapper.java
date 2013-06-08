@@ -33,8 +33,8 @@ public class CQLEntityMapper extends EntityMapper
 			String propertyName = pm.getPropertyName();
 			if (!row.isNull(propertyName))
 			{
-				Object value = cqlRowInvoker.invokeOnRowForEagerFields(row, pm);
-				invoker.setValueToField(entity, pm.getSetter(), pm.castValue(value));
+				Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
+				invoker.setValueToField(entity, pm.getSetter(), value);
 			}
 		}
 	}

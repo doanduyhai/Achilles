@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 
 /**
@@ -21,6 +23,14 @@ public class MultiKeyProperties
 	private List<String> componentNames;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
+
+	private Function<String, String> lowerCase = new Function<String, String>()
+	{
+		public String apply(String name)
+		{
+			return name.toLowerCase();
+		}
+	};
 
 	public List<Class<?>> getComponentClasses()
 	{
@@ -55,6 +65,11 @@ public class MultiKeyProperties
 	public List<String> getComponentNames()
 	{
 		return componentNames;
+	}
+
+	public List<String> getCQLComponentNames()
+	{
+		return FluentIterable.from(componentNames).transform(lowerCase).toImmutableList();
 	}
 
 	public void setComponentNames(List<String> componentNames)

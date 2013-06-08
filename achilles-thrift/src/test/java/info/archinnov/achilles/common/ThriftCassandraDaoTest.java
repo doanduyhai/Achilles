@@ -66,8 +66,7 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 				FORCE_CF_CREATION_PARAM, true, ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
-		ConfigurationContext configContext = Whitebox
-				.getInternalState(emf, "configContext");
+		ConfigurationContext configContext = Whitebox.getInternalState(emf, "configContext");
 		policy = (ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy();
 	}
 
@@ -83,7 +82,7 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest
 
 	public static ThriftEntityManager getEm()
 	{
-		return (ThriftEntityManager) emf.createEntityManager();
+		return emf.createEntityManager();
 	}
 
 	public static <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass)

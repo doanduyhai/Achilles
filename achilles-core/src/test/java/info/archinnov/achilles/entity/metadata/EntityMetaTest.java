@@ -54,4 +54,13 @@ public class EntityMetaTest
 		toString.append("consistencyLevels=[ONE,ONE]]");
 		assertThat(entityMeta.toString()).isEqualTo(toString.toString());
 	}
+
+	@Test
+	public void should_get_cql_table_name() throws Exception
+	{
+		EntityMeta meta = new EntityMeta();
+		meta.setTableName("TaBle");
+
+		assertThat(meta.getCQLTableName()).isEqualTo("table");
+	}
 }

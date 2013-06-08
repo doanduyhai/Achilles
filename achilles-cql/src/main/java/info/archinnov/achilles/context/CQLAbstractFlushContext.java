@@ -10,8 +10,6 @@ import java.util.List;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 
 /**
  * CQLFlushContext
@@ -23,28 +21,16 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 {
 
 	private List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-	private List<Statement> statements = new ArrayList<Statement>();
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
-	private Session session;
+	private CQLDaoContext daoContext;
 
-	public CQLAbstractFlushContext(ConsistencyLevel readLevel, ConsistencyLevel writeLevel,
-			Session session)
-	{
-		this.readLevel = readLevel;
-		this.writeLevel = writeLevel;
-		this.session = session;
+	public CQLAbstractFlushContext(CQLDaoContext daoContext) {
+		this.daoContext = daoContext;
 	}
 
 	@Override
 	public void startBatch()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void flush()
 	{
 		// TODO Auto-generated method stub
 
@@ -68,8 +54,10 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	{
 		for (BoundStatement bs : boundStatements)
 		{
-			session.execute(bs);
+			daoContext.execute(bs);
 		}
+		boundStatements.clear();
+
 	}
 
 	@Override
@@ -95,7 +83,8 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	{
 		if (this.writeLevel != null)
 		{
-			boundStatement.setConsistencyLevel(getCQLLevel(writeLevel));
+			boundStatement.setConsistencyLevel(getCQLLevel(this.writeLevel));
+
 		}
 		else
 		{
@@ -104,8 +93,7 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 		boundStatements.add(boundStatement);
 	}
 
-	public ResultSet executeImmediateWithConsistency(Session session, Query query,
-			EntityMeta entityMeta)
+	public ResultSet executeImmediateWithConsistency(Query query, EntityMeta entityMeta)
 	{
 		if (readLevel != null)
 		{
@@ -116,7 +104,7 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 			query.setConsistencyLevel(getCQLLevel(entityMeta.getReadConsistencyLevel()));
 		}
 
-		return session.execute(query);
+		return daoContext.execute(query);
 	}
 
 	public List<BoundStatement> getBoundStatements()
@@ -124,13 +112,4 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 		return boundStatements;
 	}
 
-	public List<Statement> getStatements()
-	{
-		return statements;
-	}
-
-	public void addStatement(Statement statement)
-	{
-		statements.add(statement);
-	}
 }

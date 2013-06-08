@@ -28,7 +28,6 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -356,7 +355,6 @@ public class ThriftTableCreatorTest
 						"testCF");
 	}
 
-	@Ignore
 	@Test
 	public void should_exception_because_column_family_not_found_for_external_wide_map()
 			throws Exception

@@ -2,6 +2,7 @@ package info.archinnov.achilles.statement;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
+import com.google.common.collect.FluentIterable;
 
 /**
  * CQLPreparedStatementBinder
@@ -25,27 +27,38 @@ public class CQLPreparedStatementBinder
 	{
 		List<Object> values = new ArrayList<Object>();
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		bindPrimaryKey(entity, values, idMeta);
-		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
+		Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
+		bindPrimaryKey(primaryKey, values, idMeta);
+
+		List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+				.from(entityMeta.getAllMetas())
+				.filter(PropertyType.excludeProxyType)
+				.toImmutableList();
+
+		List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+		fieldMetas.remove(idMeta);
+
+		for (PropertyMeta<?, ?> pm : fieldMetas)
 		{
 			Object value = invoker.getValueFromField(entity, pm.getGetter());
-			values.add(pm.writeValueAsSupportedTypeOrString(value));
+			value = extractFieldFromEntity(pm, value);
+			values.add(value);
 		}
-		return ps.bind(values);
+		return ps.bind(values.toArray(new Object[values.size()]));
 	}
 
-	private void bindPrimaryKey(Object entity, List<Object> values, PropertyMeta<?, ?> idMeta)
+	private void bindPrimaryKey(Object primaryKey, List<Object> values, PropertyMeta<?, ?> idMeta)
 	{
 		if (idMeta.type().isClusteredKey())
 		{
 			for (Method componentGetter : idMeta.getMultiKeyProperties().getComponentGetters())
 			{
-				values.add(invoker.getValueFromField(entity, componentGetter));
+				values.add(invoker.getValueFromField(primaryKey, componentGetter));
 			}
 		}
 		else
 		{
-			values.add(invoker.getValueFromField(entity, idMeta.getGetter()));
+			values.add(primaryKey);
 		}
 	}
 
@@ -57,19 +70,36 @@ public class CQLPreparedStatementBinder
 		for (PropertyMeta<?, ?> pm : pms)
 		{
 			Object value = invoker.getValueFromField(entity, pm.getGetter());
-			values.add(pm.writeValueAsSupportedTypeOrString(value));
+			value = extractFieldFromEntity(pm, value);
+			values.add(value);
 		}
-		bindPrimaryKey(entity, values, idMeta);
-		return ps.bind(values);
+		Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
+		bindPrimaryKey(primaryKey, values, idMeta);
+		return ps.bind(values.toArray(new Object[values.size()]));
 	}
 
 	public BoundStatement bindStatementWithOnlyPKInWhereClause(PreparedStatement ps,
-			EntityMeta entityMeta, Object entity)
+			EntityMeta entityMeta, Object primaryKey)
 	{
 		List<Object> values = new ArrayList<Object>();
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		bindPrimaryKey(entity, values, idMeta);
-		return ps.bind(values);
+		bindPrimaryKey(primaryKey, values, idMeta);
+		return ps.bind(values.toArray(new Object[values.size()]));
 	}
 
+	private Object extractFieldFromEntity(PropertyMeta<?, ?> pm, Object value)
+	{
+		if (value != null)
+		{
+			if (pm.isJoin())
+			{
+				value = invoker.getPrimaryKey(value, pm.joinIdMeta());
+			}
+			else
+			{
+				value = pm.writeValueAsSupportedTypeOrString(value);
+			}
+		}
+		return value;
+	}
 }

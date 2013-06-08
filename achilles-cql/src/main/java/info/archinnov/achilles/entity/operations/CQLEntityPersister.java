@@ -26,7 +26,7 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 {
 	private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
 
-	private CQLPersisterImpl persisterImpl;
+	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
 	@Override
 	public void persist(CQLPersistenceContext context)

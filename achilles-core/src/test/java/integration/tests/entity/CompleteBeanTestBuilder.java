@@ -27,6 +27,8 @@ public class CompleteBeanTestBuilder
 
 	private Long age;
 
+	private Tweet welcomeTweet;
+
 	private List<String> friends = new ArrayList<String>();
 
 	private Set<String> followers = new HashSet<String>();
@@ -49,6 +51,7 @@ public class CompleteBeanTestBuilder
 		bean.setFriends(friends);
 		bean.setFollowers(followers);
 		bean.setPreferences(preferences);
+		bean.setWelcomeTweet(welcomeTweet);
 		return bean;
 	}
 
@@ -79,6 +82,12 @@ public class CompleteBeanTestBuilder
 	public CompleteBeanTestBuilder age(Long age)
 	{
 		this.age = age;
+		return this;
+	}
+
+	public CompleteBeanTestBuilder welcomeTweet(Tweet welcomeTweet)
+	{
+		this.welcomeTweet = welcomeTweet;
 		return this;
 	}
 

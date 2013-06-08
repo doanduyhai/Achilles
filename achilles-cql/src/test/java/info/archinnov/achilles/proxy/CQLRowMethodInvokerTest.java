@@ -62,7 +62,7 @@ public class CQLRowMethodInvokerTest
 		List<String> list = Arrays.asList("value");
 		when(row.getList("property", String.class)).thenReturn(list);
 
-		Object actual = invoker.invokeOnRowForEagerFields(row, pm);
+		Object actual = invoker.invokeOnRowForFields(row, pm);
 
 		assertThat(actual).isSameAs(list);
 	}
@@ -70,7 +70,7 @@ public class CQLRowMethodInvokerTest
 	@Test
 	public void should_return_null_when_get_value_from_null_row() throws Exception
 	{
-		assertThat(invoker.invokeOnRowForEagerFields(null, pm)).isNull();
+		assertThat(invoker.invokeOnRowForFields(null, pm)).isNull();
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class CQLRowMethodInvokerTest
 		Set<String> set = Sets.newHashSet("value");
 		when(row.getSet("property", String.class)).thenReturn(set);
 
-		Object actual = invoker.invokeOnRowForEagerFields(row, pm);
+		Object actual = invoker.invokeOnRowForFields(row, pm);
 
 		assertThat(actual).isSameAs(set);
 	}
@@ -95,7 +95,7 @@ public class CQLRowMethodInvokerTest
 		Map<Integer, String> map = ImmutableMap.of(11, "value");
 		when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
 
-		Object actual = invoker.invokeOnRowForEagerFields(row, pm);
+		Object actual = invoker.invokeOnRowForFields(row, pm);
 
 		assertThat(actual).isSameAs(map);
 	}
@@ -107,7 +107,7 @@ public class CQLRowMethodInvokerTest
 
 		when(row.getString("property")).thenReturn("value");
 
-		Object actual = invoker.invokeOnRowForEagerFields(row, pm);
+		Object actual = invoker.invokeOnRowForFields(row, pm);
 
 		assertThat(actual).isEqualTo("value");
 	}
@@ -118,14 +118,14 @@ public class CQLRowMethodInvokerTest
 		when(pm.type()).thenReturn(PropertyType.SIMPLE);
 		when(row.isNull("property")).thenReturn(true);
 
-		assertThat(invoker.invokeOnRowForEagerFields(row, pm)).isNull();
+		assertThat(invoker.invokeOnRowForFields(row, pm)).isNull();
 	}
 
 	@Test
 	public void should_return_null_when_not_eager_property_type() throws Exception
 	{
 		when(pm.type()).thenReturn(PropertyType.LAZY_SIMPLE);
-		assertThat(invoker.invokeOnRowForEagerFields(row, pm)).isNull();
+		assertThat(invoker.invokeOnRowForFields(row, pm)).isNull();
 	}
 
 	@Test
@@ -138,7 +138,7 @@ public class CQLRowMethodInvokerTest
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Cannot retrieve property 'property' from CQL Row");
 
-		invoker.invokeOnRowForEagerFields(row, pm);
+		invoker.invokeOnRowForFields(row, pm);
 	}
 
 	@Test

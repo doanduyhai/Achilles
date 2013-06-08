@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.entity.metadata.util.PropertyTypeExclude;
 import info.archinnov.achilles.entity.metadata.util.PropertyTypeFilter;
 
 /**
@@ -113,6 +114,12 @@ public enum PropertyType
 	public static PropertyTypeFilter joinCollectionType = new PropertyTypeFilter(JOIN_LIST,
 			JOIN_SET);
 	public static PropertyTypeFilter joinMapType = new PropertyTypeFilter(JOIN_MAP);
-	public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER, COUNTER_WIDE_MAP,
-			WIDE_MAP, JOIN_WIDE_MAP);
+	public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER,
+			COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
+
+	public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER,
+			COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
+
+	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(SIMPLE, LIST, SET, MAP);
+
 }

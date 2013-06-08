@@ -4,7 +4,9 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.context.CQLDaoContext.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.google.common.collect.FluentIterable;
 
 /**
  * CQLPreparedStatementHelper
@@ -31,15 +34,20 @@ public class CQLPreparedStatementGenerator
 	public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta)
 	{
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		Insert insert = insertInto(entityMeta.getTableName());
+		Insert insert = insertInto(entityMeta.getCQLTableName());
 		prepareInsertPrimaryKey(idMeta, insert);
 
-		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
+		List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+				.from(entityMeta.getAllMetas())
+				.filter(PropertyType.excludeProxyType)
+				.toImmutableList();
+
+		List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+		fieldMetas.remove(idMeta);
+
+		for (PropertyMeta<?, ?> pm : fieldMetas)
 		{
-			if (!pm.type().isProxyType())
-			{
-				insert.value(pm.getPropertyName(), bindMarker());
-			}
+			insert.value(pm.getCQLPropertyName(), bindMarker());
 		}
 		return session.prepare(insert.getQueryString());
 	}
@@ -54,17 +62,17 @@ public class CQLPreparedStatementGenerator
 			Selection select;
 			if (pm.isSingleKey())
 			{
-				select = select().column(pm.getPropertyName());
+				select = select().column(pm.getCQLPropertyName());
 			}
 			else
 			{
 				select = select();
-				for (String component : pm.getMultiKeyProperties().getComponentNames())
+				for (String component : pm.getMultiKeyProperties().getCQLComponentNames())
 				{
 					select = select.column(component);
 				}
 			}
-			Select from = select.from(entityMeta.getTableName());
+			Select from = select.from(entityMeta.getCQLTableName());
 			Statement statement = prepareWhereClauseForSelect(idMeta, from);
 			return session.prepare(statement.getQueryString());
 		}
@@ -80,7 +88,7 @@ public class CQLPreparedStatementGenerator
 			List<PropertyMeta<?, ?>> pms)
 	{
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-		Update update = update(entityMeta.getTableName());
+		Update update = update(entityMeta.getCQLTableName());
 
 		int i = 0;
 		Assignments assignments = null;
@@ -88,11 +96,11 @@ public class CQLPreparedStatementGenerator
 		{
 			if (i == 0)
 			{
-				assignments = update.with(set(pm.getPropertyName(), bindMarker()));
+				assignments = update.with(set(pm.getCQLPropertyName(), bindMarker()));
 			}
 			else
 			{
-				assignments.and(set(pm.getPropertyName(), bindMarker()));
+				assignments.and(set(pm.getCQLPropertyName(), bindMarker()));
 			}
 			i++;
 		}
@@ -108,9 +116,9 @@ public class CQLPreparedStatementGenerator
 
 		for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas())
 		{
-			select.column(pm.getPropertyName());
+			select.column(pm.getCQLPropertyName());
 		}
-		Select from = select.from(entityMeta.getTableName());
+		Select from = select.from(entityMeta.getCQLTableName());
 
 		Statement statement = prepareWhereClauseForSelect(idMeta, from);
 		return session.prepare(statement.getQueryString());
@@ -120,14 +128,14 @@ public class CQLPreparedStatementGenerator
 	{
 		if (idMeta.type().isClusteredKey())
 		{
-			for (String component : idMeta.getMultiKeyProperties().getComponentNames())
+			for (String component : idMeta.getMultiKeyProperties().getCQLComponentNames())
 			{
 				insert.value(component, bindMarker());
 			}
 		}
 		else
 		{
-			insert.value(idMeta.getPropertyName(), bindMarker());
+			insert.value(idMeta.getCQLPropertyName(), bindMarker());
 		}
 	}
 
@@ -138,7 +146,7 @@ public class CQLPreparedStatementGenerator
 		{
 			Select.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getComponentNames())
+			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -154,7 +162,7 @@ public class CQLPreparedStatementGenerator
 		}
 		else
 		{
-			statement = from.where(eq(idMeta.getPropertyName(), bindMarker()));
+			statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
 		}
 		return statement;
 	}
@@ -166,7 +174,7 @@ public class CQLPreparedStatementGenerator
 		{
 			Update.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getComponentNames())
+			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -182,7 +190,7 @@ public class CQLPreparedStatementGenerator
 		}
 		else
 		{
-			statement = update.where(eq(idMeta.getPropertyName(), bindMarker()));
+			statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
 		}
 		return statement;
 	}
@@ -193,7 +201,7 @@ public class CQLPreparedStatementGenerator
 
 		Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
 
-		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
+		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getCQLTableName());
 		Statement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
 		removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
 		for (PropertyMeta<?, ?> pm : entityMeta.getAllMetas())
@@ -203,7 +211,7 @@ public class CQLPreparedStatementGenerator
 				case WIDE_MAP:
 				case JOIN_WIDE_MAP:
 				case COUNTER_WIDE_MAP:
-					Delete wideMapFrom = QueryBuilder.delete().from(pm.getExternalTableName());
+					Delete wideMapFrom = QueryBuilder.delete().from(pm.getCQLExternalTableName());
 					Statement wideMapStatement = prepareWhereClauseForDelete(idMeta, wideMapFrom);
 					removePSs.put(pm.getExternalTableName(),
 							session.prepare(wideMapStatement.getQueryString()));
@@ -232,7 +240,7 @@ public class CQLPreparedStatementGenerator
 		{
 			Delete.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getComponentNames())
+			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -249,7 +257,7 @@ public class CQLPreparedStatementGenerator
 		}
 		else
 		{
-			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
+			mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
 		}
 		return mainStatement;
 	}

@@ -19,7 +19,7 @@ import com.datastax.driver.core.Row;
 public class CQLRowMethodInvoker
 {
 
-	public Object invokeOnRowForEagerFields(Row row, PropertyMeta<?, ?> pm)
+	public Object invokeOnRowForFields(Row row, PropertyMeta<?, ?> pm)
 	{
 		String propertyName = pm.getPropertyName();
 		Object value = null;
@@ -28,21 +28,21 @@ public class CQLRowMethodInvoker
 			switch (pm.type())
 			{
 				case LIST:
+				case LAZY_LIST:
 					value = invokeOnRowForList(row, pm.getPropertyName(), pm.getValueClass());
 					break;
 				case SET:
+				case LAZY_SET:
 					value = invokeOnRowForSet(row, pm.getPropertyName(), pm.getValueClass());
 					break;
 				case MAP:
+				case LAZY_MAP:
 					Class<?> keyClass = pm.getKeyClass();
-					Class<?> valueClass = pm
-							.getJoinProperties()
-							.getEntityMeta()
-							.getIdMeta()
-							.getValueClass();
+					Class<?> valueClass = pm.getValueClass();
 					value = invokeOnRowForMap(row, pm.getPropertyName(), keyClass, valueClass);
 					break;
 				case SIMPLE:
+				case LAZY_SIMPLE:
 					value = invokeOnRowForProperty(row, pm.getPropertyName(), pm.getValueClass());
 					break;
 				default:

@@ -13,6 +13,8 @@ import java.util.Map;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Query;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.cache.Cache;
@@ -92,8 +94,9 @@ public class CQLDaoContext
 		Map<String, PreparedStatement> psMap = removePSs.get(entityClass);
 		if (psMap.containsKey(tableName))
 		{
+
 			BoundStatement bs = binder.bindStatementWithOnlyPKInWhereClause(psMap.get(tableName),
-					entityMeta, context.getEntity());
+					entityMeta, context.getPrimaryKey());
 			context.pushBoundStatement(bs, writeLevel);
 		}
 		else
@@ -116,9 +119,9 @@ public class CQLDaoContext
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
 		BoundStatement boundStatement = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta,
-				context.getEntity());
+				context.getPrimaryKey());
 
-		return context.executeImmediateWithConsistency(session, boundStatement).all();
+		return context.executeImmediateWithConsistency(boundStatement).all();
 	}
 
 	private Row returnFirstRowOrNull(List<Row> rows)
@@ -133,4 +136,8 @@ public class CQLDaoContext
 		}
 	}
 
+	public ResultSet execute(Query query)
+	{
+		return session.execute(query);
+	}
 }

@@ -17,7 +17,7 @@ import info.archinnov.achilles.validation.Validator;
  */
 public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
 {
-	private CQLLoaderImpl loaderImpl;
+	private CQLLoaderImpl loaderImpl = new CQLLoaderImpl();
 	private MethodInvoker invoker = new MethodInvoker();
 
 	@Override

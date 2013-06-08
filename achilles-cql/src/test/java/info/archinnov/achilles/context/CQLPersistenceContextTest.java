@@ -33,7 +33,6 @@ import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 
 /**
@@ -193,12 +192,11 @@ public class CQLPersistenceContextTest
 	@Test
 	public void should_execute_immediate_with_consistency() throws Exception
 	{
-		Session session = mock(Session.class);
 		BoundStatement bs = mock(BoundStatement.class);
 		ResultSet resultSet = mock(ResultSet.class);
-		when(flushContext.executeImmediateWithConsistency(session, bs, meta)).thenReturn(resultSet);
+		when(flushContext.executeImmediateWithConsistency(bs, meta)).thenReturn(resultSet);
 
-		ResultSet actual = context.executeImmediateWithConsistency(session, bs);
+		ResultSet actual = context.executeImmediateWithConsistency(bs);
 
 		assertThat(actual).isSameAs(resultSet);
 	}

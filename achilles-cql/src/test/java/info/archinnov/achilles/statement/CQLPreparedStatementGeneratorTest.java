@@ -40,7 +40,7 @@ public class CQLPreparedStatementGeneratorTest
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CQLPreparedStatementGenerator helper = new CQLPreparedStatementGenerator();
+	private CQLPreparedStatementGenerator generator = new CQLPreparedStatementGenerator();
 
 	@Mock
 	private Session session;
@@ -77,6 +77,7 @@ public class CQLPreparedStatementGeneratorTest
 				.type(PropertyType.WIDE_MAP)
 				.build();
 
+		allMetas.add(idMeta);
 		allMetas.add(nameMeta);
 		allMetas.add(proxyTypeMeta);
 		EntityMeta meta = new EntityMeta();
@@ -86,7 +87,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareInsertPS(session, meta);
+		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?);");
@@ -118,7 +119,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareInsertPS(session, meta);
+		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo(
@@ -147,7 +148,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareSelectFieldPS(session, meta, nameMeta);
+		PreparedStatement actual = generator.prepareSelectFieldPS(session, meta, nameMeta);
 
 		assertThat(actual).isSameAs(ps);
 
@@ -171,7 +172,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareSelectFieldPS(session, meta, idMeta);
+		PreparedStatement actual = generator.prepareSelectFieldPS(session, meta, idMeta);
 
 		assertThat(actual).isSameAs(ps);
 
@@ -207,7 +208,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareUpdateFields(session, meta,
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta,
 				Arrays.asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
@@ -244,7 +245,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareUpdateFields(session, meta,
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta,
 				Arrays.asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
@@ -270,7 +271,7 @@ public class CQLPreparedStatementGeneratorTest
 		exception
 				.expectMessage("Cannot prepare statement for property 'widemap' of entity 'entity' because it is of proxy type");
 
-		helper.prepareSelectFieldPS(session, meta, nameMeta);
+		generator.prepareSelectFieldPS(session, meta, nameMeta);
 
 	}
 
@@ -299,7 +300,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
@@ -331,7 +332,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = helper.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo(
@@ -363,7 +364,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
@@ -396,7 +397,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
@@ -430,7 +431,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(2);
 		assertThat(actual).containsKey("table");
@@ -467,7 +468,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(2);
 		assertThat(actual).containsKey("table");
@@ -504,7 +505,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(2);
 		assertThat(actual).containsKey("table");
@@ -540,7 +541,7 @@ public class CQLPreparedStatementGeneratorTest
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
-		Map<String, PreparedStatement> actual = helper.prepareRemovePSs(session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(2);
 		assertThat(actual).containsKey("table");

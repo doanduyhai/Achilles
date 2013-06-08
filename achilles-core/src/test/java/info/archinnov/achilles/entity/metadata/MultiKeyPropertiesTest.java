@@ -29,4 +29,14 @@ public class MultiKeyPropertiesTest
 
 		assertThat(props.toString()).isEqualTo(toString.toString());
 	}
+
+	@Test
+	public void should_escape_component_names() throws Exception
+	{
+		MultiKeyProperties props = new MultiKeyProperties();
+		props.setComponentNames(Arrays.asList("Id", "aGe"));
+
+		assertThat(props.getCQLComponentNames()).containsExactly("id", "age");
+
+	}
 }

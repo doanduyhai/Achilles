@@ -5,6 +5,7 @@ import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.type.KeyValue;
 
+import java.util.Set;
 import java.util.UUID;
 
 import mapping.entity.UserBean;
@@ -13,6 +14,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import testBuilders.PropertyMetaTestBuilder;
+
+import com.google.common.collect.Sets;
 
 /**
  * PropertyMetaTest
@@ -462,6 +465,66 @@ public class PropertyMetaTest
 				.type(JOIN_MAP)
 				.build();
 		assertThat(pm.isJoinMap()).isTrue();
+	}
 
+	@Test
+	public void should_use_equals_and_hashcode() throws Exception
+	{
+		PropertyMeta<Void, String> meta1 = new PropertyMeta<Void, String>();
+		meta1.setEntityClassName("entity");
+		meta1.setPropertyName("field1");
+		meta1.setType(PropertyType.SIMPLE);
+
+		PropertyMeta<Void, String> meta2 = new PropertyMeta<Void, String>();
+		meta2.setEntityClassName("entity");
+		meta2.setPropertyName("field2");
+		meta2.setType(PropertyType.SIMPLE);
+
+		PropertyMeta<Void, String> meta3 = new PropertyMeta<Void, String>();
+		meta3.setEntityClassName("entity");
+		meta3.setPropertyName("field1");
+		meta3.setType(PropertyType.LIST);
+
+		PropertyMeta<Void, String> meta4 = new PropertyMeta<Void, String>();
+		meta4.setEntityClassName("entity1");
+		meta4.setPropertyName("field1");
+		meta4.setType(PropertyType.SIMPLE);
+
+		PropertyMeta<Void, String> meta5 = new PropertyMeta<Void, String>();
+		meta5.setEntityClassName("entity");
+		meta5.setPropertyName("field1");
+		meta5.setType(PropertyType.SIMPLE);
+
+		assertThat(meta1).isNotEqualTo(meta2);
+		assertThat(meta1).isNotEqualTo(meta3);
+		assertThat(meta1).isNotEqualTo(meta4);
+		assertThat(meta1).isEqualTo(meta5);
+
+		assertThat(meta1.hashCode()).isNotEqualTo(meta2.hashCode());
+		assertThat(meta1.hashCode()).isNotEqualTo(meta3.hashCode());
+		assertThat(meta1.hashCode()).isNotEqualTo(meta4.hashCode());
+		assertThat(meta1.hashCode()).isEqualTo(meta5.hashCode());
+
+		Set<PropertyMeta<Void, String>> pms = Sets.newHashSet(meta1, meta2, meta3, meta4, meta5);
+
+		assertThat(pms).containsOnly(meta1, meta2, meta3, meta4);
+	}
+
+	@Test
+	public void should_get_cql_property_name() throws Exception
+	{
+		PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
+		pm.setPropertyName("Name");
+
+		assertThat(pm.getCQLPropertyName()).isEqualTo("name");
+	}
+
+	@Test
+	public void should_get_escaped_external_table_name() throws Exception
+	{
+		PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
+		pm.setExternalTableName("taBLe");
+
+		assertThat(pm.getCQLExternalTableName()).isEqualTo("table");
 	}
 }

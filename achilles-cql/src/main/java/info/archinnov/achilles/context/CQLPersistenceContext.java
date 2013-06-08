@@ -15,7 +15,6 @@ import java.util.List;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 
 /**
@@ -110,9 +109,9 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 		flushContext.pushBoundStatement(boundStatement, writeLevel);
 	}
 
-	public ResultSet executeImmediateWithConsistency(Session session, BoundStatement bs)
+	public ResultSet executeImmediateWithConsistency(BoundStatement bs)
 	{
-		return flushContext.executeImmediateWithConsistency(session, bs, entityMeta);
+		return flushContext.executeImmediateWithConsistency(bs, entityMeta);
 	}
 
 	@Override

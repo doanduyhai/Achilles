@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.eagerType;
 import static info.archinnov.achilles.table.TableCreator.TABLE_PATTERN;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
@@ -14,6 +15,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.FluentIterable;
 
 /**
  * EntityMetaBuilder
@@ -33,7 +36,6 @@ public class EntityMetaBuilder
 	private Map<String, PropertyMeta<?, ?>> propertyMetas;
 	private boolean wideRow = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
-	private List<PropertyMeta<?, ?>> eagerMetas;
 	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
 
 	public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
@@ -67,15 +69,18 @@ public class EntityMetaBuilder
 		meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
 		meta.setWideRow(wideRow);
 		meta.setConsistencyLevels(consistencyLevels);
-		if (eagerMetas != null)
-		{
-			meta.setEagerMetas(Collections.unmodifiableList(eagerMetas));
-			meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
-		}
 
 		allMetas.add(idMeta);
 		allMetas.addAll(propertyMetas.values());
 		meta.setAllMetas(allMetas);
+
+		List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
+				.from(propertyMetas.values())
+				.filter(eagerType)
+				.toImmutableList();
+
+		meta.setEagerMetas(eagerMetas);
+		meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
 
 		return meta;
 	}
@@ -153,12 +158,6 @@ public class EntityMetaBuilder
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
 	{
 		this.consistencyLevels = consistencyLevels;
-		return this;
-	}
-
-	public EntityMetaBuilder eagerMetas(List<PropertyMeta<?, ?>> eagerMetas)
-	{
-		this.eagerMetas = eagerMetas;
 		return this;
 	}
 }

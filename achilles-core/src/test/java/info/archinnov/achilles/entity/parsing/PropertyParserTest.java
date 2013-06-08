@@ -104,8 +104,7 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("id"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
 		context.setPrimaryKey(true);
 
 		PropertyMeta<Void, Long> meta = (PropertyMeta<Void, Long>) parser.parse(context);
@@ -138,8 +137,7 @@ public class PropertyParserTest
 
 		}
 
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("id"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
 		context.hasMultiKeyPrimaryKey(true);
 
 		PropertyMeta<Void, ClusteredId> meta = (PropertyMeta<Void, ClusteredId>) parser
@@ -184,8 +182,7 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("id"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
 		context.hasMultiKeyPrimaryKey(true);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
@@ -216,8 +213,7 @@ public class PropertyParserTest
 			}
 		}
 
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("name"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("name"));
 
 		PropertyMeta<Void, String> meta = (PropertyMeta<Void, String>) parser.parse(context);
 
@@ -255,8 +251,7 @@ public class PropertyParserTest
 				this.name = name;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("name"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("name"));
 
 		PropertyMeta<?, ?> meta = parser.parse(context);
 
@@ -406,8 +401,7 @@ public class PropertyParserTest
 				this.type = type;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("type"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("type"));
 		PropertyMeta<?, ?> meta = parser.parse(context);
 
 		assertThat((Class<PropertyType>) meta.getValueClass()).isEqualTo(PropertyType.class);
@@ -432,8 +426,7 @@ public class PropertyParserTest
 				this.uuid = uuid;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
-				Test.class.getDeclaredField("uuid"));
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("uuid"));
 
 		PropertyMeta<?, ?> meta = parser.parse(context);
 
@@ -464,8 +457,6 @@ public class PropertyParserTest
 				Test.class.getDeclaredField("friends"));
 		PropertyMeta<?, ?> meta = parser.parse(context);
 		assertThat(meta.type().isLazy()).isTrue();
-
-		assertThat(entityContext.getEagerMetas()).isEmpty();
 	}
 
 	@SuppressWarnings("rawtypes")

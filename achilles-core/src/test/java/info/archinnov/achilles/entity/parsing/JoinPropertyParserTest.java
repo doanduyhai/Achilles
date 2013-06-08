@@ -103,7 +103,7 @@ public class JoinPropertyParserTest
 			}
 		}
 
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("user"));
 
 		PropertyMeta<Void, UserBean> meta = (PropertyMeta<Void, UserBean>) parser
@@ -139,7 +139,7 @@ public class JoinPropertyParserTest
 				this.user = user;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("user"));
 		PropertyMeta<?, ?> meta = parser.parseJoin(context);
 
@@ -176,7 +176,7 @@ public class JoinPropertyParserTest
 
 		expectedEx.expect(AchillesBeanMappingException.class);
 		expectedEx.expectMessage("CascadeType.REMOVE is not supported for join columns");
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("user"));
 		parser.parseJoin(context);
 	}
@@ -206,7 +206,7 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 
 		PropertyMeta<?, ?> meta = parser.parseJoin(context);
@@ -244,7 +244,7 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<?, ?> meta = parser.parseJoin(context);
 
@@ -281,7 +281,7 @@ public class JoinPropertyParserTest
 				this.users = users;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<?, ?> meta = parser.parseJoin(context);
 
@@ -319,14 +319,13 @@ public class JoinPropertyParserTest
 			}
 
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<?, ?> meta = parser.parseJoin(context);
-
 		assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
 		JoinProperties joinProperties = meta.getJoinProperties();
 		assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-		assertThat(context.getJoinWideMaps().get(meta)).isEqualTo("join_users_xxx");
+		assertThat(context.getJoinWideMaps()).containsValue("join_users_xxx");
 		assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
 				.isEqualTo(UserBean.class);
 	}
@@ -348,7 +347,7 @@ public class JoinPropertyParserTest
 				return users;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser
 				.parseJoin(context);
@@ -375,7 +374,7 @@ public class JoinPropertyParserTest
 				return users;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class,
+		PropertyParsingContext context = newJoinParsingContext(Test.class,
 				Test.class.getDeclaredField("users"));
 		PropertyMeta<?, ?> propertyMeta = parser.parseJoin(context);
 		assertThat(propertyMeta.getReadConsistencyLevel()).isEqualTo(QUORUM);
@@ -413,7 +412,7 @@ public class JoinPropertyParserTest
 						.next()).isSameAs(propertyMeta);
 	}
 
-	private <T> PropertyParsingContext newContext(Class<T> entityClass, Field field)
+	private <T> PropertyParsingContext newJoinParsingContext(Class<T> entityClass, Field field)
 	{
 		entityContext = new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //

@@ -62,6 +62,11 @@ public class PropertyMeta<K, V>
 		return propertyName;
 	}
 
+	public String getCQLPropertyName()
+	{
+		return propertyName.toLowerCase();
+	}
+
 	public void setPropertyName(String propertyName)
 	{
 		this.propertyName = propertyName;
@@ -373,9 +378,14 @@ public class PropertyMeta<K, V>
 		return externalTableName;
 	}
 
-	public void setExternalTableName(String externalCfName)
+	public String getCQLExternalTableName()
 	{
-		this.externalTableName = externalCfName;
+		return externalTableName.toLowerCase();
+	}
+
+	public void setExternalTableName(String externalTableName)
+	{
+		this.externalTableName = externalTableName;
 	}
 
 	public String getEntityClassName()
@@ -424,4 +434,45 @@ public class PropertyMeta<K, V>
 
 		return description.toString();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((entityClassName == null) ? 0 : entityClassName.hashCode());
+		result = prime * result + ((propertyName == null) ? 0 : propertyName.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PropertyMeta<?, ?> other = (PropertyMeta<?, ?>) obj;
+		if (entityClassName == null)
+		{
+			if (other.entityClassName != null)
+				return false;
+		}
+		else if (!entityClassName.equals(other.entityClassName))
+			return false;
+		if (propertyName == null)
+		{
+			if (other.propertyName != null)
+				return false;
+		}
+		else if (!propertyName.equals(other.propertyName))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+
 }

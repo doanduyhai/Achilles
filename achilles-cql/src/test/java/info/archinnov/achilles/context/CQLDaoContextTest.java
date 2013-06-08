@@ -108,6 +108,7 @@ public class CQLDaoContextTest
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntity()).thenReturn(entity);
+		when(context.getPrimaryKey()).thenReturn(entity.getId());
 
 		insertPSs.clear();
 		selectEagerPSs.clear();
@@ -157,11 +158,11 @@ public class CQLDaoContextTest
 
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, idMeta))
 				.thenReturn(ps);
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, context.getEntity()))
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
 				.thenReturn(bs);
 
 		ResultSet resultSet = mock(ResultSet.class);
-		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
 		when(resultSet.all()).thenReturn(Arrays.asList(mock(Row.class)));
 
 		boolean actual = daoContext.checkForEntityExistence(context);
@@ -173,7 +174,8 @@ public class CQLDaoContextTest
 	public void should_bind_for_removal() throws Exception
 	{
 		when(removePSs.get(CompleteBean.class)).thenReturn(ImmutableMap.of("table", ps));
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
+				.thenReturn(bs);
 
 		daoContext.bindForRemoval(context, "table", EACH_QUORUM);
 
@@ -195,12 +197,13 @@ public class CQLDaoContextTest
 	public void should_eager_load_entity() throws Exception
 	{
 		when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
+				.thenReturn(bs);
 
 		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
 		when(resultSet.all()).thenReturn(Arrays.asList(row));
-		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
 
 		Row actual = daoContext.eagerLoadEntity(context);
 
@@ -219,11 +222,12 @@ public class CQLDaoContextTest
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
 				ps);
 
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
+				.thenReturn(bs);
 		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
 		when(resultSet.all()).thenReturn(Arrays.asList(row));
-		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
 
 		Row actual = daoContext.loadProperty(context, pm);
 
@@ -241,12 +245,24 @@ public class CQLDaoContextTest
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
 				ps);
 
-		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity)).thenReturn(bs);
+		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
+				.thenReturn(bs);
 		ResultSet resultSet = mock(ResultSet.class);
 		when(resultSet.all()).thenReturn(Lists.<Row> newLinkedList());
-		when(context.executeImmediateWithConsistency(session, bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
 
 		assertThat(daoContext.loadProperty(context, pm)).isNull();
+	}
+
+	@Test
+	public void should_execute_query() throws Exception
+	{
+		ResultSet resultSet = mock(ResultSet.class);
+		when(session.execute(bs)).thenReturn(resultSet);
+
+		ResultSet actual = daoContext.execute(bs);
+
+		assertThat(actual).isSameAs(resultSet);
 	}
 
 }

@@ -8,19 +8,23 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import mapping.entity.CompleteBean;
+import mapping.entity.UserBean;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import parser.entity.ClusteredId;
 import testBuilders.CompleteBeanTestBuilder;
@@ -51,8 +55,7 @@ public class CQLPreparedStatementBinderTest
 	@Mock
 	private BoundStatement bs;
 
-	@Captor
-	private ArgumentCaptor<List<Object>> valuesCaptor;
+	private List<Object> boundValues = new ArrayList<Object>();
 
 	private EntityMeta entityMeta;
 
@@ -62,6 +65,7 @@ public class CQLPreparedStatementBinderTest
 	public void setUp()
 	{
 		entityMeta = new EntityMeta();
+		boundValues.clear();
 	}
 
 	@Test
@@ -77,28 +81,158 @@ public class CQLPreparedStatementBinderTest
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class)
 				.field("name")
+				.type(PropertyType.SIMPLE)
 				.accessors()
 				.build();
 
 		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
 				.field("age")
+				.type(PropertyType.SIMPLE)
+				.accessors()
+				.build();
+
+		PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
+				.completeBean(UUID.class, String.class)
+				.field("geoPositions")
+				.type(PropertyType.WIDE_MAP)
 				.accessors()
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetas(Arrays.asList(nameMeta, ageMeta));
+		entityMeta.setAllMetas(Arrays.asList(idMeta, nameMeta, ageMeta, wideMapMeta));
 
 		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(11L);
 		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn("name");
 		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(30L);
 
-		when(ps.bind(valuesCaptor.capture())).thenReturn(bs);
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
 
 		BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
 
 		assertThat(actual).isSameAs(bs);
-		assertThat(valuesCaptor.getValue()).containsExactly(11L, "name", 30L);
+		assertThat(boundValues).containsExactly(11L, "name", 30L);
+
+	}
+
+	@Test
+	public void should_bind_for_insert_with_join_entity() throws Exception
+	{
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.accessors()
+				.build();
+
+		PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta<?, ?> userMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.type(PropertyType.JOIN_SIMPLE)
+				.joinMeta(joinMeta)
+				.accessors()
+				.build();
+
+		UserBean user = new UserBean();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setAllMetas(Arrays.asList(idMeta, nameMeta, userMeta));
+
+		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(11L);
+		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn("name");
+		when(invoker.getValueFromField(entity, userMeta.getGetter())).thenReturn(user);
+		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(123L);
+
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
+
+		BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+
+		assertThat(actual).isSameAs(bs);
+		assertThat(boundValues).containsExactly(11L, "name", 123L);
+
+	}
+
+	@Test
+	public void should_bind_for_insert_with_null_fields() throws Exception
+	{
+		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.accessors()
+				.type(PropertyType.SIMPLE)
+				.build();
+
+		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.type(PropertyType.SIMPLE)
+				.accessors()
+				.build();
+
+		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("age")
+				.type(PropertyType.SIMPLE)
+				.accessors()
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setAllMetas(Arrays.asList(idMeta, nameMeta, ageMeta));
+
+		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(11L);
+		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn("name");
+		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(null);
+
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
+
+		BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+
+		assertThat(actual).isSameAs(bs);
+		assertThat(boundValues).containsExactly(11L, "name", null);
 
 	}
 
@@ -118,22 +252,36 @@ public class CQLPreparedStatementBinderTest
 		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
 				.field("age")
+				.type(PropertyType.SIMPLE)
 				.accessors()
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetas(Arrays.<PropertyMeta<?, ?>> asList(ageMeta));
+		ClusteredId clusteredId = new ClusteredId(11L, "name");
 
-		when(invoker.getValueFromField(entity, userIdGetter)).thenReturn(11L);
-		when(invoker.getValueFromField(entity, nameGetter)).thenReturn("name");
+		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(clusteredId);
+		when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
+		when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
 		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(30L);
 
-		when(ps.bind(valuesCaptor.capture())).thenReturn(bs);
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
 
 		BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
 
 		assertThat(actual).isSameAs(bs);
-		assertThat(valuesCaptor.getValue()).containsExactly(11L, "name", 30L);
+		assertThat(boundValues).containsExactly(11L, "name", 30L);
 	}
 
 	@Test
@@ -147,14 +295,23 @@ public class CQLPreparedStatementBinderTest
 				.build();
 		entityMeta.setIdMeta(idMeta);
 
-		when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(11L);
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
 
-		when(ps.bind(valuesCaptor.capture())).thenReturn(bs);
-
-		BoundStatement actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity);
+		BoundStatement actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, 11L);
 
 		assertThat(actual).isSameAs(bs);
-		assertThat(valuesCaptor.getValue()).containsExactly(11L);
+		assertThat(boundValues).containsExactly(11L);
 	}
 
 	@Test
@@ -170,12 +327,14 @@ public class CQLPreparedStatementBinderTest
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class)
 				.field("name")
+				.type(PropertyType.SIMPLE)
 				.accessors()
 				.build();
 
 		PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
 				.field("age")
+				.type(PropertyType.SIMPLE)
 				.accessors()
 				.build();
 
@@ -185,13 +344,24 @@ public class CQLPreparedStatementBinderTest
 		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn("name");
 		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(30L);
 
-		when(ps.bind(valuesCaptor.capture())).thenReturn(bs);
+		when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+		{
+			@Override
+			public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+			{
+				for (Object value : invocation.getArguments())
+				{
+					boundValues.add(value);
+				}
+				return bs;
+			}
+		});
 
 		BoundStatement actual = binder.bindForUpdate(ps, entityMeta,
 				Arrays.asList(nameMeta, ageMeta), entity);
 
 		assertThat(actual).isSameAs(bs);
-		assertThat(valuesCaptor.getValue()).containsExactly("name", 30L, 11L);
+		assertThat(boundValues).containsExactly("name", 30L, 11L);
 
 	}
 }
