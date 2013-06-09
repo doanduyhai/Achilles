@@ -452,7 +452,6 @@ public class Cql3Test
 				.all();
 
 		assertThat(rows).hasSize(49);
-
 	}
 
 	@After
