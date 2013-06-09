@@ -11,7 +11,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.User;
-import integration.tests.entity.UserTestBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +28,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import testBuilders.TweetTestBuilder;
+import testBuilders.UserTestBuilder;
 
 /**
  * JoinColumnIT

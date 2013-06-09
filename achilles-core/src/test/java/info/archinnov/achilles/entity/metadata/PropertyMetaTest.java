@@ -5,6 +5,7 @@ import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.type.KeyValue;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 
@@ -172,21 +173,6 @@ public class PropertyMetaTest
 	}
 
 	@Test
-	public void should_cast_value_as_join_type() throws Exception
-	{
-		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_WIDE_MAP)
-				.build();
-
-		Object bean = new UserBean();
-
-		Object cast = propertyMeta.castValue(bean);
-
-		assertThat(cast).isSameAs(bean);
-	}
-
-	@Test
 	public void should_cast_value_as_supported_type() throws Exception
 	{
 		PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
@@ -199,36 +185,6 @@ public class PropertyMetaTest
 		Object cast = propertyMeta.castValue(uuid);
 
 		assertThat(cast).isSameAs(uuid);
-	}
-
-	@Test
-	public void should_cast_value_as_map_value() throws Exception
-	{
-		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class)
-				.type(PropertyType.MAP)
-				.build();
-
-		Object userBean = new UserBean();
-
-		Object cast = propertyMeta.castValue(userBean);
-
-		assertThat(cast).isSameAs(userBean);
-	}
-
-	@Test
-	public void should_cast_value_as_lazy_map_value() throws Exception
-	{
-		PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, UserBean.class)
-				.type(PropertyType.LAZY_MAP)
-				.build();
-
-		Object userBean = new UserBean();
-
-		Object cast = propertyMeta.castValue(userBean);
-
-		assertThat(cast).isSameAs(userBean);
 	}
 
 	@Test
@@ -249,7 +205,6 @@ public class PropertyMetaTest
 		assertThat(cast.getUserId()).isEqualTo(bean.getUserId());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_join_entity_meta() throws Exception
 	{
@@ -536,6 +491,44 @@ public class PropertyMetaTest
 
 		assertThat(pm.jsonSerializeValue(new UUID(10, 10))).isEqualTo(
 				"\"00000000-0000-000a-0000-00000000000a\"");
+	}
+
+	@Test
+	public void should_get_cql_ordering_component() throws Exception
+	{
+		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
+		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		multiKeyProperties.setComponentNames(Arrays.asList("id", "age", "name"));
+		meta.setMultiKeyProperties(multiKeyProperties);
+
+		assertThat(meta.getCQLOrderingComponent()).isEqualTo("age");
+	}
+
+	@Test
+	public void should_return_null_for_cql_ordering_component_if_no_multikey() throws Exception
+	{
+		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
+
+		assertThat(meta.getCQLOrderingComponent()).isNull();
+
+	}
+
+	@Test
+	public void should_get_cql_component_names() throws Exception
+	{
+		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
+		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		multiKeyProperties.setComponentNames(Arrays.asList("Id", "aGe", "namE"));
+		meta.setMultiKeyProperties(multiKeyProperties);
+
+		assertThat(meta.getCQLComponentNames()).containsExactly("id", "age", "name");
+	}
+
+	@Test
+	public void should_return_empty_list_when_no_cql_component_names() throws Exception
+	{
+		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
+		assertThat(meta.getCQLComponentNames()).isEmpty();
 	}
 
 }

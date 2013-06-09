@@ -31,7 +31,7 @@ public enum PropertyType
 	JOIN_SET(70), //
 	JOIN_MAP(70), //
 	JOIN_WIDE_MAP(70), //
-	CLUSTERED_KEY(80);
+	COMPOUND_KEY(80);
 
 	private final int flag;
 
@@ -93,9 +93,9 @@ public enum PropertyType
 		|| this == JOIN_WIDE_MAP);
 	}
 
-	public boolean isClusteredKey()
+	public boolean isCompoundKey()
 	{
-		return this == CLUSTERED_KEY;
+		return this == COMPOUND_KEY;
 	}
 
 	public static PropertyType[] nonProxyJoinTypes()

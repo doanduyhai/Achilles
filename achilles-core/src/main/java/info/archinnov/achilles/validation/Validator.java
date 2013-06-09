@@ -45,6 +45,14 @@ public class Validator
 		}
 	}
 
+	public static <T> void validateContains(Collection<T> collection, T element, String message)
+	{
+		if (!collection.contains(element))
+		{
+			throw new AchillesException(message);
+		}
+	}
+
 	public static void validateBeanMappingNotEmpty(Collection<?> arg, String message)
 	{
 		if (arg == null || arg.isEmpty())

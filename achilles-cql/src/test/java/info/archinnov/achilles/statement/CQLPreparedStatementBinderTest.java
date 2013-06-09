@@ -245,7 +245,7 @@ public class CQLPreparedStatementBinderTest
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.accessors()
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.compGetters(userIdGetter, nameGetter)
 				.build();
 

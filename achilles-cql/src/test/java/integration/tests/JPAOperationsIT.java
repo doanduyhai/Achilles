@@ -1,5 +1,6 @@
 package integration.tests;
 
+import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTables;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
@@ -16,9 +17,7 @@ import java.util.Map;
 
 import net.sf.cglib.proxy.Factory;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,7 +26,6 @@ import testBuilders.TweetTestBuilder;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
 
 /**
  * JPAOperationsIT
@@ -43,77 +41,6 @@ public class JPAOperationsIT
 	private Session session = CQLCassandraDaoTest.getCqlSession();
 
 	private CQLEntityManager em = CQLCassandraDaoTest.getEm();
-
-	private ObjectMapper mapper = new ObjectMapper();
-
-	@Before
-	public void setUp()
-	{
-		StringBuilder tableUser = new StringBuilder();
-		tableUser.append("CREATE TABLE completebean(");
-		tableUser.append("id bigint,");
-		tableUser.append("name text,");
-		tableUser.append("label text,");
-		tableUser.append("age_in_years bigint,");
-		tableUser.append("welcometweet uuid,");
-		tableUser.append("friends list<text>,");
-		tableUser.append("followers set<text>,");
-		tableUser.append("preferences map<int,text>,");
-		tableUser.append("primary key(id))");
-
-		StringBuilder tableTweet = new StringBuilder();
-		tableTweet.append("CREATE TABLE tweet(");
-		tableTweet.append("id uuid,");
-		tableTweet.append("creator bigint,");
-		tableTweet.append("content text,");
-		tableTweet.append("primary key(id))");
-
-		StringBuilder tableCompleteBeanTweets = new StringBuilder();
-		tableCompleteBeanTweets.append("CREATE TABLE complete_bean_tweets(");
-		tableCompleteBeanTweets.append("id bigint,");
-		tableCompleteBeanTweets.append("key uuid,");
-		tableCompleteBeanTweets.append("value text,");
-		tableCompleteBeanTweets.append("primary key(id,key))");
-
-		StringBuilder tableCompleteBeanUserTweets = new StringBuilder();
-		tableCompleteBeanUserTweets.append("CREATE TABLE complete_bean_user_tweets(");
-		tableCompleteBeanUserTweets.append("id bigint,");
-		tableCompleteBeanUserTweets.append("user text,");
-		tableCompleteBeanUserTweets.append("tweet uuid,");
-		tableCompleteBeanUserTweets.append("value text,");
-		tableCompleteBeanUserTweets.append("primary key(id,user,tweet))");
-
-		StringBuilder tableCompleteBeanWideMap = new StringBuilder();
-		tableCompleteBeanWideMap.append("CREATE TABLE complete_bean_widemap(");
-		tableCompleteBeanWideMap.append("id bigint,");
-		tableCompleteBeanWideMap.append("key int,");
-		tableCompleteBeanWideMap.append("value text,");
-		tableCompleteBeanWideMap.append("primary key(id,key))");
-
-		StringBuilder tableCompleteBeanMultiKeyWideMap = new StringBuilder();
-		tableCompleteBeanMultiKeyWideMap.append("CREATE TABLE complete_bean_multi_key_widemap(");
-		tableCompleteBeanMultiKeyWideMap.append("id bigint,");
-		tableCompleteBeanMultiKeyWideMap.append("user text,");
-		tableCompleteBeanMultiKeyWideMap.append("tweet uuid,");
-		tableCompleteBeanMultiKeyWideMap.append("value text,");
-		tableCompleteBeanMultiKeyWideMap.append("primary key(id,user,tweet))");
-
-		StringBuilder tableCompleteBeanPopularTopics = new StringBuilder();
-		tableCompleteBeanPopularTopics.append("CREATE TABLE complete_bean_popular_topics(");
-		tableCompleteBeanPopularTopics.append("id bigint,");
-		tableCompleteBeanPopularTopics.append("key text,");
-		tableCompleteBeanPopularTopics.append("value counter,");
-		tableCompleteBeanPopularTopics.append("primary key(id,key))");
-
-		session.execute(tableUser.toString());
-		session.execute(tableTweet.toString());
-		session.execute(tableCompleteBeanTweets.toString());
-		session.execute(tableCompleteBeanUserTweets.toString());
-		session.execute(tableCompleteBeanWideMap.toString());
-		session.execute(tableCompleteBeanMultiKeyWideMap.toString());
-		session.execute(tableCompleteBeanPopularTopics.toString());
-
-	}
 
 	@Test
 	public void should_persist() throws Exception
@@ -332,16 +259,6 @@ public class JPAOperationsIT
 	@Test
 	public void should_remove() throws Exception
 	{
-		StringBuilder tableAchillesCounter = new StringBuilder();
-		tableAchillesCounter.append("CREATE TABLE achilles_counter_table(");
-		tableAchillesCounter.append("fqcn text,");
-		tableAchillesCounter.append("primary_key text,");
-		tableAchillesCounter.append("property_name text,");
-		tableAchillesCounter.append("counter_value counter,");
-		tableAchillesCounter.append("primary key((fqcn,primary_key),property_name))");
-
-		session.execute(tableAchillesCounter.toString());
-
 		CompleteBean bean = CompleteBeanTestBuilder
 				.builder()
 				.randomId()
@@ -357,6 +274,8 @@ public class JPAOperationsIT
 		bean = em.merge(bean);
 
 		em.remove(bean);
+
+		assertThat(em.find(CompleteBean.class, bean.getId())).isNull();
 
 		List<Row> rows = session
 				.execute("select * from completebean where id=" + bean.getId())
@@ -519,13 +438,6 @@ public class JPAOperationsIT
 	@After
 	public void tearDown()
 	{
-		String listAllTables = "select columnfamily_name from system.schema_columnfamilies where keyspace_name='achilles'";
-		List<Row> rows = session.execute(listAllTables).all();
-
-		for (Row row : rows)
-		{
-			session
-					.execute(new SimpleStatement("drop table " + row.getString("columnfamily_name")));
-		}
+		truncateTables();
 	}
 }

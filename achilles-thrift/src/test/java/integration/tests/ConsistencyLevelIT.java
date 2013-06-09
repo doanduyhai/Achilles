@@ -27,7 +27,6 @@ import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.User;
-import integration.tests.entity.UserTestBuilder;
 import integration.tests.utils.CassandraLogAsserter;
 
 import java.util.List;
@@ -46,6 +45,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import testBuilders.TweetTestBuilder;
+import testBuilders.UserTestBuilder;
 
 /**
  * ConsistencyLevelIT

@@ -159,7 +159,7 @@ public class ThriftLoaderImpl
 			{
 				KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
 
-				map.put(keyClass.cast(holder.getKey()), propertyMeta.castValue(holder.getValue()));
+				map.put(keyClass.cast(holder.getKey()), holder.getValue());
 			}
 		}
 		return map;

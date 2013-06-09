@@ -105,7 +105,7 @@ public class CQLPreparedStatementGeneratorTest
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.compNames("id", "a", "b")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.build();
 
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -165,7 +165,7 @@ public class CQLPreparedStatementGeneratorTest
 		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class)
 				.field("id")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.compNames("id", "a", "b")
 				.build();
 
@@ -227,7 +227,7 @@ public class CQLPreparedStatementGeneratorTest
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.compNames("id", "a", "b")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.build();
 
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -318,7 +318,7 @@ public class CQLPreparedStatementGeneratorTest
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.compNames("id", "a", "b")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.build();
 
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -383,7 +383,7 @@ public class CQLPreparedStatementGeneratorTest
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.compNames("id", "a", "b")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.build();
 
 		PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder

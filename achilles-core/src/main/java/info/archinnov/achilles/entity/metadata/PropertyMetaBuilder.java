@@ -65,7 +65,7 @@ public class PropertyMetaBuilder {
             case WIDE_MAP:
             case JOIN_WIDE_MAP:
             case COUNTER_WIDE_MAP:
-            case CLUSTERED_KEY:
+            case COMPOUND_KEY:
                 meta = new PropertyMeta<K, V>();
                 break;
 

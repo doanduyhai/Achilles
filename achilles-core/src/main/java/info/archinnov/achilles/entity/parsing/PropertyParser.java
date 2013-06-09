@@ -111,7 +111,7 @@ public class PropertyParser
 		Field field = context.getCurrentField();
 
 		Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-		PropertyType type = CLUSTERED_KEY;
+		PropertyType type = COMPOUND_KEY;
 
 		MultiKeyProperties multiKeyProperties = parseMultiKey(field.getType());
 

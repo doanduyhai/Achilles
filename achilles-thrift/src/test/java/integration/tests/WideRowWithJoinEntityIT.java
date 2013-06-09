@@ -13,7 +13,6 @@ import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
 import integration.tests.entity.User;
-import integration.tests.entity.UserTestBuilder;
 import integration.tests.entity.WideRowBeanWithJoinEntity;
 
 import java.util.List;
@@ -25,6 +24,8 @@ import net.sf.cglib.proxy.Factory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import testBuilders.UserTestBuilder;
 
 /**
  * ColumnFamilyWithJoinEntityIT

@@ -37,16 +37,6 @@ public class CQLEntityManagerFactory extends AchillesEntityManagerFactory
 
 		boolean hasSimpleCounter = bootstrap();
 
-		StringBuilder tableAchillesCounter = new StringBuilder();
-		tableAchillesCounter.append("CREATE TABLE achilles_counter_table(");
-		tableAchillesCounter.append("fqcn text,");
-		tableAchillesCounter.append("primary_key text,");
-		tableAchillesCounter.append("property_name text,");
-		tableAchillesCounter.append("counter_value counter,");
-		tableAchillesCounter.append("primary key((fqcn,primary_key),property_name))");
-
-		session.execute(tableAchillesCounter.toString());
-
 		daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap);
 
 	}

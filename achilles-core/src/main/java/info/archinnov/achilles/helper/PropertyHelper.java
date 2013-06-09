@@ -43,7 +43,7 @@ public class PropertyHelper {
     private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
     public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-    protected EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();
+    protected EntityIntrospector entityIntrospector = new EntityIntrospector();
     private MethodInvoker invoker = new MethodInvoker();
 
     static {
@@ -149,8 +149,8 @@ public class PropertyHelper {
                     componentNames.add(multiKeyField.getName());
                 }
             }
-            componentGetters.add(achillesEntityIntrospector.findGetter(keyClass, multiKeyField));
-            componentSetters.add(achillesEntityIntrospector.findSetter(keyClass, multiKeyField));
+            componentGetters.add(entityIntrospector.findGetter(keyClass, multiKeyField));
+            componentSetters.add(entityIntrospector.findSetter(keyClass, multiKeyField));
             componentClasses.add(multiKeyField.getType());
         }
 
@@ -195,11 +195,11 @@ public class PropertyHelper {
         return lastNotNullIndex;
     }
 
-    public <K> void checkBounds(PropertyMeta<?, ?> wideMapMeta, K start, K end, WideMap.OrderingMode ordering,
+    public <K> void checkBounds(PropertyMeta<?, ?> propertyMeta, K start, K end, WideMap.OrderingMode ordering,
             boolean clusteringId) {
         log.trace("Check composites {} / {} with respect to ordering mode {}", start, end, ordering.name());
         if (start != null && end != null) {
-            if (wideMapMeta.isSingleKey()) {
+            if (propertyMeta.isSingleKey()) {
                 Comparable<K> startComp = (Comparable<K>) start;
 
                 if (WideMap.OrderingMode.DESCENDING.equals(ordering)) {
@@ -210,8 +210,8 @@ public class PropertyHelper {
                             "For range query, start value should be lesser or equal to end value");
                 }
             } else {
-                List<Method> componentGetters = wideMapMeta.getMultiKeyProperties().getComponentGetters();
-                String propertyName = wideMapMeta.getPropertyName();
+                List<Method> componentGetters = propertyMeta.getMultiKeyProperties().getComponentGetters();
+                String propertyName = propertyMeta.getPropertyName();
 
                 List<Object> startComponentValues = invoker.determineMultiKeyValues(start, componentGetters);
                 List<Object> endComponentValues = invoker.determineMultiKeyValues(end, componentGetters);
@@ -313,8 +313,8 @@ public class PropertyHelper {
 
         Consistency clevel = field.getAnnotation(Consistency.class);
 
-        ConsistencyLevel defaultGlobalRead = achillesEntityIntrospector.getDefaultGlobalReadConsistency(policy);
-        ConsistencyLevel defaultGlobalWrite = achillesEntityIntrospector.getDefaultGlobalWriteConsistency(policy);
+        ConsistencyLevel defaultGlobalRead = entityIntrospector.getDefaultGlobalReadConsistency(policy);
+        ConsistencyLevel defaultGlobalWrite = entityIntrospector.getDefaultGlobalWriteConsistency(policy);
 
         if (clevel != null) {
             defaultGlobalRead = clevel.read();

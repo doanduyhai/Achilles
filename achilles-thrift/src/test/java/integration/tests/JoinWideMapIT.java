@@ -13,7 +13,6 @@ import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.User;
-import integration.tests.entity.UserTestBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +27,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import testBuilders.TweetTestBuilder;
+import testBuilders.UserTestBuilder;
 
 /**
  * ExternalJoinWideMapIT

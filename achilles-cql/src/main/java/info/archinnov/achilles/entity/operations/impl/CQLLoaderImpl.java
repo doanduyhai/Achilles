@@ -32,14 +32,18 @@ public class CQLLoaderImpl
 	public <T> T eagerLoadEntity(CQLPersistenceContext context, Class<T> entityClass)
 			throws Exception
 	{
-		T entity = entityClass.newInstance();
+		T entity = null;
 		Row row = context.eagerLoadEntity();
-		mapper.setEagerPropertiesToEntity(row, context.getEntityMeta(), entity);
+		if (row != null)
+		{
+			entity = entityClass.newInstance();
+			mapper.setEagerPropertiesToEntity(row, context.getEntityMeta(), entity);
+		}
 		return entity;
 	}
 
-	public void loadPropertyIntoEntity(CQLPersistenceContext context,
-			PropertyMeta<?, ?> pm, Object entity)
+	public void loadPropertyIntoEntity(CQLPersistenceContext context, PropertyMeta<?, ?> pm,
+			Object entity)
 	{
 		Row row = context.loadProperty(pm);
 		mapper.setPropertyToEntity(row, pm, entity);

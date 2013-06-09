@@ -128,7 +128,7 @@ public class ThriftPropertyHelperTest
 		Method authorSetter = TweetMultiKey.class.getDeclaredMethod("setAuthor", String.class);
 		Method idSetter = TweetMultiKey.class.getDeclaredMethod("setId", UUID.class);
 		Method retweetCountSetter = TweetMultiKey.class.getDeclaredMethod("setRetweetCount",
-				int.class);
+				Integer.class);
 
 		UUID uuid1 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 
@@ -140,7 +140,7 @@ public class ThriftPropertyHelperTest
 		when(multiKeyWideMeta.getKeyClass()).thenReturn(TweetMultiKey.class);
 
 		when(multiKeyProperties.getComponentClasses()).thenReturn(
-				Arrays.asList((Class<?>) String.class, UUID.class, Integer.class));
+				Arrays.<Class<?>> asList(String.class, UUID.class, Integer.class));
 		when(multiKeyProperties.getComponentSetters()).thenReturn(
 				Arrays.asList(authorSetter, idSetter, retweetCountSetter));
 

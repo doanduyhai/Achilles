@@ -94,7 +94,7 @@ public class CacheManagerTest
 				.valueClass(String.class)
 				.field("name")
 				.compNames("id", "a", "b")
-				.type(PropertyType.CLUSTERED_KEY)
+				.type(PropertyType.COMPOUND_KEY)
 				.build();
 
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);

@@ -326,8 +326,10 @@ public class EntityParserTest
 		initEntityParsingContext(BeanWithNoId.class);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
-				+ "' should have at least one field with javax.persistence.Id annotation");
+		expectedEx
+				.expectMessage("The entity '"
+						+ BeanWithNoId.class.getCanonicalName()
+						+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
 		parser.parseEntity(entityContext);
 	}
 

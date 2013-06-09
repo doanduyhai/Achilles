@@ -5,7 +5,6 @@ import info.archinnov.achilles.type.MultiKey;
 
 import java.util.UUID;
 
-
 /**
  * TweetMultiKey
  * 
@@ -21,7 +20,15 @@ public class TweetMultiKey implements MultiKey
 	private UUID id;
 
 	@Key(order = 3)
-	private int retweetCount;
+	private Integer retweetCount;
+
+	public TweetMultiKey() {}
+
+	public TweetMultiKey(UUID id, String author, Integer retweetCount) {
+		this.id = id;
+		this.author = author;
+		this.retweetCount = retweetCount;
+	}
 
 	public UUID getId()
 	{
@@ -43,12 +50,12 @@ public class TweetMultiKey implements MultiKey
 		this.author = author;
 	}
 
-	public int getRetweetCount()
+	public Integer getRetweetCount()
 	{
 		return retweetCount;
 	}
 
-	public void setRetweetCount(int retweetCount)
+	public void setRetweetCount(Integer retweetCount)
 	{
 		this.retweetCount = retweetCount;
 	}

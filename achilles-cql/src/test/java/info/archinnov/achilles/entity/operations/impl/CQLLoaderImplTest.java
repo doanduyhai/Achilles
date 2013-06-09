@@ -109,6 +109,17 @@ public class CQLLoaderImplTest
 	}
 
 	@Test
+	public void should_return_null_for_eager_load_when_not_found() throws Exception
+	{
+		when(context.eagerLoadEntity()).thenReturn(null);
+
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
+
+		assertThat(actual).isNull();
+		verifyZeroInteractions(mapper);
+	}
+
+	@Test
 	public void should_load_property_into_entity() throws Exception
 	{
 		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder

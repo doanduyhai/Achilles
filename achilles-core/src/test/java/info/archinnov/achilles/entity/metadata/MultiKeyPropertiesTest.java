@@ -31,12 +31,29 @@ public class MultiKeyPropertiesTest
 	}
 
 	@Test
-	public void should_escape_component_names() throws Exception
+	public void should_get_cql_component_names() throws Exception
 	{
 		MultiKeyProperties props = new MultiKeyProperties();
 		props.setComponentNames(Arrays.asList("Id", "aGe"));
 
 		assertThat(props.getCQLComponentNames()).containsExactly("id", "age");
+	}
 
+	@Test
+	public void should_get_cql_ordering_component() throws Exception
+	{
+		MultiKeyProperties props = new MultiKeyProperties();
+		props.setComponentNames(Arrays.asList("id", "age", "label"));
+
+		assertThat(props.getCQLOrderingComponent()).isEqualTo("age");
+	}
+
+	@Test
+	public void should_return_null_if_no_cql_ordering_component() throws Exception
+	{
+		MultiKeyProperties props = new MultiKeyProperties();
+		props.setComponentNames(Arrays.asList("id"));
+
+		assertThat(props.getCQLOrderingComponent()).isNull();
 	}
 }

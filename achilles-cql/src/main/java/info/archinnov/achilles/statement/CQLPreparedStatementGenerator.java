@@ -169,27 +169,31 @@ public class CQLPreparedStatementGenerator
 
 	private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
 	{
-		if (idMeta.type().isClusteredKey())
+		if (idMeta.isSingleKey())
 		{
-			for (String component : idMeta.getMultiKeyProperties().getCQLComponentNames())
-			{
-				insert.value(component, bindMarker());
-			}
+			insert.value(idMeta.getCQLPropertyName(), bindMarker());
 		}
 		else
 		{
-			insert.value(idMeta.getCQLPropertyName(), bindMarker());
+			for (String component : idMeta.getCQLComponentNames())
+			{
+				insert.value(component, bindMarker());
+			}
 		}
 	}
 
 	private Statement prepareWhereClauseForSelect(PropertyMeta<?, ?> idMeta, Select from)
 	{
 		Statement statement;
-		if (idMeta.type().isClusteredKey())
+		if (idMeta.isSingleKey())
+		{
+			statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+		}
+		else
 		{
 			Select.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
+			for (String clusteredId : idMeta.getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -203,21 +207,21 @@ public class CQLPreparedStatementGenerator
 			}
 			statement = where;
 		}
-		else
-		{
-			statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
-		}
 		return statement;
 	}
 
 	private Statement prepareWhereClauseForUpdate(PropertyMeta<?, ?> idMeta, Assignments update)
 	{
 		Statement statement;
-		if (idMeta.type().isClusteredKey())
+		if (idMeta.isSingleKey())
+		{
+			statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+		}
+		else
 		{
 			Update.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
+			for (String clusteredId : idMeta.getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -230,10 +234,6 @@ public class CQLPreparedStatementGenerator
 				i++;
 			}
 			statement = where;
-		}
-		else
-		{
-			statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
 		}
 		return statement;
 	}
@@ -279,11 +279,15 @@ public class CQLPreparedStatementGenerator
 	private Statement prepareWhereClauseForDelete(PropertyMeta<?, ?> idMeta, Delete mainFrom)
 	{
 		Statement mainStatement;
-		if (idMeta.type().isClusteredKey())
+		if (idMeta.isSingleKey())
+		{
+			mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+		}
+		else
 		{
 			Delete.Where where = null;
 			int i = 0;
-			for (String clusteredId : idMeta.getMultiKeyProperties().getCQLComponentNames())
+			for (String clusteredId : idMeta.getCQLComponentNames())
 			{
 				if (i == 0)
 				{
@@ -295,12 +299,7 @@ public class CQLPreparedStatementGenerator
 				}
 				i++;
 			}
-
 			mainStatement = where;
-		}
-		else
-		{
-			mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
 		}
 		return mainStatement;
 	}

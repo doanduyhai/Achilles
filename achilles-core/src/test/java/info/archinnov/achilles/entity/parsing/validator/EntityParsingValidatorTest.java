@@ -37,16 +37,17 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_no_id_meta() throws Exception
 	{
 		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("The entity '" + CompleteBean.class.getCanonicalName()
-				+ "' should have at least one field with javax.persistence.Id annotation");
+		exception
+				.expectMessage("The entity '"
+						+ CompleteBean.class.getCanonicalName()
+						+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
 		validator.validateHasIdMeta(CompleteBean.class, null);
 	}
 
 	@Test
 	public void should_exception_when_empty_property_meta_map() throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 		exception.expect(AchillesBeanMappingException.class);
 		exception
@@ -60,8 +61,7 @@ public class EntityParsingValidatorTest
 	@Test
 	public void should_exception_when_more_than_one_property_meta_for_wide_row() throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
@@ -79,8 +79,7 @@ public class EntityParsingValidatorTest
 	public void should_exception_when_incorrect_type_of_property_meta_for_wide_row()
 			throws Exception
 	{
-		EntityParsingContext context = new EntityParsingContext(null, null,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
 		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
 
 		PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //

@@ -14,7 +14,6 @@ import info.archinnov.achilles.type.Pair;
 import integration.tests.entity.BeanWithJoinCollectionAndMap;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.User;
-import integration.tests.entity.UserTestBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +36,7 @@ import org.junit.rules.ExpectedException;
 
 import testBuilders.CompositeTestBuilder;
 import testBuilders.TweetTestBuilder;
+import testBuilders.UserTestBuilder;
 
 /**
  * JoinColumnIT

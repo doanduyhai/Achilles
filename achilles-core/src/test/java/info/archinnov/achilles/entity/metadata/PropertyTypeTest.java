@@ -30,7 +30,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
         assertThat(PropertyType.LIST.isLazy()).isFalse();
         assertThat(PropertyType.MAP.isLazy()).isFalse();
-        assertThat(PropertyType.CLUSTERED_KEY.isLazy()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isLazy()).isFalse();
     }
 
     @Test
@@ -46,7 +46,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.LAZY_MAP.isJoinColumn()).isFalse();
         assertThat(PropertyType.WIDE_MAP.isJoinColumn()).isFalse();
         assertThat(PropertyType.COUNTER_WIDE_MAP.isJoinColumn()).isFalse();
-        assertThat(PropertyType.CLUSTERED_KEY.isJoinColumn()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isJoinColumn()).isFalse();
 
         assertThat(PropertyType.JOIN_SIMPLE.isJoinColumn()).isTrue();
         assertThat(PropertyType.JOIN_LIST.isJoinColumn()).isTrue();
@@ -73,7 +73,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isWideMap()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isWideMap()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isWideMap()).isTrue();
-        assertThat(PropertyType.CLUSTERED_KEY.isWideMap()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isWideMap()).isFalse();
     }
 
     @Test
@@ -94,7 +94,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isCounter()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isCounter()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isCounter()).isFalse();
-        assertThat(PropertyType.CLUSTERED_KEY.isCounter()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isCounter()).isFalse();
     }
 
     @Test
@@ -115,28 +115,28 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isProxyType()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isProxyType()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isProxyType()).isTrue();
-        assertThat(PropertyType.CLUSTERED_KEY.isProxyType()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isProxyType()).isFalse();
     }
 
     @Test
     public void should_test_is_multikey() throws Exception {
-        assertThat(PropertyType.COUNTER.isClusteredKey()).isFalse();
-        assertThat(PropertyType.LAZY_SIMPLE.isClusteredKey()).isFalse();
-        assertThat(PropertyType.LAZY_LIST.isClusteredKey()).isFalse();
-        assertThat(PropertyType.LAZY_SET.isClusteredKey()).isFalse();
-        assertThat(PropertyType.LAZY_MAP.isClusteredKey()).isFalse();
-        assertThat(PropertyType.WIDE_MAP.isClusteredKey()).isFalse();
-        assertThat(PropertyType.COUNTER_WIDE_MAP.isClusteredKey()).isFalse();
-        assertThat(PropertyType.JOIN_SIMPLE.isClusteredKey()).isFalse();
-        assertThat(PropertyType.JOIN_LIST.isClusteredKey()).isFalse();
-        assertThat(PropertyType.JOIN_SET.isClusteredKey()).isFalse();
-        assertThat(PropertyType.JOIN_MAP.isClusteredKey()).isFalse();
-        assertThat(PropertyType.JOIN_WIDE_MAP.isClusteredKey()).isFalse();
+        assertThat(PropertyType.COUNTER.isCompoundKey()).isFalse();
+        assertThat(PropertyType.LAZY_SIMPLE.isCompoundKey()).isFalse();
+        assertThat(PropertyType.LAZY_LIST.isCompoundKey()).isFalse();
+        assertThat(PropertyType.LAZY_SET.isCompoundKey()).isFalse();
+        assertThat(PropertyType.LAZY_MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.WIDE_MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.COUNTER_WIDE_MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.JOIN_SIMPLE.isCompoundKey()).isFalse();
+        assertThat(PropertyType.JOIN_LIST.isCompoundKey()).isFalse();
+        assertThat(PropertyType.JOIN_SET.isCompoundKey()).isFalse();
+        assertThat(PropertyType.JOIN_MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.JOIN_WIDE_MAP.isCompoundKey()).isFalse();
 
-        assertThat(PropertyType.SERIAL_VERSION_UID.isClusteredKey()).isFalse();
-        assertThat(PropertyType.SIMPLE.isClusteredKey()).isFalse();
-        assertThat(PropertyType.LIST.isClusteredKey()).isFalse();
-        assertThat(PropertyType.MAP.isClusteredKey()).isFalse();
-        assertThat(PropertyType.CLUSTERED_KEY.isClusteredKey()).isTrue();
+        assertThat(PropertyType.SERIAL_VERSION_UID.isCompoundKey()).isFalse();
+        assertThat(PropertyType.SIMPLE.isCompoundKey()).isFalse();
+        assertThat(PropertyType.LIST.isCompoundKey()).isFalse();
+        assertThat(PropertyType.MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.COMPOUND_KEY.isCompoundKey()).isTrue();
     }
 }

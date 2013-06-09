@@ -9,6 +9,7 @@ import com.google.common.base.Objects;
  * @author DuyHai DOAN
  * 
  */
+//TODO to be removed, use Pair of Cassandra Utils instead
 public class Pair<T1, T2>
 {
 	public final T1 left;

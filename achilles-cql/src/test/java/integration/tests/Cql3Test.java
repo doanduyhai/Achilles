@@ -1,5 +1,6 @@
 package integration.tests;
 
+import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTables;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
 
@@ -10,7 +11,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.BoundStatement;
@@ -36,25 +36,6 @@ public class Cql3Test
 {
 
 	private Session session = CQLCassandraDaoTest.getCqlSession();
-
-	@Before
-	public void setUp()
-	{
-		String tableUser = "create table cql3_user(id bigint,firstname text,lastname text, age int, primary key(id))";
-		String tableList = "create table cql3_list(id bigint,myList list<text>, primary key(id))";
-		String tableSet = "create table cql3_set(id bigint,mySet set<text>, primary key(id))";
-		String tableMap = "create table cql3_map(id bigint,myMap map<int,text>, primary key(id))";
-		String wideRow = "create table widerow(id bigint,key text,value text, primary key(id,key))";
-		String clustering = "create table clustering(a int,b int,c int,d int, primary key (a,b,c))";
-		String counter = "create table achillescounter(fqcn text,pk text,key text,counter_value counter, primary key ((fqcn,pk),key))";
-		session.execute(tableUser);
-		session.execute(tableList);
-		session.execute(tableSet);
-		session.execute(tableMap);
-		session.execute(wideRow);
-		session.execute(clustering);
-		session.execute(counter);
-	}
 
 	@Test
 	public void should_insert_list() throws Exception
@@ -315,10 +296,10 @@ public class Cql3Test
 		}
 
 		PreparedStatement preparedStatement1 = session
-				.prepare("select * from clustering where a=? and b>? and b<=?");
-		BoundStatement boundStatement2 = preparedStatement1.bind(1, 1, 3);
-		List<Row> rows = session.execute(boundStatement2).all();
-		assertThat(rows.size()).isEqualTo(10);
+				.prepare("select d from clustering where a=? and b=? and c>?");
+		BoundStatement boundStatement1 = preparedStatement1.bind(1, 1, 2);
+		List<Row> rows = session.execute(boundStatement1).all();
+		assertThat(rows.size()).isEqualTo(3);
 	}
 
 	@Test
@@ -437,16 +418,46 @@ public class Cql3Test
 
 	}
 
+	@Test
+	public void should_select_clustered_key_with_IN_clause() throws Exception
+	{
+		// clustering(a int,b int,c int,d int, primary key (a,b,c)
+		for (int i = 1; i <= 5; i++)
+		{
+			for (int j = 1; j <= 5; j++)
+			{
+				for (int k = 1; k <= 5; k++)
+				{
+					for (int l = 1; l <= 2; l++)
+					{
+						String insert = QueryBuilder.insertInto("clustering") //
+								.value("a", i)
+								.value("b", j)
+								.value("c", k)
+								.value("d", l)
+								.toString();
+						session.execute(insert);
+					}
+				}
+			}
+		}
+
+		List<Row> rows = session.execute(
+				"SELECT * FROM clustering WHERE a IN(1,4) AND b>=2 AND b<=3").all();
+
+		assertThat(rows).hasSize(20);
+
+		rows = session
+				.execute("SELECT * FROM clustering WHERE a IN(1,4) ORDER BY b,c LIMIT 49")
+				.all();
+
+		assertThat(rows).hasSize(49);
+
+	}
+
 	@After
 	public void cleanUp()
 	{
-		String listAllTables = "select columnfamily_name from system.schema_columnfamilies where keyspace_name='achilles'";
-		List<Row> rows = session.execute(listAllTables).all();
-
-		for (Row row : rows)
-		{
-			session
-					.execute(new SimpleStatement("drop table " + row.getString("columnfamily_name")));
-		}
+		truncateTables();
 	}
 }

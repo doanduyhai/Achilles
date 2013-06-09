@@ -51,7 +51,7 @@ public class CQLPreparedStatementBinder
 
 	private void bindPrimaryKey(Object primaryKey, List<Object> values, PropertyMeta<?, ?> idMeta)
 	{
-		if (idMeta.type().isClusteredKey())
+		if (idMeta.type().isCompoundKey())
 		{
 			for (Method componentGetter : idMeta.getMultiKeyProperties().getComponentGetters())
 			{
@@ -132,7 +132,7 @@ public class CQLPreparedStatementBinder
 		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 		String fqcn = entityMeta.getClassName();
 		String primaryKeyAsString = idMeta.jsonSerializeValue(primaryKey);
-		String propertyName = pm.getPropertyName();
+		String propertyName = pm.getCQLPropertyName();
 
 		return new Object[]
 		{

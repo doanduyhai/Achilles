@@ -1,4 +1,6 @@
-package integration.tests.entity;
+package testBuilders;
+
+import integration.tests.entity.User;
 
 /**
  * UserTestBuilder

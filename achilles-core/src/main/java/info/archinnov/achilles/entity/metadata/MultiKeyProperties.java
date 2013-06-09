@@ -32,6 +32,16 @@ public class MultiKeyProperties
 		}
 	};
 
+	public String getCQLOrderingComponent()
+	{
+		String component = null;
+		if (componentNames.size() > 1)
+		{
+			return componentNames.get(1).toLowerCase();
+		}
+		return component;
+	}
+
 	public List<Class<?>> getComponentClasses()
 	{
 		return componentClasses;

@@ -2,11 +2,15 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 
@@ -46,96 +50,6 @@ public class PropertyMeta<K, V>
 	private boolean singleKey;
 
 	private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
-
-	public PropertyType type()
-	{
-		return type;
-	}
-
-	public void setType(PropertyType propertyType)
-	{
-		this.type = propertyType;
-	}
-
-	public String getPropertyName()
-	{
-		return propertyName;
-	}
-
-	public String getCQLPropertyName()
-	{
-		return propertyName.toLowerCase();
-	}
-
-	public void setPropertyName(String propertyName)
-	{
-		this.propertyName = propertyName;
-	}
-
-	public Class<K> getKeyClass()
-	{
-		return keyClass;
-	}
-
-	public void setKeyClass(Class<K> keyClass)
-	{
-		this.keyClass = keyClass;
-	}
-
-	public Class<V> getValueClass()
-	{
-		return valueClass;
-	}
-
-	public void setValueClass(Class<V> valueClass)
-	{
-		this.valueClass = valueClass;
-	}
-
-	public Method getGetter()
-	{
-		return getter;
-	}
-
-	public void setGetter(Method getter)
-	{
-		this.getter = getter;
-	}
-
-	public Method getSetter()
-	{
-		return setter;
-	}
-
-	public void setSetter(Method setter)
-	{
-		this.setter = setter;
-	}
-
-	public MultiKeyProperties getMultiKeyProperties()
-	{
-		return multiKeyProperties;
-	}
-
-	public void setMultiKeyProperties(MultiKeyProperties multiKeyProperties)
-	{
-		this.multiKeyProperties = multiKeyProperties;
-	}
-
-	public Class<?> getIdClass()
-	{
-		return idClass;
-	}
-
-	public void setIdClass(Class<?> idClass)
-	{
-		this.idClass = idClass;
-	}
-
-	public K getKey(Object object)
-	{
-		return keyClass.cast(object);
-	}
 
 	public V getValueFromString(Object stringValue)
 	{
@@ -243,23 +157,66 @@ public class PropertyMeta<K, V>
 	{
 		try
 		{
-			if (type.isJoinColumn() || isSupportedType(valueClass) || type == MAP
-					|| type == LAZY_MAP)
-			{
+			if (isSupportedType(valueClass))
 				return this.valueClass.cast(object);
-			}
 			else
-			{
 				return objectMapper.readValue((String) object, valueClass);
-			}
-
 		}
 		catch (Exception e)
 		{
-			logger.error("Error while trying to cast the object " + object + " to type '"
-					+ this.valueClass.getCanonicalName() + "'", e);
-			return null;
+			throw new AchillesException("Error while trying to cast the object " + object
+					+ " to type '" + this.valueClass.getCanonicalName() + "'", e);
 		}
+	}
+
+	public List<Method> getComponentGetters()
+	{
+		List<Method> compGetters = new ArrayList<Method>();
+		if (multiKeyProperties != null)
+		{
+			compGetters = multiKeyProperties.getComponentGetters();
+		}
+		return compGetters;
+	}
+
+	public List<Method> getComponentSetters()
+	{
+		List<Method> compSetters = new ArrayList<Method>();
+		if (multiKeyProperties != null)
+		{
+			compSetters = multiKeyProperties.getComponentSetters();
+		}
+		return compSetters;
+	}
+
+	public List<Class<?>> getComponentClasses()
+	{
+		List<Class<?>> compClasses = new ArrayList<Class<?>>();
+		if (multiKeyProperties != null)
+		{
+			compClasses = multiKeyProperties.getComponentClasses();
+		}
+		return compClasses;
+	}
+
+	public String getCQLOrderingComponent()
+	{
+		String component = null;
+		if (multiKeyProperties != null)
+		{
+			return multiKeyProperties.getCQLOrderingComponent();
+		}
+		return component;
+	}
+
+	public List<String> getCQLComponentNames()
+	{
+		List<String> components = new ArrayList<String>();
+		if (multiKeyProperties != null)
+		{
+			return Collections.unmodifiableList(multiKeyProperties.getCQLComponentNames());
+		}
+		return components;
 	}
 
 	public boolean isJoin()
@@ -285,41 +242,6 @@ public class PropertyMeta<K, V>
 	public String fqcn()
 	{
 		return counterProperties != null ? counterProperties.getFqcn() : null;
-	}
-
-	public JoinProperties getJoinProperties()
-	{
-		return joinProperties;
-	}
-
-	public void setJoinProperties(JoinProperties joinProperties)
-	{
-		this.joinProperties = joinProperties;
-	}
-
-	public boolean isSingleKey()
-	{
-		return singleKey;
-	}
-
-	public void setSingleKey(boolean singleKey)
-	{
-		this.singleKey = singleKey;
-	}
-
-	public void setObjectMapper(ObjectMapper objectMapper)
-	{
-		this.objectMapper = objectMapper;
-	}
-
-	public CounterProperties getCounterProperties()
-	{
-		return counterProperties;
-	}
-
-	public void setCounterProperties(CounterProperties counterProperties)
-	{
-		this.counterProperties = counterProperties;
 	}
 
 	public boolean isLazy()
@@ -379,6 +301,132 @@ public class PropertyMeta<K, V>
 	public ConsistencyLevel getWriteConsistencyLevel()
 	{
 		return consistencyLevels != null ? consistencyLevels.right : null;
+	}
+
+	public PropertyType type()
+	{
+		return type;
+	}
+
+	public void setType(PropertyType propertyType)
+	{
+		this.type = propertyType;
+	}
+
+	public String getPropertyName()
+	{
+		return propertyName;
+	}
+
+	public String getCQLPropertyName()
+	{
+		return propertyName.toLowerCase();
+	}
+
+	public void setPropertyName(String propertyName)
+	{
+		this.propertyName = propertyName;
+	}
+
+	public Class<K> getKeyClass()
+	{
+		return keyClass;
+	}
+
+	public void setKeyClass(Class<K> keyClass)
+	{
+		this.keyClass = keyClass;
+	}
+
+	public Class<V> getValueClass()
+	{
+		return valueClass;
+	}
+
+	public void setValueClass(Class<V> valueClass)
+	{
+		this.valueClass = valueClass;
+	}
+
+	public Method getGetter()
+	{
+		return getter;
+	}
+
+	public void setGetter(Method getter)
+	{
+		this.getter = getter;
+	}
+
+	public Method getSetter()
+	{
+		return setter;
+	}
+
+	public void setSetter(Method setter)
+	{
+		this.setter = setter;
+	}
+
+	// TODO to be removed
+	public MultiKeyProperties getMultiKeyProperties()
+	{
+		return multiKeyProperties;
+	}
+
+	public void setMultiKeyProperties(MultiKeyProperties multiKeyProperties)
+	{
+		this.multiKeyProperties = multiKeyProperties;
+	}
+
+	public Class<?> getIdClass()
+	{
+		return idClass;
+	}
+
+	public void setIdClass(Class<?> idClass)
+	{
+		this.idClass = idClass;
+	}
+
+	public K getKey(Object object)
+	{
+		return keyClass.cast(object);
+	}
+
+	public JoinProperties getJoinProperties()
+	{
+		return joinProperties;
+	}
+
+	public void setJoinProperties(JoinProperties joinProperties)
+	{
+		this.joinProperties = joinProperties;
+	}
+
+	public boolean isSingleKey()
+	{
+		return singleKey;
+	}
+
+	public void setSingleKey(boolean singleKey)
+	{
+		this.singleKey = singleKey;
+	}
+
+	public void setObjectMapper(ObjectMapper objectMapper)
+	{
+		this.objectMapper = objectMapper;
+	}
+
+	public CounterProperties getCounterProperties()
+	{
+		return counterProperties;
+	}
+
+	public void setCounterProperties(CounterProperties counterProperties)
+	{
+		this.counterProperties = counterProperties;
 	}
 
 	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels)
