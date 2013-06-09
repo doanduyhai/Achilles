@@ -520,11 +520,22 @@ public class PropertyMetaTest
 	}
 
 	@Test
-	public void should_get_escaped_external_table_name() throws Exception
+	public void should_get_cql_external_table_name() throws Exception
 	{
 		PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
 		pm.setExternalTableName("taBLe");
 
 		assertThat(pm.getCQLExternalTableName()).isEqualTo("table");
 	}
+
+	@Test
+	public void should_serialize_as_json() throws Exception
+	{
+		PropertyMeta<Void, UUID> pm = new PropertyMeta<Void, UUID>();
+		pm.setObjectMapper(objectMapper);
+
+		assertThat(pm.jsonSerializeValue(new UUID(10, 10))).isEqualTo(
+				"\"00000000-0000-000a-0000-00000000000a\"");
+	}
+
 }

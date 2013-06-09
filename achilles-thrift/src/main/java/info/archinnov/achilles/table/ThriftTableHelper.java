@@ -1,8 +1,8 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
@@ -139,7 +139,7 @@ public class ThriftTableHelper extends TableHelper
 	public ColumnFamilyDefinition buildCounterCF(String keyspaceName)
 	{
 		ColumnFamilyDefinition counterCfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
-				COUNTER_CF, COMPOSITETYPE);
+				AchillesCounter.THRIFT_COUNTER_CF, COMPOSITETYPE);
 
 		counterCfDef.setKeyValidationClass(COMPOSITETYPE.getTypeName());
 		counterCfDef.setKeyValidationAlias(COUNTER_KEY_ALIAS);
@@ -150,7 +150,9 @@ public class ThriftTableHelper extends TableHelper
 
 		StringBuilder builder = new StringBuilder("\n\n");
 		builder.append("Create generic counter column family for Achilles : \n");
-		builder.append("\tcreate column family ").append(COUNTER_CF).append("\n");
+		builder.append("\tcreate column family ")
+				.append(AchillesCounter.THRIFT_COUNTER_CF)
+				.append("\n");
 		builder.append("\t\twith key_validation_class = '").append(COUNTER_KEY_CHECK).append("'\n");
 		builder.append("\t\tand comparator = '").append(COUNTER_COMPARATOR_CHECK).append("'\n");
 		builder.append("\t\tand default_validation_class = ")
@@ -235,8 +237,9 @@ public class ThriftTableHelper extends TableHelper
 		String keyValidation = cfDef.getKeyValidationClass() + cfDef.getKeyValidationAlias();
 		if (!StringUtils.equals(keyValidation, COUNTER_KEY_CHECK))
 		{
-			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' key class '" + keyValidation + "' should be '" + COUNTER_KEY_CHECK + "'");
+			throw new AchillesInvalidColumnFamilyException("The column family '"
+					+ AchillesCounter.THRIFT_COUNTER_CF + "' key class '" + keyValidation
+					+ "' should be '" + COUNTER_KEY_CHECK + "'");
 		}
 
 		String comparatorType = (cfDef.getComparatorType() != null ? cfDef
@@ -244,15 +247,16 @@ public class ThriftTableHelper extends TableHelper
 				.getTypeName() : "") + cfDef.getComparatorTypeAlias();
 		if (!StringUtils.equals(comparatorType, COUNTER_COMPARATOR_CHECK))
 		{
-			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' comparator type '" + comparatorType + "' should be '"
-					+ COUNTER_COMPARATOR_CHECK + "'");
+			throw new AchillesInvalidColumnFamilyException("The column family '"
+					+ AchillesCounter.THRIFT_COUNTER_CF + "' comparator type '" + comparatorType
+					+ "' should be '" + COUNTER_COMPARATOR_CHECK + "'");
 		}
 
 		if (!StringUtils.equals(cfDef.getDefaultValidationClass(), COUNTERTYPE.getClassName()))
 		{
-			throw new AchillesInvalidColumnFamilyException("The column family '" + COUNTER_CF
-					+ "' validation class '" + cfDef.getDefaultValidationClass() + "' should be '"
+			throw new AchillesInvalidColumnFamilyException("The column family '"
+					+ AchillesCounter.THRIFT_COUNTER_CF + "' validation class '"
+					+ cfDef.getDefaultValidationClass() + "' should be '"
 					+ COUNTERTYPE.getClassName() + "'");
 		}
 	}

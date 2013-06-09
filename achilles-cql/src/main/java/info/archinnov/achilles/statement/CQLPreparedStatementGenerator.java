@@ -1,7 +1,10 @@
 package info.archinnov.achilles.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.context.CQLDaoContext.*;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import info.archinnov.achilles.counter.AchillesCounter;
+import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -124,6 +127,46 @@ public class CQLPreparedStatementGenerator
 		return session.prepare(statement.getQueryString());
 	}
 
+	public Map<CQLQueryType, PreparedStatement> prepareSimpleCounterQueryMap(Session session)
+	{
+		StringBuilder incr = new StringBuilder();
+		incr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
+		incr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
+		incr.append(CQL_COUNTER_VALUE).append(" + ? ");
+		incr.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
+		incr.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
+		incr.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+
+		StringBuilder decr = new StringBuilder();
+		decr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
+		decr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
+		decr.append(CQL_COUNTER_VALUE).append(" - ? ");
+		decr.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
+		decr.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
+		decr.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+
+		StringBuilder select = new StringBuilder();
+		select.append("SELECT ").append(CQL_COUNTER_VALUE).append(" ");
+		select.append("FROM ").append(CQL_COUNTER_TABLE).append(" ");
+		select.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
+		select.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
+		select.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+
+		StringBuilder delete = new StringBuilder();
+		delete.append("DELETE FROM ").append(CQL_COUNTER_TABLE).append(" ");
+		delete.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
+		delete.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
+		delete.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+
+		Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap<AchillesCounter.CQLQueryType, PreparedStatement>();
+		counterPSMap.put(INCR, session.prepare(incr.toString()));
+		counterPSMap.put(DECR, session.prepare(decr.toString()));
+		counterPSMap.put(SELECT, session.prepare(select.toString()));
+		counterPSMap.put(DELETE, session.prepare(delete.toString()));
+
+		return counterPSMap;
+	}
+
 	private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
 	{
 		if (idMeta.type().isClusteredKey())
@@ -220,10 +263,10 @@ public class CQLPreparedStatementGenerator
 				case COUNTER:
 					Statement counterStatement = QueryBuilder
 							.delete()
-							.from(ACHILLES_COUNTER_TABLE)
-							.where(eq(ACHILLES_COUNTER_FQCN, bindMarker()))
-							.and(eq(ACHILLES_COUNTER_PK, bindMarker()));
-					removePSs.put(ACHILLES_COUNTER_TABLE,
+							.from(AchillesCounter.CQL_COUNTER_TABLE)
+							.where(eq(AchillesCounter.CQL_COUNTER_FQCN, bindMarker()))
+							.and(eq(AchillesCounter.CQL_COUNTER_PRIMARY_KEY, bindMarker()));
+					removePSs.put(AchillesCounter.CQL_COUNTER_TABLE,
 							session.prepare(counterStatement.getQueryString()));
 					break;
 				default:

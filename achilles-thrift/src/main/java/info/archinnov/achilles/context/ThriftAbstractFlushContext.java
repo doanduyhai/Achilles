@@ -1,7 +1,7 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -105,8 +105,8 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 			if (entityDao != null)
 			{
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(
-						mutator, entityDao));
+				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
+						entityDao));
 			}
 		}
 		return mutator;
@@ -121,14 +121,13 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		}
 		else
 		{
-			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext
-					.findWideRowDao(tableName);
+			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext.findWideRowDao(tableName);
 
 			if (columnFamilyDao != null)
 			{
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(
-						mutator, columnFamilyDao));
+				mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
+						columnFamilyDao));
 			}
 		}
 		return mutator;
@@ -137,16 +136,16 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 	public Mutator<Object> getCounterMutator()
 	{
 		Mutator<Object> mutator = null;
-		if (mutatorMap.containsKey(COUNTER_CF))
+		if (mutatorMap.containsKey(AchillesCounter.THRIFT_COUNTER_CF))
 		{
-			mutator = mutatorMap.get(COUNTER_CF).left;
+			mutator = mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).left;
 		}
 		else
 		{
 			ThriftCounterDao thriftCounterDao = thriftDaoContext.getCounterDao();
 			mutator = thriftCounterDao.buildMutator();
-			mutatorMap.put(COUNTER_CF, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
-					thriftCounterDao));
+			mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF,
+					new Pair<Mutator<Object>, ThriftAbstractDao>(mutator, thriftCounterDao));
 		}
 		return mutator;
 	}

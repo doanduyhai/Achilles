@@ -202,6 +202,19 @@ public class PropertyMeta<K, V>
 		}
 	}
 
+	public String jsonSerializeValue(Object object)
+	{
+		try
+		{
+			return this.objectMapper.writeValueAsString(object);
+		}
+		catch (Exception e)
+		{
+			logger.error("Error while trying to serialize to JSON the object : " + object, e);
+			return null;
+		}
+	}
+
 	public Object writeValueAsSupportedTypeOrString(Object value)
 	{
 		log.trace("Writing value {} as native type or string for property {} of entity class {}",

@@ -46,12 +46,14 @@ public class Cql3Test
 		String tableMap = "create table cql3_map(id bigint,myMap map<int,text>, primary key(id))";
 		String wideRow = "create table widerow(id bigint,key text,value text, primary key(id,key))";
 		String clustering = "create table clustering(a int,b int,c int,d int, primary key (a,b,c))";
+		String counter = "create table achillescounter(fqcn text,pk text,key text,counter_value counter, primary key ((fqcn,pk),key))";
 		session.execute(tableUser);
 		session.execute(tableList);
 		session.execute(tableSet);
 		session.execute(tableMap);
 		session.execute(wideRow);
 		session.execute(clustering);
+		session.execute(counter);
 	}
 
 	@Test
@@ -409,6 +411,30 @@ public class Cql3Test
 		List<Row> rows = session.execute(select).all();
 
 		assertThat(rows).isEmpty();
+	}
+
+	@Test
+	public void should_prepare_statement_for_counter() throws Exception
+	{
+		String incr = "UPDATE achillescounter SET counter_value = counter_value + ? WHERE fqcn=? AND pk=? and key=?";
+
+		PreparedStatement ps = session.prepare(incr);
+		BoundStatement bs = ps.bind(2L, "CompleteBean", "150", "clicks");
+
+		session.execute(bs);
+
+		String select = "SELECT counter_value from achillescounter WHERE fqcn='CompleteBean' AND pk='150' and key='clicks'";
+		List<Row> rows = session.execute(select).all();
+
+		assertThat(rows).hasSize(1);
+		assertThat(rows.get(0).getLong("counter_value")).isEqualTo(2L);
+
+		session
+				.execute("DELETE FROM achillescounter  WHERE fqcn='CompleteBean' AND pk='150' and key='clicks'");
+
+		rows = session.execute(select).all();
+		assertThat(rows).isEmpty();
+
 	}
 
 	@After

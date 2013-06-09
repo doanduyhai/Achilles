@@ -1,12 +1,12 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -241,7 +241,7 @@ public class ThriftTableCreatorTest
 	{
 
 		ColumnFamilyDefinition cfDef = mock(ColumnFamilyDefinition.class);
-		when(cfDef.getName()).thenReturn(COUNTER_CF);
+		when(cfDef.getName()).thenReturn(AchillesCounter.THRIFT_COUNTER_CF);
 		Whitebox.setInternalState(creator, "cfDefs", Arrays.asList(cfDef));
 
 		when(keyspace.getKeyspaceName()).thenReturn("keyspace");
@@ -390,7 +390,8 @@ public class ThriftTableCreatorTest
 		configContext.setForceColumnFamilyCreation(false);
 
 		exception.expect(AchillesInvalidColumnFamilyException.class);
-		exception.expectMessage("The required column family '" + COUNTER_CF + "' does not exist");
+		exception.expectMessage("The required column family '" + AchillesCounter.THRIFT_COUNTER_CF
+				+ "' does not exist");
 
 		creator.validateOrCreateColumnFamilies(new HashMap<Class<?>, EntityMeta>(), configContext,
 				true);

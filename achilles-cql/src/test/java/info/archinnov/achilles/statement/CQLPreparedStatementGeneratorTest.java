@@ -1,8 +1,11 @@
 package info.archinnov.achilles.statement;
 
-import static info.archinnov.achilles.context.CQLDaoContext.*;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.counter.AchillesCounter;
+import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -545,12 +548,55 @@ public class CQLPreparedStatementGeneratorTest
 
 		assertThat(actual).hasSize(2);
 		assertThat(actual).containsKey("table");
-		assertThat(actual).containsKey(ACHILLES_COUNTER_TABLE);
+		assertThat(actual).containsKey(AchillesCounter.CQL_COUNTER_TABLE);
 		assertThat(actual).containsValue(ps);
 		assertThat(actual).containsValue(ps2);
 		assertThat(queryCaptor.getAllValues()).contains(
 				"DELETE  FROM table WHERE id=?;",
-				"DELETE  FROM " + ACHILLES_COUNTER_TABLE + " WHERE " + ACHILLES_COUNTER_FQCN
-						+ "=? AND " + ACHILLES_COUNTER_PK + "=?;");
+				"DELETE  FROM " + AchillesCounter.CQL_COUNTER_TABLE + " WHERE "
+						+ AchillesCounter.CQL_COUNTER_FQCN + "=? AND "
+						+ AchillesCounter.CQL_COUNTER_PRIMARY_KEY + "=?;");
+	}
+
+	@Test
+	public void should_prepare_simple_counter_queries() throws Exception
+	{
+		PreparedStatement incrPs = mock(PreparedStatement.class);
+		PreparedStatement decrPs = mock(PreparedStatement.class);
+		PreparedStatement selectPs = mock(PreparedStatement.class);
+		PreparedStatement deletePs = mock(PreparedStatement.class);
+
+		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
+
+		Map<CQLQueryType, PreparedStatement> actual = generator
+				.prepareSimpleCounterQueryMap(session);
+
+		assertThat(actual.get(INCR)).isSameAs(incrPs);
+		assertThat(actual.get(DECR)).isSameAs(decrPs);
+		assertThat(actual.get(SELECT)).isSameAs(selectPs);
+		assertThat(actual.get(DELETE)).isSameAs(deletePs);
+
+		List<String> queries = queryCaptor.getAllValues();
+
+		assertThat(queries).hasSize(4);
+		assertThat(queries.get(0)).isEqualTo(
+				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + " = "
+						+ CQL_COUNTER_VALUE + " + ? WHERE " + CQL_COUNTER_FQCN + " = ? AND "
+						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME
+						+ " = ?");
+		assertThat(queries.get(1)).isEqualTo(
+				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + " = "
+						+ CQL_COUNTER_VALUE + " - ? WHERE " + CQL_COUNTER_FQCN + " = ? AND "
+						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME
+						+ " = ?");
+		assertThat(queries.get(2)).isEqualTo(
+				"SELECT " + CQL_COUNTER_VALUE + " FROM " + CQL_COUNTER_TABLE + " WHERE "
+						+ CQL_COUNTER_FQCN + " = ? AND " + CQL_COUNTER_PRIMARY_KEY + " = ? AND "
+						+ CQL_COUNTER_PROPERTY_NAME + " = ?");
+		assertThat(queries.get(3)).isEqualTo(
+				"DELETE FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN + " = ? AND "
+						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME
+						+ " = ?");
+
 	}
 }

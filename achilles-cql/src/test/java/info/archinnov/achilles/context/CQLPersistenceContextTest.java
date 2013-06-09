@@ -180,6 +180,17 @@ public class CQLPersistenceContextTest
 	}
 
 	@Test
+	public void should_bind_for_simple_counter_removal() throws Exception
+	{
+		PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+		EntityMeta meta = new EntityMeta();
+
+		context.bindForSimpleCounterRemoval(meta, counterMeta, 11L);
+
+		verify(daoContext).bindForSimpleCounterDelete(context, meta, counterMeta, 11L);
+	}
+
+	@Test
 	public void should_push_bound_statement() throws Exception
 	{
 		BoundStatement bs = mock(BoundStatement.class);
@@ -194,9 +205,9 @@ public class CQLPersistenceContextTest
 	{
 		BoundStatement bs = mock(BoundStatement.class);
 		ResultSet resultSet = mock(ResultSet.class);
-		when(flushContext.executeImmediateWithConsistency(bs, meta)).thenReturn(resultSet);
+		when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 
-		ResultSet actual = context.executeImmediateWithConsistency(bs);
+		ResultSet actual = context.executeImmediateWithConsistency(bs, EACH_QUORUM);
 
 		assertThat(actual).isSameAs(resultSet);
 	}
@@ -264,5 +275,4 @@ public class CQLPersistenceContextTest
 		verify(flushContext).setReadConsistencyLevel(null);
 		verify(refresher).refresh(context);
 	}
-
 }

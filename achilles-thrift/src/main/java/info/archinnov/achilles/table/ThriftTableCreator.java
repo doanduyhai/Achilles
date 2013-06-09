@@ -1,6 +1,6 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
@@ -161,7 +161,7 @@ public class ThriftTableCreator extends TableCreator
 	@Override
 	protected void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation)
 	{
-		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(COUNTER_CF);
+		ColumnFamilyDefinition cfDef = this.discoverColumnFamily(AchillesCounter.THRIFT_COUNTER_CF);
 		if (cfDef == null)
 		{
 			if (forceColumnFamilyCreation)
@@ -173,7 +173,7 @@ public class ThriftTableCreator extends TableCreator
 			else
 			{
 				throw new AchillesInvalidColumnFamilyException("The required column family '"
-						+ COUNTER_CF + "' does not exist");
+						+ AchillesCounter.THRIFT_COUNTER_CF + "' does not exist");
 			}
 		}
 		else
@@ -186,7 +186,7 @@ public class ThriftTableCreator extends TableCreator
 	private void createCounterColumnFamily()
 	{
 		log.debug("Creating generic counter column family");
-		if (!columnFamilyNames.contains(COUNTER_CF))
+		if (!columnFamilyNames.contains(AchillesCounter.THRIFT_COUNTER_CF))
 		{
 			ColumnFamilyDefinition cfDef = thriftTableHelper.buildCounterCF(this.keyspace
 					.getKeyspaceName());

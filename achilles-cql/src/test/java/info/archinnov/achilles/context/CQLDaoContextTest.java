@@ -3,6 +3,7 @@ package info.archinnov.achilles.context;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
@@ -68,6 +69,9 @@ public class CQLDaoContextTest
 	private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 
 	@Mock
+	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
+
+	@Mock
 	private Session session;
 
 	@Mock
@@ -99,6 +103,7 @@ public class CQLDaoContextTest
 		Whitebox.setInternalState(daoContext, "dynamicPSCache", dynamicPSCache);
 		Whitebox.setInternalState(daoContext, "selectEagerPSs", selectEagerPSs);
 		Whitebox.setInternalState(daoContext, "removePSs", removePSs);
+		Whitebox.setInternalState(daoContext, "counterQueryMap", counterQueryMap);
 		Whitebox.setInternalState(daoContext, "session", session);
 
 		entityMeta = new EntityMeta();
@@ -155,6 +160,7 @@ public class CQLDaoContextTest
 				.field("id")
 				.build();
 		entityMeta.setIdMeta(idMeta);
+		entityMeta.setConsistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM));
 
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, idMeta))
 				.thenReturn(ps);
@@ -162,7 +168,7 @@ public class CQLDaoContextTest
 				.thenReturn(bs);
 
 		ResultSet resultSet = mock(ResultSet.class);
-		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 		when(resultSet.all()).thenReturn(Arrays.asList(mock(Row.class)));
 
 		boolean actual = daoContext.checkForEntityExistence(context);
@@ -196,6 +202,7 @@ public class CQLDaoContextTest
 	@Test
 	public void should_eager_load_entity() throws Exception
 	{
+		entityMeta.setConsistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM));
 		when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
 		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
 				.thenReturn(bs);
@@ -203,7 +210,7 @@ public class CQLDaoContextTest
 		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
 		when(resultSet.all()).thenReturn(Arrays.asList(row));
-		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 
 		Row actual = daoContext.eagerLoadEntity(context);
 
@@ -217,6 +224,7 @@ public class CQLDaoContextTest
 		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
 				.build();
 
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
@@ -227,7 +235,7 @@ public class CQLDaoContextTest
 		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
 		when(resultSet.all()).thenReturn(Arrays.asList(row));
-		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 
 		Row actual = daoContext.loadProperty(context, pm);
 
@@ -240,6 +248,7 @@ public class CQLDaoContextTest
 		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
 				.build();
 
 		when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(
@@ -249,7 +258,7 @@ public class CQLDaoContextTest
 				.thenReturn(bs);
 		ResultSet resultSet = mock(ResultSet.class);
 		when(resultSet.all()).thenReturn(Lists.<Row> newLinkedList());
-		when(context.executeImmediateWithConsistency(bs)).thenReturn(resultSet);
+		when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 
 		assertThat(daoContext.loadProperty(context, pm)).isNull();
 	}
@@ -265,4 +274,78 @@ public class CQLDaoContextTest
 		assertThat(actual).isSameAs(resultSet);
 	}
 
+	@Test
+	public void should_bind_counter_increment() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+				.build();
+
+		when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
+		when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, 11L, 2L))
+				.thenReturn(bs);
+
+		daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 11L, 2L);
+
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_bind_counter_decrement() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+				.build();
+
+		when(counterQueryMap.get(CQLQueryType.DECR)).thenReturn(ps);
+		when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, 11L, 2L))
+				.thenReturn(bs);
+
+		daoContext.bindForSimpleCounterDecrement(context, entityMeta, pm, 11L, 2L);
+
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_bind_counter_delete() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+				.build();
+
+		when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
+		when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+
+		daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
+
+		verify(context).pushBoundStatement(bs, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_bind_counter_select() throws Exception
+	{
+		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.field("name")
+				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+				.build();
+
+		when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
+		when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, 11L)).thenReturn(bs);
+
+		ResultSet resultSet = mock(ResultSet.class);
+		Row row = mock(Row.class);
+		when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+		when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
+
+		Row actual = daoContext.bindForSimpleCounterSelect(context, entityMeta, pm, 11L);
+
+		assertThat(actual).isSameAs(row);
+	}
 }

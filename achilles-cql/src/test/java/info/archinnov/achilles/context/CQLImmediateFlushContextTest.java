@@ -3,9 +3,7 @@ package info.archinnov.achilles.context;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,14 +82,11 @@ public class CQLImmediateFlushContextTest
 	@Test
 	public void should_execute_immediate_with_consistency_level() throws Exception
 	{
-		EntityMeta meta = new EntityMeta();
-		meta.setConsistencyLevels(Pair.create(ConsistencyLevel.EACH_QUORUM,
-				ConsistencyLevel.LOCAL_QUORUM));
-
 		ResultSet result = mock(ResultSet.class);
 		when(daoContext.execute(query)).thenReturn(result);
 
-		ResultSet actual = context.executeImmediateWithConsistency(query, meta);
+		ResultSet actual = context.executeImmediateWithConsistency(query,
+				ConsistencyLevel.EACH_QUORUM);
 
 		assertThat(actual).isSameAs(result);
 		verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
@@ -101,15 +96,12 @@ public class CQLImmediateFlushContextTest
 	public void should_execute_immediate_with_consistency_level_overriden_by_current_level()
 			throws Exception
 	{
-		EntityMeta meta = new EntityMeta();
-		meta.setConsistencyLevels(Pair.create(ConsistencyLevel.EACH_QUORUM,
-				ConsistencyLevel.LOCAL_QUORUM));
-
 		ResultSet result = mock(ResultSet.class);
 		when(daoContext.execute(query)).thenReturn(result);
 
 		context.setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		ResultSet actual = context.executeImmediateWithConsistency(query, meta);
+		ResultSet actual = context.executeImmediateWithConsistency(query,
+				ConsistencyLevel.EACH_QUORUM);
 
 		assertThat(actual).isSameAs(result);
 		verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);

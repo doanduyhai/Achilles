@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.collect.FluentIterable;
@@ -87,6 +89,27 @@ public class CQLPreparedStatementBinder
 		return ps.bind(values.toArray(new Object[values.size()]));
 	}
 
+	public BoundStatement bindForSimpleCounterIncrementDecrement(PreparedStatement ps,
+			EntityMeta entityMeta, PropertyMeta<?, ?> pm, Object primaryKey, Long increment)
+	{
+		Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+		return ps.bind(ArrayUtils.add(values, 0, increment));
+	}
+
+	public BoundStatement bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta<?, ?> pm, Object primaryKey)
+	{
+		Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+		return ps.bind(values);
+	}
+
+	public BoundStatement bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta<?, ?> pm, Object primaryKey)
+	{
+		Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+		return ps.bind(values);
+	}
+
 	private Object extractFieldFromEntity(PropertyMeta<?, ?> pm, Object value)
 	{
 		if (value != null)
@@ -101,5 +124,21 @@ public class CQLPreparedStatementBinder
 			}
 		}
 		return value;
+	}
+
+	private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta,
+			PropertyMeta<?, ?> pm, Object primaryKey)
+	{
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		String fqcn = entityMeta.getClassName();
+		String primaryKeyAsString = idMeta.jsonSerializeValue(primaryKey);
+		String propertyName = pm.getPropertyName();
+
+		return new Object[]
+		{
+				fqcn,
+				primaryKeyAsString,
+				propertyName
+		};
 	}
 }

@@ -104,14 +104,21 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 		daoContext.bindForRemoval(this, tableName, writeLevel);
 	}
 
+	public void bindForSimpleCounterRemoval(EntityMeta meta, PropertyMeta<?, ?> counterMeta,
+			Object primaryKey)
+	{
+		daoContext.bindForSimpleCounterDelete(this, meta, counterMeta, primaryKey);
+	}
+
 	public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
 	{
 		flushContext.pushBoundStatement(boundStatement, writeLevel);
 	}
 
-	public ResultSet executeImmediateWithConsistency(BoundStatement bs)
+	public ResultSet executeImmediateWithConsistency(BoundStatement bs,
+			ConsistencyLevel readConsistencyLevel)
 	{
-		return flushContext.executeImmediateWithConsistency(bs, entityMeta);
+		return flushContext.executeImmediateWithConsistency(bs, readConsistencyLevel);
 	}
 
 	@Override

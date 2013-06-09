@@ -542,8 +542,8 @@ public class JPAOperationsIT
 		listLazyMeta.setType(LAZY_LIST);
 		listLazyMeta.setPropertyName("friends");
 
-		Composite friend3Composite = thriftCompositeFactory.createForBatchInsertMultiValue(listLazyMeta,
-				2);
+		Composite friend3Composite = thriftCompositeFactory.createForBatchInsertMultiValue(
+				listLazyMeta, 2);
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 
 		em.refresh(bean);
@@ -561,10 +561,8 @@ public class JPAOperationsIT
 				.label("label")
 				.age(35L)
 				.addFriends("foo", "bar")
-				//
 				.addFollowers("George", "Paul")
 				.addPreference(1, "FR")
-				//
 				.addPreference(2, "Paris")
 				.addPreference(3, "75014")
 				.buid();

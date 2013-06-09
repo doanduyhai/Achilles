@@ -4,6 +4,7 @@ import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
@@ -547,7 +548,7 @@ public abstract class ThriftAbstractDao
 
 	public void truncateCounters()
 	{
-		cluster.truncate(keyspace.getKeyspaceName(), ThriftCounterDao.COUNTER_CF);
+		cluster.truncate(keyspace.getKeyspaceName(), AchillesCounter.THRIFT_COUNTER_CF);
 	}
 
 	public <K> Mutator<K> buildMutator()

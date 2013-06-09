@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static com.google.common.collect.Collections2.filter;
-import static info.archinnov.achilles.entity.metadata.PropertyType.isProxyType;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -76,7 +76,14 @@ public class CQLPersisterImpl
 		Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, isProxyType);
 		for (PropertyMeta<?, ?> pm : proxyMetas)
 		{
-			context.bindForRemoval(pm.getExternalTableName(), pm.getWriteConsistencyLevel());
+			if (pm.type() == COUNTER)
+			{
+				context.bindForSimpleCounterRemoval(entityMeta, pm, context.getPrimaryKey());
+			}
+			else
+			{
+				context.bindForRemoval(pm.getExternalTableName(), pm.getWriteConsistencyLevel());
+			}
 
 		}
 	}

@@ -1,9 +1,9 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.dao.ThriftCounterDao.COUNTER_CF;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -179,7 +179,7 @@ public class ThriftImmediateFlushContextTest
 	{
 		Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(
 				counterMutator, thriftCounterDao);
-		mutatorMap.put(ThriftCounterDao.COUNTER_CF, pair);
+		mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF, pair);
 
 		Mutator<Object> actual = context.getCounterMutator();
 		assertThat(actual).isSameAs(counterMutator);
@@ -194,8 +194,10 @@ public class ThriftImmediateFlushContextTest
 		Mutator<Object> actual = context.getCounterMutator();
 
 		assertThat(actual).isSameAs(counterMutator);
-		assertThat((Mutator<Object>) mutatorMap.get(COUNTER_CF).left).isSameAs(counterMutator);
-		assertThat(mutatorMap.get(COUNTER_CF).right).isSameAs(thriftCounterDao);
+		assertThat((Mutator<Object>) mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).left)
+				.isSameAs(counterMutator);
+		assertThat(mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).right).isSameAs(
+				thriftCounterDao);
 	}
 
 	@Test

@@ -362,6 +362,72 @@ public class CQLPreparedStatementBinderTest
 
 		assertThat(actual).isSameAs(bs);
 		assertThat(boundValues).containsExactly("name", 30L, 11L);
+	}
 
+	@Test
+	public void should_bind_for_simple_counter_increment_decrement() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setClassName("CompleteBean");
+		meta.setIdMeta(idMeta);
+
+		PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("counter")
+				.build();
+
+		when(ps.bind(2L, "CompleteBean", "11", "counter")).thenReturn(bs);
+
+		assertThat(binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta, 11L, 2L))
+				.isSameAs(bs);
+	}
+
+	@Test
+	public void should_bind_for_simple_counter_select() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setClassName("CompleteBean");
+		meta.setIdMeta(idMeta);
+
+		PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("counter")
+				.build();
+
+		when(ps.bind("CompleteBean", "11", "counter")).thenReturn(bs);
+
+		assertThat(binder.bindForSimpleCounterSelect(ps, meta, counterMeta, 11L)).isSameAs(bs);
+	}
+
+	@Test
+	public void should_bind_for_simple_counter_delete() throws Exception
+	{
+		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("id")
+				.build();
+
+		EntityMeta meta = new EntityMeta();
+		meta.setClassName("CompleteBean");
+		meta.setIdMeta(idMeta);
+
+		PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class)
+				.field("counter")
+				.build();
+
+		when(ps.bind("CompleteBean", "11", "counter")).thenReturn(bs);
+
+		assertThat(binder.bindForSimpleCounterDelete(ps, meta, counterMeta, 11L)).isSameAs(bs);
 	}
 }

@@ -1,7 +1,6 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
@@ -93,7 +92,8 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 		boundStatements.add(boundStatement);
 	}
 
-	public ResultSet executeImmediateWithConsistency(Query query, EntityMeta entityMeta)
+	public ResultSet executeImmediateWithConsistency(Query query,
+			ConsistencyLevel readConsistencyLevel)
 	{
 		if (readLevel != null)
 		{
@@ -101,7 +101,7 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 		}
 		else
 		{
-			query.setConsistencyLevel(getCQLLevel(entityMeta.getReadConsistencyLevel()));
+			query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
 		}
 
 		return daoContext.execute(query);
