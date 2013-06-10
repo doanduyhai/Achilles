@@ -30,7 +30,7 @@ public class SliceQueryBuilder
 	{
 		PropertyMeta<?, ?> idMeta = meta.getIdMeta();
 
-		validator.validateCompoundKeys(idMeta, from, to);
+		validator.validateClusteringKeys(idMeta, from, to);
 		List<Method> componentGetters = idMeta.getComponentGetters();
 		List<String> componentNames = idMeta.getCQLComponentNames();
 
