@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.MethodInvoker;
@@ -170,6 +170,65 @@ public class ThriftEntityMapperTest
 		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
 		assertThat(mapCaptor.getValue().get(2)).isEqualTo("Paris");
 		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
+	}
+
+	@Test
+	public void should_do_nothing_for_unmapped_property() throws Exception
+	{
+		CompleteBean entity = new CompleteBean();
+
+		PropertyMeta<Void, String> namePropertyMeta = PropertyMetaTestBuilder //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("name")
+				.type(SIMPLE)
+				.mapper(objectMapper)
+				.accessors()
+				.build();
+
+		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
+				.addPropertyMeta(namePropertyMeta)
+				.build();
+
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+
+		columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
+		columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("unmapped"),
+				"unmapped property"));
+
+		doNothing().when(invoker).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
+				simpleCaptor.capture());
+
+		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
+
+		assertThat(simpleCaptor.getValue()).isEqualTo("name");
+
+	}
+
+	@Test
+	public void should_not_set_lazy_or_proxy_property_type() throws Exception
+	{
+		CompleteBean entity = new CompleteBean();
+
+		PropertyMeta<Void, String> lazyNamePropertyMeta = PropertyMetaTestBuilder //
+				.of(CompleteBean.class, Void.class, String.class)
+				.field("name")
+				.type(LAZY_SIMPLE)
+				.mapper(objectMapper)
+				.accessors()
+				.build();
+
+		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
+				.addPropertyMeta(lazyNamePropertyMeta)
+				.build();
+
+		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
+
+		columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
+
+		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
+
+		verify(invoker, never()).setValueToField(entity, lazyNamePropertyMeta.getSetter(), "name");
+
 	}
 
 	@Test

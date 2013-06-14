@@ -1,9 +1,9 @@
 package info.archinnov.achilles.entity;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.SERIAL_VERSION_UID;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.helper.EntityMapper;
 import info.archinnov.achilles.type.Pair;
 
@@ -46,7 +46,7 @@ public class ThriftEntityMapper extends EntityMapper
 		{
 			String propertyName = pair.left.get(1, STRING_SRZ);
 
-			if (StringUtils.equals(propertyName, PropertyType.SERIAL_VERSION_UID.name()))
+			if (StringUtils.equals(propertyName, SERIAL_VERSION_UID.name()))
 			{
 				if (Long.parseLong(pair.right) != entityMeta.getSerialVersionUID())
 				{
@@ -59,28 +59,45 @@ public class ThriftEntityMapper extends EntityMapper
 
 			PropertyMeta<?, ?> propertyMeta = propertyMetas.get(propertyName);
 
-			if (propertyMeta.type() == PropertyType.SIMPLE)
+			if (propertyMeta != null)
 			{
-				setSimplePropertyToEntity(pair.right, propertyMeta, entity);
-			}
 
-			else if (propertyMeta.type() == PropertyType.LIST)
-			{
-				addToList(listProperties, propertyMeta, propertyMeta.getValueFromString(pair.right));
+				switch (propertyMeta.type())
+				{
+					case SIMPLE:
+						setSimplePropertyToEntity(pair.right, propertyMeta, entity);
+						break;
+					case LIST:
+						addToList(listProperties, propertyMeta,
+								propertyMeta.getValueFromString(pair.right));
+						break;
+					case SET:
+						addToSet(setProperties, propertyMeta,
+								propertyMeta.getValueFromString(pair.right));
+						break;
+					case MAP:
+						addToMap(mapProperties, propertyMeta,
+								propertyMeta.getKeyValueFromString(pair.right));
+						break;
+					default:
+						log.debug("Property {} is lazy or of proxy type, do not set to entity now");
+						break;
+				}
 			}
-
-			else if (propertyMeta.type() == PropertyType.SET)
+			else
 			{
-				addToSet(setProperties, propertyMeta, propertyMeta.getValueFromString(pair.right));
-			}
-
-			else if (propertyMeta.type() == PropertyType.MAP)
-			{
-				addToMap(mapProperties, propertyMeta,
-						propertyMeta.getKeyValueFromString(pair.right));
+				log.warn("No field mapping for property {}", propertyName);
 			}
 		}
 
+		setMultiValuesProperties(entity, listProperties, setProperties, mapProperties,
+				propertyMetas);
+	}
+
+	private void setMultiValuesProperties(Object entity, Map<String, List<Object>> listProperties,
+			Map<String, Set<Object>> setProperties, Map<String, Map<Object, Object>> mapProperties,
+			Map<String, PropertyMeta<?, ?>> propertyMetas)
+	{
 		for (Entry<String, List<Object>> entry : listProperties.entrySet())
 		{
 			setListPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
@@ -96,5 +113,4 @@ public class ThriftEntityMapper extends EntityMapper
 			setMapPropertyToEntity(entry.getValue(), propertyMetas.get(entry.getKey()), entity);
 		}
 	}
-
 }

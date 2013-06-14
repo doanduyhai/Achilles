@@ -201,6 +201,7 @@ public class JPAOperationsIT
 		Composite composite = new Composite();
 		composite.addComponent(0, SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
+		composite.addComponent(2, 0, ComponentEquality.EQUAL);
 
 		dao.setValue(bean.getId(), composite, "123");
 
@@ -592,6 +593,28 @@ public class JPAOperationsIT
 		assertThat(bean.getPreferences()).isNull();
 		assertThat(bean.getLabel()).isNull();
 		assertThat(bean.getAge()).isNull();
+	}
+
+	@Test
+	public void should_not_exception_when_loading_column_family_with_unmapped_property()
+			throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
+				.buid();
+
+		em.persist(bean);
+
+		Composite composite = new Composite();
+		composite.addComponent(0, SIMPLE.flag(), ComponentEquality.EQUAL);
+		composite.addComponent(1, "unmappedProperty", ComponentEquality.EQUAL);
+		composite.addComponent(2, 0, ComponentEquality.EQUAL);
+
+		dao.setValue(bean.getId(), composite, "this is an unmapped property");
+
+		bean = em.find(CompleteBean.class, bean.getId());
+
+		assertThat(bean.getName()).isEqualTo("DuyHai");
+
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
