@@ -5,10 +5,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
-
 import java.lang.reflect.Method;
 import java.util.List;
-
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.Lists;
@@ -19,36 +17,30 @@ import com.google.common.collect.Lists;
  * @author DuyHai DOAN
  * 
  */
-public class SliceQueryBuilder
-{
-	private MethodInvoker invoker = new MethodInvoker();
-	private SliceQueryValidator validator = new SliceQueryValidator();
-	private CQLStatementGenerator generator = new CQLStatementGenerator();
+public class SliceQueryBuilder {
+    private MethodInvoker invoker = new MethodInvoker();
+    private SliceQueryValidator validator = new SliceQueryValidator();
+    private CQLStatementGenerator generator = new CQLStatementGenerator();
 
-	public Statement generateSelectStatement(EntityMeta meta, Object from, Object to,
-			BoundingMode boundingMode)
-	{
-		PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+    public Statement generateSelectStatement(EntityMeta meta, Object from, Object to, BoundingMode boundingMode) {
+        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
 
-		validator.validateClusteringKeys(idMeta, from, to);
-		List<Method> componentGetters = idMeta.getComponentGetters();
-		List<String> componentNames = idMeta.getCQLComponentNames();
+        List<Method> componentGetters = idMeta.getComponentGetters();
+        List<String> componentNames = idMeta.getCQLComponentNames();
 
-		List<Object> startValues = Lists.newArrayList();
-		List<Object> endValues = Lists.newArrayList();
-		if (from != null)
-		{
-			startValues = invoker.determineMultiKeyValues(from, componentGetters);
-		}
-		if (to != null)
-		{
-			endValues = invoker.determineMultiKeyValues(to, componentGetters);
-		}
+        List<Comparable> startValues = Lists.newArrayList();
+        List<Comparable> endValues = Lists.newArrayList();
+        //        if (from != null) {
+        //            startValues = invoker.determineMultiKeyValues(from, componentGetters);
+        //        }
+        //        if (to != null) {
+        //            endValues = invoker.determineMultiKeyValues(to, componentGetters);
+        //        }
 
-		Select select = generator.generateSelectEntity(meta);
-		Statement statement = generator.generateWhereClauseForSliceQuery(componentNames,
-				startValues, endValues, boundingMode, select);
+        Select select = generator.generateSelectEntity(meta);
+        Statement statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
+                boundingMode, select);
 
-		return statement;
-	}
+        return statement;
+    }
 }

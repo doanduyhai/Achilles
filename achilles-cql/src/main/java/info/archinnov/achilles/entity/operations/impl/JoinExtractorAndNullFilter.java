@@ -40,12 +40,12 @@ public class JoinExtractorAndNullFilter implements
 		{
 			if (pm.isJoinCollection())
 			{
-				joinValues.addAll((Collection<Object>) joinValue);
+				joinValues.addAll((Collection) joinValue);
 			}
 			else if (pm.isJoinMap())
 			{
 				Map<?, ?> joinMap = (Map<?, ?>) joinValue;
-				joinValues.addAll((Collection<Object>) joinMap.values());
+				joinValues.addAll((Collection) joinMap.values());
 			}
 			else
 			{
