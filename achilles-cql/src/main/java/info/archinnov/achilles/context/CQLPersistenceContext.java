@@ -11,6 +11,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.List;
+import java.util.Set;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
@@ -36,16 +37,17 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
 			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Class<?> entityClass,
-			Object primaryKey)
+			Object primaryKey, Set<String> entitiesIdentity)
 	{
-		super(entityMeta, configContext, entityClass, primaryKey, flushContext);
+		super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
 		initCollaborators(daoContext, flushContext);
 	}
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Object entity)
+			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Object entity,
+			Set<String> entitiesIdentity)
 	{
-		super(entityMeta, configContext, entity, flushContext);
+		super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
 		initCollaborators(daoContext, flushContext);
 	}
 
@@ -61,7 +63,7 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	{
 		Validator.validateNotNull(joinEntity, "join entity should not be null");
 		return new CQLPersistenceContext(joinMeta, configContext, daoContext, flushContext,
-				joinEntity);
+				joinEntity, entitiesIdentity);
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 		Validator.validateNotNull(entityClass, "entityClass should not be null");
 		Validator.validateNotNull(joinId, "joinId should not be null");
 		return new CQLPersistenceContext(joinMeta, configContext, daoContext, flushContext,
-				entityClass, joinId);
+				entityClass, joinId, entitiesIdentity);
 	}
 
 	public boolean checkForEntityExistence()

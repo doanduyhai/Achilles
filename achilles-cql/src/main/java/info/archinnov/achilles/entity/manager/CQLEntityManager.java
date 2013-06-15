@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -35,7 +36,7 @@ public class CQLEntityManager extends AchillesEntityManager<CQLPersistenceContex
 	{
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
 		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				new CQLImmediateFlushContext(daoContext), entity);
+				new CQLImmediateFlushContext(daoContext), entity, new HashSet<String>());
 	}
 
 	@Override
@@ -43,7 +44,8 @@ public class CQLEntityManager extends AchillesEntityManager<CQLPersistenceContex
 	{
 		EntityMeta entityMeta = this.entityMetaMap.get(entityClass);
 		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				new CQLImmediateFlushContext(daoContext), entityClass, primaryKey);
+				new CQLImmediateFlushContext(daoContext), entityClass, primaryKey,
+				new HashSet<String>());
 	}
 
 }

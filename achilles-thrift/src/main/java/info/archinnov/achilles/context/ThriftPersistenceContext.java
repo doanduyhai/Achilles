@@ -12,6 +12,9 @@ import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.type.ConsistencyLevel;
+
+import java.util.Set;
+
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
@@ -45,9 +48,9 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 			ConfigurationContext configContext, //
 			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
-			Object entity)
+			Object entity, Set<String> entitiesIdentity)
 	{
-		super(entityMeta, configContext, entity, flushContext);
+		super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
 		log.trace("Create new persistence context for instance {} of class {}", entity,
 				entityMeta.getClassName());
 
@@ -59,9 +62,9 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 			ConfigurationContext configContext, //
 			ThriftDaoContext thriftDaoContext, //
 			ThriftAbstractFlushContext flushContext, //
-			Class<?> entityClass, Object primaryKey)
+			Class<?> entityClass, Object primaryKey, Set<String> entitiesIdentity)
 	{
-		super(entityMeta, configContext, entityClass, primaryKey, flushContext);
+		super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
 		log.trace("Create new persistence context for instance {} of class {}", entity,
 				entityClass.getCanonicalName());
 
@@ -97,7 +100,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
 				joinMeta.getClassName());
 		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
-				thriftFlushContext, joinEntity);
+				thriftFlushContext, joinEntity, entitiesIdentity);
 	}
 
 	@Override
@@ -108,7 +111,7 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 				joinMeta.getClassName());
 
 		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
-				thriftFlushContext, entityClass, joinId);
+				thriftFlushContext, entityClass, joinId, entitiesIdentity);
 	}
 
 	@Override

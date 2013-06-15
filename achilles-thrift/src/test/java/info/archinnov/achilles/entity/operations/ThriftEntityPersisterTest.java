@@ -74,7 +74,7 @@ public class ThriftEntityPersisterTest
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
-	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private ThriftPersistenceContext context;
 
@@ -85,11 +85,9 @@ public class ThriftEntityPersisterTest
 	{
 		entityDaosMap.clear();
 		context = ThriftPersistenceContextTestBuilder
-				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
-				.entity(bean)
-				//
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+				.entity(entity)
 				.entityDaosMap(entityDaosMap)
-				//
 				.build();
 	}
 
@@ -98,7 +96,6 @@ public class ThriftEntityPersisterTest
 	{
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
-
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistVersionSerialUID(context);
@@ -120,6 +117,36 @@ public class ThriftEntityPersisterTest
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistSimpleProperty(context, simpleMeta);
+	}
+
+	@Test
+	public void should_not_persist_twice_the_same_entity() throws Exception
+	{
+		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+		PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder
+				.valueClass(String.class)
+				.type(PropertyType.SIMPLE)
+				.build();
+		propertyMetas.put("simple", simpleMeta);
+
+		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
+
+		persister.persist(context);
+		persister.persist(context);
+
+		verify(persisterImpl, times(1)).batchPersistSimpleProperty(context, simpleMeta);
+	}
+
+	@Test
+	public void should_not_persist_widerow() throws Exception
+	{
+
+		when(entityMeta.isWideRow()).thenReturn(true);
+
+		persister.persist(context);
+
+		verifyZeroInteractions(persisterImpl);
 	}
 
 	@Test
@@ -150,12 +177,12 @@ public class ThriftEntityPersisterTest
 
 		UserBean user = new UserBean();
 
-		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(joinId);
+		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, propertyMeta.getGetter())).thenReturn(user);
+		when(invoker.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(user);
 
-		persister.cascadePersistOrEnsureExists(context, bean, propertyMeta.getJoinProperties());
+		persister.cascadePersistOrEnsureExists(context, entity, propertyMeta.getJoinProperties());
 		verify(persisterImpl).batchPersistJoinEntity(context, propertyMeta, user, persister);
 	}
 
@@ -176,11 +203,11 @@ public class ThriftEntityPersisterTest
 		JoinProperties joinProperties = new JoinProperties();
 		joinProperties.setEntityMeta(joinMeta);
 
-		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(joinId);
-		when(loader.loadVersionSerialUID(bean.getId(), entityDao)).thenReturn(joinId);
+		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
+		when(loader.loadVersionSerialUID(entity.getId(), entityDao)).thenReturn(joinId);
 		context.getConfigContext().setEnsureJoinConsistency(true);
 
-		persister.cascadePersistOrEnsureExists(context, bean, joinProperties);
+		persister.cascadePersistOrEnsureExists(context, entity, joinProperties);
 
 	}
 
@@ -192,18 +219,15 @@ public class ThriftEntityPersisterTest
 
 		PropertyMeta<Void, String> listMeta = PropertyMetaTestBuilder //
 				.completeBean(Void.class, String.class)
-				//
 				.field("friends")
-				//
 				.accessors()
-				//
 				.type(PropertyType.LIST)
 				.build();
 		propertyMetas.put("list", listMeta);
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, listMeta.getGetter())).thenReturn(list);
+		when(invoker.getValueFromField(entity, listMeta.getGetter())).thenReturn(list);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistList(list, context, listMeta);
@@ -225,7 +249,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, setMeta.getGetter())).thenReturn(set);
+		when(invoker.getValueFromField(entity, setMeta.getGetter())).thenReturn(set);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistSet(set, context, setMeta);
@@ -247,7 +271,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, mapMeta.getGetter())).thenReturn(map);
+		when(invoker.getValueFromField(entity, mapMeta.getGetter())).thenReturn(map);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistMap(map, context, mapMeta);
@@ -269,7 +293,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, joinMeta.getGetter())).thenReturn(user);
+		when(invoker.getValueFromField(entity, joinMeta.getGetter())).thenReturn(user);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinEntity(context, joinMeta, user, persister);
@@ -291,7 +315,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, joinSetMeta.getGetter())).thenReturn(joinSet);
+		when(invoker.getValueFromField(entity, joinSetMeta.getGetter())).thenReturn(joinSet);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinCollection(context, joinSetMeta, joinSet, persister);
@@ -313,7 +337,7 @@ public class ThriftEntityPersisterTest
 
 		when(entityMeta.isWideRow()).thenReturn(false);
 		when(entityMeta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(invoker.getValueFromField(bean, joinMapMeta.getGetter())).thenReturn(joinMap);
+		when(invoker.getValueFromField(entity, joinMapMeta.getGetter())).thenReturn(joinMap);
 		persister.persist(context);
 
 		verify(persisterImpl).batchPersistJoinMap(context, joinMapMeta, joinMap, persister);

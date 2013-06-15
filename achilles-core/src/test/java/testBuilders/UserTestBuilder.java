@@ -2,6 +2,8 @@ package testBuilders;
 
 import integration.tests.entity.User;
 
+import org.apache.commons.lang.math.RandomUtils;
+
 /**
  * UserTestBuilder
  * 
@@ -35,6 +37,12 @@ public class UserTestBuilder
 	public UserTestBuilder id(Long id)
 	{
 		this.id = id;
+		return this;
+	}
+
+	public UserTestBuilder randomId()
+	{
+		this.id = RandomUtils.nextLong();
 		return this;
 	}
 

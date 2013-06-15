@@ -41,10 +41,11 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 	{
 
 		EntityMeta entityMeta = context.getEntityMeta();
+		Object entity = context.getEntity();
 
-		if (!entityMeta.isWideRow())
+		if (!entityMeta.isWideRow() && context.addToProcessingList(entity))
 		{
-			log.debug("Persisting transient entity {}", context.getEntity());
+			log.debug("Persisting transient entity {}", entity);
 
 			persisterImpl.batchPersistVersionSerialUID((ThriftPersistenceContext) context);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
@@ -55,7 +56,8 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 		}
 	}
 
-	public void persistPropertyBatch(AchillesPersistenceContext context, PropertyMeta<?, ?> propertyMeta)
+	public void persistPropertyBatch(AchillesPersistenceContext context,
+			PropertyMeta<?, ?> propertyMeta)
 	{
 		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
 				context.getEntity());

@@ -222,6 +222,71 @@ public class JoinColumnIT
 		assertThat(tweet.getCreator()).isNotInstanceOf(Factory.class);
 	}
 
+	@Test
+	public void should_persist_user_and_referrer() throws Exception
+	{
+
+		creator = UserTestBuilder.user().randomId().firstname("creator").buid();
+		User referrer = UserTestBuilder.user().randomId().firstname("referrer").buid();
+
+		creator.setReferrer(referrer);
+		referrer.setReferrer(creator);
+
+		em.persist(creator);
+
+		User foundCreator = em.find(User.class, creator.getId());
+
+		User foundReferrer = foundCreator.getReferrer();
+		assertThat(foundReferrer.getId()).isEqualTo(referrer.getId());
+		assertThat(foundReferrer.getFirstname()).isEqualTo("referrer");
+	}
+
+	@Test
+	public void should_merge_user_and_referrer() throws Exception
+	{
+
+		creator = UserTestBuilder.user().randomId().firstname("creator").buid();
+		User referrer = UserTestBuilder.user().randomId().firstname("referrer").buid();
+
+		creator.setReferrer(referrer);
+		referrer.setReferrer(creator);
+
+		em.persist(creator);
+
+		User foundCreator = em.find(User.class, creator.getId());
+		User foundReferrer = foundCreator.getReferrer();
+
+		foundCreator.setFirstname("modified_creator");
+		foundReferrer.setFirstname("modified_referrer");
+
+		em.merge(foundCreator);
+
+		User modifiedCreator = em.find(User.class, creator.getId());
+		User modifiedReferrer = foundCreator.getReferrer();
+
+		assertThat(modifiedCreator.getFirstname()).isEqualTo("modified_creator");
+		assertThat(modifiedReferrer.getFirstname()).isEqualTo("modified_referrer");
+	}
+
+	@Test
+	public void should_persist_transient_user_and_referrer_with_merge() throws Exception
+	{
+
+		creator = UserTestBuilder.user().randomId().firstname("creator").buid();
+		User referrer = UserTestBuilder.user().randomId().firstname("referrer").buid();
+
+		creator.setReferrer(referrer);
+		referrer.setReferrer(creator);
+
+		em.merge(creator);
+
+		User foundCreator = em.find(User.class, creator.getId());
+
+		User foundReferrer = foundCreator.getReferrer();
+		assertThat(foundReferrer.getId()).isEqualTo(referrer.getId());
+		assertThat(foundReferrer.getFirstname()).isEqualTo("referrer");
+	}
+
 	private Long readLong(String value) throws Exception
 	{
 		return this.objectMapper.readValue(value, Long.class);

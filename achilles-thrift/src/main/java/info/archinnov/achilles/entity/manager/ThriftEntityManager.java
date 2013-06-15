@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
 		EntityMeta entityMeta = this.entityMetaMap.get(entityClass);
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
 				thriftDaoContext, new ThriftImmediateFlushContext(thriftDaoContext,
-						consistencyPolicy), entityClass, primaryKey);
+						consistencyPolicy), entityClass, primaryKey, new HashSet<String>());
 		return context;
 	}
 
@@ -79,7 +80,8 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
 		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entity);
+				new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entity,
+				new HashSet<String>());
 	}
 
 	protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext)

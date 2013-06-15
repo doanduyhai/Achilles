@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 
 /**
  * User
@@ -43,6 +44,10 @@ public class User implements Serializable
 	@ManyToMany(cascade = CascadeType.PERSIST)
 	@JoinColumn(table = "retweets_cf")
 	private WideMap<Integer, Tweet> retweets;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn
+	private User referrer;
 
 	public Long getId()
 	{
@@ -87,5 +92,15 @@ public class User implements Serializable
 	public WideMap<Integer, Tweet> getRetweets()
 	{
 		return retweets;
+	}
+
+	public User getReferrer()
+	{
+		return referrer;
+	}
+
+	public void setReferrer(User referrer)
+	{
+		this.referrer = referrer;
 	}
 }

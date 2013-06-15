@@ -10,6 +10,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -257,7 +258,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entityClass, primaryKey);
+				flushContext, entityClass, primaryKey, new HashSet<String>());
 	}
 
 	protected ThriftPersistenceContext initPersistenceContext(Object entity)
@@ -266,7 +267,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
 		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity);
+				flushContext, entity, new HashSet<String>());
 	}
 
 	private <T> T reinitConsistencyLevelsOnError(SafeExecutionContext<T> context)

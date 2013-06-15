@@ -18,6 +18,9 @@ import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+
+import java.util.HashSet;
+
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.mutation.Mutator;
@@ -124,7 +127,7 @@ public class ThriftPersistenceContextTest
 		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 
 		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity);
+				flushContext, entity, new HashSet<String>());
 	}
 
 	@Test
@@ -144,7 +147,7 @@ public class ThriftPersistenceContextTest
 		when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
 
 		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, CompleteBean.class, entity.getId());
+				flushContext, CompleteBean.class, entity.getId(), new HashSet<String>());
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isNull();
@@ -197,7 +200,7 @@ public class ThriftPersistenceContextTest
 	public void should_persist_with_consistency() throws Exception
 	{
 		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity);
+				flushContext, entity, new HashSet<String>());
 
 		Whitebox.setInternalState(context, "persister", persister);
 
@@ -290,7 +293,7 @@ public class ThriftPersistenceContextTest
 	public void should_get_reference() throws Exception
 	{
 		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity);
+				flushContext, entity, new HashSet<String>());
 
 		Whitebox.setInternalState(context, "loader", loader);
 		Whitebox.setInternalState(context, "proxifier", proxifier);

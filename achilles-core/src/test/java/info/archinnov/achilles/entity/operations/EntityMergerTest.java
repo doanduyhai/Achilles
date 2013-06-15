@@ -80,6 +80,7 @@ public class EntityMergerTest
 		when(context.getEntity()).thenReturn(entity);
 		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
+		when(context.addToProcessingList(entity)).thenReturn(true);
 
 		allMetas.clear();
 		dirtyMap.clear();
@@ -92,6 +93,7 @@ public class EntityMergerTest
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(context.addToProcessingList(entity)).thenReturn(true, false);
 
 		PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class)
@@ -106,9 +108,11 @@ public class EntityMergerTest
 		dirtyMap.put(pm.getSetter(), pm);
 
 		CompleteBean actual = entityMerger.merge(context, entity);
+		CompleteBean actual2 = entityMerger.merge(context, entity);
 
+		assertThat(actual2).isSameAs(entity);
 		assertThat(actual).isSameAs(entity);
-		verify(context).setEntity(entity);
+		verify(context, times(2)).setEntity(entity);
 		verify(merger).merge(context, dirtyMap);
 		verify(merger).cascadeMerge(eq(entityMerger), eq(context), any(List.class));
 

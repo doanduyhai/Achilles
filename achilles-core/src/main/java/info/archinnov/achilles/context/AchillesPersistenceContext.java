@@ -6,6 +6,10 @@ import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Set;
+
+import org.apache.commons.lang.ObjectUtils;
+
 import com.google.common.base.Optional;
 
 /**
@@ -23,22 +27,24 @@ public abstract class AchillesPersistenceContext
 	protected Object entity;
 	protected Object primaryKey;
 	protected AchillesFlushContext flushContext;
+	protected Set<String> entitiesIdentity;
 	protected boolean loadEagerFields = true;
 
 	private AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			AchillesFlushContext flushContext, Class<?> entityClass)
+			AchillesFlushContext flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
 	{
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
 		this.flushContext = flushContext;
 		this.entityClass = entityClass;
+		this.entitiesIdentity = entitiesIdentity;
 
 	}
 
 	protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			Object entity, AchillesFlushContext flushContext)
+			Object entity, AchillesFlushContext flushContext, Set<String> entitiesIdentity)
 	{
-		this(entityMeta, configContext, flushContext, entityMeta.getEntityClass());
+		this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
 
 		Validator.validateNotNull(entity, "The entity '" + entity + "' should not be null");
 		this.entity = entity;
@@ -49,15 +55,21 @@ public abstract class AchillesPersistenceContext
 	}
 
 	protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			Class<?> entityClass, Object primaryKey, AchillesFlushContext flushContext)
+			Class<?> entityClass, Object primaryKey, AchillesFlushContext flushContext,
+			Set<String> entitiesIdentity)
 	{
-		this(entityMeta, configContext, flushContext, entityClass);
+		this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
 
 		this.primaryKey = primaryKey;
 		this.flushContext = flushContext;
 
 		Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
 				+ "' should not be null");
+	}
+
+	public boolean addToProcessingList(Object entity)
+	{
+		return entitiesIdentity.add(ObjectUtils.identityToString(entity));
 	}
 
 	public abstract void persist(Optional<ConsistencyLevel> writeLevelO);

@@ -55,18 +55,20 @@ public abstract class EntityMerger<CONTEXT extends AchillesPersistenceContext>
 			EntityInterceptor<CONTEXT, T> interceptor = proxifier.getInterceptor(entity);
 			Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
-			merger.merge(context, dirtyMap);
+			if (context.addToProcessingList(realObject))
+			{
+				merger.merge(context, dirtyMap);
+				List<PropertyMeta<?, ?>> joinPMs = FluentIterable
+						.from(entityMeta.getAllMetas())
+						.filter(joinPropertyType)
+						.filter(hasCascadeMerge)
+						.toImmutableList();
 
-			List<PropertyMeta<?, ?>> joinPMs = FluentIterable
-					.from(entityMeta.getAllMetas())
-					.filter(joinPropertyType)
-					.filter(hasCascadeMerge)
-					.toImmutableList();
+				merger.cascadeMerge(this, context, joinPMs);
 
-			merger.cascadeMerge(this, context, joinPMs);
-
-			interceptor.setContext(context);
-			interceptor.setTarget(realObject);
+				interceptor.setContext(context);
+				interceptor.setTarget(realObject);
+			}
 			proxy = entity;
 		}
 		else

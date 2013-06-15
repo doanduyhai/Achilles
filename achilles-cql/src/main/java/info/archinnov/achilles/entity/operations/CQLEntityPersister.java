@@ -33,9 +33,10 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 	{
 		EntityMeta entityMeta = context.getEntityMeta();
 
-		if (!entityMeta.isWideRow())
+		Object entity = context.getEntity();
+		if (!entityMeta.isWideRow() && context.addToProcessingList(entity))
 		{
-			log.debug("Persisting transient entity {}", context.getEntity());
+			log.debug("Persisting transient entity {}", entity);
 
 			persisterImpl.persist(context);
 

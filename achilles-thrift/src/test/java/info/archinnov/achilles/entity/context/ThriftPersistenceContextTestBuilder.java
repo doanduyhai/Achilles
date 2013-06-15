@@ -12,6 +12,7 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.powermock.reflect.Whitebox;
@@ -77,7 +78,7 @@ public class ThriftPersistenceContextTestBuilder
 				configContext, //
 				thriftDaoContext, //
 				thriftImmediateFlushContext, //
-				entityClass, primaryKey);
+				entityClass, primaryKey, new HashSet<String>());
 
 		context.setEntity(entity);
 		Whitebox.setInternalState(context, "entityDao", entityDao);
