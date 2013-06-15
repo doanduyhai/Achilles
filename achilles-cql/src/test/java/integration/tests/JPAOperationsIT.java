@@ -232,6 +232,39 @@ public class JPAOperationsIT
 	}
 
 	@Test
+	public void should_remove_property_after_merge() throws Exception
+	{
+		CompleteBean bean = CompleteBeanTestBuilder
+				.builder()
+				.randomId()
+				.name("Jonathan")
+				.age(40L)
+				.addFriends("bob", "alice")
+				.addFollowers("Billy", "Stephen", "Jacky")
+				.addPreference(1, "US")
+				.addPreference(2, "New York")
+				.buid();
+		em.persist(bean);
+
+		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+
+		found.setName(null);
+		found.setFriends(null);
+		found.setFollowers(null);
+		found.setPreferences(null);
+
+		em.merge(found);
+
+		found = em.find(CompleteBean.class, bean.getId());
+
+		assertThat(found.getName()).isNull();
+		assertThat(found.getFriends()).isNull();
+		assertThat(found.getFollowers()).isNull();
+		assertThat(found.getPreferences()).isNull();
+
+	}
+
+	@Test
 	public void should_return_managed_entity_after_merge() throws Exception
 	{
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();

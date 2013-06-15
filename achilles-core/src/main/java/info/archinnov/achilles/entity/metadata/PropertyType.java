@@ -3,6 +3,10 @@ package info.archinnov.achilles.entity.metadata;
 import info.archinnov.achilles.entity.metadata.util.PropertyTypeExclude;
 import info.archinnov.achilles.entity.metadata.util.PropertyTypeFilter;
 
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
 /**
  * PropertyType
  * 
@@ -122,4 +126,6 @@ public enum PropertyType
 
 	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(SIMPLE, LIST, SET, MAP);
 
+	public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST,
+			SET, LAZY_SET, MAP, LAZY_MAP);
 }

@@ -50,12 +50,12 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
-				this.persistProperty(context, propertyMeta);
+				this.persistPropertyBatch(context, propertyMeta);
 			}
 		}
 	}
 
-	public void persistProperty(AchillesPersistenceContext context, PropertyMeta<?, ?> propertyMeta)
+	public void persistPropertyBatch(AchillesPersistenceContext context, PropertyMeta<?, ?> propertyMeta)
 	{
 		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
 				context.getEntity());

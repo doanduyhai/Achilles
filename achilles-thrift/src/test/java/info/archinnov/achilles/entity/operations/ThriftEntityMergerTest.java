@@ -134,7 +134,7 @@ public class ThriftEntityMergerTest
 		assertThat(mergedEntity).isSameAs(entity);
 
 		verify(persister).removePropertyBatch(context, friendsMeta);
-		verify(persister).persistProperty(context, friendsMeta);
+		verify(persister).persistPropertyBatch(context, friendsMeta);
 		assertThat(dirtyMap).isEmpty();
 	}
 

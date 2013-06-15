@@ -158,7 +158,7 @@ public class CQLMergerImplTest
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
-		List<UserBean> users = Arrays.asList(user1, user2);
+		List<UserBean> users = Arrays.asList(user1, user2, null);
 		when(invoker.getValueFromField(entity, joinListMeta.getGetter())).thenReturn(users);
 
 		when(context.newPersistenceContext(joinMeta, user1)).thenReturn(joinContext);

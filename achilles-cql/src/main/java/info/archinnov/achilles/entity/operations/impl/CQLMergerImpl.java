@@ -2,14 +2,14 @@ package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.CQLEntityMerger;
-import info.archinnov.achilles.entity.operations.CQLEntityMerger.PropertyMetaComparator;
+import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.proxy.MethodInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,14 +19,15 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class CQLMergerImpl
+public class CQLMergerImpl implements Merger<CQLPersistenceContext>
 {
 	private MethodInvoker invoker = new MethodInvoker();
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
+	@Override
 	public void merge(CQLPersistenceContext context, Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
-		if (!dirtyMap.isEmpty())
+		if (dirtyMap.size() > 0)
 		{
 			List<PropertyMeta<?, ?>> sortedDirtyMetas = new ArrayList<PropertyMeta<?, ?>>(
 					dirtyMap.values());
@@ -36,8 +37,9 @@ public class CQLMergerImpl
 		}
 	}
 
-	public void cascadeMerge(CQLEntityMerger entityMerger, CQLPersistenceContext context,
-			List<PropertyMeta<?, ?>> joinPMs)
+	@Override
+	public void cascadeMerge(EntityMerger<CQLPersistenceContext> entityMerger,
+			CQLPersistenceContext context, List<PropertyMeta<?, ?>> joinPMs)
 	{
 		Object entity = context.getEntity();
 		for (PropertyMeta<?, ?> pm : joinPMs)
@@ -62,8 +64,8 @@ public class CQLMergerImpl
 		}
 	}
 
-	private void doCascadeCollection(CQLEntityMerger entityMerger, CQLPersistenceContext context,
-			PropertyMeta<?, ?> pm, Collection<?> joinCollection)
+	private void doCascadeCollection(EntityMerger<CQLPersistenceContext> entityMerger,
+			CQLPersistenceContext context, PropertyMeta<?, ?> pm, Collection<?> joinCollection)
 	{
 		for (Object joinEntity : joinCollection)
 		{
@@ -71,12 +73,24 @@ public class CQLMergerImpl
 		}
 	}
 
-	private void doCascade(CQLEntityMerger entityMerger, CQLPersistenceContext context,
-			PropertyMeta<?, ?> pm, Object joinEntity)
+	private void doCascade(EntityMerger<CQLPersistenceContext> entityMerger,
+			CQLPersistenceContext context, PropertyMeta<?, ?> pm, Object joinEntity)
 	{
-		CQLPersistenceContext joinContext = context.newPersistenceContext(pm
-				.getJoinProperties()
-				.getEntityMeta(), joinEntity);
-		entityMerger.merge(joinContext, joinEntity);
+		if (joinEntity != null)
+		{
+			CQLPersistenceContext joinContext = context.newPersistenceContext(pm.joinMeta(),
+					joinEntity);
+			entityMerger.merge(joinContext, joinEntity);
+		}
+	}
+
+	public static class PropertyMetaComparator implements Comparator<PropertyMeta<?, ?>>
+	{
+		@Override
+		public int compare(PropertyMeta<?, ?> arg0, PropertyMeta<?, ?> arg1)
+		{
+			return arg0.getPropertyName().compareTo(arg1.getPropertyName());
+		}
+
 	}
 }
