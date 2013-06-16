@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
@@ -14,10 +14,12 @@ import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.table.TableCreator;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,174 +36,114 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesEntityManagerFactoryTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+public class AchillesEntityManagerFactoryTest
+{
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @Mock
-    private AchillesEntityManagerFactory factory;
+	@Mock
+	private AchillesEntityManagerFactory factory;
 
-    @Mock
-    private TableCreator tableCreator;
+	@Mock
+	private TableCreator tableCreator;
 
-    @Mock
-    private EntityExplorer achillesEntityExplorer;
+	@Mock
+	private EntityExplorer achillesEntityExplorer;
 
-    @Mock
-    private EntityParsingValidator validator;
+	@Mock
+	private EntityParsingValidator validator;
 
-    @Mock
-    private EntityParser achillesEntityParser;
+	@Mock
+	private EntityParser achillesEntityParser;
 
-    @Mock
-    private ArgumentExtractor extractor;
+	@Mock
+	private ArgumentExtractor extractor;
 
-    private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
-    private List<String> entityPackages = new ArrayList<String>();
+	private List<String> entityPackages = new ArrayList<String>();
 
-    @Before
-    public void setUp() {
-        doCallRealMethod().when(factory).setEntityMetaMap(any(Map.class));
-        doCallRealMethod().when(factory).setEntityPackages(any(List.class));
-        doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
-        doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
-        doCallRealMethod().when(factory).setValidator(any(EntityParsingValidator.class));
+	@Before
+	public void setUp()
+	{
+		doCallRealMethod().when(factory).setEntityMetaMap(any(Map.class));
+		doCallRealMethod().when(factory).setEntityPackages(any(List.class));
+		doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
+		doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
+		doCallRealMethod().when(factory).setValidator(any(EntityParsingValidator.class));
 
-        factory.setEntityMetaMap(entityMetaMap);
-        factory.setEntityPackages(entityPackages);
-        factory.setEntityParser(achillesEntityParser);
-        factory.setEntityExplorer(achillesEntityExplorer);
-        factory.setValidator(validator);
-    }
+		factory.setEntityMetaMap(entityMetaMap);
+		factory.setEntityPackages(entityPackages);
+		factory.setEntityParser(achillesEntityParser);
+		factory.setEntityExplorer(achillesEntityExplorer);
+		factory.setValidator(validator);
+	}
 
-    @Test
-    public void should_bootstrap() throws Exception {
+	@Test
+	public void should_bootstrap() throws Exception
+	{
 
-        when(factory.discoverEntities()).thenReturn(true);
-        doCallRealMethod().when(factory).bootstrap();
-        boolean hasSimpleCounter = factory.bootstrap();
-        assertThat(hasSimpleCounter).isTrue();
-    }
+		when(factory.discoverEntities()).thenReturn(true);
+		doCallRealMethod().when(factory).bootstrap();
+		boolean hasSimpleCounter = factory.bootstrap();
+		assertThat(hasSimpleCounter).isTrue();
+	}
 
-    @Test
-    public void should_exception_during_boostrap() throws Exception {
-        when(factory.discoverEntities()).thenThrow(new RuntimeException("test"));
-        doCallRealMethod().when(factory).bootstrap();
+	@Test
+	public void should_exception_during_boostrap() throws Exception
+	{
+		when(factory.discoverEntities()).thenThrow(new RuntimeException("test"));
+		doCallRealMethod().when(factory).bootstrap();
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage("Exception during entity parsing : test");
-        factory.bootstrap();
+		exception.expect(AchillesException.class);
+		exception.expectMessage("Exception during entity parsing : test");
+		factory.bootstrap();
 
-    }
+	}
 
-    @Test
-    public void should_discover_entities() throws Exception {
-        List<Class<?>> entities = new ArrayList<Class<?>>();
-        entities.add(Long.class);
-        EntityMeta entityMeta = new EntityMeta();
+	@Test
+	public void should_discover_entities() throws Exception
+	{
+		List<Class<?>> entities = new ArrayList<Class<?>>();
+		entities.add(Long.class);
+		EntityMeta entityMeta = new EntityMeta();
 
-        when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-        when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
+		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
+		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(
+				entityMeta);
 
-        doCallRealMethod().when(factory).discoverEntities();
-        factory.discoverEntities();
+		doCallRealMethod().when(factory).discoverEntities();
+		factory.discoverEntities();
 
-        assertThat(entityMetaMap).containsKey(Long.class);
-        assertThat(entityMetaMap).containsValue(entityMeta);
-        verify(validator).validateAtLeastOneEntity(entities, entityPackages);
-        verify(achillesEntityParser).fillJoinEntityMeta(any(EntityParsingContext.class), eq(entityMetaMap));
+		assertThat(entityMetaMap).containsKey(Long.class);
+		assertThat(entityMetaMap).containsValue(entityMeta);
+		verify(validator).validateAtLeastOneEntity(entities, entityPackages);
+		verify(achillesEntityParser).fillJoinEntityMeta(any(EntityParsingContext.class),
+				eq(entityMetaMap));
 
-    }
+	}
 
-    @Test
-    public void should_parse_configuration() throws Exception {
-        AchillesConsistencyLevelPolicy policy = mock(AchillesConsistencyLevelPolicy.class);
-        ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
-        Map<String, Object> configurationMap = new HashMap<String, Object>();
+	@Test
+	public void should_parse_configuration() throws Exception
+	{
+		AchillesConsistencyLevelPolicy policy = mock(AchillesConsistencyLevelPolicy.class);
+		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
+		Map<String, Object> configurationMap = new HashMap<String, Object>();
 
-        when(extractor.ensureConsistencyOnJoin(configurationMap)).thenReturn(true);
-        when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
-        when(factory.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
-        when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
+		when(extractor.ensureConsistencyOnJoin(configurationMap)).thenReturn(true);
+		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
+		when(factory.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
+		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
 
-        doCallRealMethod().when(factory).parseConfiguration(configurationMap, extractor);
+		doCallRealMethod().when(factory).parseConfiguration(configurationMap, extractor);
 
-        ConfigurationContext builtContext = factory.parseConfiguration(configurationMap, extractor);
+		ConfigurationContext builtContext = factory.parseConfiguration(configurationMap, extractor);
 
-        assertThat(builtContext).isNotNull();
-        assertThat(builtContext.isEnsureJoinConsistency()).isTrue();
-        assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
-        assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
-        assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
-    }
+		assertThat(builtContext).isNotNull();
+		assertThat(builtContext.isEnsureJoinConsistency()).isTrue();
+		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
+		assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
+		assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
+	}
 
-    @Test
-    public void should_exception_when_get_criteria_builder() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).getCriteriaBuilder();
-
-        factory.getCriteriaBuilder();
-    }
-
-    @Test
-    public void should_exception_when_get_metamodel() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).getMetamodel();
-
-        factory.getMetamodel();
-    }
-
-    @Test
-    public void should_exception_when_get_cache() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).getCache();
-
-        factory.getCache();
-    }
-
-    @Test
-    public void should_exception_when_get_persistence_unit_util() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).getPersistenceUnitUtil();
-
-        factory.getPersistenceUnitUtil();
-    }
-
-    @Test
-    public void should_exception_when_close() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).close();
-
-        factory.close();
-    }
-
-    @Test
-    public void should_exception_when_is_open() throws Exception {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This operation is not supported by Achilles");
-
-        doCallRealMethod().when(factory).isOpen();
-
-        factory.isOpen();
-    }
-
-    @Test
-    public void should_return_empty_properties_map() throws Exception {
-        doCallRealMethod().when(factory).getProperties();
-        Map<String, Object> properties = factory.getProperties();
-
-        assertThat(properties).isNotNull();
-        assertThat(properties).isEmpty();
-    }
 }

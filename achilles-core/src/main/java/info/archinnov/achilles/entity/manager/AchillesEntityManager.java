@@ -11,21 +11,9 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.FlushModeType;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.metamodel.Metamodel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +26,7 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceContext> implements
-		EntityManager
+public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
 
@@ -70,7 +57,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 * @param entity
 	 *            Entity to be persisted
 	 */
-	@Override
 	public void persist(Object entity)
 	{
 		log.debug("Persisting entity '{}'", entity);
@@ -133,7 +119,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 *            Entity to be merged
 	 * @return Merged entity or a new proxified entity
 	 */
-	@Override
 	public <T> T merge(T entity)
 	{
 		if (log.isDebugEnabled())
@@ -200,7 +185,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 * @param entity
 	 *            Entity to be removed
 	 */
-	@Override
 	public void remove(Object entity)
 	{
 		if (log.isDebugEnabled())
@@ -252,7 +236,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
@@ -298,7 +281,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	@Override
 	public <T> T getReference(Class<T> entityClass, Object primaryKey)
 	{
 		log.debug("Get reference for entity class '{}' with primary key {}", entityClass,
@@ -344,7 +326,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	 * @param entity
 	 *            Entity to be refreshed
 	 */
-	@Override
 	public void refresh(Object entity)
 	{
 		if (log.isDebugEnabled())
@@ -477,333 +458,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		log.debug("Unproxying set of entities {}", proxies);
 
 		return proxifier.unproxy(proxies);
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties)
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode)
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode,
-			Map<String, Object> properties)
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw UnsupportedOperationException
-	 */
-	@Override
-	public void flush()
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void setFlushMode(FlushModeType flushMode)
-	{
-		throw new UnsupportedOperationException("This operation is not supported for Cassandra");
-
-	}
-
-	/**
-	 * Always return FlushModeType.AUTO
-	 */
-	@Override
-	public FlushModeType getFlushMode()
-	{
-		return FlushModeType.AUTO;
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void lock(Object entity, LockModeType lockMode)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void refresh(Object entity, Map<String, Object> properties)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void refresh(Object entity, LockModeType lockMode)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void detach(Object entity)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public LockModeType getLockMode(Object entity)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	@Override
-	public void setProperty(String propertyName, Object value)
-	{
-		// TODO Allow setting config properties at runtime
-
-	}
-
-	@Override
-	public Map<String, Object> getProperties()
-	{
-		// TODO Return config properties at runtime
-		return new HashMap<String, Object>();
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void clear()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public boolean contains(Object entity)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Query createQuery(String qlString)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Query createNamedQuery(String name)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Entity Manager");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Query createNativeQuery(String sqlString)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Query createNativeQuery(String sqlString, Class resultClass)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Query createNativeQuery(String sqlString, String resultSetMapping)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void joinTransaction()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-
-	}
-
-	/**
-	 * @return the ThriftEntityManager instance itself
-	 */
-	@Override
-	public Object getDelegate()
-	{
-		return this;
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public void close()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public boolean isOpen()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public EntityTransaction getTransaction()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public <T> T unwrap(Class<T> cls)
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	@Override
-	public EntityManagerFactory getEntityManagerFactory()
-	{
-		return entityManagerFactory;
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public CriteriaBuilder getCriteriaBuilder()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
-	}
-
-	/**
-	 * Not supported operation. Will throw <strong>UnsupportedOperationException</strong>
-	 */
-	@Override
-	public Metamodel getMetamodel()
-	{
-		throw new UnsupportedOperationException(
-				"This operation is not supported for this Cassandra");
 	}
 
 	protected abstract CONTEXT initPersistenceContext(Object entity);

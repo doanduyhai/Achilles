@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.FlushModeType;
-
 import mapping.entity.CompleteBean;
 
 import org.junit.Before;
@@ -299,22 +297,6 @@ public class AchillesEntityManagerTest
 		verify(proxifier).ensureProxy(entity);
 		verify(context).refresh(levelOCaptor.capture());
 		assertThat(levelOCaptor.getValue().get()).isSameAs(EACH_QUORUM);
-	}
-
-	@Test
-	public void should_get_flush_mode() throws Exception
-	{
-		doCallRealMethod().when(em).getFlushMode();
-		FlushModeType flushMode = em.getFlushMode();
-
-		assertThat(flushMode).isEqualTo(FlushModeType.AUTO);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_set_flush_mode() throws Exception
-	{
-		doCallRealMethod().when(em).setFlushMode(FlushModeType.COMMIT);
-		em.setFlushMode(FlushModeType.COMMIT);
 	}
 
 	@Test

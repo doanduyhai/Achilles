@@ -67,35 +67,6 @@ public class ThriftEntityManagerFactoryTest
 	}
 
 	@Test
-	public void should_create_entity_manager_with_properties() throws Exception
-	{
-		ThriftDaoContext daoContext = mock(ThriftDaoContext.class);
-		ConfigurationContext configContext = mock(ConfigurationContext.class);
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-		Map map = mock(Map.class);
-
-		doCallRealMethod().when(factory).setThriftDaoContext(any(ThriftDaoContext.class));
-		doCallRealMethod().when(factory).setConfigContext(any(ConfigurationContext.class));
-		doCallRealMethod().when(factory).setEntityMetaMap(
-				(Map<Class<?>, EntityMeta>) any(Map.class));
-
-		factory.setThriftDaoContext(daoContext);
-		factory.setConfigContext(configContext);
-		factory.setEntityMetaMap(entityMetaMap);
-
-		doCallRealMethod().when(factory).createEntityManager(map);
-
-		ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager(map);
-
-		assertThat(Whitebox.getInternalState(em, "thriftDaoContext")).isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(em, "configContext")).isSameAs(configContext);
-		Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox.getInternalState(em,
-				"entityMetaMap");
-		assertThat(builtEntityMetaMap).isNotNull();
-		assertThat(builtEntityMetaMap).isEmpty();
-	}
-
-	@Test
 	public void should_init_consistency_level_policy() throws Exception
 	{
 		Map<String, Object> configMap = new HashMap<String, Object>();

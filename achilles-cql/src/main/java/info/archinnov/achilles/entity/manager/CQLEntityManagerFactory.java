@@ -41,14 +41,7 @@ public class CQLEntityManagerFactory extends AchillesEntityManagerFactory
 
 	}
 
-	@Override
 	public CQLEntityManager createEntityManager()
-	{
-		return new CQLEntityManager(this, entityMetaMap, configContext, daoContext);
-	}
-
-	@Override
-	public CQLEntityManager createEntityManager(Map map)
 	{
 		return new CQLEntityManager(this, entityMetaMap, configContext, daoContext);
 	}

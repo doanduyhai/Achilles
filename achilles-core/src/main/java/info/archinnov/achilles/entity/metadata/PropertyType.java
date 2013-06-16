@@ -35,7 +35,7 @@ public enum PropertyType
 	JOIN_SET(70), //
 	JOIN_MAP(70), //
 	JOIN_WIDE_MAP(70), //
-	COMPOUND_KEY(80);
+	COMPOUND_KEY(70);
 
 	private final int flag;
 

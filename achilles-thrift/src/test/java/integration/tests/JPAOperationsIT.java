@@ -21,9 +21,6 @@ import integration.tests.entity.Tweet;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.persistence.FlushModeType;
-import javax.persistence.LockModeType;
-
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
@@ -511,26 +508,6 @@ public class JPAOperationsIT
 		assertThat(foundBean.getPreferences()).containsValue("75014");
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_set_flush_mode() throws Exception
-	{
-		em.setFlushMode(FlushModeType.COMMIT);
-	}
-
-	@Test
-	public void should_get_flush_moe() throws Exception
-	{
-		FlushModeType type = em.getFlushMode();
-
-		assertThat(type).isEqualTo(FlushModeType.AUTO);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_lock() throws Exception
-	{
-		em.lock("sdf", LockModeType.READ);
-	}
-
 	@Test
 	public void should_exception_refreshing_non_managed_entity() throws Exception
 	{
@@ -648,57 +625,6 @@ public class JPAOperationsIT
 
 		assertThat(bean.getName()).isEqualTo("DuyHai");
 
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_contains() throws Exception
-	{
-		em.contains("sdf");
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_create_query() throws Exception
-	{
-		em.createQuery("query");
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_create_named_query() throws Exception
-	{
-		em.createNamedQuery("query");
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_create_native_query() throws Exception
-	{
-		em.createNativeQuery("query");
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_create_native_query_with_result_class() throws Exception
-	{
-		em.createNativeQuery("query", String.class);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_create_native_query_with_result_set_mapping()
-			throws Exception
-	{
-		em.createNativeQuery("query", "mapping");
-	}
-
-	@Test
-	public void should_get_delegate() throws Exception
-	{
-		Object delegate = em.getDelegate();
-
-		assertThat(delegate).isSameAs(em);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_when_get_transaction() throws Exception
-	{
-		em.getTransaction();
 	}
 
 	private Long readLong(String value) throws Exception
