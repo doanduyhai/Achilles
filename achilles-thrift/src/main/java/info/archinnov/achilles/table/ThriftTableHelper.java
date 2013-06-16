@@ -113,7 +113,8 @@ public class ThriftTableHelper extends TableHelper
 		}
 
 		cfDef.setDefaultValidationClass(defaultValidationType);
-		cfDef.setComment("Column family for entity '" + columnFamilyName + "'");
+		cfDef.setComment("Column family for property '" + columnFamilyName + "' of entity '"
+				+ entityName + "'");
 
 		String propertyName = propertyMeta.getPropertyName();
 
