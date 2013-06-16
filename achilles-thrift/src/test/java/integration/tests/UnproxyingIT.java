@@ -39,7 +39,7 @@ public class UnproxyingIT
 
 		bean = em.merge(bean);
 
-		bean = em.unproxy(bean);
+		bean = em.unwrap(bean);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
 	}
@@ -55,7 +55,7 @@ public class UnproxyingIT
 
 		bean = em.find(CompleteBean.class, bean.getId());
 		em.initialize(bean);
-		bean = em.unproxy(bean);
+		bean = em.unwrap(bean);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
 		assertThat(bean.getWelcomeTweet()).isNotInstanceOf(Factory.class);

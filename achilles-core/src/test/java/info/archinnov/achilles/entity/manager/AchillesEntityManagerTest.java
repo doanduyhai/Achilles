@@ -329,8 +329,8 @@ public class AchillesEntityManagerTest
 	public void should_unproxy_entity() throws Exception
 	{
 		when(proxifier.unproxy(entity)).thenReturn(entity);
-		doCallRealMethod().when(em).unproxy(entity);
-		CompleteBean actual = em.unproxy(entity);
+		doCallRealMethod().when(em).unwrap(entity);
+		CompleteBean actual = em.unwrap(entity);
 
 		assertThat(actual).isSameAs(entity);
 	}
@@ -341,8 +341,8 @@ public class AchillesEntityManagerTest
 		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
 
 		when(proxifier.unproxy(proxies)).thenReturn(proxies);
-		doCallRealMethod().when(em).unproxy(proxies);
-		Collection<CompleteBean> actual = em.unproxy(proxies);
+		doCallRealMethod().when(em).unwrap(proxies);
+		Collection<CompleteBean> actual = em.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
 	}
@@ -353,8 +353,8 @@ public class AchillesEntityManagerTest
 		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
 		when(proxifier.unproxy(proxies)).thenReturn(proxies);
 
-		doCallRealMethod().when(em).unproxy(proxies);
-		List<CompleteBean> actual = em.unproxy(proxies);
+		doCallRealMethod().when(em).unwrap(proxies);
+		List<CompleteBean> actual = em.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
 	}
@@ -366,8 +366,8 @@ public class AchillesEntityManagerTest
 
 		when(proxifier.unproxy(proxies)).thenReturn(proxies);
 
-		doCallRealMethod().when(em).unproxy(proxies);
-		Set<CompleteBean> actual = em.unproxy(proxies);
+		doCallRealMethod().when(em).unwrap(proxies);
+		Set<CompleteBean> actual = em.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
 	}

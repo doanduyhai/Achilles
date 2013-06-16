@@ -396,14 +396,15 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	}
 
 	/**
-	 * Unproxy a 'managed' entity to prepare it for serialization
+	 * Unwrap a 'managed' entity to prepare it for serialization
 	 * 
-	 * Raise an IllegalStateException if the entity is not managed'
+	 * If the argument is not a proxy objet, return itself <br/>
+	 * Else, return the target object behind the proxy
 	 * 
 	 * @param proxy
 	 * @return real object
 	 */
-	public <T> T unproxy(T proxy)
+	public <T> T unwrap(T proxy)
 	{
 		log.debug("Unproxying entity {}", proxy);
 
@@ -413,15 +414,15 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	}
 
 	/**
-	 * Unproxy a collection of 'managed' entities to prepare them for serialization
+	 * Unwrap a collection of 'managed' entities to prepare them for serialization
 	 * 
-	 * Raise an IllegalStateException if an entity is not managed' in the collection
+	 * See {@link #unwrap}
 	 * 
 	 * @param proxy
 	 *            collection
 	 * @return real object collection
 	 */
-	public <T> Collection<T> unproxy(Collection<T> proxies)
+	public <T> Collection<T> unwrap(Collection<T> proxies)
 	{
 		log.debug("Unproxying collection of entities {}", proxies);
 
@@ -429,15 +430,15 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	}
 
 	/**
-	 * Unproxy a list of 'managed' entities to prepare them for serialization
+	 * Unwrap a list of 'managed' entities to prepare them for serialization
 	 * 
-	 * Raise an IllegalStateException if an entity is not managed' in the list
+	 * See {@link #unwrap}
 	 * 
 	 * @param proxy
 	 *            list
 	 * @return real object list
 	 */
-	public <T> List<T> unproxy(List<T> proxies)
+	public <T> List<T> unwrap(List<T> proxies)
 	{
 		log.debug("Unproxying list of entities {}", proxies);
 
@@ -445,15 +446,15 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	}
 
 	/**
-	 * Unproxy a set of 'managed' entities to prepare them for serialization
+	 * Unwrap a set of 'managed' entities to prepare them for serialization
 	 * 
-	 * Raise an IllegalStateException if an entity is not managed' in the set
+	 * See {@link #unwrap}
 	 * 
 	 * @param proxy
 	 *            set
 	 * @return real object set
 	 */
-	public <T> Set<T> unproxy(Set<T> proxies)
+	public <T> Set<T> unwrap(Set<T> proxies)
 	{
 		log.debug("Unproxying set of entities {}", proxies);
 

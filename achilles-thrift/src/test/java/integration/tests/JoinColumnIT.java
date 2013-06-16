@@ -216,7 +216,7 @@ public class JoinColumnIT
 
 		tweet = em.merge(tweet);
 		em.initialize(tweet);
-		tweet = em.unproxy(tweet);
+		tweet = em.unwrap(tweet);
 
 		assertThat(tweet).isNotInstanceOf(Factory.class);
 		assertThat(tweet.getCreator()).isNotInstanceOf(Factory.class);

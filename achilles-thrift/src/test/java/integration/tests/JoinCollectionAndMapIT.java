@@ -365,7 +365,7 @@ public class JoinCollectionAndMapIT
 
 		em.merge(bean);
 
-		bean = em.unproxy(bean);
+		bean = em.unwrap(bean);
 
 		Set<User> foundFriends = bean.getFriends();
 

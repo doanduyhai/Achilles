@@ -356,7 +356,7 @@ public class JPAOperationsIT
 		assertThat(foundBean).isNotNull();
 
 		// Real object should be empty
-		CompleteBean realObject = em.unproxy(foundBean);
+		CompleteBean realObject = em.unwrap(foundBean);
 
 		assertThat(realObject.getId()).isEqualTo(bean.getId());
 		assertThat(realObject.getName()).isNull();
