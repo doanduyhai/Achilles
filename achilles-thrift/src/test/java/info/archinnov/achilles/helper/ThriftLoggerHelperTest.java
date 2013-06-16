@@ -80,7 +80,7 @@ public class ThriftLoggerHelperTest
 		comp.addComponent(0, PropertyType.COUNTER.flag(), EQUAL);
 		comp.addComponent(1, "test", GREATER_THAN_EQUAL);
 
-		assertThat(format(comp)).isEqualTo("[70:test(GREATER_THAN_EQUAL)]");
+		assertThat(format(comp)).isEqualTo("[30:test(GREATER_THAN_EQUAL)]");
 	}
 
 	@Test

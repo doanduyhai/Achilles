@@ -1,6 +1,6 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.dao.ThriftGenericEntityDao.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.type.Pair;
@@ -51,7 +51,7 @@ public class ThriftGenericEntityDaoTest
 
 		Composite comp = Whitebox.getInternalState(dao, "startCompositeForEagerFetch");
 
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER.flag());
+		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER);
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
 	}
 
@@ -61,7 +61,7 @@ public class ThriftGenericEntityDaoTest
 
 		Composite comp = Whitebox.getInternalState(dao, "endCompositeForEagerFetch");
 
-		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER.flag());
+		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER);
 		assertThat(comp.getComponent(0).getEquality()).isSameAs(
 				ComponentEquality.GREATER_THAN_EQUAL);
 	}

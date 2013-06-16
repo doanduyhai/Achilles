@@ -1,6 +1,5 @@
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.type.Pair;
@@ -30,6 +29,15 @@ import org.slf4j.LoggerFactory;
 public class ThriftGenericEntityDao extends ThriftAbstractDao
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftGenericEntityDao.class);
+
+	protected static final byte[] START_EAGER = new byte[]
+	{
+		0
+	};
+	protected static final byte[] END_EAGER = new byte[]
+	{
+		20
+	};
 
 	private Composite startCompositeForEagerFetch;
 	private Composite endCompositeForEagerFetch;
@@ -92,10 +100,9 @@ public class ThriftGenericEntityDao extends ThriftAbstractDao
 	private void initComposites()
 	{
 		startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, START_EAGER, ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, END_EAGER, ComponentEquality.GREATER_THAN_EQUAL);
 	}
 }

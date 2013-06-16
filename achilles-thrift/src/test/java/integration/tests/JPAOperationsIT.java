@@ -53,6 +53,15 @@ public class JPAOperationsIT
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
+	private byte[] START_EAGER = new byte[]
+	{
+		0
+	};
+	private byte[] END_EAGER = new byte[]
+	{
+		20
+	};
+
 	@Test
 	public void should_persist() throws Exception
 	{
@@ -71,11 +80,10 @@ public class JPAOperationsIT
 		em.persist(bean);
 
 		Composite startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0, START_EAGER.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, START_EAGER, ComponentEquality.EQUAL);
 
 		Composite endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0, END_EAGER.flag(),
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, END_EAGER, ComponentEquality.GREATER_THAN_EQUAL);
 
 		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(),
 				startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
@@ -86,10 +94,10 @@ public class JPAOperationsIT
 
 		Pair<Composite, String> age = columns.get(1);
 
-		Pair<Composite, String> name = columns.get(2);
+		Pair<Composite, String> George = columns.get(2);
+		Pair<Composite, String> Paul = columns.get(3);
 
-		Pair<Composite, String> George = columns.get(3);
-		Pair<Composite, String> Paul = columns.get(4);
+		Pair<Composite, String> name = columns.get(4);
 
 		Pair<Composite, String> FR = columns.get(5);
 		Pair<Composite, String> Paris = columns.get(6);

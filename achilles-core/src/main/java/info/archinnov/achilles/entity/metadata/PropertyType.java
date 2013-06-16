@@ -16,26 +16,24 @@ import com.google.common.collect.Sets;
 public enum PropertyType
 {
 
-	START_EAGER(0), //
 	SERIAL_VERSION_UID(10), //
-	SIMPLE(20), //
-	LIST(30), //
-	SET(40), //
-	MAP(50), //
-	END_EAGER(60), //
-	LAZY_SIMPLE(70), //
-	COUNTER(70), //
-	LAZY_LIST(70), //
-	LAZY_SET(70), //
-	LAZY_MAP(70), //
-	WIDE_MAP(70), //
-	COUNTER_WIDE_MAP(70), //
-	JOIN_SIMPLE(70), //
-	JOIN_LIST(70), //
-	JOIN_SET(70), //
-	JOIN_MAP(70), //
-	JOIN_WIDE_MAP(70), //
-	COMPOUND_KEY(70);
+	COMPOUND_KEY(20), //
+	SIMPLE(10), //
+	LIST(10), //
+	SET(10), //
+	MAP(10), //
+	LAZY_SIMPLE(30), //
+	COUNTER(30), //
+	LAZY_LIST(30), //
+	LAZY_SET(30), //
+	LAZY_MAP(30), //
+	WIDE_MAP(30), //
+	COUNTER_WIDE_MAP(30), //
+	JOIN_SIMPLE(30), //
+	JOIN_LIST(30), //
+	JOIN_SET(30), //
+	JOIN_MAP(30), //
+	JOIN_WIDE_MAP(30);
 
 	private final int flag;
 
