@@ -2,13 +2,13 @@ package info.archinnov.achilles.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.HashMap;
@@ -40,6 +40,9 @@ public class ThriftImmediateFlushContextTest
 
 	@InjectMocks
 	private ThriftImmediateFlushContext context;
+
+	@Mock
+	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
 	private ThriftCounterDao thriftCounterDao;
@@ -104,20 +107,6 @@ public class ThriftImmediateFlushContextTest
 				.expectMessage("Cannot end a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
 		context.endBatch();
 
-	}
-
-	@Test
-	public void should_set_write_consistency_level() throws Exception
-	{
-		context.setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		verify(thriftConsistencyContext).setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_set_read_consistency_level() throws Exception
-	{
-		context.setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		verify(thriftConsistencyContext).setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test

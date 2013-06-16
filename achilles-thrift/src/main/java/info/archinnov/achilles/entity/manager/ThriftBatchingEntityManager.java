@@ -35,7 +35,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			ConfigurationContext configContext)
 	{
 		super(entityManagerFactory, entityMetaMap, thriftDaoContext, configContext);
-		this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy);
+		this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy,
+				Optional.<ConsistencyLevel> absent(), Optional.<ConsistencyLevel> absent(),
+				Optional.<Integer> absent());
 	}
 
 	/**
@@ -54,14 +56,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	{
 		log.debug("Starting batch mode with write consistency level {}", writeLevel.name());
 		startBatch();
-		if (readLevel != null)
-		{
-			flushContext.setReadConsistencyLevel(readLevel);
-		}
-		if (writeLevel != null)
-		{
-			flushContext.setWriteConsistencyLevel(writeLevel);
-		}
+		flushContext.setReadConsistencyLevel(Optional.fromNullable(readLevel));
+		flushContext.setWriteConsistencyLevel(Optional.fromNullable(writeLevel));
+
 	}
 
 	/**
@@ -95,8 +92,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.persist(entity,
-						Optional.<ConsistencyLevel> absent());
+				ThriftBatchingEntityManager.super.persist(entity, flushContext
+						.getConsistencyContext()
+						.getWriteLevelO());
 				return null;
 			}
 		});
@@ -118,8 +116,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public T execute()
 			{
-				return ThriftBatchingEntityManager.super.merge(entity,
-						Optional.<ConsistencyLevel> absent());
+				return ThriftBatchingEntityManager.super.merge(entity, flushContext
+						.getConsistencyContext()
+						.getWriteLevelO());
 			}
 		});
 	}
@@ -140,8 +139,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.remove(entity,
-						Optional.<ConsistencyLevel> absent());
+				ThriftBatchingEntityManager.super.remove(entity, flushContext
+						.getConsistencyContext()
+						.getWriteLevelO());
 				return null;
 			}
 		});
@@ -163,8 +163,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public T execute()
 			{
-				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey,
-						(ConsistencyLevel) null);
+				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey, flushContext
+						.getConsistencyContext()
+						.getReadLevelO());
 			}
 		});
 	}
@@ -187,7 +188,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			public T execute()
 			{
 				return ThriftBatchingEntityManager.super.getReference(entityClass, primaryKey,
-						Optional.<ConsistencyLevel> absent());
+						flushContext.getConsistencyContext().getReadLevelO());
 			}
 		});
 	}
@@ -209,7 +210,9 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 			@Override
 			public Void execute()
 			{
-				ThriftBatchingEntityManager.super.refresh(entity, (ConsistencyLevel) null);
+				ThriftBatchingEntityManager.super.refresh(entity, flushContext
+						.getConsistencyContext()
+						.getReadLevelO());
 				return null;
 			}
 		});
@@ -250,8 +253,10 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 				"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 	}
 
+	@Override
 	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
-			Object primaryKey)
+			Object primaryKey, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
@@ -261,7 +266,10 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 				flushContext, entityClass, primaryKey, new HashSet<String>());
 	}
 
-	protected ThriftPersistenceContext initPersistenceContext(Object entity)
+	@Override
+	protected ThriftPersistenceContext initPersistenceContext(Object entity,
+			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttlO)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 

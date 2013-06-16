@@ -7,12 +7,15 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashSet;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftEntityManager
@@ -61,27 +64,35 @@ public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistence
 
 	@Override
 	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
-			Object primaryKey)
+			Object primaryKey, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(entityClass);
+
+		ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(
+				thriftDaoContext, consistencyPolicy, readLevelO, writeLevelO, ttlO);
+
 		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-				thriftDaoContext, new ThriftImmediateFlushContext(thriftDaoContext,
-						consistencyPolicy), entityClass, primaryKey, new HashSet<String>());
+				thriftDaoContext, flushContext, entityClass, primaryKey, new HashSet<String>());
 		return context;
 	}
 
 	@Override
-	protected ThriftPersistenceContext initPersistenceContext(Object entity)
+	protected ThriftPersistenceContext initPersistenceContext(Object entity,
+			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttlO)
 	{
 		log.trace("Initializing new persistence context for entity {}", entity);
 
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
+		ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(
+				thriftDaoContext, consistencyPolicy, readLevelO, writeLevelO, ttlO);
+
 		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				new ThriftImmediateFlushContext(thriftDaoContext, consistencyPolicy), entity,
-				new HashSet<String>());
+				flushContext, entity, new HashSet<String>());
 	}
 
 	protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext)

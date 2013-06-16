@@ -12,6 +12,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
 import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
+import integration.tests.entity.BeanWithConsistencyLevelOnClassAndWideMapCounter;
 import integration.tests.utils.CassandraLogAsserter;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 
@@ -268,7 +269,7 @@ public class ConsistencyLevelPriorityOrderingIT
 	public void should_override_mapping_on_class_by_runtime_value_for_counter_widemap_type()
 			throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = new BeanWithConsistencyLevelOnClassAndField();
+		BeanWithConsistencyLevelOnClassAndWideMapCounter entity = new BeanWithConsistencyLevelOnClassAndWideMapCounter();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
@@ -294,9 +295,9 @@ public class ConsistencyLevelPriorityOrderingIT
 		batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
 		entity = batchEm.merge(entity);
 
-		expectedEx.expect(AchillesException.class);
+		expectedEx.expect(HInvalidRequestException.class);
 		expectedEx
-				.expectMessage("me.prettyprint.hector.api.exceptions.HInvalidRequestException: InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
 		entity.getCounterWideMap().insert(11, CounterBuilder.incr());
 	}

@@ -11,7 +11,6 @@ import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +32,6 @@ import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.google.common.base.Optional;
 
 /**
  * CQLPersistenceContextTest
@@ -79,8 +77,6 @@ public class CQLPersistenceContextTest
 	private Long primaryKey = RandomUtils.nextLong();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
-
-	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 
 	@Before
 	public void setUp() throws Exception
@@ -215,8 +211,7 @@ public class CQLPersistenceContextTest
 	@Test
 	public void should_persist() throws Exception
 	{
-		context.persist(noConsistency);
-		verify(flushContext).setWriteConsistencyLevel(null);
+		context.persist();
 		verify(persister).persist(context);
 		verify(flushContext).flush();
 	}
@@ -226,9 +221,8 @@ public class CQLPersistenceContextTest
 	{
 		when(merger.merge(context, entity)).thenReturn(entity);
 
-		CompleteBean merged = context.merge(entity, noConsistency);
+		CompleteBean merged = context.merge(entity);
 
-		verify(flushContext).setWriteConsistencyLevel(null);
 		assertThat(merged).isSameAs(entity);
 		verify(flushContext).flush();
 	}
@@ -236,8 +230,7 @@ public class CQLPersistenceContextTest
 	@Test
 	public void should_remove() throws Exception
 	{
-		context.remove(noConsistency);
-		verify(flushContext).setWriteConsistencyLevel(null);
+		context.remove();
 		verify(persister).remove(context);
 		verify(flushContext).flush();
 	}
@@ -248,9 +241,8 @@ public class CQLPersistenceContextTest
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
-		CompleteBean found = context.find(CompleteBean.class, noConsistency);
+		CompleteBean found = context.find(CompleteBean.class);
 
-		verify(flushContext).setReadConsistencyLevel(null);
 		assertThat(context.isLoadEagerFields()).isTrue();
 		assertThat(found).isSameAs(entity);
 	}
@@ -261,9 +253,8 @@ public class CQLPersistenceContextTest
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
-		CompleteBean found = context.getReference(CompleteBean.class, noConsistency);
+		CompleteBean found = context.getReference(CompleteBean.class);
 
-		verify(flushContext).setReadConsistencyLevel(null);
 		assertThat(context.isLoadEagerFields()).isFalse();
 		assertThat(found).isSameAs(entity);
 	}
@@ -271,8 +262,7 @@ public class CQLPersistenceContextTest
 	@Test
 	public void should_refresh() throws Exception
 	{
-		context.refresh(noConsistency);
-		verify(flushContext).setReadConsistencyLevel(null);
+		context.refresh();
 		verify(refresher).refresh(context);
 	}
 }

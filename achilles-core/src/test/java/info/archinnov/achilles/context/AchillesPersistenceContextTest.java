@@ -14,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.base.Optional;
+
 /**
  * AchillesPersistenceContextTest
  * 
@@ -102,21 +104,23 @@ public class AchillesPersistenceContextTest
 	@Test
 	public void should_set_read_cl() throws Exception
 	{
-		doCallRealMethod().when(context).setReadConsistencyLevel(any(ConsistencyLevel.class));
+		doCallRealMethod().when(context).setReadConsistencyLevelO(any(Optional.class));
 
-		context.setReadConsistencyLevel(ONE);
+		Optional<ConsistencyLevel> readLevelO = Optional.fromNullable(ONE);
+		context.setReadConsistencyLevelO(readLevelO);
 
-		verify(flushContext).setReadConsistencyLevel(ONE);
+		verify(flushContext).setReadConsistencyLevel(readLevelO);
 	}
 
 	@Test
 	public void should_set_write_cl() throws Exception
 	{
-		doCallRealMethod().when(context).setWriteConsistencyLevel(any(ConsistencyLevel.class));
+		doCallRealMethod().when(context).setWriteConsistencyLevelO(any(Optional.class));
 
-		context.setWriteConsistencyLevel(ONE);
+		Optional<ConsistencyLevel> writeLevelO = Optional.fromNullable(ONE);
+		context.setWriteConsistencyLevelO(writeLevelO);
 
-		verify(flushContext).setWriteConsistencyLevel(ONE);
+		verify(flushContext).setWriteConsistencyLevel(writeLevelO);
 	}
 
 	@Test
@@ -129,13 +133,4 @@ public class AchillesPersistenceContextTest
 		verify(flushContext).reinitConsistencyLevels();
 	}
 
-	@Test
-	public void should_clean_flush_context() throws Exception
-	{
-		doCallRealMethod().when(context).cleanUpFlushContext();
-
-		context.cleanUpFlushContext();
-
-		verify(flushContext).cleanUp();
-	}
 }

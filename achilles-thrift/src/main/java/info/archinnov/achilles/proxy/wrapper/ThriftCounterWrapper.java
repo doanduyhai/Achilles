@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
@@ -31,7 +31,7 @@ public class ThriftCounterWrapper implements Counter
 	private ConsistencyLevel readLevel;
 	private ConsistencyLevel writeLevel;
 
-	private EntityValidator validator = new EntityValidator(
+	private EntityValidator<ThriftPersistenceContext> validator = new EntityValidator<ThriftPersistenceContext>(
 			new ThriftEntityProxifier());
 
 	public ThriftCounterWrapper(ThriftPersistenceContext context) {
@@ -41,7 +41,9 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public Long get()
 	{
-		return executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
+		log.trace("Get counter value for property {} of entity {}", columnName.get(0, STRING_SRZ),
+				context.getEntityClass().getCanonicalName());
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -54,8 +56,11 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public Long get(ConsistencyLevel readLevel)
 	{
+		log.trace("Get counter value for property {} of entity {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				readLevel.name());
 		validator.validateNoPendingBatch(context);
-		return executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
 		{
 			@Override
 			public Long execute()
@@ -68,7 +73,10 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void incr()
 	{
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		log.trace("Increment counter value for property {} of entity {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName());
+
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -82,8 +90,12 @@ public class ThriftCounterWrapper implements Counter
 
 	public void incr(ConsistencyLevel writeLevel)
 	{
+		log.trace("Increment counter value for property {} of entity {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				writeLevel);
+
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -98,7 +110,11 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void incr(final Long increment)
 	{
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		log.trace("Increment counter value for property {} of entity {} of {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				increment);
+
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -112,8 +128,13 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void incr(final Long increment, ConsistencyLevel writeLevel)
 	{
+		log.trace(
+				"Increment counter value for property {} of entity {} of {}  with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				increment, writeLevel);
+
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -127,7 +148,10 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr()
 	{
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		log.trace("Decrement counter value for property {} of entity {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName());
+
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -142,8 +166,12 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr(ConsistencyLevel writeLevel)
 	{
+		log.trace("Decrement counter value for property {} of entity {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				writeLevel);
+
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -157,7 +185,11 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr(final Long decrement)
 	{
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		log.trace("Decrement counter value for property {} of entity {} of {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				decrement);
+
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -171,8 +203,13 @@ public class ThriftCounterWrapper implements Counter
 	@Override
 	public void decr(final Long decrement, ConsistencyLevel writeLevel)
 	{
+		log.trace(
+				"Decrement counter value for property {} of entity {} pof {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
+				decrement, writeLevel);
+
 		validator.validateNoPendingBatch(context);
-		executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -181,57 +218,6 @@ public class ThriftCounterWrapper implements Counter
 				return null;
 			}
 		}, writeLevel);
-	}
-
-	private <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context,
-			final ConsistencyLevel writeLevel)
-	{
-		log.trace("Execute write with runtime consistency level {}", writeLevel.name());
-
-		boolean resetConsistencyLevel = false;
-		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) this.context
-				.getPolicy();
-		if (policy.getCurrentWriteLevel() == null)
-		{
-			policy.setCurrentWriteLevel(writeLevel);
-			resetConsistencyLevel = true;
-		}
-		try
-		{
-			return context.execute();
-		}
-		finally
-		{
-			if (resetConsistencyLevel)
-			{
-				policy.removeCurrentWriteLevel();
-			}
-		}
-	}
-
-	private <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,
-			final ConsistencyLevel readLevel)
-	{
-		log.trace("Execute read with runtime consistency level {}", readLevel.name());
-		boolean resetConsistencyLevel = false;
-		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) this.context
-				.getPolicy();
-		if (policy.getCurrentReadLevel() == null)
-		{
-			policy.setCurrentReadLevel(readLevel);
-			resetConsistencyLevel = true;
-		}
-		try
-		{
-			return context.execute();
-		}
-		finally
-		{
-			if (resetConsistencyLevel)
-			{
-				policy.removeCurrentReadLevel();
-			}
-		}
 	}
 
 	public void setCounterDao(ThriftAbstractDao counterDao)

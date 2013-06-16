@@ -20,8 +20,6 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-
 /**
  * ThriftPersistenceContext
  * 
@@ -115,98 +113,67 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public void persist(Optional<ConsistencyLevel> writeLevelO)
+	public void persist()
 	{
-		if (writeLevelO.isPresent())
-		{
-			policy.setCurrentWriteLevel(writeLevelO.get());
-			reinitConsistencyLevels(new SafeExecutionContext<Void>()
-			{
-				@Override
-				public Void execute()
+		thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+				new SafeExecutionContext<Void>()
 				{
-					persister.persist(ThriftPersistenceContext.this);
-					flush();
-					return null;
-				}
-			});
-		}
-		else
-		{
-			persister.persist(this);
-			flush();
-		}
+					@Override
+					public Void execute()
+					{
+						persister.persist(ThriftPersistenceContext.this);
+						flush();
+						return null;
+					}
+				});
 	}
 
 	@Override
-	public <T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO)
+	public <T> T merge(final T entity)
 	{
-		if (writeLevelO.isPresent())
-		{
-			policy.setCurrentWriteLevel(writeLevelO.get());
-			return reinitConsistencyLevels(new SafeExecutionContext<T>()
-			{
-				@Override
-				public T execute()
+
+		return thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+				new SafeExecutionContext<T>()
 				{
-					T merged = merger.<T> merge(ThriftPersistenceContext.this, entity);
-					flush();
-					return merged;
-				}
-			});
-		}
-		else
-		{
-			T merged = merger.<T> merge(this, entity);
-			flush();
-			return merged;
-		}
+					@Override
+					public T execute()
+					{
+						T merged = merger.<T> merge(ThriftPersistenceContext.this, entity);
+						flush();
+						return merged;
+					}
+				});
+
 	}
 
 	@Override
-	public void remove(Optional<ConsistencyLevel> writeLevelO)
+	public void remove()
 	{
-		if (writeLevelO.isPresent())
-		{
-			policy.setCurrentWriteLevel(writeLevelO.get());
-			reinitConsistencyLevels(new SafeExecutionContext<Void>()
-			{
-				@Override
-				public Void execute()
+		thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+				new SafeExecutionContext<Void>()
 				{
-					persister.remove(ThriftPersistenceContext.this);
-					flush();
-					return null;
-				}
-			});
-		}
-		else
-		{
-			persister.remove(this);
-			flush();
-		}
+					@Override
+					public Void execute()
+					{
+						persister.remove(ThriftPersistenceContext.this);
+						flush();
+						return null;
+					}
+				});
 	}
 
 	@Override
-	public <T> T find(final Class<T> entityClass, Optional<ConsistencyLevel> readLevel0)
+	public <T> T find(final Class<T> entityClass)
 	{
-		T entity;
-		if (readLevel0.isPresent())
-		{
-			policy.setCurrentReadLevel(readLevel0.get());
-			entity = reinitConsistencyLevels(new SafeExecutionContext<T>()
-			{
-				@Override
-				public T execute()
+		T entity = thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+				new SafeExecutionContext<T>()
 				{
-					return loader.<T> load(ThriftPersistenceContext.this, entityClass);
-				}
-			});
-		}
-		else
-		{
-			entity = loader.<T> load(this, entityClass);
-		}
+					@Override
+					public T execute()
+					{
+						return loader.<T> load(ThriftPersistenceContext.this, entityClass);
+					}
+				});
 
 		if (entity != null)
 		{
@@ -216,45 +183,40 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public <T> T getReference(Class<T> entityClass, Optional<ConsistencyLevel> readLevel0)
+	public <T> T getReference(Class<T> entityClass)
 	{
 		setLoadEagerFields(false);
-		return find(entityClass, readLevel0);
+		return find(entityClass);
 	}
 
 	@Override
-	public void refresh(Optional<ConsistencyLevel> readLevel0)
+	public void refresh()
 	{
-		if (readLevel0.isPresent())
-		{
-			policy.setCurrentReadLevel(readLevel0.get());
-			reinitConsistencyLevels(new SafeExecutionContext<Void>()
-			{
-				@Override
-				public Void execute()
+		thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+				new SafeExecutionContext<Void>()
 				{
-					refresher.refresh(ThriftPersistenceContext.this);
-					return null;
-				}
-			});
-		}
-		else
-		{
-			refresher.refresh(this);
-		}
+					@Override
+					public Void execute()
+					{
+						refresher.refresh(ThriftPersistenceContext.this);
+						return null;
+					}
+				});
+
 	}
 
-	private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)
+	public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,
+			ConsistencyLevel readLevel)
 	{
-		try
-		{
-			return context.execute();
-		}
-		finally
-		{
-			policy.reinitCurrentConsistencyLevels();
-			policy.reinitDefaultConsistencyLevels();
-		}
+		return thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(context,
+				readLevel);
+	}
+
+	public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context,
+			ConsistencyLevel writeLevel)
+	{
+		return thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(context,
+				writeLevel);
 	}
 
 	public ThriftGenericEntityDao findEntityDao(String tableName)

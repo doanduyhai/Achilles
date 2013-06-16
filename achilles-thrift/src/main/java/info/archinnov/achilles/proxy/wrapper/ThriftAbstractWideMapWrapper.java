@@ -27,44 +27,30 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 
 	protected ThriftPersistenceContext context;
 	protected ThriftEntityInterceptor<?> interceptor;
-	protected EntityValidator validator = new EntityValidator(
+	protected EntityValidator<ThriftPersistenceContext> validator = new EntityValidator<ThriftPersistenceContext>(
 			new ThriftEntityProxifier());
 
 	protected static final int DEFAULT_COUNT = 100;
 
-	private <T> T reinitConsistencyLevel(final SafeExecutionContext<T> executionContext)
-	{
-		log.trace("Execute safely");
-		try
-		{
-			return executionContext.execute();
-		}
-		finally
-		{
-			log.trace("Cleaning up flushing context");
-			context.cleanUpFlushContext();
-		}
-	}
-
 	@Override
 	public V get(final K key, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<V>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
 			{
 				return get(key);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
 	public void insert(final K key, final V value, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -72,14 +58,14 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				insert(key, value);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
 	public void insert(final K key, final V value, final int ttl, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -87,7 +73,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				insert(key, value, ttl);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
@@ -102,15 +88,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValue<K, V> findFirstMatching(final K key, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
 			{
 				return findFirstMatching(key);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -125,15 +111,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValue<K, V> findLastMatching(final K key, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
 			{
 				return findLastMatching(key);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -146,16 +132,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> find(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 
 	}
 
@@ -163,15 +150,16 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> find(final K start, final K end, final int count,
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(start, end, count, bounds, ordering);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(start, end, count, bounds, ordering);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -184,16 +172,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> findBoundsExclusive(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 
 	}
 
@@ -207,16 +196,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> findReverse(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -230,16 +220,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<KeyValue<K, V>> findReverseBoundsExclusive(final K start, final K end,
 			final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -259,15 +250,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValue<K, V> findFirst(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
 			{
 				return findFirst();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -279,15 +270,16 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<KeyValue<K, V>> findFirst(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return find(null, null, count);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return find(null, null, count);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -307,15 +299,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValue<K, V> findLast(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<KeyValue<K, V>>()
 		{
 			@Override
 			public KeyValue<K, V> execute()
 			{
 				return findLast();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -327,15 +319,16 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<KeyValue<K, V>> findLast(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<KeyValue<K, V>>>()
-		{
-			@Override
-			public List<KeyValue<K, V>> execute()
-			{
-				return findReverse(null, null, count);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<KeyValue<K, V>>>()
+				{
+					@Override
+					public List<KeyValue<K, V>> execute()
+					{
+						return findReverse(null, null, count);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -350,15 +343,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public V findValue(final K key, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<V>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
 			{
 				return findValue(key);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -371,8 +364,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findValues(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -380,22 +373,22 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findValues(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
 						OrderingMode.ASCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
 	public List<V> findValues(final K start, final K end, final int count,
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
 			{
 				return findValues(start, end, count, bounds, ordering);
 			}
-		});
+		}, readLevel);
 
 	}
 
@@ -409,8 +402,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findBoundsExclusiveValues(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -418,7 +411,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findValues(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
 						OrderingMode.ASCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -431,8 +424,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findReverseBoundsExclusiveValues(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -440,7 +433,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findValues(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
 						OrderingMode.DESCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -453,8 +446,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<V> findReverseValues(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
@@ -462,7 +455,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findValues(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
 						OrderingMode.DESCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -482,15 +475,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public V findFirstValue(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<V>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
 			{
 				return findFirstValue();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -502,15 +495,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<V> findFirstValues(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
 			{
 				return findValues(null, null, count);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -530,15 +523,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public V findLastValue(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<V>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<V>()
 		{
 			@Override
 			public V execute()
 			{
 				return findLastValue();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -550,15 +543,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<V> findLastValues(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<V>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<V>>()
 		{
 			@Override
 			public List<V> execute()
 			{
 				return findReverseValues(null, null, count);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -572,15 +565,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public K findKey(final K key, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<K>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
 			{
 				return findKey(key);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -593,8 +586,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findKeys(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -602,22 +595,22 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findKeys(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
 						OrderingMode.ASCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
 	public List<K> findKeys(final K start, final K end, final int count, final BoundingMode bounds,
 			final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
 			{
 				return findKeys(start, end, count, bounds, ordering);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -630,8 +623,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findBoundsExclusiveKeys(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -639,7 +632,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findKeys(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
 						OrderingMode.ASCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -652,8 +645,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findReverseKeys(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -661,7 +654,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findKeys(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
 						OrderingMode.DESCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -674,8 +667,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public List<K> findReverseBoundsExclusiveKeys(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
@@ -683,7 +676,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				return findKeys(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
 						OrderingMode.DESCENDING);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -703,15 +696,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public K findFirstKey(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<K>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
 			{
 				return findFirstKey();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -723,15 +716,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<K> findFirstKeys(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
 			{
 				return findKeys(null, null, count);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -751,15 +744,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public K findLastKey(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<K>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<K>()
 		{
 			@Override
 			public K execute()
 			{
 				return findLastKey();
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -771,15 +764,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public List<K> findLastKeys(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<List<K>>()
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<K>>()
 		{
 			@Override
 			public List<K> execute()
 			{
 				return findReverseKeys(null, null, count);
 			}
-		});
+		}, readLevel);
 	}
 
 	@Override
@@ -792,31 +785,33 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValueIterator<K, V> iterator(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
 	public KeyValueIterator<K, V> iterator(final K start, final K end, final int count,
 			final BoundingMode bounds, final OrderingMode ordering, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(null, null, count, bounds, ordering);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(null, null, count, bounds, ordering);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -828,16 +823,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValueIterator<K, V> iterator(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -850,16 +846,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iterator(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -873,16 +870,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iteratorBoundsExclusive(final K start, final K end,
 			final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
-						OrderingMode.ASCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
+								OrderingMode.ASCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -895,16 +893,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse(final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(null, null, DEFAULT_COUNT, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -916,16 +915,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public KeyValueIterator<K, V> iteratorReverse(final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(null, null, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -938,16 +938,17 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iteratorReverse(final K start, final K end, final int count,
 			final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(start, end, count, BoundingMode.INCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
@@ -961,23 +962,24 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	public KeyValueIterator<K, V> iteratorReverseBoundsExclusive(final K start, final K end,
 			final int count, final ConsistencyLevel readLevel)
 	{
-		forceReadConsistencyLevel(readLevel);
-		return reinitConsistencyLevel(new SafeExecutionContext<KeyValueIterator<K, V>>()
-		{
-			@Override
-			public KeyValueIterator<K, V> execute()
-			{
-				return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
-						OrderingMode.DESCENDING);
-			}
-		});
+		ensureNoPendingBatch();
+		return context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<KeyValueIterator<K, V>>()
+				{
+					@Override
+					public KeyValueIterator<K, V> execute()
+					{
+						return iterator(start, end, count, BoundingMode.EXCLUSIVE_BOUNDS,
+								OrderingMode.DESCENDING);
+					}
+				}, readLevel);
 	}
 
 	@Override
 	public void remove(final K key, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -985,7 +987,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				remove(key);
 				return null;
 			}
-		});
+		}, writeLevel);
 
 	}
 
@@ -998,8 +1000,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public void remove(final K start, final K end, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1007,15 +1009,15 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				remove(start, end, BoundingMode.INCLUSIVE_BOUNDS);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
 	public void remove(final K start, final K end, final BoundingMode bounds,
 			final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1023,7 +1025,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				remove(start, end, bounds);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
@@ -1035,8 +1037,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public void removeBoundsExclusive(final K start, final K end, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1044,7 +1046,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				remove(start, end, BoundingMode.EXCLUSIVE_BOUNDS);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
@@ -1056,8 +1058,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public void removeFirst(final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1065,14 +1067,14 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				removeFirst(1);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
 	public void removeFirst(final int count, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1080,7 +1082,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				removeFirst(count);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
@@ -1092,8 +1094,8 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 	@Override
 	public void removeLast(final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1101,14 +1103,14 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				removeLast(1);
 				return null;
 			}
-		});
+		}, writeLevel);
 	}
 
 	@Override
 	public void removeLast(final int count, final ConsistencyLevel writeLevel)
 	{
-		forceWriteConsistencyLevel(writeLevel);
-		reinitConsistencyLevel(new SafeExecutionContext<Void>()
+		ensureNoPendingBatch();
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
 			@Override
 			public Void execute()
@@ -1116,41 +1118,12 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
 				removeLast(count);
 				return null;
 			}
-		});
-	}
-
-	private void forceReadConsistencyLevel(final ConsistencyLevel readLevel)
-	{
-		log.trace("Execute read operation with consistency level {}", readLevel.name());
-		ensureNoPendingBatch();
-		context.setReadConsistencyLevel(readLevel);
-	}
-
-	private void forceWriteConsistencyLevel(final ConsistencyLevel writeLevel)
-	{
-		log.trace("Execute write operation with consistency level {}", writeLevel.name());
-		ensureNoPendingBatch();
-		context.setWriteConsistencyLevel(writeLevel);
+		}, writeLevel);
 	}
 
 	private void ensureNoPendingBatch() throws Error
 	{
-		try
-		{
-			validator.validateNoPendingBatch(context);
-		}
-		catch (RuntimeException e)
-		{
-			log.trace("Cleaning up flushing context");
-			context.cleanUpFlushContext();
-			throw e;
-		}
-		catch (Error e)
-		{
-			log.trace("Cleaning up flushing context");
-			context.cleanUpFlushContext();
-			throw e;
-		}
+		validator.validateNoPendingBatch(context);
 	}
 
 	public ThriftEntityInterceptor<?> getInterceptor()

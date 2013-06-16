@@ -9,6 +9,7 @@ import java.util.List;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
+import com.google.common.base.Optional;
 
 /**
  * CQLFlushContext
@@ -20,12 +21,17 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 {
 
 	private List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-	private ConsistencyLevel readLevel;
-	private ConsistencyLevel writeLevel;
+	private Optional<ConsistencyLevel> readLevelO;
+	private Optional<ConsistencyLevel> writeLevelO;
 	private CQLDaoContext daoContext;
 
-	public CQLAbstractFlushContext(CQLDaoContext daoContext) {
+	public CQLAbstractFlushContext(CQLDaoContext daoContext, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+	{
+		super(ttlO);
 		this.daoContext = daoContext;
+		this.readLevelO = readLevelO;
+		this.writeLevelO = writeLevelO;
 	}
 
 	@Override
@@ -60,15 +66,15 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	}
 
 	@Override
-	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
+	public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO)
 	{
-		this.writeLevel = writeLevel;
+		this.writeLevelO = writeLevelO;
 	}
 
 	@Override
-	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
+	public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO)
 	{
-		this.readLevel = readLevel;
+		this.readLevelO = readLevelO;
 	}
 
 	@Override
@@ -78,16 +84,16 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 
 	}
 
-	public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
+	public void pushBoundStatement(BoundStatement boundStatement,
+			ConsistencyLevel writeConsistencyLevel)
 	{
-		if (this.writeLevel != null)
+		if (writeLevelO.isPresent())
 		{
-			boundStatement.setConsistencyLevel(getCQLLevel(this.writeLevel));
-
+			boundStatement.setConsistencyLevel(getCQLLevel(writeLevelO.get()));
 		}
 		else
 		{
-			boundStatement.setConsistencyLevel(getCQLLevel(writeLevel));
+			boundStatement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
 		}
 		boundStatements.add(boundStatement);
 	}
@@ -95,9 +101,9 @@ public abstract class CQLAbstractFlushContext extends AchillesFlushContext
 	public ResultSet executeImmediateWithConsistency(Query query,
 			ConsistencyLevel readConsistencyLevel)
 	{
-		if (readLevel != null)
+		if (readLevelO.isPresent())
 		{
-			query.setConsistencyLevel(getCQLLevel(readLevel));
+			query.setConsistencyLevel(getCQLLevel(readLevelO.get()));
 		}
 		else
 		{

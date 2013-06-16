@@ -11,6 +11,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
@@ -26,6 +27,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftEntityManagerTest
@@ -68,6 +71,9 @@ public class ThriftEntityManagerTest
 	@Mock
 	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
+	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
+	private Optional<Integer> noTtl = Optional.<Integer> absent();
+
 	private Long primaryKey = 1165446L;
 	private CompleteBean entity = CompleteBeanTestBuilder
 			.builder()
@@ -89,10 +95,11 @@ public class ThriftEntityManagerTest
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 
-		doCallRealMethod().when(em).initPersistenceContext(CompleteBean.class, entity.getId());
+		doCallRealMethod().when(em).initPersistenceContext(CompleteBean.class, entity.getId(),
+				noConsistency, noConsistency, noTtl);
 
 		ThriftPersistenceContext context = em.initPersistenceContext(CompleteBean.class,
-				entity.getId());
+				entity.getId(), noConsistency, noConsistency, noTtl);
 
 		assertThat(context.getEntityMeta()).isSameAs(entityMeta);
 		assertThat(context.getConfigContext()).isSameAs(configContext);
@@ -113,9 +120,11 @@ public class ThriftEntityManagerTest
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 
-		doCallRealMethod().when(em).initPersistenceContext(entity);
+		doCallRealMethod().when(em).initPersistenceContext(entity, noConsistency, noConsistency,
+				noTtl);
 
-		ThriftPersistenceContext context = em.initPersistenceContext(entity);
+		ThriftPersistenceContext context = em.initPersistenceContext(entity, noConsistency,
+				noConsistency, noTtl);
 
 		assertThat(context.getEntityMeta()).isSameAs(entityMeta);
 		assertThat(context.getConfigContext()).isSameAs(configContext);

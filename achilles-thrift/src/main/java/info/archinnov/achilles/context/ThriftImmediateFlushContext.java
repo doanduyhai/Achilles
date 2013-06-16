@@ -2,9 +2,12 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.context.AchillesFlushContext.FlushType.IMMEDIATE;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftImmediateFlushContext
@@ -17,9 +20,10 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext
 	private static final Logger log = LoggerFactory.getLogger(ThriftImmediateFlushContext.class);
 
 	public ThriftImmediateFlushContext(ThriftDaoContext thriftDaoContext,
-			AchillesConsistencyLevelPolicy policy)
+			AchillesConsistencyLevelPolicy policy, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
-		super(thriftDaoContext, policy);
+		super(thriftDaoContext, policy, readLevelO, writeLevelO, ttlO);
 	}
 
 	@Override

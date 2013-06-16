@@ -9,6 +9,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,8 @@ import org.powermock.reflect.Whitebox;
 
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
+
+import com.google.common.base.Optional;
 
 /**
  * CqlEntityManagerTest
@@ -56,6 +59,9 @@ public class CQLEntityManagerTest
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
+	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
+	private Optional<Integer> noTtl = Optional.<Integer> absent();
+
 	@Before
 	public void setUp() throws Exception
 	{
@@ -83,7 +89,8 @@ public class CQLEntityManagerTest
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(entity))
 				.thenReturn(CompleteBean.class);
 
-		CQLPersistenceContext context = manager.initPersistenceContext(entity);
+		CQLPersistenceContext context = manager.initPersistenceContext(entity, noConsistency,
+				noConsistency, noTtl);
 
 		assertThat(context.getConfigContext()).isSameAs(configContext);
 		assertThat(context.getEntity()).isSameAs(entity);
@@ -96,7 +103,7 @@ public class CQLEntityManagerTest
 	public void should_init_persistence_context_with_type_and_id() throws Exception
 	{
 		CQLPersistenceContext context = manager.initPersistenceContext(CompleteBean.class,
-				entity.getId());
+				entity.getId(), noConsistency, noConsistency, noTtl);
 
 		assertThat(context.getConfigContext()).isSameAs(configContext);
 		assertThat(context.getEntity()).isNull();

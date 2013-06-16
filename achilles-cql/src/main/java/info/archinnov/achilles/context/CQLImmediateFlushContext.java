@@ -1,5 +1,8 @@
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.type.ConsistencyLevel;
+
+import com.google.common.base.Optional;
 
 /**
  * CQLImmediateFlushContext
@@ -10,8 +13,11 @@ package info.archinnov.achilles.context;
 public class CQLImmediateFlushContext extends CQLAbstractFlushContext
 {
 
-	public CQLImmediateFlushContext(CQLDaoContext daoContext) {
-		super(daoContext);
+	public CQLImmediateFlushContext(CQLDaoContext daoContext,
+			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttlO)
+	{
+		super(daoContext, readLevelO, writeLevelO, ttlO);
 	}
 
 	@Override

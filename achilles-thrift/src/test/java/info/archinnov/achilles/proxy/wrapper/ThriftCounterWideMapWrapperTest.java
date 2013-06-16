@@ -2,16 +2,17 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.WideMap.OrderingMode.DESCENDING;
+import static info.archinnov.achilles.type.WideMap.OrderingMode.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftCounterKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
@@ -35,6 +36,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -82,6 +85,18 @@ public class ThriftCounterWideMapWrapperTest
 	@Mock
 	private ThriftPersistenceContext context;
 
+	@Captor
+	private ArgumentCaptor<SafeExecutionContext<Long>> execCaptor;
+
+	@Captor
+	private ArgumentCaptor<SafeExecutionContext<Void>> voidExecCaptor;
+
+	@Captor
+	private ArgumentCaptor<SafeExecutionContext<List<HCounterColumn<Composite>>>> hColsExecCaptor;
+
+	@Captor
+	private ArgumentCaptor<SafeExecutionContext<ThriftCounterSliceIterator<Long>>> iterExecCaptor;
+
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
@@ -105,17 +120,34 @@ public class ThriftCounterWideMapWrapperTest
 	}
 
 	@Test
-	public void should_get_key() throws Exception
+	public void should_get_counter() throws Exception
 	{
 		when(thriftCompositeFactory.createForQuery(propertyMeta, key, EQUAL)).thenReturn(comp);
+		when(context.executeWithReadConsistencyLevel(execCaptor.capture(), eq(readLevel)))
+				.thenReturn(10L);
+
 		Counter actual = wrapper.get(key);
+
+		execCaptor.getValue().execute();
+
+		verify(wideMapCounterDao).getCounterValue(id, comp);
 
 		assertThat(Whitebox.getInternalState(actual, "columnName")).isSameAs(comp);
 		assertThat(Whitebox.getInternalState(actual, "counterDao")).isSameAs(wideMapCounterDao);
 		assertThat(Whitebox.getInternalState(actual, "context")).isSameAs(context);
 		assertThat(Whitebox.getInternalState(actual, "readLevel")).isSameAs(readLevel);
 		assertThat(Whitebox.getInternalState(actual, "writeLevel")).isSameAs(writeLevel);
+	}
 
+	@Test
+	public void should_return_null_when_no_counter_found() throws Exception
+	{
+		when(thriftCompositeFactory.createForQuery(propertyMeta, key, EQUAL)).thenReturn(comp);
+		when(context.executeWithReadConsistencyLevel(execCaptor.capture(), eq(readLevel)))
+				.thenReturn(null);
+
+		Counter actual = wrapper.get(key);
+		assertThat(actual).isNull();
 	}
 
 	@Test
@@ -124,25 +156,11 @@ public class ThriftCounterWideMapWrapperTest
 		when(thriftCompositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
 
 		wrapper.insert(key, CounterBuilder.incr(150L));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(writeLevel));
+
+		voidExecCaptor.getValue().execute();
 
 		verify(wideMapCounterDao).incrementCounter(id, comp, 150L);
-		verify(context, never()).flush();
-	}
-
-	@Test
-	public void should_cleanup_consistency_level_when_runtime_exception_on_insert()
-			throws Exception
-	{
-		when(thriftCompositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
-		doThrow(new RuntimeException()).when(wideMapCounterDao).incrementCounter(id, comp, 150L);
-		try
-		{
-			wrapper.insert(key, CounterBuilder.incr(150L));
-		}
-		catch (AchillesException e)
-		{
-			verify(context).cleanUpFlushContext();
-		}
 	}
 
 	@Test
@@ -153,7 +171,6 @@ public class ThriftCounterWideMapWrapperTest
 		wrapper.insert(key, CounterBuilder.incr(150L), 3600);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find() throws Exception
 	{
@@ -171,17 +188,21 @@ public class ThriftCounterWideMapWrapperTest
 				.thenReturn(hColumns);
 		List<KeyValue<Integer, Counter>> expected = new ArrayList<KeyValue<Integer, Counter>>();
 
+		when(context.executeWithReadConsistencyLevel(hColsExecCaptor.capture(), eq(readLevel)))
+				.thenReturn(hColumns);
 		when(thriftKeyValueFactory.createCounterKeyValueList(context, propertyMeta, hColumns))
 				.thenReturn(expected);
 
 		List<KeyValue<Integer, Counter>> actual = wrapper.find(11, 12, 100, INCLUSIVE_BOUNDS,
 				DESCENDING);
+		List<HCounterColumn<Composite>> actual2 = hColsExecCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(expected);
+		assertThat(actual2).isSameAs(hColumns);
+
 		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_values() throws Exception
 	{
@@ -199,17 +220,20 @@ public class ThriftCounterWideMapWrapperTest
 				.thenReturn(hColumns);
 
 		List<Counter> expected = new ArrayList<Counter>();
-
+		when(context.executeWithReadConsistencyLevel(hColsExecCaptor.capture(), eq(readLevel)))
+				.thenReturn(hColumns);
 		when(thriftKeyValueFactory.createCounterValueList(context, propertyMeta, hColumns))
 				.thenReturn(expected);
 
 		List<Counter> actual = wrapper.findValues(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
+		List<HCounterColumn<Composite>> actual2 = hColsExecCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(expected);
+		assertThat(actual2).isSameAs(hColumns);
+
 		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_find_keys() throws Exception
 	{
@@ -227,17 +251,20 @@ public class ThriftCounterWideMapWrapperTest
 				.thenReturn(hColumns);
 
 		List<Integer> expected = new ArrayList<Integer>();
-
+		when(context.executeWithReadConsistencyLevel(hColsExecCaptor.capture(), eq(readLevel)))
+				.thenReturn(hColumns);
 		when(thriftKeyValueFactory.createCounterKeyList(propertyMeta, hColumns)).thenReturn(
 				expected);
 
 		List<Integer> actual = wrapper.findKeys(11, 12, 100, INCLUSIVE_BOUNDS, DESCENDING);
+		List<HCounterColumn<Composite>> actual2 = hColsExecCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(expected);
+		assertThat(actual2).isSameAs(hColumns);
+
 		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_iterator() throws Exception
 	{
@@ -255,14 +282,18 @@ public class ThriftCounterWideMapWrapperTest
 						100)).thenReturn(thriftCounterSliceIterator);
 		ThriftCounterKeyValueIteratorImpl<Integer> expected = mock(ThriftCounterKeyValueIteratorImpl.class);
 
+		when(context.executeWithReadConsistencyLevel(iterExecCaptor.capture(), eq(readLevel)))
+				.thenReturn(thriftCounterSliceIterator);
 		when(
 				thriftIteratorFactory.createCounterKeyValueIterator(context,
 						thriftCounterSliceIterator, propertyMeta)).thenReturn(expected);
 
 		KeyValueIterator<Integer, Counter> actual = wrapper.iterator(11, 12, 100, INCLUSIVE_BOUNDS,
 				DESCENDING);
+		ThriftCounterSliceIterator<Long> actual2 = iterExecCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(expected);
+		assertThat(actual2).isSameAs(thriftCounterSliceIterator);
 	}
 
 	@Test
@@ -316,6 +347,16 @@ public class ThriftCounterWideMapWrapperTest
 	}
 
 	@Test
+	public void should_exception_when_insert_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+
+		wrapper.insert(15, CounterBuilder.incr(), EACH_QUORUM);
+	}
+
+	@Test
 	public void should_exception_when_insert_with_ttl_and_consistency_level() throws Exception
 	{
 		exception.expect(UnsupportedOperationException.class);
@@ -332,6 +373,16 @@ public class ThriftCounterWideMapWrapperTest
 				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
 
 		wrapper.find(10, 11, 100, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_not_find_complete_with_consistency_level() throws Exception
+	{
+		exception.expect(UnsupportedOperationException.class);
+		exception
+				.expectMessage("Please set runtime consistency level at Counter level instead of at WideMap level");
+
+		wrapper.find(10, 11, 100, INCLUSIVE_BOUNDS, ASCENDING, EACH_QUORUM);
 	}
 
 	@Test

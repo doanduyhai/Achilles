@@ -16,7 +16,6 @@ import java.util.Set;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.google.common.base.Optional;
 
 /**
  * CQLPersistenceContext
@@ -124,34 +123,30 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public void persist(Optional<ConsistencyLevel> writeLevelO)
+	public void persist()
 	{
-		flushContext.setWriteConsistencyLevel(writeLevelO.orNull());
 		persister.persist(this);
 		flush();
 	}
 
 	@Override
-	public <T> T merge(T entity, Optional<ConsistencyLevel> writeLevelO)
+	public <T> T merge(T entity)
 	{
-		flushContext.setWriteConsistencyLevel(writeLevelO.orNull());
 		T merged = merger.merge(this, entity);
 		flush();
 		return merged;
 	}
 
 	@Override
-	public void remove(Optional<ConsistencyLevel> writeLevelO)
+	public void remove()
 	{
-		flushContext.setWriteConsistencyLevel(writeLevelO.orNull());
 		persister.remove(this);
 		flush();
 	}
 
 	@Override
-	public <T> T find(Class<T> entityClass, Optional<ConsistencyLevel> readLevelO)
+	public <T> T find(Class<T> entityClass)
 	{
-		flushContext.setReadConsistencyLevel(readLevelO.orNull());
 		T entity = loader.<T> load(this, entityClass);
 
 		if (entity != null)
@@ -162,16 +157,15 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	}
 
 	@Override
-	public <T> T getReference(Class<T> entityClass, Optional<ConsistencyLevel> readLevelO)
+	public <T> T getReference(Class<T> entityClass)
 	{
 		setLoadEagerFields(false);
-		return find(entityClass, readLevelO);
+		return find(entityClass);
 	}
 
 	@Override
-	public void refresh(Optional<ConsistencyLevel> readLevelO)
+	public void refresh()
 	{
-		flushContext.setReadConsistencyLevel(readLevelO.orNull());
 		refresher.refresh(this);
 	}
 }

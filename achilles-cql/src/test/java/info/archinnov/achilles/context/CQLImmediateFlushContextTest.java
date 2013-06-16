@@ -1,5 +1,6 @@
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
@@ -18,6 +19,7 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
+import com.google.common.base.Optional;
 
 /**
  * CQLImmediateFlushContextTest
@@ -44,7 +46,10 @@ public class CQLImmediateFlushContextTest
 	@Before
 	public void setUp()
 	{
-		context = new CQLImmediateFlushContext(daoContext);
+		context = new CQLImmediateFlushContext(daoContext,
+				Optional.<ConsistencyLevel> absent(),
+				Optional.<ConsistencyLevel> absent(),
+				Optional.<Integer> absent());
 	}
 
 	@Test
@@ -59,7 +64,7 @@ public class CQLImmediateFlushContextTest
 		List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
 		Whitebox.setInternalState(context, "boundStatements", boundStatements);
 
-		context.pushBoundStatement(bs, ConsistencyLevel.EACH_QUORUM);
+		context.pushBoundStatement(bs, EACH_QUORUM);
 
 		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		assertThat(boundStatements).containsOnly(bs);
@@ -72,8 +77,8 @@ public class CQLImmediateFlushContextTest
 		List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
 		Whitebox.setInternalState(context, "boundStatements", boundStatements);
 
-		context.setWriteConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		context.pushBoundStatement(bs, ConsistencyLevel.EACH_QUORUM);
+		context.setWriteConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
+		context.pushBoundStatement(bs, EACH_QUORUM);
 
 		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
 		assertThat(boundStatements).containsOnly(bs);
@@ -85,8 +90,7 @@ public class CQLImmediateFlushContextTest
 		ResultSet result = mock(ResultSet.class);
 		when(daoContext.execute(query)).thenReturn(result);
 
-		ResultSet actual = context.executeImmediateWithConsistency(query,
-				ConsistencyLevel.EACH_QUORUM);
+		ResultSet actual = context.executeImmediateWithConsistency(query, EACH_QUORUM);
 
 		assertThat(actual).isSameAs(result);
 		verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
@@ -99,9 +103,8 @@ public class CQLImmediateFlushContextTest
 		ResultSet result = mock(ResultSet.class);
 		when(daoContext.execute(query)).thenReturn(result);
 
-		context.setReadConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-		ResultSet actual = context.executeImmediateWithConsistency(query,
-				ConsistencyLevel.EACH_QUORUM);
+		context.setReadConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
+		ResultSet actual = context.executeImmediateWithConsistency(query, EACH_QUORUM);
 
 		assertThat(actual).isSameAs(result);
 		verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);

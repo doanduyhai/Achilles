@@ -1,24 +1,31 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import integration.tests.entity.CompleteBean;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftBatchingEntityManagerTest
@@ -49,6 +56,9 @@ public class ThriftBatchingEntityManagerTest
 	@Mock
 	private AchillesEntityManagerFactory emf;
 
+	@Captor
+	private ArgumentCaptor<Optional<ConsistencyLevel>> consistencyCaptor;
+
 	@Before
 	public void setUp()
 	{
@@ -69,8 +79,12 @@ public class ThriftBatchingEntityManagerTest
 	{
 		em.startBatch(EACH_QUORUM, LOCAL_QUORUM);
 		verify(flushContext).startBatch();
-		verify(flushContext).setReadConsistencyLevel(EACH_QUORUM);
-		verify(flushContext).setWriteConsistencyLevel(LOCAL_QUORUM);
+		verify(flushContext).setReadConsistencyLevel(consistencyCaptor.capture());
+		verify(flushContext).setWriteConsistencyLevel(consistencyCaptor.capture());
+
+		List<Optional<ConsistencyLevel>> allValues = consistencyCaptor.getAllValues();
+		assertThat(allValues.get(0).get()).isSameAs(EACH_QUORUM);
+		assertThat(allValues.get(1).get()).isSameAs(LOCAL_QUORUM);
 	}
 
 	@Test

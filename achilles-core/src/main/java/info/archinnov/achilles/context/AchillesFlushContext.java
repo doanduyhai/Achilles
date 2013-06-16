@@ -2,6 +2,8 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import com.google.common.base.Optional;
+
 /**
  * AchillesFlushContext
  * 
@@ -10,7 +12,11 @@ import info.archinnov.achilles.type.ConsistencyLevel;
  */
 public abstract class AchillesFlushContext
 {
-	protected ConsistencyContext consistencyContext;
+	protected Optional<Integer> ttlO;
+
+	public AchillesFlushContext(Optional<Integer> ttlO) {
+		this.ttlO = ttlO;
+	}
 
 	public abstract void startBatch();
 
@@ -20,9 +26,9 @@ public abstract class AchillesFlushContext
 
 	public abstract void cleanUp();
 
-	public abstract void setWriteConsistencyLevel(ConsistencyLevel writeLevel);
+	public abstract void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO);
 
-	public abstract void setReadConsistencyLevel(ConsistencyLevel readLevel);
+	public abstract void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO);
 
 	public abstract void reinitConsistencyLevels();
 

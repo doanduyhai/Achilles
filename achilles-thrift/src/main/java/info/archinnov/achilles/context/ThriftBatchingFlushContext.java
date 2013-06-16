@@ -2,9 +2,12 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.context.AchillesFlushContext.FlushType.BATCH;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftBatchingFlushContext
@@ -18,9 +21,10 @@ public class ThriftBatchingFlushContext extends ThriftAbstractFlushContext
 	private static final Logger log = LoggerFactory.getLogger(ThriftImmediateFlushContext.class);
 
 	public ThriftBatchingFlushContext(ThriftDaoContext thriftDaoContext,
-			AchillesConsistencyLevelPolicy policy)
+			AchillesConsistencyLevelPolicy policy, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
-		super(thriftDaoContext, policy);
+		super(thriftDaoContext, policy, readLevelO, writeLevelO, ttlO);
 	}
 
 	@Override
@@ -40,6 +44,8 @@ public class ThriftBatchingFlushContext extends ThriftAbstractFlushContext
 	public void endBatch()
 	{
 		log.debug("Ending current batch");
+		consistencyContext.setReadConsistencyLevel();
+		consistencyContext.setWriteConsistencyLevel();
 		doFlush();
 	}
 

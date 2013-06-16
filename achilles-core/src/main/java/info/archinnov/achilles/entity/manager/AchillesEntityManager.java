@@ -61,7 +61,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}'", entity);
 
-		this.persist(entity, Optional.<ConsistencyLevel> absent());
+		persist(entity, Optional.<ConsistencyLevel> absent());
 	}
 
 	/**
@@ -78,7 +78,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}' with write consistency level {}", entity, writeLevel);
 
-		this.persist(entity, Optional.fromNullable(writeLevel));
+		persist(entity, Optional.fromNullable(writeLevel));
 	}
 
 	void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO)
@@ -92,8 +92,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 
-		CONTEXT context = initPersistenceContext(entity);
-		context.persist(writeLevelO);
+		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
+				writeLevelO, Optional.<Integer> absent());
+		context.persist();
 	}
 
 	/**
@@ -125,7 +126,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		{
 			log.debug("Merging entity '{}'", proxifier.unproxy(entity));
 		}
-		return this.merge(entity, Optional.<ConsistencyLevel> absent());
+		return merge(entity, Optional.<ConsistencyLevel> absent());
 	}
 
 	/**
@@ -168,8 +169,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
-		CONTEXT context = initPersistenceContext(entity);
-		return context.<T> merge(entity, writeLevelO);
+		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
+				writeLevelO, Optional.<Integer> absent());
+		return context.<T> merge(entity);
 
 	}
 
@@ -222,8 +224,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity);
-		context.remove(writeLevelO);
+		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
+				writeLevelO, Optional.<Integer> absent());
+		context.remove();
 	}
 
 	/**
@@ -267,8 +270,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey);
-		return context.<T> find(entityClass, readLevelO);
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO,
+				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+		return context.<T> find(entityClass);
 	}
 
 	/**
@@ -314,8 +318,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey);
-		return context.<T> getReference(entityClass, readLevelO);
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO,
+				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+		return context.<T> getReference(entityClass);
 	}
 
 	/**
@@ -362,8 +367,9 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity);
-		context.refresh(readLevelO);
+		CONTEXT context = initPersistenceContext(entity, readLevelO,
+				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+		context.refresh();
 	}
 
 	/**
@@ -461,9 +467,13 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		return proxifier.unproxy(proxies);
 	}
 
-	protected abstract CONTEXT initPersistenceContext(Object entity);
+	protected abstract CONTEXT initPersistenceContext(Object entity,
+			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttl);
 
-	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey);
+	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey,
+			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttl);
 
 	private EntityMeta prepareEntityForInitialization(Object entity)
 	{

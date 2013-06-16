@@ -2,18 +2,21 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import com.google.common.base.Optional;
+
 /**
  * ConsistencyContext
  * 
  * @author DuyHai DOAN
  * 
  */
-public interface ConsistencyContext {
+public interface ConsistencyContext
+{
 
-    public void setWriteConsistencyLevel(ConsistencyLevel writeLevel);
+	public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevel);
 
-    public void setReadConsistencyLevel(ConsistencyLevel readLevel);
+	public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevel);
 
-    public void reinitConsistencyLevels();
+	public void reinitConsistencyLevels();
 
 }

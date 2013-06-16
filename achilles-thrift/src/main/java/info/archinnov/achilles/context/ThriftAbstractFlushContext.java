@@ -18,6 +18,8 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+
 /**
  * ThriftAbstractFlushContext
  * 
@@ -29,15 +31,18 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 
 	protected ThriftDaoContext thriftDaoContext;
+	protected ThriftConsistencyContext consistencyContext;
 
 	protected Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>();
 	protected boolean hasCustomConsistencyLevels = false;
 
 	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
-			AchillesConsistencyLevelPolicy policy)
+			AchillesConsistencyLevelPolicy policy, Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
+		super(ttlO);
 		this.thriftDaoContext = thriftDaoContext;
-		this.consistencyContext = new ThriftConsistencyContext(policy);
+		this.consistencyContext = new ThriftConsistencyContext(policy, readLevelO, writeLevelO);
 	}
 
 	protected void doFlush()
@@ -69,17 +74,17 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 	}
 
 	@Override
-	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
+	public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO)
 	{
 		hasCustomConsistencyLevels = true;
-		consistencyContext.setWriteConsistencyLevel(writeLevel);
+		consistencyContext.setWriteConsistencyLevel(writeLevelO);
 	}
 
 	@Override
-	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
+	public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO)
 	{
 		hasCustomConsistencyLevels = true;
-		consistencyContext.setReadConsistencyLevel(readLevel);
+		consistencyContext.setReadConsistencyLevel(readLevelO);
 	}
 
 	@Override
@@ -150,4 +155,8 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		return mutator;
 	}
 
+	public ThriftConsistencyContext getConsistencyContext()
+	{
+		return consistencyContext;
+	}
 }

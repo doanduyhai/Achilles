@@ -3,9 +3,9 @@ package info.archinnov.achilles.proxy.wrapper;
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.format;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
@@ -48,69 +48,93 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public Counter get(K key)
 	{
 		log.trace("Get counter value having key {}", key);
-		Composite comp = thriftCompositeFactory.createForQuery(propertyMeta, key, EQUAL);
+		final Composite comp = thriftCompositeFactory.createForQuery(propertyMeta, key, EQUAL);
 
-		return ThriftCounterWrapperBuilder.builder(context) //
-				.columnName(comp)
-				.counterDao(wideMapCounterDao)
-				.key(id)
-				.readLevel(propertyMeta.getReadConsistencyLevel())
-				.writeLevel(propertyMeta.getWriteConsistencyLevel())
-				.build();
+		Long counterValue = context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<Long>()
+				{
+					@Override
+					public Long execute()
+					{
+						return wideMapCounterDao.getCounterValue(id, comp);
+					}
+				}, propertyMeta.getReadConsistencyLevel());
+
+		if (counterValue != null)
+		{
+			return ThriftCounterWrapperBuilder.builder(context) //
+					.columnName(comp)
+					.counterDao(wideMapCounterDao)
+					.key(id)
+					.readLevel(propertyMeta.getReadConsistencyLevel())
+					.writeLevel(propertyMeta.getWriteConsistencyLevel())
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 
 	}
 
 	@Override
 	public void insert(K key, Counter value, int ttl)
 	{
-		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
 	}
 
 	@Override
-	public void insert(K key, Counter value)
+	public void insert(K key, final Counter value)
 	{
 		log.trace("Insert counter value {} with key {}", value, key);
-		Composite comp = thriftCompositeFactory.createBaseComposite(propertyMeta, key);
-		try
+		final Composite comp = thriftCompositeFactory.createBaseComposite(propertyMeta, key);
+
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
 		{
-			wideMapCounterDao.incrementCounter(id, comp, value.get());
-		}
-		catch (Exception e)
-		{
-			log.trace("Exception raised, clean up consistency levels");
-			context.cleanUpFlushContext();
-			throw new AchillesException(e);
-		}
+			@Override
+			public Void execute()
+			{
+				wideMapCounterDao.incrementCounter(id, comp, value.get());
+				return null;
+			}
+		}, propertyMeta.getWriteConsistencyLevel());
 	}
 
 	@Override
-	public List<KeyValue<K, Counter>> find(K start, K end, int count, BoundingMode bounds,
-			OrderingMode ordering)
+	public List<KeyValue<K, Counter>> find(K start, K end, final int count, BoundingMode bounds,
+			final OrderingMode ordering)
 	{
 		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
 
-		Composite[] queryComps = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
-				bounds, ordering);
+		final Composite[] queryComps = thriftCompositeFactory.createForQuery(propertyMeta, start,
+				end, bounds, ordering);
 		if (log.isTraceEnabled())
 		{
 			log.trace("Find key/value pairs in range {} / {} with bounding {} and ordering {}",
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
 
-		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HCounterColumn<Composite>> hColumns = context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<HCounterColumn<Composite>>>()
+				{
+					@Override
+					public List<HCounterColumn<Composite>> execute()
+					{
+						return wideMapCounterDao.findCounterColumnsRange(id, queryComps[0],
+								queryComps[1], count, ordering.isReverse());
+					}
+				}, propertyMeta.getReadConsistencyLevel());
 
 		return thriftKeyValueFactory.createCounterKeyValueList(context, propertyMeta, hColumns);
 	}
 
 	@Override
-	public List<Counter> findValues(K start, K end, int count, BoundingMode bounds,
-			OrderingMode ordering)
+	public List<Counter> findValues(K start, K end, final int count, BoundingMode bounds,
+			final OrderingMode ordering)
 	{
 		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
 
-		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
+		final Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
 		if (log.isTraceEnabled())
@@ -118,17 +142,27 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 			log.trace("Find value in range {} / {} with bounding {} and ordering {}",
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
-		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+
+		List<HCounterColumn<Composite>> hColumns = context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<HCounterColumn<Composite>>>()
+				{
+					@Override
+					public List<HCounterColumn<Composite>> execute()
+					{
+						return wideMapCounterDao.findCounterColumnsRange(id, queryComps[0],
+								queryComps[1], count, ordering.isReverse());
+					}
+				}, propertyMeta.getReadConsistencyLevel());
 
 		return thriftKeyValueFactory.createCounterValueList(context, propertyMeta, hColumns);
 	}
 
 	@Override
-	public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
+	public List<K> findKeys(K start, K end, final int count, BoundingMode bounds,
+			final OrderingMode ordering)
 	{
 		thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
-		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
+		final Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
 		if (log.isTraceEnabled())
@@ -137,16 +171,25 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 					format(queryComps[0]), format(queryComps[1]), bounds.name(), ordering.name());
 		}
 
-		List<HCounterColumn<Composite>> hColumns = wideMapCounterDao.findCounterColumnsRange(id,
-				queryComps[0], queryComps[1], count, ordering.isReverse());
+		List<HCounterColumn<Composite>> hColumns = context.executeWithReadConsistencyLevel(
+				new SafeExecutionContext<List<HCounterColumn<Composite>>>()
+				{
+					@Override
+					public List<HCounterColumn<Composite>> execute()
+					{
+						return wideMapCounterDao.findCounterColumnsRange(id, queryComps[0],
+								queryComps[1], count, ordering.isReverse());
+					}
+				}, propertyMeta.getReadConsistencyLevel());
+
 		return thriftKeyValueFactory.createCounterKeyList(propertyMeta, hColumns);
 	}
 
 	@Override
-	public KeyValueIterator<K, Counter> iterator(K start, K end, int count, BoundingMode bounds,
-			OrderingMode ordering)
+	public KeyValueIterator<K, Counter> iterator(K start, K end, final int count,
+			BoundingMode bounds, final OrderingMode ordering)
 	{
-		Composite[] queryComps = thriftCompositeFactory.createForQuery( //
+		final Composite[] queryComps = thriftCompositeFactory.createForQuery( //
 				propertyMeta, start, end, bounds, ordering);
 
 		if (log.isTraceEnabled())
@@ -156,9 +199,18 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 							format(queryComps[0]), format(queryComps[1]), bounds.name(),
 							ordering.name(), count);
 		}
-		ThriftCounterSliceIterator<?> columnSliceIterator = wideMapCounterDao
-				.getCounterColumnsIterator(id, queryComps[0], queryComps[1], ordering.isReverse(),
-						count);
+
+		ThriftCounterSliceIterator<?> columnSliceIterator = context
+				.executeWithReadConsistencyLevel(
+						new SafeExecutionContext<ThriftCounterSliceIterator<?>>()
+						{
+							@Override
+							public ThriftCounterSliceIterator<?> execute()
+							{
+								return wideMapCounterDao.getCounterColumnsIterator(id,
+										queryComps[0], queryComps[1], ordering.isReverse(), count);
+							}
+						}, propertyMeta.getReadConsistencyLevel());
 
 		return thriftIteratorFactory.createCounterKeyValueIterator(context, columnSliceIterator,
 				propertyMeta);
@@ -167,28 +219,28 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public void remove(K key)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void remove(K start, K end, BoundingMode bounds)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeFirst(int count)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeLast(int count)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
@@ -201,7 +253,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public void insert(K key, Counter value, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -209,14 +261,14 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public void insert(K key, Counter value, int ttl, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot insert counter value with ttl");
 	}
 
 	@Override
 	public List<KeyValue<K, Counter>> find(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -225,7 +277,6 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<KeyValue<K, Counter>> find(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -234,7 +285,6 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<KeyValue<K, Counter>> findBoundsExclusive(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -243,7 +293,6 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<KeyValue<K, Counter>> findReverse(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -252,7 +301,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<KeyValue<K, Counter>> findReverseBoundsExclusive(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -260,7 +309,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValue<K, Counter> findFirst(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -268,7 +317,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<KeyValue<K, Counter>> findFirst(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -276,7 +325,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValue<K, Counter> findLast(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -284,7 +333,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<KeyValue<K, Counter>> findLast(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -292,7 +341,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<Counter> findValues(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -301,7 +350,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<Counter> findValues(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -310,7 +359,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<Counter> findBoundsExclusiveValues(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -318,7 +367,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<Counter> findReverseValues(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -327,7 +376,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<Counter> findReverseBoundsExclusiveValues(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -335,7 +384,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public Counter findFirstValue(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -343,7 +392,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<Counter> findFirstValues(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -358,7 +407,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<Counter> findLastValues(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -374,7 +423,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findKeys(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -382,7 +431,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findBoundsExclusiveKeys(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -390,7 +439,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findReverseKeys(K start, K end, int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -399,7 +448,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public List<K> findReverseBoundsExclusiveKeys(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -414,7 +463,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findFirstKeys(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -422,7 +471,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public K findLastKey(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -430,7 +479,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public List<K> findLastKeys(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -438,7 +487,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValueIterator<K, Counter> iterator(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -447,7 +496,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public KeyValueIterator<K, Counter> iterator(K start, K end, int count, BoundingMode bounds,
 			OrderingMode ordering, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -455,7 +504,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValueIterator<K, Counter> iterator(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -464,7 +513,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public KeyValueIterator<K, Counter> iterator(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -473,7 +522,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public KeyValueIterator<K, Counter> iteratorBoundsExclusive(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -481,7 +530,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValueIterator<K, Counter> iteratorReverse(ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -489,7 +538,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public KeyValueIterator<K, Counter> iteratorReverse(int count, ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -498,7 +547,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public KeyValueIterator<K, Counter> iteratorReverse(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -507,7 +556,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	public KeyValueIterator<K, Counter> iteratorReverseBoundsExclusive(K start, K end, int count,
 			ConsistencyLevel readLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException(
 				"Please set runtime consistency level at Counter level instead of at WideMap level");
 	}
@@ -515,56 +564,55 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
 	@Override
 	public void remove(K key, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void remove(K start, K end, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void remove(K start, K end, BoundingMode bounds, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeBoundsExclusive(K start, K end, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeFirst(ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeFirst(int count, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeLast(ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
+
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 
 	@Override
 	public void removeLast(int count, ConsistencyLevel writeLevel)
 	{
-		context.cleanUpFlushContext();
 		throw new UnsupportedOperationException("Cannot remove counter value");
 	}
 

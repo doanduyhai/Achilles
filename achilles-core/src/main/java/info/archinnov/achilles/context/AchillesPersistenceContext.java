@@ -28,6 +28,7 @@ public abstract class AchillesPersistenceContext
 	protected Object primaryKey;
 	protected AchillesFlushContext flushContext;
 	protected Set<String> entitiesIdentity;
+
 	protected boolean loadEagerFields = true;
 
 	private AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
@@ -72,17 +73,17 @@ public abstract class AchillesPersistenceContext
 		return entitiesIdentity.add(ObjectUtils.identityToString(entity));
 	}
 
-	public abstract void persist(Optional<ConsistencyLevel> writeLevelO);
+	public abstract void persist();
 
-	public abstract <T> T merge(T entity, Optional<ConsistencyLevel> writeLevelO);
+	public abstract <T> T merge(T entity);
 
-	public abstract void remove(Optional<ConsistencyLevel> writeLevelO);
+	public abstract void remove();
 
-	public abstract <T> T find(Class<T> entityClass, Optional<ConsistencyLevel> readLevelO);
+	public abstract <T> T find(Class<T> entityClass);
 
-	public abstract <T> T getReference(Class<T> entityClass, Optional<ConsistencyLevel> readLevelO);
+	public abstract <T> T getReference(Class<T> entityClass);
 
-	public abstract void refresh(Optional<ConsistencyLevel> readLevelO);
+	public abstract void refresh();
 
 	public abstract AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta,
 			Object joinEntity);
@@ -115,24 +116,19 @@ public abstract class AchillesPersistenceContext
 		flushContext.endBatch();
 	}
 
-	public void setReadConsistencyLevel(ConsistencyLevel readLevel)
+	public void setReadConsistencyLevelO(Optional<ConsistencyLevel> readLevelO)
 	{
-		flushContext.setReadConsistencyLevel(readLevel);
+		flushContext.setReadConsistencyLevel(readLevelO);
 	}
 
-	public void setWriteConsistencyLevel(ConsistencyLevel writeLevel)
+	public void setWriteConsistencyLevelO(Optional<ConsistencyLevel> writeLevelO)
 	{
-		flushContext.setWriteConsistencyLevel(writeLevel);
+		flushContext.setWriteConsistencyLevel(writeLevelO);
 	}
 
 	public void reinitConsistencyLevels()
 	{
 		flushContext.reinitConsistencyLevels();
-	}
-
-	public void cleanUpFlushContext()
-	{
-		flushContext.cleanUp();
 	}
 
 	public EntityMeta getEntityMeta()
