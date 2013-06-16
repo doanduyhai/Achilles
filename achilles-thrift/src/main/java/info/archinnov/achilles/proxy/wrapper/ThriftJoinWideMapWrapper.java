@@ -26,6 +26,8 @@ import me.prettyprint.hector.api.beans.HColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+
 /**
  * ThriftJoinWideMapWrapper
  * 
@@ -78,7 +80,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 		log.trace("Insert join value {} with key {} and ttl {}", value, key, ttl);
 
 		Object joinId = persistOrEnsureJoinEntityExists(value);
-		dao.setValueBatch(id, buildComposite(key), joinId, ttl,
+		dao.setValueBatch(id, buildComposite(key), joinId, Optional.fromNullable(ttl),
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
@@ -89,7 +91,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
 		log.trace("Insert join value {} with key {}", value, key);
 
 		Object joinId = persistOrEnsureJoinEntityExists(value);
-		dao.setValueBatch(id, buildComposite(key), joinId,
+		dao.setValueBatch(id, buildComposite(key), joinId, Optional.<Integer> absent(),
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}

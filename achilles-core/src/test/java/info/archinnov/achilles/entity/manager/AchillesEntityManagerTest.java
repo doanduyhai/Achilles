@@ -81,6 +81,15 @@ public class AchillesEntityManagerTest
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
+	@Mock
+	private EntityMeta entityMeta;
+
+	@Captor
+	ArgumentCaptor<Optional<ConsistencyLevel>> levelOCaptor;
+
+	@Captor
+	ArgumentCaptor<Optional<Integer>> ttlOCaptor;
+
 	private Long primaryKey = 1165446L;
 	private CompleteBean entity = CompleteBeanTestBuilder
 			.builder()
@@ -90,12 +99,6 @@ public class AchillesEntityManagerTest
 
 	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 	private Optional<Integer> noTtl = Optional.<Integer> absent();
-
-	@Mock
-	private EntityMeta entityMeta;
-
-	@Captor
-	ArgumentCaptor<Optional<ConsistencyLevel>> levelOCaptor;
 
 	@Before
 	public void setUp() throws Exception
@@ -116,7 +119,7 @@ public class AchillesEntityManagerTest
 		when(em.initPersistenceContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(
 				context);
 		doCallRealMethod().when(em).persist(entity);
-		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class));
+		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
 
 		em.persist(entity);
 
@@ -134,7 +137,7 @@ public class AchillesEntityManagerTest
 				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
 						eq(noTtl))).thenReturn(context);
 		doCallRealMethod().when(em).persist(entity, EACH_QUORUM);
-		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class));
+		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
 
 		em.persist(entity, EACH_QUORUM);
 
@@ -146,11 +149,50 @@ public class AchillesEntityManagerTest
 	}
 
 	@Test
+	public void should_persist_with_ttl() throws Exception
+	{
+		when(proxifier.isProxy(entity)).thenReturn(false);
+		when(
+				em.initPersistenceContext(eq(entity), eq(noConsistency), eq(noConsistency),
+						ttlOCaptor.capture())).thenReturn(context);
+		doCallRealMethod().when(em).persist(entity, 150);
+		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
+
+		em.persist(entity, 150);
+
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+		verify(context).persist();
+
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
+	}
+
+	@Test
+	public void should_persist_with_ttl_and_consistency_level() throws Exception
+	{
+		when(proxifier.isProxy(entity)).thenReturn(false);
+		when(
+				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
+						ttlOCaptor.capture())).thenReturn(context);
+		doCallRealMethod().when(em).persist(entity, 150, EACH_QUORUM);
+		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
+
+		em.persist(entity, 150, EACH_QUORUM);
+
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+		verify(context).persist();
+
+		assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
+	}
+
+	@Test
 	public void should_exception_trying_to_persist_a_managed_entity() throws Exception
 	{
 		when(proxifier.isProxy(entity)).thenReturn(true);
 		doCallRealMethod().when(em).persist(entity);
-		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class));
+		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
 
 		exception.expect(IllegalStateException.class);
 
@@ -162,7 +204,7 @@ public class AchillesEntityManagerTest
 	{
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity);
-		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class));
+		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
 
 		CompleteBean mergedEntity = em.merge(entity);
 
@@ -180,7 +222,7 @@ public class AchillesEntityManagerTest
 						eq(noTtl))).thenReturn(context);
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity, EACH_QUORUM);
-		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class));
+		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
 
 		CompleteBean mergedEntity = em.merge(entity, EACH_QUORUM);
 
@@ -189,6 +231,46 @@ public class AchillesEntityManagerTest
 
 		assertThat(mergedEntity).isSameAs(entity);
 		assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+	}
+
+	@Test
+	public void should_merge_with_ttl() throws Exception
+	{
+		when(
+				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
+						ttlOCaptor.capture())).thenReturn(context);
+		when(context.merge(entity)).thenReturn(entity);
+		doCallRealMethod().when(em).merge(entity, 150, EACH_QUORUM);
+		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
+
+		CompleteBean mergedEntity = em.merge(entity, 150, EACH_QUORUM);
+
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+
+		assertThat(mergedEntity).isSameAs(entity);
+
+		assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
+	}
+
+	@Test
+	public void should_merge_with_ttl_and_consistency() throws Exception
+	{
+		when(
+				em.initPersistenceContext(eq(entity), eq(noConsistency), eq(noConsistency),
+						ttlOCaptor.capture())).thenReturn(context);
+		when(context.merge(entity)).thenReturn(entity);
+		doCallRealMethod().when(em).merge(entity, 150);
+		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
+
+		CompleteBean mergedEntity = em.merge(entity, 150);
+
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
+		verify(entityValidator).validateNotWideRow(entity, entityMetaMap);
+
+		assertThat(mergedEntity).isSameAs(entity);
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
 	}
 
 	@Test

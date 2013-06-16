@@ -1,6 +1,7 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -26,9 +27,13 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftWideMapWrapperTest
@@ -63,6 +68,9 @@ public class ThriftWideMapWrapperTest
 
 	@Mock
 	private ThriftCompositeFactory thriftCompositeFactory;
+
+	@Captor
+	private ArgumentCaptor<Optional<Integer>> ttlOCaptor;
 
 	private Long id;
 
@@ -113,7 +121,7 @@ public class ThriftWideMapWrapperTest
 	{
 		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
 		wrapper.insert(12, "test");
-		verify(dao).setValueBatch(id, comp, "test", mutator);
+		verify(dao).setValueBatch(id, comp, "test", Optional.<Integer> absent(), mutator);
 		verify(context).flush();
 	}
 
@@ -122,7 +130,8 @@ public class ThriftWideMapWrapperTest
 	{
 		when(wideMapMeta.writeValueAsSupportedTypeOrString("test")).thenReturn("test");
 		wrapper.insert(12, "test", 452);
-		verify(dao).setValueBatch(id, comp, "test", 452, mutator);
+		verify(dao).setValueBatch(eq(id), eq(comp), eq("test"), ttlOCaptor.capture(), eq(mutator));
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(452);
 		verify(context).flush();
 	}
 

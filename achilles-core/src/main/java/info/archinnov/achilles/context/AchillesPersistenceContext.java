@@ -26,13 +26,13 @@ public abstract class AchillesPersistenceContext
 	protected EntityMeta entityMeta;
 	protected Object entity;
 	protected Object primaryKey;
-	protected AchillesFlushContext flushContext;
+	protected AchillesFlushContext<?> flushContext;
 	protected Set<String> entitiesIdentity;
 
 	protected boolean loadEagerFields = true;
 
 	private AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			AchillesFlushContext flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
+			AchillesFlushContext<?> flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
 	{
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
@@ -43,7 +43,7 @@ public abstract class AchillesPersistenceContext
 	}
 
 	protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			Object entity, AchillesFlushContext flushContext, Set<String> entitiesIdentity)
+			Object entity, AchillesFlushContext<?> flushContext, Set<String> entitiesIdentity)
 	{
 		this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
 
@@ -56,7 +56,7 @@ public abstract class AchillesPersistenceContext
 	}
 
 	protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			Class<?> entityClass, Object primaryKey, AchillesFlushContext flushContext,
+			Class<?> entityClass, Object primaryKey, AchillesFlushContext<?> flushContext,
 			Set<String> entitiesIdentity)
 	{
 		this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
@@ -131,6 +131,11 @@ public abstract class AchillesPersistenceContext
 		flushContext.reinitConsistencyLevels();
 	}
 
+	public Optional<Integer> getTttO()
+	{
+		return flushContext.getTtlO();
+	}
+
 	public EntityMeta getEntityMeta()
 	{
 		return entityMeta;
@@ -171,7 +176,7 @@ public abstract class AchillesPersistenceContext
 		this.entityMeta = entityMeta;
 	}
 
-	public void setFlushContext(AchillesFlushContext flushContext)
+	public void setFlushContext(AchillesFlushContext<?> flushContext)
 	{
 		this.flushContext = flushContext;
 	}

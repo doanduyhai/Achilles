@@ -85,22 +85,6 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@Override
-	public void persist(final Object entity)
-	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				ThriftBatchingEntityManager.super.persist(entity, flushContext
-						.getConsistencyContext()
-						.getWriteLevelO());
-				return null;
-			}
-		});
-	}
-
-	@Override
 	public void persist(final Object entity, ConsistencyLevel writeLevel)
 	{
 		flushContext.cleanUp();
@@ -109,18 +93,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@Override
-	public <T> T merge(final T entity)
+	public void persist(final Object entity, int ttl, ConsistencyLevel writeLevel)
 	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
-		{
-			@Override
-			public T execute()
-			{
-				return ThriftBatchingEntityManager.super.merge(entity, flushContext
-						.getConsistencyContext()
-						.getWriteLevelO());
-			}
-		});
+		flushContext.cleanUp();
+		throw new AchillesException(
+				"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 	}
 
 	@Override
@@ -132,19 +109,11 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@Override
-	public void remove(final Object entity)
+	public <T> T merge(final T entity, int ttl, ConsistencyLevel writeLevel)
 	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				ThriftBatchingEntityManager.super.remove(entity, flushContext
-						.getConsistencyContext()
-						.getWriteLevelO());
-				return null;
-			}
-		});
+		flushContext.cleanUp();
+		throw new AchillesException(
+				"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 	}
 
 	@Override
@@ -153,21 +122,6 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 		flushContext.cleanUp();
 		throw new AchillesException(
 				"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-	}
-
-	@Override
-	public <T> T find(final Class<T> entityClass, final Object primaryKey)
-	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
-		{
-			@Override
-			public T execute()
-			{
-				return ThriftBatchingEntityManager.super.find(entityClass, primaryKey, flushContext
-						.getConsistencyContext()
-						.getReadLevelO());
-			}
-		});
 	}
 
 	@Override
@@ -180,42 +134,12 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@Override
-	public <T> T getReference(final Class<T> entityClass, final Object primaryKey)
-	{
-		return reinitConsistencyLevelsOnError(new SafeExecutionContext<T>()
-		{
-			@Override
-			public T execute()
-			{
-				return ThriftBatchingEntityManager.super.getReference(entityClass, primaryKey,
-						flushContext.getConsistencyContext().getReadLevelO());
-			}
-		});
-	}
-
-	@Override
 	public <T> T getReference(final Class<T> entityClass, final Object primaryKey,
 			ConsistencyLevel readLevel)
 	{
 		flushContext.cleanUp();
 		throw new AchillesException(
 				"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-	}
-
-	@Override
-	public void refresh(final Object entity)
-	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				ThriftBatchingEntityManager.super.refresh(entity, flushContext
-						.getConsistencyContext()
-						.getReadLevelO());
-				return null;
-			}
-		});
 	}
 
 	@Override

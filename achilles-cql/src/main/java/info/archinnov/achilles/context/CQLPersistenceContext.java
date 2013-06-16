@@ -27,7 +27,7 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 {
 
 	private CQLDaoContext daoContext;
-	private CQLAbstractFlushContext flushContext;
+	private CQLAbstractFlushContext<?> flushContext;
 	private CQLEntityLoader loader = new CQLEntityLoader();
 	private CQLEntityPersister persister = new CQLEntityPersister();
 	private CQLEntityMerger merger = new CQLEntityMerger();
@@ -35,7 +35,8 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	private EntityRefresher<CQLPersistenceContext> refresher;
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Class<?> entityClass,
+			CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext,
+			Class<?> entityClass,
 			Object primaryKey, Set<String> entitiesIdentity)
 	{
 		super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
@@ -43,14 +44,14 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	}
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-			CQLDaoContext daoContext, CQLAbstractFlushContext flushContext, Object entity,
+			CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext, Object entity,
 			Set<String> entitiesIdentity)
 	{
 		super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
 		initCollaborators(daoContext, flushContext);
 	}
 
-	private void initCollaborators(CQLDaoContext daoContext, CQLAbstractFlushContext flushContext)
+	private void initCollaborators(CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext)
 	{
 		this.refresher = new EntityRefresher<CQLPersistenceContext>(loader, proxifier);
 		this.daoContext = daoContext;
@@ -61,7 +62,8 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	public CQLPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
 	{
 		Validator.validateNotNull(joinEntity, "join entity should not be null");
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext, flushContext,
+		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
+				flushContext.duplicateWithoutTtl(),
 				joinEntity, entitiesIdentity);
 	}
 
@@ -71,7 +73,8 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	{
 		Validator.validateNotNull(entityClass, "entityClass should not be null");
 		Validator.validateNotNull(joinId, "joinId should not be null");
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext, flushContext,
+		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
+				flushContext.duplicateWithoutTtl(),
 				entityClass, joinId, entitiesIdentity);
 	}
 

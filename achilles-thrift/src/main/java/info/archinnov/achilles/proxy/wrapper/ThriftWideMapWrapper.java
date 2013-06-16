@@ -19,6 +19,8 @@ import me.prettyprint.hector.api.beans.HColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+
 /**
  * ThriftWideMapWrapper
  * 
@@ -65,6 +67,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
 
 		dao.setValueBatch(id, buildComposite(key),
 				propertyMeta.writeValueAsSupportedTypeOrString(value),
+				Optional.<Integer> absent(),
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}
@@ -75,7 +78,8 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
 		log.trace("Insert value {} with key {} and ttl {}", value, key, ttl);
 
 		dao.setValueBatch(id, buildComposite(key),
-				propertyMeta.writeValueAsSupportedTypeOrString(value), ttl,
+				propertyMeta.writeValueAsSupportedTypeOrString(value),
+				Optional.fromNullable(ttl),
 				context.getWideRowMutator(getExternalCFName()));
 		context.flush();
 	}

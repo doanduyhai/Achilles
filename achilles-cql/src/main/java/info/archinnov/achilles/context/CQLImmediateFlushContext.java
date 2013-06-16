@@ -2,6 +2,9 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import java.util.List;
+
+import com.datastax.driver.core.BoundStatement;
 import com.google.common.base.Optional;
 
 /**
@@ -10,7 +13,7 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public class CQLImmediateFlushContext extends CQLAbstractFlushContext
+public class CQLImmediateFlushContext extends CQLAbstractFlushContext<CQLImmediateFlushContext>
 {
 
 	public CQLImmediateFlushContext(CQLDaoContext daoContext,
@@ -18,6 +21,15 @@ public class CQLImmediateFlushContext extends CQLAbstractFlushContext
 			Optional<Integer> ttlO)
 	{
 		super(daoContext, readLevelO, writeLevelO, ttlO);
+	}
+
+	private CQLImmediateFlushContext(CQLDaoContext daoContext,
+			List<BoundStatement> boundStatements,
+			Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttlO)
+	{
+		super(daoContext, boundStatements, readLevelO, writeLevelO, ttlO);
 	}
 
 	@Override
@@ -30,6 +42,16 @@ public class CQLImmediateFlushContext extends CQLAbstractFlushContext
 	public FlushType type()
 	{
 		return FlushType.IMMEDIATE;
+	}
+
+	@Override
+	public CQLImmediateFlushContext duplicateWithoutTtl()
+	{
+		return new CQLImmediateFlushContext(daoContext,
+				boundStatements,
+				readLevelO,
+				writeLevelO,
+				Optional.<Integer> absent());
 	}
 
 }

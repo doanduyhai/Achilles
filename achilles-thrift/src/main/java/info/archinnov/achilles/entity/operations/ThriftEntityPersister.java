@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
 import static javax.persistence.CascadeType.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -47,7 +46,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 		{
 			log.debug("Persisting transient entity {}", entity);
 
-			persisterImpl.batchPersistVersionSerialUID((ThriftPersistenceContext) context);
+			persisterImpl.batchPersistVersionSerialUID(context);
 			for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
 			{
 				PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -56,39 +55,38 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 		}
 	}
 
-	public void persistPropertyBatch(AchillesPersistenceContext context,
+	public void persistPropertyBatch(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
 		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
 				context.getEntity());
-		ThriftPersistenceContext thriftContext = (ThriftPersistenceContext) context;
 		switch (propertyMeta.type())
 		{
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				persisterImpl.batchPersistSimpleProperty(thriftContext, propertyMeta);
+				persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
 				break;
 			case LIST:
 			case LAZY_LIST:
-				batchPersistListProperty(thriftContext, propertyMeta);
+				batchPersistListProperty(context, propertyMeta);
 				break;
 			case SET:
 			case LAZY_SET:
-				batchPersistSetProperty(thriftContext, propertyMeta);
+				batchPersistSetProperty(context, propertyMeta);
 				break;
 			case MAP:
 			case LAZY_MAP:
-				batchPersistMapProperty(thriftContext, propertyMeta);
+				batchPersistMapProperty(context, propertyMeta);
 				break;
 			case JOIN_SIMPLE:
-				batchPersistJoinEntity(thriftContext, propertyMeta);
+				batchPersistJoinEntity(context, propertyMeta);
 				break;
 			case JOIN_LIST:
 			case JOIN_SET:
-				batchPersistJoinListOrSetProperty(thriftContext, propertyMeta);
+				batchPersistJoinListOrSetProperty(context, propertyMeta);
 				break;
 			case JOIN_MAP:
-				batchPersistJoinMapProperty(thriftContext, propertyMeta);
+				batchPersistJoinMapProperty(context, propertyMeta);
 				break;
 			default:
 				break;
@@ -102,7 +100,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 				.getEntityClass()
 				.getCanonicalName(), context.getPrimaryKey());
 
-		persisterImpl.remove((ThriftPersistenceContext) context);
+		persisterImpl.remove(context);
 	}
 
 	public void removePropertyBatch(ThriftPersistenceContext context,

@@ -61,13 +61,13 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}'", entity);
 
-		persist(entity, Optional.<ConsistencyLevel> absent());
+		persist(entity, Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
 	}
 
 	/**
 	 * Persist an entity with the given Consistency Level for write. All join entities with CascadeType.PERSIST or CascadeType.ALL
 	 * 
-	 * will be also persisted, overriding their current state in Cassandra
+	 * will be also persisted with the same Consistency Level, overriding their current state in Cassandra
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
@@ -78,10 +78,49 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}' with write consistency level {}", entity, writeLevel);
 
-		persist(entity, Optional.fromNullable(writeLevel));
+		persist(entity, Optional.fromNullable(writeLevel), Optional.<Integer> absent());
 	}
 
-	void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO)
+	/**
+	 * Persist an entity with the given time-to-live. All join entities with CascadeType.PERSIST or CascadeType.ALL
+	 * 
+	 * will be also persisted <strong>but the time-to-live will not be cascaded</strong>
+	 * 
+	 * @param entity
+	 *            Entity to be persisted
+	 * @param ttl
+	 *            Time to live
+	 */
+	public void persist(final Object entity, int ttl)
+	{
+		log.debug("Persisting entity '{}' with ttl {}", entity, ttl);
+
+		persist(entity, Optional.<ConsistencyLevel> absent(), Optional.fromNullable(ttl));
+	}
+
+	/**
+	 * Persist an entity with the given time-to-live and Consistency Level. All join entities
+	 * 
+	 * with CascadeType.PERSIST or CascadeType.ALL will be also persisted with the same
+	 * 
+	 * Consistency Level <strong>but the time-to-live will not be cascaded</strong>
+	 * 
+	 * @param entity
+	 *            Entity to be persisted
+	 * @param ttl
+	 *            Time to live
+	 * @param writeLevel
+	 *            Consistency Level for write
+	 */
+	public void persist(final Object entity, int ttl, ConsistencyLevel writeLevel)
+	{
+		log.debug("Persisting entity '{}' with ttl {} and consistency level {}", entity, ttl,
+				writeLevel);
+
+		persist(entity, Optional.fromNullable(writeLevel), Optional.fromNullable(ttl));
+	}
+
+	void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
@@ -93,7 +132,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		}
 
 		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
-				writeLevelO, Optional.<Integer> absent());
+				writeLevelO, ttlO);
 		context.persist();
 	}
 
@@ -126,7 +165,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		{
 			log.debug("Merging entity '{}'", proxifier.unproxy(entity));
 		}
-		return merge(entity, Optional.<ConsistencyLevel> absent());
+		return merge(entity, Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
 	}
 
 	/**
@@ -161,16 +200,92 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 			log.debug("Merging entity '{}' with write consistency level {}",
 					proxifier.unproxy(entity), writeLevel);
 		}
-		return this.merge(entity, Optional.fromNullable(writeLevel));
+		return this.merge(entity, Optional.fromNullable(writeLevel), Optional.<Integer> absent());
 
 	}
 
-	<T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO)
+	/**
+	 * Merge an entity with the given time-to-live. All join entities with CascadeType.MERGE or CascadeType.ALL
+	 * 
+	 * will be also merged <strong>but the time-to-live will not be cascaded</strong>, updating their current state in Cassandra.
+	 * 
+	 * Calling merge on a transient entity will persist it and returns a managed
+	 * 
+	 * instance.
+	 * 
+	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * 
+	 * in parameter if the latter is in managed state. It was designed on purpose
+	 * 
+	 * so you do not loose the reference of the passed entity. For transient
+	 * 
+	 * entity, the return value is a new proxy object
+	 * 
+	 * </strong>
+	 * 
+	 * @param entity
+	 *            Entity to be merged
+	 * @param ttl
+	 *            Time to live
+	 * @return Merged entity or a new proxified entity
+	 */
+	public <T> T merge(final T entity, int ttl)
+	{
+		if (log.isDebugEnabled())
+		{
+			log.debug("Merging entity '{}' with ttl {}",
+					proxifier.unproxy(entity), ttl);
+		}
+		return this
+				.merge(entity, Optional.<ConsistencyLevel> absent(), Optional.fromNullable(ttl));
+
+	}
+
+	/**
+	 * Merge an entity with the given time-to-live and Consistency Level. All join entities with
+	 * 
+	 * CascadeType.MERGE or CascadeType.ALL will be also merged with the same Consistency Level
+	 * 
+	 * <strong>but the time-to-live will not be cascaded</strong>
+	 * 
+	 * Calling merge on a transient entity will persist it and returns a managed instance.
+	 * 
+	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * 
+	 * in parameter if the latter is in managed state. It was designed on purpose
+	 * 
+	 * so you do not loose the reference of the passed entity. For transient
+	 * 
+	 * entity, the return value is a new proxy object
+	 * 
+	 * </strong>
+	 * 
+	 * @param entity
+	 *            Entity to be merged
+	 * @param ttl
+	 *            Time to live
+	 * @param writeLevel
+	 *            Consistency Level for write
+	 * @return Merged entity or a new proxified entity
+	 */
+	public <T> T merge(final T entity, int ttl, ConsistencyLevel writeLevel)
+	{
+		if (log.isDebugEnabled())
+		{
+			log.debug("Merging entity '{}' with ttl {} and consistency level {}",
+					proxifier.unproxy(entity), ttl, writeLevel);
+		}
+		return this
+				.merge(entity, Optional.fromNullable(writeLevel), Optional.fromNullable(ttl));
+
+	}
+
+	<T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
 		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
-				writeLevelO, Optional.<Integer> absent());
+				writeLevelO, ttlO);
 		return context.<T> merge(entity);
 
 	}

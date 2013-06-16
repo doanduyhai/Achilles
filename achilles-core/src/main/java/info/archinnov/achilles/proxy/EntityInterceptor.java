@@ -118,6 +118,7 @@ public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceConte
 									propertyMeta.getPropertyName(),
 									propertyMeta.getEntityClassName());
 
+					@SuppressWarnings("unchecked")
 					CONTEXT joinContext = (CONTEXT) context.newPersistenceContext(
 							propertyMeta.joinMeta(), rawValue);
 					result = proxifier.buildProxy(rawValue, joinContext);
@@ -131,6 +132,7 @@ public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceConte
 					log.trace("Build list wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
+					@SuppressWarnings("unchecked")
 					List<V> list = (List<V>) rawValue;
 					result = ListWrapperBuilder
 							.builder(context, list)
@@ -149,6 +151,7 @@ public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceConte
 					log.trace("Build set wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
+					@SuppressWarnings("unchecked")
 					Set<V> set = (Set<V>) rawValue;
 					result = SetWrapperBuilder
 							.builder(context, set)
@@ -167,6 +170,7 @@ public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceConte
 					log.trace("Build map wrapper for property {} of entity of class {} ",
 							propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
+					@SuppressWarnings("unchecked")
 					Map<K, V> map = (Map<K, V>) rawValue;
 					result = MapWrapperBuilder //
 							.builder(context, map)
@@ -324,6 +328,7 @@ public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceConte
 		this.context = context;
 	}
 
+	@SuppressWarnings("unchecked")
 	private <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(Method method)
 	{
 		return (PropertyMeta<K, V>) getterMetas.get(method);

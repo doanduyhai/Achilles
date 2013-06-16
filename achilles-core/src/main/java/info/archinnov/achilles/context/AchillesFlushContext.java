@@ -10,12 +10,17 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesFlushContext
+public abstract class AchillesFlushContext<T extends AchillesFlushContext<T>>
 {
 	protected Optional<Integer> ttlO;
 
 	public AchillesFlushContext(Optional<Integer> ttlO) {
 		this.ttlO = ttlO;
+	}
+
+	public Optional<Integer> getTtlO()
+	{
+		return ttlO;
 	}
 
 	public abstract void startBatch();
@@ -33,6 +38,8 @@ public abstract class AchillesFlushContext
 	public abstract void reinitConsistencyLevels();
 
 	public abstract FlushType type();
+
+	public abstract T duplicateWithoutTtl();
 
 	public static enum FlushType
 	{

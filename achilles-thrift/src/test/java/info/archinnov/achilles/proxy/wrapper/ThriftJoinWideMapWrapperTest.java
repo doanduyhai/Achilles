@@ -45,12 +45,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftJoinWideMapWrapperTest
@@ -117,6 +121,9 @@ public class ThriftJoinWideMapWrapperTest
 
 	@Mock
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
+
+	@Captor
+	private ArgumentCaptor<Optional<Integer>> ttlOCaptor;
 
 	private EntityMeta entityMeta;
 
@@ -226,7 +233,7 @@ public class ThriftJoinWideMapWrapperTest
 		when(thriftImmediateFlushContext.getWideRowMutator("external_cf")).thenReturn(mutator);
 		wrapper.insert(key, entity);
 
-		verify(dao).setValueBatch(id, comp, entity.getId(), mutator);
+		verify(dao).setValueBatch(id, comp, entity.getId(), Optional.<Integer> absent(), mutator);
 		verify(thriftImmediateFlushContext).flush();
 	}
 
@@ -260,8 +267,10 @@ public class ThriftJoinWideMapWrapperTest
 
 		wrapper.insert(key, entity, 150);
 
-		verify(dao).setValueBatch(id, comp, entity.getId(), 150, mutator);
+		verify(dao).setValueBatch(eq(id), eq(comp), eq(entity.getId()), ttlOCaptor.capture(),
+				eq(mutator));
 		verify(thriftImmediateFlushContext).flush();
+		assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
 	}
 
 	@Test

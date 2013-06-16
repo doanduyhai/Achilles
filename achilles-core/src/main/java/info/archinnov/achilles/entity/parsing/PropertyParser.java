@@ -409,6 +409,7 @@ public class PropertyParser
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field)
 	{
 		log.trace("Determine generic types for field Map<K,V> {} of entity class {}",

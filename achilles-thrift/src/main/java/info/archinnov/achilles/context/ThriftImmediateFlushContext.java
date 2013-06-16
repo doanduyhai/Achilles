@@ -2,7 +2,13 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.context.AchillesFlushContext.FlushType.IMMEDIATE;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
+import java.util.Map;
+
+import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +21,8 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext
+public class ThriftImmediateFlushContext extends
+		ThriftAbstractFlushContext<ThriftImmediateFlushContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftImmediateFlushContext.class);
 
@@ -24,6 +31,15 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext
 			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		super(thriftDaoContext, policy, readLevelO, writeLevelO, ttlO);
+	}
+
+	public ThriftImmediateFlushContext(ThriftDaoContext thriftDaoContext,
+			ThriftConsistencyContext consistencyContext,
+			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap,
+			boolean hasCustomConsistencyLevels,
+			Optional<Integer> ttlO)
+	{
+		super(thriftDaoContext, consistencyContext, mutatorMap, hasCustomConsistencyLevels, ttlO);
 	}
 
 	@Override
@@ -51,5 +67,15 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext
 	public FlushType type()
 	{
 		return IMMEDIATE;
+	}
+
+	@Override
+	public ThriftImmediateFlushContext duplicateWithoutTtl()
+	{
+		return new ThriftImmediateFlushContext(thriftDaoContext,
+				consistencyContext,
+				mutatorMap,
+				hasCustomConsistencyLevels,
+				Optional.<Integer> absent());
 	}
 }

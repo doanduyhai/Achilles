@@ -17,18 +17,33 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class CQLAbstractFlushContext extends AchillesFlushContext
+public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>> extends
+		AchillesFlushContext<T>
 {
 
-	private List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-	private Optional<ConsistencyLevel> readLevelO;
-	private Optional<ConsistencyLevel> writeLevelO;
-	private CQLDaoContext daoContext;
+	protected Optional<ConsistencyLevel> readLevelO;
+	protected Optional<ConsistencyLevel> writeLevelO;
+	protected CQLDaoContext daoContext;
+
+	protected List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
 
 	public CQLAbstractFlushContext(CQLDaoContext daoContext, Optional<ConsistencyLevel> readLevelO,
 			Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
 	{
 		super(ttlO);
+		this.daoContext = daoContext;
+		this.readLevelO = readLevelO;
+		this.writeLevelO = writeLevelO;
+	}
+
+	protected CQLAbstractFlushContext(CQLDaoContext daoContext,
+			List<BoundStatement> boundStatements,
+			Optional<ConsistencyLevel> readLevelO,
+			Optional<ConsistencyLevel> writeLevelO,
+			Optional<Integer> ttlO)
+	{
+		super(ttlO);
+		this.boundStatements = boundStatements;
 		this.daoContext = daoContext;
 		this.readLevelO = readLevelO;
 		this.writeLevelO = writeLevelO;

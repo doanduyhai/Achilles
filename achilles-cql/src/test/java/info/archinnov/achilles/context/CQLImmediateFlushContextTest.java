@@ -122,4 +122,16 @@ public class CQLImmediateFlushContextTest
 		verify(daoContext).execute(bs);
 		assertThat(boundStatements).isEmpty();
 	}
+
+	@Test
+	public void should_duplicate_without_ttl() throws Exception
+	{
+		context = new CQLImmediateFlushContext(daoContext,
+				Optional.fromNullable(LOCAL_QUORUM),
+				Optional.fromNullable(EACH_QUORUM),
+				Optional.fromNullable(10));
+		CQLImmediateFlushContext actual = context.duplicateWithoutTtl();
+
+		assertThat(actual.ttlO.isPresent()).isFalse();
+	}
 }

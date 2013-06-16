@@ -95,6 +95,13 @@ public class ThriftBatchingEntityManagerTest
 	}
 
 	@Test
+	public void should_clean_batch() throws Exception
+	{
+		em.cleanBatch();
+		verify(flushContext).cleanUp();
+	}
+
+	@Test
 	public void should_exception_when_persist_with_consistency() throws Exception
 	{
 		exception.expect(AchillesException.class);
@@ -105,6 +112,16 @@ public class ThriftBatchingEntityManagerTest
 	}
 
 	@Test
+	public void should_exception_when_persist_with_ttl_andconsistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.persist(new CompleteBean(), 11, ONE);
+	}
+
+	@Test
 	public void should_exception_when_merge_with_consistency() throws Exception
 	{
 		exception.expect(AchillesException.class);
@@ -112,6 +129,16 @@ public class ThriftBatchingEntityManagerTest
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
 		em.merge(new CompleteBean(), ONE);
+	}
+
+	@Test
+	public void should_exception_when_merge_with_ttl_and_consistency() throws Exception
+	{
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+
+		em.merge(new CompleteBean(), 11, ONE);
 	}
 
 	@Test
@@ -152,45 +179,6 @@ public class ThriftBatchingEntityManagerTest
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
 		em.refresh(new CompleteBean(), ONE);
-	}
-
-	@Test
-	public void should_remove_safely() throws Exception
-	{
-		try
-		{
-			em.remove(new CompleteBean());
-		}
-		catch (Exception e)
-		{
-			verify(flushContext).cleanUp();
-		}
-	}
-
-	@Test
-	public void should_get_reference_safely() throws Exception
-	{
-		try
-		{
-			em.getReference(CompleteBean.class, null);
-		}
-		catch (Exception e)
-		{
-			verify(flushContext).cleanUp();
-		}
-	}
-
-	@Test
-	public void should_refresh_safely() throws Exception
-	{
-		try
-		{
-			em.refresh(new CompleteBean());
-		}
-		catch (Exception e)
-		{
-			verify(flushContext).cleanUp();
-		}
 	}
 
 	@Test

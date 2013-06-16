@@ -21,10 +21,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.common.base.Optional;
 
 /**
  * ThriftImmediateFlushContextTest
@@ -38,7 +39,6 @@ public class ThriftImmediateFlushContextTest
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	@InjectMocks
 	private ThriftImmediateFlushContext context;
 
 	@Mock
@@ -67,9 +67,17 @@ public class ThriftImmediateFlushContextTest
 
 	private Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<?>, ThriftAbstractDao>>();
 
+	private Boolean hasCustomConsistencyLevels = false;
+
+	private Optional<Integer> ttlO = Optional.<Integer> absent();
+
 	@Before
 	public void setUp()
 	{
+		context = new ThriftImmediateFlushContext(thriftDaoContext, thriftConsistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
+				hasCustomConsistencyLevels, ttlO);
+
 		Whitebox.setInternalState(context, "consistencyContext", thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
 		Whitebox.setInternalState(context, "thriftDaoContext", thriftDaoContext);
@@ -193,5 +201,18 @@ public class ThriftImmediateFlushContextTest
 	public void should_get_type() throws Exception
 	{
 		assertThat(context.type()).isSameAs(FlushType.IMMEDIATE);
+	}
+
+	@Test
+	public void should_duplicate_without_ttl() throws Exception
+	{
+		context = new ThriftImmediateFlushContext(thriftDaoContext,
+				thriftConsistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
+				true,
+				Optional.fromNullable(10));
+		ThriftImmediateFlushContext actual = context.duplicateWithoutTtl();
+
+		assertThat(actual.ttlO.isPresent()).isFalse();
 	}
 }

@@ -26,7 +26,8 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
+public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushContext<T>> extends
+		AchillesFlushContext<T>
 {
 	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 
@@ -43,6 +44,19 @@ public abstract class ThriftAbstractFlushContext extends AchillesFlushContext
 		super(ttlO);
 		this.thriftDaoContext = thriftDaoContext;
 		this.consistencyContext = new ThriftConsistencyContext(policy, readLevelO, writeLevelO);
+	}
+
+	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
+			ThriftConsistencyContext consistencyContext,
+			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap,
+			boolean hasCustomConsistencyLevels,
+			Optional<Integer> ttlO)
+	{
+		super(ttlO);
+		this.thriftDaoContext = thriftDaoContext;
+		this.consistencyContext = consistencyContext;
+		this.mutatorMap = mutatorMap;
+		this.hasCustomConsistencyLevels = hasCustomConsistencyLevels;
 	}
 
 	protected void doFlush()

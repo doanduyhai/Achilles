@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -114,15 +115,26 @@ public abstract class ThriftAbstractDao
 		};
 	}
 
-	public <K, V> void insertColumnBatch(K key, Composite name, V value, Mutator<K> mutator)
+	public <K, V> void insertColumnBatch(K key, Composite name, V value, Optional<Integer> ttlO,
+			Mutator<K> mutator)
 	{
 		if (log.isTraceEnabled())
 		{
 			log.trace("Insert column {} into column family {} with key {}", format(name),
 					columnFamily, key);
 		}
-		mutator.addInsertion(key, columnFamily,
-				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()));
+
+		HColumn<Composite, V> column;
+		if (ttlO.isPresent())
+		{
+			column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer,
+					this.<V> valSrz());
+		}
+		else
+		{
+			column = HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz());
+		}
+		mutator.addInsertion(key, columnFamily, column);
 	}
 
 	public <K, V> V getValue(final K key, final Composite name)
@@ -164,32 +176,31 @@ public abstract class ThriftAbstractDao
 				columnFamily, key, name);
 
 		Mutator<K> mutator = HFactory.createMutator(keyspace, this.<K> rowSrz());
-		this.setValueBatch(key, name, value, mutator);
+		this.setValueBatch(key, name, value, Optional.<Integer> absent(), mutator);
 		this.executeMutator(mutator);
 	}
 
-	public <K, V> void setValueBatch(K key, Composite name, V value, Mutator<K> mutator)
+	public <K, V> void setValueBatch(K key, Composite name, V value, Optional<Integer> ttlO,
+			Mutator<K> mutator)
 	{
 		if (log.isTraceEnabled())
 		{
 			log
-					.trace("Set value {} as batch mutation to column family {} with key {} , column name {}",
-							value, columnFamily, key, format(name));
+					.trace("Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
+							value, columnFamily, key, format(name), ttlO);
+		}
+		HColumn<Composite, V> column;
+		if (ttlO.isPresent())
+		{
+			column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer,
+					this.<V> valSrz());
+		}
+		else
+		{
+			column = HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz());
 		}
 		mutator.addInsertion(key, columnFamily,
-				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()));
-	}
-
-	public <K, V> void setValueBatch(K key, Composite name, V value, int ttl, Mutator<K> mutator)
-	{
-		log
-				.trace("Set value {} as batch mutation to column family {} with key {} , column name {} and ttl {}",
-						value, columnFamily, key, name, ttl);
-		mutator.addInsertion(
-				key,
-				columnFamily,
-				HFactory.createColumn(name, value, columnNameSerializer, this.<V> valSrz()).setTtl(
-						ttl));
+				column);
 	}
 
 	public <K> void removeColumnBatch(K key, Composite name, Mutator<K> mutator)

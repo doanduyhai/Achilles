@@ -33,7 +33,7 @@ public class AchillesPersistenceContextTest
 	private EntityMeta entityMeta;
 
 	@Mock
-	private AchillesFlushContext flushContext;
+	private AchillesFlushContext<?> flushContext;
 
 	@Before
 	public void setUp()
@@ -131,6 +131,18 @@ public class AchillesPersistenceContextTest
 		context.reinitConsistencyLevels();
 
 		verify(flushContext).reinitConsistencyLevels();
+	}
+
+	@Test
+	public void should_get_ttlO() throws Exception
+	{
+		doCallRealMethod().when(context).getTttO();
+		Optional<Integer> ttlO = Optional.fromNullable(11);
+		when(flushContext.getTtlO()).thenReturn(ttlO);
+
+		Optional<Integer> actual = context.getTttO();
+
+		assertThat(actual).isSameAs(ttlO);
 	}
 
 }

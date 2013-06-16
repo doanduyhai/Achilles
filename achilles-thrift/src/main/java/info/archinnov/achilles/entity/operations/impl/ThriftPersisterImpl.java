@@ -67,7 +67,8 @@ public class ThriftPersisterImpl
 								context.getPrimaryKey(), format(composite));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
-					serialVersionUID.toString(), context.getEntityMutator(context.getTableName()));
+					serialVersionUID.toString(), context.getTttO(),
+					context.getEntityMutator(context.getTableName()));
 		}
 		else
 		{
@@ -93,6 +94,7 @@ public class ThriftPersisterImpl
 										.getCanonicalName(), context.getPrimaryKey(), format(name));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+					context.getTttO(),
 					context.getEntityMutator(context.getTableName()));
 		}
 	}
@@ -119,7 +121,8 @@ public class ThriftPersisterImpl
 									format(name));
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-						stringValue, context.getEntityMutator(context.getTableName()));
+						stringValue, context.getTttO(),
+						context.getEntityMutator(context.getTableName()));
 			}
 			count++;
 		}
@@ -146,7 +149,8 @@ public class ThriftPersisterImpl
 									format(name));
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-						stringValue, context.getEntityMutator(context.getTableName()));
+						stringValue, context.getTttO(),
+						context.getEntityMutator(context.getTableName()));
 			}
 		}
 	}
@@ -171,6 +175,7 @@ public class ThriftPersisterImpl
 										.getCanonicalName(), context.getPrimaryKey(), format(name));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+					context.getTttO(),
 					context.getEntityMutator(context.getTableName()));
 		}
 	}
@@ -189,7 +194,7 @@ public class ThriftPersisterImpl
 		Composite joinComposite = thriftCompositeFactory
 				.createForBatchInsertSingleValue(propertyMeta);
 		context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinComposite,
-				joinIdString, context.getEntityMutator(context.getTableName()));
+				joinIdString, context.getTttO(), context.getEntityMutator(context.getTableName()));
 
 		ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context
 				.newPersistenceContext(propertyMeta.joinMeta(), proxifier.unproxy(joinEntity));
@@ -234,7 +239,8 @@ public class ThriftPersisterImpl
 									format(name));
 				}
 				context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name,
-						joinEntityIdStringValue, context.getEntityMutator(context.getTableName()));
+						joinEntityIdStringValue, context.getTttO(),
+						context.getEntityMutator(context.getTableName()));
 
 				ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context
 						.newPersistenceContext(propertyMeta.joinMeta(),
@@ -266,6 +272,7 @@ public class ThriftPersisterImpl
 			String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry.getKey(),
 					joinEntityIdStringValue));
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value,
+					context.getTttO(),
 					context.getEntityMutator(context.getTableName()));
 
 			ThriftPersistenceContext joinPersistenceContext = (ThriftPersistenceContext) context

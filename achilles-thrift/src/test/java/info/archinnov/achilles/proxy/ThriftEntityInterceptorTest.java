@@ -4,6 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -108,6 +109,9 @@ public class ThriftEntityInterceptorTest
 	@Mock
 	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap;
 
+	@Mock
+	private ThriftImmediateFlushContext flushContext;
+
 	private Long key = 452L;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
@@ -165,6 +169,8 @@ public class ThriftEntityInterceptorTest
 				.columnFamilyDaosMap(columnFamilyDaosMap)
 				.build();
 
+		Whitebox.setInternalState(context, "thriftFlushContext", flushContext);
+
 		interceptor = ThriftEntityInterceptorBuilder.builder(context, entity).build();
 		Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
 
@@ -173,6 +179,8 @@ public class ThriftEntityInterceptorTest
 		interceptor.setDirtyMap(dirtyMap);
 		interceptor.setContext(context);
 		when(entityDaosMap.get("join_cf")).thenReturn(entityDao);
+
+		when(flushContext.duplicateWithoutTtl()).thenReturn(flushContext);
 	}
 
 	@Test
@@ -187,7 +195,7 @@ public class ThriftEntityInterceptorTest
 	{
 		this.interceptor.intercept(entity, idMeta.getSetter(), new Object[]
 		{
-			1L
+				1L
 		}, proxy);
 	}
 
@@ -251,7 +259,7 @@ public class ThriftEntityInterceptorTest
 
 		Object[] args = new Object[]
 		{
-			"sdfsdvdqfv"
+				"sdfsdvdqfv"
 		};
 
 		when(proxy.invoke(entity, args)).thenReturn(null);
