@@ -21,7 +21,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>1.8.0</version>
+		<version>1.8.1</version>
 	</dependency>  
  
  Right now, only the **Thrift** implementation is available. The **CQL** version is in progress and relies on 
@@ -68,20 +68,36 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **1.8.1**:
+    * Add TTL to persist and merge operations
+    * Rework of runtime consistency level
+    * Fix small bug in the Column Family comment for wide rows
+    * **BREAKING CHANGES** simplify PropertyType byte flag for Thrift persistence layer. **Need data migration**
+    * Rename 'unproxy' to 'unwrap'
+    * Fix bug with cyclic join entities during merge and persist operations
+    * Fix buggy property removal after merging
+    * Ignore un-mapped properties instead of raising exception
+    * Renamming in core package
+    * Upgrade to Cassandra 1.2.4
+    
 * **1.8.0**:
     * Use the `org.reflections.reflections` package for entity parsing
     * Split the project into 3 modules: `core`, `thrift` and `cql`
+    
 * **1.7.3**:
     * Rework of em.getReference() to avoid hitting the database
     * Refactor generics
     * Migrate to JPA 2
+   
 * **1.7.2**:
     * Add commons-collections 3.2.1 to compile dependency
     * Enhance error message for entity mapping
     * Fix bug about default consistency level hard-coded to QUORUM for WideMap and Counters 
     * Add `firstFirstMatching()` and `findLastMatching()` to the WideMap API
     * Fix bug. Do not load join entity if no join primary keys
-* **1.7.1**: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.2
+    
+* **1.7.1**: fix bug because key validation class & comparator type has changed from Cassandra 1.1 to 1.
+
 * **1.7**: stable release
 
 
