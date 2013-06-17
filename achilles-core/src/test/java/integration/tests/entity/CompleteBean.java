@@ -5,19 +5,18 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.MultiKey;
 import info.archinnov.achilles.type.WideMap;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  * CompleteBean
@@ -29,208 +28,221 @@ import javax.persistence.ManyToOne;
 public class CompleteBean implements Serializable
 {
 
-	public static final long serialVersionUID = 151L;
+    public static final long serialVersionUID = 151L;
 
-	@Id
-	private Long id;
+    @Id
+    private Long id;
 
-	@Column
-	private String name;
+    @Column
+    private String name;
 
-	@Lazy
-	@Column
-	private String label;
+    @Lazy
+    @Column
+    private String label;
 
-	@Column(name = "age_in_years")
-	private Long age;
+    @Column(name = "age_in_years")
+    private Long age;
 
-	@Lazy
-	@Column
-	private List<String> friends;
+    @Lazy
+    @Column
+    private List<String> friends;
 
-	@Column
-	private Set<String> followers;
+    @Column
+    private Set<String> followers;
 
-	@Column
-	private Map<Integer, String> preferences;
+    @Column
+    private Map<Integer, String> preferences;
 
-	@Column(table = "complete_bean_tweets")
-	private WideMap<UUID, String> tweets;
+    @Column(table = "complete_bean_tweets")
+    private WideMap<UUID, String> tweets;
 
-	@Column(table = "complete_bean_user_tweets")
-	private WideMap<UserTweetKey, String> userTweets;
+    @Column(table = "complete_bean_user_tweets")
+    private WideMap<UserTweetKey, String> userTweets;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn
-	private Tweet welcomeTweet;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn
+    private Tweet welcomeTweet;
 
-	@Column(table = "complete_bean_widemap")
-	private WideMap<Integer, String> wideMap;
+    @Column(table = "complete_bean_widemap")
+    private WideMap<Integer, String> wideMap;
 
-	@Column(table = "complete_bean_multi_key_widemap")
-	private WideMap<UserTweetKey, String> multiKeyWideMap;
+    @Column(table = "complete_bean_multi_key_widemap")
+    private WideMap<UserTweetKey, String> multiKeyWideMap;
 
-	@Column
-	private Counter version;
+    @Column
+    private Counter version;
 
-	@Column(table = "complete_bean_popular_topics")
-	private WideMap<String, Counter> popularTopics;
+    @Column(table = "complete_bean_popular_topics")
+    private WideMap<String, Counter> popularTopics;
 
-	public Long getId()
-	{
-		return id;
-	}
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn
+    private List<Tweet> favoriteTweets;
 
-	public void setId(Long id)
-	{
-		this.id = id;
-	}
+    public Long getId()
+    {
+        return id;
+    }
 
-	public String getName()
-	{
-		return name;
-	}
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public String getLabel()
-	{
-		return label;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public void setLabel(String label)
-	{
-		this.label = label;
-	}
+    public String getLabel()
+    {
+        return label;
+    }
 
-	public List<String> getFriends()
-	{
-		return friends;
-	}
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
 
-	public void setFriends(List<String> friends)
-	{
-		this.friends = friends;
-	}
+    public List<String> getFriends()
+    {
+        return friends;
+    }
 
-	public Set<String> getFollowers()
-	{
-		return followers;
-	}
+    public void setFriends(List<String> friends)
+    {
+        this.friends = friends;
+    }
 
-	public void setFollowers(Set<String> followers)
-	{
-		this.followers = followers;
-	}
+    public Set<String> getFollowers()
+    {
+        return followers;
+    }
 
-	public Map<Integer, String> getPreferences()
-	{
-		return preferences;
-	}
+    public void setFollowers(Set<String> followers)
+    {
+        this.followers = followers;
+    }
 
-	public void setPreferences(Map<Integer, String> preferences)
-	{
-		this.preferences = preferences;
-	}
+    public Map<Integer, String> getPreferences()
+    {
+        return preferences;
+    }
 
-	public Long getAge()
-	{
-		return age;
-	}
+    public void setPreferences(Map<Integer, String> preferences)
+    {
+        this.preferences = preferences;
+    }
 
-	public void setAge(Long age)
-	{
-		this.age = age;
-	}
+    public Long getAge()
+    {
+        return age;
+    }
 
-	public WideMap<UUID, String> getTweets()
-	{
-		return tweets;
-	}
+    public void setAge(Long age)
+    {
+        this.age = age;
+    }
 
-	public void setTweets(WideMap<UUID, String> tweets)
-	{
-		this.tweets = tweets;
-	}
+    public WideMap<UUID, String> getTweets()
+    {
+        return tweets;
+    }
 
-	public WideMap<UserTweetKey, String> getUserTweets()
-	{
-		return userTweets;
-	}
+    public void setTweets(WideMap<UUID, String> tweets)
+    {
+        this.tweets = tweets;
+    }
 
-	public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
-	{
-		this.userTweets = userTweets;
-	}
+    public WideMap<UserTweetKey, String> getUserTweets()
+    {
+        return userTweets;
+    }
 
-	public Tweet getWelcomeTweet()
-	{
-		return welcomeTweet;
-	}
+    public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
+    {
+        this.userTweets = userTweets;
+    }
 
-	public void setWelcomeTweet(Tweet welcomeTweet)
-	{
-		this.welcomeTweet = welcomeTweet;
-	}
+    public Tweet getWelcomeTweet()
+    {
+        return welcomeTweet;
+    }
 
-	public WideMap<Integer, String> getWideMap()
-	{
-		return wideMap;
-	}
+    public void setWelcomeTweet(Tweet welcomeTweet)
+    {
+        this.welcomeTweet = welcomeTweet;
+    }
 
-	public WideMap<UserTweetKey, String> getMultiKeyWideMap()
-	{
-		return multiKeyWideMap;
-	}
+    public WideMap<Integer, String> getWideMap()
+    {
+        return wideMap;
+    }
 
-	public Counter getVersion()
-	{
-		return version;
-	}
+    public WideMap<UserTweetKey, String> getMultiKeyWideMap()
+    {
+        return multiKeyWideMap;
+    }
 
-	public WideMap<String, Counter> getPopularTopics()
-	{
-		return popularTopics;
-	}
+    public Counter getVersion()
+    {
+        return version;
+    }
 
-	public static class UserTweetKey implements MultiKey
-	{
-		@Key(order = 1)
-		private String user;
+    public WideMap<String, Counter> getPopularTopics()
+    {
+        return popularTopics;
+    }
 
-		@Key(order = 2)
-		private UUID tweet;
+    public List<Tweet> getFavoriteTweets() {
+        return favoriteTweets;
+    }
 
-		public UserTweetKey() {}
+    public void setFavoriteTweets(List<Tweet> favoriteTweets) {
+        this.favoriteTweets = favoriteTweets;
+    }
 
-		public UserTweetKey(String user, UUID tweet) {
-			super();
-			this.user = user;
-			this.tweet = tweet;
-		}
+    public static class UserTweetKey implements MultiKey
+    {
+        @Key(order = 1)
+        private String user;
 
-		public String getUser()
-		{
-			return user;
-		}
+        @Key(order = 2)
+        private UUID tweet;
 
-		public void setUser(String user)
-		{
-			this.user = user;
-		}
+        public UserTweetKey() {
+        }
 
-		public UUID getTweet()
-		{
-			return tweet;
-		}
+        public UserTweetKey(String user, UUID tweet) {
+            super();
+            this.user = user;
+            this.tweet = tweet;
+        }
 
-		public void setTweet(UUID tweet)
-		{
-			this.tweet = tweet;
-		}
+        public String getUser()
+        {
+            return user;
+        }
 
-	}
+        public void setUser(String user)
+        {
+            this.user = user;
+        }
+
+        public UUID getTweet()
+        {
+            return tweet;
+        }
+
+        public void setTweet(UUID tweet)
+        {
+            this.tweet = tweet;
+        }
+
+    }
 }
