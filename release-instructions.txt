@@ -1,4 +1,4 @@
 Sonatype : https://oss.sonatype.org/
-mvn:clean
-mvn:prepare
+mvn release:clean
+mvn release:prepare
 mvn release:perform -Darguments=-Dgpg.passphrase=PASSPHRASE
