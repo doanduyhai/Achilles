@@ -11,9 +11,7 @@ import net.sf.cglib.transform.impl.InterceptFieldCallback;
 public class MyFieldInterceptor implements InterceptFieldCallback
 {
 
-	public MyFieldInterceptor() {
-		System.out.println("MyFieldInterceptor");
-	}
+	public MyFieldInterceptor() {}
 
 	@Override
 	public int writeInt(Object obj, String name, int oldValue, int newValue)
@@ -29,11 +27,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeByte(java.lang.Object, java.lang.String, byte, byte)
-	 */
 	@Override
 	public byte writeByte(Object obj, String name, byte oldValue, byte newValue)
 	{
@@ -41,11 +34,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeBoolean(java.lang.Object, java.lang.String, boolean, boolean)
-	 */
 	@Override
 	public boolean writeBoolean(Object obj, String name, boolean oldValue, boolean newValue)
 	{
@@ -53,11 +41,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeShort(java.lang.Object, java.lang.String, short, short)
-	 */
 	@Override
 	public short writeShort(Object obj, String name, short oldValue, short newValue)
 	{
@@ -65,11 +48,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeFloat(java.lang.Object, java.lang.String, float, float)
-	 */
 	@Override
 	public float writeFloat(Object obj, String name, float oldValue, float newValue)
 	{
@@ -77,11 +55,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeDouble(java.lang.Object, java.lang.String, double, double)
-	 */
 	@Override
 	public double writeDouble(Object obj, String name, double oldValue, double newValue)
 	{
@@ -89,11 +62,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeLong(java.lang.Object, java.lang.String, long, long)
-	 */
 	@Override
 	public long writeLong(Object obj, String name, long oldValue, long newValue)
 	{
@@ -101,11 +69,6 @@ public class MyFieldInterceptor implements InterceptFieldCallback
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.cglib.transform.impl.InterceptFieldCallback#writeObject(java.lang.Object, java.lang.String, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public Object writeObject(Object obj, String name, Object oldValue, Object newValue)
 	{

@@ -320,7 +320,7 @@ public class EntityProxifierTest
 	public void should_intercept_fields() throws Exception
 	{
 		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(MyPojo.class);
+		enhancer.setSuperclass(CompleteBean.class);
 		enhancer.setCallback(NoOp.INSTANCE);
 		enhancer.setStrategy(new DefaultGeneratorStrategy()
 		{
@@ -332,14 +332,12 @@ public class EntityProxifierTest
 							@Override
 							public boolean acceptWrite(Type owner, String name)
 							{
-								System.out.println("acceptWrite on " + name);
 								return true;
 							}
 
 							@Override
 							public boolean acceptRead(Type owner, String name)
 							{
-								System.out.println("acceptRead on " + name);
 								return true;
 							}
 						}
@@ -348,51 +346,13 @@ public class EntityProxifierTest
 				return new TransformingClassGenerator(cg, transf);
 			}
 		});
-		MyPojo myPojo = (MyPojo) enhancer.create();
+		CompleteBean entity = (CompleteBean) enhancer.create();
 		MyFieldInterceptor fieldInterceptor = new MyFieldInterceptor();
+		InterceptFieldEnabled interceptFieldEnabled = (InterceptFieldEnabled) entity;
+		interceptFieldEnabled.setInterceptFieldCallback(fieldInterceptor);
 
-		((InterceptFieldEnabled) myPojo).setInterceptFieldCallback(fieldInterceptor);
-
-		myPojo.setName("name");
-		myPojo.name = "name2";
-	}
-
-	public static class MyPojo
-	{
-		public String name;
-		private Long age;
-		private List<String> friends;
-
-		public String getName()
-		{
-			return name;
-		}
-
-		public void setName(String name)
-		{
-			this.name = name;
-		}
-
-		public Long getAge()
-		{
-			return age;
-		}
-
-		public void setAge(Long age)
-		{
-			this.age = age;
-		}
-
-		public List<String> getFriends()
-		{
-			return friends;
-		}
-
-		public void setFriends(List<String> friends)
-		{
-			this.friends = friends;
-		}
-
+		assertThat(interceptFieldEnabled.getInterceptFieldCallback()).isSameAs(fieldInterceptor);
+		entity.setUser(new UserBean());
 	}
 
 }
