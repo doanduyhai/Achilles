@@ -1,6 +1,6 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.context.AchillesFlushContext.FlushType.BATCH;
+import static info.archinnov.achilles.context.FlushContext.FlushType.BATCH;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.type.ConsistencyLevel;

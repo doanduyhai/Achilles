@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.ValueCollectionWrapper;
 import java.util.Collection;
 
@@ -14,12 +14,12 @@ public class ValueCollectionWrapperBuilder<V> extends
         AbstractWrapperBuilder<ValueCollectionWrapperBuilder<V>, Void, V> {
     private Collection<V> target;
 
-    public ValueCollectionWrapperBuilder(AchillesPersistenceContext context, Collection<V> target) {
+    public ValueCollectionWrapperBuilder(PersistenceContext context, Collection<V> target) {
         super.context = context;
         this.target = target;
     }
 
-    public static <V> ValueCollectionWrapperBuilder<V> builder(AchillesPersistenceContext context,
+    public static <V> ValueCollectionWrapperBuilder<V> builder(PersistenceContext context,
             Collection<V> target) {
         return new ValueCollectionWrapperBuilder<V>(context, target);
     }

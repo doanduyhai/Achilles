@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerFactory extends AchillesEntityManagerFactory
+public class ThriftEntityManagerFactory extends EntityManagerFactory
 {
 
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactory.class);

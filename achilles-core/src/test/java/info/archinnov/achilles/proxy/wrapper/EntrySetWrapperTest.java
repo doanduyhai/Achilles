@@ -4,7 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -59,7 +59,7 @@ public class EntrySetWrapperTest
 	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	private EntityMeta entityMeta;
 
@@ -336,7 +336,7 @@ public class EntrySetWrapperTest
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
 
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(entity), any(AchillesPersistenceContext.class))).thenReturn(
+		when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class))).thenReturn(
 				entity);
 
 		Object[] array = wrapper.toArray(new Entry[]

@@ -4,12 +4,10 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -30,14 +28,13 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
 	private ThriftBatchingFlushContext flushContext;
 
-	ThriftBatchingEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+	ThriftBatchingEntityManager(EntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, ThriftDaoContext thriftDaoContext,
 			ConfigurationContext configContext)
 	{
 		super(entityManagerFactory, entityMetaMap, thriftDaoContext, configContext);
 		this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy,
-				Optional.<ConsistencyLevel> absent(), Optional.<ConsistencyLevel> absent(),
-				Optional.<Integer> absent());
+				NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
 	}
 
 	/**
@@ -143,34 +140,6 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 	}
 
 	@Override
-	public <T> void initialize(final T entity)
-	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				ThriftBatchingEntityManager.super.initialize(entity);
-				return null;
-			}
-		});
-	}
-
-	@Override
-	public <T> void initialize(final Collection<T> entities)
-	{
-		reinitConsistencyLevelsOnError(new SafeExecutionContext<Void>()
-		{
-			@Override
-			public Void execute()
-			{
-				ThriftBatchingEntityManager.super.initialize(entities);
-				return null;
-			}
-		});
-	}
-
-	@Override
 	public void refresh(final Object entity, ConsistencyLevel readLevel)
 	{
 		throw new AchillesException(
@@ -200,18 +169,5 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
 		return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
 				flushContext, entity, new HashSet<String>());
-	}
-
-	private <T> T reinitConsistencyLevelsOnError(SafeExecutionContext<T> context)
-	{
-		try
-		{
-			return context.execute();
-		}
-		catch (Exception e)
-		{
-			this.flushContext.cleanUp();
-			throw new AchillesException(e);
-		}
 	}
 }

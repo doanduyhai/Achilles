@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.EntityInterceptor;
@@ -42,13 +42,13 @@ import testBuilders.CompleteBeanTestBuilder;
 public class EntityProxifierTest
 {
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
-	private EntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
+	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private EntityMeta entityMeta;
@@ -166,7 +166,7 @@ public class EntityProxifierTest
 		CompleteBean proxy = (CompleteBean) enhancer.create();
 
 		doCallRealMethod().when(proxifier).getInterceptor(any());
-		EntityInterceptor<AchillesPersistenceContext, CompleteBean> actual = proxifier
+		EntityInterceptor<PersistenceContext, CompleteBean> actual = proxifier
 				.getInterceptor(proxy);
 
 		assertThat(actual).isSameAs(interceptor);

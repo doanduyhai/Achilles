@@ -1,10 +1,11 @@
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.entity.manager.EntityManager.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -17,7 +18,6 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import testBuilders.CompleteBeanTestBuilder;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Sets;
 
 /**
  * AchillesEntityManagerTest
@@ -46,37 +47,37 @@ import com.google.common.base.Optional;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesEntityManagerTest
+public class EntityManagerTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private AchillesEntityManager<AchillesPersistenceContext> em;
+	private EntityManager<PersistenceContext> em;
 
 	@Mock
-	private EntityPersister<AchillesPersistenceContext> persister;
+	private EntityPersister<PersistenceContext> persister;
 
 	@Mock
-	private EntityLoader<AchillesPersistenceContext> loader;
+	private EntityLoader<PersistenceContext> loader;
 
 	@Mock
-	private EntityMerger<AchillesPersistenceContext> merger;
+	private EntityMerger<PersistenceContext> merger;
 
 	@Mock
-	private EntityRefresher<AchillesPersistenceContext> refresher;
+	private EntityRefresher<PersistenceContext> refresher;
 
 	@Mock
 	private EntityInitializer initializer;
 
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
-	private EntityValidator<AchillesPersistenceContext> entityValidator;
+	private EntityValidator<PersistenceContext> entityValidator;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
@@ -97,27 +98,26 @@ public class AchillesEntityManagerTest
 			.name("name")
 			.buid();
 
-	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
-	private Optional<Integer> noTtl = Optional.<Integer> absent();
-
 	@Before
 	public void setUp() throws Exception
 	{
 
 		forceMethodCallsOnMock();
 		when(
-				em.initPersistenceContext(CompleteBean.class, primaryKey, noConsistency,
-						noConsistency, noTtl)).thenReturn(context);
-		when(em.initPersistenceContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(
-				context);
+				em.initPersistenceContext(CompleteBean.class, primaryKey, NO_CONSISTENCY_LEVEL,
+						NO_CONSISTENCY_LEVEL, NO_TTL)).thenReturn(context);
+		when(em.initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL))
+				.thenReturn(
+						context);
 	}
 
 	@Test
 	public void should_persist() throws Exception
 	{
 		when(proxifier.isProxy(entity)).thenReturn(false);
-		when(em.initPersistenceContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(
-				context);
+		when(em.initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL))
+				.thenReturn(
+						context);
 		doCallRealMethod().when(em).persist(entity);
 		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
 
@@ -134,8 +134,9 @@ public class AchillesEntityManagerTest
 	{
 		when(proxifier.isProxy(entity)).thenReturn(false);
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
-						eq(noTtl))).thenReturn(context);
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						levelOCaptor.capture(),
+						eq(NO_TTL))).thenReturn(context);
 		doCallRealMethod().when(em).persist(entity, EACH_QUORUM);
 		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
 
@@ -153,7 +154,8 @@ public class AchillesEntityManagerTest
 	{
 		when(proxifier.isProxy(entity)).thenReturn(false);
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), eq(noConsistency),
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						eq(NO_CONSISTENCY_LEVEL),
 						ttlOCaptor.capture())).thenReturn(context);
 		doCallRealMethod().when(em).persist(entity, 150);
 		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
@@ -172,7 +174,8 @@ public class AchillesEntityManagerTest
 	{
 		when(proxifier.isProxy(entity)).thenReturn(false);
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						levelOCaptor.capture(),
 						ttlOCaptor.capture())).thenReturn(context);
 		doCallRealMethod().when(em).persist(entity, 150, EACH_QUORUM);
 		doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
@@ -218,8 +221,9 @@ public class AchillesEntityManagerTest
 	public void should_merge_with_consistency() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
-						eq(noTtl))).thenReturn(context);
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						levelOCaptor.capture(),
+						eq(NO_TTL))).thenReturn(context);
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity, EACH_QUORUM);
 		doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
@@ -237,7 +241,8 @@ public class AchillesEntityManagerTest
 	public void should_merge_with_ttl() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						levelOCaptor.capture(),
 						ttlOCaptor.capture())).thenReturn(context);
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity, 150, EACH_QUORUM);
@@ -258,7 +263,8 @@ public class AchillesEntityManagerTest
 	public void should_merge_with_ttl_and_consistency() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), eq(noConsistency),
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						eq(NO_CONSISTENCY_LEVEL),
 						ttlOCaptor.capture())).thenReturn(context);
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(em).merge(entity, 150);
@@ -289,8 +295,9 @@ public class AchillesEntityManagerTest
 	public void should_remove_with_consistency() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), eq(noConsistency), levelOCaptor.capture(),
-						eq(noTtl))).thenReturn(context);
+				em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL),
+						levelOCaptor.capture(),
+						eq(NO_TTL))).thenReturn(context);
 		doCallRealMethod().when(em).remove(entity, EACH_QUORUM);
 		doCallRealMethod().when(em).remove(eq(entity), any(Optional.class));
 
@@ -320,7 +327,8 @@ public class AchillesEntityManagerTest
 	{
 		when(
 				em.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey),
-						levelOCaptor.capture(), eq(noConsistency), eq(noTtl))).thenReturn(context);
+						levelOCaptor.capture(), eq(NO_CONSISTENCY_LEVEL), eq(NO_TTL))).thenReturn(
+				context);
 		doCallRealMethod().when(em).find(CompleteBean.class, primaryKey, EACH_QUORUM);
 		doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey),
 				any(Optional.class));
@@ -351,7 +359,8 @@ public class AchillesEntityManagerTest
 	{
 		when(
 				em.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey),
-						levelOCaptor.capture(), eq(noConsistency), eq(noTtl))).thenReturn(context);
+						levelOCaptor.capture(), eq(NO_CONSISTENCY_LEVEL), eq(NO_TTL))).thenReturn(
+				context);
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
 		doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 		doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey),
@@ -367,8 +376,9 @@ public class AchillesEntityManagerTest
 	public void should_refresh() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), levelOCaptor.capture(), eq(noConsistency),
-						eq(noTtl))).thenReturn(context);
+				em.initPersistenceContext(eq(entity), levelOCaptor.capture(),
+						eq(NO_CONSISTENCY_LEVEL),
+						eq(NO_TTL))).thenReturn(context);
 
 		doCallRealMethod().when(em).refresh(entity);
 		doCallRealMethod().when(em).refresh(eq(entity), any(Optional.class));
@@ -385,8 +395,9 @@ public class AchillesEntityManagerTest
 	public void should_refresh_with_consistency() throws Exception
 	{
 		when(
-				em.initPersistenceContext(eq(entity), levelOCaptor.capture(), eq(noConsistency),
-						eq(noTtl))).thenReturn(context);
+				em.initPersistenceContext(eq(entity), levelOCaptor.capture(),
+						eq(NO_CONSISTENCY_LEVEL),
+						eq(NO_TTL))).thenReturn(context);
 		doCallRealMethod().when(em).refresh(entity, EACH_QUORUM);
 		doCallRealMethod().when(em).refresh(eq(entity), any(Optional.class));
 
@@ -402,27 +413,32 @@ public class AchillesEntityManagerTest
 	@Test
 	public void should_initialize_entity() throws Exception
 	{
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-
 		doCallRealMethod().when(em).initialize(entity);
-		em.initialize(entity);
-		verify(proxifier).ensureProxy(entity);
-		verify(initializer).initializeEntity(entity, entityMeta);
+		when(context.initialize(entity)).thenReturn(entity);
+		CompleteBean actual = em.initialize(entity);
+		assertThat(actual).isSameAs(entity);
 	}
 
 	@Test
-	public void should_initialize_entities() throws Exception
+	public void should_initialize_list_of_entities() throws Exception
 	{
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-
+		when(em.initialize(entity)).thenReturn(entity);
 		List<CompleteBean> entities = Arrays.asList(entity);
 		doCallRealMethod().when(em).initialize(entities);
-		em.initialize(entities);
+		List<CompleteBean> actual = em.initialize(entities);
 
-		verify(proxifier).ensureProxy(entity);
-		verify(initializer).initializeEntity(entity, entityMeta);
+		assertThat(actual).containsExactly(entity);
+	}
+
+	@Test
+	public void should_initialize_set_of_entities() throws Exception
+	{
+		when(em.initialize(entity)).thenReturn(entity);
+		Set<CompleteBean> entities = Sets.newHashSet(entity);
+		doCallRealMethod().when(em).initialize(entities);
+		Set<CompleteBean> actual = em.initialize(entities);
+
+		assertThat(actual).containsExactly(entity);
 	}
 
 	@Test
@@ -433,18 +449,6 @@ public class AchillesEntityManagerTest
 		CompleteBean actual = em.unwrap(entity);
 
 		assertThat(actual).isSameAs(entity);
-	}
-
-	@Test
-	public void should_unwrap_collection_of_entity() throws Exception
-	{
-		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
-
-		when(proxifier.unproxy(proxies)).thenReturn(proxies);
-		doCallRealMethod().when(em).unwrap(proxies);
-		Collection<CompleteBean> actual = em.unwrap(proxies);
-
-		assertThat(actual).isSameAs(proxies);
 	}
 
 	@Test
@@ -470,6 +474,49 @@ public class AchillesEntityManagerTest
 		Set<CompleteBean> actual = em.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
+	}
+
+	@Test
+	public void should_init_and_unwrap_entity() throws Exception
+	{
+		when(em.initialize(entity)).thenReturn(entity);
+		when(em.unwrap(entity)).thenReturn(entity);
+
+		doCallRealMethod().when(em).initAndUnwrap(entity);
+
+		CompleteBean actual = em.initAndUnwrap(entity);
+
+		assertThat(actual).isSameAs(entity);
+	}
+
+	@Test
+	public void should_init_and_unwrap_list_of_entities() throws Exception
+	{
+		List<CompleteBean> entities = Arrays.asList(entity);
+
+		when(em.initialize(entities)).thenReturn(entities);
+		when(em.unwrap(entities)).thenReturn(entities);
+
+		doCallRealMethod().when(em).initAndUnwrap(entities);
+
+		List<CompleteBean> actual = em.initAndUnwrap(entities);
+
+		assertThat(actual).isSameAs(entities);
+	}
+
+	@Test
+	public void should_init_and_unwrap_set_of_entities() throws Exception
+	{
+		Set<CompleteBean> entities = Sets.newHashSet(entity);
+
+		when(em.initialize(entities)).thenReturn(entities);
+		when(em.unwrap(entities)).thenReturn(entities);
+
+		doCallRealMethod().when(em).initAndUnwrap(entities);
+
+		Set<CompleteBean> actual = em.initAndUnwrap(entities);
+
+		assertThat(actual).isSameAs(entities);
 	}
 
 	private void forceMethodCallsOnMock()

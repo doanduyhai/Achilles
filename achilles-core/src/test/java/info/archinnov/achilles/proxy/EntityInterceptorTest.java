@@ -3,7 +3,7 @@ package info.archinnov.achilles.proxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -52,25 +52,25 @@ public class EntityInterceptorTest
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private EntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
+	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
 	@Mock
-	private EntityLoader<AchillesPersistenceContext> loader;
+	private EntityLoader<PersistenceContext> loader;
 
 	@Mock
-	private EntityPersister<AchillesPersistenceContext> persister;
+	private EntityPersister<PersistenceContext> persister;
 
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
 	private MethodProxy proxy;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
-	private AchillesPersistenceContext joinContext;
+	private PersistenceContext joinContext;
 
 	private Object[] args = new Object[] {};
 

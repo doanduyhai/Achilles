@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityPersister;
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class EntityInterceptor<CONTEXT extends AchillesPersistenceContext, T> implements
+public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> implements
 		MethodInterceptor
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityInterceptor.class);

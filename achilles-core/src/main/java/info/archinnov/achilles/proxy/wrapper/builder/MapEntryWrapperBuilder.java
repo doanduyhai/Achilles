@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.MapEntryWrapper;
 import java.util.Map;
 
@@ -13,12 +13,12 @@ import java.util.Map;
 public class MapEntryWrapperBuilder<K, V> extends AbstractWrapperBuilder<MapEntryWrapperBuilder<K, V>, K, V> {
     private final Map.Entry<K, V> target;
 
-    public MapEntryWrapperBuilder(AchillesPersistenceContext context, Map.Entry<K, V> target) {
+    public MapEntryWrapperBuilder(PersistenceContext context, Map.Entry<K, V> target) {
         super.context = context;
         this.target = target;
     }
 
-    public static <K, V> MapEntryWrapperBuilder<K, V> builder(AchillesPersistenceContext context,
+    public static <K, V> MapEntryWrapperBuilder<K, V> builder(PersistenceContext context,
             Map.Entry<K, V> target) {
         return new MapEntryWrapperBuilder<K, V>(context, target);
     }

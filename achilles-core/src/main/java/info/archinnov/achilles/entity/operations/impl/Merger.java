@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public interface Merger<CONTEXT extends AchillesPersistenceContext>
+public interface Merger<CONTEXT extends PersistenceContext>
 {
 
 	public void merge(CONTEXT context, Map<Method, PropertyMeta<?, ?>> dirtyMap);

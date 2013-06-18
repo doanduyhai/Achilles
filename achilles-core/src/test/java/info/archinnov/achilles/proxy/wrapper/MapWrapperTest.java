@@ -2,7 +2,7 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -51,10 +51,10 @@ public class MapWrapperTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
-	private AchillesPersistenceContext joinContext;
+	private PersistenceContext joinContext;
 
 	@Before
 	public void setUp() throws Exception

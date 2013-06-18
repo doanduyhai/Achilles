@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iter
         if (isJoin()) {
             log.trace("Build proxy for join entity for property {} of entity class {} upon next() call",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-            AchillesPersistenceContext joinContext = context.newPersistenceContext(propertyMeta.joinMeta(), value);
+            PersistenceContext joinContext = context.newPersistenceContext(propertyMeta.joinMeta(), value);
             return proxifier.buildProxy(value, joinContext);
         } else {
             return value;

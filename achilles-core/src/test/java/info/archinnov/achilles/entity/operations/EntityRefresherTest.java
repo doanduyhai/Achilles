@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.EntityIntrospector;
@@ -32,22 +32,22 @@ public class EntityRefresherTest
 {
 
 	@InjectMocks
-	private EntityRefresher<AchillesPersistenceContext> achillesEntityRefresher;
+	private EntityRefresher<PersistenceContext> achillesEntityRefresher;
 
 	@Mock
 	private EntityIntrospector introspector;
 
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
-	private EntityLoader<AchillesPersistenceContext> loader;
+	private EntityLoader<PersistenceContext> loader;
 
 	@Mock
 	private EntityMeta entityMeta;
 
 	@Mock
-	private EntityInterceptor<AchillesPersistenceContext, CompleteBean> jpaEntityInterceptor;
+	private EntityInterceptor<PersistenceContext, CompleteBean> jpaEntityInterceptor;
 
 	@Mock
 	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
@@ -56,7 +56,7 @@ public class EntityRefresherTest
 	private Set<Method> lazyLoaded;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Test
 	public void should_refresh() throws Exception

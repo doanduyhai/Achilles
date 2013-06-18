@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 
 /**
  * EntityPersister
@@ -8,7 +8,7 @@ import info.archinnov.achilles.context.AchillesPersistenceContext;
  * @author DuyHai DOAN
  * 
  */
-public interface EntityPersister<CONTEXT extends AchillesPersistenceContext> {
+public interface EntityPersister<CONTEXT extends PersistenceContext> {
 
     public void persist(CONTEXT context);
 

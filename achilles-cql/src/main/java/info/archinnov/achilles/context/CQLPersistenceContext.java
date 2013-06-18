@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -23,9 +24,8 @@ import com.datastax.driver.core.Row;
  * @author DuyHai DOAN
  * 
  */
-public class CQLPersistenceContext extends AchillesPersistenceContext
+public class CQLPersistenceContext extends PersistenceContext
 {
-
 	private CQLDaoContext daoContext;
 	private CQLAbstractFlushContext<?> flushContext;
 	private CQLEntityLoader loader = new CQLEntityLoader();
@@ -170,5 +170,15 @@ public class CQLPersistenceContext extends AchillesPersistenceContext
 	public void refresh()
 	{
 		refresher.refresh(this);
+	}
+
+	@Override
+	public <T> T initialize(T entity)
+	{
+		proxifier.ensureProxy(entity);
+		final EntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier
+				.getInterceptor(entity);
+		initializer.initializeEntity(entity, entityMeta, interceptor);
+		return entity;
 	}
 }

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 
@@ -18,8 +18,8 @@ public abstract class AbstractWrapper<K, V>
 	protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta<K, V> propertyMeta;
-	protected EntityProxifier<AchillesPersistenceContext> proxifier;
-	protected AchillesPersistenceContext context;
+	protected EntityProxifier<PersistenceContext> proxifier;
+	protected PersistenceContext context;
 
 	public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
 	{
@@ -49,7 +49,7 @@ public abstract class AbstractWrapper<K, V>
 		}
 	}
 
-	public void setProxifier(EntityProxifier<AchillesPersistenceContext> proxifier)
+	public void setProxifier(EntityProxifier<PersistenceContext> proxifier)
 	{
 		this.proxifier = proxifier;
 	}
@@ -59,12 +59,12 @@ public abstract class AbstractWrapper<K, V>
 		return this.propertyMeta.type().isJoinColumn();
 	}
 
-	public void setContext(AchillesPersistenceContext context)
+	public void setContext(PersistenceContext context)
 	{
 		this.context = context;
 	}
 
-	protected AchillesPersistenceContext joinContext(Object joinEntity)
+	protected PersistenceContext joinContext(Object joinEntity)
 	{
 		return context.newPersistenceContext(propertyMeta.joinMeta(), joinEntity);
 	}

@@ -4,7 +4,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
+import info.archinnov.achilles.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -24,22 +24,22 @@ import com.google.common.base.Optional;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesPersistenceContextTest
+public class PersistenceContextTest
 {
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private EntityMeta entityMeta;
 
 	@Mock
-	private AchillesFlushContext<?> flushContext;
+	private FlushContext<?> flushContext;
 
 	@Before
 	public void setUp()
 	{
 		doCallRealMethod().when(context).setEntityMeta(any(EntityMeta.class));
-		doCallRealMethod().when(context).setFlushContext(any(AchillesFlushContext.class));
+		doCallRealMethod().when(context).setFlushContext(any(FlushContext.class));
 
 		context.setEntityMeta(entityMeta);
 		context.setFlushContext(flushContext);

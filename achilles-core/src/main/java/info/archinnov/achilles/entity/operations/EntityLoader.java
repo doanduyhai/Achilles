@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 
 /**
@@ -9,7 +9,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
  * @author DuyHai DOAN
  * 
  */
-public interface EntityLoader<CONTEXT extends AchillesPersistenceContext> {
+public interface EntityLoader<CONTEXT extends PersistenceContext> {
 
     public <T> T load(CONTEXT context, Class<T> entityClass);
 

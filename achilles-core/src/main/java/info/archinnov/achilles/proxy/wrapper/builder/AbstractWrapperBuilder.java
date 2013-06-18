@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.AbstractWrapper;
@@ -20,7 +20,7 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T,
 	private Method setter;
 	private PropertyMeta<K, V> propertyMeta;
 	private EntityProxifier proxifier;
-	protected AchillesPersistenceContext context;
+	protected PersistenceContext context;
 
 	public T dirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
 	{
@@ -46,7 +46,7 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T,
 		return (T) this;
 	}
 
-	public T context(AchillesPersistenceContext context)
+	public T context(PersistenceContext context)
 	{
 		this.context = context;
 		return (T) this;

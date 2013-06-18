@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class EntityProxifier<CONTEXT extends AchillesPersistenceContext>
+public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
