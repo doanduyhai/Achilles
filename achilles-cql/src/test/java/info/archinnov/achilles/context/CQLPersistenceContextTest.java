@@ -10,7 +10,9 @@ import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,6 +70,9 @@ public class CQLPersistenceContextTest
 	private CQLEntityProxifier proxifier;
 
 	@Mock
+	private EntityInitializer initializer;
+
+	@Mock
 	private EntityRefresher<CQLPersistenceContext> refresher;
 
 	private EntityMeta meta;
@@ -98,6 +103,7 @@ public class CQLPersistenceContextTest
 		Whitebox.setInternalState(context, "persister", persister);
 		Whitebox.setInternalState(context, "refresher", refresher);
 		Whitebox.setInternalState(context, "proxifier", proxifier);
+		Whitebox.setInternalState(context, "initializer", initializer);
 	}
 
 	@Test
@@ -243,8 +249,18 @@ public class CQLPersistenceContextTest
 
 		CompleteBean found = context.find(CompleteBean.class);
 
-		assertThat(context.isLoadEagerFields()).isTrue();
 		assertThat(found).isSameAs(entity);
+	}
+
+	@Test
+	public void should_return_null_when_not_found() throws Exception
+	{
+		when(loader.load(context, CompleteBean.class)).thenReturn(null);
+
+		CompleteBean found = context.find(CompleteBean.class);
+
+		assertThat(found).isNull();
+		verifyZeroInteractions(proxifier);
 	}
 
 	@Test
@@ -264,5 +280,20 @@ public class CQLPersistenceContextTest
 	{
 		context.refresh();
 		verify(refresher).refresh(context);
+	}
+
+	@Test
+	public void should_initialize() throws Exception
+	{
+		EntityInterceptor<CQLPersistenceContext, CompleteBean> interceptor = mock(EntityInterceptor.class);
+
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+
+		CompleteBean actual = context.initialize(entity);
+
+		assertThat(actual).isSameAs(entity);
+
+		verify(proxifier).ensureProxy(entity);
+		verify(initializer).initializeEntity(entity, meta, interceptor);
 	}
 }

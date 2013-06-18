@@ -11,6 +11,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Set;
@@ -204,6 +205,28 @@ public class ThriftPersistenceContext extends AchillesPersistenceContext
 					}
 				});
 
+	}
+
+	@Override
+	public <T> T initialize(final T entity)
+	{
+		log.debug("Force lazy fields initialization for entity {}", entity);
+		proxifier.ensureProxy(entity);
+		final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
+				.getInterceptor(entity);
+
+		thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+				new SafeExecutionContext<Void>()
+				{
+					@Override
+					public Void execute()
+					{
+						initializer.initializeEntity(entity, entityMeta, interceptor);
+						return null;
+					}
+				});
+
+		return entity;
 	}
 
 	public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,

@@ -117,10 +117,12 @@ public enum PropertyType
     public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER,
             COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
 
+    public static PropertyTypeFilter eagerType = new PropertyTypeFilter(SIMPLE, LIST, SET, MAP);
+    public static PropertyTypeFilter lazyNonProxyType = new PropertyTypeFilter(SIMPLE, LAZY_SIMPLE, LIST, LAZY_LIST,
+            SET, LAZY_SET, MAP, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP);
+
     public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER,
             COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
-
-    public static PropertyTypeFilter eagerType = new PropertyTypeFilter(SIMPLE, LIST, SET, MAP);
 
     public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST,
             SET, LAZY_SET, MAP, LAZY_MAP, JOIN_LIST, JOIN_SET, JOIN_MAP);

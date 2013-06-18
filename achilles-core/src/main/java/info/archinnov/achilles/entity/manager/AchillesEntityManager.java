@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +27,10 @@ import com.google.common.base.Optional;
  */
 public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceContext>
 {
+	protected static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
+	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional
+			.<ConsistencyLevel> absent();
+
 	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
 
 	protected final AchillesEntityManagerFactory entityManagerFactory;
@@ -61,7 +64,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}'", entity);
 
-		persist(entity, Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+		persist(entity, NO_CONSISTENCY_LEVEL, NO_TTL);
 	}
 
 	/**
@@ -78,7 +81,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}' with write consistency level {}", entity, writeLevel);
 
-		persist(entity, Optional.fromNullable(writeLevel), Optional.<Integer> absent());
+		persist(entity, Optional.fromNullable(writeLevel), NO_TTL);
 	}
 
 	/**
@@ -95,7 +98,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Persisting entity '{}' with ttl {}", entity, ttl);
 
-		persist(entity, Optional.<ConsistencyLevel> absent(), Optional.fromNullable(ttl));
+		persist(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
 	}
 
 	/**
@@ -131,7 +134,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 
-		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
+		CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL,
 				writeLevelO, ttlO);
 		context.persist();
 	}
@@ -165,7 +168,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		{
 			log.debug("Merging entity '{}'", proxifier.unproxy(entity));
 		}
-		return merge(entity, Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+		return merge(entity, NO_CONSISTENCY_LEVEL, NO_TTL);
 	}
 
 	/**
@@ -200,7 +203,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 			log.debug("Merging entity '{}' with write consistency level {}",
 					proxifier.unproxy(entity), writeLevel);
 		}
-		return this.merge(entity, Optional.fromNullable(writeLevel), Optional.<Integer> absent());
+		return this.merge(entity, Optional.fromNullable(writeLevel), NO_TTL);
 
 	}
 
@@ -237,7 +240,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 					proxifier.unproxy(entity), ttl);
 		}
 		return this
-				.merge(entity, Optional.<ConsistencyLevel> absent(), Optional.fromNullable(ttl));
+				.merge(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
 
 	}
 
@@ -284,7 +287,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		entityValidator.validateEntity(entity, entityMetaMap);
-		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
+		CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL,
 				writeLevelO, ttlO);
 		return context.<T> merge(entity);
 
@@ -308,7 +311,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		{
 			log.debug("Removing entity '{}'", proxifier.unproxy(entity));
 		}
-		this.remove(entity, Optional.<ConsistencyLevel> absent());
+		this.remove(entity, NO_CONSISTENCY_LEVEL);
 	}
 
 	/**
@@ -339,8 +342,8 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity, Optional.<ConsistencyLevel> absent(),
-				writeLevelO, Optional.<Integer> absent());
+		CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL,
+				writeLevelO, NO_TTL);
 		context.remove();
 	}
 
@@ -357,7 +360,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	public <T> T find(Class<T> entityClass, Object primaryKey)
 	{
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-		return this.find(entityClass, primaryKey, Optional.<ConsistencyLevel> absent());
+		return this.find(entityClass, primaryKey, NO_CONSISTENCY_LEVEL);
 	}
 
 	/**
@@ -386,7 +389,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO,
-				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+				NO_CONSISTENCY_LEVEL, NO_TTL);
 		return context.<T> find(entityClass);
 	}
 
@@ -404,7 +407,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	{
 		log.debug("Get reference for entity class '{}' with primary key {}", entityClass,
 				primaryKey);
-		return this.getReference(entityClass, primaryKey, Optional.<ConsistencyLevel> absent());
+		return this.getReference(entityClass, primaryKey, NO_CONSISTENCY_LEVEL);
 	}
 
 	/**
@@ -434,7 +437,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		Validator.validateNotNull(entityClass, "Entity class should not be null");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO,
-				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+				NO_CONSISTENCY_LEVEL, NO_TTL);
 		return context.<T> getReference(entityClass);
 	}
 
@@ -453,7 +456,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 			log.debug("Refreshing entity '{}'", proxifier.unproxy(entity));
 		}
 
-		this.refresh(entity, Optional.<ConsistencyLevel> absent());
+		this.refresh(entity, NO_CONSISTENCY_LEVEL);
 	}
 
 	/**
@@ -483,37 +486,81 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		entityValidator.validateNotWideRow(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
 		CONTEXT context = initPersistenceContext(entity, readLevelO,
-				Optional.<ConsistencyLevel> absent(), Optional.<Integer> absent());
+				NO_CONSISTENCY_LEVEL, NO_TTL);
 		context.refresh();
 	}
 
 	/**
-	 * Initialize all lazy fields of a 'managed' entity, except WideMap fields.
+	 * Initialize all lazy fields of a 'managed' entity, except WideMap/Counter fields.
 	 * 
 	 * Raise an <strong>IllegalStateException</strong> if the entity is not 'managed'
 	 * 
 	 */
-	public <T> void initialize(final T entity)
+	public <T> T initialize(final T entity)
 	{
 		log.debug("Force lazy fields initialization for entity {}", entity);
-		final EntityMeta entityMeta = prepareEntityForInitialization(entity);
-		initializer.initializeEntity(entity, entityMeta);
+		CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL,
+				NO_CONSISTENCY_LEVEL, NO_TTL);
+		return context.initialize(entity);
 	}
 
 	/**
-	 * Initialize all lazy fields of a collection of 'managed' entities, except WideMap fields.
+	 * Initialize all lazy fields of a set of 'managed' entities, except WideMap/Counter fields.
 	 * 
 	 * Raise an IllegalStateException if an entity is not 'managed'
 	 * 
 	 */
-	public <T> void initialize(Collection<T> entities)
+	public <T> Set<T> initialize(final Set<T> entities)
 	{
-		log.debug("Force lazy fields initialization for entity collection {}", entities);
+		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities)
 		{
-			EntityMeta entityMeta = prepareEntityForInitialization(entity);
-			initializer.initializeEntity(entity, entityMeta);
+			initialize(entity);
 		}
+		return entities;
+	}
+
+	/**
+	 * Initialize all lazy fields of a list of 'managed' entities, except WideMap/Counter fields.
+	 * 
+	 * Raise an IllegalStateException if an entity is not 'managed'
+	 * 
+	 */
+	public <T> List<T> initialize(final List<T> entities)
+	{
+		log.debug("Force lazy fields initialization for entity set {}", entities);
+		for (T entity : entities)
+		{
+			initialize(entity);
+		}
+		return entities;
+	}
+
+	/**
+	 * Shorthand for em.unwrap(em.initialize(T entity))
+	 * 
+	 */
+	public <T> T initAndUnwrap(T entity)
+	{
+		return unwrap(initialize(entity));
+	}
+
+	/**
+	 * Shorthand for em.unwrap(em.initialize(Set<T> entities))
+	 * 
+	 */
+	public <T> Set<T> initAndUnwrap(Set<T> entities)
+	{
+		return unwrap(initialize(entities));
+	}
+
+	/**
+	 * Shorthand for em.unwrap(em.initialize(List<T> entities))
+	 * 
+	 */
+	public <T> List<T> initAndUnwrap(List<T> entities)
+	{
+		return unwrap(initialize(entities));
 	}
 
 	/**
@@ -532,22 +579,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 		T realObject = proxifier.unproxy(proxy);
 
 		return realObject;
-	}
-
-	/**
-	 * Unwrap a collection of 'managed' entities to prepare them for serialization
-	 * 
-	 * See {@link #unwrap}
-	 * 
-	 * @param proxy
-	 *            collection
-	 * @return real object collection
-	 */
-	public <T> Collection<T> unwrap(Collection<T> proxies)
-	{
-		log.debug("Unproxying collection of entities {}", proxies);
-
-		return proxifier.unproxy(proxies);
 	}
 
 	/**
@@ -589,14 +620,6 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey,
 			Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
 			Optional<Integer> ttl);
-
-	private EntityMeta prepareEntityForInitialization(Object entity)
-	{
-		proxifier.ensureProxy(entity);
-		Object realObject = proxifier.getRealObject(entity);
-		EntityMeta entityMeta = entityMetaMap.get(realObject.getClass());
-		return entityMeta;
-	}
 
 	protected Map<Class<?>, EntityMeta> getEntityMetaMap()
 	{
