@@ -23,4 +23,12 @@
 	    </plugin>
 	</plugins>
   </build>	            
+  <dependencies>
+  	<dependency>
+  		<groupId>org.hibernate</groupId>
+  		<artifactId>hibernate-core</artifactId>
+  		<version>3.5.6-Final</version>
+  		<scope>test</scope>
+  	</dependency>
+  </dependencies>
 </project>

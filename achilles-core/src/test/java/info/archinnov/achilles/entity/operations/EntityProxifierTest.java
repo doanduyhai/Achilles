@@ -19,9 +19,17 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
+import net.sf.cglib.asm.Type;
+import net.sf.cglib.core.ClassGenerator;
+import net.sf.cglib.core.DefaultGeneratorStrategy;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
+import net.sf.cglib.transform.ClassTransformer;
+import net.sf.cglib.transform.TransformingClassGenerator;
+import net.sf.cglib.transform.impl.InterceptFieldEnabled;
+import net.sf.cglib.transform.impl.InterceptFieldFilter;
+import net.sf.cglib.transform.impl.InterceptFieldTransformer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -307,4 +315,84 @@ public class EntityProxifierTest
 
 		assertThat(actual).containsExactly(realObject);
 	}
+
+	@Test
+	public void should_intercept_fields() throws Exception
+	{
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(MyPojo.class);
+		enhancer.setCallback(NoOp.INSTANCE);
+		enhancer.setStrategy(new DefaultGeneratorStrategy()
+		{
+			protected ClassGenerator transform(ClassGenerator cg)
+			{
+				ClassTransformer transf = new InterceptFieldTransformer(
+						new InterceptFieldFilter()
+						{
+							@Override
+							public boolean acceptWrite(Type owner, String name)
+							{
+								System.out.println("acceptWrite on " + name);
+								return true;
+							}
+
+							@Override
+							public boolean acceptRead(Type owner, String name)
+							{
+								System.out.println("acceptRead on " + name);
+								return true;
+							}
+						}
+						);
+
+				return new TransformingClassGenerator(cg, transf);
+			}
+		});
+		MyPojo myPojo = (MyPojo) enhancer.create();
+		MyFieldInterceptor fieldInterceptor = new MyFieldInterceptor();
+
+		((InterceptFieldEnabled) myPojo).setInterceptFieldCallback(fieldInterceptor);
+
+		myPojo.setName("name");
+		myPojo.name = "name2";
+	}
+
+	public static class MyPojo
+	{
+		public String name;
+		private Long age;
+		private List<String> friends;
+
+		public String getName()
+		{
+			return name;
+		}
+
+		public void setName(String name)
+		{
+			this.name = name;
+		}
+
+		public Long getAge()
+		{
+			return age;
+		}
+
+		public void setAge(Long age)
+		{
+			this.age = age;
+		}
+
+		public List<String> getFriends()
+		{
+			return friends;
+		}
+
+		public void setFriends(List<String> friends)
+		{
+			this.friends = friends;
+		}
+
+	}
+
 }
