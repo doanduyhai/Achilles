@@ -2,7 +2,7 @@ package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadeMerge;
 import static info.archinnov.achilles.entity.metadata.PropertyType.joinPropertyType;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.Merger;
@@ -24,7 +24,7 @@ import com.google.common.collect.FluentIterable;
  * @author DuyHai DOAN
  * 
  */
-public abstract class EntityMerger<CONTEXT extends AchillesPersistenceContext>
+public abstract class EntityMerger<CONTEXT extends PersistenceContext>
 {
 
 	private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);

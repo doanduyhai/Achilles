@@ -3,7 +3,7 @@ package info.archinnov.achilles.context;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
+import info.archinnov.achilles.context.FlushContext.FlushType;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;

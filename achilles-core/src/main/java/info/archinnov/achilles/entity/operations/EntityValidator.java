@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.MethodInvoker;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntityValidator<CONTEXT extends AchillesPersistenceContext> {
+public class EntityValidator<CONTEXT extends PersistenceContext> {
     private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
 
     private MethodInvoker invoker = new MethodInvoker();
@@ -70,7 +70,7 @@ public class EntityValidator<CONTEXT extends AchillesPersistenceContext> {
         }
     }
 
-    public void validateNoPendingBatch(AchillesPersistenceContext context) {
+    public void validateNoPendingBatch(PersistenceContext context) {
         log.debug("Validate no pending batch");
         Validator
                 .validateFalse(

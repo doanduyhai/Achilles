@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesEntityManagerFactory
+public abstract class EntityManagerFactory
 {
-	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManagerFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected ConfigurationContext configContext;
@@ -39,7 +39,7 @@ public abstract class AchillesEntityManagerFactory
 	private EntityExplorer achillesEntityExplorer = new EntityExplorer();
 	private EntityParsingValidator validator = new EntityParsingValidator();
 
-	protected AchillesEntityManagerFactory(Map<String, Object> configurationMap,
+	protected EntityManagerFactory(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor)
 	{
 		Validator.validateNotNull(configurationMap,

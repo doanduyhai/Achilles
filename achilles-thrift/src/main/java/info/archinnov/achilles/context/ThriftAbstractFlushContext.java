@@ -27,7 +27,7 @@ import com.google.common.base.Optional;
  * 
  */
 public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushContext<T>> extends
-		AchillesFlushContext<T>
+		FlushContext<T>
 {
 	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 

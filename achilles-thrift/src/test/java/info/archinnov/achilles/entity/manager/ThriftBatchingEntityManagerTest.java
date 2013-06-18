@@ -50,7 +50,7 @@ public class ThriftBatchingEntityManagerTest
     private ThriftBatchingFlushContext flushContext;
 
     @Mock
-    private AchillesEntityManagerFactory emf;
+    private EntityManagerFactory emf;
 
     @Captor
     private ArgumentCaptor<Optional<ConsistencyLevel>> consistencyCaptor;

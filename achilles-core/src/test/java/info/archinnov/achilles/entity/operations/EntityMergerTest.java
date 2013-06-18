@@ -5,7 +5,7 @@ import static javax.persistence.CascadeType.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.Merger;
@@ -44,23 +44,23 @@ public class EntityMergerTest
 {
 
 	@InjectMocks
-	private EntityMerger<AchillesPersistenceContext> entityMerger = new EntityMerger<AchillesPersistenceContext>()
+	private EntityMerger<PersistenceContext> entityMerger = new EntityMerger<PersistenceContext>()
 	{};
 
 	@Mock
-	private Merger<AchillesPersistenceContext> merger;
+	private Merger<PersistenceContext> merger;
 
 	@Mock
-	private EntityPersister<AchillesPersistenceContext> persister;
+	private EntityPersister<PersistenceContext> persister;
 
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
-	private EntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
+	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 

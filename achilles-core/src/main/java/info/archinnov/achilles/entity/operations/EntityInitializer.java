@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.lazyNonProxyType;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.util.AlreadyLoadedTransformer;
@@ -26,7 +26,7 @@ public class EntityInitializer
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityInitializer.class);
 
-	public <T, CONTEXT extends AchillesPersistenceContext>
+	public <T, CONTEXT extends PersistenceContext>
 			void initializeEntity(T entity, EntityMeta entityMeta,
 					EntityInterceptor<CONTEXT, T> interceptor)
 	{

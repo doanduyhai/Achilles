@@ -31,13 +31,13 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManager extends AchillesEntityManager<ThriftPersistenceContext>
+public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	protected ThriftDaoContext thriftDaoContext;
 
-	ThriftEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+	ThriftEntityManager(EntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, //
 			ThriftDaoContext thriftDaoContext, //
 			ConfigurationContext configContext)

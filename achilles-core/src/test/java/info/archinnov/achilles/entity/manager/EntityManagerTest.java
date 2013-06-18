@@ -1,11 +1,11 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.manager.AchillesEntityManager.*;
+import static info.archinnov.achilles.entity.manager.EntityManager.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -47,37 +47,37 @@ import com.google.common.collect.Sets;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesEntityManagerTest
+public class EntityManagerTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private AchillesEntityManager<AchillesPersistenceContext> em;
+	private EntityManager<PersistenceContext> em;
 
 	@Mock
-	private EntityPersister<AchillesPersistenceContext> persister;
+	private EntityPersister<PersistenceContext> persister;
 
 	@Mock
-	private EntityLoader<AchillesPersistenceContext> loader;
+	private EntityLoader<PersistenceContext> loader;
 
 	@Mock
-	private EntityMerger<AchillesPersistenceContext> merger;
+	private EntityMerger<PersistenceContext> merger;
 
 	@Mock
-	private EntityRefresher<AchillesPersistenceContext> refresher;
+	private EntityRefresher<PersistenceContext> refresher;
 
 	@Mock
 	private EntityInitializer initializer;
 
 	@Mock
-	private EntityProxifier<AchillesPersistenceContext> proxifier;
+	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
-	private EntityValidator<AchillesPersistenceContext> entityValidator;
+	private EntityValidator<PersistenceContext> entityValidator;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;

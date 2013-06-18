@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -48,7 +48,7 @@ public class EntityInitializerTest
 	private final List<String> calledMethods = new ArrayList<String>();
 
 	@Mock
-	private EntityInterceptor<AchillesPersistenceContext, CompleteBean> interceptor;
+	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
 	private CompleteBean bean = new CompleteBean()
 	{

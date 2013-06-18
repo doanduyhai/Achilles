@@ -20,11 +20,11 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityManager extends AchillesEntityManager<CQLPersistenceContext>
+public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
 {
 	private CQLDaoContext daoContext;
 
-	protected CQLEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+	protected CQLEntityManager(EntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, //
 			ConfigurationContext configContext, CQLDaoContext daoContext)
 	{

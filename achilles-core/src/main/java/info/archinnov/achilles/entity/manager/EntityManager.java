@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -25,15 +25,15 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceContext>
+public abstract class EntityManager<CONTEXT extends PersistenceContext>
 {
 	protected static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional
 			.<ConsistencyLevel> absent();
 
-	private static final Logger log = LoggerFactory.getLogger(AchillesEntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityManager.class);
 
-	protected final AchillesEntityManagerFactory entityManagerFactory;
+	protected final EntityManagerFactory entityManagerFactory;
 	protected Map<Class<?>, EntityMeta> entityMetaMap;
 	protected AchillesConsistencyLevelPolicy consistencyPolicy;
 	protected ConfigurationContext configContext;
@@ -42,7 +42,7 @@ public abstract class AchillesEntityManager<CONTEXT extends AchillesPersistenceC
 	protected EntityValidator<CONTEXT> entityValidator;
 	protected EntityInitializer initializer = new EntityInitializer();
 
-	AchillesEntityManager(AchillesEntityManagerFactory entityManagerFactory,
+	EntityManager(EntityManagerFactory entityManagerFactory,
 			Map<Class<?>, EntityMeta> entityMetaMap, //
 			ConfigurationContext configContext)
 	{

@@ -22,7 +22,7 @@ import com.datastax.driver.core.Session;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityManagerFactory extends AchillesEntityManagerFactory
+public class CQLEntityManagerFactory extends EntityManagerFactory
 {
 	private static final Logger log = LoggerFactory.getLogger(CQLEntityManagerFactory.class);
 	private Cluster cluster;

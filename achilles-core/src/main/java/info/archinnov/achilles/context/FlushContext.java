@@ -10,11 +10,11 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesFlushContext<T extends AchillesFlushContext<T>>
+public abstract class FlushContext<T extends FlushContext<T>>
 {
 	protected Optional<Integer> ttlO;
 
-	public AchillesFlushContext(Optional<Integer> ttlO) {
+	public FlushContext(Optional<Integer> ttlO) {
 		this.ttlO = ttlO;
 	}
 

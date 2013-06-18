@@ -18,7 +18,7 @@ import com.google.common.base.Optional;
  * 
  */
 public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>> extends
-		AchillesFlushContext<T>
+		FlushContext<T>
 {
 
 	protected Optional<ConsistencyLevel> readLevelO;

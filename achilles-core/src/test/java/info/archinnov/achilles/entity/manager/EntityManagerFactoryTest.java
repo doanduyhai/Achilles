@@ -36,13 +36,13 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesEntityManagerFactoryTest
+public class EntityManagerFactoryTest
 {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private AchillesEntityManagerFactory factory;
+	private EntityManagerFactory factory;
 
 	@Mock
 	private TableCreator tableCreator;

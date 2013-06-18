@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.AbstractWrapper;
 import info.archinnov.achilles.proxy.wrapper.KeySetWrapper;
 
@@ -17,12 +17,12 @@ public class KeySetWrapperBuilder<K> extends
 {
 	private Set<K> target;
 
-	public KeySetWrapperBuilder(AchillesPersistenceContext context, Set<K> target) {
+	public KeySetWrapperBuilder(PersistenceContext context, Set<K> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static <K> KeySetWrapperBuilder<K> builder(AchillesPersistenceContext context,
+	public static <K> KeySetWrapperBuilder<K> builder(PersistenceContext context,
 			Set<K> target)
 	{
 		return new KeySetWrapperBuilder<K>(context, target);

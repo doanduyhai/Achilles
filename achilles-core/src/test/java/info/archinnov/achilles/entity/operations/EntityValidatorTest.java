@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.MethodInvoker;
@@ -57,7 +57,7 @@ public class EntityValidatorTest
 	private PropertyMeta<Void, Long> idMeta;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Before
 	public void setUp()

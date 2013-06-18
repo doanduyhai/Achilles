@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftPersistenceContext extends AchillesPersistenceContext
+public class ThriftPersistenceContext extends PersistenceContext
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContext.class);
 

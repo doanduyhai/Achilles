@@ -1,6 +1,6 @@
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.context.AchillesFlushContext.FlushType;
+import info.archinnov.achilles.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.proxy.MethodInvoker;
@@ -17,7 +17,7 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public abstract class AchillesPersistenceContext
+public abstract class PersistenceContext
 {
     protected MethodInvoker invoker = new MethodInvoker();
     protected EntityInitializer initializer = new EntityInitializer();
@@ -26,13 +26,13 @@ public abstract class AchillesPersistenceContext
     protected EntityMeta entityMeta;
     protected Object entity;
     protected Object primaryKey;
-    protected AchillesFlushContext<?> flushContext;
+    protected FlushContext<?> flushContext;
     protected Set<String> entitiesIdentity;
 
     protected boolean loadEagerFields = true;
 
-    private AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            AchillesFlushContext<?> flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
+    private PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+            FlushContext<?> flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
     {
         this.entityMeta = entityMeta;
         this.configContext = configContext;
@@ -42,8 +42,8 @@ public abstract class AchillesPersistenceContext
 
     }
 
-    protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Object entity, AchillesFlushContext<?> flushContext, Set<String> entitiesIdentity)
+    protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+            Object entity, FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
 
@@ -55,8 +55,8 @@ public abstract class AchillesPersistenceContext
                 + "' should not be null");
     }
 
-    protected AchillesPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Class<?> entityClass, Object primaryKey, AchillesFlushContext<?> flushContext,
+    protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+            Class<?> entityClass, Object primaryKey, FlushContext<?> flushContext,
             Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
@@ -105,10 +105,10 @@ public abstract class AchillesPersistenceContext
 
     public abstract void refresh();
 
-    public abstract AchillesPersistenceContext newPersistenceContext(EntityMeta joinMeta,
+    public abstract PersistenceContext newPersistenceContext(EntityMeta joinMeta,
             Object joinEntity);
 
-    public abstract AchillesPersistenceContext newPersistenceContext(Class<?> entityClass,
+    public abstract PersistenceContext newPersistenceContext(Class<?> entityClass,
             EntityMeta joinMeta, Object joinId);
 
     public boolean isWideRow()
@@ -196,7 +196,7 @@ public abstract class AchillesPersistenceContext
         this.entityMeta = entityMeta;
     }
 
-    public void setFlushContext(AchillesFlushContext<?> flushContext)
+    public void setFlushContext(FlushContext<?> flushContext)
     {
         this.flushContext = flushContext;
     }

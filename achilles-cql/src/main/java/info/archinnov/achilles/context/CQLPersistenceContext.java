@@ -24,7 +24,7 @@ import com.datastax.driver.core.Row;
  * @author DuyHai DOAN
  * 
  */
-public class CQLPersistenceContext extends AchillesPersistenceContext
+public class CQLPersistenceContext extends PersistenceContext
 {
 	private CQLDaoContext daoContext;
 	private CQLAbstractFlushContext<?> flushContext;

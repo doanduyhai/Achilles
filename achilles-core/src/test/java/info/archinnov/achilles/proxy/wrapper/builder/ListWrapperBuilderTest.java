@@ -1,7 +1,7 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.context.AchillesPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
@@ -42,7 +42,7 @@ public class ListWrapperBuilderTest
 	private EntityProxifier proxifier;
 
 	@Mock
-	private AchillesPersistenceContext context;
+	private PersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception
