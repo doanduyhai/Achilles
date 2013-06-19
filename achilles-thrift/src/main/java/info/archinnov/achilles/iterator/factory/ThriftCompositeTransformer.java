@@ -78,6 +78,17 @@ public class ThriftCompositeTransformer
 		};
 	}
 
+	public Function<HColumn<Composite, ?>, Long> buildTimestampTransformer()
+	{
+		return new Function<HColumn<Composite, ?>, Long>()
+		{
+			public Long apply(HColumn<Composite, ?> hColumn)
+			{
+				return hColumn.getClock();
+			}
+		};
+	}
+
 	public <K, V> Function<HColumn<Composite, V>, KeyValue<K, V>> buildKeyValueTransformer(
 			final ThriftPersistenceContext context, final PropertyMeta<K, V> propertyMeta)
 	{
@@ -96,8 +107,9 @@ public class ThriftCompositeTransformer
 		K key = buildKey(propertyMeta, hColumn);
 		V value = this.buildValue(context, propertyMeta, hColumn);
 		int ttl = hColumn.getTtl();
+		long timestamp = hColumn.getClock();
 
-		KeyValue<K, V> keyValue = new KeyValue<K, V>(key, value, ttl);
+		KeyValue<K, V> keyValue = new KeyValue<K, V>(key, value, ttl, timestamp);
 		if (log.isTraceEnabled())
 		{
 			log.trace("Built key/value from {} = {}",
@@ -169,7 +181,7 @@ public class ThriftCompositeTransformer
 		K key = buildCounterKey(propertyMeta, hColumn);
 		Counter value = buildCounterValue(context, propertyMeta, hColumn);
 
-		return new KeyValue<K, Counter>(key, value, 0);
+		return new KeyValue<K, Counter>(key, value, 0, 0);
 	}
 
 	public <K> K buildCounterKey(PropertyMeta<K, ?> propertyMeta, HCounterColumn<Composite> hColumn)

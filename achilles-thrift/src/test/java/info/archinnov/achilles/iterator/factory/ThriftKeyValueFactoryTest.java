@@ -297,7 +297,7 @@ public class ThriftKeyValueFactoryTest
 						.getValue(ThriftSerializerUtils.INT_SRZ);
 				String value = hCol.getValue();
 
-				return new KeyValue<Integer, String>(key, value, hCol.getTtl());
+				return new KeyValue<Integer, String>(key, value, hCol.getTtl(), hCol.getClock());
 			}
 		};
 
@@ -326,10 +326,16 @@ public class ThriftKeyValueFactoryTest
 	@Test
 	public void should_create_join_keyvalue_list() throws Exception
 	{
+		long timestamp1 = 11L;
+		long timestamp2 = 12L;
+
 		Composite comp1 = CompositeTestBuilder.builder().values(key1).buildSimple();
 		Composite comp2 = CompositeTestBuilder.builder().values(key2).buildSimple();
 		HColumn<Composite, Long> hCol1 = HColumnTestBuilder.simple(comp1, joinId1, ttl1);
 		HColumn<Composite, Long> hCol2 = HColumnTestBuilder.simple(comp2, joinId2, ttl2);
+
+		hCol1.setClock(timestamp1);
+		hCol2.setClock(timestamp2);
 
 		Function<HColumn<Composite, Integer>, Integer> keyFunction = new Function<HColumn<Composite, Integer>, Integer>()
 		{
@@ -358,11 +364,22 @@ public class ThriftKeyValueFactoryTest
 			}
 		};
 
+		Function<HColumn<Composite, Long>, Long> timestampFn = new Function<HColumn<Composite, Long>, Long>()
+		{
+			@Override
+			public Long apply(HColumn<Composite, Long> hCol)
+			{
+				return hCol.getClock();
+			}
+		};
+
 		when(thriftCompositeTransformer.buildKeyTransformer(propertyMeta)).thenReturn(
 				(Function) keyFunction);
 		when(thriftCompositeTransformer.buildRawValueTransformer()).thenReturn(
 				(Function) rawValueFn);
 		when(thriftCompositeTransformer.buildTtlTransformer()).thenReturn((Function) ttlFn);
+		when(thriftCompositeTransformer.buildTimestampTransformer()).thenReturn(
+				(Function) timestampFn);
 
 		List<KeyValue<Integer, UserBean>> builtList = factory.createJoinKeyValueList(context,
 				propertyMeta, Arrays.asList(hCol1, hCol2));
@@ -374,10 +391,12 @@ public class ThriftKeyValueFactoryTest
 		assertThat(builtList.get(0).getKey()).isEqualTo(key1);
 		assertThat(builtList.get(0).getValue()).isEqualTo(bean1);
 		assertThat(builtList.get(0).getTtl()).isEqualTo(ttl1);
+		assertThat(builtList.get(0).getTimestamp()).isEqualTo(timestamp1);
 
 		assertThat(builtList.get(1).getKey()).isEqualTo(key2);
 		assertThat(builtList.get(1).getValue()).isEqualTo(bean2);
 		assertThat(builtList.get(1).getTtl()).isEqualTo(ttl2);
+		assertThat(builtList.get(1).getTimestamp()).isEqualTo(timestamp2);
 	}
 
 	@Test
@@ -444,7 +463,7 @@ public class ThriftKeyValueFactoryTest
 		Composite dynComp2 = CompositeTestBuilder.builder().values(0, 1, 2).buildSimple();
 		HCounterColumn<Composite> hCol1 = HColumnTestBuilder.counter(dynComp1, 11L);
 		HCounterColumn<Composite> hCol2 = HColumnTestBuilder.counter(dynComp2, 12L);
-
+		final long timestamp = System.currentTimeMillis();
 		Function<HCounterColumn<Composite>, KeyValue<Integer, Counter>> function = new Function<HCounterColumn<Composite>, KeyValue<Integer, Counter>>()
 		{
 			@Override
@@ -456,7 +475,7 @@ public class ThriftKeyValueFactoryTest
 						.getValue(ThriftSerializerUtils.INT_SRZ);
 				Counter value = CounterBuilder.incr(hCol.getValue());
 
-				return new KeyValue<Integer, Counter>(key, value, 0);
+				return new KeyValue<Integer, Counter>(key, value, 0, timestamp);
 			}
 		};
 
@@ -471,10 +490,12 @@ public class ThriftKeyValueFactoryTest
 		assertThat(builtList.get(0).getKey()).isEqualTo(1);
 		assertThat(builtList.get(0).getValue().get()).isEqualTo(11L);
 		assertThat(builtList.get(0).getTtl()).isEqualTo(0);
+		assertThat(builtList.get(0).getTimestamp()).isEqualTo(timestamp);
 
 		assertThat(builtList.get(1).getKey()).isEqualTo(2);
 		assertThat(builtList.get(1).getValue().get()).isEqualTo(12L);
 		assertThat(builtList.get(1).getTtl()).isEqualTo(0);
+		assertThat(builtList.get(1).getTimestamp()).isEqualTo(timestamp);
 	}
 
 	@SuppressWarnings("unchecked")

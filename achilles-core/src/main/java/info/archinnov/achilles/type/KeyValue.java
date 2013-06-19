@@ -25,6 +25,7 @@ public class KeyValue<K, V> implements Serializable
 	@JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY)
 	private V value;
 	private int ttl;
+	private long timestamp;
 
 	/**
 	 * Default constructor
@@ -41,10 +42,11 @@ public class KeyValue<K, V> implements Serializable
 	 * @param ttl
 	 *            Time to live
 	 */
-	public KeyValue(K key, V value, int ttl) {
+	public KeyValue(K key, V value, int ttl, long timestamp) {
 		this.key = key;
 		this.value = value;
 		this.ttl = ttl;
+		this.timestamp = timestamp;
 	}
 
 	/**
@@ -93,10 +95,16 @@ public class KeyValue<K, V> implements Serializable
 		return ttl;
 	}
 
+	public long getTimestamp()
+	{
+		return timestamp;
+	}
+
 	@Override
 	public String toString()
 	{
-		return "KeyValue [key=" + key + ", value=" + value + ", ttl=" + ttl + "]";
+		return "KeyValue [key=" + key + ", value=" + value + ", ttl=" + ttl + ", timestamp="
+				+ timestamp + "]";
 	}
 
 }
