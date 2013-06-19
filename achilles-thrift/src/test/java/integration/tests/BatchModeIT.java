@@ -363,7 +363,7 @@ public class BatchModeIT
 		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 		batchEm.startBatch();
 
-		batchEm.startBatch(ONE, ALL);
+		batchEm.startBatch(QUORUM, ALL);
 
 		logAsserter.prepareLogLevel();
 
@@ -376,7 +376,7 @@ public class BatchModeIT
 
 		batchEm.endBatch();
 
-		logAsserter.assertConsistencyLevels(ONE, ALL);
+		logAsserter.assertConsistencyLevels(QUORUM, ALL);
 		assertThatBatchContextHasBeenReset(batchEm);
 		assertThatConsistencyLevelHasBeenReset();
 	}

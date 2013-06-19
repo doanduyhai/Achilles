@@ -567,12 +567,12 @@ public class ConsistencyLevelIT
 
 		logAsserter.prepareLogLevel();
 		ThriftBatchingEntityManager batchingEm = em.batchingEntityManager();
-		batchingEm.startBatch(ConsistencyLevel.ALL, ConsistencyLevel.ONE);
+		batchingEm.startBatch(ONE, QUORUM);
 		batchingEm.persist(entity);
 		batchingEm.persist(tweet);
 
 		batchingEm.endBatch();
-		logAsserter.assertConsistencyLevels(ALL, ONE);
+		logAsserter.assertConsistencyLevels(ONE, QUORUM);
 	}
 
 	@Test

@@ -53,7 +53,6 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
-
 		enhancer.setCallback(buildInterceptor(context, entity));
 
 		return (T) enhancer.create();

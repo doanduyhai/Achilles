@@ -144,10 +144,13 @@ public class ThriftKeyValueFactory
 			List<Integer> ttls = Lists.transform(hColumns,
 					thriftCompositeTransformer.buildTtlTransformer());
 
+			List<Long> timestamps = Lists.transform(hColumns,
+					thriftCompositeTransformer.buildTimestampTransformer());
+
 			for (int i = 0; i < keys.size(); i++)
 			{
 				V proxy = buildProxy(context, joinMeta, joinEntities, joinIds.get(i));
-				result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i)));
+				result.add(new KeyValue<K, V>(keys.get(i), proxy, ttls.get(i), timestamps.get(i)));
 			}
 		}
 		return result;

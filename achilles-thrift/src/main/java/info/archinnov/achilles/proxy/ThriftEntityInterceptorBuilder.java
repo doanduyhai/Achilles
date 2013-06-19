@@ -1,6 +1,5 @@
 package info.archinnov.achilles.proxy;
 
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -28,16 +27,16 @@ public class ThriftEntityInterceptorBuilder<T>
 	private Set<Method> lazyLoaded = new HashSet<Method>();
 	private ThriftPersistenceContext context;
 
-	public static <T> ThriftEntityInterceptorBuilder<T> builder(PersistenceContext context,
+	public static <T> ThriftEntityInterceptorBuilder<T> builder(ThriftPersistenceContext context,
 			T entity)
 	{
 		return new ThriftEntityInterceptorBuilder<T>(context, entity);
 	}
 
-	public ThriftEntityInterceptorBuilder(PersistenceContext context, T entity) {
+	public ThriftEntityInterceptorBuilder(ThriftPersistenceContext context, T entity) {
 		Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
 		Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
-		this.context = (ThriftPersistenceContext) context;
+		this.context = context;
 		this.target = entity;
 	}
 

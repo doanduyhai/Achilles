@@ -185,6 +185,23 @@ public class ThriftCompositeTransformerTest
 	}
 
 	@Test
+	public void should_build_timestamp_transformer() throws Exception
+	{
+		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
+		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
+
+		hCol1.setClock(10);
+		hCol2.setClock(11);
+
+		List<Long> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+				transformer.buildTimestampTransformer());
+
+		assertThat(rawValues).containsExactly(10L, 11L);
+	}
+
+	@Test
 	public void should_build_key_value_transformer() throws Exception
 	{
 		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();

@@ -307,4 +307,5 @@ public class EntityProxifierTest
 
 		assertThat(actual).containsExactly(realObject);
 	}
+
 }

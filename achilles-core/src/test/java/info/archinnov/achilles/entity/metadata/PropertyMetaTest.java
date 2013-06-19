@@ -106,7 +106,7 @@ public class PropertyMetaTest
 		PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
 		propertyMeta.setObjectMapper(objectMapper);
 
-		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "12", 456);
+		KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "12", 456, 10L);
 		String keyValueString = objectMapper.writeValueAsString(keyValue);
 
 		KeyValue<Integer, String> converted = propertyMeta.getKeyValueFromString(keyValueString);
@@ -114,6 +114,7 @@ public class PropertyMetaTest
 		assertThat(converted.getKey()).isEqualTo(keyValue.getKey());
 		assertThat(converted.getValue()).isEqualTo(keyValue.getValue());
 		assertThat(converted.getTtl()).isEqualTo(keyValue.getTtl());
+		assertThat(converted.getTimestamp()).isEqualTo(10L);
 	}
 
 	@Test
