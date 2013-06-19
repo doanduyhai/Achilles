@@ -157,6 +157,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 	private void batchPersistListProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
+		persisterImpl.removePropertyBatch(context, propertyMeta);
 		List<?> list = (List<?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (list != null)
@@ -168,6 +169,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 	private void batchPersistSetProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
+		persisterImpl.removePropertyBatch(context, propertyMeta);
 		Set<?> set = (Set<?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (set != null)
@@ -179,7 +181,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 	private void batchPersistMapProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, ?> propertyMeta)
 	{
-
+		persisterImpl.removePropertyBatch(context, propertyMeta);
 		Map<?, ?> map = (Map<?, ?>) invoker.getValueFromField(context.getEntity(),
 				propertyMeta.getGetter());
 		if (map != null)

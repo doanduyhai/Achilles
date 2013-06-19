@@ -230,6 +230,7 @@ public class ThriftEntityPersisterTest
 		when(invoker.getValueFromField(entity, listMeta.getGetter())).thenReturn(list);
 		persister.persist(context);
 
+		verify(persisterImpl).removePropertyBatch(context, listMeta);
 		verify(persisterImpl).batchPersistList(list, context, listMeta);
 	}
 
@@ -252,6 +253,7 @@ public class ThriftEntityPersisterTest
 		when(invoker.getValueFromField(entity, setMeta.getGetter())).thenReturn(set);
 		persister.persist(context);
 
+		verify(persisterImpl).removePropertyBatch(context, setMeta);
 		verify(persisterImpl).batchPersistSet(set, context, setMeta);
 	}
 
@@ -274,6 +276,7 @@ public class ThriftEntityPersisterTest
 		when(invoker.getValueFromField(entity, mapMeta.getGetter())).thenReturn(map);
 		persister.persist(context);
 
+		verify(persisterImpl).removePropertyBatch(context, mapMeta);
 		verify(persisterImpl).batchPersistMap(map, context, mapMeta);
 	}
 

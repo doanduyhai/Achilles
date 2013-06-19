@@ -19,17 +19,9 @@ import java.util.Set;
 
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-import net.sf.cglib.asm.Type;
-import net.sf.cglib.core.ClassGenerator;
-import net.sf.cglib.core.DefaultGeneratorStrategy;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
-import net.sf.cglib.transform.ClassTransformer;
-import net.sf.cglib.transform.TransformingClassGenerator;
-import net.sf.cglib.transform.impl.InterceptFieldEnabled;
-import net.sf.cglib.transform.impl.InterceptFieldFilter;
-import net.sf.cglib.transform.impl.InterceptFieldTransformer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -314,45 +306,6 @@ public class EntityProxifierTest
 		Collection<CompleteBean> actual = proxifier.unproxy(proxies);
 
 		assertThat(actual).containsExactly(realObject);
-	}
-
-	@Test
-	public void should_intercept_fields() throws Exception
-	{
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(CompleteBean.class);
-		enhancer.setCallback(NoOp.INSTANCE);
-		enhancer.setStrategy(new DefaultGeneratorStrategy()
-		{
-			protected ClassGenerator transform(ClassGenerator cg)
-			{
-				ClassTransformer transf = new InterceptFieldTransformer(
-						new InterceptFieldFilter()
-						{
-							@Override
-							public boolean acceptWrite(Type owner, String name)
-							{
-								return true;
-							}
-
-							@Override
-							public boolean acceptRead(Type owner, String name)
-							{
-								return true;
-							}
-						}
-						);
-
-				return new TransformingClassGenerator(cg, transf);
-			}
-		});
-		CompleteBean entity = (CompleteBean) enhancer.create();
-		MyFieldInterceptor fieldInterceptor = new MyFieldInterceptor();
-		InterceptFieldEnabled interceptFieldEnabled = (InterceptFieldEnabled) entity;
-		interceptFieldEnabled.setInterceptFieldCallback(fieldInterceptor);
-
-		assertThat(interceptFieldEnabled.getInterceptFieldCallback()).isSameAs(fieldInterceptor);
-		entity.setUser(new UserBean());
 	}
 
 }

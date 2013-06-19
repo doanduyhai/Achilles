@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,15 +10,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
-import net.sf.cglib.transform.impl.InterceptFieldCallback;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 /**
  * EntityProxifier
@@ -30,21 +25,6 @@ import com.google.common.collect.Sets;
 public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 {
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
-
-	private static final CallbackFilter OBJECT_METHODS_FILTER = new CallbackFilter()
-	{
-		private final Set<String> methodsToFilter = Sets.newHashSet("finalize",
-				"equals", "hashCode", "toString", "getClass", "notify", "notifyAll", "wait",
-				"clone");
-
-		public int accept(Method method)
-		{
-			if (methodsToFilter.contains(method.getName()))
-				return 1;
-			else
-				return 0;
-		}
-	};
 
 	public <ID> Class<?> deriveBaseClass(Object entity)
 	{
@@ -72,12 +52,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 		log.debug("Build Cglib proxy for entity {} ", entity);
 
 		Enhancer enhancer = new Enhancer();
-		enhancer.setCallbackFilter(OBJECT_METHODS_FILTER);
 		enhancer.setSuperclass(entity.getClass());
-		enhancer.setInterfaces(new Class[]
-		{
-			InterceptFieldCallback.class
-		});
 		enhancer.setCallback(buildInterceptor(context, entity));
 
 		return (T) enhancer.create();
