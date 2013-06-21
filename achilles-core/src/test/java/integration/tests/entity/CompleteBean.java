@@ -2,8 +2,8 @@ package integration.tests.entity;
 
 import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.MultiKey;
 import info.archinnov.achilles.type.WideMap;
 import java.io.Serializable;
 import java.util.List;
@@ -207,7 +207,8 @@ public class CompleteBean implements Serializable
         this.favoriteTweets = favoriteTweets;
     }
 
-    public static class UserTweetKey implements MultiKey
+    @MultiKey
+    public static class UserTweetKey
     {
         @Key(order = 1)
         private String user;

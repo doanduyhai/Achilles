@@ -1,10 +1,9 @@
 package parser.entity;
 
 import info.archinnov.achilles.annotations.Key;
-import info.archinnov.achilles.type.MultiKey;
+import info.archinnov.achilles.annotations.MultiKey;
 
 import java.util.List;
-
 
 /**
  * MultiKeyIncorrectType
@@ -12,31 +11,32 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyIncorrectType implements MultiKey
+@MultiKey
+public class MultiKeyIncorrectType
 {
-	@Key(order = 1)
-	private List<String> name;
+    @Key(order = 1)
+    private List<String> name;
 
-	@Key(order = 2)
-	private int rank;
+    @Key(order = 2)
+    private int rank;
 
-	public List<String> getName()
-	{
-		return name;
-	}
+    public List<String> getName()
+    {
+        return name;
+    }
 
-	public void setName(List<String> name)
-	{
-		this.name = name;
-	}
+    public void setName(List<String> name)
+    {
+        this.name = name;
+    }
 
-	public int getRank()
-	{
-		return rank;
-	}
+    public int getRank()
+    {
+        return rank;
+    }
 
-	public void setRank(int rank)
-	{
-		this.rank = rank;
-	}
+    public void setRank(int rank)
+    {
+        this.rank = rank;
+    }
 }

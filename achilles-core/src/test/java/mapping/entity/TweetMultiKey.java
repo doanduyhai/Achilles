@@ -1,8 +1,7 @@
 package mapping.entity;
 
 import info.archinnov.achilles.annotations.Key;
-import info.archinnov.achilles.type.MultiKey;
-
+import info.archinnov.achilles.annotations.MultiKey;
 import java.util.UUID;
 
 /**
@@ -11,53 +10,55 @@ import java.util.UUID;
  * @author DuyHai DOAN
  * 
  */
-public class TweetMultiKey implements MultiKey
+@MultiKey
+public class TweetMultiKey
 {
-	@Key(order = 2)
-	private String author;
+    @Key(order = 2)
+    private String author;
 
-	@Key(order = 1)
-	private UUID id;
+    @Key(order = 1)
+    private UUID id;
 
-	@Key(order = 3)
-	private Integer retweetCount;
+    @Key(order = 3)
+    private Integer retweetCount;
 
-	public TweetMultiKey() {}
+    public TweetMultiKey() {
+    }
 
-	public TweetMultiKey(UUID id, String author, Integer retweetCount) {
-		this.id = id;
-		this.author = author;
-		this.retweetCount = retweetCount;
-	}
+    public TweetMultiKey(UUID id, String author, Integer retweetCount) {
+        this.id = id;
+        this.author = author;
+        this.retweetCount = retweetCount;
+    }
 
-	public UUID getId()
-	{
-		return id;
-	}
+    public UUID getId()
+    {
+        return id;
+    }
 
-	public void setId(UUID id)
-	{
-		this.id = id;
-	}
+    public void setId(UUID id)
+    {
+        this.id = id;
+    }
 
-	public String getAuthor()
-	{
-		return author;
-	}
+    public String getAuthor()
+    {
+        return author;
+    }
 
-	public void setAuthor(String author)
-	{
-		this.author = author;
-	}
+    public void setAuthor(String author)
+    {
+        this.author = author;
+    }
 
-	public Integer getRetweetCount()
-	{
-		return retweetCount;
-	}
+    public Integer getRetweetCount()
+    {
+        return retweetCount;
+    }
 
-	public void setRetweetCount(Integer retweetCount)
-	{
-		this.retweetCount = retweetCount;
-	}
+    public void setRetweetCount(Integer retweetCount)
+    {
+        this.retweetCount = retweetCount;
+    }
 
 }

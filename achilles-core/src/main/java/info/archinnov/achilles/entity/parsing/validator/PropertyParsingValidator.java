@@ -1,10 +1,10 @@
 package info.archinnov.achilles.entity.parsing.validator;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.MultiKey;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
@@ -102,7 +102,9 @@ public class PropertyParsingValidator {
     }
 
     public static void validateAllowedTypes(Class<?> type, Set<Class<?>> allowedTypes, String message) {
-        if (!allowedTypes.contains(type) && !MultiKey.class.isAssignableFrom(type) && !type.isEnum()) {
+        if (!allowedTypes.contains(type)
+                && type.getAnnotation(MultiKey.class) == null
+                && !type.isEnum()) {
             throw new AchillesBeanMappingException(message);
         }
     }

@@ -1,7 +1,7 @@
 package parser.entity;
 
 import info.archinnov.achilles.annotations.Key;
-import info.archinnov.achilles.type.MultiKey;
+import info.archinnov.achilles.annotations.MultiKey;
 
 /**
  * CorrectMultiKey
@@ -9,31 +9,32 @@ import info.archinnov.achilles.type.MultiKey;
  * @author DuyHai DOAN
  * 
  */
-public class CorrectMultiKey implements MultiKey
+@MultiKey
+public class CorrectMultiKey
 {
-	@Key(order = 1)
-	private String name;
+    @Key(order = 1)
+    private String name;
 
-	@Key(order = 2)
-	private int rank;
+    @Key(order = 2)
+    private int rank;
 
-	public String getName()
-	{
-		return name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public int getRank()
-	{
-		return rank;
-	}
+    public int getRank()
+    {
+        return rank;
+    }
 
-	public void setRank(int rank)
-	{
-		this.rank = rank;
-	}
+    public void setRank(int rank)
+    {
+        this.rank = rank;
+    }
 }

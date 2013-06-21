@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.parsing;
 import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.*;
+import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -15,7 +16,6 @@ import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.MultiKey;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
@@ -424,7 +424,8 @@ public class PropertyParser
     {
         log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
         MultiKeyProperties multiKeyProperties = null;
-        if (MultiKey.class.isAssignableFrom(keyClass))
+
+        if (keyClass.getAnnotation(MultiKey.class) != null)
         {
             multiKeyProperties = achillesPropertyHelper.parseMultiKey(keyClass);
         }
