@@ -10,6 +10,7 @@ import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
@@ -29,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -48,7 +48,6 @@ public class ThriftTableCreatorTest
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
     private ThriftTableCreator creator;
 
     @Mock
@@ -86,11 +85,25 @@ public class ThriftTableCreatorTest
                 .build();
 
         columnFamilyNames.clear();
-        Whitebox.setInternalState(creator, "thriftTableHelper", thriftTableHelper);
-        Whitebox.setInternalState(creator, "columnFamilyNames", columnFamilyNames);
         configContext.setForceColumnFamilyCreation(true);
         when(keyspace.getKeyspaceName()).thenReturn("keyspace");
         when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
+
+        creator = new ThriftTableCreator(cluster, keyspace);
+        Whitebox.setInternalState(creator, "thriftTableHelper", thriftTableHelper);
+        Whitebox.setInternalState(creator, "columnFamilyNames", columnFamilyNames);
+    }
+
+    @Test
+    public void should_exception_when_keyspace_does_not_exist() throws Exception {
+
+        when(cluster.describeKeyspace("keyspace")).thenReturn(null);
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("The keyspace 'keyspace' provided by configuration does not exist");
+
+        new ThriftTableCreator(cluster, keyspace);
+
     }
 
     @Test
