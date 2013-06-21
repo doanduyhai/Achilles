@@ -59,7 +59,7 @@ public class CQLStatementGeneratorTest {
         List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
 
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .compNames("id", "a", "b").type(PropertyType.COMPOUND_KEY).build();
+                .compNames("id", "a", "b").type(PropertyType.COMPOUND_ID).build();
 
         PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
                 .type(PropertyType.SIMPLE).build();

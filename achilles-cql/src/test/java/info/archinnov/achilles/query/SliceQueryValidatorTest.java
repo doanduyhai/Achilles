@@ -43,7 +43,7 @@ public class SliceQueryValidatorTest {
         multiKeyProperties.setComponentGetters(Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
         pm.setMultiKeyProperties(multiKeyProperties);
-        pm.setType(PropertyType.COMPOUND_KEY);
+        pm.setType(PropertyType.COMPOUND_ID);
     }
 
     @Test

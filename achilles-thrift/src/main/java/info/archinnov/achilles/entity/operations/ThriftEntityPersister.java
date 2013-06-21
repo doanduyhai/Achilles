@@ -46,7 +46,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
             // Remove
             persisterImpl.removeEntityBatch(context);
 
-            persisterImpl.batchPersistVersionSerialUID(context);
+            //persisterImpl.batchPersistVersionSerialUID(context);
             for (Entry<String, PropertyMeta<?, ?>> entry : entityMeta.getPropertyMetas().entrySet())
             {
                 PropertyMeta<?, ?> propertyMeta = entry.getValue();
@@ -62,6 +62,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
                 context.getEntity());
         switch (propertyMeta.type())
         {
+            case ID:
             case SIMPLE:
             case LAZY_SIMPLE:
                 persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
@@ -138,11 +139,14 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
                     .getEntityClass()
                     .getCanonicalName(), context.getPrimaryKey());
 
-            Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
-                    context.findEntityDao(joinMeta.getTableName()));
+            //            Long joinVersionSerialUID = loader.loadVersionSerialUID(joinId,
+            //                    context.findEntityDao(joinMeta.getTableName()));
+
+            Object primaryKey = loader.loadPrimaryKey(context, joinMeta.getIdMeta());
+
             Validator
                     .validateNotNull(
-                            joinVersionSerialUID,
+                            primaryKey,
                             "The entity '"
                                     + joinProperties.getEntityMeta().getClassName()
                                     + "' with id '"

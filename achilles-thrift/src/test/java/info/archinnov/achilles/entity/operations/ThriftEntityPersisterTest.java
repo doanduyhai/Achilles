@@ -87,17 +87,6 @@ public class ThriftEntityPersisterTest
     }
 
     @Test
-    public void should_persist_versionSerialUID() throws Exception
-    {
-        when(entityMeta.isWideRow()).thenReturn(false);
-        when(entityMeta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta<?, ?>>());
-        persister.persist(context);
-
-        verify(persisterImpl).removeEntityBatch(context);
-        verify(persisterImpl).batchPersistVersionSerialUID(context);
-    }
-
-    @Test
     public void should_persist_simple_property() throws Exception
     {
         HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
@@ -203,7 +192,7 @@ public class ThriftEntityPersisterTest
         joinProperties.setEntityMeta(joinMeta);
 
         when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
-        when(loader.loadVersionSerialUID(entity.getId(), entityDao)).thenReturn(joinId);
+        when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
         context.getConfigContext().setEnsureJoinConsistency(true);
 
         persister.cascadePersistOrEnsureExists(context, entity, joinProperties);

@@ -14,8 +14,9 @@ import com.google.common.collect.Sets;
 public enum PropertyType
 {
 
+    ID(5), //
     SERIAL_VERSION_UID(10), //
-    COMPOUND_KEY(20), //
+    COMPOUND_ID(10), //
     SIMPLE(10), //
     LIST(10), //
     SET(10), //
@@ -95,7 +96,7 @@ public enum PropertyType
 
     public boolean isCompoundKey()
     {
-        return this == COMPOUND_KEY;
+        return this == COMPOUND_ID;
     }
 
     public static PropertyType[] nonProxyJoinTypes()

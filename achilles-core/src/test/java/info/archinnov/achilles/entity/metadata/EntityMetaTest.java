@@ -1,15 +1,12 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Test;
-
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
@@ -20,47 +17,63 @@ import testBuilders.PropertyMetaTestBuilder;
  */
 public class EntityMetaTest
 {
-	@Test
-	public void should_to_string() throws Exception
-	{
-		Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		propertyMetas.put("name", null);
-		propertyMetas.put("age", null);
+    @Test
+    public void should_to_string() throws Exception
+    {
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        propertyMetas.put("name", null);
+        propertyMetas.put("age", null);
 
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.type(PropertyType.SIMPLE)
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
-				.build();
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.SIMPLE)
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .build();
 
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setClassName("className");
-		entityMeta.setTableName("cfName");
-		entityMeta.setSerialVersionUID(10L);
-		entityMeta.setIdClass(Long.class);
-		entityMeta.setPropertyMetas(propertyMetas);
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setWideRow(true);
-		entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setClassName("className");
+        entityMeta.setTableName("cfName");
+        entityMeta.setSerialVersionUID(10L);
+        entityMeta.setIdClass(Long.class);
+        entityMeta.setPropertyMetas(propertyMetas);
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setWideRow(true);
+        entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
 
-		StringBuilder toString = new StringBuilder();
-		toString.append("EntityMeta [className=className, ");
-		toString.append("columnFamilyName=cfName, ");
-		toString.append("serialVersionUID=10, ");
-		toString.append("propertyMetas=[age,name], ");
-		toString.append("idMeta=").append(idMeta.toString()).append(", ");
-		toString.append("wideRow=true, ");
-		toString.append("consistencyLevels=[ONE,ONE]]");
-		assertThat(entityMeta.toString()).isEqualTo(toString.toString());
-	}
+        StringBuilder toString = new StringBuilder();
+        toString.append("EntityMeta [className=className, ");
+        toString.append("columnFamilyName=cfName, ");
+        toString.append("serialVersionUID=10, ");
+        toString.append("propertyMetas=[age,name], ");
+        toString.append("idMeta=").append(idMeta.toString()).append(", ");
+        toString.append("wideRow=true, ");
+        toString.append("consistencyLevels=[ONE,ONE]]");
+        assertThat(entityMeta.toString()).isEqualTo(toString.toString());
+    }
 
-	@Test
-	public void should_get_cql_table_name() throws Exception
-	{
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("TaBle");
+    @Test
+    public void should_get_cql_table_name() throws Exception
+    {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("TaBle");
 
-		assertThat(meta.getCQLTableName()).isEqualTo("table");
-	}
+        assertThat(meta.getCQLTableName()).isEqualTo("table");
+    }
+
+    @Test
+    public void should_get_all_metas() throws Exception {
+
+        PropertyMeta<?, ?> pm1 = new PropertyMeta<Void, String>();
+        PropertyMeta<?, ?> pm2 = new PropertyMeta<Void, String>();
+
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        propertyMetas.put("name", pm1);
+        propertyMetas.put("age", pm2);
+
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setPropertyMetas(propertyMetas);
+
+        assertThat(entityMeta.getAllMetas()).containsExactly(pm1, pm2);
+    }
 }
