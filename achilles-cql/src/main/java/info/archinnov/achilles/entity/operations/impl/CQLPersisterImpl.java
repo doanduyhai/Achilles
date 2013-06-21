@@ -70,7 +70,7 @@ public class CQLPersisterImpl
     {
         EntityMeta entityMeta = context.getEntityMeta();
 
-        List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetas();
+        List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
         Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, isProxyType);
         for (PropertyMeta<?, ?> pm : proxyMetas)
         {

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -34,7 +35,6 @@ public class EntityMetaTest
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClassName("className");
         entityMeta.setTableName("cfName");
-        entityMeta.setSerialVersionUID(10L);
         entityMeta.setIdClass(Long.class);
         entityMeta.setPropertyMetas(propertyMetas);
         entityMeta.setIdMeta(idMeta);
@@ -44,7 +44,6 @@ public class EntityMetaTest
         StringBuilder toString = new StringBuilder();
         toString.append("EntityMeta [className=className, ");
         toString.append("columnFamilyName=cfName, ");
-        toString.append("serialVersionUID=10, ");
         toString.append("propertyMetas=[age,name], ");
         toString.append("idMeta=").append(idMeta.toString()).append(", ");
         toString.append("wideRow=true, ");
@@ -75,5 +74,23 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
 
         assertThat(entityMeta.getAllMetas()).containsExactly(pm1, pm2);
+    }
+
+    @Test
+    public void should_get_all_metas_except_id_meta() throws Exception {
+
+        PropertyMeta<?, ?> pm1 = new PropertyMeta<Void, String>();
+        pm1.setType(SIMPLE);
+        PropertyMeta<?, ?> pm2 = new PropertyMeta<Void, String>();
+        pm2.setType(ID);
+
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        propertyMetas.put("name", pm1);
+        propertyMetas.put("age", pm2);
+
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setPropertyMetas(propertyMetas);
+
+        assertThat(entityMeta.getAllMetasExceptIdMeta()).containsExactly(pm1);
     }
 }

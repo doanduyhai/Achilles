@@ -29,7 +29,6 @@ public class EntityMetaBuilder
     private Class<?> entityClass;
     private String className;
     private String columnFamilyName;
-    private Long serialVersionUID;
     private Map<String, PropertyMeta<?, ?>> propertyMetas;
     private boolean wideRow = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
@@ -48,7 +47,6 @@ public class EntityMetaBuilder
         log.debug("Build entityMeta for entity class {}", className);
 
         Validator.validateNotNull(idMeta, "idMeta should not be null");
-        Validator.validateNotNull(serialVersionUID, "serialVersionUID should not be null");
         Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
         Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName");
 
@@ -59,7 +57,6 @@ public class EntityMetaBuilder
         meta.setEntityClass(entityClass);
         meta.setClassName(className);
         meta.setTableName(columnFamilyName);
-        meta.setSerialVersionUID(serialVersionUID);
         meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
         meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
@@ -125,12 +122,6 @@ public class EntityMetaBuilder
     public EntityMetaBuilder columnFamilyName(String columnFamilyName)
     {
         this.columnFamilyName = columnFamilyName;
-        return this;
-    }
-
-    public EntityMetaBuilder serialVersionUID(long serialVersionUID)
-    {
-        this.serialVersionUID = serialVersionUID;
         return this;
     }
 

@@ -1064,35 +1064,6 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_exception_when_field_not_serializable() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private PropertyParser parser;
-
-            public PropertyParser getParser()
-            {
-                return parser;
-            }
-
-            public void setParser(PropertyParser parser)
-            {
-                this.parser = parser;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("Value of 'parser' should be Serializable");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("parser"));
-
-        parser.parse(context);
-    }
-
-    @Test
     public void should_exception_when_value_of_list_not_serializable() throws Exception
     {
         @SuppressWarnings("unused")

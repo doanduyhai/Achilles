@@ -15,7 +15,6 @@ public enum PropertyType
 {
 
     ID(5), //
-    SERIAL_VERSION_UID(10), //
     COMPOUND_ID(10), //
     SIMPLE(10), //
     LIST(10), //
@@ -94,7 +93,7 @@ public enum PropertyType
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isCompoundKey()
+    public boolean isCompoundId()
     {
         return this == COMPOUND_ID;
     }
@@ -121,6 +120,8 @@ public enum PropertyType
     public static PropertyTypeFilter eagerType = new PropertyTypeFilter(SIMPLE, LIST, SET, MAP);
     public static PropertyTypeFilter lazyNonProxyType = new PropertyTypeFilter(SIMPLE, LAZY_SIMPLE, LIST, LAZY_LIST,
             SET, LAZY_SET, MAP, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP);
+
+    public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, COMPOUND_ID);
 
     public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER,
             COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);

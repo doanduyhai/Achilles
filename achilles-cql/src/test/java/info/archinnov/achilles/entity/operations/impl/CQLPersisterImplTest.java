@@ -10,24 +10,19 @@ import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
-
 import mapping.entity.CompleteBean;
 import mapping.entity.UserBean;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 
@@ -41,124 +36,125 @@ import testBuilders.PropertyMetaTestBuilder;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersisterImplTest
 {
-	@InjectMocks
-	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
+    @InjectMocks
+    private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
-	@Mock
-	private MethodInvoker invoker;
+    @Mock
+    private MethodInvoker invoker;
 
-	@Mock
-	private CQLEntityPersister entityPersister;
+    @Mock
+    private CQLEntityPersister entityPersister;
 
-	@Mock
-	private CQLPersistenceContext context;
+    @Mock
+    private CQLPersistenceContext context;
 
-	@Mock
-	private CQLPersistenceContext joinContext;
+    @Mock
+    private CQLPersistenceContext joinContext;
 
-	@Mock
-	private EntityMeta entityMeta;
+    @Mock
+    private EntityMeta entityMeta;
 
-	@Mock
-	private EntityMeta joinMeta;
+    @Mock
+    private EntityMeta joinMeta;
 
-	private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
-	private Set<PropertyMeta<?, ?>> joinMetas = new HashSet<PropertyMeta<?, ?>>();
+    private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+    private Set<PropertyMeta<?, ?>> joinMetas = new HashSet<PropertyMeta<?, ?>>();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	@Before
-	public void setUp()
-	{
-		when(context.getEntity()).thenReturn(entity);
-		when(context.getEntityMeta()).thenReturn(entityMeta);
+    @Before
+    public void setUp()
+    {
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getEntityMeta()).thenReturn(entityMeta);
 
-		when(entityMeta.getAllMetas()).thenReturn(allMetas);
-		allMetas.clear();
-		joinMetas.clear();
-	}
+        when(entityMeta.getAllMetas()).thenReturn(allMetas);
+        when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
+        allMetas.clear();
+        joinMetas.clear();
+    }
 
-	@Test
-	public void should_persist() throws Exception
-	{
-		persisterImpl.persist(context);
+    @Test
+    public void should_persist() throws Exception
+    {
+        persisterImpl.persist(context);
 
-		verify(context).bindForInsert();
-	}
+        verify(context).bindForInsert();
+    }
 
-	@Test
-	public void should_cascade_persist() throws Exception
-	{
-		PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.type(PropertyType.JOIN_SIMPLE)
-				.accessors()
-				.joinMeta(joinMeta)
-				.cascadeType(CascadeType.ALL)
-				.build();
-		joinMetas.add(joinSimpleMeta);
+    @Test
+    public void should_cascade_persist() throws Exception
+    {
+        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.JOIN_SIMPLE)
+                .accessors()
+                .joinMeta(joinMeta)
+                .cascadeType(CascadeType.ALL)
+                .build();
+        joinMetas.add(joinSimpleMeta);
 
-		UserBean user = new UserBean();
-		entity.setUser(user);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+        UserBean user = new UserBean();
+        entity.setUser(user);
+        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
-		when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
 
-		persisterImpl.cascadePersist(entityPersister, context, joinMetas);
+        persisterImpl.cascadePersist(entityPersister, context, joinMetas);
 
-		verify(entityPersister).persist(joinContext);
-	}
+        verify(entityPersister).persist(joinContext);
+    }
 
-	@Test
-	public void should_check_for_entity_existence() throws Exception
-	{
-		PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.type(PropertyType.JOIN_SIMPLE)
-				.accessors()
-				.joinMeta(joinMeta)
-				.cascadeType(CascadeType.ALL)
-				.build();
+    @Test
+    public void should_check_for_entity_existence() throws Exception
+    {
+        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.JOIN_SIMPLE)
+                .accessors()
+                .joinMeta(joinMeta)
+                .cascadeType(CascadeType.ALL)
+                .build();
 
-		joinMetas.add(joinSimpleMeta);
-		UserBean user = new UserBean();
-		entity.setUser(user);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+        joinMetas.add(joinSimpleMeta);
+        UserBean user = new UserBean();
+        entity.setUser(user);
+        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
-		when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
-		when(joinContext.checkForEntityExistence()).thenReturn(true);
-		persisterImpl.ensureEntitiesExist(context, joinMetas);
+        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+        when(joinContext.checkForEntityExistence()).thenReturn(true);
+        persisterImpl.ensureEntitiesExist(context, joinMetas);
 
-	}
+    }
 
-	@Test
-	public void should_remove() throws Exception
-	{
-		when(entityMeta.getTableName()).thenReturn("table");
-		when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
+    @Test
+    public void should_remove() throws Exception
+    {
+        when(entityMeta.getTableName()).thenReturn("table");
+        when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-		persisterImpl.remove(context);
+        persisterImpl.remove(context);
 
-		verify(context).bindForRemoval("table", EACH_QUORUM);
-	}
+        verify(context).bindForRemoval("table", EACH_QUORUM);
+    }
 
-	@Test
-	public void should_remove_linked_tables() throws Exception
-	{
-		PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.type(PropertyType.WIDE_MAP)
-				.externalTable("external_table")
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
-				.build();
+    @Test
+    public void should_remove_linked_tables() throws Exception
+    {
+        PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.WIDE_MAP)
+                .externalTable("external_table")
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
+                .build();
 
-		allMetas.add(wideMapMeta);
+        allMetas.add(wideMapMeta);
 
-		persisterImpl.removeLinkedTables(context);
+        persisterImpl.removeLinkedTables(context);
 
-		verify(context).bindForRemoval("external_table", EACH_QUORUM);
-	}
+        verify(context).bindForRemoval("external_table", EACH_QUORUM);
+    }
 }

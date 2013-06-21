@@ -71,7 +71,7 @@ public class CQLPreparedStatementBinderTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
-                .type(PropertyType.SIMPLE)
+                .type(PropertyType.ID)
                 .build();
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder

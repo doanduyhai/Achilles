@@ -4,23 +4,18 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-
+import info.archinnov.achilles.proxy.MethodInvoker;
 import java.util.Arrays;
 import java.util.List;
-
 import mapping.entity.CompleteBean;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
-
 import com.datastax.driver.core.Row;
 
 /**
@@ -34,94 +29,102 @@ import com.datastax.driver.core.Row;
 public class CQLEntityMapperTest
 {
 
-	@InjectMocks
-	private CQLEntityMapper mapper;
+    @InjectMocks
+    private CQLEntityMapper mapper;
 
-	@Mock
-	private MethodInvoker invoker;
+    @Mock
+    private MethodInvoker invoker;
 
-	@Mock
-	private CQLRowMethodInvoker cqlRowInvoker;
+    @Mock
+    private CQLRowMethodInvoker cqlRowInvoker;
 
-	@Mock
-	private Row row;
+    @Mock
+    private Row row;
 
-	@Mock
-	private EntityMeta entityMeta;
+    @Mock
+    private EntityMeta entityMeta;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	@Test
-	public void should_set_eager_properties_to_entity() throws Exception
-	{
-		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class)
-				.field("name")
-				.accessors()
-				.type(PropertyType.SIMPLE)
-				.build();
+    @Test
+    public void should_set_eager_properties_to_entity() throws Exception
+    {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .accessors()
+                .type(PropertyType.ID)
+                .build();
 
-		List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.SIMPLE)
+                .build();
 
-		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
+        List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
 
-		when(row.isNull("name")).thenReturn(false);
-		when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
+        when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
+        when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
 
-		mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+        when(row.isNull("name")).thenReturn(false);
+        when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), "value");
-	}
+        mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
-	@Test
-	public void should_set_null_to_entity_when_no_value_from_row() throws Exception
-	{
-		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class)
-				.field("name")
-				.accessors()
-				.type(PropertyType.SIMPLE)
-				.build();
+        verify(invoker).setValueToField(entity, pm.getSetter(), "value");
+    }
 
-		List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
+    @Test
+    public void should_set_null_to_entity_when_no_value_from_row() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.SIMPLE)
+                .build();
 
-		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
+        List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
 
-		when(row.isNull("name")).thenReturn(true);
+        when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
 
-		mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+        when(row.isNull("name")).thenReturn(true);
 
-		verifyZeroInteractions(cqlRowInvoker, invoker);
-	}
+        mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
-	@Test
-	public void should_do_nothing_when_null_row() throws Exception
-	{
-		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class)
-				.field("name")
-				.accessors()
-				.type(PropertyType.SIMPLE)
-				.build();
+        verifyZeroInteractions(cqlRowInvoker, invoker);
+    }
 
-		mapper.setPropertyToEntity((Row) null, pm, entity);
+    @Test
+    public void should_do_nothing_when_null_row() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.SIMPLE)
+                .build();
 
-		verifyZeroInteractions(cqlRowInvoker, invoker);
-	}
+        mapper.setPropertyToEntity((Row) null, pm, entity);
 
-	@Test
-	public void should_set_property_to_entity() throws Exception
-	{
-		PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class)
-				.field("name")
-				.accessors()
-				.type(PropertyType.SIMPLE)
-				.build();
+        verifyZeroInteractions(cqlRowInvoker, invoker);
+    }
 
-		mapper.setJoinValueToEntity("name", pm, entity);
+    @Test
+    public void should_set_property_to_entity() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.SIMPLE)
+                .build();
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
-	}
+        mapper.setJoinValueToEntity("name", pm, entity);
+
+        verify(invoker).setValueToField(entity, pm.getSetter(), "name");
+    }
 
 }

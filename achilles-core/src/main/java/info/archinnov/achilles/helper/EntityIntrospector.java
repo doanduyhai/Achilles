@@ -129,28 +129,6 @@ public class EntityIntrospector {
         return accessors;
     }
 
-    public Long findSerialVersionUID(Class<?> entity) {
-        log.trace("Find SerialVersionUID for entity {}", entity);
-
-        Long serialVersionUID = null;
-        try {
-            Field declaredSerialVersionUID = entity.getDeclaredField("serialVersionUID");
-            declaredSerialVersionUID.setAccessible(true);
-            serialVersionUID = declaredSerialVersionUID.getLong(null);
-
-        } catch (NoSuchFieldException e) {
-            throw new AchillesBeanMappingException("The 'serialVersionUID' property should be declared for entity '"
-                    + entity.getCanonicalName() + "'", e);
-        } catch (IllegalAccessException e) {
-            throw new AchillesBeanMappingException(
-                    "The 'serialVersionUID' property should be publicly accessible for entity '"
-                            + entity.getCanonicalName() + "'", e);
-        }
-
-        log.trace("Found serialVersionUID : {}", serialVersionUID);
-        return serialVersionUID;
-    }
-
     public String inferColumnFamilyName(Class<?> entity, String canonicalName) {
         String columnFamilyName = null;
         Table table = entity.getAnnotation(javax.persistence.Table.class);

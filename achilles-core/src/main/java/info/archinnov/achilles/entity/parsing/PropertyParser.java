@@ -140,8 +140,6 @@ public class PropertyParser
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
-        Validator.validateSerializable(field.getType(), "Value of '" + field.getName()
-                + "' should be Serializable");
         Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
         PropertyType type = achillesPropertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
@@ -331,8 +329,6 @@ public class PropertyParser
             type = COUNTER_WIDE_MAP;
         }
 
-        Validator.validateSerializable(valueClass, "Wide map value of '" + field.getName()
-                + "' should be Serializable");
         Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
 
         PropertyMeta<K, V> propertyMeta = factory() //

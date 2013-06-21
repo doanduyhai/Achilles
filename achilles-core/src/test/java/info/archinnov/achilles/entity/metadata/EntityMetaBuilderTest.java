@@ -56,7 +56,6 @@ public class EntityMetaBuilderTest
         EntityMeta meta = entityMetaBuilder(idMeta)
                 .entityClass(CompleteBean.class)
                 .className("Bean")
-                .serialVersionUID(1L)
                 .columnFamilyName("cfName")
                 .propertyMetas(propertyMetas)
                 .build();
@@ -97,7 +96,6 @@ public class EntityMetaBuilderTest
 
         EntityMeta meta = entityMetaBuilder(idMeta)
                 .className("Bean")
-                .serialVersionUID(1L)
                 .propertyMetas(propertyMetas)
                 .columnFamilyName("toto")
                 .build();
@@ -122,7 +120,6 @@ public class EntityMetaBuilderTest
 
         EntityMeta meta = entityMetaBuilder(idMeta)
                 .className("Bean")
-                .serialVersionUID(1L)
                 .propertyMetas(propertyMetas)
                 .columnFamilyName("toto")
                 .wideRow(true)
@@ -149,7 +146,6 @@ public class EntityMetaBuilderTest
 
         EntityMeta meta = entityMetaBuilder(idMeta)
                 .className("Bean")
-                .serialVersionUID(1L)
                 .propertyMetas(propertyMetas)
                 .columnFamilyName("toto")
                 .consistencyLevels(consistencyLevels)

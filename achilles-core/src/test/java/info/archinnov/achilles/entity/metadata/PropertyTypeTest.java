@@ -26,7 +26,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_MAP.isLazy()).isTrue();
         assertThat(PropertyType.JOIN_WIDE_MAP.isLazy()).isTrue();
 
-        assertThat(PropertyType.SERIAL_VERSION_UID.isLazy()).isFalse();
+        assertThat(PropertyType.ID.isLazy()).isFalse();
         assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
         assertThat(PropertyType.LIST.isLazy()).isFalse();
         assertThat(PropertyType.MAP.isLazy()).isFalse();
@@ -35,7 +35,7 @@ public class PropertyTypeTest {
 
     @Test
     public void should_test_is_join_column() throws Exception {
-        assertThat(PropertyType.SERIAL_VERSION_UID.isJoinColumn()).isFalse();
+        assertThat(PropertyType.ID.isJoinColumn()).isFalse();
         assertThat(PropertyType.SIMPLE.isJoinColumn()).isFalse();
         assertThat(PropertyType.LIST.isJoinColumn()).isFalse();
         assertThat(PropertyType.MAP.isJoinColumn()).isFalse();
@@ -57,7 +57,7 @@ public class PropertyTypeTest {
 
     @Test
     public void should_test_is_wide_map() throws Exception {
-        assertThat(PropertyType.SERIAL_VERSION_UID.isWideMap()).isFalse();
+        assertThat(PropertyType.ID.isWideMap()).isFalse();
         assertThat(PropertyType.SIMPLE.isWideMap()).isFalse();
         assertThat(PropertyType.LIST.isWideMap()).isFalse();
         assertThat(PropertyType.MAP.isWideMap()).isFalse();
@@ -78,7 +78,7 @@ public class PropertyTypeTest {
 
     @Test
     public void should_test_is_counter() throws Exception {
-        assertThat(PropertyType.SERIAL_VERSION_UID.isCounter()).isFalse();
+        assertThat(PropertyType.ID.isCounter()).isFalse();
         assertThat(PropertyType.SIMPLE.isCounter()).isFalse();
         assertThat(PropertyType.LIST.isCounter()).isFalse();
         assertThat(PropertyType.MAP.isCounter()).isFalse();
@@ -99,7 +99,7 @@ public class PropertyTypeTest {
 
     @Test
     public void should_test_is_proxy_type() throws Exception {
-        assertThat(PropertyType.SERIAL_VERSION_UID.isProxyType()).isFalse();
+        assertThat(PropertyType.ID.isProxyType()).isFalse();
         assertThat(PropertyType.SIMPLE.isProxyType()).isFalse();
         assertThat(PropertyType.LIST.isProxyType()).isFalse();
         assertThat(PropertyType.MAP.isProxyType()).isFalse();
@@ -120,23 +120,23 @@ public class PropertyTypeTest {
 
     @Test
     public void should_test_is_multikey() throws Exception {
-        assertThat(PropertyType.COUNTER.isCompoundKey()).isFalse();
-        assertThat(PropertyType.LAZY_SIMPLE.isCompoundKey()).isFalse();
-        assertThat(PropertyType.LAZY_LIST.isCompoundKey()).isFalse();
-        assertThat(PropertyType.LAZY_SET.isCompoundKey()).isFalse();
-        assertThat(PropertyType.LAZY_MAP.isCompoundKey()).isFalse();
-        assertThat(PropertyType.WIDE_MAP.isCompoundKey()).isFalse();
-        assertThat(PropertyType.COUNTER_WIDE_MAP.isCompoundKey()).isFalse();
-        assertThat(PropertyType.JOIN_SIMPLE.isCompoundKey()).isFalse();
-        assertThat(PropertyType.JOIN_LIST.isCompoundKey()).isFalse();
-        assertThat(PropertyType.JOIN_SET.isCompoundKey()).isFalse();
-        assertThat(PropertyType.JOIN_MAP.isCompoundKey()).isFalse();
-        assertThat(PropertyType.JOIN_WIDE_MAP.isCompoundKey()).isFalse();
+        assertThat(PropertyType.COUNTER.isCompoundId()).isFalse();
+        assertThat(PropertyType.LAZY_SIMPLE.isCompoundId()).isFalse();
+        assertThat(PropertyType.LAZY_LIST.isCompoundId()).isFalse();
+        assertThat(PropertyType.LAZY_SET.isCompoundId()).isFalse();
+        assertThat(PropertyType.LAZY_MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.WIDE_MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.COUNTER_WIDE_MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.JOIN_SIMPLE.isCompoundId()).isFalse();
+        assertThat(PropertyType.JOIN_LIST.isCompoundId()).isFalse();
+        assertThat(PropertyType.JOIN_SET.isCompoundId()).isFalse();
+        assertThat(PropertyType.JOIN_MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.JOIN_WIDE_MAP.isCompoundId()).isFalse();
 
-        assertThat(PropertyType.SERIAL_VERSION_UID.isCompoundKey()).isFalse();
-        assertThat(PropertyType.SIMPLE.isCompoundKey()).isFalse();
-        assertThat(PropertyType.LIST.isCompoundKey()).isFalse();
-        assertThat(PropertyType.MAP.isCompoundKey()).isFalse();
-        assertThat(PropertyType.COMPOUND_ID.isCompoundKey()).isTrue();
+        assertThat(PropertyType.ID.isCompoundId()).isFalse();
+        assertThat(PropertyType.SIMPLE.isCompoundId()).isFalse();
+        assertThat(PropertyType.LIST.isCompoundId()).isFalse();
+        assertThat(PropertyType.MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.COMPOUND_ID.isCompoundId()).isTrue();
     }
 }

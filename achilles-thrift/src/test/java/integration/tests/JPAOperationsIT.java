@@ -24,6 +24,7 @@ import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
+import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Rule;
@@ -304,24 +305,6 @@ public class JPAOperationsIT
         assertThat(found).isInstanceOf(Factory.class);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void should_exception_when_serialVersionUID_changes() throws Exception
-    {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
-
-        em.persist(bean);
-
-        Composite composite = new Composite();
-        composite.addComponent(0, SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
-        composite.addComponent(1, SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
-        composite.addComponent(2, 0, ComponentEquality.EQUAL);
-
-        dao.setValue(bean.getId(), composite, "123");
-
-        em.find(CompleteBean.class, bean.getId());
-
-    }
-
     @SuppressWarnings("rawtypes")
     @Test
     public void should_find_lazy_simple() throws Exception
@@ -502,6 +485,27 @@ public class JPAOperationsIT
         assertThat(found.getFollowers()).isNull();
         assertThat(found.getPreferences()).isNull();
 
+    }
+
+    @Test
+    public void should_exception_when_trying_to_modify_primary_key() throws Exception {
+        CompleteBean bean = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("Jonathan")
+                .age(40L)
+                .addFriends("bob", "alice")
+                .addFollowers("Billy", "Stephen", "Jacky")
+                .addPreference(1, "US")
+                .addPreference(2, "New York")
+                .buid();
+
+        bean = em.merge(bean);
+
+        exception.expect(IllegalAccessException.class);
+        exception.expectMessage("Cannot change primary key value for existing entity");
+
+        bean.setId(RandomUtils.nextLong());
     }
 
     @Test

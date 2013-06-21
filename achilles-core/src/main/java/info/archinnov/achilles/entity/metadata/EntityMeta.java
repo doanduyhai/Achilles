@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
+import com.google.common.collect.FluentIterable;
 
 /**
  * EntityMeta
@@ -19,7 +20,6 @@ public class EntityMeta
     private Class<?> entityClass;
     private String className;
     private String tableName;
-    private Long serialVersionUID;
     private Class<?> idClass;
     private Map<String, PropertyMeta<?, ?>> propertyMetas;
     private List<PropertyMeta<?, ?>> eagerMetas;
@@ -63,16 +63,6 @@ public class EntityMeta
     public void setTableName(String tableName)
     {
         this.tableName = tableName;
-    }
-
-    public Long getSerialVersionUID()
-    {
-        return serialVersionUID;
-    }
-
-    public void setSerialVersionUID(Long serialVersionUID)
-    {
-        this.serialVersionUID = serialVersionUID;
     }
 
     public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
@@ -181,7 +171,6 @@ public class EntityMeta
         StringBuilder description = new StringBuilder();
         description.append("EntityMeta [className=").append(className).append(", ");
         description.append("columnFamilyName=").append(tableName).append(", ");
-        description.append("serialVersionUID=").append(serialVersionUID).append(", ");
         description
                 .append("propertyMetas=[")
                 .append(StringUtils.join(propertyMetas.keySet(), ","))
@@ -199,5 +188,13 @@ public class EntityMeta
 
     public List<PropertyMeta<?, ?>> getAllMetas() {
         return new ArrayList<PropertyMeta<?, ?>>(propertyMetas.values());
+    }
+
+    public List<PropertyMeta<?, ?>> getAllMetasExceptIdMeta() {
+
+        return FluentIterable
+                .from(propertyMetas.values())
+                .filter(PropertyType.excludeIdType)
+                .toImmutableList();
     }
 }

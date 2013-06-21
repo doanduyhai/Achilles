@@ -4,11 +4,9 @@ import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.KeyValue;
@@ -19,9 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,28 +55,6 @@ public class ThriftLoaderImpl
         }
 
         return entity;
-    }
-
-    public <V> Long loadVersionSerialUID(Object key, ThriftGenericEntityDao dao)
-    {
-        Composite composite = new Composite();
-        composite.addComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), ComponentEquality.EQUAL);
-        composite.addComponent(1, PropertyType.SERIAL_VERSION_UID.name(), ComponentEquality.EQUAL);
-        composite.addComponent(2, 0, ComponentEquality.EQUAL);
-
-        String serialVersionUIDString = dao.getValue(key, composite);
-        if (StringUtils.isNotBlank(serialVersionUIDString))
-        {
-            log.trace("Serial version UID {} found for column family {} and primary key {}",
-                    serialVersionUIDString, dao.getColumnFamily(), key);
-            return Long.parseLong(serialVersionUIDString);
-        }
-        else
-        {
-            log.trace("No serial version UID found for column family {} and primary key {}",
-                    dao.getColumnFamily(), key);
-            return null;
-        }
     }
 
     public <V> V loadSimpleProperty(ThriftPersistenceContext context,

@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
@@ -110,13 +109,6 @@ public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext
                 return;
         }
         invoker.setValueToField(realObject, propertyMeta.getSetter(), value);
-    }
-
-    protected Long loadVersionSerialUID(Object key, ThriftGenericEntityDao dao)
-    {
-        log.debug("Loading serialVersionUID for entity  with primary key {} from column family {}",
-                key, dao.getColumnFamily());
-        return loaderImpl.loadVersionSerialUID(key, dao);
     }
 
     protected <V> V loadPrimaryKey(ThriftPersistenceContext context, PropertyMeta<?, V> propertyMeta)

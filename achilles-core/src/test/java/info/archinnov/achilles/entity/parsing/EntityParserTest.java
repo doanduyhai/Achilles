@@ -38,7 +38,6 @@ import parser.entity.BeanWithExternalJoinWideMap;
 import parser.entity.BeanWithExternalWideMap;
 import parser.entity.BeanWithJoinColumnAsWideMap;
 import parser.entity.BeanWithNoId;
-import parser.entity.BeanWithNotSerializableId;
 import parser.entity.BeanWithSimpleCounter;
 import parser.entity.BeanWithWideMapCounter;
 import parser.entity.ChildBean;
@@ -111,7 +110,6 @@ public class EntityParserTest
 
         assertThat(meta.getClassName()).isEqualTo("parser.entity.Bean");
         assertThat(meta.getTableName()).isEqualTo("Bean");
-        assertThat(meta.getSerialVersionUID()).isEqualTo(1L);
         assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
@@ -333,15 +331,6 @@ public class EntityParserTest
                 .expectMessage("The entity '"
                         + BeanWithNoId.class.getCanonicalName()
                         + "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
-        parser.parseEntity(entityContext);
-    }
-
-    @Test
-    public void should_exception_when_id_type_not_serializable() throws Exception
-    {
-        initEntityParsingContext(BeanWithNotSerializableId.class);
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("Value of 'id' should be Serializable");
         parser.parseEntity(entityContext);
     }
 

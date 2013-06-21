@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -9,10 +8,8 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.validation.Validator;
@@ -41,38 +38,6 @@ public class ThriftPersisterImpl
     private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
     private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
-
-    public void batchPersistVersionSerialUID(ThriftPersistenceContext context)
-    {
-        Composite composite = new Composite();
-        composite.setComponent(0, PropertyType.SERIAL_VERSION_UID.flag(), BYTE_SRZ, BYTE_SRZ
-                .getComparatorType()
-                .getTypeName());
-        composite.setComponent(1, PropertyType.SERIAL_VERSION_UID.name(), STRING_SRZ, STRING_SRZ
-                .getComparatorType()
-                .getTypeName());
-        composite.setComponent(2, 0, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
-        Long serialVersionUID = context.getEntityMeta().getSerialVersionUID();
-
-        if (serialVersionUID != null)
-        {
-            if (log.isTraceEnabled())
-            {
-                log
-                        .trace("Batch persisting serial version UID for entity of class {} and primary key {} with column name {}",
-                                context.getEntityClass().getCanonicalName(),
-                                context.getPrimaryKey(), format(composite));
-            }
-            context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), composite,
-                    serialVersionUID.toString(), context.getTttO(),
-                    context.getEntityMutator(context.getTableName()));
-        }
-        else
-        {
-            throw new AchillesException("Cannot find 'serialVersionUID' field for entity class '"
-                    + context.getEntityClass().getCanonicalName() + "'");
-        }
-    }
 
     public void batchPersistSimpleProperty(ThriftPersistenceContext context,
             PropertyMeta<?, ?> propertyMeta)
