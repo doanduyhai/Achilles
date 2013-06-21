@@ -1,8 +1,7 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
-
+import info.archinnov.achilles.annotations.Order;
 import java.util.Date;
 
 /**
@@ -14,13 +13,13 @@ import java.util.Date;
 @MultiKey
 public class MultiKeyWithDuplicateOrder
 {
-    @Key(order = 1)
+    @Order(1)
     private String name;
 
-    @Key(order = 1)
+    @Order(1)
     private int rank;
 
-    @Key(order = 4)
+    @Order(4)
     private Date date;
 
     public String getName()

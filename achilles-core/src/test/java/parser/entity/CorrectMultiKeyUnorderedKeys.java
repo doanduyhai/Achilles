@@ -1,7 +1,7 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.Order;
 
 /**
  * CorrectMultiKeyUnorderedKeys
@@ -12,10 +12,10 @@ import info.archinnov.achilles.annotations.MultiKey;
 @MultiKey
 public class CorrectMultiKeyUnorderedKeys
 {
-    @Key(order = 2)
+    @Order(2)
     private int rank;
 
-    @Key(order = 1)
+    @Order(1)
     private String name;
 
     public String getName()

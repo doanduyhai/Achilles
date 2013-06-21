@@ -1,18 +1,17 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
-
+import info.archinnov.achilles.annotations.Order;
 import javax.persistence.Column;
 
 @MultiKey
 public class MissingAnnotationClusteredId
 {
 
-    @Key(order = 1)
+    @Order(1)
     private Long userId;
 
-    @Key(order = 2)
+    @Order(2)
     @Column
     private String name;
 

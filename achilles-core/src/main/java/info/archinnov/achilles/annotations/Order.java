@@ -15,13 +15,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
-public @interface Key
+public @interface Order
 {
 
-	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
-	 */
-	int order();
+    /**
+     * <p>
+     * Indicates the key order. The order index start at 1
+     * </p>
+     */
+    int value();
 }

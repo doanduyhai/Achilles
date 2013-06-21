@@ -1,8 +1,8 @@
 package mapping.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
 import java.io.Serializable;
@@ -222,10 +222,10 @@ public class CompleteBean implements Serializable
     @MultiKey
     public static class UserTweetKey
     {
-        @Key(order = 1)
+        @Order(1)
         private String user;
 
-        @Key(order = 2)
+        @Order(2)
         private UUID tweet;
 
         public UserTweetKey() {

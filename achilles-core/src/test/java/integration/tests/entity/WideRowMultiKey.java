@@ -1,7 +1,7 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.Order;
 
 /**
  * ColumnFamilyMultiKey
@@ -12,10 +12,10 @@ import info.archinnov.achilles.annotations.MultiKey;
 @MultiKey
 public class WideRowMultiKey
 {
-    @Key(order = 1)
+    @Order(1)
     private Long index;
 
-    @Key(order = 2)
+    @Order(2)
     private String name;
 
     public WideRowMultiKey() {

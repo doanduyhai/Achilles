@@ -1,8 +1,7 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
-
+import info.archinnov.achilles.annotations.Order;
 
 /**
  * MultiKeyWithNegativeOrder
@@ -13,10 +12,10 @@ import info.archinnov.achilles.annotations.MultiKey;
 @MultiKey
 public class MultiKeyWithNegativeOrder
 {
-    @Key(order = -1)
+    @Order(-1)
     private String name;
 
-    @Key(order = 0)
+    @Order(0)
     private int rank;
 
     public String getName()

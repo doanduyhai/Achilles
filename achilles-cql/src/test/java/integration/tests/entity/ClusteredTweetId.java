@@ -1,7 +1,7 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.Key;
 import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.Order;
 import java.util.Date;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -15,15 +15,15 @@ import javax.persistence.Column;
 @MultiKey
 public class ClusteredTweetId
 {
-    @Key(order = 1)
+    @Order(1)
     @Column(name = "user_id")
     private Long userId;
 
-    @Key(order = 2)
+    @Order(2)
     @Column(name = "tweet_id")
     private UUID tweetId;
 
-    @Key(order = 3)
+    @Order(3)
     @Column(name = "creation_date")
     private Date creationDate;
 
