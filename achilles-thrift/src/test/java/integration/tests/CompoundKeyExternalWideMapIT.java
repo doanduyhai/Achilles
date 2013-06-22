@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyExternalWideMapIT
+public class CompoundKeyExternalWideMapIT
 {
 	private ThriftGenericWideRowDao multiKeyExternalWideMapDao = getColumnFamilyDao(
 			normalizerAndValidateColumnFamilyName("complete_bean_multi_key_widemap"), Long.class,
@@ -43,7 +43,7 @@ public class MultiKeyExternalWideMapIT
 
 	private CompleteBean bean;
 
-	private WideMap<UserTweetKey, String> multiKeyExternalWideMap;
+	private WideMap<UserTweetKey, String> compoundKeyExternalWideMap;
 
 	private UUID uuid1 = TimeUUIDUtils.getTimeUUID(1);
 	private UUID uuid2 = TimeUUIDUtils.getTimeUUID(2);
@@ -60,18 +60,18 @@ public class MultiKeyExternalWideMapIT
 	{
 		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 		bean = em.merge(bean);
-		multiKeyExternalWideMap = bean.getMultiKeyWideMap();
+		compoundKeyExternalWideMap = bean.getMultiKeyWideMap();
 	}
 
 	@Test
 	public void should_insert_values() throws Exception
 	{
 
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		Composite startComp = new Composite();
 		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
@@ -93,7 +93,7 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_insert_values_with_ttl() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar", 150);
 
 		Composite startComp = new Composite();
 		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
@@ -113,9 +113,9 @@ public class MultiKeyExternalWideMapIT
 	public void should_get_value_by_key() throws Exception
 	{
 		UserTweetKey userTweetKey = new UserTweetKey(bar, uuid1);
-		multiKeyExternalWideMap.insert(userTweetKey, "tweet1-bar");
+		compoundKeyExternalWideMap.insert(userTweetKey, "tweet1-bar");
 
-		assertThat(multiKeyExternalWideMap.get(userTweetKey)).isEqualTo("tweet1-bar");
+		assertThat(compoundKeyExternalWideMap.get(userTweetKey)).isEqualTo("tweet1-bar");
 	}
 
 	@Test
@@ -123,13 +123,13 @@ public class MultiKeyExternalWideMapIT
 			throws Exception
 	{
 
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+		List<KeyValue<UserTweetKey, String>> results = compoundKeyExternalWideMap.find(
 				//
 				new UserTweetKey(qux, uuid5), new UserTweetKey(foo, uuid3), 10,
 				BoundingMode.INCLUSIVE_END_BOUND_ONLY, OrderingMode.DESCENDING);
@@ -147,13 +147,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_having_null() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+		List<KeyValue<UserTweetKey, String>> results = compoundKeyExternalWideMap.find(
 				new UserTweetKey(bar, null), new UserTweetKey(foo, uuid3), 10,
 				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
@@ -172,13 +172,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_end_having_null() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(
+		List<KeyValue<UserTweetKey, String>> results = compoundKeyExternalWideMap.find(
 				new UserTweetKey(bar, uuid1), new UserTweetKey(foo, null), 10,
 				BoundingMode.INCLUSIVE_BOUNDS, OrderingMode.ASCENDING);
 
@@ -197,13 +197,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_find_values_by_asc_range_with_start_completely_null() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		List<KeyValue<UserTweetKey, String>> results = multiKeyExternalWideMap.find(null,
+		List<KeyValue<UserTweetKey, String>> results = compoundKeyExternalWideMap.find(null,
 				new UserTweetKey(foo, null), 10, BoundingMode.INCLUSIVE_BOUNDS,
 				OrderingMode.ASCENDING);
 
@@ -222,13 +222,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_iterate() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		KeyValueIterator<UserTweetKey, String> iter = multiKeyExternalWideMap.iterator( //
+		KeyValueIterator<UserTweetKey, String> iter = compoundKeyExternalWideMap.iterator( //
 				new UserTweetKey(foo, uuid3), //
 				new UserTweetKey(qux, uuid5), //
 				5);
@@ -254,14 +254,14 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_iterate_desc_exclusive_start_inclusive_end_with_count() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
 		KeyValueIterator<UserTweetKey, String> iter = //
-		multiKeyExternalWideMap.iterator(new UserTweetKey(qux, uuid5),
+		compoundKeyExternalWideMap.iterator(new UserTweetKey(qux, uuid5),
 				new UserTweetKey(bar, uuid1), 2, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
 				OrderingMode.DESCENDING);
 
@@ -283,13 +283,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_remove() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2));
+		compoundKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2));
 
 		Composite startComp = new Composite();
 		startComp.addComponent(0, bar, ComponentEquality.EQUAL);
@@ -308,13 +308,13 @@ public class MultiKeyExternalWideMapIT
 	@Test
 	public void should_remove_inclusive_start_exclusive_end() throws Exception
 	{
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
-		multiKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
-		multiKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid1), "tweet1-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(bar, uuid2), "tweet2-bar");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(foo, uuid3), "tweet3-foo");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid4), "tweet4-qux");
+		compoundKeyExternalWideMap.insert(new UserTweetKey(qux, uuid5), "tweet5-qux");
 
-		multiKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4),
+		compoundKeyExternalWideMap.remove(new UserTweetKey(bar, uuid2), new UserTweetKey(qux, uuid4),
 				BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
 		List<Pair<Composite, String>> columns = multiKeyExternalWideMapDao.findColumnsRange(

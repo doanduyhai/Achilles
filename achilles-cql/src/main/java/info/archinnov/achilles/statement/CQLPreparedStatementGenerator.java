@@ -68,7 +68,7 @@ public class CQLPreparedStatementGenerator
             else
             {
                 select = select();
-                for (String component : pm.getMultiKeyProperties().getCQLComponentNames())
+                for (String component : pm.getCQLComponentNames())
                 {
                     select = select.column(component);
                 }

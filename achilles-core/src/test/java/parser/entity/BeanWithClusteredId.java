@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -11,23 +11,23 @@ import javax.persistence.EmbeddedId;
  * @author DuyHai DOAN
  * 
  */
-public class BeanWithClusteredId implements Serializable
+public class BeanWithClusteredId
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@EmbeddedId
-	private ClusteredId id;
+	private CompoundKey id;
 
 	@Column
 	private String name;
 
-	public ClusteredId getId()
+	public CompoundKey getId()
 	{
 		return id;
 	}
 
-	public void setId(ClusteredId id)
+	public void setId(CompoundKey id)
 	{
 		this.id = id;
 	}

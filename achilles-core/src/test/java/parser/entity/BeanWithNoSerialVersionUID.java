@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Entity;
 
@@ -12,7 +12,7 @@ import javax.persistence.Entity;
  */
 @SuppressWarnings("serial")
 @Entity
-public class BeanWithNoSerialVersionUID implements Serializable
+public class BeanWithNoSerialVersionUID
 {
 
 }

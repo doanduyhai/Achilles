@@ -1,6 +1,6 @@
 package integration.tests.entity;
 
-import java.io.Serializable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,9 +19,9 @@ import javax.persistence.OneToMany;
  * 
  */
 @Entity
-public class BeanWithJoinCollectionAndMap implements Serializable
+public class EntityWithJoinCollectionAndMap
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Entity;
 
@@ -11,7 +11,7 @@ import javax.persistence.Entity;
  * 
  */
 @Entity
-public class BeanWithNoId implements Serializable
+public class BeanWithNoId
 {
 	public static final long serialVersionUID = 1L;
 }

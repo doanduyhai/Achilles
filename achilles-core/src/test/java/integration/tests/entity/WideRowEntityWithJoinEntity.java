@@ -3,7 +3,7 @@ package integration.tests.entity;
 import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -19,9 +19,9 @@ import javax.persistence.ManyToMany;
  */
 @Entity
 @WideRow
-public class WideRowBeanWithJoinEntity implements Serializable
+public class WideRowEntityWithJoinEntity
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

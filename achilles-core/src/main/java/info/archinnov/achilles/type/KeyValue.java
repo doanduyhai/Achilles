@@ -1,6 +1,6 @@
 package info.archinnov.achilles.type;
 
-import java.io.Serializable;
+
 
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.annotate.JsonTypeInfo.As;
@@ -15,7 +15,7 @@ import org.codehaus.jackson.annotate.JsonTypeInfo.Id;
  * 
  */
 
-public class KeyValue<K, V> implements Serializable
+public class KeyValue<K, V>
 {
 	public static final long serialVersionUID = 1L;
 

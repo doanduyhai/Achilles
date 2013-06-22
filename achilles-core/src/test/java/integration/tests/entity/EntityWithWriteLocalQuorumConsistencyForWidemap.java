@@ -4,7 +4,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,9 +19,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "beanWithWriteLocalQuorumWideMap")
-public class BeanWithWriteLocalQuorumConsistencyForWidemap implements Serializable
+public class EntityWithWriteLocalQuorumConsistencyForWidemap
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;
@@ -33,9 +33,9 @@ public class BeanWithWriteLocalQuorumConsistencyForWidemap implements Serializab
 	@Column(table = "widemap_with_consistency2")
 	private WideMap<Integer, String> wideMap;
 
-	public BeanWithWriteLocalQuorumConsistencyForWidemap() {}
+	public EntityWithWriteLocalQuorumConsistencyForWidemap() {}
 
-	public BeanWithWriteLocalQuorumConsistencyForWidemap(Long id, String name) {
+	public EntityWithWriteLocalQuorumConsistencyForWidemap(Long id, String name) {
 		this.id = id;
 		this.name = name;
 	}

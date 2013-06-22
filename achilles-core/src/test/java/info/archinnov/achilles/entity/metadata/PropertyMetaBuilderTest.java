@@ -328,7 +328,7 @@ public class PropertyMetaBuilderTest {
         when(componentClasses.iterator()).thenReturn(iterator);
         when(iterator.hasNext()).thenReturn(false);
 
-        MultiKeyProperties props = new MultiKeyProperties();
+        CompoundKeyProperties props = new CompoundKeyProperties();
         props.setComponentClasses(componentClasses);
         props.setComponentGetters(componentGetters);
         props.setComponentSetters(componentSetters);
@@ -349,11 +349,11 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getKey(multiKey)).isInstanceOf(MyMultiKey.class);
         assertThat(built.getKeyClass()).isEqualTo(MyMultiKey.class);
 
-        assertThat(built.getMultiKeyProperties().getComponentClasses()).isSameAs(componentClasses);
+        assertThat(built.getComponentClasses()).isSameAs(componentClasses);
 
-        assertThat(built.getMultiKeyProperties().getComponentGetters()).isSameAs(componentGetters);
+        assertThat(built.getComponentGetters()).isSameAs(componentGetters);
 
-        assertThat(built.getMultiKeyProperties().getComponentSetters()).isSameAs(componentSetters);
+        assertThat(built.getComponentSetters()).isSameAs(componentSetters);
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
         assertThat(built.getValueClass()).isEqualTo(String.class);

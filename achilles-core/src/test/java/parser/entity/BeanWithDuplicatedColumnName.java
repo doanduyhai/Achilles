@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,7 +13,7 @@ import javax.persistence.Id;
  * 
  */
 @Entity
-public class BeanWithDuplicatedColumnName implements Serializable
+public class BeanWithDuplicatedColumnName
 {
 	public static final long serialVersionUID = 1L;
 

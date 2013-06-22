@@ -65,8 +65,8 @@ public class SliceQueryBuilderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
-        when(invoker.determineMultiKeyValues(10L, compGetters)).thenReturn(startValues);
-        when(invoker.determineMultiKeyValues(11L, compGetters)).thenReturn(endValues);
+        when(invoker.extractCompoundKeyComponents(10L, compGetters)).thenReturn(startValues);
+        when(invoker.extractCompoundKeyComponents(11L, compGetters)).thenReturn(endValues);
 
         when(generator.generateSelectEntity(meta)).thenReturn(select);
         //		when(
@@ -92,7 +92,7 @@ public class SliceQueryBuilderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
-        when(invoker.determineMultiKeyValues(11L, compGetters)).thenReturn(endValues);
+        when(invoker.extractCompoundKeyComponents(11L, compGetters)).thenReturn(endValues);
 
         when(generator.generateSelectEntity(meta)).thenReturn(select);
         //        when(generator.generateWhereClauseForSliceQuery(compNames, startValues, endValues, boundingMode, select))
@@ -100,7 +100,7 @@ public class SliceQueryBuilderTest {
         Statement actual = builder.generateSelectStatement(meta, null, 11L, boundingMode);
 
         assertThat(actual).isSameAs(statement);
-        verify(invoker, never()).determineMultiKeyValues(null, compGetters);
+        verify(invoker, never()).extractCompoundKeyComponents(null, compGetters);
     }
 
     @Test
@@ -118,7 +118,7 @@ public class SliceQueryBuilderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
-        when(invoker.determineMultiKeyValues(10L, compGetters)).thenReturn(endValues);
+        when(invoker.extractCompoundKeyComponents(10L, compGetters)).thenReturn(endValues);
 
         when(generator.generateSelectEntity(meta)).thenReturn(select);
         //        when(generator.generateWhereClauseForSliceQuery(compNames, startValues, endValues, boundingMode, select))
@@ -126,6 +126,6 @@ public class SliceQueryBuilderTest {
         Statement actual = builder.generateSelectStatement(meta, 10L, null, boundingMode);
 
         assertThat(actual).isSameAs(statement);
-        verify(invoker, never()).determineMultiKeyValues(null, compGetters);
+        verify(invoker, never()).extractCompoundKeyComponents(null, compGetters);
     }
 }

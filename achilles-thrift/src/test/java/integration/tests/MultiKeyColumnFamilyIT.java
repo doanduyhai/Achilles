@@ -12,8 +12,8 @@ import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
-import integration.tests.entity.MultiKeyWideRowBean;
-import integration.tests.entity.WideRowMultiKey;
+import integration.tests.entity.WideRowEntityWithCompoundKey;
+import integration.tests.entity.CompoundKey;
 
 import java.util.Iterator;
 import java.util.List;
@@ -35,21 +35,21 @@ public class MultiKeyColumnFamilyIT
 
 	private ThriftGenericWideRowDao dao = ThriftCassandraDaoTest.getColumnFamilyDao(
 
-	normalizerAndValidateColumnFamilyName(MultiKeyWideRowBean.class.getName()), Long.class,
+	normalizerAndValidateColumnFamilyName(WideRowEntityWithCompoundKey.class.getName()), Long.class,
 			String.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private MultiKeyWideRowBean bean;
+	private WideRowEntityWithCompoundKey bean;
 
-	private WideMap<WideRowMultiKey, String> map;
+	private WideMap<CompoundKey, String> map;
 
 	private Long id = 452L;
 
 	@Before
 	public void setUp()
 	{
-		bean = em.find(MultiKeyWideRowBean.class, id);
+		bean = em.find(WideRowEntityWithCompoundKey.class, id);
 		map = bean.getMap();
 	}
 
@@ -86,7 +86,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert3Values();
 
-		assertThat(map.get(new WideRowMultiKey(11L, "11"))).isEqualTo("value1");
+		assertThat(map.get(new CompoundKey(11L, "11"))).isEqualTo("value1");
 	}
 
 	@Test
@@ -94,9 +94,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find( //
-				new WideRowMultiKey(11L, "11"), //
-				new WideRowMultiKey(15L, "15"), //
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find( //
+				new CompoundKey(11L, "11"), //
+				new CompoundKey(15L, "15"), //
 				10);
 
 		assertThat(foundTweets).hasSize(5);
@@ -113,9 +113,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find( //
-				new WideRowMultiKey(12L, "12"), //
-				new WideRowMultiKey(15L, "15"), //
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find( //
+				new CompoundKey(12L, "12"), //
+				new CompoundKey(15L, "15"), //
 				3);
 
 		assertThat(foundTweets).hasSize(3);
@@ -130,9 +130,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.findBoundsExclusive( //
-				new WideRowMultiKey(12L, "12"), //
-				new WideRowMultiKey(15L, "15"), //
+		List<KeyValue<CompoundKey, String>> foundTweets = map.findBoundsExclusive( //
+				new CompoundKey(12L, "12"), //
+				new CompoundKey(15L, "15"), //
 				10);
 
 		assertThat(foundTweets).hasSize(2);
@@ -146,8 +146,8 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(new WideRowMultiKey(14L,
-				"14"), new WideRowMultiKey(12L, "12"), 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(new CompoundKey(14L,
+				"14"), new CompoundKey(12L, "12"), 10, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
 				OrderingMode.DESCENDING);
 
 		assertThat(foundTweets).hasSize(2);
@@ -160,7 +160,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, new WideRowMultiKey(
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, new CompoundKey(
 				12L, "12"), 10);
 
 		assertThat(foundTweets).hasSize(2);
@@ -173,7 +173,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(5);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -188,7 +188,7 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<WideRowMultiKey, String>> iter = map.iterator(null, null, 10);
+		Iterator<KeyValue<CompoundKey, String>> iter = map.iterator(null, null, 10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value1");
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -203,9 +203,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<WideRowMultiKey, String>> iter = map.iteratorBoundsExclusive( //
-				new WideRowMultiKey(12L, "12"), //
-				new WideRowMultiKey(14L, "14"), //
+		Iterator<KeyValue<CompoundKey, String>> iter = map.iteratorBoundsExclusive( //
+				new CompoundKey(12L, "12"), //
+				new CompoundKey(14L, "14"), //
 				10);
 
 		assertThat(iter.next().getValue()).isEqualTo("value3");
@@ -217,8 +217,8 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		Iterator<KeyValue<WideRowMultiKey, String>> iter = map.iterator(new WideRowMultiKey(12L,
-				"12"), new WideRowMultiKey(14L, "14"), 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY,
+		Iterator<KeyValue<CompoundKey, String>> iter = map.iterator(new CompoundKey(12L,
+				"12"), new CompoundKey(14L, "14"), 10, BoundingMode.INCLUSIVE_START_BOUND_ONLY,
 				OrderingMode.ASCENDING);
 
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -231,9 +231,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert3Values();
 
-		map.remove(new WideRowMultiKey(11L, "11"));
+		map.remove(new CompoundKey(11L, "11"));
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value2");
@@ -245,9 +245,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.remove(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(14L, "14"));
+		map.remove(new CompoundKey(12L, "12"), new CompoundKey(14L, "14"));
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -259,9 +259,9 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.removeBoundsExclusive(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(15L, "15"));
+		map.removeBoundsExclusive(new CompoundKey(12L, "12"), new CompoundKey(15L, "15"));
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(3);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -274,10 +274,10 @@ public class MultiKeyColumnFamilyIT
 	{
 		insert5Values();
 
-		map.remove(new WideRowMultiKey(12L, "12"), new WideRowMultiKey(15L, "15"),
+		map.remove(new CompoundKey(12L, "12"), new CompoundKey(15L, "15"),
 				BoundingMode.INCLUSIVE_START_BOUND_ONLY);
 
-		List<KeyValue<WideRowMultiKey, String>> foundTweets = map.find(null, null, 10);
+		List<KeyValue<CompoundKey, String>> foundTweets = map.find(null, null, 10);
 
 		assertThat(foundTweets).hasSize(2);
 		assertThat(foundTweets.get(0).getValue()).isEqualTo("value1");
@@ -286,18 +286,18 @@ public class MultiKeyColumnFamilyIT
 
 	private void insert3Values()
 	{
-		map.insert(new WideRowMultiKey(11L, "11"), "value1");
-		map.insert(new WideRowMultiKey(12L, "12"), "value2");
-		map.insert(new WideRowMultiKey(13L, "13"), "value3");
+		map.insert(new CompoundKey(11L, "11"), "value1");
+		map.insert(new CompoundKey(12L, "12"), "value2");
+		map.insert(new CompoundKey(13L, "13"), "value3");
 	}
 
 	private void insert5Values()
 	{
-		map.insert(new WideRowMultiKey(11L, "11"), "value1");
-		map.insert(new WideRowMultiKey(12L, "12"), "value2");
-		map.insert(new WideRowMultiKey(13L, "13"), "value3");
-		map.insert(new WideRowMultiKey(14L, "14"), "value4");
-		map.insert(new WideRowMultiKey(15L, "15"), "value5");
+		map.insert(new CompoundKey(11L, "11"), "value1");
+		map.insert(new CompoundKey(12L, "12"), "value2");
+		map.insert(new CompoundKey(13L, "13"), "value3");
+		map.insert(new CompoundKey(14L, "14"), "value4");
+		map.insert(new CompoundKey(15L, "15"), "value5");
 	}
 
 	@After

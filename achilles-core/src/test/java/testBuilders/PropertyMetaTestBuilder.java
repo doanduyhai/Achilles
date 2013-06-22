@@ -4,7 +4,7 @@ import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.helper.EntityIntrospector;
@@ -117,7 +117,7 @@ public class PropertyMetaTestBuilder<T, K, V>
         if (componentClasses != null || componentNames != null || componentGetters != null
                 || componentSetters != null)
         {
-            MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+            CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
             multiKeyProperties.setComponentClasses(componentClasses);
             multiKeyProperties.setComponentNames(componentNames);
             multiKeyProperties.setComponentGetters(componentGetters);

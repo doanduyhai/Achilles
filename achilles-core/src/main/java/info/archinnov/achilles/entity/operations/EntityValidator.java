@@ -48,7 +48,7 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
                     + entity.getClass().getCanonicalName());
         }
         if (!idMeta.isSingleKey()) {
-            for (Method getter : idMeta.getMultiKeyProperties().getComponentGetters()) {
+            for (Method getter : idMeta.getComponentGetters()) {
                 Object component = invoker.getValueFromField(id, getter);
                 Validator.validateNotNull(component, "The entity " + entity.getClass().getCanonicalName()
                         + " clustered key '" + idMeta.getPropertyName() + "' components should not be null");

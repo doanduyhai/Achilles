@@ -9,8 +9,8 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
-import integration.tests.entity.BeanWithObjectAsWideMapValue;
-import integration.tests.entity.BeanWithObjectAsWideMapValue.Holder;
+import integration.tests.entity.EntityWithObjectAsWideMapValue;
+import integration.tests.entity.EntityWithObjectAsWideMapValue.Holder;
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +37,7 @@ public class ObjectAsWideMapValueIT
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private BeanWithObjectAsWideMapValue bean;
+	private EntityWithObjectAsWideMapValue bean;
 
 	private Long id = 498L;
 
@@ -48,7 +48,7 @@ public class ObjectAsWideMapValueIT
 	@Before
 	public void setUp()
 	{
-		bean = new BeanWithObjectAsWideMapValue();
+		bean = new EntityWithObjectAsWideMapValue();
 		bean.setId(id);
 		bean.setName("name");
 

@@ -2,7 +2,7 @@ package parser.entity;
 
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,7 +16,7 @@ import javax.persistence.Id;
  * 
  */
 @Entity
-public class BeanWithExternalWideMap implements Serializable
+public class BeanWithExternalWideMap
 {
 	public static final long serialVersionUID = 1L;
 

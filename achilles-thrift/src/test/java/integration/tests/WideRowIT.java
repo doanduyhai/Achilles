@@ -11,7 +11,7 @@ import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
-import integration.tests.entity.WideRowBean;
+import integration.tests.entity.WideRowEntity;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,12 +34,12 @@ public class WideRowIT
 {
 
 	private ThriftGenericWideRowDao dao = getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName(WideRowBean.class.getName()), Long.class,
+			normalizerAndValidateColumnFamilyName(WideRowEntity.class.getName()), Long.class,
 			String.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private WideRowBean bean;
+	private WideRowEntity bean;
 
 	private WideMap<Integer, String> map;
 
@@ -48,7 +48,7 @@ public class WideRowIT
 	@Before
 	public void setUp()
 	{
-		bean = em.find(WideRowBean.class, id);
+		bean = em.find(WideRowEntity.class, id);
 		map = bean.getMap();
 	}
 

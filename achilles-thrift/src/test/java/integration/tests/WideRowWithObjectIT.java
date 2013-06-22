@@ -8,8 +8,8 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
-import integration.tests.entity.WideRowBeanWithObject;
-import integration.tests.entity.WideRowBeanWithObject.Holder;
+import integration.tests.entity.WideRowEntityWithObjectProperty;
+import integration.tests.entity.WideRowEntityWithObjectProperty.Holder;
 
 import java.util.Iterator;
 import java.util.List;
@@ -33,14 +33,14 @@ public class WideRowWithObjectIT
 
 	private ThriftGenericWideRowDao dao = ThriftCassandraDaoTest.getColumnFamilyDao(
 
-	normalizerAndValidateColumnFamilyName(WideRowBeanWithObject.class.getName()), Long.class,
+	normalizerAndValidateColumnFamilyName(WideRowEntityWithObjectProperty.class.getName()), Long.class,
 			String.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
-	private WideRowBeanWithObject bean;
+	private WideRowEntityWithObjectProperty bean;
 
 	private WideMap<Long, Holder> map;
 
@@ -49,7 +49,7 @@ public class WideRowWithObjectIT
 	@Before
 	public void setUp()
 	{
-		bean = em.find(WideRowBeanWithObject.class, id);
+		bean = em.find(WideRowEntityWithObjectProperty.class, id);
 		map = bean.getMap();
 	}
 

@@ -4,26 +4,26 @@ import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
- * ColumnFamilyMultiKey
+ * CompoundKeyWithEnum
  * 
  * @author DuyHai DOAN
  * 
  */
 @MultiKey
-public class WideRowMultiKey
+public class CompoundKeyWithEnum
 {
     @Order(1)
     private Long index;
 
     @Order(2)
-    private String name;
+    private Type type;
 
-    public WideRowMultiKey() {
+    public CompoundKeyWithEnum() {
     }
 
-    public WideRowMultiKey(Long index, String name) {
+    public CompoundKeyWithEnum(Long index, Type type) {
         this.index = index;
-        this.name = name;
+        this.type = type;
     }
 
     public Long getIndex()
@@ -36,13 +36,16 @@ public class WideRowMultiKey
         this.index = index;
     }
 
-    public String getName()
-    {
-        return name;
+    public Type getType() {
+        return type;
     }
 
-    public void setName(String name)
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public static enum Type
     {
-        this.name = name;
+        AUDIO, IMAGE, FILE;
     }
 }

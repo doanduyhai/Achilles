@@ -27,7 +27,7 @@ public class CQLPreparedStatementBinder
         List<Object> values = new ArrayList<Object>();
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
         Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
-        bindPrimaryKey(primaryKey, values, idMeta);
+        values.addAll(bindPrimaryKey(primaryKey, idMeta));
 
         List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
@@ -46,21 +46,6 @@ public class CQLPreparedStatementBinder
         return ps.bind(values.toArray(new Object[values.size()]));
     }
 
-    private void bindPrimaryKey(Object primaryKey, List<Object> values, PropertyMeta<?, ?> idMeta)
-    {
-        if (idMeta.type().isCompoundId())
-        {
-            for (Method componentGetter : idMeta.getMultiKeyProperties().getComponentGetters())
-            {
-                values.add(invoker.getValueFromField(primaryKey, componentGetter));
-            }
-        }
-        else
-        {
-            values.add(primaryKey);
-        }
-    }
-
     public BoundStatement bindForUpdate(PreparedStatement ps, EntityMeta entityMeta,
             List<PropertyMeta<?, ?>> pms, Object entity)
     {
@@ -73,16 +58,15 @@ public class CQLPreparedStatementBinder
             values.add(value);
         }
         Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
-        bindPrimaryKey(primaryKey, values, idMeta);
+        values.addAll(bindPrimaryKey(primaryKey, idMeta));
         return ps.bind(values.toArray(new Object[values.size()]));
     }
 
     public BoundStatement bindStatementWithOnlyPKInWhereClause(PreparedStatement ps,
             EntityMeta entityMeta, Object primaryKey)
     {
-        List<Object> values = new ArrayList<Object>();
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        bindPrimaryKey(primaryKey, values, idMeta);
+        List<Object> values = bindPrimaryKey(primaryKey, idMeta);
         return ps.bind(values.toArray(new Object[values.size()]));
     }
 
@@ -105,6 +89,28 @@ public class CQLPreparedStatementBinder
     {
         Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         return ps.bind(values);
+    }
+
+    private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta<?, ?> idMeta)
+    {
+        List<Object> values = new ArrayList<Object>();
+        if (idMeta.type().isCompoundId())
+        {
+            for (Method componentGetter : idMeta.getComponentGetters())
+            {
+                Object valueFromField = invoker.getValueFromField(primaryKey, componentGetter);
+                if (valueFromField.getClass().isEnum())
+                {
+                    valueFromField = ((Enum) valueFromField).name();
+                }
+                values.add(valueFromField);
+            }
+        }
+        else
+        {
+            values.add(primaryKey);
+        }
+        return values;
     }
 
     private Object extractFieldFromEntity(PropertyMeta<?, ?> pm, Object value)

@@ -3,7 +3,7 @@ package mapping.entity;
 import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,9 +17,9 @@ import javax.persistence.Id;
  */
 @Entity
 @WideRow
-public class MultiKeyWideRowBean implements Serializable
+public class MultiKeyWideRowBean
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

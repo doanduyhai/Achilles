@@ -5,20 +5,21 @@ import info.archinnov.achilles.annotations.Order;
 import javax.persistence.Column;
 
 @MultiKey
-public class MissingAnnotationClusteredId
+public class CompoundKey
 {
 
     @Order(1)
+    @Column(name = "id")
     private Long userId;
 
     @Order(2)
     @Column
     private String name;
 
-    public MissingAnnotationClusteredId() {
+    public CompoundKey() {
     }
 
-    public MissingAnnotationClusteredId(Long userId, String name) {
+    public CompoundKey(Long userId, String name) {
         this.userId = userId;
         this.name = name;
     }

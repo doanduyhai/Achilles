@@ -13,7 +13,7 @@ import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
 import integration.tests.entity.User;
-import integration.tests.entity.WideRowBeanWithJoinEntity;
+import integration.tests.entity.WideRowEntityWithJoinEntity;
 
 import java.util.List;
 
@@ -37,12 +37,12 @@ public class WideRowWithJoinEntityIT
 {
 
 	private ThriftGenericWideRowDao dao = getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName(WideRowBeanWithJoinEntity.class.getName()),
+			normalizerAndValidateColumnFamilyName(WideRowEntityWithJoinEntity.class.getName()),
 			Long.class, Long.class);
 
 	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private WideRowBeanWithJoinEntity bean;
+	private WideRowEntityWithJoinEntity bean;
 
 	private WideMap<Integer, User> friends;
 
@@ -58,7 +58,7 @@ public class WideRowWithJoinEntityIT
 	@Before
 	public void setUp()
 	{
-		bean = em.find(WideRowBeanWithJoinEntity.class, id);
+		bean = em.find(WideRowEntityWithJoinEntity.class, id);
 		friends = bean.getFriends();
 
 		user1 = UserTestBuilder.user().id(userId1).firstname("fn1").lastname("ln1").buid();

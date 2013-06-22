@@ -5,7 +5,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.*;
 import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -42,8 +42,8 @@ public class PropertyParser
 {
     private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
-    private PropertyHelper achillesPropertyHelper = new PropertyHelper();
-    private EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();
+    private PropertyHelper propertyHelper = new PropertyHelper();
+    private EntityIntrospector entityIntrospector = new EntityIntrospector();
     private PropertyParsingValidator validator = new PropertyParsingValidator();
 
     public PropertyMeta<?, ?> parse(PropertyParsingContext context)
@@ -53,7 +53,7 @@ public class PropertyParser
 
         Field field = context.getCurrentField();
         inferPropertyNameAndExternalTableName(context);
-        context.setCustomConsistencyLevels(achillesPropertyHelper.hasConsistencyAnnotation(context
+        context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context
                 .getCurrentField()));
 
         validator.validateNoDuplicate(context);
@@ -96,10 +96,7 @@ public class PropertyParser
         {
             propertyMeta = parseSimpleProperty(context);
         }
-
-        //		{
         context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
-        //		}
         return propertyMeta;
     }
 
@@ -111,16 +108,16 @@ public class PropertyParser
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = COMPOUND_ID;
 
-        MultiKeyProperties multiKeyProperties = parseMultiKey(field.getType());
+        CompoundKeyProperties compoundKeyProperties = parseCompoundKey(field.getType());
 
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
-                .multiKeyProperties(multiKeyProperties)
+                .multiKeyProperties(compoundKeyProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels())
@@ -140,8 +137,8 @@ public class PropertyParser
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = achillesPropertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+        PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
@@ -166,7 +163,7 @@ public class PropertyParser
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = PropertyType.COUNTER;
         CounterProperties counterProperties = new CounterProperties(context
                 .getCurrentEntityClass()
@@ -206,12 +203,10 @@ public class PropertyParser
         Class<V> valueClass;
         Type genericType = field.getGenericType();
 
-        valueClass = achillesPropertyHelper.inferValueClassForListOrSet(genericType, entityClass);
+        valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 
-        Validator.validateSerializable(valueClass, "List value type of '" + field.getName()
-                + "' should be Serializable");
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = achillesPropertyHelper.isLazy(field) ? LAZY_LIST : LIST;
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+        PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
         PropertyMeta<Void, V> listMeta = factory() //
                 .objectMapper(context.getCurrentObjectMapper())
@@ -241,11 +236,9 @@ public class PropertyParser
         Class<V> valueClass;
         Type genericType = field.getGenericType();
 
-        valueClass = achillesPropertyHelper.inferValueClassForListOrSet(genericType, entityClass);
-        Validator.validateSerializable(valueClass, "Set value type of '" + field.getName()
-                + "' should be Serializable");
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = achillesPropertyHelper.isLazy(field) ? LAZY_SET : SET;
+        valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+        PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
         PropertyMeta<Void, V> setMeta = factory() //
                 .objectMapper(context.getCurrentObjectMapper())
@@ -277,13 +270,8 @@ public class PropertyParser
         Class<K> keyClass = types.left;
         Class<V> valueClass = types.right;
 
-        Validator.validateSerializable(valueClass, "Map value type of '" + field.getName()
-                + "' should be Serializable");
-        Validator.validateSerializable(keyClass, "Map key type of '" + field.getName()
-                + "' should be Serializable");
-
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = achillesPropertyHelper.isLazy(field) ? LAZY_MAP : MAP;
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+        PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
         PropertyMeta<K, V> mapMeta = factory() //
                 .objectMapper(context.getCurrentObjectMapper())
@@ -312,7 +300,7 @@ public class PropertyParser
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
         PropertyType type = PropertyType.WIDE_MAP;
-        MultiKeyProperties multiKeyProperties = null;
+        CompoundKeyProperties multiKeyProperties = null;
         CounterProperties counterProperties = null;
 
         Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
@@ -321,7 +309,7 @@ public class PropertyParser
         boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
 
         // Multi Key
-        multiKeyProperties = parseMultiKey(keyClass);
+        multiKeyProperties = parseCompoundKey(keyClass);
 
         if (isCounterValueType)
         {
@@ -329,7 +317,7 @@ public class PropertyParser
             type = COUNTER_WIDE_MAP;
         }
 
-        Method[] accessors = achillesEntityIntrospector.findAccessors(entityClass, field);
+        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 
         PropertyMeta<K, V> propertyMeta = factory() //
                 .objectMapper(context.getCurrentObjectMapper())
@@ -344,7 +332,7 @@ public class PropertyParser
 
         if (isCounterValueType)
         {
-            if (achillesPropertyHelper.hasConsistencyAnnotation(context.getCurrentField()))
+            if (propertyHelper.hasConsistencyAnnotation(context.getCurrentField()))
             {
                 throw new AchillesBeanMappingException(
                         "Counter WideMap type '"
@@ -420,14 +408,14 @@ public class PropertyParser
                 (Class<V>) actualTypeArguments[1]);
     }
 
-    private MultiKeyProperties parseMultiKey(Class<?> keyClass)
+    private CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
     {
         log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
-        MultiKeyProperties multiKeyProperties = null;
+        CompoundKeyProperties compoundKeyProperties = null;
 
         if (keyClass.getAnnotation(MultiKey.class) != null)
         {
-            multiKeyProperties = achillesPropertyHelper.parseMultiKey(keyClass);
+            compoundKeyProperties = propertyHelper.parseCompoundKey(keyClass);
         }
         else
         {
@@ -440,8 +428,8 @@ public class PropertyParser
                                     + "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
         }
 
-        log.trace("Built multi key properties", multiKeyProperties);
-        return multiKeyProperties;
+        log.trace("Built multi key properties", compoundKeyProperties);
+        return compoundKeyProperties;
     }
 
     private void saveWideMapForDeferredBinding(PropertyParsingContext context,
@@ -493,13 +481,13 @@ public class PropertyParser
             PropertyMeta<?, ?> propertyMeta)
     {
         log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
-        boolean isCustomConsistencyLevel = achillesPropertyHelper.hasConsistencyAnnotation(context
+        boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(context
                 .getCurrentField());
         String externalTableName = context.getCurrentExternalTableName();
 
         if (isCustomConsistencyLevel)
         {
-            Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = achillesPropertyHelper
+            Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
                     .findConsistencyLevels(context.getCurrentField(),
                             context.getConfigurableCLPolicy());
 
@@ -519,7 +507,7 @@ public class PropertyParser
     {
 
         log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = achillesPropertyHelper
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
                 .findConsistencyLevels(context.getCurrentField(), context.getConfigurableCLPolicy());
 
         validator.validateConsistencyLevelForCounter(context, consistencyLevels);

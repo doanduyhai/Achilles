@@ -3,7 +3,7 @@ package integration.tests.entity;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import info.archinnov.achilles.annotations.Consistency;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,9 +17,9 @@ import javax.persistence.Id;
  */
 @Entity
 @Consistency(read = LOCAL_QUORUM, write = LOCAL_QUORUM)
-public class BeanWithLocalQuorumConsistency implements Serializable
+public class EntityWithLocalQuorumConsistency
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

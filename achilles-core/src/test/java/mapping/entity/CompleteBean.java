@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
-import java.io.Serializable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +24,7 @@ import javax.persistence.ManyToOne;
  * 
  */
 @Entity
-public class CompleteBean implements Serializable
+public class CompleteBean
 {
 
     public static final long serialVersionUID = 151L;

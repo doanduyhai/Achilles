@@ -3,7 +3,7 @@ package parser.entity;
 import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,10 +19,10 @@ import mapping.entity.TweetMultiKey;
  */
 @Entity
 @WideRow
-public class MultiKeyColumnFamilyBean implements Serializable
+public class MultiKeyColumnFamilyBean
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

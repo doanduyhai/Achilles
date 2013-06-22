@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +14,7 @@ import javax.persistence.JoinColumn;
  * 
  */
 @Entity
-public class BeanWithDuplicatedJoinColumnName implements Serializable
+public class BeanWithDuplicatedJoinColumnName
 {
 	public static final long serialVersionUID = 1L;
 

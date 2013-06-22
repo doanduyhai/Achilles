@@ -3,7 +3,7 @@ package mapping.entity;
 import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,9 +17,9 @@ import javax.persistence.Id;
  */
 @Entity
 @WideRow
-public class WideRowBeanWithObject implements Serializable
+public class WideRowBeanWithObject
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;
@@ -47,9 +47,9 @@ public class WideRowBeanWithObject implements Serializable
 		this.map = map;
 	}
 
-	public static class Holder implements Serializable
+	public static class Holder
 	{
-		private static final long serialVersionUID = 1L;
+		
 		private String name;
 
 		public Holder() {}

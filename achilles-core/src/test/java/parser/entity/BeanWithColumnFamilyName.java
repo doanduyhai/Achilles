@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +15,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "myOwnCF")
-public class BeanWithColumnFamilyName implements Serializable
+public class BeanWithColumnFamilyName
 {
 	public static final long serialVersionUID = 1234L;
 

@@ -2,7 +2,7 @@ package parser.entity;
 
 import info.archinnov.achilles.annotations.WideRow;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,10 +16,10 @@ import javax.persistence.Id;
  */
 @Entity
 @WideRow
-public class WideRowBeanWithWrongColumnType implements Serializable
+public class WideRowBeanWithWrongColumnType
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

@@ -1,17 +1,20 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.annotations.MultiKey;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.WideMap;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import me.prettyprint.cassandra.serializers.SerializerTypeInferer;
+import java.util.Set;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -45,12 +48,11 @@ public class ThriftPropertyHelper extends PropertyHelper
 
         if (nameClass.getAnnotation(MultiKey.class) != null)
         {
-
-            MultiKeyProperties multiKeyProperties = this.parseMultiKey(nameClass);
+            CompoundKeyProperties multiKeyProperties = this.parseCompoundKey(nameClass);
 
             for (Class<?> clazz : multiKeyProperties.getComponentClasses())
             {
-                Serializer<?> srz = SerializerTypeInferer.getSerializer(clazz);
+                Serializer<?> srz = ThriftSerializerTypeInferer.getSerializer(clazz);
                 if (forCreation)
                 {
                     comparatorTypes.add(srz.getComparatorType().getTypeName());
@@ -73,7 +75,7 @@ public class ThriftPropertyHelper extends PropertyHelper
         }
         else
         {
-            String typeAlias = SerializerTypeInferer
+            String typeAlias = ThriftSerializerTypeInferer
                     .getSerializer(nameClass)
                     .getComparatorType()
                     .getTypeName();
@@ -93,7 +95,7 @@ public class ThriftPropertyHelper extends PropertyHelper
         return comparatorTypesAlias;
     }
 
-    public <K, V> K buildMultiKeyFromComposite(PropertyMeta<K, V> propertyMeta,
+    public <K, V> K buildComponentsFromComposite(PropertyMeta<K, V> propertyMeta,
             List<Component<?>> components)
     {
         if (log.isTraceEnabled())
@@ -103,23 +105,39 @@ public class ThriftPropertyHelper extends PropertyHelper
         }
 
         K key;
-        MultiKeyProperties multiKeyProperties = propertyMeta.getMultiKeyProperties();
-        Class<K> multiKeyClass = propertyMeta.getKeyClass();
-        List<Method> componentSetters = multiKeyProperties.getComponentSetters();
+        Class<K> compoundKeyClass = propertyMeta.getKeyClass();
+        List<Method> componentSetters = propertyMeta.getComponentSetters();
+        List<Class<?>> componentClasses = propertyMeta.getComponentClasses();
         List<Serializer<?>> serializers = new ArrayList<Serializer<?>>();
-        for (Class<?> clazz : multiKeyProperties.getComponentClasses())
+        Set<Integer> enumTypeIndex = new HashSet<Integer>();
+        int j = 0;
+        for (Class<?> clazz : componentClasses)
         {
-            serializers.add(SerializerTypeInferer.getSerializer(clazz));
+            if (clazz.isEnum()) {
+                serializers.add(STRING_SRZ);
+                enumTypeIndex.add(j);
+            }
+            else {
+                serializers.add(ThriftSerializerTypeInferer.getSerializer(clazz));
+            }
+            j++;
         }
 
         try
         {
-            key = multiKeyClass.newInstance();
+            key = compoundKeyClass.newInstance();
 
             for (int i = 0; i < components.size(); i++)
             {
                 Component<?> comp = components.get(i);
-                Object compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+                Object compValue;
+                if (enumTypeIndex.contains(i)) {
+                    String enumName = STRING_SRZ.fromByteBuffer(comp.getBytes());
+                    compValue = Enum.valueOf((Class<Enum>) componentClasses.get(i), enumName);
+                }
+                else {
+                    compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+                }
                 invoker.setValueToField(key, componentSetters.get(i), compValue);
             }
 
@@ -128,7 +146,7 @@ public class ThriftPropertyHelper extends PropertyHelper
             throw new AchillesException(e);
         }
 
-        log.trace("Built multi key : {}", key);
+        log.trace("Built compound key : {}", key);
 
         return key;
     }

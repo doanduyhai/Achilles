@@ -2,7 +2,7 @@ package mapping.entity;
 
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,7 +16,7 @@ import javax.persistence.Id;
  * 
  */
 @Entity
-public class BeanWithObjectAsWideMapValue implements Serializable
+public class BeanWithObjectAsWideMapValue
 {
 
 	public static final long serialVersionUID = 1L;
@@ -55,9 +55,9 @@ public class BeanWithObjectAsWideMapValue implements Serializable
 		return holders;
 	}
 
-	public static class Holder implements Serializable
+	public static class Holder
 	{
-		private static final long serialVersionUID = 1L;
+		
 
 		private String name;
 

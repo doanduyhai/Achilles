@@ -35,7 +35,7 @@ public abstract class EntityManagerFactory
 	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
 
-	private EntityParser achillesEntityParser = new EntityParser();
+	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer achillesEntityExplorer = new EntityExplorer();
 	private EntityParsingValidator validator = new EntityParsingValidator();
 
@@ -83,12 +83,12 @@ public abstract class EntityManagerFactory
 					joinPropertyMetaToBeFilled, //
 					configContext, entityClass);
 
-			EntityMeta entityMeta = achillesEntityParser.parseEntity(context);
+			EntityMeta entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
 			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
 		}
 
-		achillesEntityParser.fillJoinEntityMeta(new EntityParsingContext( //
+		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
 				joinPropertyMetaToBeFilled, //
 				configContext), entityMetaMap);
 
@@ -121,7 +121,7 @@ public abstract class EntityManagerFactory
 
 	protected void setEntityParser(EntityParser achillesEntityParser)
 	{
-		this.achillesEntityParser = achillesEntityParser;
+		this.entityParser = achillesEntityParser;
 	}
 
 	protected void setEntityExplorer(EntityExplorer achillesEntityExplorer)

@@ -14,7 +14,7 @@ import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
-import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
+import integration.tests.entity.EntityWithConsistencyLevelOnClassAndField;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 
@@ -276,7 +276,7 @@ public class CounterIT
 	@Test
 	public void should_incr_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		counterWideMap.insert(10, CounterBuilder.incr());
@@ -287,7 +287,7 @@ public class CounterIT
 	@Test
 	public void should_incr_n_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		counterWideMap.insert(10, CounterBuilder.incr(15L));
@@ -298,7 +298,7 @@ public class CounterIT
 	@Test
 	public void should_decr_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		counterWideMap.insert(10, CounterBuilder.decr());
@@ -309,7 +309,7 @@ public class CounterIT
 	@Test
 	public void should_decr_n_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		counterWideMap.insert(10, CounterBuilder.decr(15L));
@@ -317,9 +317,9 @@ public class CounterIT
 				.isEqualTo(-15L);
 	}
 
-	private BeanWithConsistencyLevelOnClassAndField prepareCounterWideMap()
+	private EntityWithConsistencyLevelOnClassAndField prepareCounterWideMap()
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = new BeanWithConsistencyLevelOnClassAndField();
+		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 		entity = em.merge(entity);

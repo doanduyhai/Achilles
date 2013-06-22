@@ -152,19 +152,26 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
         tableAchillesCounter.append("counter_value counter,");
         tableAchillesCounter.append("primary key((fqcn,primary_key),property_name))");
 
-        StringBuilder tableUser = new StringBuilder();
-        tableUser.append("CREATE TABLE clusteredtweet(");
-        tableUser.append("user_id bigint,");
-        tableUser.append("tweet_id uuid,");
-        tableUser.append("creation_date timestamp,");
-        tableUser.append("content text,");
-        tableUser.append("original_author_id bigint,");
-        tableUser.append("is_a_retweet boolean,");
-        tableUser.append("primary key(user_id,tweet_id,creation_date))");
+        StringBuilder tableClusteredTweet = new StringBuilder();
+        tableClusteredTweet.append("CREATE TABLE clusteredtweet(");
+        tableClusteredTweet.append("user_id bigint,");
+        tableClusteredTweet.append("tweet_id uuid,");
+        tableClusteredTweet.append("creation_date timestamp,");
+        tableClusteredTweet.append("content text,");
+        tableClusteredTweet.append("original_author_id bigint,");
+        tableClusteredTweet.append("is_a_retweet boolean,");
+        tableClusteredTweet.append("primary key(user_id,tweet_id,creation_date))");
 
-        session.execute(tableUser.toString());
+        StringBuilder tableClusteredMessage = new StringBuilder();
+        tableClusteredMessage.append("CREATE TABLE clusteredmessage(");
+        tableClusteredMessage.append("id bigint,");
+        tableClusteredMessage.append("type text,");
+        tableClusteredMessage.append("label text,");
+        tableClusteredMessage.append("primary key(id,type))");
+
+        session.execute(tableClusteredMessage.toString());
+        session.execute(tableClusteredTweet.toString());
         session.execute(tableAchillesCounter.toString());
-
         session.execute(tableTweet.toString());
         session.execute(tableCompleteBean.toString());
         session.execute(tableCompleteBeanTweets.toString());

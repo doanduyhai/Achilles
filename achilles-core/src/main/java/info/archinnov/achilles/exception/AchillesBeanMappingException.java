@@ -8,7 +8,7 @@ package info.archinnov.achilles.exception;
  */
 public class AchillesBeanMappingException extends RuntimeException
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	public AchillesBeanMappingException() {
 		super();

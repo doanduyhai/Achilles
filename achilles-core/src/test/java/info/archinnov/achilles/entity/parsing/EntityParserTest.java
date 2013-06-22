@@ -9,7 +9,6 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -41,7 +40,7 @@ import parser.entity.BeanWithNoId;
 import parser.entity.BeanWithSimpleCounter;
 import parser.entity.BeanWithWideMapCounter;
 import parser.entity.ChildBean;
-import parser.entity.ClusteredId;
+import parser.entity.CompoundKey;
 import parser.entity.UserBean;
 import parser.entity.WideRowBean;
 import parser.entity.WideRowBeanWithJoinEntity;
@@ -215,13 +214,11 @@ public class EntityParserTest
 
         assertThat(meta).isNotNull();
 
-        assertThat((Class<ClusteredId>) meta.getIdClass()).isEqualTo(ClusteredId.class);
-        PropertyMeta<Void, ClusteredId> idMeta = (PropertyMeta<Void, ClusteredId>) meta.getIdMeta();
+        assertThat((Class<CompoundKey>) meta.getIdClass()).isEqualTo(CompoundKey.class);
+        PropertyMeta<Void, CompoundKey> idMeta = (PropertyMeta<Void, CompoundKey>) meta.getIdMeta();
 
         assertThat(idMeta.isSingleKey()).isFalse();
-        MultiKeyProperties multiKeyProperties = idMeta.getMultiKeyProperties();
-        assertThat(multiKeyProperties).isNotNull();
-        assertThat(multiKeyProperties.getComponentClasses()).containsExactly(Long.class,
+        assertThat(idMeta.getComponentClasses()).containsExactly(Long.class,
                 String.class);
 
     }

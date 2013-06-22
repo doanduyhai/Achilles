@@ -32,7 +32,7 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyWideMapIT
+public class CompoundKeyWideMapIT
 {
 	private ThriftGenericWideRowDao userTweetsDao = ThriftCassandraDaoTest.getColumnFamilyDao(
 			"complete_bean_user_tweets", Long.class, String.class);

@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyProperties
+public class CompoundKeyProperties
 {
 	private List<Class<?>> componentClasses;
 	private List<String> componentNames;

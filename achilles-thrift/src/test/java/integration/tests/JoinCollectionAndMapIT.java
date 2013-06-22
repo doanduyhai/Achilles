@@ -11,7 +11,7 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
-import integration.tests.entity.BeanWithJoinCollectionAndMap;
+import integration.tests.entity.EntityWithJoinCollectionAndMap;
 import integration.tests.entity.Tweet;
 import integration.tests.entity.User;
 
@@ -57,7 +57,7 @@ public class JoinCollectionAndMapIT
 			normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()), Long.class);
 
 	private ThriftGenericEntityDao beanDao = getEntityDao(
-			normalizerAndValidateColumnFamilyName(BeanWithJoinCollectionAndMap.class
+			normalizerAndValidateColumnFamilyName(EntityWithJoinCollectionAndMap.class
 					.getCanonicalName()),
 			Long.class);
 
@@ -69,14 +69,14 @@ public class JoinCollectionAndMapIT
 
 	private Long beanId = RandomUtils.nextLong();
 
-	private BeanWithJoinCollectionAndMap bean;
+	private EntityWithJoinCollectionAndMap bean;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp()
 	{
-		bean = new BeanWithJoinCollectionAndMap();
+		bean = new EntityWithJoinCollectionAndMap();
 		bean.setId(beanId);
 
 		tweet1 = TweetTestBuilder.tweet().randomId().content("tweet1").buid();
@@ -261,7 +261,7 @@ public class JoinCollectionAndMapIT
 
 		em.persist(bean);
 
-		bean = em.find(BeanWithJoinCollectionAndMap.class, beanId);
+		bean = em.find(EntityWithJoinCollectionAndMap.class, beanId);
 
 		Set<User> foundFriends = bean.getFriends();
 

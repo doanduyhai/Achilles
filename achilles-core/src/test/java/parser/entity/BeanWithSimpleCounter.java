@@ -2,7 +2,7 @@ package parser.entity;
 
 import info.archinnov.achilles.type.Counter;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -13,10 +13,10 @@ import javax.persistence.Id;
  * @author DuyHai DOAN
  * 
  */
-public class BeanWithSimpleCounter implements Serializable
+public class BeanWithSimpleCounter
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

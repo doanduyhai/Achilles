@@ -52,7 +52,7 @@ public class EntityInitializerTest
 
 	private CompleteBean bean = new CompleteBean()
 	{
-		private static final long serialVersionUID = 1L;
+		
 
 		@Override
 		public Set<String> getFollowers()
@@ -119,7 +119,7 @@ public class EntityInitializerTest
 	{
 		CompleteBean bean = new CompleteBean()
 		{
-			private static final long serialVersionUID = 1L;
+			
 
 			public Long getId()
 			{

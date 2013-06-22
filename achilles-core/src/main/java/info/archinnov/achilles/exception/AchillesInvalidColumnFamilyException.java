@@ -9,7 +9,7 @@ package info.archinnov.achilles.exception;
 public class AchillesInvalidColumnFamilyException extends RuntimeException
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	public AchillesInvalidColumnFamilyException() {
 		super();

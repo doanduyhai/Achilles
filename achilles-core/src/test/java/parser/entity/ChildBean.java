@@ -1,6 +1,6 @@
 package parser.entity;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +14,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ChildBean")
-public class ChildBean extends ParentBean implements Serializable
+public class ChildBean extends ParentBean
 {
 
 	public static final long serialVersionUID = 1L;

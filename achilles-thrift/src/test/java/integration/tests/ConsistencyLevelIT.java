@@ -17,12 +17,12 @@ import info.archinnov.achilles.type.KeyValueIterator;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
-import integration.tests.entity.BeanWithConsistencyLevelOnClassAndField;
-import integration.tests.entity.BeanWithLocalQuorumConsistency;
-import integration.tests.entity.BeanWithReadLocalQuorumConsistencyForWidemap;
-import integration.tests.entity.BeanWithReadOneWriteAllConsistencyForWidemap;
-import integration.tests.entity.BeanWithWriteLocalQuorumConsistencyForWidemap;
-import integration.tests.entity.BeanWithWriteOneAndReadLocalQuorumConsistency;
+import integration.tests.entity.EntityWithConsistencyLevelOnClassAndField;
+import integration.tests.entity.EntityWithLocalQuorumConsistency;
+import integration.tests.entity.EntityWithReadLocalQuorumConsistencyForWidemap;
+import integration.tests.entity.EntityWithReadOneWriteAllConsistencyForWidemap;
+import integration.tests.entity.EntityWithWriteLocalQuorumConsistencyForWidemap;
+import integration.tests.entity.EntityWithWriteOneAndReadLocalQuorumConsistency;
 import integration.tests.entity.CompleteBean;
 import integration.tests.entity.CompleteBeanTestBuilder;
 import integration.tests.entity.Tweet;
@@ -78,7 +78,7 @@ public class ConsistencyLevelIT
 	public void should_throw_exception_when_persisting_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithLocalQuorumConsistency bean = new BeanWithLocalQuorumConsistency();
+		EntityWithLocalQuorumConsistency bean = new EntityWithLocalQuorumConsistency();
 		bean.setId(id);
 		bean.setName("name");
 
@@ -94,16 +94,16 @@ public class ConsistencyLevelIT
 	public void should_throw_exception_when_loading_entity_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithWriteOneAndReadLocalQuorumConsistency bean = new BeanWithWriteOneAndReadLocalQuorumConsistency(
+		EntityWithWriteOneAndReadLocalQuorumConsistency bean = new EntityWithWriteOneAndReadLocalQuorumConsistency(
 				id, "FN", "LN");
 
 		em.persist(bean);
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx.expectMessage("Error when loading entity type '"
-				+ BeanWithWriteOneAndReadLocalQuorumConsistency.class.getCanonicalName() + "'");
+				+ EntityWithWriteOneAndReadLocalQuorumConsistency.class.getCanonicalName() + "'");
 
-		em.find(BeanWithWriteOneAndReadLocalQuorumConsistency.class, id);
+		em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 		assertThatConsistencyLevelsAreReinitialized();
 	}
 
@@ -111,7 +111,7 @@ public class ConsistencyLevelIT
 	public void should_insert_find_get_iterator_and_remove_for_widemap_with_consistency_level()
 			throws Exception
 	{
-		BeanWithReadOneWriteAllConsistencyForWidemap bean = new BeanWithReadOneWriteAllConsistencyForWidemap(
+		EntityWithReadOneWriteAllConsistencyForWidemap bean = new EntityWithReadOneWriteAllConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -156,7 +156,7 @@ public class ConsistencyLevelIT
 	public void should_exception_when_writing_to_widemap_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithWriteLocalQuorumConsistencyForWidemap bean = new BeanWithWriteLocalQuorumConsistencyForWidemap(
+		EntityWithWriteLocalQuorumConsistencyForWidemap bean = new EntityWithWriteLocalQuorumConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -173,7 +173,7 @@ public class ConsistencyLevelIT
 	public void should_exception_when_reading_from_widemap_with_local_quorum_consistency()
 			throws Exception
 	{
-		BeanWithReadLocalQuorumConsistencyForWidemap bean = new BeanWithReadLocalQuorumConsistencyForWidemap(
+		EntityWithReadLocalQuorumConsistencyForWidemap bean = new EntityWithReadLocalQuorumConsistencyForWidemap(
 				id, "name");
 
 		bean = em.merge(bean);
@@ -193,24 +193,24 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_recover_from_exception_and_reinit_consistency_level() throws Exception
 	{
-		BeanWithWriteOneAndReadLocalQuorumConsistency bean = new BeanWithWriteOneAndReadLocalQuorumConsistency(
+		EntityWithWriteOneAndReadLocalQuorumConsistency bean = new EntityWithWriteOneAndReadLocalQuorumConsistency(
 				id, "FN", "LN");
 
 		try
 		{
 			em.persist(bean);
-			em.find(BeanWithWriteOneAndReadLocalQuorumConsistency.class, id);
+			em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 		}
 		catch (AchillesException e)
 		{
 			// Should reinit consistency level to default
 		}
-		BeanWithReadOneWriteAllConsistencyForWidemap newBean = new BeanWithReadOneWriteAllConsistencyForWidemap(
+		EntityWithReadOneWriteAllConsistencyForWidemap newBean = new EntityWithReadOneWriteAllConsistencyForWidemap(
 				id, "name");
 
 		em.persist(newBean);
 
-		newBean = em.find(BeanWithReadOneWriteAllConsistencyForWidemap.class, newBean.getId());
+		newBean = em.find(EntityWithReadOneWriteAllConsistencyForWidemap.class, newBean.getId());
 
 		assertThat(newBean).isNotNull();
 		assertThat(newBean.getName()).isEqualTo("name");
@@ -668,7 +668,7 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_incr_with_consistency_level_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
@@ -683,7 +683,7 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_incr_n_with_consistency_level_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
@@ -698,7 +698,7 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_decr_with_consistency_level_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
@@ -713,7 +713,7 @@ public class ConsistencyLevelIT
 	@Test
 	public void should_decr_n_with_consistency_level_for_counter_widemap() throws Exception
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
+		EntityWithConsistencyLevelOnClassAndField entity = prepareCounterWideMap();
 		WideMap<Integer, Counter> counterWideMap = entity.getCounterWideMap();
 
 		logAsserter.prepareLogLevel();
@@ -725,9 +725,9 @@ public class ConsistencyLevelIT
 				.isEqualTo(-15L);
 	}
 
-	private BeanWithConsistencyLevelOnClassAndField prepareCounterWideMap()
+	private EntityWithConsistencyLevelOnClassAndField prepareCounterWideMap()
 	{
-		BeanWithConsistencyLevelOnClassAndField entity = new BeanWithConsistencyLevelOnClassAndField();
+		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 		entity = em.merge(entity);

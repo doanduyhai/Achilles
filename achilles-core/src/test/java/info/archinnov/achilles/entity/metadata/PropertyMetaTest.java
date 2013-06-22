@@ -498,7 +498,7 @@ public class PropertyMetaTest
 	public void should_get_cql_ordering_component() throws Exception
 	{
 		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
 		multiKeyProperties.setComponentNames(Arrays.asList("id", "age", "name"));
 		meta.setMultiKeyProperties(multiKeyProperties);
 
@@ -518,7 +518,7 @@ public class PropertyMetaTest
 	public void should_get_cql_component_names() throws Exception
 	{
 		PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-		MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+		CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
 		multiKeyProperties.setComponentNames(Arrays.asList("Id", "aGe", "namE"));
 		meta.setMultiKeyProperties(multiKeyProperties);
 

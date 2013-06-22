@@ -10,6 +10,7 @@ import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
+import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -47,6 +48,8 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     {
         log.trace("Get value having key {}", key);
 
+        Validator.validateNotNull(key, "Key should be provided to fetch data from WideMap");
+
         V result = null;
         Object value = dao.getValue(id, buildComposite(key));
         if (value != null)
@@ -60,6 +63,8 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     public void insert(K key, V value)
     {
         log.trace("Insert value {} with key {}", value, key);
+        Validator.validateNotNull(key, "Key should be provided to insert data into WideMap");
+        Validator.validateNotNull(value, "Value should be provided to insert data into WideMap");
 
         dao.setValueBatch(id, buildComposite(key),
                 propertyMeta.writeValueAsSupportedTypeOrString(value),
@@ -72,6 +77,8 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     public void insert(K key, V value, int ttl)
     {
         log.trace("Insert value {} with key {} and ttl {}", value, key, ttl);
+        Validator.validateNotNull(key, "Key should be provided to insert data into WideMap");
+        Validator.validateNotNull(value, "Value should be provided to insert data into WideMap");
 
         dao.setValueBatch(id, buildComposite(key),
                 propertyMeta.writeValueAsSupportedTypeOrString(value),

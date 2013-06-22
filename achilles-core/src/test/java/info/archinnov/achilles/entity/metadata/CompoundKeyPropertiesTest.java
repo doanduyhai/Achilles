@@ -13,13 +13,13 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class MultiKeyPropertiesTest
+public class CompoundKeyPropertiesTest
 {
 	@Test
 	public void should_to_string() throws Exception
 	{
 		List<Class<?>> componentClasses = Arrays.<Class<?>> asList(Integer.class, String.class);
-		MultiKeyProperties props = new MultiKeyProperties();
+		CompoundKeyProperties props = new CompoundKeyProperties();
 		props.setComponentClasses(componentClasses);
 		props.setComponentNames(Arrays.asList("id", "age"));
 
@@ -33,7 +33,7 @@ public class MultiKeyPropertiesTest
 	@Test
 	public void should_get_cql_component_names() throws Exception
 	{
-		MultiKeyProperties props = new MultiKeyProperties();
+		CompoundKeyProperties props = new CompoundKeyProperties();
 		props.setComponentNames(Arrays.asList("Id", "aGe"));
 
 		assertThat(props.getCQLComponentNames()).containsExactly("id", "age");
@@ -42,7 +42,7 @@ public class MultiKeyPropertiesTest
 	@Test
 	public void should_get_cql_ordering_component() throws Exception
 	{
-		MultiKeyProperties props = new MultiKeyProperties();
+		CompoundKeyProperties props = new CompoundKeyProperties();
 		props.setComponentNames(Arrays.asList("id", "age", "label"));
 
 		assertThat(props.getCQLOrderingComponent()).isEqualTo("age");
@@ -51,7 +51,7 @@ public class MultiKeyPropertiesTest
 	@Test
 	public void should_return_null_if_no_cql_ordering_component() throws Exception
 	{
-		MultiKeyProperties props = new MultiKeyProperties();
+		CompoundKeyProperties props = new CompoundKeyProperties();
 		props.setComponentNames(Arrays.asList("id"));
 
 		assertThat(props.getCQLOrderingComponent()).isNull();

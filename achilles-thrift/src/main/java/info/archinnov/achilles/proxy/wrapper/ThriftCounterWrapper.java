@@ -23,7 +23,7 @@ public class ThriftCounterWrapper implements Counter
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftCounterWrapper.class);
 
-	private static final long serialVersionUID = 1L;
+	
 	private Object key;
 	private Composite columnName;
 	private ThriftAbstractDao counterDao;

@@ -3,7 +3,7 @@ package parser.entity;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -15,10 +15,10 @@ import javax.persistence.Id;
  * @author DuyHai DOAN
  * 
  */
-public class BeanWithWideMapCounter implements Serializable
+public class BeanWithWideMapCounter
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;

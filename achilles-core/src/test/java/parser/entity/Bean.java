@@ -6,7 +6,7 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +26,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
-public class Bean implements Serializable
+public class Bean
 {
 	public static final long serialVersionUID = 1L;
 

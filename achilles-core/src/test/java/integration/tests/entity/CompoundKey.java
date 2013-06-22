@@ -1,37 +1,39 @@
-package parser.entity;
+package integration.tests.entity;
 
 import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.annotations.Order;
-import javax.persistence.Column;
 
+/**
+ * ColumnFamilyMultiKey
+ * 
+ * @author DuyHai DOAN
+ * 
+ */
 @MultiKey
-public class ClusteredId
+public class CompoundKey
 {
-
     @Order(1)
-    @Column(name = "id")
-    private Long userId;
+    private Long index;
 
     @Order(2)
-    @Column
     private String name;
 
-    public ClusteredId() {
+    public CompoundKey() {
     }
 
-    public ClusteredId(Long userId, String name) {
-        this.userId = userId;
+    public CompoundKey(Long index, String name) {
+        this.index = index;
         this.name = name;
     }
 
-    public Long getUserId()
+    public Long getIndex()
     {
-        return userId;
+        return index;
     }
 
-    public void setUserId(Long userId)
+    public void setIndex(Long index)
     {
-        this.userId = userId;
+        this.index = index;
     }
 
     public String getName()

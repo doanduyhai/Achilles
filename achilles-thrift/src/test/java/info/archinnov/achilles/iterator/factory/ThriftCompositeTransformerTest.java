@@ -1,9 +1,9 @@
 package info.archinnov.achilles.iterator.factory;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.WIDE_MAP;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -13,15 +13,13 @@ import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
-
 import java.util.Arrays;
 import java.util.List;
-
 import mapping.entity.TweetMultiKey;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
-
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,11 +27,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
 import testBuilders.CompositeTestBuilder;
 import testBuilders.HColumnTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
-
 import com.google.common.collect.Lists;
 
 /**
@@ -46,187 +42,188 @@ import com.google.common.collect.Lists;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftCompositeTransformerTest
 {
-	@InjectMocks
-	private ThriftCompositeTransformer transformer;
+    @InjectMocks
+    private ThriftCompositeTransformer transformer;
 
-	@Mock
-	private ThriftPropertyHelper helper;
+    @Mock
+    private ThriftPropertyHelper helper;
 
-	@Mock
-	private ThriftEntityProxifier proxifier;
+    @Mock
+    private ThriftEntityProxifier proxifier;
 
-	@Mock
-	private ThriftPersistenceContext context;
+    @Mock
+    private ThriftPersistenceContext context;
 
-	@Mock
-	private ThriftPersistenceContext joinContext;
+    @Mock
+    private ThriftPersistenceContext joinContext;
 
-	@Before
-	public void setUp()
-	{
-		Whitebox.setInternalState(transformer, "helper", helper);
-	}
+    private ObjectMapper mapper = new ObjectMapper();
 
-	@Test
-	public void should_build_single_key_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().values(45).buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().values(51).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
+    @Before
+    public void setUp()
+    {
+        Whitebox.setInternalState(transformer, "helper", helper);
+    }
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
-				.noClass(Integer.class, String.class)
-				//
-				.type(WIDE_MAP)
-				//
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
-				//
-				.build();
+    @Test
+    public void should_build_single_key_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().values(45).buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().values(51).buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildKeyTransformer(propertyMeta));
+        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
+                .noClass(Integer.class, String.class)
+                .type(WIDE_MAP)
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .build();
 
-		assertThat(keys).containsExactly(45, 51);
-	}
+        List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildKeyTransformer(propertyMeta));
 
-	@Test
-	public void should_build_multi_key_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().values("a", "b").buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().values("c", "d").buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
+        assertThat(keys).containsExactly(45, 51);
+    }
 
-		PropertyMeta<TweetMultiKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
-				TweetMultiKey.class, String.class).build();
+    @Test
+    public void should_build_multi_key_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().values("a", "b").buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().values("c", "d").buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		TweetMultiKey multiKey1 = new TweetMultiKey();
-		TweetMultiKey multiKey2 = new TweetMultiKey();
+        PropertyMeta<TweetMultiKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
+                TweetMultiKey.class, String.class).build();
 
-		when(helper.buildMultiKeyFromComposite(propertyMeta, hCol1.getName().getComponents()))
-				.thenReturn(multiKey1);
-		when(helper.buildMultiKeyFromComposite(propertyMeta, hCol2.getName().getComponents()))
-				.thenReturn(multiKey2);
-		List<TweetMultiKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildKeyTransformer(propertyMeta));
+        TweetMultiKey multiKey1 = new TweetMultiKey();
+        TweetMultiKey multiKey2 = new TweetMultiKey();
 
-		assertThat(keys).containsExactly(multiKey1, multiKey2);
-	}
+        when(helper.buildComponentsFromComposite(propertyMeta, hCol1.getName().getComponents()))
+                .thenReturn(multiKey1);
+        when(helper.buildComponentsFromComposite(propertyMeta, hCol2.getName().getComponents()))
+                .thenReturn(multiKey2);
+        List<TweetMultiKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildKeyTransformer(propertyMeta));
 
-	@Test
-	public void should_build_value_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
+        assertThat(keys).containsExactly(multiKey1, multiKey2);
+    }
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, String.class)
-				.type(WIDE_MAP)
-				.build();
+    @Test
+    public void should_build_value_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		List<String> values = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildValueTransformer(propertyMeta));
+        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+                .noClass(Integer.class, String.class)
+                .type(WIDE_MAP)
+                .build();
 
-		assertThat(values).containsExactly("test1", "test2");
-	}
+        List<String> values = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildValueTransformer(propertyMeta));
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_build_raw_value_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
+        assertThat(values).containsExactly("test1", "test2");
+    }
 
-		List<Object> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildRawValueTransformer());
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_build_raw_value_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-		assertThat(rawValues).containsExactly("test1", "test2");
-	}
+        List<Object> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildRawValueTransformer());
 
-	@Test
-	public void should_build_join_value_from_composite() throws Exception
-	{
-		EntityMeta joinMeta = new EntityMeta();
-		PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.joinMeta(joinMeta)
-				.type(PropertyType.JOIN_SIMPLE)
-				.build();
+        assertThat(rawValues).containsExactly("test1", "test2");
+    }
 
-		UserBean user = new UserBean();
-		Composite comp = new Composite();
-		HColumn<Composite, UserBean> hColumn = HColumnTestBuilder.simple(comp, user);
+    @Test
+    public void should_build_join_value_from_composite() throws Exception
+    {
+        EntityMeta joinMeta = new EntityMeta();
+        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("user")
+                .joinMeta(joinMeta)
+                .type(PropertyType.JOIN_SIMPLE)
+                .build();
 
-		when(context.newPersistenceContext(joinMeta, hColumn.getValue())).thenReturn(joinContext);
-		when(proxifier.buildProxy(hColumn.getValue(), joinContext)).thenReturn(user);
-		UserBean actual = transformer.buildValue(context, propertyMeta, hColumn);
+        UserBean user = new UserBean();
+        Composite comp = new Composite();
 
-		assertThat(actual).isSameAs(user);
-	}
+        String userAsString = mapper.writeValueAsString(user);
+        HColumn<Composite, String> hColumn = HColumnTestBuilder.simple(comp, userAsString);
 
-	@Test
-	public void should_build_ttl_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
+        when(context.newPersistenceContext(joinMeta, hColumn.getValue())).thenReturn(joinContext);
+        when(proxifier.buildProxy(hColumn.getValue(), joinContext)).thenReturn(userAsString);
+        String actual = transformer.buildValue(context, propertyMeta, hColumn);
 
-		List<Integer> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildTtlTransformer());
+        assertThat(actual).isSameAs(userAsString);
+    }
 
-		assertThat(rawValues).containsExactly(12, 13);
-	}
+    @Test
+    public void should_build_ttl_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
 
-	@Test
-	public void should_build_timestamp_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
+        List<Integer> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildTtlTransformer());
 
-		hCol1.setClock(10);
-		hCol2.setClock(11);
+        assertThat(rawValues).containsExactly(12, 13);
+    }
 
-		List<Long> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildTimestampTransformer());
+    @Test
+    public void should_build_timestamp_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 12);
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 13);
 
-		assertThat(rawValues).containsExactly(10L, 11L);
-	}
+        hCol1.setClock(10);
+        hCol2.setClock(11);
 
-	@Test
-	public void should_build_key_value_transformer() throws Exception
-	{
-		Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
-		Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 456);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
+        List<Long> rawValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildTimestampTransformer());
 
-		PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-				.noClass(Integer.class, String.class)
-				.type(WIDE_MAP)
-				.consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
-				.build();
+        assertThat(rawValues).containsExactly(10L, 11L);
+    }
 
-		List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
-				transformer.buildKeyValueTransformer(context, propertyMeta));
+    @Test
+    public void should_build_key_value_transformer() throws Exception
+    {
+        Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
+        HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1", 456);
+        HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
-		assertThat(keyValues).hasSize(2);
+        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+                .noClass(Integer.class, String.class)
+                .type(WIDE_MAP)
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .build();
 
-		assertThat(keyValues.get(0).getKey()).isEqualTo(11);
-		assertThat(keyValues.get(0).getValue()).isEqualTo("test1");
-		assertThat(keyValues.get(0).getTtl()).isEqualTo(456);
+        List<KeyValue<Integer, String>> keyValues = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildKeyValueTransformer(context, propertyMeta));
 
-		assertThat(keyValues.get(1).getKey()).isEqualTo(12);
-		assertThat(keyValues.get(1).getValue()).isEqualTo("test2");
-		assertThat(keyValues.get(1).getTtl()).isEqualTo(789);
-	}
+        assertThat(keyValues).hasSize(2);
+
+        assertThat(keyValues.get(0).getKey()).isEqualTo(11);
+        assertThat(keyValues.get(0).getValue()).isEqualTo("test1");
+        assertThat(keyValues.get(0).getTtl()).isEqualTo(456);
+
+        assertThat(keyValues.get(1).getKey()).isEqualTo(12);
+        assertThat(keyValues.get(1).getValue()).isEqualTo("test2");
+        assertThat(keyValues.get(1).getTtl()).isEqualTo(789);
+    }
 
 }

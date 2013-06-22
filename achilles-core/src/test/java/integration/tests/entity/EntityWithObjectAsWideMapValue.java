@@ -1,31 +1,33 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.WideRow;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * ColumnFamilyBeanWithObject
+ * BeanWithObjectAsWideMapValue
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
-@WideRow
-public class WideRowBeanWithObject implements Serializable
+public class EntityWithObjectAsWideMapValue
 {
-	private static final long serialVersionUID = 1L;
+
+	public static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;
 
 	@Column
-	private WideMap<Long, Holder> map;
+	private String name;
+
+	@Column(table = "bean_with_widemap_object")
+	private WideMap<Integer, Holder> holders;
 
 	public Long getId()
 	{
@@ -37,19 +39,25 @@ public class WideRowBeanWithObject implements Serializable
 		this.id = id;
 	}
 
-	public WideMap<Long, Holder> getMap()
+	public String getName()
 	{
-		return map;
+		return name;
 	}
 
-	public void setMap(WideMap<Long, Holder> map)
+	public void setName(String name)
 	{
-		this.map = map;
+		this.name = name;
 	}
 
-	public static class Holder implements Serializable
+	public WideMap<Integer, Holder> getHolders()
 	{
-		private static final long serialVersionUID = 1L;
+		return holders;
+	}
+
+	public static class Holder
+	{
+		
+
 		private String name;
 
 		public Holder() {}
@@ -67,5 +75,6 @@ public class WideRowBeanWithObject implements Serializable
 		{
 			this.name = name;
 		}
+
 	}
 }

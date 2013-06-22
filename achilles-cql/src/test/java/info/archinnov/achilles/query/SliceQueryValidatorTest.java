@@ -1,7 +1,7 @@
 package info.archinnov.achilles.query;
 
 import static org.fest.assertions.api.Assertions.*;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
@@ -33,7 +33,7 @@ public class SliceQueryValidatorTest {
     @Before
     public void setUp() throws Exception {
         pm = new PropertyMeta<Void, TweetMultiKey>();
-        MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
         multiKeyProperties.setComponentNames(Arrays.asList("id", "author", "retweetCount"));
 
         Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");

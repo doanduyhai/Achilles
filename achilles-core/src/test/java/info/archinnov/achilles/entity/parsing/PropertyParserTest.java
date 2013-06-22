@@ -8,7 +8,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -37,10 +37,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import parser.entity.ClusteredId;
+import parser.entity.CompoundKey;
 import parser.entity.CorrectMultiKey;
 import parser.entity.CorrectMultiKeyUnorderedKeys;
-import parser.entity.MissingAnnotationClusteredId;
 import parser.entity.MultiKeyNotInstantiable;
 import parser.entity.MultiKeyWithNegativeOrder;
 import parser.entity.MultiKeyWithNoAnnotation;
@@ -118,14 +117,14 @@ public class PropertyParserTest
         {
 
             @EmbeddedId
-            private ClusteredId id;
+            private CompoundKey id;
 
-            public ClusteredId getId()
+            public CompoundKey getId()
             {
                 return id;
             }
 
-            public void setId(ClusteredId id)
+            public void setId(CompoundKey id)
             {
                 this.id = id;
             }
@@ -135,18 +134,18 @@ public class PropertyParserTest
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
         context.hasMultiKeyPrimaryKey(true);
 
-        PropertyMeta<Void, ClusteredId> meta = (PropertyMeta<Void, ClusteredId>) parser
+        PropertyMeta<Void, CompoundKey> meta = (PropertyMeta<Void, CompoundKey>) parser
                 .parse(context);
 
-        Method userIdGetter = ClusteredId.class.getDeclaredMethod("getUserId");
-        Method userIdSetter = ClusteredId.class.getDeclaredMethod("setUserId", Long.class);
+        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
 
-        Method nameGetter = ClusteredId.class.getDeclaredMethod("getName");
-        Method nameSetter = ClusteredId.class.getDeclaredMethod("setName", String.class);
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+        Method nameSetter = CompoundKey.class.getDeclaredMethod("setName", String.class);
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
-        assertThat(meta.getValueClass()).isEqualTo(ClusteredId.class);
-        MultiKeyProperties multiKeyProperties = meta.getMultiKeyProperties();
+        assertThat(meta.getValueClass()).isEqualTo(CompoundKey.class);
+        CompoundKeyProperties multiKeyProperties = meta.getMultiKeyProperties();
         assertThat(multiKeyProperties).isNotNull();
         assertThat(multiKeyProperties.getComponentClasses()).contains(Long.class, String.class);
         assertThat(multiKeyProperties.getComponentNames()).contains("id", "name");
@@ -154,37 +153,6 @@ public class PropertyParserTest
         assertThat(multiKeyProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
         assertThat(context.getPropertyMetas()).hasSize(1);
 
-    }
-
-    @Test
-    public void should_exception_when_clustering_key_missing_annotation() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-
-            @EmbeddedId
-            private MissingAnnotationClusteredId id;
-
-            public MissingAnnotationClusteredId getId()
-            {
-                return id;
-            }
-
-            public void setId(MissingAnnotationClusteredId id)
-            {
-                this.id = id;
-            }
-        }
-
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
-        context.hasMultiKeyPrimaryKey(true);
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx
-                .expectMessage("There should be the same number of @Key than @Column annotation in the class '"
-                        + MissingAnnotationClusteredId.class.getCanonicalName() + "'");
-        parser.parse(context);
     }
 
     @Test
@@ -926,20 +894,18 @@ public class PropertyParserTest
 
         assertThat((Class<CorrectMultiKey>) meta.getKeyClass()).isEqualTo(CorrectMultiKey.class);
 
-        MultiKeyProperties multiKeyProperties = meta.getMultiKeyProperties();
+        assertThat(meta.getComponentGetters()).hasSize(2);
+        assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+        assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
-        assertThat(multiKeyProperties.getComponentGetters()).hasSize(2);
-        assertThat(multiKeyProperties.getComponentGetters().get(0).getName()).isEqualTo("getName");
-        assertThat(multiKeyProperties.getComponentGetters().get(1).getName()).isEqualTo("getRank");
+        assertThat(meta.getComponentSetters()).hasSize(2);
+        assertThat(meta.getComponentSetters().get(0).getName()).isEqualTo("setName");
+        assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
 
-        assertThat(multiKeyProperties.getComponentSetters()).hasSize(2);
-        assertThat(multiKeyProperties.getComponentSetters().get(0).getName()).isEqualTo("setName");
-        assertThat(multiKeyProperties.getComponentSetters().get(1).getName()).isEqualTo("setRank");
-
-        assertThat(multiKeyProperties.getComponentClasses()).hasSize(2);
-        assertThat((Class<String>) multiKeyProperties.getComponentClasses().get(0)).isEqualTo(
+        assertThat(meta.getComponentClasses()).hasSize(2);
+        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(
                 String.class);
-        assertThat((Class<Integer>) multiKeyProperties.getComponentClasses().get(1)).isEqualTo(
+        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(
                 int.class);
     }
 
@@ -975,16 +941,14 @@ public class PropertyParserTest
         assertThat((Class<CorrectMultiKeyUnorderedKeys>) meta.getKeyClass()).isEqualTo(
                 CorrectMultiKeyUnorderedKeys.class);
 
-        MultiKeyProperties multiKeyProperties = meta.getMultiKeyProperties();
+        assertThat(meta.getComponentGetters()).hasSize(2);
+        assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
+        assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
-        assertThat(multiKeyProperties.getComponentGetters()).hasSize(2);
-        assertThat(multiKeyProperties.getComponentGetters().get(0).getName()).isEqualTo("getName");
-        assertThat(multiKeyProperties.getComponentGetters().get(1).getName()).isEqualTo("getRank");
-
-        assertThat(multiKeyProperties.getComponentClasses()).hasSize(2);
-        assertThat((Class<String>) multiKeyProperties.getComponentClasses().get(0)).isEqualTo(
+        assertThat(meta.getComponentClasses()).hasSize(2);
+        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(
                 String.class);
-        assertThat((Class<Integer>) multiKeyProperties.getComponentClasses().get(1)).isEqualTo(
+        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(
                 int.class);
     }
 
@@ -1014,7 +978,7 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_exception_when_no_annotation_in_multi_key() throws Exception
+    public void should_exception_when_no_annotation_in_compound_key() throws Exception
     {
         @SuppressWarnings("unused")
         class Test
@@ -1029,7 +993,7 @@ public class PropertyParserTest
         }
 
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("No field with @Key annotation found in the class '"
+        expectedEx.expectMessage("No field with @Order annotation found in the class '"
                 + MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
         PropertyParsingContext context = newContext(Test.class,
@@ -1059,93 +1023,6 @@ public class PropertyParserTest
 
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("tweets"));
-
-        parser.parse(context);
-    }
-
-    @Test
-    public void should_exception_when_value_of_list_not_serializable() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private List<PropertyParser> parsers;
-
-            public List<PropertyParser> getParsers()
-            {
-                return parsers;
-            }
-
-            public void setParsers(List<PropertyParser> parsers)
-            {
-                this.parsers = parsers;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("List value type of 'parsers' should be Serializable");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("parsers"));
-
-        parser.parse(context);
-    }
-
-    @Test
-    public void should_exception_when_value_of_set_not_serializable() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private Set<PropertyParser> parsers;
-
-            public Set<PropertyParser> getParsers()
-            {
-                return parsers;
-            }
-
-            public void setParsers(Set<PropertyParser> parsers)
-            {
-                this.parsers = parsers;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("Set value type of 'parsers' should be Serializable");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("parsers"));
-
-        parser.parse(context);
-    }
-
-    @Test
-    public void should_exception_when_value_and_key_of_map_not_serializable() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private Map<PropertyParser, PropertyParser> parsers;
-
-            public Map<PropertyParser, PropertyParser> getParsers()
-            {
-                return parsers;
-            }
-
-            public void setParsers(Map<PropertyParser, PropertyParser> parsers)
-            {
-                this.parsers = parsers;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("Map value type of 'parsers' should be Serializable");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("parsers"));
 
         parser.parse(context);
     }

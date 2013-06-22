@@ -38,7 +38,7 @@ public class PropertyMeta<K, V>
     private Method setter;
     private CounterProperties counterProperties;
     private JoinProperties joinProperties;
-    private MultiKeyProperties multiKeyProperties;
+    private CompoundKeyProperties compoundKeyProperties;
     private String externalTableName;
     private Class<?> idClass;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
@@ -163,9 +163,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentGetters()
     {
         List<Method> compGetters = new ArrayList<Method>();
-        if (multiKeyProperties != null)
+        if (compoundKeyProperties != null)
         {
-            compGetters = multiKeyProperties.getComponentGetters();
+            compGetters = compoundKeyProperties.getComponentGetters();
         }
         return compGetters;
     }
@@ -173,9 +173,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentSetters()
     {
         List<Method> compSetters = new ArrayList<Method>();
-        if (multiKeyProperties != null)
+        if (compoundKeyProperties != null)
         {
-            compSetters = multiKeyProperties.getComponentSetters();
+            compSetters = compoundKeyProperties.getComponentSetters();
         }
         return compSetters;
     }
@@ -183,9 +183,9 @@ public class PropertyMeta<K, V>
     public List<Class<?>> getComponentClasses()
     {
         List<Class<?>> compClasses = new ArrayList<Class<?>>();
-        if (multiKeyProperties != null)
+        if (compoundKeyProperties != null)
         {
-            compClasses = multiKeyProperties.getComponentClasses();
+            compClasses = compoundKeyProperties.getComponentClasses();
         }
         return compClasses;
     }
@@ -193,9 +193,9 @@ public class PropertyMeta<K, V>
     public String getCQLOrderingComponent()
     {
         String component = null;
-        if (multiKeyProperties != null)
+        if (compoundKeyProperties != null)
         {
-            return multiKeyProperties.getCQLOrderingComponent();
+            return compoundKeyProperties.getCQLOrderingComponent();
         }
         return component;
     }
@@ -203,9 +203,9 @@ public class PropertyMeta<K, V>
     public List<String> getCQLComponentNames()
     {
         List<String> components = new ArrayList<String>();
-        if (multiKeyProperties != null)
+        if (compoundKeyProperties != null)
         {
-            return Collections.unmodifiableList(multiKeyProperties.getCQLComponentNames());
+            return Collections.unmodifiableList(compoundKeyProperties.getCQLComponentNames());
         }
         return components;
     }
@@ -360,14 +360,14 @@ public class PropertyMeta<K, V>
     }
 
     // TODO to be removed
-    public MultiKeyProperties getMultiKeyProperties()
+    public CompoundKeyProperties getMultiKeyProperties()
     {
-        return multiKeyProperties;
+        return compoundKeyProperties;
     }
 
-    public void setMultiKeyProperties(MultiKeyProperties multiKeyProperties)
+    public void setMultiKeyProperties(CompoundKeyProperties multiKeyProperties)
     {
-        this.multiKeyProperties = multiKeyProperties;
+        this.compoundKeyProperties = multiKeyProperties;
     }
 
     public Class<?> getIdClass()
@@ -468,8 +468,8 @@ public class PropertyMeta<K, V>
         if (joinProperties != null)
             description.append("joinProperties=").append(joinProperties).append(", ");
 
-        if (multiKeyProperties != null)
-            description.append("multiKeyProperties=").append(multiKeyProperties).append(", ");
+        if (compoundKeyProperties != null)
+            description.append("multiKeyProperties=").append(compoundKeyProperties).append(", ");
 
         if (StringUtils.isNotBlank(externalTableName))
             description.append("externalCfName=").append(externalTableName).append(", ");

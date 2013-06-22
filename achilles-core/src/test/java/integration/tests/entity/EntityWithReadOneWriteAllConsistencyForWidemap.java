@@ -2,26 +2,26 @@ package integration.tests.entity;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
 
-import java.io.Serializable;
+
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * BeanWithConsistencyLevelOnClassAndField
+ * BeanWithReadWriteConsistencyForExternalWidemap
  * 
  * @author DuyHai DOAN
  * 
  */
 @Entity
-@Consistency(read = ONE, write = QUORUM)
-public class BeanWithConsistencyLevelOnClassAndWideMapCounter implements Serializable
+@Table(name = "beanWithReadOneWriteAllWideMap")
+public class EntityWithReadOneWriteAllConsistencyForWidemap
 {
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private Long id;
@@ -29,8 +29,16 @@ public class BeanWithConsistencyLevelOnClassAndWideMapCounter implements Seriali
 	@Column
 	private String name;
 
-	@Column(table = "simple_counter_wide_map")
-	private WideMap<Integer, Counter> counterWideMap;
+	@Consistency(read = ONE, write = ALL)
+	@Column(table = "widemap_with_consistency1")
+	private WideMap<Integer, String> wideMap;
+
+	public EntityWithReadOneWriteAllConsistencyForWidemap() {}
+
+	public EntityWithReadOneWriteAllConsistencyForWidemap(Long id, String name) {
+		this.id = id;
+		this.name = name;
+	}
 
 	public Long getId()
 	{
@@ -52,8 +60,8 @@ public class BeanWithConsistencyLevelOnClassAndWideMapCounter implements Seriali
 		this.name = name;
 	}
 
-	public WideMap<Integer, Counter> getCounterWideMap()
+	public WideMap<Integer, String> getWideMap()
 	{
-		return counterWideMap;
+		return wideMap;
 	}
 }

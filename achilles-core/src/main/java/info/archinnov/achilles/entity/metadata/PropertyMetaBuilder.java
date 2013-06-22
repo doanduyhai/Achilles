@@ -24,7 +24,7 @@ public class PropertyMetaBuilder {
     private CounterProperties counterProperties;
 
     private JoinProperties joinProperties;
-    private MultiKeyProperties multiKeyProperties;
+    private CompoundKeyProperties multiKeyProperties;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static PropertyMetaBuilder factory() {
@@ -102,7 +102,7 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder multiKeyProperties(MultiKeyProperties multiKeyProperties) {
+    public PropertyMetaBuilder multiKeyProperties(CompoundKeyProperties multiKeyProperties) {
         this.multiKeyProperties = multiKeyProperties;
         return this;
     }

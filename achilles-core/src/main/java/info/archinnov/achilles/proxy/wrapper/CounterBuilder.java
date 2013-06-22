@@ -44,7 +44,7 @@ public class CounterBuilder {
     }
 
     public static class CounterImpl implements Counter {
-        private static final long serialVersionUID = 1L;
+        
         private final Long value;
         private final ConsistencyLevel writeLevel;
 

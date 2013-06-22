@@ -2,7 +2,7 @@ package integration.tests.entity;
 
 import info.archinnov.achilles.type.Counter;
 
-import java.io.Serializable;
+
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -18,10 +18,10 @@ import javax.persistence.ManyToOne;
  * 
  */
 @Entity
-public class Tweet implements Serializable
+public class Tweet
 {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	@Id
 	private UUID id;

@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.metadata.MultiKeyProperties;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -95,7 +95,7 @@ public class PropertyHelper
     public PropertyHelper() {
     }
 
-    public MultiKeyProperties parseMultiKey(Class<?> keyClass)
+    public CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
     {
         log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
 
@@ -153,37 +153,34 @@ public class PropertyHelper
         Collections.sort(orderList);
         for (Integer order : orderList)
         {
-            Field multiKeyField = components.get(order);
-            Column column = multiKeyField.getAnnotation(Column.class);
-            if (column != null)
+            Field compoundKeyField = components.get(order);
+            Column column = compoundKeyField.getAnnotation(Column.class);
+            if (column != null && isNotBlank(column.name()))
             {
-                if (isNotBlank(column.name()))
-                {
-                    componentNames.add(column.name());
-                }
-                else
-                {
-                    componentNames.add(multiKeyField.getName());
-                }
+                componentNames.add(column.name());
             }
-            componentGetters.add(entityIntrospector.findGetter(keyClass, multiKeyField));
-            componentSetters.add(entityIntrospector.findSetter(keyClass, multiKeyField));
-            componentClasses.add(multiKeyField.getType());
+            else
+            {
+                componentNames.add(compoundKeyField.getName());
+            }
+            componentGetters.add(entityIntrospector.findGetter(keyClass, compoundKeyField));
+            componentSetters.add(entityIntrospector.findSetter(keyClass, compoundKeyField));
+            componentClasses.add(compoundKeyField.getType());
         }
 
         Validator.validateBeanMappingNotEmpty(componentClasses,
-                "No field with @Key annotation found in the class '"
+                "No field with @Order annotation found in the class '"
                         + keyClass.getCanonicalName() + "'");
         Validator.validateInstantiable(keyClass);
         if (componentNames.size() > 0)
         {
             Validator.validateBeanMappingTrue(
                     componentClasses.size() == componentNames.size(),
-                    "There should be the same number of @Key than @Column annotation in the class '"
+                    "There should be the same number of @Order than @Column annotation in the class '"
                             + keyClass.getCanonicalName() + "'");
         }
 
-        MultiKeyProperties multiKeyProperties = new MultiKeyProperties();
+        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
         multiKeyProperties.setComponentClasses(componentClasses);
         multiKeyProperties.setComponentNames(componentNames);
         multiKeyProperties.setComponentGetters(componentGetters);
@@ -249,13 +246,12 @@ public class PropertyHelper
             else
             {
                 List<Method> componentGetters = propertyMeta
-                        .getMultiKeyProperties()
                         .getComponentGetters();
                 String propertyName = propertyMeta.getPropertyName();
 
-                List<Object> startComponentValues = invoker.determineMultiKeyValues(start,
+                List<Object> startComponentValues = invoker.extractCompoundKeyComponents(start,
                         componentGetters);
-                List<Object> endComponentValues = invoker.determineMultiKeyValues(end,
+                List<Object> endComponentValues = invoker.extractCompoundKeyComponents(end,
                         componentGetters);
 
                 if (clusteringId)

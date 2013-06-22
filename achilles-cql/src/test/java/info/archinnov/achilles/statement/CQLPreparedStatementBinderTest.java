@@ -22,7 +22,9 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import parser.entity.ClusteredId;
+import parser.entity.CompoundKey;
+import parser.entity.CompoundKeyWithEnum;
+import parser.entity.CompoundKeyWithEnum.Gender;
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.BoundStatement;
@@ -236,10 +238,10 @@ public class CQLPreparedStatementBinderTest
     }
 
     @Test
-    public void should_bind_for_insert_with_clustered_id() throws Exception
+    public void should_bind_for_insert_with_compound_key() throws Exception
     {
-        Method userIdGetter = ClusteredId.class.getDeclaredMethod("getUserId");
-        Method nameGetter = ClusteredId.class.getDeclaredMethod("getName");
+        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
@@ -258,7 +260,7 @@ public class CQLPreparedStatementBinderTest
         entityMeta.setIdMeta(idMeta);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("age", ageMeta));
 
-        ClusteredId clusteredId = new ClusteredId(11L, "name");
+        CompoundKey clusteredId = new CompoundKey(11L, "name");
 
         when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(clusteredId);
         when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
@@ -282,6 +284,47 @@ public class CQLPreparedStatementBinderTest
 
         assertThat(actual).isSameAs(bs);
         assertThat(boundValues).containsExactly(11L, "name", 30L);
+    }
+
+    @Test
+    public void should_bind_for_insert_with_compound_key_having_enum() throws Exception
+    {
+        Method userIdGetter = CompoundKeyWithEnum.class.getDeclaredMethod("getUserId");
+        Method genderGetter = CompoundKeyWithEnum.class.getDeclaredMethod("getGender");
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .accessors()
+                .type(PropertyType.COMPOUND_ID)
+                .compGetters(userIdGetter, genderGetter)
+                .build();
+
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+
+        CompoundKeyWithEnum compoundKey = new CompoundKeyWithEnum(11L, Gender.MALE);
+
+        when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(compoundKey);
+        when(invoker.getValueFromField(compoundKey, userIdGetter)).thenReturn(11L);
+        when(invoker.getValueFromField(compoundKey, genderGetter)).thenReturn(Gender.MALE);
+
+        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
+        {
+            @Override
+            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
+            {
+                for (Object value : invocation.getArguments())
+                {
+                    boundValues.add(value);
+                }
+                return bs;
+            }
+        });
+
+        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+
+        assertThat(actual).isSameAs(bs);
+        assertThat(boundValues).containsExactly(11L, "MALE");
     }
 
     @Test
