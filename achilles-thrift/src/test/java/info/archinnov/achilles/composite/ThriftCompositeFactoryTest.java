@@ -5,18 +5,12 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.WideMap.BoundingMode;
 import info.archinnov.achilles.type.WideMap.OrderingMode;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import mapping.entity.TweetMultiKey;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import mapping.entity.TweetCompoundKey;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import org.junit.Before;
@@ -48,13 +42,13 @@ public class ThriftCompositeFactoryTest
     private ThriftPropertyHelper helper;
 
     @Mock
-    private MethodInvoker invoker;
+    private ThriftCompoundKeyMapper compoundKeyMapper;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
 
     @Mock
-    private PropertyMeta<TweetMultiKey, String> compoundKeyWideMapMeta;
+    private PropertyMeta<TweetCompoundKey, String> compoundKeyWideMapMeta;
 
     @Before
     public void setUp()
@@ -77,48 +71,21 @@ public class ThriftCompositeFactoryTest
     }
 
     @Test
-    public void should_create_multikey_for_insert() throws Exception
+    public void should_create_for_compound_key_insert() throws Exception
     {
-        UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        TweetMultiKey tweetMultiKey = prepareData(1, "a", uuid);
+        TweetCompoundKey tweetKey = new TweetCompoundKey();
+        Composite comp = new Composite();
 
-        Composite comp = factory.createBaseComposite(compoundKeyWideMapMeta, tweetMultiKey);
+        when(compoundKeyMapper.writeToComposite(tweetKey, compoundKeyWideMapMeta)).thenReturn(comp);
 
-        assertThat(comp.getComponents()).hasSize(3);
-        assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(1);
-        assertThat((String) comp.getComponents().get(1).getValue()).isEqualTo("a");
-        assertThat((UUID) comp.getComponents().get(2).getValue()).isEqualTo(uuid);
-    }
+        Composite actual = factory.createBaseComposite(compoundKeyWideMapMeta, tweetKey);
 
-    @Test
-    public void should_exception_when_missing_value() throws Exception
-    {
-        TweetMultiKey tweetMultiKey = prepareData(1, "a");
-
-        expectedEx.expect(AchillesException.class);
-        expectedEx.expectMessage("There should be 3 values for the key of WideMap 'property'");
-
-        factory.createBaseComposite(compoundKeyWideMapMeta, tweetMultiKey);
-
-    }
-
-    @Test
-    public void should_exception_when_null_value() throws Exception
-    {
-        TweetMultiKey tweetMultiKey = prepareData(1, "a", null);
-
-        expectedEx.expect(AchillesException.class);
-        expectedEx
-                .expectMessage("The values for the for the key of WideMap 'property' should not be null");
-
-        factory.createBaseComposite(compoundKeyWideMapMeta, tweetMultiKey);
-
+        assertThat(actual).isSameAs(comp);
     }
 
     @Test
     public void should_create_for_query() throws Exception
     {
-
         Composite comp = factory.createForQuery(wideMapMeta, 123, LESS_THAN_EQUAL);
 
         assertThat(comp.getComponents()).hasSize(1);
@@ -131,27 +98,6 @@ public class ThriftCompositeFactoryTest
     {
         Composite comp = factory.createForQuery(wideMapMeta, null, LESS_THAN_EQUAL);
         assertThat(comp).isNull();
-    }
-
-    @Test
-    public void should_create_multikey_for_query() throws Exception
-    {
-        List<Object> keyValues = Arrays.asList((Object) 1, "a", null);
-        TweetMultiKey tweetMultiKey = prepareData(1, "a", null);
-
-        when(helper.findLastNonNullIndexForComponents("property", keyValues)).thenReturn(1);
-
-        Composite comp = factory
-                .createForQuery(compoundKeyWideMapMeta, tweetMultiKey, LESS_THAN_EQUAL);
-
-        assertThat(comp.getComponents()).hasSize(2);
-
-        assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
-        assertThat(comp.getComponent(0).getValue()).isEqualTo(1);
-
-        assertThat(comp.getComponent(1).getEquality()).isEqualTo(LESS_THAN_EQUAL);
-        assertThat(comp.getComponent(1).getValue()).isEqualTo("a");
-
     }
 
     @Test
@@ -177,16 +123,12 @@ public class ThriftCompositeFactoryTest
     }
 
     @Test
-    public void should_create_multikey_composites_for_query() throws Exception
+    public void should_create_compound_key_composites_for_query() throws Exception
     {
-        TweetMultiKey tweetKey1 = new TweetMultiKey();
-        TweetMultiKey tweetKey2 = new TweetMultiKey();
-        List<Method> componentGetters = mock(List.class);
-        List<Class<?>> componentClasses = Arrays.asList((Class<?>) Integer.class, String.class,
-                UUID.class);
-        List<Object> keyValues1 = Arrays.asList((Object) 1, "a", null);
-        UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        List<Object> keyValues2 = Arrays.asList((Object) 5, "c", uuid);
+        TweetCompoundKey tweetKey1 = new TweetCompoundKey();
+        TweetCompoundKey tweetKey2 = new TweetCompoundKey();
+        Composite comp1 = new Composite();
+        Composite comp2 = new Composite();
 
         when(
                 helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY,
@@ -196,32 +138,19 @@ public class ThriftCompositeFactoryTest
                         LESS_THAN_EQUAL,
                         GREATER_THAN_EQUAL
                 });
-        when(compoundKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-        when(invoker.extractCompoundKeyComponents(tweetKey1, componentGetters)).thenReturn(keyValues1);
-        when(invoker.extractCompoundKeyComponents(tweetKey2, componentGetters)).thenReturn(keyValues2);
 
-        when(compoundKeyWideMapMeta.getComponentClasses()).thenReturn(componentClasses);
-
-        when(helper.findLastNonNullIndexForComponents("property", keyValues1)).thenReturn(1);
-        when(helper.findLastNonNullIndexForComponents("property", keyValues2)).thenReturn(2);
+        when(compoundKeyMapper.buildCompositeForQuery(tweetKey1, compoundKeyWideMapMeta, LESS_THAN_EQUAL))
+                .thenReturn(comp1);
+        when(compoundKeyMapper.buildCompositeForQuery(tweetKey2, compoundKeyWideMapMeta, GREATER_THAN_EQUAL))
+                .thenReturn(comp2);
 
         Composite[] composites = factory.createForQuery(
-                //
                 compoundKeyWideMapMeta, tweetKey1, tweetKey2, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
                 OrderingMode.ASCENDING);
 
         assertThat(composites).hasSize(2);
-        assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
-        assertThat(composites[0].getComponent(0).getValue()).isEqualTo(1);
-        assertThat(composites[0].getComponent(1).getEquality()).isEqualTo(LESS_THAN_EQUAL);
-        assertThat(composites[0].getComponent(1).getValue()).isEqualTo("a");
-
-        assertThat(composites[1].getComponent(0).getEquality()).isEqualTo(EQUAL);
-        assertThat(composites[1].getComponent(0).getValue()).isEqualTo(5);
-        assertThat(composites[1].getComponent(1).getEquality()).isEqualTo(EQUAL);
-        assertThat(composites[1].getComponent(1).getValue()).isEqualTo("c");
-        assertThat(composites[1].getComponent(2).getEquality()).isEqualTo(GREATER_THAN_EQUAL);
-        assertThat(composites[1].getComponent(2).getValue()).isEqualTo(uuid);
+        assertThat(composites[0]).isSameAs(comp1);
+        assertThat(composites[1]).isSameAs(comp2);
     }
 
     @Test
@@ -339,18 +268,4 @@ public class ThriftCompositeFactoryTest
         assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(21);
     }
 
-    private TweetMultiKey prepareData(Object... objects)
-    {
-        TweetMultiKey tweetMultiKey = new TweetMultiKey();
-        List<Method> componentGetters = mock(List.class);
-        List<Class<?>> componentClasses = Arrays.asList((Class<?>) Integer.class, String.class,
-                UUID.class);
-        List<Object> keyValues = Arrays.asList(objects);
-
-        when(compoundKeyWideMapMeta.getComponentClasses()).thenReturn(componentClasses);
-        when(compoundKeyWideMapMeta.getComponentGetters()).thenReturn(componentGetters);
-        when(invoker.extractCompoundKeyComponents(tweetMultiKey, componentGetters))
-                .thenReturn(keyValues);
-        return tweetMultiKey;
-    }
 }

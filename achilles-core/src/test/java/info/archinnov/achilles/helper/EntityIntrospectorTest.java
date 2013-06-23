@@ -18,7 +18,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import mapping.entity.CompleteBean;
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -48,7 +48,7 @@ public class EntityIntrospectorTest
     private PropertyMeta<Void, Long> idMeta;
 
     @Mock
-    private PropertyMeta<TweetMultiKey, String> wideMapMeta;
+    private PropertyMeta<TweetCompoundKey, String> wideMapMeta;
 
     @Mock
     private Map<Method, PropertyMeta<?, ?>> getterMetas;

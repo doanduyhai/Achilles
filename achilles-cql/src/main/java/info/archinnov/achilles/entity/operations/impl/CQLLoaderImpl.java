@@ -6,7 +6,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,13 +26,11 @@ public class CQLLoaderImpl
 {
     private CQLEntityMapper mapper = new CQLEntityMapper();
     private CQLRowMethodInvoker cqlRowInvoker = new CQLRowMethodInvoker();
-    private MethodInvoker invoker = new MethodInvoker();
 
     public <T> T eagerLoadEntity(CQLPersistenceContext context, Class<T> entityClass)
             throws Exception
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        Object primaryKey = context.getPrimaryKey();
 
         T entity = null;
         Row row = context.eagerLoadEntity();
@@ -41,7 +38,6 @@ public class CQLLoaderImpl
         {
             entity = entityClass.newInstance();
             mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
-            invoker.setValueToField(entity, entityMeta.getIdMeta().getSetter(), primaryKey);
         }
         return entity;
     }

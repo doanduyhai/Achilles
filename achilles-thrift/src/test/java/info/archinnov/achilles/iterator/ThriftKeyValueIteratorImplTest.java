@@ -18,7 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import parser.entity.CorrectMultiKey;
+import parser.entity.CorrectCompoundKey;
 
 /**
  * ThriftKeyValueIteratorImplTest
@@ -31,16 +31,16 @@ public class ThriftKeyValueIteratorImplTest
 {
 
     @InjectMocks
-    private ThriftKeyValueIteratorImpl<CorrectMultiKey, String> iterator;
+    private ThriftKeyValueIteratorImpl<CorrectCompoundKey, String> iterator;
 
     @Mock
-    private ThriftSliceIterator<CorrectMultiKey, String> thriftSliceIterator;
+    private ThriftSliceIterator<CorrectCompoundKey, String> thriftSliceIterator;
 
     @Mock
     private List<Method> componentSetters;
 
     @Mock
-    private PropertyMeta<CorrectMultiKey, String> multiKeyWideMapMeta;
+    private PropertyMeta<CorrectCompoundKey, String> multiKeyWideMapMeta;
 
     @Mock
     private ThriftKeyValueFactory factory;
@@ -52,7 +52,7 @@ public class ThriftKeyValueIteratorImplTest
     public void setUp()
     {
         Whitebox.setInternalState(iterator, "factory", factory);
-        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
     }
 
     @Test
@@ -69,17 +69,17 @@ public class ThriftKeyValueIteratorImplTest
     @Test
     public void should_give_next_keyvalue() throws Exception
     {
-        KeyValue<CorrectMultiKey, String> keyValue = mock(KeyValue.class);
+        KeyValue<CorrectCompoundKey, String> keyValue = mock(KeyValue.class);
         HColumn<Composite, String> hColumn = mock(HColumn.class);
 
         when(thriftSliceIterator.hasNext()).thenReturn(true, false);
         when(thriftSliceIterator.next()).thenReturn(hColumn);
-        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
         when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
         when(factory.createKeyValue(context, multiKeyWideMapMeta, hColumn)).thenReturn(keyValue);
 
-        KeyValue<CorrectMultiKey, String> result = iterator.next();
+        KeyValue<CorrectCompoundKey, String> result = iterator.next();
 
         assertThat(result).isSameAs(keyValue);
     }
@@ -87,17 +87,17 @@ public class ThriftKeyValueIteratorImplTest
     @Test
     public void should_give_next_key() throws Exception
     {
-        CorrectMultiKey key = mock(CorrectMultiKey.class);
+        CorrectCompoundKey key = mock(CorrectCompoundKey.class);
         HColumn<Composite, String> hColumn = mock(HColumn.class);
 
         when(thriftSliceIterator.hasNext()).thenReturn(true, false);
         when(thriftSliceIterator.next()).thenReturn(hColumn);
-        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
         when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
         when(factory.createKey(multiKeyWideMapMeta, hColumn)).thenReturn(key);
 
-        CorrectMultiKey result = iterator.nextKey();
+        CorrectCompoundKey result = iterator.nextKey();
 
         assertThat(result).isSameAs(key);
     }
@@ -110,7 +110,7 @@ public class ThriftKeyValueIteratorImplTest
 
         when(thriftSliceIterator.hasNext()).thenReturn(true, false);
         when(thriftSliceIterator.next()).thenReturn(hColumn);
-        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
         when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
         when(factory.createValue(context, multiKeyWideMapMeta, hColumn)).thenReturn(value);
@@ -128,7 +128,7 @@ public class ThriftKeyValueIteratorImplTest
 
         when(thriftSliceIterator.hasNext()).thenReturn(true, false);
         when(thriftSliceIterator.next()).thenReturn(hColumn);
-        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectMultiKey.class);
+        when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
         when(multiKeyWideMapMeta.getComponentSetters()).thenReturn(componentSetters);
 
         when(factory.createTtl(hColumn)).thenReturn(ttl);

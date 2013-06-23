@@ -1,15 +1,12 @@
 package info.archinnov.achilles.composite;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
+import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.ThriftPropertyHelper;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.WideMap;
 import info.archinnov.achilles.validation.Validator;
-import java.util.ArrayList;
-import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
@@ -27,7 +24,7 @@ public class ThriftCompositeFactory
     private static final Logger log = LoggerFactory.getLogger(ThriftCompositeFactory.class);
 
     private ThriftPropertyHelper helper = new ThriftPropertyHelper();
-    private MethodInvoker invoker = new MethodInvoker();
+    private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
 
     public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T key)
     {
@@ -50,30 +47,7 @@ public class ThriftCompositeFactory
         }
         else
         {
-            log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
-            List<Serializer<Object>> componentSerializers = getComponentSerializers(propertyMeta
-                    .getComponentClasses());
-            List<Object> keyComponents = invoker.extractCompoundKeyComponents(key,
-                    propertyMeta.getComponentGetters());
-            int srzCount = componentSerializers.size();
-            int valueCount = keyComponents.size();
-
-            Validator.validateTrue(srzCount == valueCount, "There should be " + srzCount
-                    + " values for the key of WideMap '" + propertyName + "'");
-
-            for (Object value : keyComponents)
-            {
-                Validator.validateNotNull(value, "The values for the for the key of WideMap '"
-                        + propertyName + "' should not be null");
-            }
-
-            for (int i = 0; i < srzCount; i++)
-            {
-                Serializer<Object> srz = componentSerializers.get(i);
-                composite.setComponent(i, keyComponents.get(i), srz, srz
-                        .getComparatorType()
-                        .getTypeName());
-            }
+            composite = compoundKeyMapper.writeToComposite(key, propertyMeta);
         }
         return composite;
     }
@@ -84,7 +58,6 @@ public class ThriftCompositeFactory
         log.trace("Creating query composite for propertyMeta {}", propertyMeta.getPropertyName());
 
         Composite composite = new Composite();
-        String propertyName = propertyMeta.getPropertyName();
 
         if (propertyMeta.isSingleKey())
         {
@@ -101,49 +74,9 @@ public class ThriftCompositeFactory
         }
         else
         {
-            log.trace("PropertyMeta {} is multi key", propertyMeta.getPropertyName());
-
-            List<Serializer<Object>> componentSerializers = getComponentSerializers(propertyMeta
-                    .getComponentClasses());
-
-            List<Object> keyComponents = invoker.extractCompoundKeyComponents(key,
-                    propertyMeta.getComponentGetters());
-            int srzCount = componentSerializers.size();
-            int valueCount = keyComponents.size();
-
-            Validator.validateTrue(srzCount >= valueCount, "There should be at most" + srzCount
-                    + " values for the key of WideMap '" + propertyName + "'");
-
-            int lastNotNullIndex = helper
-                    .findLastNonNullIndexForComponents(propertyName, keyComponents);
-
-            for (int i = 0; i <= lastNotNullIndex; i++)
-            {
-                Serializer<Object> srz = componentSerializers.get(i);
-                Object value = keyComponents.get(i);
-                if (i < lastNotNullIndex)
-                {
-                    composite.setComponent(i, value, srz, srz.getComparatorType().getTypeName(),
-                            EQUAL);
-                }
-                else
-                {
-                    composite.setComponent(i, value, srz, srz.getComparatorType().getTypeName(),
-                            equality);
-                }
-            }
+            composite = compoundKeyMapper.buildCompositeForQuery(key, propertyMeta, equality);
         }
         return composite;
-    }
-
-    private List<Serializer<Object>> getComponentSerializers(List<Class<?>> componentClasses)
-    {
-        List<Serializer<Object>> componentSerializers = new ArrayList<Serializer<Object>>();
-        for (Class<?> clazz : componentClasses)
-        {
-            componentSerializers.add(ThriftSerializerTypeInferer.getSerializer(clazz));
-        }
-        return componentSerializers;
     }
 
     public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,

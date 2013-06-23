@@ -1,7 +1,9 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * CompoundKeyWithEnum
@@ -9,39 +11,27 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
+@CompoundKey
 public class CompoundKeyWithEnum
 {
-    @Order(1)
+
     private Long index;
 
-    @Order(2)
     private Type type;
 
-    public CompoundKeyWithEnum() {
-    }
-
-    public CompoundKeyWithEnum(Long index, Type type) {
+    @JsonCreator
+    public CompoundKeyWithEnum(@Order(1) @JsonProperty("index") Long index,
+            @Order(2) @JsonProperty("type") Type type) {
         this.index = index;
         this.type = type;
     }
 
-    public Long getIndex()
-    {
+    public Long getIndex() {
         return index;
-    }
-
-    public void setIndex(Long index)
-    {
-        this.index = index;
     }
 
     public Type getType() {
         return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public static enum Type

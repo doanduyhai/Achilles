@@ -29,7 +29,7 @@ public class MethodInvoker
             for (Method getter : componentGetters)
             {
                 Object key = getValueFromField(compoundKey, getter);
-                key = getPossibleEnumName(key);
+                //key = getPossibleEnumName(key);
                 compoundComponents.add(key);
             }
         }

@@ -10,7 +10,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,9 +57,6 @@ public class CQLLoaderImplTest
     private CQLRowMethodInvoker cqlRowInvoker;
 
     @Mock
-    private MethodInvoker invoker;
-
-    @Mock
     private Row row;
 
     @Mock
@@ -103,14 +99,12 @@ public class CQLLoaderImplTest
         Long id = RandomUtils.nextLong();
         when(context.eagerLoadEntity()).thenReturn(row);
         when(context.getEntityMeta()).thenReturn(entityMeta);
-        when(context.getPrimaryKey()).thenReturn(id);
 
         CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
         assertThat(actual).isInstanceOf(CompleteBean.class);
 
         verify(mapper).setEagerPropertiesToEntity(row, entityMeta, actual);
-        verify(invoker).setValueToField(any(CompleteBean.class), eq(idMeta.getSetter()), eq(id));
     }
 
     @Test

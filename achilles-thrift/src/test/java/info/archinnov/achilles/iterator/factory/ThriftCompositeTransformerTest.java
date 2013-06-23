@@ -4,21 +4,25 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
+import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 import java.util.Arrays;
 import java.util.List;
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 import mapping.entity.UserBean;
+import me.prettyprint.cassandra.model.HCounterColumnImpl;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.beans.HCounterColumn;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +50,7 @@ public class ThriftCompositeTransformerTest
     private ThriftCompositeTransformer transformer;
 
     @Mock
-    private ThriftPropertyHelper helper;
+    private ThriftCompoundKeyMapper compoundKeyMapper;
 
     @Mock
     private ThriftEntityProxifier proxifier;
@@ -62,7 +66,7 @@ public class ThriftCompositeTransformerTest
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(transformer, "helper", helper);
+        Whitebox.setInternalState(transformer, "compoundKeyMapper", compoundKeyMapper);
     }
 
     @Test
@@ -93,17 +97,17 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
         HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-        PropertyMeta<TweetMultiKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
-                TweetMultiKey.class, String.class).build();
+        PropertyMeta<TweetCompoundKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
+                TweetCompoundKey.class, String.class).build();
 
-        TweetMultiKey multiKey1 = new TweetMultiKey();
-        TweetMultiKey multiKey2 = new TweetMultiKey();
+        TweetCompoundKey multiKey1 = new TweetCompoundKey();
+        TweetCompoundKey multiKey2 = new TweetCompoundKey();
 
-        when(helper.buildComponentsFromComposite(propertyMeta, hCol1.getName().getComponents()))
+        when(compoundKeyMapper.readFromComposite(propertyMeta, hCol1.getName().getComponents()))
                 .thenReturn(multiKey1);
-        when(helper.buildComponentsFromComposite(propertyMeta, hCol2.getName().getComponents()))
+        when(compoundKeyMapper.readFromComposite(propertyMeta, hCol2.getName().getComponents()))
                 .thenReturn(multiKey2);
-        List<TweetMultiKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+        List<TweetCompoundKey> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
                 transformer.buildKeyTransformer(propertyMeta));
 
         assertThat(keys).containsExactly(multiKey1, multiKey2);
@@ -224,6 +228,58 @@ public class ThriftCompositeTransformerTest
         assertThat(keyValues.get(1).getKey()).isEqualTo(12);
         assertThat(keyValues.get(1).getValue()).isEqualTo("test2");
         assertThat(keyValues.get(1).getTtl()).isEqualTo(789);
+    }
+
+    @Test
+    public void should_counter_key_value_transformer() throws Exception {
+        Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
+
+        HCounterColumn<Composite> hCol1 = new HCounterColumnImpl<Composite>(comp1, 11L);
+        HCounterColumn<Composite> hCol2 = new HCounterColumnImpl<Composite>(comp2, 12L);
+
+        PropertyMeta<Integer, Counter> propertyMeta = PropertyMetaTestBuilder
+                .noClass(Integer.class, Counter.class)
+                .type(WIDE_MAP)
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .build();
+
+        List<KeyValue<Integer, Counter>> keyValues = Lists.
+                transform(Arrays.asList(hCol1, hCol2),
+                        transformer.buildCounterKeyValueTransformer(context, propertyMeta));
+
+        assertThat(keyValues).hasSize(2);
+
+        assertThat(keyValues.get(0).getKey()).isEqualTo(11);
+        assertThat(keyValues.get(0).getValue()).isInstanceOf(ThriftCounterWrapper.class);
+
+        assertThat(keyValues.get(1).getKey()).isEqualTo(12);
+        assertThat(keyValues.get(1).getValue()).isInstanceOf(ThriftCounterWrapper.class);
+
+        List<Integer> keys = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildCounterKeyTransformer(propertyMeta));
+
+        assertThat(keys).hasSize(2);
+
+        assertThat(keys.get(0)).isEqualTo(11);
+        assertThat(keys.get(1)).isEqualTo(12);
+
+        List<Counter> values = Lists.transform(Arrays.asList(hCol1, hCol2),
+                transformer.buildCounterValueTransformer(context, propertyMeta));
+
+        assertThat(values).hasSize(2);
+        assertThat(values.get(0)).isInstanceOf(ThriftCounterWrapper.class);
+        assertThat(values.get(1)).isInstanceOf(ThriftCounterWrapper.class);
+    }
+
+    @Test
+    public void should_build_compound_counter_key() throws Exception {
+        Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
+        Composite comp2 = CompositeTestBuilder.builder().values(12).buildSimple();
+
+        HCounterColumn<Composite> hCol1 = new HCounterColumnImpl<Composite>(comp1, 11L);
+        HCounterColumn<Composite> hCol2 = new HCounterColumnImpl<Composite>(comp2, 12L);
+
     }
 
 }

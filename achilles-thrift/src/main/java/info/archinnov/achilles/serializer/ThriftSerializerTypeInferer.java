@@ -7,21 +7,36 @@ public class ThriftSerializerTypeInferer {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> Serializer<T> getSerializer(Class<?> valueClass) {
-        Serializer srz = SerializerTypeInferer.getSerializer(valueClass);
-        if (srz == null || srz == ThriftSerializerUtils.OBJECT_SRZ)
+        if (valueClass == null)
         {
-            srz = ThriftSerializerUtils.STRING_SRZ;
+            return null;
         }
-        return srz;
+
+        if (valueClass.isEnum())
+        {
+            return new ThriftEnumSerializer(valueClass);
+        }
+
+        Serializer<T> serializer = SerializerTypeInferer.getSerializer(valueClass);
+
+        if (serializer == null || serializer.equals(ThriftSerializerUtils.OBJECT_SRZ))
+        {
+            return SerializerTypeInferer.getSerializer(String.class);
+        }
+        else
+        {
+            return serializer;
+        }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> Serializer<T> getSerializer(Object value) {
-        Serializer srz = SerializerTypeInferer.getSerializer(value);
-        if (srz == null || srz == ThriftSerializerUtils.OBJECT_SRZ)
+        if (value == null)
         {
-            srz = ThriftSerializerUtils.STRING_SRZ;
+            return null;
         }
-        return srz;
+
+        Class<?> valueClass = value.getClass();
+
+        return getSerializer(valueClass);
     }
 }

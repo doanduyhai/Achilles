@@ -19,7 +19,7 @@ public class BeanWithMultiKeyJoinColumnAsWideRow
 	private Long id;
 
 	@JoinColumn(table = "my_wide_row_cf")
-	private WideMap<CorrectMultiKey, String> wideMap;
+	private WideMap<CorrectCompoundKey, String> wideMap;
 
 	public Long getId()
 	{
@@ -31,12 +31,12 @@ public class BeanWithMultiKeyJoinColumnAsWideRow
 		this.id = id;
 	}
 
-	public WideMap<CorrectMultiKey, String> getWideMap()
+	public WideMap<CorrectCompoundKey, String> getWideMap()
 	{
 		return wideMap;
 	}
 
-	public void setWideMap(WideMap<CorrectMultiKey, String> wideMap)
+	public void setWideMap(WideMap<CorrectCompoundKey, String> wideMap)
 	{
 		this.wideMap = wideMap;
 	}

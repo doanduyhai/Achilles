@@ -1,35 +1,20 @@
 package info.archinnov.achilles.helper;
 
-import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
-import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.persistence.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +30,6 @@ public class PropertyHelper
 
     public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
     protected EntityIntrospector entityIntrospector = new EntityIntrospector();
-    private MethodInvoker invoker = new MethodInvoker();
 
     static
     {
@@ -93,214 +77,6 @@ public class PropertyHelper
     }
 
     public PropertyHelper() {
-    }
-
-    public CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
-    {
-        log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
-
-        List<Class<?>> componentClasses = new ArrayList<Class<?>>();
-        List<String> componentNames = new ArrayList<String>();
-        List<Method> componentGetters = new ArrayList<Method>();
-        List<Method> componentSetters = new ArrayList<Method>();
-
-        int keySum = 0;
-        int keyCount = 0;
-        Map<Integer, Field> components = new HashMap<Integer, Field>();
-
-        Set<Integer> orders = new HashSet<Integer>();
-        for (Field multiKeyField : keyClass.getDeclaredFields())
-        {
-            Order keyAnnotation = multiKeyField.getAnnotation(Order.class);
-            if (keyAnnotation != null)
-            {
-                keyCount++;
-                int order = keyAnnotation.value();
-                if (orders.contains(order))
-                {
-                    throw new AchillesBeanMappingException("The order '" + order
-                            + "' is duplicated in MultiKey class '" + keyClass.getCanonicalName()
-                            + "'");
-                }
-                else
-                {
-                    orders.add(order);
-                }
-                keySum += order;
-
-                Class<?> keySubType = multiKeyField.getType();
-                PropertyParsingValidator.validateAllowedTypes(
-                        keySubType,
-                        allowedTypes,
-                        "The class '" + keySubType.getCanonicalName()
-                                + "' is not a valid key type for the MultiKey class '"
-                                + keyClass.getCanonicalName()
-                                + "'");
-
-                components.put(keyAnnotation.value(), multiKeyField);
-
-            }
-        }
-
-        int check = (keyCount * (keyCount + 1)) / 2;
-
-        log.debug("Validate key ordering multikey class {} ", keyClass.getCanonicalName());
-
-        Validator.validateBeanMappingTrue(keySum == check,
-                "The key orders is wrong for MultiKey class '" + keyClass.getCanonicalName() + "'");
-
-        List<Integer> orderList = new ArrayList<Integer>(components.keySet());
-        Collections.sort(orderList);
-        for (Integer order : orderList)
-        {
-            Field compoundKeyField = components.get(order);
-            Column column = compoundKeyField.getAnnotation(Column.class);
-            if (column != null && isNotBlank(column.name()))
-            {
-                componentNames.add(column.name());
-            }
-            else
-            {
-                componentNames.add(compoundKeyField.getName());
-            }
-            componentGetters.add(entityIntrospector.findGetter(keyClass, compoundKeyField));
-            componentSetters.add(entityIntrospector.findSetter(keyClass, compoundKeyField));
-            componentClasses.add(compoundKeyField.getType());
-        }
-
-        Validator.validateBeanMappingNotEmpty(componentClasses,
-                "No field with @Order annotation found in the class '"
-                        + keyClass.getCanonicalName() + "'");
-        Validator.validateInstantiable(keyClass);
-        if (componentNames.size() > 0)
-        {
-            Validator.validateBeanMappingTrue(
-                    componentClasses.size() == componentNames.size(),
-                    "There should be the same number of @Order than @Column annotation in the class '"
-                            + keyClass.getCanonicalName() + "'");
-        }
-
-        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
-        multiKeyProperties.setComponentClasses(componentClasses);
-        multiKeyProperties.setComponentNames(componentNames);
-        multiKeyProperties.setComponentGetters(componentGetters);
-        multiKeyProperties.setComponentSetters(componentSetters);
-
-        log.trace("Built multi key properties : {}", multiKeyProperties);
-        return multiKeyProperties;
-    }
-
-    public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
-    {
-        boolean nullFlag = false;
-        int lastNotNullIndex = 0;
-        for (Object keyValue : keyValues)
-        {
-            if (keyValue != null)
-            {
-                if (nullFlag)
-                {
-                    throw new IllegalArgumentException(
-                            "There should not be any null value between two non-null keys of WideMap '"
-                                    + propertyName + "'");
-                }
-                lastNotNullIndex++;
-            }
-            else
-            {
-                nullFlag = true;
-            }
-        }
-        lastNotNullIndex--;
-
-        log.trace("Last non null index for components of property {} : {}", propertyName,
-                lastNotNullIndex);
-        return lastNotNullIndex;
-    }
-
-    public <K> void checkBounds(PropertyMeta<?, ?> propertyMeta, K start, K end,
-            WideMap.OrderingMode ordering,
-            boolean clusteringId)
-    {
-        log.trace("Check composites {} / {} with respect to ordering mode {}", start, end,
-                ordering.name());
-        if (start != null && end != null)
-        {
-            if (propertyMeta.isSingleKey())
-            {
-                @SuppressWarnings("unchecked")
-                Comparable<K> startComp = (Comparable<K>) start;
-
-                if (WideMap.OrderingMode.DESCENDING.equals(ordering))
-                {
-                    Validator
-                            .validateTrue(startComp.compareTo(end) >= 0,
-                                    "For reverse range query, start value should be greater or equal to end value");
-                }
-                else
-                {
-                    Validator.validateTrue(startComp.compareTo(end) <= 0,
-                            "For range query, start value should be lesser or equal to end value");
-                }
-            }
-            else
-            {
-                List<Method> componentGetters = propertyMeta
-                        .getComponentGetters();
-                String propertyName = propertyMeta.getPropertyName();
-
-                List<Object> startComponentValues = invoker.extractCompoundKeyComponents(start,
-                        componentGetters);
-                List<Object> endComponentValues = invoker.extractCompoundKeyComponents(end,
-                        componentGetters);
-
-                if (clusteringId)
-                {
-                    Validator.validateNotNull(startComponentValues.get(0),
-                            "Partition key should not be null for start clustering key : "
-                                    + startComponentValues);
-                    Validator.validateNotNull(endComponentValues.get(0),
-                            "Partition key should not be null for end clustering key : "
-                                    + endComponentValues);
-                    Validator.validateTrue(
-                            startComponentValues.get(0).equals(endComponentValues.get(0)),
-                            "Partition key should be equals for start and end clustering keys : ["
-                                    + startComponentValues + "," + endComponentValues + "]");
-                }
-
-                findLastNonNullIndexForComponents(propertyName, startComponentValues);
-                findLastNonNullIndexForComponents(propertyName, endComponentValues);
-
-                for (int i = 0; i < startComponentValues.size(); i++)
-                {
-
-                    @SuppressWarnings("unchecked")
-                    Comparable<Object> startValue = (Comparable<Object>) startComponentValues
-                            .get(i);
-                    Object endValue = endComponentValues.get(i);
-
-                    if (WideMap.OrderingMode.DESCENDING.equals(ordering))
-                    {
-                        if (startValue != null && endValue != null)
-                        {
-                            Validator
-                                    .validateTrue(startValue.compareTo(endValue) >= 0,
-                                            "For multiKey descending range query, startKey value should be greater or equal to end endKey");
-                        }
-
-                    }
-                    else
-                    {
-                        if (startValue != null && endValue != null)
-                        {
-                            Validator
-                                    .validateTrue(startValue.compareTo(endValue) <= 0,
-                                            "For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @SuppressWarnings("unchecked")

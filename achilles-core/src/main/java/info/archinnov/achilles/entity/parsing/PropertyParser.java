@@ -3,9 +3,9 @@ package info.archinnov.achilles.entity.parsing;
 import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.*;
-import info.archinnov.achilles.annotations.MultiKey;
-import info.archinnov.achilles.entity.metadata.CounterProperties;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -43,6 +43,7 @@ public class PropertyParser
     private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
     private PropertyHelper propertyHelper = new PropertyHelper();
+    private CompoundKeyParser compoundKeyParser = new CompoundKeyParser();
     private EntityIntrospector entityIntrospector = new EntityIntrospector();
     private PropertyParsingValidator validator = new PropertyParsingValidator();
 
@@ -85,7 +86,7 @@ public class PropertyParser
         }
         else if (context.isMultiKeyPrimaryKey())
         {
-            propertyMeta = parseClusteredId(context);
+            propertyMeta = parseCompoundId(context);
         }
         else if (context.isPrimaryKey())
         {
@@ -100,7 +101,7 @@ public class PropertyParser
         return propertyMeta;
     }
 
-    protected PropertyMeta<?, ?> parseClusteredId(PropertyParsingContext context)
+    protected PropertyMeta<?, ?> parseCompoundId(PropertyParsingContext context)
     {
         log.debug("Parsing property {} as multikey id of entity class {}", context
                 .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
@@ -410,12 +411,12 @@ public class PropertyParser
 
     private CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
     {
-        log.trace("Parsing wide map multi key class", keyClass.getCanonicalName());
+        log.trace("Parsing compound key class", keyClass.getCanonicalName());
         CompoundKeyProperties compoundKeyProperties = null;
 
-        if (keyClass.getAnnotation(MultiKey.class) != null)
+        if (keyClass.getAnnotation(CompoundKey.class) != null)
         {
-            compoundKeyProperties = propertyHelper.parseCompoundKey(keyClass);
+            compoundKeyProperties = compoundKeyParser.parseCompoundKey(keyClass);
         }
         else
         {
@@ -425,10 +426,10 @@ public class PropertyParser
                             allowedTypes,
                             "The class '"
                                     + keyClass.getCanonicalName()
-                                    + "' is not allowed as WideMap key. Did you forget to implement MultiKey interface ?");
+                                    + "' is not allowed as WideMap key. Did you forget to add @CompoundKey annotation ?");
         }
 
-        log.trace("Built multi key properties", compoundKeyProperties);
+        log.trace("Built compound key properties", compoundKeyProperties);
         return compoundKeyProperties;
     }
 

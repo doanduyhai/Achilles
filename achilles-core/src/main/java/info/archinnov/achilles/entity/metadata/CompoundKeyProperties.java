@@ -1,12 +1,10 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.helper.LoggerHelper.fqcnToStringFn;
-
+import static info.archinnov.achilles.helper.LoggerHelper.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
-
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
@@ -19,80 +17,90 @@ import com.google.common.collect.Lists;
  */
 public class CompoundKeyProperties
 {
-	private List<Class<?>> componentClasses;
-	private List<String> componentNames;
-	private List<Method> componentGetters;
-	private List<Method> componentSetters;
+    private List<Class<?>> componentClasses;
+    private List<String> componentNames;
+    private List<Method> componentGetters;
+    private List<Method> componentSetters;
+    private Constructor<?> constructor;
 
-	private Function<String, String> lowerCase = new Function<String, String>()
-	{
-		public String apply(String name)
-		{
-			return name.toLowerCase();
-		}
-	};
+    private Function<String, String> lowerCase = new Function<String, String>()
+    {
+        @Override
+        public String apply(String name)
+        {
+            return name.toLowerCase();
+        }
+    };
 
-	public String getCQLOrderingComponent()
-	{
-		String component = null;
-		if (componentNames.size() > 1)
-		{
-			return componentNames.get(1).toLowerCase();
-		}
-		return component;
-	}
+    public String getCQLOrderingComponent()
+    {
+        String component = null;
+        if (componentNames.size() > 1)
+        {
+            return componentNames.get(1).toLowerCase();
+        }
+        return component;
+    }
 
-	public List<Class<?>> getComponentClasses()
-	{
-		return componentClasses;
-	}
+    public List<Class<?>> getComponentClasses()
+    {
+        return componentClasses;
+    }
 
-	public void setComponentClasses(List<Class<?>> componentClasses)
-	{
-		this.componentClasses = componentClasses;
-	}
+    public void setComponentClasses(List<Class<?>> componentClasses)
+    {
+        this.componentClasses = componentClasses;
+    }
 
-	public List<Method> getComponentGetters()
-	{
-		return componentGetters;
-	}
+    public List<Method> getComponentGetters()
+    {
+        return componentGetters;
+    }
 
-	public void setComponentGetters(List<Method> componentGetters)
-	{
-		this.componentGetters = componentGetters;
-	}
+    public void setComponentGetters(List<Method> componentGetters)
+    {
+        this.componentGetters = componentGetters;
+    }
 
-	public List<Method> getComponentSetters()
-	{
-		return componentSetters;
-	}
+    public List<Method> getComponentSetters()
+    {
+        return componentSetters;
+    }
 
-	public void setComponentSetters(List<Method> componentSetters)
-	{
-		this.componentSetters = componentSetters;
-	}
+    public void setComponentSetters(List<Method> componentSetters)
+    {
+        this.componentSetters = componentSetters;
+    }
 
-	public List<String> getComponentNames()
-	{
-		return componentNames;
-	}
+    public List<String> getComponentNames()
+    {
+        return componentNames;
+    }
 
-	public List<String> getCQLComponentNames()
-	{
-		return FluentIterable.from(componentNames).transform(lowerCase).toImmutableList();
-	}
+    public List<String> getCQLComponentNames()
+    {
+        return FluentIterable.from(componentNames).transform(lowerCase).toImmutableList();
+    }
 
-	public void setComponentNames(List<String> componentNames)
-	{
-		this.componentNames = componentNames;
-	}
+    public void setComponentNames(List<String> componentNames)
+    {
+        this.componentNames = componentNames;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "MultiKeyProperties [componentClasses=["
-				+ StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ",")
-				+ "], componentNames=" + componentNames + "]";
-	}
+    public <T> Constructor<T> getConstructor() {
+        return (Constructor<T>) constructor;
+    }
+
+    public void setConstructor(Constructor<?> constructor) {
+        this.constructor = constructor;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "MultiKeyProperties [componentClasses=["
+                + StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ",")
+                + "], componentNames=" + componentNames + "]";
+    }
 
 }

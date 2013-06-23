@@ -2,11 +2,11 @@ package info.archinnov.achilles.statement;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.MethodInvoker;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,8 +23,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import parser.entity.CompoundKey;
-import parser.entity.CompoundKeyWithEnum;
-import parser.entity.CompoundKeyWithEnum.Gender;
 import testBuilders.CompleteBeanTestBuilder;
 import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.BoundStatement;
@@ -46,6 +44,9 @@ public class CQLPreparedStatementBinderTest
 
     @Mock
     private MethodInvoker invoker;
+
+    @Mock
+    private CQLCompoundKeyMapper mapper;
 
     @Mock
     private PreparedStatement ps;
@@ -240,14 +241,11 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_insert_with_compound_key() throws Exception
     {
-        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
                 .type(PropertyType.COMPOUND_ID)
-                .compGetters(userIdGetter, nameGetter)
                 .build();
 
         PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
@@ -260,11 +258,11 @@ public class CQLPreparedStatementBinderTest
         entityMeta.setIdMeta(idMeta);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("age", ageMeta));
 
-        CompoundKey clusteredId = new CompoundKey(11L, "name");
+        CompoundKey compoundKey = new CompoundKey(11L, "name");
 
-        when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(clusteredId);
-        when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
-        when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
+        when(mapper.extractComponents(compoundKey, idMeta)).thenReturn(Arrays.<Object> asList(11L, "name"));
+
+        when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(compoundKey);
         when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(30L);
 
         when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
@@ -284,47 +282,6 @@ public class CQLPreparedStatementBinderTest
 
         assertThat(actual).isSameAs(bs);
         assertThat(boundValues).containsExactly(11L, "name", 30L);
-    }
-
-    @Test
-    public void should_bind_for_insert_with_compound_key_having_enum() throws Exception
-    {
-        Method userIdGetter = CompoundKeyWithEnum.class.getDeclaredMethod("getUserId");
-        Method genderGetter = CompoundKeyWithEnum.class.getDeclaredMethod("getGender");
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .accessors()
-                .type(PropertyType.COMPOUND_ID)
-                .compGetters(userIdGetter, genderGetter)
-                .build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
-
-        CompoundKeyWithEnum compoundKey = new CompoundKeyWithEnum(11L, Gender.MALE);
-
-        when(invoker.getValueFromField(entity, idMeta.getGetter())).thenReturn(compoundKey);
-        when(invoker.getValueFromField(compoundKey, userIdGetter)).thenReturn(11L);
-        when(invoker.getValueFromField(compoundKey, genderGetter)).thenReturn(Gender.MALE);
-
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
-
-        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
-
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(11L, "MALE");
     }
 
     @Test

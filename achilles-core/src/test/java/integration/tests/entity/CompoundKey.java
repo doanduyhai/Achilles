@@ -1,6 +1,5 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
@@ -9,7 +8,7 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
+@info.archinnov.achilles.annotations.CompoundKey
 public class CompoundKey
 {
     @Order(1)

@@ -9,7 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 
 /**
  * MultiKeyColumnFamilyBean
@@ -28,7 +28,7 @@ public class MultiKeyColumnFamilyBean
 	private Long id;
 
 	@Column
-	private WideMap<TweetMultiKey, String> values;
+	private WideMap<TweetCompoundKey, String> values;
 
 	public Long getId()
 	{
@@ -40,12 +40,12 @@ public class MultiKeyColumnFamilyBean
 		this.id = id;
 	}
 
-	public WideMap<TweetMultiKey, String> getValues()
+	public WideMap<TweetCompoundKey, String> getValues()
 	{
 		return values;
 	}
 
-	public void setValues(WideMap<TweetMultiKey, String> values)
+	public void setValues(WideMap<TweetCompoundKey, String> values)
 	{
 		this.values = values;
 	}

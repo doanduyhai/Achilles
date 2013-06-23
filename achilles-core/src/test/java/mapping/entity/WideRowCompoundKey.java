@@ -1,6 +1,6 @@
 package mapping.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
@@ -9,8 +9,8 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class WideRowMultiKey
+@CompoundKey
+public class WideRowCompoundKey
 {
     @Order(1)
     private Long index;
@@ -18,10 +18,10 @@ public class WideRowMultiKey
     @Order(2)
     private String name;
 
-    public WideRowMultiKey() {
+    public WideRowCompoundKey() {
     }
 
-    public WideRowMultiKey(Long index, String name) {
+    public WideRowCompoundKey(Long index, String name) {
         this.index = index;
         this.name = name;
     }

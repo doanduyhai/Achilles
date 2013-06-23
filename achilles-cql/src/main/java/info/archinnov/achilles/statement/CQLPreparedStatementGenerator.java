@@ -60,19 +60,7 @@ public class CQLPreparedStatementGenerator
 
         if (!pm.isProxyType())
         {
-            Selection select;
-            if (pm.isSingleKey())
-            {
-                select = select().column(pm.getCQLPropertyName());
-            }
-            else
-            {
-                select = select();
-                for (String component : pm.getCQLComponentNames())
-                {
-                    select = select.column(component);
-                }
-            }
+            Selection select = prepareSelectField(pm, select());
             Select from = select.from(entityMeta.getCQLTableName());
             Statement statement = prepareWhereClauseForSelect(idMeta, from);
             return session.prepare(statement.getQueryString());
@@ -115,11 +103,9 @@ public class CQLPreparedStatementGenerator
 
         Selection select = select();
 
-        //select.column(idMeta.getPropertyName());
-
         for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas())
         {
-            select.column(pm.getCQLPropertyName());
+            select = prepareSelectField(pm, select);
         }
         Select from = select.from(entityMeta.getCQLTableName());
 
@@ -165,6 +151,22 @@ public class CQLPreparedStatementGenerator
         counterPSMap.put(DELETE, session.prepare(delete.toString()));
 
         return counterPSMap;
+    }
+
+    private Selection prepareSelectField(PropertyMeta<?, ?> pm, Selection select)
+    {
+        if (pm.isSingleKey())
+        {
+            select = select.column(pm.getCQLPropertyName());
+        }
+        else
+        {
+            for (String component : pm.getCQLComponentNames())
+            {
+                select = select.column(component);
+            }
+        }
+        return select;
     }
 
     private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)

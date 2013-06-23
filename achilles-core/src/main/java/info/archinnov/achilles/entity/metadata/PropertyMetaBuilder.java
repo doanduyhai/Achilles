@@ -83,7 +83,7 @@ public class PropertyMetaBuilder {
         meta.setSetter(accessors[1]);
 
         meta.setJoinProperties(joinProperties);
-        meta.setMultiKeyProperties(multiKeyProperties);
+        meta.setCompoundKeyProperties(multiKeyProperties);
 
         meta.setSingleKey(singleKey);
         meta.setCounterProperties(counterProperties);

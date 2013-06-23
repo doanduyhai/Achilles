@@ -1,30 +1,29 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
-import java.util.List;
 
 /**
- * MultiKeyIncorrectType
+ * CorrectMultiKey
  * 
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class MultiKeyIncorrectType
+@CompoundKey
+public class CorrectCompoundKey
 {
     @Order(1)
-    private List<String> name;
+    private String name;
 
     @Order(2)
     private int rank;
 
-    public List<String> getName()
+    public String getName()
     {
         return name;
     }
 
-    public void setName(List<String> name)
+    public void setName(String name)
     {
         this.name = name;
     }

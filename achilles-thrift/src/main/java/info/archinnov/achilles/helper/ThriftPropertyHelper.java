@@ -1,22 +1,18 @@
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.entity.parsing.CompoundKeyParser;
 import info.archinnov.achilles.proxy.MethodInvoker;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.WideMap;
+import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import me.prettyprint.hector.api.Serializer;
-import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -32,12 +28,12 @@ public class ThriftPropertyHelper extends PropertyHelper
 {
     private static final Logger log = LoggerFactory.getLogger(ThriftPropertyHelper.class);
 
+    private CompoundKeyParser parser = new CompoundKeyParser();
     private MethodInvoker invoker = new MethodInvoker();
 
     public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta<?, ?> propertyMeta,
             boolean forCreation)
     {
-
         log
                 .debug("Determine the Comparator type alias for composite-based column family using propertyMeta of field {} ",
                         propertyMeta.getPropertyName());
@@ -46,9 +42,9 @@ public class ThriftPropertyHelper extends PropertyHelper
         List<String> comparatorTypes = new ArrayList<String>();
         String comparatorTypesAlias;
 
-        if (nameClass.getAnnotation(MultiKey.class) != null)
+        if (nameClass.getAnnotation(CompoundKey.class) != null)
         {
-            CompoundKeyProperties multiKeyProperties = this.parseCompoundKey(nameClass);
+            CompoundKeyProperties multiKeyProperties = parser.parseCompoundKey(nameClass);
 
             for (Class<?> clazz : multiKeyProperties.getComponentClasses())
             {
@@ -95,60 +91,117 @@ public class ThriftPropertyHelper extends PropertyHelper
         return comparatorTypesAlias;
     }
 
-    public <K, V> K buildComponentsFromComposite(PropertyMeta<K, V> propertyMeta,
-            List<Component<?>> components)
+    public <K> void checkBounds(PropertyMeta<?, ?> propertyMeta, K start, K end,
+            WideMap.OrderingMode ordering,
+            boolean isCompoundKey)
     {
-        if (log.isTraceEnabled())
+        log.trace("Check composites {} / {} with respect to ordering mode {}", start, end,
+                ordering.name());
+        if (start != null && end != null)
         {
-            log.trace("Build multi-key instance of field {} from composite components {}",
-                    propertyMeta.getPropertyName(), format(components));
-        }
-
-        K key;
-        Class<K> compoundKeyClass = propertyMeta.getKeyClass();
-        List<Method> componentSetters = propertyMeta.getComponentSetters();
-        List<Class<?>> componentClasses = propertyMeta.getComponentClasses();
-        List<Serializer<?>> serializers = new ArrayList<Serializer<?>>();
-        Set<Integer> enumTypeIndex = new HashSet<Integer>();
-        int j = 0;
-        for (Class<?> clazz : componentClasses)
-        {
-            if (clazz.isEnum()) {
-                serializers.add(STRING_SRZ);
-                enumTypeIndex.add(j);
-            }
-            else {
-                serializers.add(ThriftSerializerTypeInferer.getSerializer(clazz));
-            }
-            j++;
-        }
-
-        try
-        {
-            key = compoundKeyClass.newInstance();
-
-            for (int i = 0; i < components.size(); i++)
+            if (propertyMeta.isSingleKey())
             {
-                Component<?> comp = components.get(i);
-                Object compValue;
-                if (enumTypeIndex.contains(i)) {
-                    String enumName = STRING_SRZ.fromByteBuffer(comp.getBytes());
-                    compValue = Enum.valueOf((Class<Enum>) componentClasses.get(i), enumName);
+                @SuppressWarnings("unchecked")
+                Comparable<K> startComp = (Comparable<K>) start;
+
+                if (WideMap.OrderingMode.DESCENDING.equals(ordering))
+                {
+                    Validator
+                            .validateTrue(startComp.compareTo(end) >= 0,
+                                    "For reverse range query, start value should be greater or equal to end value");
                 }
-                else {
-                    compValue = serializers.get(i).fromByteBuffer(comp.getBytes());
+                else
+                {
+                    Validator.validateTrue(startComp.compareTo(end) <= 0,
+                            "For range query, start value should be lesser or equal to end value");
                 }
-                invoker.setValueToField(key, componentSetters.get(i), compValue);
             }
+            else
+            {
+                List<Method> componentGetters = propertyMeta
+                        .getComponentGetters();
+                String propertyName = propertyMeta.getPropertyName();
 
-        } catch (Exception e)
-        {
-            throw new AchillesException(e);
+                List<Object> startComponentValues = invoker.extractCompoundKeyComponents(start,
+                        componentGetters);
+                List<Object> endComponentValues = invoker.extractCompoundKeyComponents(end,
+                        componentGetters);
+
+                if (isCompoundKey)
+                {
+                    Validator.validateNotNull(startComponentValues.get(0),
+                            "Partition key should not be null for start clustering key : "
+                                    + startComponentValues);
+                    Validator.validateNotNull(endComponentValues.get(0),
+                            "Partition key should not be null for end clustering key : "
+                                    + endComponentValues);
+                    Validator.validateTrue(
+                            startComponentValues.get(0).equals(endComponentValues.get(0)),
+                            "Partition key should be equals for start and end clustering keys : ["
+                                    + startComponentValues + "," + endComponentValues + "]");
+                }
+
+                findLastNonNullIndexForComponents(propertyName, startComponentValues);
+                findLastNonNullIndexForComponents(propertyName, endComponentValues);
+
+                for (int i = 0; i < startComponentValues.size(); i++)
+                {
+
+                    @SuppressWarnings("unchecked")
+                    Comparable<Object> startValue = (Comparable<Object>) startComponentValues
+                            .get(i);
+                    Object endValue = endComponentValues.get(i);
+
+                    if (WideMap.OrderingMode.DESCENDING.equals(ordering))
+                    {
+                        if (startValue != null && endValue != null)
+                        {
+                            Validator
+                                    .validateTrue(startValue.compareTo(endValue) >= 0,
+                                            "For multiKey descending range query, startKey value should be greater or equal to end endKey");
+                        }
+
+                    }
+                    else
+                    {
+                        if (startValue != null && endValue != null)
+                        {
+                            Validator
+                                    .validateTrue(startValue.compareTo(endValue) <= 0,
+                                            "For multiKey ascending range query, startKey value should be lesser or equal to end endKey");
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        log.trace("Built compound key : {}", key);
+    public int findLastNonNullIndexForComponents(String propertyName, List<Object> keyValues)
+    {
+        boolean nullFlag = false;
+        int lastNotNullIndex = 0;
+        for (Object keyValue : keyValues)
+        {
+            if (keyValue != null)
+            {
+                if (nullFlag)
+                {
+                    throw new IllegalArgumentException(
+                            "There should not be any null value between two non-null keys of WideMap '"
+                                    + propertyName + "'");
+                }
+                lastNotNullIndex++;
+            }
+            else
+            {
+                nullFlag = true;
+            }
+        }
+        lastNotNullIndex--;
 
-        return key;
+        log.trace("Last non null index for components of property {} : {}", propertyName,
+                lastNotNullIndex);
+        return lastNotNullIndex;
     }
 
     public ComponentEquality[] determineEquality(WideMap.BoundingMode bounds,

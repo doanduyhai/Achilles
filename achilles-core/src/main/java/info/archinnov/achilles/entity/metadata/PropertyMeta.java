@@ -6,6 +6,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -210,6 +211,16 @@ public class PropertyMeta<K, V>
         return components;
     }
 
+    public <T> Constructor<T> getCompoundKeyConstructor()
+    {
+        return compoundKeyProperties != null ? compoundKeyProperties.<T> getConstructor() : null;
+    }
+
+    public boolean hasDefaultConstructorForCompoundKey()
+    {
+        return compoundKeyProperties != null ? compoundKeyProperties.getConstructor().getParameterTypes().length == 0 : false;
+    }
+
     public boolean isJoin()
     {
         return type.isJoinColumn();
@@ -360,12 +371,12 @@ public class PropertyMeta<K, V>
     }
 
     // TODO to be removed
-    public CompoundKeyProperties getMultiKeyProperties()
+    public CompoundKeyProperties getCompoundKeyProperties()
     {
         return compoundKeyProperties;
     }
 
-    public void setMultiKeyProperties(CompoundKeyProperties multiKeyProperties)
+    public void setCompoundKeyProperties(CompoundKeyProperties multiKeyProperties)
     {
         this.compoundKeyProperties = multiKeyProperties;
     }

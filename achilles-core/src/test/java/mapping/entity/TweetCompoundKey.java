@@ -1,6 +1,6 @@
 package mapping.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import java.util.UUID;
 
@@ -10,8 +10,8 @@ import java.util.UUID;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class TweetMultiKey
+@CompoundKey
+public class TweetCompoundKey
 {
     @Order(2)
     private String author;
@@ -22,10 +22,10 @@ public class TweetMultiKey
     @Order(3)
     private Integer retweetCount;
 
-    public TweetMultiKey() {
+    public TweetCompoundKey() {
     }
 
-    public TweetMultiKey(UUID id, String author, Integer retweetCount) {
+    public TweetCompoundKey(UUID id, String author, Integer retweetCount) {
         this.id = id;
         this.author = author;
         this.retweetCount = retweetCount;

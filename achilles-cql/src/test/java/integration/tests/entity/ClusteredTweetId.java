@@ -1,10 +1,12 @@
 package integration.tests.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import java.util.Date;
 import java.util.UUID;
 import javax.persistence.Column;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * CompoundPrimaryKey
@@ -12,30 +14,22 @@ import javax.persistence.Column;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
+@CompoundKey
 public class ClusteredTweetId
 {
-    @Order(1)
     @Column(name = "user_id")
     private Long userId;
 
-    @Order(2)
     @Column(name = "tweet_id")
     private UUID tweetId;
 
-    @Order(3)
     @Column(name = "creation_date")
     private Date creationDate;
 
-    public ClusteredTweetId() {
-    }
-
-    public ClusteredTweetId(Long userId, UUID tweetId) {
-        this.userId = userId;
-        this.tweetId = tweetId;
-    }
-
-    public ClusteredTweetId(Long userId, UUID tweetId, Date creationDate) {
+    @JsonCreator
+    public ClusteredTweetId(@Order(1) @JsonProperty("userId") Long userId,
+            @Order(2) @JsonProperty("tweetId") UUID tweetId,
+            @Order(3) @JsonProperty("creationDate") Date creationDate) {
         this.userId = userId;
         this.tweetId = tweetId;
         this.creationDate = creationDate;

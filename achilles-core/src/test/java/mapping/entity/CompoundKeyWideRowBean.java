@@ -17,7 +17,7 @@ import javax.persistence.Id;
  */
 @Entity
 @WideRow
-public class MultiKeyWideRowBean
+public class CompoundKeyWideRowBean
 {
 	
 
@@ -25,7 +25,7 @@ public class MultiKeyWideRowBean
 	private Long id;
 
 	@Column
-	private WideMap<WideRowMultiKey, String> map;
+	private WideMap<WideRowCompoundKey, String> map;
 
 	public Long getId()
 	{
@@ -37,7 +37,7 @@ public class MultiKeyWideRowBean
 		this.id = id;
 	}
 
-	public WideMap<WideRowMultiKey, String> getMap()
+	public WideMap<WideRowCompoundKey, String> getMap()
 	{
 		return map;
 	}

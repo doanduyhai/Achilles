@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,21 +28,21 @@ public class SliceQueryValidatorTest {
 
     private SliceQueryValidator validator = new SliceQueryValidator();
 
-    private PropertyMeta<Void, TweetMultiKey> pm;
+    private PropertyMeta<Void, TweetCompoundKey> pm;
 
     @Before
     public void setUp() throws Exception {
-        pm = new PropertyMeta<Void, TweetMultiKey>();
+        pm = new PropertyMeta<Void, TweetCompoundKey>();
         CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
         multiKeyProperties.setComponentNames(Arrays.asList("id", "author", "retweetCount"));
 
-        Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");
-        Method authorGetter = TweetMultiKey.class.getDeclaredMethod("getAuthor");
-        Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
+        Method idGetter = TweetCompoundKey.class.getDeclaredMethod("getId");
+        Method authorGetter = TweetCompoundKey.class.getDeclaredMethod("getAuthor");
+        Method retweetCountGetter = TweetCompoundKey.class.getDeclaredMethod("getRetweetCount");
 
         multiKeyProperties.setComponentGetters(Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
-        pm.setMultiKeyProperties(multiKeyProperties);
+        pm.setCompoundKeyProperties(multiKeyProperties);
         pm.setType(PropertyType.COMPOUND_ID);
     }
 

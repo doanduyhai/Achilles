@@ -20,7 +20,7 @@ public class BeanWithMultiKeyJoinColumnAsEntity
 	private Long id;
 
 	@JoinColumn
-	private WideMap<CorrectMultiKey, Bean> wide;
+	private WideMap<CorrectCompoundKey, Bean> wide;
 
 	public Long getId()
 	{
@@ -32,12 +32,12 @@ public class BeanWithMultiKeyJoinColumnAsEntity
 		this.id = id;
 	}
 
-	public WideMap<CorrectMultiKey, Bean> getWide()
+	public WideMap<CorrectCompoundKey, Bean> getWide()
 	{
 		return wide;
 	}
 
-	public void setWide(WideMap<CorrectMultiKey, Bean> wide)
+	public void setWide(WideMap<CorrectCompoundKey, Bean> wide)
 	{
 		this.wide = wide;
 	}

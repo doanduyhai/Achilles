@@ -1,10 +1,10 @@
 package info.archinnov.achilles.statement;
 
+import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.MethodInvoker;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
@@ -21,6 +21,7 @@ import com.google.common.collect.FluentIterable;
 public class CQLPreparedStatementBinder
 {
     private MethodInvoker invoker = new MethodInvoker();
+    private CQLCompoundKeyMapper mapper = new CQLCompoundKeyMapper();
 
     public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
     {
@@ -94,21 +95,13 @@ public class CQLPreparedStatementBinder
     private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta<?, ?> idMeta)
     {
         List<Object> values = new ArrayList<Object>();
-        if (idMeta.type().isCompoundId())
+        if (idMeta.isSingleKey())
         {
-            for (Method componentGetter : idMeta.getComponentGetters())
-            {
-                Object valueFromField = invoker.getValueFromField(primaryKey, componentGetter);
-                if (valueFromField.getClass().isEnum())
-                {
-                    valueFromField = ((Enum) valueFromField).name();
-                }
-                values.add(valueFromField);
-            }
+            values.add(primaryKey);
         }
         else
         {
-            values.add(primaryKey);
+            values.addAll(mapper.extractComponents(primaryKey, idMeta));
         }
         return values;
     }

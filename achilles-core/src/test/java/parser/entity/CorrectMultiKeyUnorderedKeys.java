@@ -1,6 +1,6 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
@@ -9,7 +9,7 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
+@CompoundKey
 public class CorrectMultiKeyUnorderedKeys
 {
     @Order(2)

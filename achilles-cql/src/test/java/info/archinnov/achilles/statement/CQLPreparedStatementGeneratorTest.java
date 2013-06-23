@@ -321,6 +321,7 @@ public class CQLPreparedStatementGeneratorTest
                 .type(PropertyType.SIMPLE)
                 .build();
 
+        eagerMetas.add(idMeta);
         eagerMetas.add(nameMeta);
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
@@ -333,7 +334,7 @@ public class CQLPreparedStatementGeneratorTest
 
         assertThat(actual).isSameAs(ps);
         assertThat(queryCaptor.getValue()).isEqualTo(
-                "SELECT name FROM table WHERE id=? AND a=? AND b=?;");
+                "SELECT id,a,b,name FROM table WHERE id=? AND a=? AND b=?;");
     }
 
     @Test

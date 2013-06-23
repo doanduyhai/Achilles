@@ -1,10 +1,10 @@
-package mapping.entity;
+package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
-@MultiKey
+@CompoundKey
 public class CompoundKeyWithEnum {
 
     @Order(1)

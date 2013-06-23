@@ -1,10 +1,9 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
 import info.archinnov.achilles.annotations.Order;
 import javax.persistence.Column;
 
-@MultiKey
+@info.archinnov.achilles.annotations.CompoundKey
 public class CompoundKey
 {
 

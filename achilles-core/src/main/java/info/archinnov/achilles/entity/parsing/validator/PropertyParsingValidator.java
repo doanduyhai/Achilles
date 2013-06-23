@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.parsing.validator;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -103,7 +103,7 @@ public class PropertyParsingValidator {
 
     public static void validateAllowedTypes(Class<?> type, Set<Class<?>> allowedTypes, String message) {
         if (!allowedTypes.contains(type)
-                && type.getAnnotation(MultiKey.class) == null
+                && type.getAnnotation(CompoundKey.class) == null
                 && !type.isEnum()) {
             throw new AchillesBeanMappingException(message);
         }

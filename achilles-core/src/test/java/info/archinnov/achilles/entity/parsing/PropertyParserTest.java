@@ -38,11 +38,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import parser.entity.CompoundKey;
-import parser.entity.CorrectMultiKey;
+import parser.entity.CompoundKeyWithNegativeOrder;
+import parser.entity.CorrectCompoundKey;
 import parser.entity.CorrectMultiKeyUnorderedKeys;
-import parser.entity.MultiKeyNotInstantiable;
-import parser.entity.MultiKeyWithNegativeOrder;
-import parser.entity.MultiKeyWithNoAnnotation;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
@@ -145,7 +143,7 @@ public class PropertyParserTest
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
         assertThat(meta.getValueClass()).isEqualTo(CompoundKey.class);
-        CompoundKeyProperties multiKeyProperties = meta.getMultiKeyProperties();
+        CompoundKeyProperties multiKeyProperties = meta.getCompoundKeyProperties();
         assertThat(multiKeyProperties).isNotNull();
         assertThat(multiKeyProperties.getComponentClasses()).contains(Long.class, String.class);
         assertThat(multiKeyProperties.getComponentNames()).contains("id", "name");
@@ -869,14 +867,14 @@ public class PropertyParserTest
         class Test
         {
             @Column(table = "tweets_xxx")
-            private WideMap<CorrectMultiKey, String> tweets;
+            private WideMap<CorrectCompoundKey, String> tweets;
 
-            public WideMap<CorrectMultiKey, String> getTweets()
+            public WideMap<CorrectCompoundKey, String> getTweets()
             {
                 return tweets;
             }
 
-            public void setTweets(WideMap<CorrectMultiKey, String> tweets)
+            public void setTweets(WideMap<CorrectCompoundKey, String> tweets)
             {
                 this.tweets = tweets;
             }
@@ -892,7 +890,7 @@ public class PropertyParserTest
         assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
         assertThat(meta.isSingleKey()).isFalse();
 
-        assertThat((Class<CorrectMultiKey>) meta.getKeyClass()).isEqualTo(CorrectMultiKey.class);
+        assertThat((Class<CorrectCompoundKey>) meta.getKeyClass()).isEqualTo(CorrectCompoundKey.class);
 
         assertThat(meta.getComponentGetters()).hasSize(2);
         assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
@@ -959,72 +957,22 @@ public class PropertyParserTest
         class Test
         {
             @Column
-            private WideMap<MultiKeyWithNegativeOrder, String> tweets;
+            private WideMap<CompoundKeyWithNegativeOrder, String> tweets;
 
-            public WideMap<MultiKeyWithNegativeOrder, String> getTweets()
+            public WideMap<CompoundKeyWithNegativeOrder, String> getTweets()
             {
                 return tweets;
             }
         }
 
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The key orders is wrong for MultiKey class '"
-                + MultiKeyWithNegativeOrder.class.getCanonicalName() + "'");
+        expectedEx.expectMessage("The key orders is wrong for @CompoundKey class '"
+                + CompoundKeyWithNegativeOrder.class.getCanonicalName() + "'");
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("tweets"));
 
         parser.parse(context);
 
-    }
-
-    @Test
-    public void should_exception_when_no_annotation_in_compound_key() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private WideMap<MultiKeyWithNoAnnotation, String> tweets;
-
-            public WideMap<MultiKeyWithNoAnnotation, String> getTweets()
-            {
-                return tweets;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("No field with @Order annotation found in the class '"
-                + MultiKeyWithNoAnnotation.class.getCanonicalName() + "'");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("tweets"));
-
-        parser.parse(context);
-    }
-
-    @Test
-    public void should_exception_when_multi_key_not_instantiable() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column
-            private WideMap<MultiKeyNotInstantiable, String> tweets;
-
-            public WideMap<MultiKeyNotInstantiable, String> getTweets()
-            {
-                return tweets;
-            }
-        }
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The class '" + MultiKeyNotInstantiable.class.getCanonicalName()
-                + "' should have a public default constructor");
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("tweets"));
-
-        parser.parse(context);
     }
 
     private <T> PropertyParsingContext newContext(Class<T> entityClass, Field field)

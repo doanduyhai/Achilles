@@ -1,20 +1,28 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
-
+import info.archinnov.achilles.annotations.CompoundKey;
+import info.archinnov.achilles.annotations.Order;
 
 /**
- * MultiKeyWithNoAnnotation
+ * MultiKeyNotInstantiable
  * 
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class MultiKeyWithNoAnnotation
+@CompoundKey
+public class CompoundKeyNotInstantiable
 {
+    @Order(1)
     private String name;
 
+    @Order(2)
     private int rank;
+
+    public CompoundKeyNotInstantiable(String name, int rank) {
+        super();
+        this.name = name;
+        this.rank = rank;
+    }
 
     public String getName()
     {

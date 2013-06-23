@@ -1,6 +1,6 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import java.util.Date;
 
@@ -10,7 +10,7 @@ import java.util.Date;
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
+@CompoundKey
 public class MyMultiKey
 {
 

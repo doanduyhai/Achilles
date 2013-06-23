@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * ColumnFamilyWithObjectIT
+ * WideRowWithEnumCompoundKeyIT
  * 
  * @author DuyHai DOAN
  * 

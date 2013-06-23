@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -55,7 +55,7 @@ public class ThriftKeyValueFactoryTest
     private PropertyMeta<Integer, String> wideMapMeta;
 
     @Mock
-    private PropertyMeta<TweetMultiKey, String> multiKeyWideMeta;
+    private PropertyMeta<TweetCompoundKey, String> multiKeyWideMeta;
 
     @Mock
     private PropertyMeta<Integer, Counter> counterMeta;

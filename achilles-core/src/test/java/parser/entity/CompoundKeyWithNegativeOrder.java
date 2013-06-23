@@ -1,26 +1,22 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
-import java.util.Date;
 
 /**
- * MultiKeyWithDuplicateOrder
+ * MultiKeyWithNegativeOrder
  * 
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class MultiKeyWithDuplicateOrder
+@CompoundKey
+public class CompoundKeyWithNegativeOrder
 {
-    @Order(1)
+    @Order(-1)
     private String name;
 
-    @Order(1)
+    @Order(0)
     private int rank;
-
-    @Order(4)
-    private Date date;
 
     public String getName()
     {
@@ -42,13 +38,4 @@ public class MultiKeyWithDuplicateOrder
         this.rank = rank;
     }
 
-    public Date getDate()
-    {
-        return date;
-    }
-
-    public void setDate(Date date)
-    {
-        this.date = date;
-    }
 }

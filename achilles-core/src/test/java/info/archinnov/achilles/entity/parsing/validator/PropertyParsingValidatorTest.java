@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import parser.entity.CorrectMultiKey;
+import parser.entity.CorrectCompoundKey;
 
 /**
  * AchillesPropertyParsingValidatorTest
@@ -196,7 +196,7 @@ public class PropertyParsingValidatorTest
 
 		PropertyParsingValidator.validateAllowedTypes(Integer.class, allowedTypes, "msg1");
 
-		PropertyParsingValidator.validateAllowedTypes(CorrectMultiKey.class, allowedTypes,
+		PropertyParsingValidator.validateAllowedTypes(CorrectCompoundKey.class, allowedTypes,
 				"msg1");
 		PropertyParsingValidator.validateAllowedTypes(CustomEnum.class, allowedTypes,
 				"msg1");

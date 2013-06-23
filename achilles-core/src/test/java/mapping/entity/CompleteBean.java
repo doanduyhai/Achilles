@@ -1,7 +1,7 @@
 package mapping.entity;
 
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
@@ -219,7 +219,7 @@ public class CompleteBean
         return friendsWideMap;
     }
 
-    @MultiKey
+    @CompoundKey
     public static class UserTweetKey
     {
         @Order(1)

@@ -1,21 +1,19 @@
 package parser.entity;
 
-import info.archinnov.achilles.annotations.MultiKey;
-import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.CompoundKey;
+
 
 /**
- * MultiKeyWithNegativeOrder
+ * MultiKeyWithNoAnnotation
  * 
  * @author DuyHai DOAN
  * 
  */
-@MultiKey
-public class MultiKeyWithNegativeOrder
+@CompoundKey
+public class CompoundKeyWithNoAnnotation
 {
-    @Order(-1)
     private String name;
 
-    @Order(0)
     private int rank;
 
     public String getName()

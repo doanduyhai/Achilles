@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import mapping.entity.CompoundKeyWithEnum;
-import mapping.entity.TweetMultiKey;
+import mapping.entity.TweetCompoundKey;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import parser.entity.CompoundKeyWithEnum;
 import testBuilders.PropertyMetaTestBuilder;
 
 /**
@@ -114,11 +114,11 @@ public class MethodInvokerTest
     @Test
     public void should_determine_compound_key() throws Exception
     {
-        Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");
-        Method authorGetter = TweetMultiKey.class.getDeclaredMethod("getAuthor");
-        Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
+        Method idGetter = TweetCompoundKey.class.getDeclaredMethod("getId");
+        Method authorGetter = TweetCompoundKey.class.getDeclaredMethod("getAuthor");
+        Method retweetCountGetter = TweetCompoundKey.class.getDeclaredMethod("getRetweetCount");
 
-        TweetMultiKey multiKey = new TweetMultiKey();
+        TweetCompoundKey multiKey = new TweetCompoundKey();
         UUID uuid = new UUID(10L, 100L);
 
         multiKey.setId(uuid);
@@ -151,17 +151,17 @@ public class MethodInvokerTest
 
         assertThat(components).hasSize(2);
         assertThat(components.get(0)).isEqualTo(id);
-        assertThat(components.get(1)).isEqualTo("COMPOUND_ID");
+        assertThat(components.get(1)).isEqualTo(COMPOUND_ID);
     }
 
     @Test
     public void should_determine_compound_components_with_null() throws Exception
     {
-        Method idGetter = TweetMultiKey.class.getDeclaredMethod("getId");
-        Method authorGetter = TweetMultiKey.class.getDeclaredMethod("getAuthor");
-        Method retweetCountGetter = TweetMultiKey.class.getDeclaredMethod("getRetweetCount");
+        Method idGetter = TweetCompoundKey.class.getDeclaredMethod("getId");
+        Method authorGetter = TweetCompoundKey.class.getDeclaredMethod("getAuthor");
+        Method retweetCountGetter = TweetCompoundKey.class.getDeclaredMethod("getRetweetCount");
 
-        TweetMultiKey multiKey = new TweetMultiKey();
+        TweetCompoundKey multiKey = new TweetCompoundKey();
         UUID uuid = new UUID(10L, 100L);
 
         multiKey.setId(uuid);

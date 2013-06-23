@@ -1,10 +1,10 @@
 package testBuilders;
 
-import info.archinnov.achilles.annotations.MultiKey;
+import info.archinnov.achilles.annotations.CompoundKey;
+import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.helper.EntityIntrospector;
@@ -123,11 +123,12 @@ public class PropertyMetaTestBuilder<T, K, V>
             multiKeyProperties.setComponentGetters(componentGetters);
             multiKeyProperties.setComponentSetters(componentSetters);
 
-            propertyMeta.setMultiKeyProperties(multiKeyProperties);
+            propertyMeta.setCompoundKeyProperties(multiKeyProperties);
         }
 
-        if (propertyMeta.getMultiKeyProperties() != null
-                || keyClass.getAnnotation(MultiKey.class) != null)
+        if (propertyMeta.getCompoundKeyProperties() != null
+                || keyClass.getAnnotation(CompoundKey.class) != null
+                || (type != null && type.isCompoundId()))
         {
             propertyMeta.setSingleKey(false);
         }

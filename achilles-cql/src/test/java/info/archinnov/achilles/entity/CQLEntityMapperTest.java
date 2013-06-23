@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity;
 
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -30,13 +31,16 @@ public class CQLEntityMapperTest
 {
 
     @InjectMocks
-    private CQLEntityMapper mapper;
+    private CQLEntityMapper entityMapper;
 
     @Mock
     private MethodInvoker invoker;
 
     @Mock
     private CQLRowMethodInvoker cqlRowInvoker;
+
+    @Mock
+    private CQLCompoundKeyMapper compoundKeyMapper;
 
     @Mock
     private Row row;
@@ -71,7 +75,7 @@ public class CQLEntityMapperTest
         when(row.isNull("name")).thenReturn(false);
         when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
 
-        mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+        entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
         verify(invoker).setValueToField(entity, pm.getSetter(), "value");
     }
@@ -92,7 +96,7 @@ public class CQLEntityMapperTest
 
         when(row.isNull("name")).thenReturn(true);
 
-        mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+        entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
         verifyZeroInteractions(cqlRowInvoker, invoker);
     }
@@ -107,7 +111,7 @@ public class CQLEntityMapperTest
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        mapper.setPropertyToEntity((Row) null, pm, entity);
+        entityMapper.setPropertyToEntity((Row) null, pm, entity);
 
         verifyZeroInteractions(cqlRowInvoker, invoker);
     }
@@ -122,9 +126,26 @@ public class CQLEntityMapperTest
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        mapper.setJoinValueToEntity("name", pm, entity);
+        entityMapper.setJoinValueToEntity("name", pm, entity);
 
         verify(invoker).setValueToField(entity, pm.getSetter(), "name");
     }
 
+    @Test
+    public void should_set_compound_key_to_entity() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.COMPOUND_ID)
+                .compNames("name")
+                .build();
+
+        when(compoundKeyMapper.createFromRow(row, pm)).thenReturn("name");
+
+        entityMapper.setPropertyToEntity(row, pm, entity);
+
+        verify(invoker).setValueToField(entity, pm.getSetter(), "name");
+    }
 }

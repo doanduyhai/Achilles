@@ -1,10 +1,10 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
+import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.proxy.wrapper.builder.ThriftCounterWrapperBuilder;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.Counter;
@@ -27,7 +27,7 @@ public class ThriftCompositeTransformer
 {
     private static final Logger log = LoggerFactory.getLogger(ThriftCompositeTransformer.class);
 
-    private ThriftPropertyHelper helper = new ThriftPropertyHelper();
+    private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
     private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
     public <K, V> Function<HColumn<Composite, ?>, K> buildKeyTransformer(
@@ -155,8 +155,7 @@ public class ThriftCompositeTransformer
         }
         else
         {
-            key = helper
-                    .buildComponentsFromComposite(propertyMeta, hColumn.getName().getComponents());
+            key = compoundKeyMapper.readFromComposite(propertyMeta, hColumn.getName().getComponents());
         }
 
         if (log.isTraceEnabled())
@@ -199,8 +198,7 @@ public class ThriftCompositeTransformer
         }
         else
         {
-            key = helper
-                    .buildComponentsFromComposite(propertyMeta, hColumn.getName().getComponents());
+            key = compoundKeyMapper.readFromComposite(propertyMeta, hColumn.getName().getComponents());
         }
         if (log.isTraceEnabled())
         {
@@ -214,15 +212,10 @@ public class ThriftCompositeTransformer
     {
         return ThriftCounterWrapperBuilder.builder(context) //
                 .columnName(hColumn.getName())
-                //
                 .counterDao(context.findWideRowDao(propertyMeta.getExternalTableName()))
-                //
                 .readLevel(propertyMeta.getReadConsistencyLevel())
-                //
                 .writeLevel(propertyMeta.getWriteConsistencyLevel())
-                //
                 .key(context.getPrimaryKey())
-                //
                 .build();
     }
 
