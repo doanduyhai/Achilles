@@ -68,6 +68,18 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **1.8.2**:
+    * Remove
+    * Support immutability for `@CompoundKey` classes (Issue #5). See https://github.com/doanduyhai/Achilles/issues/5#issuecomment-19882998 for more details on new syntax
+    * **BREAKING CHANGE**, for `@CompoundKey`, enum types are serialized as String instead of Object (Issue #8)
+    * **BREAKING CHANGE**, replace `@Key(order=1)` by `@Order(1)` annotation (Issue #6)
+    * Throw Exception instead of having NPE when keyspace is not created in Cassandra (Issue #10)
+    * **BREAKING CHANGE**, replace `MultiKey`interface by `@CompoundKey` annotation (Issue #15)
+    * It is no longer required to implements `Serializable`on all entities (Issue #11)
+    * Enforce consistency im ThriftImpl on `persist()` by removing all row data first (Issue #14 & Issue #7)
+    * Add timestamp meta data to `KeyValye<K,V>` type (Issue #9)
+    * Add initAndUnwrap() shortcut to EntityManager (Issue #2)
+    * Fix bug on dirty check on join collection/map
 * **1.8.1**:
     * Add TTL to persist and merge operations
     * Rework of runtime consistency level
