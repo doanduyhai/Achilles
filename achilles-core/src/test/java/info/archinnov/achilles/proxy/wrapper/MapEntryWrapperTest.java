@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +71,7 @@ public class MapEntryWrapperTest
 		mapEntryWrapper.setDirtyMap(dirtyMap);
 		mapEntryWrapper.setSetter(setter);
 		mapEntryWrapper.setPropertyMeta(propertyMeta);
-		when(proxifier.unproxy("TEST")).thenReturn("TEST");
+		when(proxifier.unwrap("TEST")).thenReturn("TEST");
 		mapEntryWrapper.setValue("TEST");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -93,7 +93,7 @@ public class MapEntryWrapperTest
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unproxy("csdf")).thenReturn("csdf");
+		when(proxifier.unwrap("csdf")).thenReturn("csdf");
 
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
@@ -114,8 +114,8 @@ public class MapEntryWrapperTest
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unproxy("csdf")).thenReturn("csdf");
-		when(proxifier.unproxy("df")).thenReturn("df");
+		when(proxifier.unwrap("csdf")).thenReturn("csdf");
+		when(proxifier.unwrap("df")).thenReturn("df");
 
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
@@ -136,7 +136,7 @@ public class MapEntryWrapperTest
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unproxy((Object) null)).thenReturn(null);
+		when(proxifier.unwrap((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -156,7 +156,7 @@ public class MapEntryWrapperTest
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unproxy((Object) null)).thenReturn(null);
+		when(proxifier.unwrap((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
 
@@ -176,7 +176,7 @@ public class MapEntryWrapperTest
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unproxy((Object) null)).thenReturn(null);
+		when(proxifier.unwrap((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -237,7 +237,7 @@ public class MapEntryWrapperTest
 		wrapper1.setContext(context);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
 		when(propertyMeta.joinMeta()).thenReturn(joinMeta);
-		when(context.newPersistenceContext(joinMeta, "abc")).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, "abc")).thenReturn(joinContext);
 
 		when(proxifier.buildProxy("abc", joinContext)).thenReturn("def");
 

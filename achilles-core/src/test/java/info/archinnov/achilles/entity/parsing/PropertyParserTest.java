@@ -2,8 +2,8 @@ package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -14,6 +14,12 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.CompoundKeyWithNegativeOrder;
+import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
+import info.archinnov.achilles.test.parser.entity.CorrectMultiKeyUnorderedKeys;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
@@ -29,7 +35,6 @@ import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import mapping.entity.CompleteBean;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,11 +42,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import parser.entity.CompoundKey;
-import parser.entity.CompoundKeyWithNegativeOrder;
-import parser.entity.CorrectCompoundKey;
-import parser.entity.CorrectMultiKeyUnorderedKeys;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesPropertyParserTest
@@ -108,7 +108,7 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_parse_clustering_key() throws Exception
+    public void should_parse_embedded_id() throws Exception
     {
         @SuppressWarnings("unused")
         class Test
@@ -130,7 +130,7 @@ public class PropertyParserTest
         }
 
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
-        context.hasMultiKeyPrimaryKey(true);
+        context.isEmbeddedId(true);
 
         PropertyMeta<Void, CompoundKey> meta = (PropertyMeta<Void, CompoundKey>) parser
                 .parse(context);
@@ -143,12 +143,12 @@ public class PropertyParserTest
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
         assertThat(meta.getValueClass()).isEqualTo(CompoundKey.class);
-        CompoundKeyProperties multiKeyProperties = meta.getCompoundKeyProperties();
-        assertThat(multiKeyProperties).isNotNull();
-        assertThat(multiKeyProperties.getComponentClasses()).contains(Long.class, String.class);
-        assertThat(multiKeyProperties.getComponentNames()).contains("id", "name");
-        assertThat(multiKeyProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
-        assertThat(multiKeyProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
+        CompoundKeyProperties compoundKeyProperties = meta.getCompoundKeyProperties();
+        assertThat(compoundKeyProperties).isNotNull();
+        assertThat(compoundKeyProperties.getComponentClasses()).contains(Long.class, String.class);
+        assertThat(compoundKeyProperties.getComponentNames()).contains("id", "name");
+        assertThat(compoundKeyProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
+        assertThat(compoundKeyProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
         assertThat(context.getPropertyMetas()).hasSize(1);
 
     }
@@ -667,37 +667,6 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_exception_when_wide_row_has_external_wide_map() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @Column(table = "external")
-            private WideMap<UUID, Long> external;
-
-            public WideMap<UUID, Long> getExternal()
-            {
-                return external;
-            }
-
-            public void setExternal(WideMap<UUID, Long> external)
-            {
-                this.external = external;
-            }
-        }
-
-        PropertyParsingContext context = newContext(Test.class,
-                Test.class.getDeclaredField("external"));
-        entityContext.setWideRow(true);
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx
-                .expectMessage("Error for field 'external' of entity 'null'. Wide row entity cannot have external WideMap. It does not make sense");
-
-        parser.parse(context);
-    }
-
-    @Test
     public void should_fill_widemap_hashmap() throws Exception
     {
         @SuppressWarnings("unused")
@@ -754,12 +723,12 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_fill_widemap_hashmap_when_wide_row() throws Exception
+    public void should_fill_widemap_hashmap_when_clustered_entity() throws Exception
     {
         @SuppressWarnings("unused")
         class Test
         {
-            @Column
+            @Column(table = "xxx")
             private WideMap<UUID, String> tweets;
 
             public WideMap<UUID, String> getTweets()
@@ -768,10 +737,10 @@ public class PropertyParserTest
             }
 
         }
+
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("tweets"));
-
-        entityContext.setWideRow(true);
+        entityContext.setClusteredEntity(true);
 
         parser.parse(context);
 
@@ -861,7 +830,7 @@ public class PropertyParserTest
     }
 
     @Test
-    public void should_parse_multi_key_wide_map() throws Exception
+    public void should_parse_compound_key_wide_map() throws Exception
     {
         @SuppressWarnings("unused")
         class Test
@@ -885,12 +854,14 @@ public class PropertyParserTest
 
         PropertyMeta<?, ?> meta = parser.parse(context);
 
+        assertThat(meta.isEmbeddedId()).isFalse();
         assertThat(meta.getPropertyName()).isEqualTo("tweets");
         assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
         assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
         assertThat(meta.isSingleKey()).isFalse();
 
-        assertThat((Class<CorrectCompoundKey>) meta.getKeyClass()).isEqualTo(CorrectCompoundKey.class);
+        assertThat((Class<CorrectCompoundKey>) meta.getKeyClass()).isEqualTo(
+                CorrectCompoundKey.class);
 
         assertThat(meta.getComponentGetters()).hasSize(2);
         assertThat(meta.getComponentGetters().get(0).getName()).isEqualTo("getName");
@@ -901,14 +872,12 @@ public class PropertyParserTest
         assertThat(meta.getComponentSetters().get(1).getName()).isEqualTo("setRank");
 
         assertThat(meta.getComponentClasses()).hasSize(2);
-        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(
-                String.class);
-        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(
-                int.class);
+        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(String.class);
+        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(int.class);
     }
 
     @Test
-    public void should_parse_multi_key_wide_map_unordered_keys() throws Exception
+    public void should_parse_compound_key_wide_map_unordered_keys() throws Exception
     {
         @SuppressWarnings("unused")
         class Test
@@ -944,10 +913,8 @@ public class PropertyParserTest
         assertThat(meta.getComponentGetters().get(1).getName()).isEqualTo("getRank");
 
         assertThat(meta.getComponentClasses()).hasSize(2);
-        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(
-                String.class);
-        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(
-                int.class);
+        assertThat((Class<String>) meta.getComponentClasses().get(0)).isEqualTo(String.class);
+        assertThat((Class<Integer>) meta.getComponentClasses().get(1)).isEqualTo(int.class);
     }
 
     @Test

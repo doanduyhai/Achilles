@@ -6,13 +6,16 @@ import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,9 +25,6 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import parser.entity.CompoundKey;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +43,7 @@ public class CQLPreparedStatementBinderTest
     private CQLPreparedStatementBinder binder;
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     @Mock
     private CQLCompoundKeyMapper mapper;
@@ -245,7 +245,7 @@ public class CQLPreparedStatementBinderTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
 
         PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder

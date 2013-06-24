@@ -15,7 +15,11 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
+import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 
@@ -24,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
@@ -39,8 +41,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -58,7 +58,7 @@ public class ThriftJoinLoaderImplTest
 	private ThriftJoinLoaderImpl thriftJoinLoader;
 
 	@Mock
-	private ThriftJoinEntityHelper joinHelper;
+	private ThriftJoinEntityLoader joinHelper;
 
 	@Mock
 	private ThriftCompositeFactory thriftCompositeFactory;

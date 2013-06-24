@@ -5,6 +5,8 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
@@ -16,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import parser.entity.CorrectCompoundKey;
 
 /**
  * AchillesPropertyParsingValidatorTest

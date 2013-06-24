@@ -24,7 +24,7 @@ public class ThriftEntityInterceptorBuilder<T>
 	private static final Logger log = LoggerFactory.getLogger(ThriftEntityInterceptorBuilder.class);
 
 	private T target;
-	private Set<Method> lazyLoaded = new HashSet<Method>();
+	private Set<Method> alreadyLoaded = new HashSet<Method>();
 	private ThriftPersistenceContext context;
 
 	public static <T> ThriftEntityInterceptorBuilder<T> builder(ThriftPersistenceContext context,
@@ -58,7 +58,7 @@ public class ThriftEntityInterceptorBuilder<T>
 		Validator.validateNotNull(entityMeta.getSetterMetas(),
 				"Setters metadata for interceptor of '"
 						+ context.getEntityClass().getCanonicalName() + "'should not be null");
-		if (entityMeta.isWideRow())
+		if (entityMeta.isClusteredEntity())
 		{
 			Validator.validateNotNull(context.getWideRowDao(), "Column Family Dao for '"
 					+ context.getEntityClass().getCanonicalName() + "' should not be null");
@@ -68,24 +68,33 @@ public class ThriftEntityInterceptorBuilder<T>
 			Validator.validateNotNull(context.getEntityDao(), "Entity dao for '"
 					+ context.getEntityClass().getCanonicalName() + "' should not be null");
 		}
-		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '"
+		PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+		Validator.validateNotNull(idMeta, "Id metadata for '"
 				+ context.getEntityClass().getCanonicalName() + "' should not be null");
 
 		interceptor.setTarget(target);
 		interceptor.setContext(context);
 		interceptor.setGetterMetas(entityMeta.getGetterMetas());
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
-		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
-		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
+		interceptor.setIdGetter(idMeta.getGetter());
+		interceptor.setIdSetter(idMeta.getSetter());
 
 		if (context.isLoadEagerFields())
 		{
-			lazyLoaded.addAll(entityMeta.getEagerGetters());
+			alreadyLoaded.addAll(entityMeta.getEagerGetters());
 		}
-		interceptor.setAlreadyLoaded(lazyLoaded);
+
+		interceptor.setAlreadyLoaded(alreadyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
-		interceptor.setKey(context.getPrimaryKey());
+
+		interceptor.setPrimaryKey(context.getPrimaryKey());
 
 		return interceptor;
+	}
+
+	public ThriftEntityInterceptorBuilder<T> alreadyLoaded(Set<Method> alreadyLoaded)
+	{
+		this.alreadyLoaded = alreadyLoaded;
+		return this;
 	}
 }

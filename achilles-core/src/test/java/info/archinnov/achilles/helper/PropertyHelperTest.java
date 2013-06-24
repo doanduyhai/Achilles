@@ -7,7 +7,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.WideMap;
@@ -39,7 +39,7 @@ public class PropertyHelperTest
     private PropertyHelper helper;
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     @Mock
     private AchillesConsistencyLevelPolicy policy;

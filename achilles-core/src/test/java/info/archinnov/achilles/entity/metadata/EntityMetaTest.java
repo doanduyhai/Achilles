@@ -2,13 +2,13 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityMetaTest
@@ -38,7 +38,7 @@ public class EntityMetaTest
         entityMeta.setIdClass(Long.class);
         entityMeta.setPropertyMetas(propertyMetas);
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setWideRow(true);
+        entityMeta.setClusteredEntity(true);
         entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
 
         StringBuilder toString = new StringBuilder();
@@ -46,7 +46,7 @@ public class EntityMetaTest
         toString.append("columnFamilyName=cfName, ");
         toString.append("propertyMetas=[age,name], ");
         toString.append("idMeta=").append(idMeta.toString()).append(", ");
-        toString.append("wideRow=true, ");
+        toString.append("clusteredEntity=true, ");
         toString.append("consistencyLevels=[ONE,ONE]]");
         assertThat(entityMeta.toString()).isEqualTo(toString.toString());
     }

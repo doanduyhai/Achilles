@@ -56,7 +56,7 @@ public abstract class AbstractWrapper<K, V>
 
 	protected boolean isJoin()
 	{
-		return this.propertyMeta.type().isJoinColumn();
+		return this.propertyMeta.type().isJoin();
 	}
 
 	public void setContext(PersistenceContext context)
@@ -66,6 +66,6 @@ public abstract class AbstractWrapper<K, V>
 
 	protected PersistenceContext joinContext(Object joinEntity)
 	{
-		return context.newPersistenceContext(propertyMeta.joinMeta(), joinEntity);
+		return context.createContextForJoin(propertyMeta.joinMeta(), joinEntity);
 	}
 }

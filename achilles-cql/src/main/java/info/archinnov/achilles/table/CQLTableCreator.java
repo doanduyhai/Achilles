@@ -6,20 +6,20 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 public class CQLTableCreator extends TableCreator {
 
     @Override
-    protected void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
+    protected void validateOrCreateTableForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
             boolean forceColumnFamilyCreation, String externalColumnFamilyName, String entityName) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    protected void validateOrCreateCFForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
+    protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    protected void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation) {
+    protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
         // TODO Auto-generated method stub
 
     }

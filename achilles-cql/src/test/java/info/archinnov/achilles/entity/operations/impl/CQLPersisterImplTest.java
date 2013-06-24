@@ -7,7 +7,11 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.util.ArrayList;
@@ -15,16 +19,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * CQLPersisterImplTest
@@ -40,7 +40,7 @@ public class CQLPersisterImplTest
     private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     @Mock
     private CQLEntityPersister entityPersister;
@@ -99,7 +99,7 @@ public class CQLPersisterImplTest
         entity.setUser(user);
         when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
-        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
 
         persisterImpl.cascadePersist(entityPersister, context, joinMetas);
 
@@ -123,7 +123,7 @@ public class CQLPersisterImplTest
         entity.setUser(user);
         when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
-        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
         when(joinContext.checkForEntityExistence()).thenReturn(true);
         persisterImpl.ensureEntitiesExist(context, joinMetas);
 

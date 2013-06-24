@@ -93,7 +93,7 @@ public class ThriftPersistenceContextTestBuilder
 		return this;
 	}
 
-	public ThriftPersistenceContextTestBuilder columnFamilyDaosMap(
+	public ThriftPersistenceContextTestBuilder wideRowDaosMap(
 			Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap)
 	{
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
@@ -112,7 +112,7 @@ public class ThriftPersistenceContextTestBuilder
 		return this;
 	}
 
-	public ThriftPersistenceContextTestBuilder columnFamilyDao(
+	public ThriftPersistenceContextTestBuilder wideRowDao(
 			ThriftGenericWideRowDao columnFamilyDao)
 	{
 		this.wideRowDao = columnFamilyDao;

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.JoinProperties.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadePersist;
+import static info.archinnov.achilles.entity.metadata.PropertyType.joinPropertyType;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -31,7 +31,7 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
         EntityMeta entityMeta = context.getEntityMeta();
 
         Object entity = context.getEntity();
-        if (!entityMeta.isWideRow() && context.addToProcessingList(entity))
+        if (context.addToProcessingList(entity))
         {
             log.debug("Persisting transient entity {}", entity);
 

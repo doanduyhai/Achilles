@@ -2,6 +2,8 @@ package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import java.lang.reflect.Method;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +35,13 @@ public class EntityRefresher<CONTEXT extends PersistenceContext> {
 
         EntityInterceptor<CONTEXT, Object> interceptor = proxifier.getInterceptor(entity);
 
+        interceptor.getDirtyMap().clear();
+        Set<Method> alreadyLoaded = interceptor.getAlreadyLoaded();
+        alreadyLoaded.clear();
+        alreadyLoaded.addAll(context.getEntityMeta().getEagerGetters());
+
         Object freshEntity = loader.load(context, context.getEntityClass());
 
-        interceptor.getDirtyMap().clear();
-        interceptor.getAlreadyLoaded().clear();
         interceptor.setTarget(freshEntity);
     }
 }

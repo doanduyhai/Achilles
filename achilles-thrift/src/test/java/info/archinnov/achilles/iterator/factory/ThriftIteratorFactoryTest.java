@@ -8,13 +8,13 @@ import info.archinnov.achilles.iterator.ThriftAbstractSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValueIterator;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 

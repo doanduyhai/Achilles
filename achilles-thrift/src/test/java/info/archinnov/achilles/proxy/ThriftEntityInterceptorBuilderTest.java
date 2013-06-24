@@ -1,5 +1,6 @@
 package info.archinnov.achilles.proxy;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -10,8 +11,12 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,17 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
-import mapping.entity.WideRowBean;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
-import testBuilders.CompleteBeanTestBuilder;
 
 /**
  * ThriftEntityInterceptorBuilderTest
@@ -86,7 +86,7 @@ public class ThriftEntityInterceptorBuilderTest
 				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
 				.entity(entity)
 				.entityDao(entityDao)
-				.columnFamilyDao(columnFamilyDao)
+				.wideRowDao(columnFamilyDao)
 				.build();
 	}
 
@@ -114,7 +114,7 @@ public class ThriftEntityInterceptorBuilderTest
 		ThriftEntityInterceptor<CompleteBean> interceptor = ThriftEntityInterceptorBuilder.builder(
 				context, entity).build();
 
-		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+		assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(interceptor.getTarget()).isEqualTo(entity);
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
@@ -123,7 +123,7 @@ public class ThriftEntityInterceptorBuilderTest
 		assertThat(interceptor.getAlreadyLoaded()).isInstanceOf(HashSet.class);
 		assertThat(interceptor.getAlreadyLoaded()).containsOnly(nameGetter, ageGetter);
 
-		assertThat(context.isWideRow()).isFalse();
+		assertThat(context.isClusteredEntity()).isFalse();
 
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 
@@ -148,7 +148,7 @@ public class ThriftEntityInterceptorBuilderTest
 		ThriftEntityInterceptor<CompleteBean> interceptor = ThriftEntityInterceptorBuilder.builder(
 				context, entity).build();
 
-		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+		assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(interceptor.getTarget()).isEqualTo(entity);
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
@@ -160,28 +160,40 @@ public class ThriftEntityInterceptorBuilderTest
 	@Test
 	public void should_build_wide_row() throws Exception
 	{
-		WideRowBean bean = new WideRowBean();
-		bean.setId(1545L);
+		CompoundKey embeddedId = new CompoundKey();
+		BeanWithClusteredId bean = new BeanWithClusteredId();
+		bean.setId(embeddedId);
 
 		when(entityMeta.getGetterMetas()).thenReturn(getterMetas);
 		when(entityMeta.getSetterMetas()).thenReturn(setterMetas);
 
-		Method idGetter = WideRowBean.class.getDeclaredMethod("getId");
-		Method idSetter = WideRowBean.class.getDeclaredMethod("setId", Long.class);
+		Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
+		Method idSetter = BeanWithClusteredId.class.getDeclaredMethod("setId", CompoundKey.class);
 
-		PropertyMeta<Void, Long> idMeta = new PropertyMeta<Void, Long>();
-		idMeta.setType(PropertyType.SIMPLE);
+		PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class)
+				.type(EMBEDDED_ID)
+				.build();
 
 		idMeta.setGetter(idGetter);
 		idMeta.setSetter(idSetter);
 
-		when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when((PropertyMeta<Void, CompoundKey>) entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(entityMeta.isClusteredEntity()).thenReturn(true);
 
-		ThriftEntityInterceptor<WideRowBean> interceptor = ThriftEntityInterceptorBuilder.builder(
-				context, bean).build();
+		context = ThriftPersistenceContextTestBuilder //
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, embeddedId)
+				.entity(bean)
+				.entityDao(entityDao)
+				.wideRowDao(columnFamilyDao)
+				.build();
 
-		assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+		ThriftEntityInterceptor<BeanWithClusteredId> interceptor = ThriftEntityInterceptorBuilder
+				.builder(
+						context, bean)
+				.build();
+
+		assertThat(interceptor.getPrimaryKey()).isEqualTo(embeddedId);
 		assertThat(interceptor.getTarget()).isEqualTo(bean);
 		assertThat(interceptor.getDirtyMap()).isNotNull();
 		assertThat(interceptor.getDirtyMap()).isInstanceOf(HashMap.class);
@@ -189,7 +201,7 @@ public class ThriftEntityInterceptorBuilderTest
 		assertThat(interceptor.getAlreadyLoaded()).isNotNull();
 		assertThat(interceptor.getAlreadyLoaded()).isInstanceOf(HashSet.class);
 
-		assertThat(context.isWideRow()).isTrue();
+		assertThat(context.isClusteredEntity()).isTrue();
 
 		Object entityLoader = Whitebox.getInternalState(interceptor, "loader");
 

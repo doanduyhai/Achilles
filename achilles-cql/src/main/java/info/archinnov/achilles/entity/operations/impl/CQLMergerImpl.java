@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations.impl;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityMerger;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class CQLMergerImpl implements Merger<CQLPersistenceContext>
 {
-	private MethodInvoker invoker = new MethodInvoker();
+	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
 	@Override
@@ -78,7 +78,7 @@ public class CQLMergerImpl implements Merger<CQLPersistenceContext>
 	{
 		if (joinEntity != null)
 		{
-			CQLPersistenceContext joinContext = context.newPersistenceContext(pm.joinMeta(),
+			CQLPersistenceContext joinContext = context.createContextForJoin(pm.joinMeta(),
 					joinEntity);
 			entityMerger.merge(joinContext, joinEntity);
 		}

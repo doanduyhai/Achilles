@@ -9,6 +9,7 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -99,7 +99,7 @@ public class CQLPreparedStatementGeneratorTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -159,7 +159,7 @@ public class CQLPreparedStatementGeneratorTest
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .compNames("id", "a", "b")
                 .build();
 
@@ -221,7 +221,7 @@ public class CQLPreparedStatementGeneratorTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -312,7 +312,7 @@ public class CQLPreparedStatementGeneratorTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
@@ -375,7 +375,7 @@ public class CQLPreparedStatementGeneratorTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder

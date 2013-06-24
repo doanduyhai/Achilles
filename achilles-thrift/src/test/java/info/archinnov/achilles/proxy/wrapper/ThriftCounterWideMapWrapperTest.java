@@ -1,8 +1,8 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.WideMap.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.WideMap.OrderingMode.*;
+import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.OrderingMode.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
@@ -13,17 +13,17 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftCounterKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
+import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
-import info.archinnov.achilles.type.WideMap.OrderingMode;
+import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class ThriftCounterWideMapWrapperTest
 	private PropertyMeta<Integer, Counter> propertyMeta;
 
 	@Mock
-	private ThriftPropertyHelper thriftPropertyHelper;
+	private ThriftQueryValidator queryValidator;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -200,7 +200,7 @@ public class ThriftCounterWideMapWrapperTest
 		assertThat(actual).isSameAs(expected);
 		assertThat(actual2).isSameAs(hColumns);
 
-		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
+		verify(queryValidator).validateBoundsForQuery(propertyMeta, 11, 12, DESCENDING);
 	}
 
 	@Test
@@ -231,7 +231,7 @@ public class ThriftCounterWideMapWrapperTest
 		assertThat(actual).isSameAs(expected);
 		assertThat(actual2).isSameAs(hColumns);
 
-		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
+		verify(queryValidator).validateBoundsForQuery(propertyMeta, 11, 12, DESCENDING);
 	}
 
 	@Test
@@ -262,7 +262,7 @@ public class ThriftCounterWideMapWrapperTest
 		assertThat(actual).isSameAs(expected);
 		assertThat(actual2).isSameAs(hColumns);
 
-		verify(thriftPropertyHelper).checkBounds(propertyMeta, 11, 12, DESCENDING, false);
+		verify(queryValidator).validateBoundsForQuery(propertyMeta, 11, 12, DESCENDING);
 	}
 
 	@Test

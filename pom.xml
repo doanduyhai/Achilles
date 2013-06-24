@@ -144,6 +144,12 @@
          <groupId>org.reflections</groupId>
          <artifactId>reflections</artifactId>
          <version>${reflections.version}</version>
+         <exclusions>
+         	<exclusion>
+         		<groupId>com.google.guava</groupId>
+         		<artifactId>guava</artifactId>
+         	</exclusion>
+         </exclusions>
     </dependency>	  		 
 	 <!-- Jackson Serializer -->
 	<dependency>
@@ -290,7 +296,6 @@
 			<configuration>			
 				<includes>
 					<include>**/info/archinnov/**/*.java</include>
-					<include>**/integration/tests/*.java</include>
 				</includes>	 
 			</configuration>
        	</plugin>		  
@@ -307,7 +312,6 @@
 						<configuration>			
 							<includes>
 								<include>**/info/archinnov/**/*.java</include>
-								<include>**/integration/tests/*.java</include>
 							</includes>	 
 						</configuration>
           			</plugin>

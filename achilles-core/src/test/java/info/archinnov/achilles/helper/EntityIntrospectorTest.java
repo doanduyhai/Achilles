@@ -8,6 +8,10 @@ import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
+import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Field;
@@ -17,16 +21,12 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import mapping.entity.CompleteBean;
-import mapping.entity.TweetCompoundKey;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import parser.entity.BeanWithColumnFamilyName;
-import parser.entity.ChildBean;
 
 /**
  * AchillesEntityIntrospectorTest

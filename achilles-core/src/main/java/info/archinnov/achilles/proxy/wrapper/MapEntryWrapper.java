@@ -38,14 +38,14 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
     public V setValue(V value) {
         log.trace("Mark map entry property {} of entity class {} dirty upon element set",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-        V result = this.target.setValue(proxifier.unproxy(value));
+        V result = this.target.setValue(proxifier.unwrap(value));
         this.markDirty();
         return result;
     }
 
     public boolean equals(Entry<K, V> entry) {
         K key = entry.getKey();
-        V value = proxifier.unproxy(entry.getValue());
+        V value = proxifier.unwrap(entry.getValue());
 
         boolean keyEquals = this.target.getKey().equals(key);
 

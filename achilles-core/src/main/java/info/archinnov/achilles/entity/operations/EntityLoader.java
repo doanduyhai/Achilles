@@ -9,10 +9,11 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
  * @author DuyHai DOAN
  * 
  */
-public interface EntityLoader<CONTEXT extends PersistenceContext> {
+public interface EntityLoader<CONTEXT extends PersistenceContext>
+{
 
-    public <T> T load(CONTEXT context, Class<T> entityClass);
+	public <T> T load(CONTEXT context, Class<T> entityClass);
 
-    public <V> void loadPropertyIntoObject(Object realObject, Object key, CONTEXT context,
-            PropertyMeta<?, V> propertyMeta);
+	public <V> void loadPropertyIntoObject(CONTEXT context, Object realObject,
+			PropertyMeta<?, V> propertyMeta);
 }

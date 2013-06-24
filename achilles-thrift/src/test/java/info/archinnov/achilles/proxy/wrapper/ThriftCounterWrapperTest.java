@@ -9,8 +9,8 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import mapping.entity.CompleteBean;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.commons.lang.math.RandomUtils;

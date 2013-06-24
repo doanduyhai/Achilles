@@ -1,8 +1,8 @@
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.*;
+import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.helper.PropertyHelper.*;
+import static info.archinnov.achilles.helper.PropertyHelper.allowedTypes;
 import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
@@ -50,7 +50,8 @@ public class PropertyParser
     public PropertyMeta<?, ?> parse(PropertyParsingContext context)
     {
         log.debug("Parsing property {} of entity class {}", context.getCurrentPropertyName(),
-                context.getCurrentEntityClass().getCanonicalName());
+                context
+                        .getCurrentEntityClass().getCanonicalName());
 
         Field field = context.getCurrentField();
         inferPropertyNameAndExternalTableName(context);
@@ -58,7 +59,6 @@ public class PropertyParser
                 .getCurrentField()));
 
         validator.validateNoDuplicate(context);
-        validator.validateWideRowHasNoExternalWideMap(context);
 
         Class<?> fieldType = field.getType();
         PropertyMeta<?, ?> propertyMeta;
@@ -84,9 +84,9 @@ public class PropertyParser
         {
             propertyMeta = parseWideMapProperty(context);
         }
-        else if (context.isMultiKeyPrimaryKey())
+        else if (context.isEmbeddedId())
         {
-            propertyMeta = parseCompoundId(context);
+            propertyMeta = parseEmbeddedId(context);
         }
         else if (context.isPrimaryKey())
         {
@@ -101,19 +101,19 @@ public class PropertyParser
         return propertyMeta;
     }
 
-    protected PropertyMeta<?, ?> parseCompoundId(PropertyParsingContext context)
+    protected PropertyMeta<?, ?> parseEmbeddedId(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as multikey id of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as multikey id of entity class {}",
+                context.getCurrentPropertyName(), context
+                        .getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-        PropertyType type = COMPOUND_ID;
+        PropertyType type = EMBEDDED_ID;
 
         CompoundKeyProperties compoundKeyProperties = parseCompoundKey(field.getType());
-
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
@@ -132,8 +132,9 @@ public class PropertyParser
 
     protected PropertyMeta<Void, ?> parseSimpleProperty(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as simple property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as simple property of entity class {}",
+                context.getCurrentPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
@@ -158,16 +159,18 @@ public class PropertyParser
 
     protected PropertyMeta<Void, ?> parseCounterProperty(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as counter property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as counter property of entity class {}",
+                context.getCurrentPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
+
         PropertyType type = PropertyType.COUNTER;
-        CounterProperties counterProperties = new CounterProperties(context
-                .getCurrentEntityClass()
+
+        CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass()
                 .getCanonicalName());
 
         PropertyMeta<Void, ?> propertyMeta = factory()
@@ -196,8 +199,9 @@ public class PropertyParser
     public <V> PropertyMeta<Void, V> parseListProperty(PropertyParsingContext context)
     {
 
-        log.debug("Parsing property {} as list property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as list property of entity class {}",
+                context.getCurrentPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
@@ -209,7 +213,8 @@ public class PropertyParser
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-        PropertyMeta<Void, V> listMeta = factory() //
+        PropertyMeta<Void, V> listMeta = factory()
+                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -219,8 +224,8 @@ public class PropertyParser
                 .build(Void.class, valueClass);
 
         log.trace("Built list property meta for property {} of entity class {} : {}",
-                listMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                listMeta);
+                listMeta.getPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName(), listMeta);
 
         return listMeta;
 
@@ -228,8 +233,9 @@ public class PropertyParser
 
     public <V> PropertyMeta<Void, V> parseSetProperty(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as set property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as set property of entity class {}",
+                context.getCurrentPropertyName(), context
+                        .getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
@@ -241,7 +247,8 @@ public class PropertyParser
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-        PropertyMeta<Void, V> setMeta = factory() //
+        PropertyMeta<Void, V> setMeta = factory()
+                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -251,16 +258,17 @@ public class PropertyParser
                 .build(Void.class, valueClass);
 
         log.trace("Built set property meta for property {} of  entity class {} : {}",
-                setMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                setMeta);
+                setMeta.getPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName(), setMeta);
 
         return setMeta;
     }
 
     protected <K, V> PropertyMeta<K, V> parseMapProperty(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as map property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as map property of entity class {}",
+                context.getCurrentPropertyName(), context
+                        .getCurrentEntityClass().getCanonicalName());
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
@@ -274,7 +282,8 @@ public class PropertyParser
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-        PropertyMeta<K, V> mapMeta = factory() //
+        PropertyMeta<K, V> mapMeta = factory()
+                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -284,8 +293,8 @@ public class PropertyParser
                 .build(keyClass, valueClass);
 
         log.trace("Built map property meta for property {} of entity class {} : {}",
-                mapMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                mapMeta);
+                mapMeta.getPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName(), mapMeta);
 
         return mapMeta;
 
@@ -293,8 +302,9 @@ public class PropertyParser
 
     protected <K, V> PropertyMeta<K, V> parseWideMapProperty(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as wide map property of entity class {}", context
-                .getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+        log.debug("Parsing property {} as wide map property of entity class {}",
+                context.getCurrentPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName());
 
         validator.validateWideMapGenerics(context);
 
@@ -320,7 +330,8 @@ public class PropertyParser
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 
-        PropertyMeta<K, V> propertyMeta = factory() //
+        PropertyMeta<K, V> propertyMeta = factory()
+                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -353,17 +364,18 @@ public class PropertyParser
     }
 
     public void fillWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
-            PropertyMeta<?, ?> propertyMeta, String externalTableName)
+            PropertyMeta<?, ?> propertyMeta,
+            String externalTableName)
     {
         log.debug("Filling wide map meta {} of entity class {} with id meta {} info",
-                propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                idMeta.getPropertyName());
+                propertyMeta.getPropertyName(),
+                context.getCurrentEntityClass().getCanonicalName(), idMeta.getPropertyName());
 
         propertyMeta.setIdClass(idMeta.getValueClass());
 
         log.trace("Complete wide map property {} of entity class {} : {}",
-                propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                propertyMeta);
+                propertyMeta.getPropertyName(), context
+                        .getCurrentEntityClass().getCanonicalName(), propertyMeta);
     }
 
     private void inferPropertyNameAndExternalTableName(PropertyParsingContext context)
@@ -399,7 +411,8 @@ public class PropertyParser
     private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field)
     {
         log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
-                field.getName(), field.getDeclaringClass().getCanonicalName());
+                field.getName(), field
+                        .getDeclaringClass().getCanonicalName());
 
         Type genericType = field.getGenericType();
         ParameterizedType pt = (ParameterizedType) genericType;
@@ -441,13 +454,13 @@ public class PropertyParser
         String externalCFName;
 
         Class<?> entityClass = context.getCurrentEntityClass();
-        if (context.isColumnFamilyDirectMapping())
+        if (context.isClusteredEntity())
         {
             externalCFName = context.getCurrentColumnFamilyName();
             Validator
-                    .validateBeanMappingTrue(
+                    .validateBeanMappingFalse(
                             StringUtils.isBlank(context.getCurrentExternalTableName()),
-                            "External Column Family should be defined for counter WideMap property '"
+                            "External Column Family should be defined for WideMap property '"
                                     + propertyMeta.getPropertyName()
                                     + "' of entity '"
                                     + entityClass.getCanonicalName()
@@ -489,8 +502,8 @@ public class PropertyParser
         if (isCustomConsistencyLevel)
         {
             Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-                    .findConsistencyLevels(context.getCurrentField(),
-                            context.getConfigurableCLPolicy());
+                    .findConsistencyLevels(
+                            context.getCurrentField(), context.getConfigurableCLPolicy());
 
             context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left,
                     externalTableName);
@@ -509,7 +522,8 @@ public class PropertyParser
 
         log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
         Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-                .findConsistencyLevels(context.getCurrentField(), context.getConfigurableCLPolicy());
+                .findConsistencyLevels(
+                        context.getCurrentField(), context.getConfigurableCLPolicy());
 
         validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 

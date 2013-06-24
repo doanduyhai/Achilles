@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * WideRow
+ * CompoundKey
  * 
  * @author DuyHai DOAN
  * 

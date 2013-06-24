@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 public abstract class TableCreator {
     public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
 
-    public void validateOrCreateColumnFamilies(Map<Class<?>, EntityMeta> entityMetaMap,
+    public void validateOrCreateTables(Map<Class<?>, EntityMeta> entityMetaMap,
             ConfigurationContext configContext, boolean hasCounter) {
         for (Entry<Class<?>, EntityMeta> entry : entityMetaMap.entrySet()) {
 
@@ -24,25 +24,25 @@ public abstract class TableCreator {
                 PropertyMeta<?, ?> propertyMeta = entryMeta.getValue();
 
                 if (propertyMeta.type().isWideMap()) {
-                    validateOrCreateCFForWideMap(propertyMeta, entityMeta.getIdMeta().getValueClass(),
+                    validateOrCreateTableForWideMap(propertyMeta, entityMeta.getIdMeta().getValueClass(),
                             configContext.isForceColumnFamilyCreation(), propertyMeta.getExternalTableName(),
                             entityMeta.getClassName());
                 }
             }
 
-            validateOrCreateCFForEntity(entityMeta, configContext.isForceColumnFamilyCreation());
+            validateOrCreateTableForEntity(entityMeta, configContext.isForceColumnFamilyCreation());
         }
 
         if (hasCounter) {
-            validateOrCreateCFForCounter(configContext.isForceColumnFamilyCreation());
+            validateOrCreateTableForCounter(configContext.isForceColumnFamilyCreation());
         }
     }
 
-    protected abstract void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
+    protected abstract void validateOrCreateTableForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
             boolean forceColumnFamilyCreation, String externalColumnFamilyName, String entityName);
 
-    protected abstract void validateOrCreateCFForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation);
+    protected abstract void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation);
 
-    protected abstract void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation);
+    protected abstract void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation);
 
 }

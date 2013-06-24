@@ -2,9 +2,9 @@ package info.archinnov.achilles.query;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
+import info.archinnov.achilles.type.BoundingMode;
 import java.lang.reflect.Method;
 import java.util.List;
 import com.datastax.driver.core.Statement;
@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
  * 
  */
 public class SliceQueryBuilder {
-    private MethodInvoker invoker = new MethodInvoker();
+    private ReflectionInvoker invoker = new ReflectionInvoker();
     private SliceQueryValidator validator = new SliceQueryValidator();
     private CQLStatementGenerator generator = new CQLStatementGenerator();
 

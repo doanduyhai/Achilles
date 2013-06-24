@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
+import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 import info.archinnov.achilles.type.KeyValue;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -18,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import parser.entity.CorrectCompoundKey;
 
 /**
  * ThriftKeyValueIteratorImplTest

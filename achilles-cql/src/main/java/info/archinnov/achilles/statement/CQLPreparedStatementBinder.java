@@ -4,7 +4,7 @@ import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
@@ -20,7 +20,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class CQLPreparedStatementBinder
 {
-    private MethodInvoker invoker = new MethodInvoker();
+    private ReflectionInvoker invoker = new ReflectionInvoker();
     private CQLCompoundKeyMapper mapper = new CQLCompoundKeyMapper();
 
     public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)

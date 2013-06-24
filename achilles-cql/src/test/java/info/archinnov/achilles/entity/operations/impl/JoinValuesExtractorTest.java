@@ -4,13 +4,14 @@ import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import testBuilders.PropertyMetaTestBuilder;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 
@@ -35,7 +35,7 @@ public class JoinValuesExtractorTest
     private JoinValuesExtractor transformer;
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     private CompleteBean entity = new CompleteBean();
     private UserBean user1 = new UserBean();

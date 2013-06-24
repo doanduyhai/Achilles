@@ -1,8 +1,12 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_PORT_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENSURE_CONSISTENCY_ON_JOIN_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import java.util.HashMap;
@@ -20,36 +24,27 @@ import com.datastax.driver.core.SimpleStatement;
  * @author DuyHai DOAN
  * 
  */
-public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
-{
-    private static final String ENTITY_PACKAGE = "integration.tests.entity";
+public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
+    private static final String ENTITY_PACKAGE = "info.archinnov.achilles.test.integration.entity";
 
     private static Cluster cluster;
     private static Session session;
     private static CQLEntityManagerFactory emf;
     private static CQLEntityManager em;
 
-    static
-    {
+    static {
         String cassandraHost = System.getProperty(CASSANDRA_HOST);
-        if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":"))
-        {
+        if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
             String[] fullHostName = StringUtils.split(cassandraHost, ":");
 
             assert fullHostName.length == 2;
 
             cluster = Cluster.builder() //
-                    .addContactPoints(fullHostName[0])
-                    .withPort(Integer.parseInt(fullHostName[1]))
-                    .build();
+                    .addContactPoints(fullHostName[0]).withPort(Integer.parseInt(fullHostName[1])).build();
 
-        }
-        else
-        {
+        } else {
             cluster = Cluster.builder() //
-                    .addContactPoints(CASSANDRA_TEST_HOST)
-                    .withPort(CASSANDRA_CQL_TEST_PORT)
-                    .build();
+                    .addContactPoints(CASSANDRA_TEST_HOST).withPort(CASSANDRA_CQL_TEST_PORT).build();
         }
         session = cluster.connect(CASSANDRA_KEYSPACE_NAME);
         Map<String, Object> configMap = new HashMap<String, Object>();
@@ -65,28 +60,23 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
         em = emf.createEntityManager();
     }
 
-    public static com.datastax.driver.core.Cluster getCqlCluster()
-    {
+    public static com.datastax.driver.core.Cluster getCqlCluster() {
         return cluster;
     }
 
-    public static Session getCqlSession()
-    {
+    public static Session getCqlSession() {
         return session;
     }
 
-    public static int getCqlPort()
-    {
+    public static int getCqlPort() {
         return CASSANDRA_CQL_TEST_PORT;
     }
 
-    public static CQLEntityManager getEm()
-    {
+    public static CQLEntityManager getEm() {
         return em;
     }
 
-    private static void createTables()
-    {
+    private static void createTables() {
         StringBuilder tableCompleteBean = new StringBuilder();
         tableCompleteBean.append("CREATE TABLE completebean(");
         tableCompleteBean.append("id bigint,");
@@ -196,13 +186,11 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest
         session.execute(counter);
     }
 
-    public static void truncateTables()
-    {
+    public static void truncateTables() {
         String listAllTables = "select columnfamily_name from system.schema_columnfamilies where keyspace_name='achilles'";
         List<Row> rows = session.execute(listAllTables).all();
 
-        for (Row row : rows)
-        {
+        for (Row row : rows) {
             String tableName = row.getString("columnfamily_name");
             session.execute(new SimpleStatement("truncate " + tableName));
         }

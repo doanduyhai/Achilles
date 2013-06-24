@@ -7,12 +7,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.test.builders.HColumnTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Iterator;
 import java.util.List;
 
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -25,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.HColumnTestBuilder;
 
 /**
  * ThriftSliceIteratorTest

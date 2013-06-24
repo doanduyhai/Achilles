@@ -26,7 +26,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
         log.trace("Mark collection property {} of entity class {} dirty upon element addition",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
         this.markDirty();
-        boolean result = target.add(proxifier.unproxy(arg0));
+        boolean result = target.add(proxifier.unwrap(arg0));
 
         return result;
     }
@@ -34,7 +34,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     @Override
     public boolean addAll(Collection<? extends V> arg0) {
         boolean result = false;
-        result = target.addAll(proxifier.unproxy(arg0));
+        result = target.addAll(proxifier.unwrap(arg0));
         if (result) {
             log.trace("Mark collection property {} of entity class {} dirty upon elements addition",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -55,12 +55,12 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
 
     @Override
     public boolean contains(Object arg0) {
-        return this.target.contains(proxifier.unproxy(arg0));
+        return this.target.contains(proxifier.unwrap(arg0));
     }
 
     @Override
     public boolean containsAll(Collection<?> arg0) {
-        return this.target.containsAll(proxifier.unproxy(arg0));
+        return this.target.containsAll(proxifier.unwrap(arg0));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     @Override
     public boolean remove(Object arg0) {
         boolean result = false;
-        result = this.target.remove(proxifier.unproxy(arg0));
+        result = this.target.remove(proxifier.unwrap(arg0));
         if (result) {
             log.trace("Mark collection property {} of entity class {} dirty upon element removal",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -100,7 +100,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     @Override
     public boolean removeAll(Collection<?> arg0) {
         boolean result = false;
-        result = this.target.removeAll(proxifier.unproxy(arg0));
+        result = this.target.removeAll(proxifier.unwrap(arg0));
         if (result) {
             log.trace("Mark collection property {} of entity class {} dirty upon elements removal",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -112,7 +112,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     @Override
     public boolean retainAll(Collection<?> arg0) {
         boolean result = false;
-        result = this.target.retainAll(proxifier.unproxy(arg0));
+        result = this.target.retainAll(proxifier.unwrap(arg0));
         if (result) {
             log.trace("Mark collection property {} of entity class {} dirty upon elements retentions",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());

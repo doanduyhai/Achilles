@@ -4,6 +4,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.test.parser.entity.Bean;
+import info.archinnov.achilles.test.parser.entity.MyMultiKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
@@ -12,8 +14,6 @@ import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import parser.entity.Bean;
-import parser.entity.MyMultiKey;
 
 /**
  * PropertyMetaBuilderTest
@@ -54,7 +54,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
     }
@@ -64,14 +64,14 @@ public class PropertyMetaBuilderTest {
 
         PropertyMeta<Void, String> built = PropertyMetaBuilder
                 .factory()
-                .type(COMPOUND_ID)
+                .type(EMBEDDED_ID)
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
                 .build(Void.class, String.class);
 
-        assertThat(built.type()).isEqualTo(COMPOUND_ID);
+        assertThat(built.type()).isEqualTo(EMBEDDED_ID);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
@@ -79,7 +79,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
     }
@@ -103,7 +103,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -125,7 +125,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -147,7 +147,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -169,7 +169,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -191,7 +191,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -213,7 +213,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -238,7 +238,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -263,7 +263,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -288,7 +288,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @Test
@@ -313,7 +313,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     @SuppressWarnings("unchecked")
@@ -360,7 +360,7 @@ public class PropertyMetaBuilderTest {
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isSingleKey()).isFalse();
-        assertThat(built.type().isJoinColumn()).isFalse();
+        assertThat(built.type().isJoin()).isFalse();
     }
 
     private String writeString(Object value) throws Exception {

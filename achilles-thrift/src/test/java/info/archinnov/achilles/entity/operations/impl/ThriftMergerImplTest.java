@@ -8,23 +8,26 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
+
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -38,206 +41,251 @@ import com.google.common.collect.ImmutableMap;
 public class ThriftMergerImplTest
 {
 
-    @InjectMocks
-    private ThriftMergerImpl mergerImpl;
+	@InjectMocks
+	private ThriftMergerImpl mergerImpl;
 
-    @Mock
-    private ThriftEntityPersister persister;
+	@Mock
+	private ThriftEntityPersister persister;
 
-    @Mock
-    private MethodInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private ThriftEntityMerger entityMerger;
+	@Mock
+	private ThriftEntityMerger entityMerger;
 
-    @Mock
-    private ThriftPersistenceContext context;
+	@Mock
+	private ThriftPersistenceContext context;
 
-    @Mock
-    private ThriftPersistenceContext joinContext;
+	@Mock
+	private ThriftPersistenceContext joinContext;
 
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-    private UserBean user = new UserBean();
+	private UserBean user = new UserBean();
 
-    private EntityMeta joinMeta = new EntityMeta();
+	private EntityMeta meta = new EntityMeta();
 
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+	private EntityMeta joinMeta = new EntityMeta();
 
-    private List<PropertyMeta<?, ?>> joinPMs = new ArrayList<PropertyMeta<?, ?>>();
+	private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
 
-    @Before
-    public void setUp()
-    {
-        when(context.getEntity()).thenReturn(entity);
-        dirtyMap.clear();
-        joinPMs.clear();
-    }
+	private List<PropertyMeta<?, ?>> joinPMs = new ArrayList<PropertyMeta<?, ?>>();
 
-    @Test
-    public void should_merge_simple_property() throws Exception
-    {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, String.class)
-                .field("name")
-                .accessors()
-                .type(SIMPLE)
-                .build();
+	@Before
+	public void setUp()
+	{
+		when(context.getEntity()).thenReturn(entity);
+		when(context.getEntityMeta()).thenReturn(meta);
 
-        dirtyMap.put(pm.getSetter(), pm);
+		meta.setClusteredEntity(false);
+		dirtyMap.clear();
+		joinPMs.clear();
+	}
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn("name");
+	@Test
+	public void should_merge_simple_property() throws Exception
+	{
+		PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.type(SIMPLE)
+				.build();
 
-        mergerImpl.merge(context, dirtyMap);
+		dirtyMap.put(pm.getSetter(), pm);
 
-        verify(persister).persistPropertyBatch(context, pm);
-    }
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn("name");
 
-    @Test
-    public void should_merge_multi_values_property() throws Exception
-    {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, String.class)
-                .field("friends")
-                .accessors()
-                .type(LIST)
-                .build();
+		mergerImpl.merge(context, dirtyMap);
 
-        PropertyMeta<Void, String> joinPm = PropertyMetaTestBuilder
-                .completeBean(Void.class, String.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_LIST)
-                .build();
+		verify(persister).persistPropertyBatch(context, pm);
+	}
 
-        dirtyMap.put(pm.getSetter(), pm);
-        dirtyMap.put(joinPm.getSetter(), joinPm);
+	@Test
+	public void should_merge_multi_values_property() throws Exception
+	{
+		PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("friends")
+				.accessors()
+				.type(LIST)
+				.build();
 
-        when(invoker.getValueFromField(entity, pm.getGetter()))
-                .thenReturn(Arrays.asList("friends"));
-        when(invoker.getValueFromField(entity, joinPm.getGetter()))
-                .thenReturn(Arrays.asList("join_friends"));
+		PropertyMeta<Void, String> joinPm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("user")
+				.accessors()
+				.type(JOIN_LIST)
+				.build();
 
-        mergerImpl.merge(context, dirtyMap);
+		dirtyMap.put(pm.getSetter(), pm);
+		dirtyMap.put(joinPm.getSetter(), joinPm);
 
-        verify(persister).removePropertyBatch(context, pm);
-        verify(persister).removePropertyBatch(context, joinPm);
-        verify(persister).persistPropertyBatch(context, pm);
-        verify(persister).persistPropertyBatch(context, joinPm);
-    }
+		when(invoker.getValueFromField(entity, pm.getGetter()))
+				.thenReturn(Arrays.asList("friends"));
+		when(invoker.getValueFromField(entity, joinPm.getGetter()))
+				.thenReturn(Arrays.asList("join_friends"));
 
-    @Test
-    public void should_remove_property_when_null() throws Exception
-    {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, String.class)
-                .field("name")
-                .accessors()
-                .type(SIMPLE)
-                .build();
+		mergerImpl.merge(context, dirtyMap);
 
-        dirtyMap.put(pm.getSetter(), pm);
+		verify(persister).removePropertyBatch(context, pm);
+		verify(persister).removePropertyBatch(context, joinPm);
+		verify(persister).persistPropertyBatch(context, pm);
+		verify(persister).persistPropertyBatch(context, joinPm);
+	}
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
+	@Test
+	public void should_remove_property_when_null() throws Exception
+	{
+		PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.type(SIMPLE)
+				.build();
 
-        mergerImpl.merge(context, dirtyMap);
+		dirtyMap.put(pm.getSetter(), pm);
 
-        verify(persister).removePropertyBatch(context, pm);
-        verify(persister, never()).persistPropertyBatch(context, pm);
-    }
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
 
-    @Test
-    public void should_do_nothing_when_not_dirty() throws Exception
-    {
-        mergerImpl.merge(context, dirtyMap);
+		mergerImpl.merge(context, dirtyMap);
 
-        verifyZeroInteractions(context, invoker, persister);
-    }
+		verify(persister).removePropertyBatch(context, pm);
+		verify(persister, never()).persistPropertyBatch(context, pm);
+	}
 
-    @Test
-    public void should_cascade_merge_simple_property() throws Exception
-    {
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_SIMPLE)
-                .joinMeta(joinMeta)
-                .build();
+	@Test
+	public void should_remove_clustered_entity_when_value_dirty() throws Exception
+	{
+		PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.type(SIMPLE)
+				.build();
 
-        joinPMs.add(pm);
+		dirtyMap.put(pm.getSetter(), pm);
+		meta.setClusteredEntity(true);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(user);
-        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+		mergerImpl.merge(context, dirtyMap);
 
-        mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+		verify(persister).remove(context);
+	}
 
-        verify(entityMerger).merge(joinContext, user);
-    }
+	@Test
+	public void should_merge_value_for_clustered_entity() throws Exception
+	{
+		Object clusteredValue = "clusteredValue";
+		PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class)
+				.field("name")
+				.accessors()
+				.type(SIMPLE)
+				.build();
 
-    @Test
-    public void should_cascade_merge_collection_property() throws Exception
-    {
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_LIST)
-                .joinMeta(joinMeta)
-                .build();
+		dirtyMap.put(pm.getSetter(), pm);
+		meta.setClusteredEntity(true);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(clusteredValue);
 
-        joinPMs.add(pm);
+		mergerImpl.merge(context, dirtyMap);
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-                Arrays.asList(user, null));
-        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+		verify(persister).persistClusteredValue(context, clusteredValue);
 
-        mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+	}
 
-        verify(entityMerger).merge(joinContext, user);
-    }
+	@Test
+	public void should_do_nothing_when_not_dirty() throws Exception
+	{
+		mergerImpl.merge(context, dirtyMap);
 
-    @Test
-    public void should_cascade_merge_map_property() throws Exception
-    {
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_MAP)
-                .joinMeta(joinMeta)
-                .build();
+		verifyZeroInteractions(context, invoker, persister);
+	}
 
-        joinPMs.add(pm);
+	@Test
+	public void should_cascade_merge_simple_property() throws Exception
+	{
+		PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(JOIN_SIMPLE)
+				.joinMeta(joinMeta)
+				.build();
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-                ImmutableMap.of(11, user));
-        when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+		joinPMs.add(pm);
 
-        mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(user);
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
 
-        verify(entityMerger).merge(joinContext, user);
-    }
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-    @Test
-    public void should_not_cascade_merge_for_null_value() throws Exception
-    {
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_LIST)
-                .joinMeta(joinMeta)
-                .build();
+		verify(entityMerger).merge(joinContext, user);
+	}
 
-        joinPMs.add(pm);
+	@Test
+	public void should_cascade_merge_collection_property() throws Exception
+	{
+		PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(JOIN_LIST)
+				.joinMeta(joinMeta)
+				.build();
 
-        when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
+		joinPMs.add(pm);
 
-        mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
+				Arrays.asList(user, null));
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
 
-        verifyZeroInteractions(entityMerger);
-        verify(context, never()).newPersistenceContext(eq(joinMeta), any());
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
-    }
+		verify(entityMerger).merge(joinContext, user);
+	}
+
+	@Test
+	public void should_cascade_merge_map_property() throws Exception
+	{
+		PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(JOIN_MAP)
+				.joinMeta(joinMeta)
+				.build();
+
+		joinPMs.add(pm);
+
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
+				ImmutableMap.of(11, user));
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
+
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+
+		verify(entityMerger).merge(joinContext, user);
+	}
+
+	@Test
+	public void should_not_cascade_merge_for_null_value() throws Exception
+	{
+		PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class)
+				.field("user")
+				.accessors()
+				.type(JOIN_LIST)
+				.joinMeta(joinMeta)
+				.build();
+
+		joinPMs.add(pm);
+
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
+
+		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
+
+		verifyZeroInteractions(entityMerger);
+		verify(context, never()).createContextForJoin(eq(joinMeta), any());
+
+	}
 }

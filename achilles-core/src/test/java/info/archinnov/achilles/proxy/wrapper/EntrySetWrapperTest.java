@@ -9,6 +9,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -21,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +31,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesEntrySetWrapperTest
@@ -106,7 +106,7 @@ public class EntrySetWrapperTest
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(proxifier.unproxy(any())).thenReturn(entry);
+		when(proxifier.unwrap(any())).thenReturn(entry);
 
 		assertThat(wrapper.contains(entry)).isTrue();
 	}
@@ -126,8 +126,8 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry1 = iterator.next();
 		Entry<Integer, String> entry2 = iterator.next();
 
-		when(proxifier.unproxy(entry1)).thenReturn(entry1);
-		when(proxifier.unproxy(entry2)).thenReturn(entry2);
+		when(proxifier.unwrap(entry1)).thenReturn(entry1);
+		when(proxifier.unwrap(entry2)).thenReturn(entry2);
 
 		assertThat(wrapper.containsAll(Arrays.asList(entry1, entry2))).isTrue();
 	}
@@ -162,7 +162,7 @@ public class EntrySetWrapperTest
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		Entry<Integer, String> entry = map.entrySet().iterator().next();
-		when(proxifier.unproxy(any())).thenReturn(entry);
+		when(proxifier.unwrap(any())).thenReturn(entry);
 		wrapper.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -201,7 +201,7 @@ public class EntrySetWrapperTest
 		list.add(entry1);
 		list.add(entry2);
 
-		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -241,7 +241,7 @@ public class EntrySetWrapperTest
 		Entry<Integer, String> entry2 = iterator.next();
 		List<Entry<Integer, String>> list = Arrays.asList(entry1, entry2);
 
-		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
@@ -258,7 +258,7 @@ public class EntrySetWrapperTest
 
 		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "FR");
 		List<Entry<Integer, String>> list = Arrays.asList(entry1);
-		when(proxifier.unproxy((Collection<Entry<Integer, String>>) list)).thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Integer, String>>) list)).thenReturn(list);
 		EntrySetWrapper<Integer, String> wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);

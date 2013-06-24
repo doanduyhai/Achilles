@@ -21,7 +21,7 @@ public class CQLEntityInterceptorBuilder<T> {
     private static final Logger log = LoggerFactory.getLogger(CQLEntityInterceptorBuilder.class);
 
     private T target;
-    private Set<Method> lazyLoaded = new HashSet<Method>();
+    private Set<Method> alreadyLoaded = new HashSet<Method>();
     private CQLPersistenceContext context;
 
     public static <T> CQLEntityInterceptorBuilder<T> builder(CQLPersistenceContext context, T entity) {
@@ -60,12 +60,17 @@ public class CQLEntityInterceptorBuilder<T> {
         interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
 
         if (context.isLoadEagerFields()) {
-            lazyLoaded.addAll(entityMeta.getEagerGetters());
+            alreadyLoaded.addAll(entityMeta.getEagerGetters());
         }
-        interceptor.setAlreadyLoaded(lazyLoaded);
+        interceptor.setAlreadyLoaded(alreadyLoaded);
         interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
-        interceptor.setKey(context.getPrimaryKey());
+        interceptor.setPrimaryKey(context.getPrimaryKey());
 
         return interceptor;
+    }
+
+    public CQLEntityInterceptorBuilder<T> alreadyLoaded(Set<Method> alreadyLoaded) {
+        this.alreadyLoaded = alreadyLoaded;
+        return this;
     }
 }

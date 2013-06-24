@@ -13,11 +13,9 @@ import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
-
+import java.util.HashSet;
 import java.util.Set;
-
 import me.prettyprint.hector.api.mutation.Mutator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,263 +27,277 @@ import org.slf4j.LoggerFactory;
  */
 public class ThriftPersistenceContext extends PersistenceContext
 {
-	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContext.class);
+    private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContext.class);
 
-	private ThriftEntityPersister persister = new ThriftEntityPersister();
-	private ThriftEntityLoader loader = new ThriftEntityLoader();
-	private ThriftEntityMerger merger = new ThriftEntityMerger();
-	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
-	private EntityRefresher<ThriftPersistenceContext> refresher;
+    private ThriftEntityPersister persister = new ThriftEntityPersister();
+    private ThriftEntityLoader loader = new ThriftEntityLoader();
+    private ThriftEntityMerger merger = new ThriftEntityMerger();
+    private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
+    private EntityRefresher<ThriftPersistenceContext> refresher;
 
-	private ThriftDaoContext thriftDaoContext;
-	private ThriftGenericEntityDao entityDao;
-	private ThriftGenericWideRowDao wideRowDao;
-	private ThriftAbstractFlushContext<?> thriftFlushContext;
-	private AchillesConsistencyLevelPolicy policy;
+    private ThriftDaoContext thriftDaoContext;
+    private ThriftGenericEntityDao entityDao;
+    private ThriftGenericWideRowDao wideRowDao;
+    private ThriftAbstractFlushContext<?> flushContext;
+    private AchillesConsistencyLevelPolicy policy;
 
-	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			ConfigurationContext configContext, //
-			ThriftDaoContext thriftDaoContext, //
-			ThriftAbstractFlushContext<?> flushContext, //
-			Object entity, Set<String> entitiesIdentity)
-	{
-		super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
-		log.trace("Create new persistence context for instance {} of class {}", entity,
-				entityMeta.getClassName());
+    public ThriftPersistenceContext(EntityMeta entityMeta, //
+            ConfigurationContext configContext, //
+            ThriftDaoContext thriftDaoContext, //
+            ThriftAbstractFlushContext<?> flushContext, //
+            Object entity, Set<String> entitiesIdentity)
+    {
+        super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
+        log.trace("Create new persistence context for instance {} of class {}", entity,
+                entityMeta.getClassName());
 
-		initCollaborators(thriftDaoContext, flushContext);
-		initDaos();
-	}
+        initCollaborators(thriftDaoContext, flushContext);
+        initDaos();
+    }
 
-	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			ConfigurationContext configContext, //
-			ThriftDaoContext thriftDaoContext, //
-			ThriftAbstractFlushContext<?> flushContext, //
-			Class<?> entityClass, Object primaryKey, Set<String> entitiesIdentity)
-	{
-		super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
-		log.trace("Create new persistence context for instance {} of class {}", entity,
-				entityClass.getCanonicalName());
+    public ThriftPersistenceContext(EntityMeta entityMeta, //
+            ConfigurationContext configContext, //
+            ThriftDaoContext thriftDaoContext, //
+            ThriftAbstractFlushContext<?> flushContext, //
+            Class<?> entityClass, Object primaryKey, Set<String> entitiesIdentity)
+    {
+        super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
+        log.trace("Create new persistence context for instance {} of class {}", entity,
+                entityClass.getCanonicalName());
 
-		initCollaborators(thriftDaoContext, flushContext);
-		initDaos();
-	}
+        initCollaborators(thriftDaoContext, flushContext);
+        initDaos();
+    }
 
-	private void initCollaborators(ThriftDaoContext thriftDaoContext, //
-			ThriftAbstractFlushContext<?> flushContext)
-	{
-		refresher = new EntityRefresher<ThriftPersistenceContext>(loader, proxifier);
-		policy = configContext.getConsistencyPolicy();
-		this.thriftDaoContext = thriftDaoContext;
-		this.thriftFlushContext = flushContext;
-	}
+    private void initCollaborators(ThriftDaoContext thriftDaoContext, //
+            ThriftAbstractFlushContext<?> flushContext)
+    {
+        refresher = new EntityRefresher<ThriftPersistenceContext>(loader, proxifier);
+        policy = configContext.getConsistencyPolicy();
+        this.thriftDaoContext = thriftDaoContext;
+        this.flushContext = flushContext;
+    }
 
-	private void initDaos()
-	{
-		String tableName = entityMeta.getTableName();
-		if (entityMeta.isWideRow())
-		{
-			this.wideRowDao = thriftDaoContext.findWideRowDao(tableName);
-		}
-		else
-		{
-			this.entityDao = thriftDaoContext.findEntityDao(tableName);
-		}
-	}
+    private void initDaos()
+    {
+        String tableName = entityMeta.getTableName();
+        if (entityMeta.isClusteredEntity())
+        {
+            this.wideRowDao = thriftDaoContext.findWideRowDao(tableName);
+        }
+        else
+        {
+            this.entityDao = thriftDaoContext.findEntityDao(tableName);
+        }
+    }
 
-	@Override
-	public ThriftPersistenceContext newPersistenceContext(EntityMeta joinMeta, Object joinEntity)
-	{
-		log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
-				joinMeta.getClassName());
+    @Override
+    public ThriftPersistenceContext createContextForJoin(EntityMeta joinMeta, Object joinEntity)
+    {
+        log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
+                joinMeta.getClassName());
 
-		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
-				thriftFlushContext.duplicateWithoutTtl(), joinEntity, entitiesIdentity);
-	}
+        return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
+                flushContext.duplicateWithoutTtl(), joinEntity, entitiesIdentity);
+    }
 
-	@Override
-	public ThriftPersistenceContext newPersistenceContext(Class<?> entityClass,
-			EntityMeta joinMeta, Object joinId)
-	{
-		log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
-				joinMeta.getClassName());
+    @Override
+    public ThriftPersistenceContext createContextForJoin(Class<?> entityClass,
+            EntityMeta joinMeta, Object joinId)
+    {
+        log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
+                joinMeta.getClassName());
 
-		return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
-				thriftFlushContext.duplicateWithoutTtl(), entityClass, joinId, entitiesIdentity);
-	}
+        return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
+                flushContext.duplicateWithoutTtl(), entityClass, joinId, entitiesIdentity);
+    }
 
-	@Override
-	public void persist()
-	{
-		thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>()
-				{
-					@Override
-					public Void execute()
-					{
-						persister.persist(ThriftPersistenceContext.this);
-						flush();
-						return null;
-					}
-				});
-	}
+    @Override
+    public ThriftPersistenceContext duplicateWithPrimaryKey(Object embeddedId)
+    {
+        return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+                flushContext.duplicateWithoutTtl(), entityClass, embeddedId, new HashSet<String>());
+    }
 
-	@Override
-	public <T> T merge(final T entity)
-	{
+    @Override
+    public ThriftPersistenceContext duplicate(Object entity)
+    {
+        return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+                flushContext.duplicateWithoutTtl(), entity, new HashSet<String>());
+    }
 
-		return thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<T>()
-				{
-					@Override
-					public T execute()
-					{
-						T merged = merger.<T> merge(ThriftPersistenceContext.this, entity);
-						flush();
-						return merged;
-					}
-				});
+    @Override
+    public void persist()
+    {
+        flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+                new SafeExecutionContext<Void>()
+                {
+                    @Override
+                    public Void execute()
+                    {
+                        persister.persist(ThriftPersistenceContext.this);
+                        flush();
+                        return null;
+                    }
+                });
+    }
 
-	}
+    @Override
+    public <T> T merge(final T entity)
+    {
 
-	@Override
-	public void remove()
-	{
-		thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>()
-				{
-					@Override
-					public Void execute()
-					{
-						persister.remove(ThriftPersistenceContext.this);
-						flush();
-						return null;
-					}
-				});
-	}
+        return flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+                new SafeExecutionContext<T>()
+                {
+                    @Override
+                    public T execute()
+                    {
+                        T merged = merger.<T> merge(ThriftPersistenceContext.this, entity);
+                        flush();
+                        return merged;
+                    }
+                });
 
-	@Override
-	public <T> T find(final Class<T> entityClass)
-	{
-		T entity = thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
-				new SafeExecutionContext<T>()
-				{
-					@Override
-					public T execute()
-					{
-						return loader.<T> load(ThriftPersistenceContext.this, entityClass);
-					}
-				});
+    }
 
-		if (entity != null)
-		{
-			entity = proxifier.buildProxy(entity, this);
-		}
-		return entity;
-	}
+    @Override
+    public void remove()
+    {
+        flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
+                new SafeExecutionContext<Void>()
+                {
+                    @Override
+                    public Void execute()
+                    {
+                        persister.remove(ThriftPersistenceContext.this);
+                        flush();
+                        return null;
+                    }
+                });
+    }
 
-	@Override
-	public <T> T getReference(Class<T> entityClass)
-	{
-		setLoadEagerFields(false);
-		return find(entityClass);
-	}
+    @Override
+    public <T> T find(final Class<T> entityClass)
+    {
+        T entity = flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+                new SafeExecutionContext<T>()
+                {
+                    @Override
+                    public T execute()
+                    {
+                        return loader.<T> load(ThriftPersistenceContext.this, entityClass);
+                    }
+                });
 
-	@Override
-	public void refresh()
-	{
-		thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Void>()
-				{
-					@Override
-					public Void execute()
-					{
-						refresher.refresh(ThriftPersistenceContext.this);
-						return null;
-					}
-				});
+        if (entity != null)
+        {
+            entity = proxifier.buildProxy(entity, this);
+        }
+        return entity;
+    }
 
-	}
+    @Override
+    public <T> T getReference(Class<T> entityClass)
+    {
+        setLoadEagerFields(false);
+        return find(entityClass);
+    }
 
-	@Override
-	public <T> T initialize(final T entity)
-	{
-		log.debug("Force lazy fields initialization for entity {}", entity);
-		proxifier.ensureProxy(entity);
-		final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
-				.getInterceptor(entity);
+    @Override
+    public void refresh()
+    {
+        flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+                new SafeExecutionContext<Void>()
+                {
+                    @Override
+                    public Void execute()
+                    {
+                        refresher.refresh(ThriftPersistenceContext.this);
+                        return null;
+                    }
+                });
 
-		thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Void>()
-				{
-					@Override
-					public Void execute()
-					{
-						initializer.initializeEntity(entity, entityMeta, interceptor);
-						return null;
-					}
-				});
+    }
 
-		return entity;
-	}
+    @Override
+    public <T> T initialize(final T entity)
+    {
+        log.debug("Force lazy fields initialization for entity {}", entity);
+        proxifier.ensureProxy(entity);
+        final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
+                .getInterceptor(entity);
 
-	public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,
-			ConsistencyLevel readLevel)
-	{
-		return thriftFlushContext.getConsistencyContext().executeWithReadConsistencyLevel(context,
-				readLevel);
-	}
+        flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
+                new SafeExecutionContext<Void>()
+                {
+                    @Override
+                    public Void execute()
+                    {
+                        initializer.initializeEntity(entity, entityMeta, interceptor);
+                        return null;
+                    }
+                });
 
-	public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context,
-			ConsistencyLevel writeLevel)
-	{
-		return thriftFlushContext.getConsistencyContext().executeWithWriteConsistencyLevel(context,
-				writeLevel);
-	}
+        return entity;
+    }
 
-	public ThriftGenericEntityDao findEntityDao(String tableName)
-	{
-		return thriftDaoContext.findEntityDao(tableName);
-	}
+    public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context,
+            ConsistencyLevel readLevel)
+    {
+        return flushContext.getConsistencyContext().executeWithReadConsistencyLevel(context,
+                readLevel);
+    }
 
-	public ThriftGenericWideRowDao findWideRowDao(String tableName)
-	{
-		return thriftDaoContext.findWideRowDao(tableName);
-	}
+    public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context,
+            ConsistencyLevel writeLevel)
+    {
+        return flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(context,
+                writeLevel);
+    }
 
-	public ThriftCounterDao getCounterDao()
-	{
-		return thriftDaoContext.getCounterDao();
-	}
+    public ThriftGenericEntityDao findEntityDao(String tableName)
+    {
+        return thriftDaoContext.findEntityDao(tableName);
+    }
 
-	public Mutator<Object> getEntityMutator(String tableName)
-	{
-		return thriftFlushContext.getEntityMutator(tableName);
-	}
+    public ThriftGenericWideRowDao findWideRowDao(String tableName)
+    {
+        return thriftDaoContext.findWideRowDao(tableName);
+    }
 
-	public Mutator<Object> getWideRowMutator(String tableName)
-	{
-		return thriftFlushContext.getWideRowMutator(tableName);
-	}
+    public ThriftCounterDao getCounterDao()
+    {
+        return thriftDaoContext.getCounterDao();
+    }
 
-	public Mutator<Object> getCounterMutator()
-	{
-		return thriftFlushContext.getCounterMutator();
-	}
+    public Mutator<Object> getEntityMutator(String tableName)
+    {
+        return flushContext.getEntityMutator(tableName);
+    }
 
-	public ThriftGenericEntityDao getEntityDao()
-	{
-		return entityDao;
-	}
+    public Mutator<Object> getWideRowMutator(String tableName)
+    {
+        return flushContext.getWideRowMutator(tableName);
+    }
 
-	public ThriftGenericWideRowDao getWideRowDao()
-	{
-		return wideRowDao;
-	}
+    public Mutator<Object> getCounterMutator()
+    {
+        return flushContext.getCounterMutator();
+    }
 
-	public AchillesConsistencyLevelPolicy getPolicy()
-	{
-		return policy;
-	}
+    public ThriftGenericEntityDao getEntityDao()
+    {
+        return entityDao;
+    }
+
+    public ThriftGenericWideRowDao getWideRowDao()
+    {
+        return wideRowDao;
+    }
+
+    public AchillesConsistencyLevelPolicy getPolicy()
+    {
+        return policy;
+    }
 
 }

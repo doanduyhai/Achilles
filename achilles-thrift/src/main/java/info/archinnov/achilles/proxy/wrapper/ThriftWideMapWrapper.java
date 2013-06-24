@@ -1,15 +1,13 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
-import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
-import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
-import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
+import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
+import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.hector.api.beans.Composite;
@@ -32,10 +30,6 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     protected Object id;
     protected ThriftGenericWideRowDao dao;
     protected PropertyMeta<K, V> propertyMeta;
-    private ThriftPropertyHelper thriftPropertyHelper;
-    private ThriftKeyValueFactory thriftKeyValueFactory;
-    private ThriftIteratorFactory thriftIteratorFactory;
-    private ThriftCompositeFactory thriftCompositeFactory;
 
     protected Composite buildComposite(K key)
     {
@@ -91,7 +85,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
             OrderingMode ordering)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -111,7 +105,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -130,7 +124,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -183,7 +177,8 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public void remove(K start, K end, BoundingMode bounds)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end,
+                OrderingMode.ASCENDING);
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, OrderingMode.ASCENDING);
 
@@ -237,25 +232,5 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     public void setWideMapMeta(PropertyMeta<K, V> wideMapMeta)
     {
         this.propertyMeta = wideMapMeta;
-    }
-
-    public void setCompositeHelper(ThriftPropertyHelper thriftPropertyHelper)
-    {
-        this.thriftPropertyHelper = thriftPropertyHelper;
-    }
-
-    public void setKeyValueFactory(ThriftKeyValueFactory thriftKeyValueFactory)
-    {
-        this.thriftKeyValueFactory = thriftKeyValueFactory;
-    }
-
-    public void setIteratorFactory(ThriftIteratorFactory thriftIteratorFactory)
-    {
-        this.thriftIteratorFactory = thriftIteratorFactory;
-    }
-
-    public void setCompositeKeyFactory(ThriftCompositeFactory thriftCompositeFactory)
-    {
-        this.thriftCompositeFactory = thriftCompositeFactory;
     }
 }

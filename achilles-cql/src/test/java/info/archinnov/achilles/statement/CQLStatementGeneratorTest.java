@@ -4,13 +4,13 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.type.BoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
-import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -59,7 +59,7 @@ public class CQLStatementGeneratorTest {
         List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
 
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .compNames("id", "a", "b").type(PropertyType.COMPOUND_ID).build();
+                .compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
 
         PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
                 .type(PropertyType.SIMPLE).build();

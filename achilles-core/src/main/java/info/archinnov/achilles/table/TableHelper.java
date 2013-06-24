@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class TableHelper {
-    protected static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
+    static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
     protected static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
     public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");

@@ -5,6 +5,7 @@ import static info.archinnov.achilles.helper.CQLTypeHelper.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import mapping.entity.UserBean;
 
 import org.junit.Test;
 

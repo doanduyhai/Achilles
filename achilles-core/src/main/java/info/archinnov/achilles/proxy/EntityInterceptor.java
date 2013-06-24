@@ -34,7 +34,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
     protected EntityProxifier<CONTEXT> proxifier;
 
     protected T target;
-    protected Object key;
+    protected Object primaryKey;
     protected Method idGetter;
     protected Method idSetter;
     protected Map<Method, PropertyMeta<?, ?>> getterMetas;
@@ -58,7 +58,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
 
         if (idGetter.equals(method))
         {
-            return key;
+            return primaryKey;
         }
         else if (idSetter.equals(method))
         {
@@ -88,11 +88,11 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         PropertyMeta<?, ?> propertyMeta = this.getterMetas.get(method);
 
         // Load fields into target object
-        if (!propertyMeta.type().isProxyType() && !this.alreadyLoaded.contains(method))
+        if (!propertyMeta.isProxyType() && !this.alreadyLoaded.contains(method))
         {
             log.trace("Loading property {}", propertyMeta.getPropertyName());
 
-            loader.loadPropertyIntoObject(target, key, context, propertyMeta);
+            loader.loadPropertyIntoObject(context, target, propertyMeta);
             alreadyLoaded.add(method);
         }
 
@@ -116,7 +116,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                                     propertyMeta.getEntityClassName());
 
                     @SuppressWarnings("unchecked")
-                    CONTEXT joinContext = (CONTEXT) context.newPersistenceContext(
+                    CONTEXT joinContext = (CONTEXT) context.createContextForJoin(
                             propertyMeta.joinMeta(), rawValue);
                     result = proxifier.buildProxy(rawValue, joinContext);
                 }
@@ -179,22 +179,10 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                 }
                 break;
             case WIDE_MAP:
-                if (context.isWideRow())
-                {
-                    log
-                            .trace("Build wide row widemap wrapper for property {} of entity of class {} ",
-                                    propertyMeta.getPropertyName(),
-                                    propertyMeta.getEntityClassName());
+                log.trace("Build wide map wrapper for property {} of entity of class {} ",
+                        propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-                    result = buildWideRowWrapper(propertyMeta);
-                }
-                else
-                {
-                    log.trace("Build wide map wrapper for property {} of entity of class {} ",
-                            propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-
-                    result = buildWideMapWrapper(propertyMeta);
-                }
+                result = buildWideMapWrapper(propertyMeta);
                 break;
             case COUNTER_WIDE_MAP:
 
@@ -228,8 +216,6 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
     protected abstract <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta);
 
     protected abstract <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta);
-
-    protected abstract <K, V> Object buildWideRowWrapper(PropertyMeta<K, V> propertyMeta);
 
     private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
             throws Throwable
@@ -270,9 +256,9 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         return alreadyLoaded;
     }
 
-    public Object getKey()
+    public Object getPrimaryKey()
     {
-        return key;
+        return primaryKey;
     }
 
     public void setTarget(T target)
@@ -280,9 +266,9 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         this.target = target;
     }
 
-    void setKey(Object key)
+    void setPrimaryKey(Object key)
     {
-        this.key = key;
+        this.primaryKey = key;
     }
 
     void setIdGetter(Method idGetter)

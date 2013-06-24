@@ -4,6 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesAbstractWrapperTest

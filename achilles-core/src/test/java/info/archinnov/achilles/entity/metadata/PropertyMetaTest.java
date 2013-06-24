@@ -2,18 +2,20 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
 import info.archinnov.achilles.type.KeyValue;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
-import mapping.entity.TweetCompoundKey;
-import mapping.entity.UserBean;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
-import parser.entity.CompoundKeyByConstructor;
-import testBuilders.PropertyMetaTestBuilder;
 import com.google.common.collect.Sets;
 
 /**
@@ -169,6 +171,21 @@ public class PropertyMetaTest
 
         String key = propertyMeta.getKey(test);
         assertThat(key).isEqualTo("test");
+    }
+
+    @Test
+    public void should_cast_value_as_join_type() throws Exception
+    {
+        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+                .noClass(Integer.class, UserBean.class)
+                .type(PropertyType.JOIN_SIMPLE)
+                .build();
+
+        UserBean uuid = new UserBean();
+
+        Object cast = propertyMeta.castValue(uuid);
+
+        assertThat(cast).isSameAs(uuid);
     }
 
     @Test
@@ -382,11 +399,8 @@ public class PropertyMetaTest
     @Test
     public void should_have_any_cascade_type() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
-                .cascadeTypes(MERGE, ALL)
-                .build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
+                .cascadeTypes(MERGE, ALL).build();
 
         assertThat(pm.hasAnyCascadeType(MERGE, PERSIST, REMOVE)).isTrue();
         assertThat(pm.getJoinProperties().getCascadeTypes()).containsOnly(MERGE, ALL);
@@ -531,26 +545,31 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_return_compound_key_constructor() throws Exception {
-        Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class.getConstructor(Long.class,
-                String.class);
+    public void should_return_compound_key_constructor() throws Exception
+    {
+        Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
+                .getConstructor(Long.class,
+                        String.class);
         CompoundKeyProperties props = new CompoundKeyProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
         meta.setCompoundKeyProperties(props);
 
-        assertThat(meta.<CompoundKeyByConstructor> getCompoundKeyConstructor()).isSameAs(constructor);
+        assertThat(meta.<CompoundKeyByConstructor> getCompoundKeyConstructor()).isSameAs(
+                constructor);
     }
 
     @Test
-    public void should_return_null_when_no_compound_key_constructor() throws Exception {
+    public void should_return_null_when_no_compound_key_constructor() throws Exception
+    {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
         assertThat(meta.getCompoundKeyConstructor()).isNull();
     }
 
     @Test
-    public void should_return_true_when_compound_key_has_default_constructor() throws Exception {
+    public void should_return_true_when_compound_key_has_default_constructor() throws Exception
+    {
 
         Constructor<TweetCompoundKey> constructor = TweetCompoundKey.class.getConstructor();
         CompoundKeyProperties props = new CompoundKeyProperties();
@@ -563,10 +582,12 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_return_false_when_compound_key_has_no_default_constructor() throws Exception {
+    public void should_return_false_when_compound_key_has_no_default_constructor() throws Exception
+    {
 
-        Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class.getConstructor(Long.class,
-                String.class);
+        Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
+                .getConstructor(Long.class,
+                        String.class);
         CompoundKeyProperties props = new CompoundKeyProperties();
         props.setConstructor(constructor);
 
@@ -577,8 +598,146 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_return_false_when_no_compound_key_constructor() throws Exception {
+    public void should_return_false_when_no_compound_key_constructor() throws Exception
+    {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
         assertThat(meta.hasDefaultConstructorForCompoundKey()).isFalse();
     }
+
+    @Test
+    public void should_get_component_getters() throws Exception
+    {
+        Method idGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compGetters(Arrays.asList(idGetter, nameGetter))
+                .build();
+
+        assertThat(idMeta.getComponentGetters()).containsExactly(idGetter, nameGetter);
+    }
+
+    @Test
+    public void should_return_empty_list_when_no_component_getters() throws Exception
+    {
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).build();
+
+        assertThat(idMeta.getComponentGetters()).isEmpty();
+    }
+
+    @Test
+    public void should_get_partition_key_getter() throws Exception
+    {
+        Method idGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compGetters(Arrays.asList(idGetter, nameGetter))
+                .build();
+
+        assertThat(idMeta.getPartitionKeyGetter()).isEqualTo(idGetter);
+    }
+
+    @Test
+    public void should_get_partition_key_setter() throws Exception
+    {
+        Method idSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
+        Method nameSetter = CompoundKey.class.getDeclaredMethod("setName", String.class);
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compSetters(Arrays.asList(idSetter, nameSetter))
+                .build();
+
+        assertThat(idMeta.getPartitionKeySetter()).isEqualTo(idSetter);
+    }
+
+    @Test
+    public void should_return_null_when_no_partition_key_getter() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).build();
+
+        assertThat(idMeta.getPartitionKeyGetter()).isNull();
+    }
+
+    @Test
+    public void should_return_null_when_no_partition_key_setter() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).build();
+
+        assertThat(idMeta.getPartitionKeySetter()).isNull();
+    }
+
+    @Test
+    public void should_get_component_setters() throws Exception
+    {
+        Method idSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
+        Method nameSetter = CompoundKey.class.getDeclaredMethod("setName", String.class);
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compSetters(Arrays.asList(idSetter, nameSetter))
+                .build();
+
+        assertThat(idMeta.getComponentSetters()).containsExactly(idSetter, nameSetter);
+    }
+
+    @Test
+    public void should_return_empty_list_when_no_component_setters() throws Exception
+    {
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).build();
+
+        assertThat(idMeta.getComponentSetters()).isEmpty();
+    }
+
+    @Test
+    public void should_get_component_classes() throws Exception
+    {
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Arrays.<Class<?>> asList(Long.class, String.class))
+                .build();
+
+        assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
+    }
+
+    @Test
+    public void should_return_empty_list_when_no_component_classes() throws Exception
+    {
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).build();
+
+        assertThat(idMeta.getComponentClasses()).isEmpty();
+    }
+
+    @Test
+    public void should_return_true_for_is_embedded_id() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class)
+                .type(EMBEDDED_ID)
+                .build();
+
+        assertThat(idMeta.isEmbeddedId()).isTrue();
+    }
+
+    @Test
+    public void should_return_false_for_is_embedded_id() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder.valueClass(
+                CompoundKey.class).type(ID).build();
+
+        assertThat(idMeta.isEmbeddedId()).isFalse();
+    }
+
 }

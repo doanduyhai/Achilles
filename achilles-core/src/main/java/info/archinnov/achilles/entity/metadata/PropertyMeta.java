@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.helper.PropertyHelper.*;
+import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
@@ -150,7 +150,7 @@ public class PropertyMeta<K, V>
     {
         try
         {
-            if (isSupportedType(valueClass))
+            if (isSupportedType(valueClass) || type.isJoin())
                 return this.valueClass.cast(object);
             else
                 return objectMapper.readValue((String) object, valueClass);
@@ -169,6 +169,26 @@ public class PropertyMeta<K, V>
             compGetters = compoundKeyProperties.getComponentGetters();
         }
         return compGetters;
+    }
+
+    public Method getPartitionKeyGetter()
+    {
+        Method getter = null;
+        if (compoundKeyProperties != null)
+        {
+            getter = compoundKeyProperties.getComponentGetters().get(0);
+        }
+        return getter;
+    }
+
+    public Method getPartitionKeySetter()
+    {
+        Method getter = null;
+        if (compoundKeyProperties != null)
+        {
+            getter = compoundKeyProperties.getComponentSetters().get(0);
+        }
+        return getter;
     }
 
     public List<Method> getComponentSetters()
@@ -218,12 +238,14 @@ public class PropertyMeta<K, V>
 
     public boolean hasDefaultConstructorForCompoundKey()
     {
-        return compoundKeyProperties != null ? compoundKeyProperties.getConstructor().getParameterTypes().length == 0 : false;
+        return compoundKeyProperties != null ? compoundKeyProperties
+                .getConstructor()
+                .getParameterTypes().length == 0 : false;
     }
 
     public boolean isJoin()
     {
-        return type.isJoinColumn();
+        return type.isJoin();
     }
 
     public EntityMeta joinMeta()
@@ -264,6 +286,11 @@ public class PropertyMeta<K, V>
     public boolean isProxyType()
     {
         return this.type.isProxyType();
+    }
+
+    public boolean isEmbeddedId()
+    {
+        return type.isEmbeddedId();
     }
 
     public boolean hasCascadeType(CascadeType type)

@@ -1,7 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import static info.archinnov.achilles.helper.ThriftLoggerHelper.*;
-import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
@@ -11,12 +10,11 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
-import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
-import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
+import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
+import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.hector.api.beans.Composite;
@@ -39,13 +37,9 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     private Object id;
     private PropertyMeta<K, V> propertyMeta;
     private ThriftGenericWideRowDao dao;
-    private ThriftEntityPersister persister;
-    private ThriftEntityLoader loader;
-    private ThriftEntityProxifier proxifier;
-    private ThriftPropertyHelper thriftPropertyHelper;
-    private ThriftCompositeFactory thriftCompositeFactory;
-    private ThriftKeyValueFactory thriftKeyValueFactory;
-    private ThriftIteratorFactory thriftIteratorFactory;
+    private ThriftEntityPersister persister = new ThriftEntityPersister();
+    private ThriftEntityLoader loader = new ThriftEntityLoader();
+    private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
     private Composite buildComposite(K key)
     {
@@ -64,7 +58,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
         {
             EntityMeta joinMeta = propertyMeta.joinMeta();
 
-            ThriftPersistenceContext joinContext = context.newPersistenceContext(
+            ThriftPersistenceContext joinContext = context.createContextForJoin(
                     propertyMeta.getValueClass(), joinMeta, joinId);
 
             result = loader.<V> load(joinContext, propertyMeta.getValueClass());
@@ -104,7 +98,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
             OrderingMode ordering)
     {
 
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -125,7 +119,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -143,7 +137,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, ordering, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -200,7 +194,8 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public void remove(K start, K end, BoundingMode bounds)
     {
-        thriftPropertyHelper.checkBounds(propertyMeta, start, end, OrderingMode.ASCENDING, false);
+        queryValidator.validateBoundsForQuery(propertyMeta, start, end,
+                OrderingMode.ASCENDING);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery(//
                 propertyMeta, start, end, bounds, OrderingMode.ASCENDING);
@@ -241,7 +236,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
         if (value != null)
         {
             ThriftPersistenceContext joinContext = context
-                    .newPersistenceContext(propertyMeta.joinMeta(), value);
+                    .createContextForJoin(propertyMeta.joinMeta(), value);
 
             joinId = persister.cascadePersistOrEnsureExists(joinContext, value, joinProperties);
         }
@@ -265,41 +260,6 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     public void setExternalWideMapMeta(PropertyMeta<K, V> externalWideMapMeta)
     {
         this.propertyMeta = externalWideMapMeta;
-    }
-
-    public void setEntityProxifier(ThriftEntityProxifier proxifier)
-    {
-        this.proxifier = proxifier;
-    }
-
-    public void setPersister(ThriftEntityPersister persister)
-    {
-        this.persister = persister;
-    }
-
-    public void setLoader(ThriftEntityLoader loader)
-    {
-        this.loader = loader;
-    }
-
-    public void setCompositeHelper(ThriftPropertyHelper thriftPropertyHelper)
-    {
-        this.thriftPropertyHelper = thriftPropertyHelper;
-    }
-
-    public void setCompositeKeyFactory(ThriftCompositeFactory thriftCompositeFactory)
-    {
-        this.thriftCompositeFactory = thriftCompositeFactory;
-    }
-
-    public void setKeyValueFactory(ThriftKeyValueFactory thriftKeyValueFactory)
-    {
-        this.thriftKeyValueFactory = thriftKeyValueFactory;
-    }
-
-    public void setIteratorFactory(ThriftIteratorFactory thriftIteratorFactory)
-    {
-        this.thriftIteratorFactory = thriftIteratorFactory;
     }
 
     public void setDao(ThriftGenericWideRowDao dao)

@@ -1,14 +1,16 @@
 package info.archinnov.achilles.entity.operations;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import mapping.entity.CompleteBean;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import parser.entity.CompoundKey;
-import testBuilders.CompleteBeanTestBuilder;
 
 /**
  * AchillesEntityValidatorTest
@@ -29,8 +29,7 @@ import testBuilders.CompleteBeanTestBuilder;
  * 
  */
 @RunWith(MockitoJUnitRunner.class)
-public class EntityValidatorTest
-{
+public class EntityValidatorTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -38,7 +37,7 @@ public class EntityValidatorTest
     private EntityValidator<PersistenceContext> achillesEntityValidator;
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     @Mock
     private EntityProxifier<PersistenceContext> proxifier;
@@ -56,15 +55,13 @@ public class EntityValidatorTest
     private PersistenceContext context;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         Whitebox.setInternalState(achillesEntityValidator, "invoker", invoker);
         when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
     }
 
     @Test
-    public void should_validate() throws Exception
-    {
+    public void should_validate() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
         when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
@@ -75,8 +72,7 @@ public class EntityValidatorTest
     }
 
     @Test
-    public void should_exception_when_no_id() throws Exception
-    {
+    public void should_exception_when_no_id() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
         when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
@@ -84,15 +80,13 @@ public class EntityValidatorTest
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(null);
 
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Cannot get primary key for entity "
-                + CompleteBean.class.getCanonicalName());
+        exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
 
         achillesEntityValidator.validateEntity(bean, entityMetaMap);
     }
 
     @Test
-    public void should_validate_clustered_id() throws Exception
-    {
+    public void should_validate_clustered_id() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
         CompoundKey clusteredId = new CompoundKey(11L, "name");
 
@@ -102,8 +96,7 @@ public class EntityValidatorTest
         Method userIdGetter = CompoundKey.class.getMethod("getUserId");
         Method nameGetter = CompoundKey.class.getMethod("getName");
 
-        when(idMeta.getComponentGetters()).thenReturn(
-                Arrays.asList(userIdGetter, nameGetter));
+        when(idMeta.getComponentGetters()).thenReturn(Arrays.asList(userIdGetter, nameGetter));
 
         when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
         when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
@@ -112,50 +105,13 @@ public class EntityValidatorTest
     }
 
     @Test
-    public void should_validate_simple_id() throws Exception
-    {
+    public void should_validate_simple_id() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
         when(idMeta.isSingleKey()).thenReturn(true);
 
         achillesEntityValidator.validateEntity(bean, entityMeta);
 
-    }
-
-    @Test
-    public void should_validate_not_wide_row() throws Exception
-    {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(entityMeta.isWideRow()).thenReturn(false);
-
-        achillesEntityValidator.validateNotWideRow(bean, entityMetaMap);
-    }
-
-    @Test
-    public void should_exception_when_wide_row() throws Exception
-    {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(entityMeta.isWideRow()).thenReturn(true);
-
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("This operation is not allowed for the wide row '"
-                + CompleteBean.class.getCanonicalName());
-
-        achillesEntityValidator.validateNotWideRow(bean, entityMetaMap);
-    }
-
-    @Test
-    public void should_check_no_pending_batch_with_persistence_context() throws Exception
-    {
-
-        when(context.isBatchMode()).thenReturn(false);
-        achillesEntityValidator.validateNoPendingBatch(context);
     }
 
 }

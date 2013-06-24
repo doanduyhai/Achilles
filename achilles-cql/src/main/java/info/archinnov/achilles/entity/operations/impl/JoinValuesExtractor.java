@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +18,7 @@ import com.google.common.base.Function;
 public class JoinValuesExtractor implements
         Function<PropertyMeta<?, ?>, Pair<List<?>, PropertyMeta<?, ?>>>
 {
-    private MethodInvoker invoker = new MethodInvoker();
+    private ReflectionInvoker invoker = new ReflectionInvoker();
 
     private Object entity;
 

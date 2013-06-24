@@ -2,11 +2,14 @@ package info.archinnov.achilles.composite;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
+import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
+import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
-import info.archinnov.achilles.type.WideMap;
+import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
+import java.util.List;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
@@ -23,8 +26,10 @@ public class ThriftCompositeFactory
 {
     private static final Logger log = LoggerFactory.getLogger(ThriftCompositeFactory.class);
 
-    private ThriftPropertyHelper helper = new ThriftPropertyHelper();
+    private ComponentEqualityCalculator calculator = new ComponentEqualityCalculator();
     private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
+    private ThriftQueryValidator queryValidator = new ThriftQueryValidator();
+    private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
     public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T key)
     {
@@ -47,7 +52,7 @@ public class ThriftCompositeFactory
         }
         else
         {
-            composite = compoundKeyMapper.writeToComposite(key, propertyMeta);
+            composite = compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
         }
         return composite;
     }
@@ -69,34 +74,60 @@ public class ThriftCompositeFactory
             }
             else
             {
-                composite.addComponent(0, key, equality);
+                Serializer<T> serializer = ThriftSerializerTypeInferer.getSerializer(key);
+                composite.setComponent(0, key, serializer, serializer.getComparatorType().getTypeName(), equality);
             }
         }
         else
         {
-            composite = compoundKeyMapper.buildCompositeForQuery(key, propertyMeta, equality);
+            composite = compoundKeyMapper.fromCompoundToCompositeForQuery(key, propertyMeta,
+                    equality);
         }
         return composite;
     }
 
     public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,
-            WideMap.BoundingMode bounds, WideMap.OrderingMode ordering)
+            BoundingMode bounds, OrderingMode ordering)
     {
         log
                 .trace("Creating query composite for propertyMeta {} with start {}, end {}, bounding mode {} and orderging {}",
                         propertyMeta.getPropertyName(), start, end, bounds.name(), ordering.name());
 
-        Composite[] queryComp = new Composite[2];
+        ComponentEquality[] equalities = calculator.determineEquality(bounds, ordering);
 
-        ComponentEquality[] equalities = helper.determineEquality(bounds, ordering);
+        Composite from = createForQuery(propertyMeta, start, equalities[0]);
+        Composite to = createForQuery(propertyMeta, end, equalities[1]);
 
-        Composite startComp = createForQuery(propertyMeta, start, equalities[0]);
-        Composite endComp = createForQuery(propertyMeta, end, equalities[1]);
+        return new Composite[]
+        {
+                from,
+                to
+        };
 
-        queryComp[0] = startComp;
-        queryComp[1] = endComp;
+    }
 
-        return queryComp;
+    public Composite[] createForClusteredQuery(PropertyMeta<?, ?> idMeta,
+            List<Object> clusteringFrom, List<Object> clusteringTo, BoundingMode bounding,
+            OrderingMode ordering)
+    {
+
+        compoundKeyValidator.validateCompoundKeysForClusteredQuery(idMeta, clusteringFrom,
+                clusteringTo, ordering);
+        ComponentEquality[] equalities = calculator.determineEquality(bounding, ordering);
+
+        final Composite from = compoundKeyMapper.fromComponentsToCompositeForQuery(
+                clusteringFrom,
+                idMeta, equalities[0]);
+        final Composite to = compoundKeyMapper.fromComponentsToCompositeForQuery(
+                clusteringTo, idMeta,
+                equalities[1]);
+
+        return new Composite[]
+        {
+                from,
+                to
+        };
+
     }
 
     public Composite createKeyForCounter(String fqcn, Object key, PropertyMeta<?, ?> idMeta)
@@ -121,6 +152,11 @@ public class ThriftCompositeFactory
         composite.addComponent(1, propertyMeta.getPropertyName(), ComponentEquality.EQUAL);
         composite.addComponent(2, 0, ComponentEquality.EQUAL);
         return composite;
+    }
+
+    public Composite createBaseForClusteredGet(Object compoundKey, PropertyMeta<?, ?> idMeta)
+    {
+        return compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(compoundKey, idMeta);
     }
 
     public <K, V> Composite createBaseForCounterGet(PropertyMeta<K, V> propertyMeta)

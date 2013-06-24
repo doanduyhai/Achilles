@@ -8,12 +8,13 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLPersisterImpl;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -26,7 +27,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -97,7 +97,7 @@ public class CQLEntityPersisterTest
 	@Test
 	public void should_persist() throws Exception
 	{
-		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.isClusteredEntity()).thenReturn(false);
 		when(context.addToProcessingList(entity)).thenReturn(true);
 		persister.persist(context);
 
@@ -110,7 +110,7 @@ public class CQLEntityPersisterTest
 	@Test
 	public void should_not_persist_twice_the_same_entity() throws Exception
 	{
-		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.isClusteredEntity()).thenReturn(false);
 		when(context.addToProcessingList(entity)).thenReturn(true, false);
 		persister.persist(context);
 		persister.persist(context);
@@ -125,7 +125,7 @@ public class CQLEntityPersisterTest
 	@Test
 	public void should_not_persist_if_widerow() throws Exception
 	{
-		when(entityMeta.isWideRow()).thenReturn(true);
+		when(entityMeta.isClusteredEntity()).thenReturn(true);
 
 		persister.persist(context);
 

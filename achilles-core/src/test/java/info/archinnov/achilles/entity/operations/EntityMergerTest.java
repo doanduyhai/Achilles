@@ -1,22 +1,27 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static javax.persistence.CascadeType.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
+import static javax.persistence.CascadeType.ALL;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.Merger;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +29,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -36,12 +39,10 @@ import com.google.common.collect.ImmutableMap;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMergerTest
-{
+public class EntityMergerTest {
 
     @InjectMocks
-    private EntityMerger<PersistenceContext> entityMerger = new EntityMerger<PersistenceContext>()
-    {
+    private EntityMerger<PersistenceContext> entityMerger = new EntityMerger<PersistenceContext>() {
     };
 
     @Mock
@@ -68,8 +69,7 @@ public class EntityMergerTest
     private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         Whitebox.setInternalState(entityMerger, "merger", merger);
         Whitebox.setInternalState(entityMerger, "persister", persister);
         Whitebox.setInternalState(entityMerger, "proxifier", proxifier);
@@ -84,21 +84,15 @@ public class EntityMergerTest
     }
 
     @Test
-    public void should_merge_proxified_entity() throws Exception
-    {
+    public void should_merge_proxified_entity() throws Exception {
         when(proxifier.isProxy(entity)).thenReturn(true);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
         when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
         when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
         when(context.addToProcessingList(entity)).thenReturn(true, false);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .accessors()
-                .type(JOIN_SIMPLE)
-                .cascadeType(ALL)
-                .build();
+        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class)
+                .field("user").accessors().type(JOIN_SIMPLE).cascadeType(ALL).build();
 
         meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("user", pm));
 
@@ -119,10 +113,9 @@ public class EntityMergerTest
     }
 
     @Test
-    public void should_persist_transient_entity() throws Exception
-    {
+    public void should_persist_transient_entity() throws Exception {
         when(proxifier.isProxy(entity)).thenReturn(false);
-        when(context.isWideRow()).thenReturn(false);
+        when(context.isClusteredEntity()).thenReturn(false);
         when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
         CompleteBean actual = entityMerger.merge(context, entity);
@@ -131,16 +124,4 @@ public class EntityMergerTest
         verify(persister).persist(context);
     }
 
-    @Test
-    public void should_not_persist_transient_wide_row_entity() throws Exception
-    {
-        when(proxifier.isProxy(entity)).thenReturn(false);
-        when(context.isWideRow()).thenReturn(true);
-        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
-
-        CompleteBean actual = entityMerger.merge(context, entity);
-
-        assertThat(actual).isSameAs(entity);
-        verifyZeroInteractions(persister);
-    }
 }

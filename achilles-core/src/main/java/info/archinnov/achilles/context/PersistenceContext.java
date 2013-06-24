@@ -2,8 +2,9 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
@@ -19,13 +20,14 @@ import com.google.common.base.Optional;
  */
 public abstract class PersistenceContext
 {
-    protected MethodInvoker invoker = new MethodInvoker();
+    protected ReflectionInvoker invoker = new ReflectionInvoker();
     protected EntityInitializer initializer = new EntityInitializer();
     protected ConfigurationContext configContext;
     protected Class<?> entityClass;
     protected EntityMeta entityMeta;
     protected Object entity;
     protected Object primaryKey;
+    protected Object partitionKey;
     protected FlushContext<?> flushContext;
     protected Set<String> entitiesIdentity;
 
@@ -43,29 +45,39 @@ public abstract class PersistenceContext
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Object entity, FlushContext<?> flushContext, Set<String> entitiesIdentity)
+            Object entity,
+            FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
 
         Validator.validateNotNull(entity, "The entity '" + entity + "' should not be null");
         this.entity = entity;
         this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
-
         Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
                 + "' should not be null");
+
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Class<?> entityClass, Object primaryKey, FlushContext<?> flushContext,
-            Set<String> entitiesIdentity)
+            Class<?> entityClass,
+            Object primaryKey, FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
 
         this.primaryKey = primaryKey;
         this.flushContext = flushContext;
-
         Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
                 + "' should not be null");
+
+    }
+
+    private void extractPartitionKey()
+    {
+        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        if (idMeta.isEmbeddedId())
+        {
+            this.partitionKey = invoker.getPartitionKey(primaryKey, idMeta);
+        }
     }
 
     public boolean addToProcessingList(Object entity)
@@ -103,17 +115,30 @@ public abstract class PersistenceContext
         return entities;
     }
 
+    public PropertyMeta<?, ?> getIdMeta()
+    {
+        return entityMeta.getIdMeta();
+    }
+
+    public PropertyMeta<?, ?> getFirstMeta()
+    {
+        return entityMeta.getAllMetasExceptIdMeta().get(0);
+    }
+
     public abstract void refresh();
 
-    public abstract PersistenceContext newPersistenceContext(EntityMeta joinMeta,
-            Object joinEntity);
+    public abstract PersistenceContext duplicateWithPrimaryKey(Object embeddedId);
 
-    public abstract PersistenceContext newPersistenceContext(Class<?> entityClass,
+    public abstract PersistenceContext duplicate(Object entity);
+
+    public abstract PersistenceContext createContextForJoin(EntityMeta joinMeta, Object joinEntity);
+
+    public abstract PersistenceContext createContextForJoin(Class<?> entityClass,
             EntityMeta joinMeta, Object joinId);
 
-    public boolean isWideRow()
+    public boolean isClusteredEntity()
     {
-        return this.entityMeta.isWideRow();
+        return this.entityMeta.isClusteredEntity();
     }
 
     public String getTableName()
@@ -184,6 +209,20 @@ public abstract class PersistenceContext
     public void setPrimaryKey(Object primaryKey)
     {
         this.primaryKey = primaryKey;
+    }
+
+    public Object getPartitionKey()
+    {
+        if (partitionKey == null && primaryKey != null)
+        {
+            extractPartitionKey();
+        }
+        return partitionKey;
+    }
+
+    public void setPartitionKey(Object partitionKey)
+    {
+        this.partitionKey = partitionKey;
     }
 
     public ConfigurationContext getConfigContext()

@@ -6,7 +6,10 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.EntityMetaTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.KeyValue;
 
 import java.util.Arrays;
@@ -15,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -29,8 +31,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.EntityMetaTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -51,7 +51,7 @@ public class EntityMapperTest
 	private EntityMapper mapper;
 
 	@Mock
-	private MethodInvoker invoker;
+	private ReflectionInvoker invoker;
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
