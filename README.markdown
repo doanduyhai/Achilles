@@ -21,7 +21,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>1.8.1</version>
+		<version>1.8.2</version>
 	</dependency>  
  
  Right now, only the **Thrift** implementation is available. The **CQL** version is in progress and relies on 
@@ -69,7 +69,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 # Changes log
 
 * **1.8.2**:
-    * Remove
     * Support immutability for `@CompoundKey` classes (Issue #5). See https://github.com/doanduyhai/Achilles/issues/5#issuecomment-19882998 for more details on new syntax
     * **BREAKING CHANGE**, for `@CompoundKey`, enum types are serialized as String instead of Object (Issue #8)
     * **BREAKING CHANGE**, replace `@Key(order=1)` by `@Order(1)` annotation (Issue #6)
