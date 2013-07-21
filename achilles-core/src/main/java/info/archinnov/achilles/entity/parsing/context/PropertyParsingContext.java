@@ -16,7 +16,8 @@ import org.codehaus.jackson.map.ObjectMapper;
  * @author DuyHai DOAN
  * 
  */
-public class PropertyParsingContext {
+public class PropertyParsingContext
+{
     private EntityParsingContext context;
     private Field currentField;
     private String currentPropertyName;
@@ -24,118 +25,146 @@ public class PropertyParsingContext {
     private boolean joinColumn = false;
     private boolean isCustomConsistencyLevels;
     private boolean primaryKey = false;
-    private boolean multiKeyPrimaryKey = false;
+    private boolean embeddedId = false;
 
     public PropertyParsingContext(EntityParsingContext context, //
-            Field currentField) {
+            Field currentField)
+    {
         this.context = context;
         this.currentField = currentField;
     }
 
-    public ObjectMapper getCurrentObjectMapper() {
+    public ObjectMapper getCurrentObjectMapper()
+    {
         return context.getCurrentObjectMapper();
     }
 
-    public Map<PropertyMeta<?, ?>, String> getWideMaps() {
+    public Map<PropertyMeta<?, ?>, String> getWideMaps()
+    {
         return context.getWideMaps();
     }
 
-    public Map<PropertyMeta<?, ?>, String> getJoinWideMaps() {
+    public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
+    {
         return context.getJoinWideMaps();
     }
 
-    public Map<String, PropertyMeta<?, ?>> getPropertyMetas() {
+    public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
+    {
         return context.getPropertyMetas();
     }
 
-    public Class<?> getCurrentEntityClass() {
+    public Class<?> getCurrentEntityClass()
+    {
         return context.getCurrentEntityClass();
     }
 
-    public boolean isColumnFamilyDirectMapping() {
-        return context.isWideRow();
-    }
-
-    public Field getCurrentField() {
+    public Field getCurrentField()
+    {
         return currentField;
     }
 
-    public boolean isJoinColumn() {
+    public boolean isJoinColumn()
+    {
         return joinColumn;
     }
 
-    public void setJoinColumn(boolean joinColumn) {
+    public void setJoinColumn(boolean joinColumn)
+    {
         this.joinColumn = joinColumn;
     }
 
-    public String getCurrentPropertyName() {
+    public String getCurrentPropertyName()
+    {
         return currentPropertyName;
     }
 
-    public void setCurrentPropertyName(String currentPropertyName) {
+    public void setCurrentPropertyName(String currentPropertyName)
+    {
         this.currentPropertyName = currentPropertyName;
     }
 
-    public String getCurrentExternalTableName() {
+    public String getCurrentExternalTableName()
+    {
         return currentExternalTableName;
     }
 
-    public void setCurrentExternalTableName(String currentExternalTableName) {
+    public void setCurrentExternalTableName(String currentExternalTableName)
+    {
         this.currentExternalTableName = currentExternalTableName;
     }
 
-    public List<PropertyMeta<?, ?>> getCounterMetas() {
+    public List<PropertyMeta<?, ?>> getCounterMetas()
+    {
         return context.getCounterMetas();
     }
 
-    public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels() {
+    public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels()
+    {
         return context.getCurrentConsistencyLevels();
     }
 
-    public AchillesConsistencyLevelPolicy getConfigurableCLPolicy() {
+    public AchillesConsistencyLevelPolicy getConfigurableCLPolicy()
+    {
         return context.getConfigurableCLPolicy();
     }
 
-    public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled() {
+    public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled()
+    {
         return context.getJoinPropertyMetaToBeFilled();
     }
 
-    public String getCurrentColumnFamilyName() {
+    public String getCurrentColumnFamilyName()
+    {
         return context.getCurrentColumnFamilyName();
     }
 
-    public boolean isExternal() {
+    public boolean isExternal()
+    {
         return !StringUtils.isBlank(currentExternalTableName);
     }
 
-    public boolean isCustomConsistencyLevels() {
+    public boolean isCustomConsistencyLevels()
+    {
         return isCustomConsistencyLevels;
     }
 
-    public void setCustomConsistencyLevels(boolean isCustomConsistencyLevels) {
+    public void setCustomConsistencyLevels(boolean isCustomConsistencyLevels)
+    {
         this.isCustomConsistencyLevels = isCustomConsistencyLevels;
     }
 
-    public void hasSimpleCounterType() {
+    public void hasSimpleCounterType()
+    {
         context.setHasSimpleCounter(true);
     }
 
-    public boolean isPrimaryKey() {
+    public boolean isPrimaryKey()
+    {
         return primaryKey;
     }
 
-    public void setPrimaryKey(boolean primaryKey) {
+    public void setPrimaryKey(boolean primaryKey)
+    {
         this.primaryKey = primaryKey;
     }
 
-    public boolean isMultiKeyPrimaryKey() {
-        return multiKeyPrimaryKey;
+    public boolean isEmbeddedId()
+    {
+        return embeddedId;
     }
 
-    public void hasMultiKeyPrimaryKey(boolean multiKeyPrimaryKey) {
-        if (multiKeyPrimaryKey) {
+    public void isEmbeddedId(boolean embeddedId)
+    {
+        if (embeddedId)
+        {
             this.primaryKey = true;
         }
-        this.multiKeyPrimaryKey = multiKeyPrimaryKey;
+        this.embeddedId = embeddedId;
+    }
+
+    public boolean isClusteredEntity()
+    {
+        return context.isClusteredEntity();
     }
 }

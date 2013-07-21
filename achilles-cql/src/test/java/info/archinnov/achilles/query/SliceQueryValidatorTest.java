@@ -5,11 +5,11 @@ import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import mapping.entity.TweetCompoundKey;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class SliceQueryValidatorTest {
         multiKeyProperties.setComponentGetters(Arrays.asList(idGetter, authorGetter, retweetCountGetter));
 
         pm.setCompoundKeyProperties(multiKeyProperties);
-        pm.setType(PropertyType.COMPOUND_ID);
+        pm.setType(PropertyType.EMBEDDED_ID);
     }
 
     @Test

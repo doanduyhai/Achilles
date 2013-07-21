@@ -23,7 +23,7 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
     public void add(V e) {
         log.trace("Mark list property {} of entity class {} dirty upon element addition",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-        this.target.add(proxifier.unproxy(e));
+        this.target.add(proxifier.unwrap(e));
         this.markDirty();
     }
 
@@ -83,7 +83,7 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
     public void set(V e) {
         log.trace("Mark list property {} of entity class {} dirty upon element set at current position",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-        this.target.set(proxifier.unproxy(e));
+        this.target.set(proxifier.unwrap(e));
         this.markDirty();
     }
 

@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +22,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class CQLPersisterImpl
 {
-    private MethodInvoker invoker = new MethodInvoker();
+    private ReflectionInvoker invoker = new ReflectionInvoker();
     private NullJoinValuesFilter nullJoinValuesFilter = new NullJoinValuesFilter();
 
     public void persist(CQLPersistenceContext context)
@@ -95,7 +95,7 @@ public class CQLPersisterImpl
             PropertyMeta<?, ?> joinPM = pair.right;
             for (Object joinEntity : joinValues)
             {
-                CQLPersistenceContext joinContext = context.newPersistenceContext(joinPM
+                CQLPersistenceContext joinContext = context.createContextForJoin(joinPM
                         .getJoinProperties()
                         .getEntityMeta(), joinEntity);
                 entityPersister.persist(joinContext);
@@ -113,7 +113,7 @@ public class CQLPersisterImpl
             for (Object joinEntity : joinValues)
             {
                 EntityMeta joinMeta = joinPM.getJoinProperties().getEntityMeta();
-                CQLPersistenceContext joinContext = context.newPersistenceContext(joinMeta,
+                CQLPersistenceContext joinContext = context.createContextForJoin(joinMeta,
                         joinEntity);
                 boolean entityExist = joinContext.checkForEntityExistence();
 

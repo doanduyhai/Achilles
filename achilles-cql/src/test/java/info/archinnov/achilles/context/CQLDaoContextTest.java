@@ -10,6 +10,9 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.statement.CQLPreparedStatementBinder;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -17,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,8 +31,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;

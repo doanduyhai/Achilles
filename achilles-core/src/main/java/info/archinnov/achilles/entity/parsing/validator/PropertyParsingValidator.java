@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.parsing.validator;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -33,17 +33,6 @@ public class PropertyParsingValidator {
                 + propertyName + "' is already used for the entity '"
                 + context.getCurrentEntityClass().getCanonicalName() + "'");
 
-    }
-
-    public void validateWideRowHasNoExternalWideMap(PropertyParsingContext context) {
-        log.debug("Validate that the wide map property {} for wide row {} has no external column family",
-                context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
-
-        if (context.isExternal() && context.isColumnFamilyDirectMapping()) {
-            throw new AchillesBeanMappingException("Error for field '" + context.getCurrentField().getName()
-                    + "' of entity '" + context.getCurrentEntityClass().getCanonicalName()
-                    + "'. Wide row entity cannot have external WideMap. It does not make sense");
-        }
     }
 
     public void validateMapGenerics(Field field, Class<?> entityClass) {

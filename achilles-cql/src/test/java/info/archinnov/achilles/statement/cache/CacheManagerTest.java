@@ -7,11 +7,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.util.Arrays;
 import java.util.List;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -94,7 +94,7 @@ public class CacheManagerTest
 				.valueClass(String.class)
 				.field("name")
 				.compNames("id", "a", "b")
-				.type(PropertyType.COMPOUND_ID)
+				.type(PropertyType.EMBEDDED_ID)
 				.build();
 
 		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);

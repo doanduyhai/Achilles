@@ -24,7 +24,7 @@ public class PropertyMetaBuilder {
     private CounterProperties counterProperties;
 
     private JoinProperties joinProperties;
-    private CompoundKeyProperties multiKeyProperties;
+    private CompoundKeyProperties compoundKeyProperties;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static PropertyMetaBuilder factory() {
@@ -50,29 +50,8 @@ public class PropertyMetaBuilder {
         log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
         PropertyMeta<K, V> meta = null;
-        boolean singleKey = multiKeyProperties == null ? true : false;
-        switch (type) {
-            case SIMPLE:
-            case LIST:
-            case SET:
-            case LAZY_SIMPLE:
-            case LAZY_LIST:
-            case LAZY_SET:
-            case JOIN_SIMPLE:
-            case COUNTER:
-            case MAP:
-            case LAZY_MAP:
-            case WIDE_MAP:
-            case JOIN_WIDE_MAP:
-            case COUNTER_WIDE_MAP:
-            case COMPOUND_ID:
-                meta = new PropertyMeta<K, V>();
-                break;
-
-            default:
-                throw new IllegalStateException("The type '" + type + "' is not supported for PropertyMeta builder");
-        }
-
+        boolean singleKey = compoundKeyProperties == null ? true : false;
+        meta = new PropertyMeta<K, V>();
         meta.setObjectMapper(objectMapper);
         meta.setType(type);
         meta.setPropertyName(propertyName);
@@ -83,7 +62,7 @@ public class PropertyMetaBuilder {
         meta.setSetter(accessors[1]);
 
         meta.setJoinProperties(joinProperties);
-        meta.setCompoundKeyProperties(multiKeyProperties);
+        meta.setCompoundKeyProperties(compoundKeyProperties);
 
         meta.setSingleKey(singleKey);
         meta.setCounterProperties(counterProperties);
@@ -103,7 +82,7 @@ public class PropertyMetaBuilder {
     }
 
     public PropertyMetaBuilder multiKeyProperties(CompoundKeyProperties multiKeyProperties) {
-        this.multiKeyProperties = multiKeyProperties;
+        this.compoundKeyProperties = multiKeyProperties;
         return this;
     }
 

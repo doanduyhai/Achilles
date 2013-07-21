@@ -18,6 +18,8 @@ public class ConfigurationContext {
 
     private ObjectMapperFactory objectMapperFactory;
 
+    private Impl impl;
+
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
     }
@@ -48,5 +50,17 @@ public class ConfigurationContext {
 
     public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
         this.objectMapperFactory = objectMapperFactory;
+    }
+
+    public Impl getImpl() {
+        return impl;
+    }
+
+    public void setImpl(Impl impl) {
+        this.impl = impl;
+    }
+
+    public static enum Impl {
+        THRIFT, CQL;
     }
 }

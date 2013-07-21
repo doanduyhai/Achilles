@@ -11,11 +11,13 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,8 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.base.Optional;
 
@@ -161,7 +161,7 @@ public class ThriftEntityManagerTest
 		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
 		when((Class) entityMeta.getEntityClass()).thenReturn(CompleteBean.class);
 		when(entityMeta.getTableName()).thenReturn("table");
-		when(entityMeta.isWideRow()).thenReturn(false);
+		when(entityMeta.isClusteredEntity()).thenReturn(false);
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
 	}
 }

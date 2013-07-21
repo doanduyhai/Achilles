@@ -1,12 +1,8 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
-import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
-import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
-import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWideMapWrapper;
 import info.archinnov.achilles.type.Counter;
@@ -24,10 +20,6 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 	private PropertyMeta<K, Counter> propertyMeta;
 
 	private ThriftEntityInterceptor<?> interceptor;
-	protected ThriftPropertyHelper thriftPropertyHelper;
-	protected ThriftKeyValueFactory thriftKeyValueFactory;
-	protected ThriftIteratorFactory thriftIteratorFactory;
-	protected ThriftCompositeFactory thriftCompositeFactory;
 	protected ThriftPersistenceContext context;
 
 	public ThriftCounterWideMapWrapperBuilder(Object id, ThriftGenericWideRowDao wideMapCounterDao,
@@ -56,34 +48,6 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 		return this;
 	}
 
-	public ThriftCounterWideMapWrapperBuilder<K> thriftPropertyHelper(
-			ThriftPropertyHelper thriftPropertyHelper)
-	{
-		this.thriftPropertyHelper = thriftPropertyHelper;
-		return this;
-	}
-
-	public ThriftCounterWideMapWrapperBuilder<K> thriftKeyValueFactory(
-			ThriftKeyValueFactory thriftKeyValueFactory)
-	{
-		this.thriftKeyValueFactory = thriftKeyValueFactory;
-		return this;
-	}
-
-	public ThriftCounterWideMapWrapperBuilder<K> thriftIteratorFactory(
-			ThriftIteratorFactory thriftIteratorFactory)
-	{
-		this.thriftIteratorFactory = thriftIteratorFactory;
-		return this;
-	}
-
-	public ThriftCounterWideMapWrapperBuilder<K> thriftCompositeFactory(
-			ThriftCompositeFactory thriftCompositeFactory)
-	{
-		this.thriftCompositeFactory = thriftCompositeFactory;
-		return this;
-	}
-
 	public ThriftCounterWideMapWrapper<K> build()
 	{
 		ThriftCounterWideMapWrapper<K> wrapper = new ThriftCounterWideMapWrapper<K>();
@@ -91,10 +55,6 @@ public class ThriftCounterWideMapWrapperBuilder<K>
 		wrapper.setWideMapCounterDao(wideMapCounterDao);
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setInterceptor(interceptor);
-		wrapper.setCompositeHelper(thriftPropertyHelper);
-		wrapper.setIteratorFactory(thriftIteratorFactory);
-		wrapper.setCompositeKeyFactory(thriftCompositeFactory);
-		wrapper.setKeyValueFactory(thriftKeyValueFactory);
 		wrapper.setContext(context);
 		return wrapper;
 	}

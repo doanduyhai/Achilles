@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
+import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.Pair;
 
@@ -35,7 +35,7 @@ public class ThriftJoinLoaderImpl
 	private static final Logger log = LoggerFactory.getLogger(ThriftJoinLoaderImpl.class);
 
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
-	private ThriftJoinEntityHelper joinHelper = new ThriftJoinEntityHelper();
+	private ThriftJoinEntityLoader joinHelper = new ThriftJoinEntityLoader();
 
 	public <V> List<V> loadJoinListProperty(ThriftPersistenceContext context,
 			PropertyMeta<?, V> propertyMeta)

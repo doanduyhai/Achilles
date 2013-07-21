@@ -11,11 +11,10 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-public enum PropertyType
-{
+public enum PropertyType {
 
     ID(5), //
-    COMPOUND_ID(10), //
+    EMBEDDED_ID(10), //
     SIMPLE(10), //
     LIST(10), //
     SET(10), //
@@ -39,16 +38,11 @@ public enum PropertyType
         this.flag = flag;
     }
 
-    public byte[] flag()
-    {
-        return new byte[]
-        {
-                (byte) flag
-        };
+    public byte[] flag() {
+        return new byte[] { (byte) flag };
     }
 
-    public boolean isLazy()
-    {
+    public boolean isLazy() {
         return (this == COUNTER //
                 || this == LAZY_SIMPLE //
                 || this == LAZY_LIST //
@@ -63,8 +57,7 @@ public enum PropertyType
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isJoinColumn()
-    {
+    public boolean isJoin() {
         return (this == JOIN_SIMPLE //
                 || this == JOIN_LIST //
                 || this == JOIN_SET //
@@ -72,60 +65,54 @@ public enum PropertyType
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isWideMap()
-    {
+    public boolean isWideMap() {
         return (this == WIDE_MAP //
                 || this == COUNTER_WIDE_MAP //
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isCounter()
-    {
+    public boolean isCounter() {
         return (this == COUNTER //
         || this == COUNTER_WIDE_MAP);
     }
 
-    public boolean isProxyType()
-    {
+    public boolean isProxyType() {
         return (this == COUNTER //
                 || this == COUNTER_WIDE_MAP //
                 || this == WIDE_MAP //
         || this == JOIN_WIDE_MAP);
     }
 
-    public boolean isCompoundId()
-    {
-        return this == COMPOUND_ID;
+    public boolean isEmbeddedId() {
+        return this == EMBEDDED_ID;
     }
 
-    public static PropertyType[] nonProxyJoinTypes()
-    {
-        return new PropertyType[]
-        {
-                JOIN_SIMPLE,
-                JOIN_LIST,
-                JOIN_SET,
-                JOIN_MAP
-        };
+    public static PropertyType[] nonProxyJoinTypes() {
+        return new PropertyType[] { JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP };
+    }
+
+    public boolean isValidClusteredValueType() {
+        return (this == SIMPLE || this == JOIN_SIMPLE || this == COUNTER);
     }
 
     public static PropertyTypeFilter joinPropertyType = new PropertyTypeFilter(nonProxyJoinTypes());
     public static PropertyTypeFilter joinSimpleType = new PropertyTypeFilter(JOIN_SIMPLE);
-    public static PropertyTypeFilter joinCollectionType = new PropertyTypeFilter(JOIN_LIST,
-            JOIN_SET);
+    public static PropertyTypeFilter joinCollectionType = new PropertyTypeFilter(JOIN_LIST, JOIN_SET);
     public static PropertyTypeFilter joinMapType = new PropertyTypeFilter(JOIN_MAP);
-    public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER,
-            COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
+    public static PropertyTypeFilter wideMapType = new PropertyTypeFilter(WIDE_MAP, JOIN_WIDE_MAP, COUNTER_WIDE_MAP);
+    public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER, COUNTER_WIDE_MAP, WIDE_MAP,
+            JOIN_WIDE_MAP);
 
-    public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, COMPOUND_ID, SIMPLE, LIST, SET, MAP);
+    public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
     public static PropertyTypeFilter lazyNonProxyType = new PropertyTypeFilter(SIMPLE, LAZY_SIMPLE, LIST, LAZY_LIST,
             SET, LAZY_SET, MAP, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP);
 
-    public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, COMPOUND_ID);
+    public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
 
-    public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER,
-            COUNTER_WIDE_MAP, WIDE_MAP, JOIN_WIDE_MAP);
+    public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER, COUNTER_WIDE_MAP, WIDE_MAP,
+            JOIN_WIDE_MAP);
 
-    public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST,
-            SET, LAZY_SET, MAP, LAZY_MAP, JOIN_LIST, JOIN_SET, JOIN_MAP);
+    public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET, MAP,
+            LAZY_MAP, JOIN_LIST, JOIN_SET, JOIN_MAP);
+
 }

@@ -1,16 +1,23 @@
 package info.archinnov.achilles.composite;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.type.BoundingMode.*;
+import static info.archinnov.achilles.type.OrderingMode.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
+import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
-import info.archinnov.achilles.type.WideMap.OrderingMode;
-import mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.query.ThriftQueryValidator;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OrderingMode;
+import java.util.Arrays;
+import java.util.List;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import org.junit.Before;
@@ -21,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * ThriftCompositeFactoryTest
@@ -39,10 +45,16 @@ public class ThriftCompositeFactoryTest
     private ThriftCompositeFactory factory;
 
     @Mock
-    private ThriftPropertyHelper helper;
+    private ComponentEqualityCalculator calculator;
 
     @Mock
     private ThriftCompoundKeyMapper compoundKeyMapper;
+
+    @Mock
+    private ThriftQueryValidator queryValidator;
+
+    @Mock
+    private ThriftCompoundKeyValidator compoundKeyValidator;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
@@ -76,7 +88,10 @@ public class ThriftCompositeFactoryTest
         TweetCompoundKey tweetKey = new TweetCompoundKey();
         Composite comp = new Composite();
 
-        when(compoundKeyMapper.writeToComposite(tweetKey, compoundKeyWideMapMeta)).thenReturn(comp);
+        when(
+                compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(tweetKey,
+                        compoundKeyWideMapMeta))
+                .thenReturn(comp);
 
         Composite actual = factory.createBaseComposite(compoundKeyWideMapMeta, tweetKey);
 
@@ -105,7 +120,7 @@ public class ThriftCompositeFactoryTest
     {
 
         when(
-                helper.determineEquality(BoundingMode.INCLUSIVE_START_BOUND_ONLY,
+                calculator.determineEquality(INCLUSIVE_START_BOUND_ONLY,
                         OrderingMode.ASCENDING)) //
                 .thenReturn(new ComponentEquality[]
                 {
@@ -113,13 +128,14 @@ public class ThriftCompositeFactoryTest
                         LESS_THAN_EQUAL
                 });
         Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15,
-                BoundingMode.INCLUSIVE_START_BOUND_ONLY, OrderingMode.ASCENDING);
+                INCLUSIVE_START_BOUND_ONLY, ASCENDING);
 
         assertThat(composites).hasSize(2);
         assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
         assertThat(composites[0].getComponent(0).getValue()).isEqualTo(12);
         assertThat(composites[1].getComponent(0).getEquality()).isEqualTo(LESS_THAN_EQUAL);
         assertThat(composites[1].getComponent(0).getValue()).isEqualTo(15);
+
     }
 
     @Test
@@ -131,7 +147,7 @@ public class ThriftCompositeFactoryTest
         Composite comp2 = new Composite();
 
         when(
-                helper.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+                calculator.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY,
                         OrderingMode.ASCENDING)) //
                 .thenReturn(new ComponentEquality[]
                 {
@@ -139,13 +155,20 @@ public class ThriftCompositeFactoryTest
                         GREATER_THAN_EQUAL
                 });
 
-        when(compoundKeyMapper.buildCompositeForQuery(tweetKey1, compoundKeyWideMapMeta, LESS_THAN_EQUAL))
+        when(
+                compoundKeyMapper.fromCompoundToCompositeForQuery(tweetKey1,
+                        compoundKeyWideMapMeta,
+                        LESS_THAN_EQUAL))
                 .thenReturn(comp1);
-        when(compoundKeyMapper.buildCompositeForQuery(tweetKey2, compoundKeyWideMapMeta, GREATER_THAN_EQUAL))
+        when(
+                compoundKeyMapper.fromCompoundToCompositeForQuery(tweetKey2,
+                        compoundKeyWideMapMeta,
+                        GREATER_THAN_EQUAL))
                 .thenReturn(comp2);
 
         Composite[] composites = factory.createForQuery(
-                compoundKeyWideMapMeta, tweetKey1, tweetKey2, BoundingMode.INCLUSIVE_END_BOUND_ONLY,
+                compoundKeyWideMapMeta, tweetKey1, tweetKey2,
+                BoundingMode.INCLUSIVE_END_BOUND_ONLY,
                 OrderingMode.ASCENDING);
 
         assertThat(composites).hasSize(2);
@@ -183,6 +206,23 @@ public class ThriftCompositeFactoryTest
         assertThat(comp.getComponent(1).getEquality()).isEqualTo(EQUAL);
         assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(0);
         assertThat(comp.getComponent(2).getEquality()).isEqualTo(EQUAL);
+    }
+
+    @Test
+    public void should_create_base_for_clustered_get() throws Exception
+    {
+        Object compoundKey = new CompoundKey();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .type(SIMPLE)
+                .build();
+
+        Composite comp = new Composite();
+        when(compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(compoundKey, idMeta))
+                .thenReturn(comp);
+        Composite actual = factory.createBaseForClusteredGet(compoundKey, idMeta);
+
+        assertThat(actual).isSameAs(comp);
     }
 
     @Test
@@ -268,4 +308,48 @@ public class ThriftCompositeFactoryTest
         assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(21);
     }
 
+    @Test
+    public void should_create_for_clustered_query() throws Exception
+    {
+
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .type(SIMPLE)
+                .field("name")
+                .compClasses(Long.class, String.class)
+                .build();
+
+        List<Object> clusteringFrom = Arrays.<Object> asList(11L, "z");
+        List<Object> clusteringTo = Arrays.<Object> asList(11L, "a");
+        Composite from = new Composite(), to = new Composite();
+
+        when(calculator.determineEquality(EXCLUSIVE_BOUNDS, DESCENDING)).thenReturn(
+                new ComponentEquality[]
+                {
+                        LESS_THAN_EQUAL,
+                        GREATER_THAN_EQUAL
+                });
+
+        when(
+                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm,
+                        LESS_THAN_EQUAL)).thenReturn(
+                from);
+        when(
+                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm,
+                        GREATER_THAN_EQUAL))
+                .thenReturn(to);
+
+        Composite[] composites = factory.createForClusteredQuery(pm, clusteringFrom,
+                clusteringTo,
+                EXCLUSIVE_BOUNDS,
+                DESCENDING);
+
+        assertThat(composites[0]).isSameAs(from);
+        assertThat(composites[1]).isSameAs(to);
+
+        verify(compoundKeyValidator).validateCompoundKeysForClusteredQuery(pm, clusteringFrom,
+                clusteringTo,
+                DESCENDING);
+
+    }
 }

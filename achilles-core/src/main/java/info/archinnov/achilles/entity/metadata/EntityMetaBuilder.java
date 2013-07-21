@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.table.TableCreator.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.eagerType;
+import static info.archinnov.achilles.table.TableCreator.TABLE_PATTERN;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
@@ -30,7 +30,7 @@ public class EntityMetaBuilder
     private String className;
     private String columnFamilyName;
     private Map<String, PropertyMeta<?, ?>> propertyMetas;
-    private boolean wideRow = false;
+    private boolean clusteredEntity = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
@@ -60,7 +60,7 @@ public class EntityMetaBuilder
         meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
         meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
-        meta.setWideRow(wideRow);
+        meta.setClusteredEntity(clusteredEntity);
         meta.setConsistencyLevels(consistencyLevels);
 
         List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
@@ -131,9 +131,9 @@ public class EntityMetaBuilder
         return this;
     }
 
-    public EntityMetaBuilder wideRow(boolean wideRow)
+    public EntityMetaBuilder clusteredEntity(boolean clusteredEntity)
     {
-        this.wideRow = wideRow;
+        this.clusteredEntity = clusteredEntity;
         return this;
     }
 

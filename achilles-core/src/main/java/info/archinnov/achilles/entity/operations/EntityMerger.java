@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.JoinProperties.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadeMerge;
+import static info.archinnov.achilles.entity.metadata.PropertyType.joinPropertyType;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -21,8 +21,7 @@ import com.google.common.collect.FluentIterable;
  * @author DuyHai DOAN
  * 
  */
-public abstract class EntityMerger<CONTEXT extends PersistenceContext>
-{
+public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 
     private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
 
@@ -30,11 +29,9 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext>
     protected EntityPersister<CONTEXT> persister;
     protected EntityProxifier<CONTEXT> proxifier;
 
-    public <T> T merge(CONTEXT context, T entity)
-    {
-        log.debug("Merging entity of class {} with primary key {}", context
-                .getEntityClass()
-                .getCanonicalName(), context.getPrimaryKey());
+    public <T> T merge(CONTEXT context, T entity) {
+        log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+                context.getPrimaryKey());
 
         EntityMeta entityMeta = context.getEntityMeta();
 
@@ -42,8 +39,7 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext>
         Validator.validateNotNull(entityMeta, "entityMeta should not be null");
 
         T proxy;
-        if (proxifier.isProxy(entity))
-        {
+        if (proxifier.isProxy(entity)) {
             log.debug("Checking for dirty fields before merging");
 
             T realObject = proxifier.getRealObject(entity);
@@ -52,14 +48,10 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext>
             EntityInterceptor<CONTEXT, T> interceptor = proxifier.getInterceptor(entity);
             Map<Method, PropertyMeta<?, ?>> dirtyMap = interceptor.getDirtyMap();
 
-            if (context.addToProcessingList(realObject))
-            {
+            if (context.addToProcessingList(realObject)) {
                 merger.merge(context, dirtyMap);
-                List<PropertyMeta<?, ?>> joinPMs = FluentIterable
-                        .from(entityMeta.getAllMetasExceptIdMeta())
-                        .filter(joinPropertyType)
-                        .filter(hasCascadeMerge)
-                        .toImmutableList();
+                List<PropertyMeta<?, ?>> joinPMs = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
+                        .filter(joinPropertyType).filter(hasCascadeMerge).toImmutableList();
 
                 merger.cascadeMerge(this, context, joinPMs);
 
@@ -67,15 +59,10 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext>
                 interceptor.setTarget(realObject);
             }
             proxy = entity;
-        }
-        else
-        {
+        } else {
             log.debug("Persisting transient entity");
 
-            if (!context.isWideRow())
-            {
-                persister.persist(context);
-            }
+            persister.persist(context);
             proxy = proxifier.buildProxy(entity, context);
         }
         return proxy;

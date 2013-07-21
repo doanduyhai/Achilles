@@ -7,6 +7,8 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -18,8 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +83,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, UserBean> wrapper = prepareJoinMapWrapper(target);
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
 		when(joinPropertyMeta.joinMeta()).thenReturn(joinMeta);
-		when(context.newPersistenceContext(joinMeta, bean)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, bean)).thenReturn(joinContext);
 		when(proxifier.buildProxy(bean, joinContext)).thenReturn(bean);
 		assertThat(wrapper.get(1)).isSameAs(bean);
 	}
@@ -103,7 +103,7 @@ public class MapWrapperTest
 		Map<Integer, String> target = prepareMap();
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
-		when(proxifier.unproxy("FR")).thenReturn("FR");
+		when(proxifier.unwrap("FR")).thenReturn("FR");
 		assertThat(wrapper.containsValue("FR")).isTrue();
 	}
 
@@ -164,7 +164,7 @@ public class MapWrapperTest
 		Set<Entry<Integer, String>> entrySet = wrapper.entrySet();
 
 		Entry<Integer, String> entry = target.entrySet().iterator().next();
-		when(proxifier.unproxy((Object) entry)).thenReturn(entry);
+		when(proxifier.unwrap((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -204,7 +204,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Set<Integer> keySet = wrapper.keySet();
-		when(proxifier.unproxy(1)).thenReturn(1);
+		when(proxifier.unwrap(1)).thenReturn(1);
 		keySet.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -254,7 +254,7 @@ public class MapWrapperTest
 	{
 		Map<Integer, String> target = prepareMap();
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
-		when(proxifier.unproxy(1)).thenReturn(1);
+		when(proxifier.unwrap(1)).thenReturn(1);
 		wrapper.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -278,7 +278,7 @@ public class MapWrapperTest
 		MapWrapper<Integer, String> wrapper = prepareMapWrapper(target);
 
 		Collection<String> collectionWrapper = wrapper.values();
-		when(proxifier.unproxy("FR")).thenReturn("FR");
+		when(proxifier.unwrap("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
 		verify(dirtyMap).put(setter, propertyMeta);

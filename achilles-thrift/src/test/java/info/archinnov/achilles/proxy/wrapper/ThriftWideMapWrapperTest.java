@@ -7,16 +7,16 @@ import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.helper.ThriftPropertyHelper;
 import info.archinnov.achilles.iterator.ThriftKeyValueIteratorImpl;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
+import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.type.KeyValueIterator;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
-import info.archinnov.achilles.type.WideMap.OrderingMode;
+import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class ThriftWideMapWrapperTest
 	private PropertyMeta<Integer, String> wideMapMeta;
 
 	@Mock
-	private ThriftPropertyHelper thriftPropertyHelper;
+	private ThriftQueryValidator queryValidator;
 
 	@Mock
 	private ThriftKeyValueFactory thriftKeyValueFactory;
@@ -159,6 +159,9 @@ public class ThriftWideMapWrapperTest
 
 		List<KeyValue<Integer, String>> expected = wrapper.find(12, 15, 10);
 		assertThat(expected).isSameAs(keyValues);
+
+		verify(queryValidator).validateBoundsForQuery(wideMapMeta, 12, 15,
+				OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -184,6 +187,8 @@ public class ThriftWideMapWrapperTest
 
 		List<String> expected = wrapper.findValues(12, 15, 10);
 		assertThat(expected).isSameAs(keyValues);
+		verify(queryValidator).validateBoundsForQuery(wideMapMeta, 12, 15,
+				OrderingMode.ASCENDING);
 	}
 
 	@Test
@@ -209,6 +214,8 @@ public class ThriftWideMapWrapperTest
 
 		List<Integer> expected = wrapper.findKeys(12, 15, 10);
 		assertThat(expected).isSameAs(keyValues);
+		verify(queryValidator).validateBoundsForQuery(wideMapMeta, 12, 15,
+				OrderingMode.ASCENDING);
 	}
 
 	@Test

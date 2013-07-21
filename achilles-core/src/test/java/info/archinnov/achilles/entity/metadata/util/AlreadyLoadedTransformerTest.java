@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.metadata.util;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.FluentIterable;
 

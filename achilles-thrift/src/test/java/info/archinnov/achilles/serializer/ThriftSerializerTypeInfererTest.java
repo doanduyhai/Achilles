@@ -2,8 +2,8 @@ package info.archinnov.achilles.serializer;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static org.fest.assertions.api.Assertions.*;
-import integration.tests.entity.CompoundKeyWithEnum;
-import integration.tests.entity.User;
+import info.archinnov.achilles.test.integration.entity.CompoundKeyWithEnum;
+import info.archinnov.achilles.test.integration.entity.User;
 import java.io.Serializable;
 import org.junit.Test;
 

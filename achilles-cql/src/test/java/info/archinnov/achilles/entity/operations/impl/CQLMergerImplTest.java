@@ -7,7 +7,11 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -18,8 +22,6 @@ import java.util.Map;
 
 import javax.persistence.CascadeType;
 
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,8 +32,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -49,7 +49,7 @@ public class CQLMergerImplTest
 	private CQLMergerImpl mergerImpl = new CQLMergerImpl();
 
 	@Mock
-	private MethodInvoker invoker;
+	private ReflectionInvoker invoker;
 
 	@Mock
 	private CQLEntityMerger entityMerger;
@@ -136,7 +136,7 @@ public class CQLMergerImplTest
 		Object user = new UserBean();
 		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
-		when(context.newPersistenceContext(joinMeta, user)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
 
 		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
@@ -161,8 +161,8 @@ public class CQLMergerImplTest
 		List<UserBean> users = Arrays.asList(user1, user2, null);
 		when(invoker.getValueFromField(entity, joinListMeta.getGetter())).thenReturn(users);
 
-		when(context.newPersistenceContext(joinMeta, user1)).thenReturn(joinContext);
-		when(context.newPersistenceContext(joinMeta, user2)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user1)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user2)).thenReturn(joinContext);
 
 		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 
@@ -188,8 +188,8 @@ public class CQLMergerImplTest
 		Map<Integer, UserBean> users = ImmutableMap.of(1, user1, 2, user2);
 		when(invoker.getValueFromField(entity, joinMapMeta.getGetter())).thenReturn(users);
 
-		when(context.newPersistenceContext(joinMeta, user1)).thenReturn(joinContext);
-		when(context.newPersistenceContext(joinMeta, user2)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user1)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user2)).thenReturn(joinContext);
 
 		mergerImpl.cascadeMerge(entityMerger, context, joinPMs);
 

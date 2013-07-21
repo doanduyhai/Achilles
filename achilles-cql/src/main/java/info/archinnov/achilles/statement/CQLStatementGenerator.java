@@ -9,7 +9,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.query.SliceQueryValidator;
-import info.archinnov.achilles.type.WideMap.BoundingMode;
+import info.archinnov.achilles.type.BoundingMode;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import com.datastax.driver.core.Statement;

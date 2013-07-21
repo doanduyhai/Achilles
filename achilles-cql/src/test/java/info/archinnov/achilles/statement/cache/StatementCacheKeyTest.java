@@ -1,7 +1,7 @@
 package info.archinnov.achilles.statement.cache;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import org.junit.Test;
 

@@ -1,36 +1,27 @@
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.dao.ThriftDaoFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
-
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.Composite;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
-
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * ThriftDaoContextBuilderTest
@@ -40,259 +31,83 @@ import testBuilders.PropertyMetaTestBuilder;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftDaoContextBuilderTest
-{
+public class ThriftDaoContextBuilderTest {
 
-	@InjectMocks
-	private ThriftDaoContextBuilder builder;
+    @InjectMocks
+    private ThriftDaoContextBuilder builder;
 
-	@Mock
-	private Cluster cluster;
+    @Mock
+    private ThriftDaoFactory daoFactory;
 
-	@Mock
-	private Keyspace keyspace;
+    @Mock
+    private Cluster cluster;
 
-	@Mock
-	private ThriftConsistencyLevelPolicy consistencyPolicy;
+    @Mock
+    private Keyspace keyspace;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
+    @Mock
+    private ThriftConsistencyLevelPolicy consistencyPolicy;
 
-	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+    @Mock
+    private ThriftCounterDao counterDao;
 
-	@Before
-	public void setUp()
-	{
-		configContext.setConsistencyPolicy(consistencyPolicy);
-		entityMetaMap.clear();
-	}
+    private ConfigurationContext configContext = new ConfigurationContext();
 
-	@Test
-	public void should_build_counter_dao() throws Exception
-	{
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, true);
+    private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
-		ThriftCounterDao thriftCounterDao = context.getCounterDao();
-		assertThat(thriftCounterDao).isNotNull();
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "policy")).isSameAs(
-				consistencyPolicy);
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
-		Pair<Class<Composite>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(
-				thriftCounterDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Composite.class);
-		assertThat(rowAndValueClases.right).isSameAs(Long.class);
-	}
+    @Before
+    public void setUp() {
+        configContext.setConsistencyPolicy(consistencyPolicy);
+        entityMetaMap.clear();
+    }
 
-	@Test
-	public void should_build_entity_dao() throws Exception
-	{
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.build();
+    @Test
+    public void should_build_counter_dao() throws Exception {
+        when(daoFactory.createCounterDao(cluster, keyspace, configContext)).thenReturn(counterDao);
+        ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext, true);
 
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setWideRow(false);
-		entityMeta.setTableName("cf");
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setIdClass(Long.class);
-		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        ThriftCounterDao counterDao = context.getCounterDao();
+        assertThat(counterDao).isSameAs(this.counterDao);
+    }
 
-		entityMetaMap.put(CompleteBean.class, entityMeta);
+    @Test
+    public void should_build_entity_dao() throws Exception {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class).field("id").build();
 
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, false);
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setClusteredEntity(false);
+        entityMeta.setTableName("cf");
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setIdClass(Long.class);
+        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 
-		ThriftGenericEntityDao entityDao = context.findEntityDao("cf");
+        entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		assertThat(entityDao).isNotNull();
-		assertThat(entityDao.getColumnFamily()).isEqualTo("cf");
-		assertThat(Whitebox.getInternalState(entityDao, "policy")).isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(entityDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(entityDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(entityDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
+        builder.buildDao(cluster, keyspace, entityMetaMap, configContext, false);
+        verify(daoFactory).createDaosForEntity(eq(cluster), eq(keyspace), eq(configContext), eq(entityMeta),
+                any(Map.class), any(Map.class));
 
-		Pair<Class<Long>, Class<String>> rowAndValueClases = Whitebox.getInternalState(entityDao,
-				"rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Long.class);
-		assertThat(rowAndValueClases.right).isSameAs(String.class);
-	}
+    }
 
-	@Test
-	public void should_build_wide_row_dao() throws Exception
-	{
-		PropertyMeta<UUID, String> geoPositionsMeta = PropertyMetaTestBuilder //
-				.completeBean(UUID.class, String.class)
-				.field("id")
-				.externalTable("externalCf")
-				.type(PropertyType.WIDE_MAP)
-				.build();
+    @Test
+    public void should_build_clustered_entity_dao() throws Exception {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class).field("id").build();
 
-		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		propertyMetas.put("geoPositions", geoPositionsMeta);
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setTableName("cf");
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setIdClass(Long.class);
+        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
 
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setWideRow(true);
-		entityMeta.setTableName("cf");
-		entityMeta.setIdClass(Long.class);
-		entityMeta.setPropertyMetas(propertyMetas);
+        entityMetaMap.put(CompleteBean.class, entityMeta);
 
-		entityMetaMap.put(CompleteBean.class, entityMeta);
+        builder.buildDao(cluster, keyspace, entityMetaMap, configContext, false);
+        verify(daoFactory).createClusteredEntityDao(eq(cluster), eq(keyspace), eq(configContext), eq(entityMeta),
+                any(Map.class));
 
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, false);
+    }
 
-		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
-
-		assertThat(columnFamilyDao).isNotNull();
-		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
-
-		Pair<Class<Long>, Class<String>> rowAndValueClases = Whitebox.getInternalState(
-				columnFamilyDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Long.class);
-		assertThat(rowAndValueClases.right).isSameAs(String.class);
-	}
-
-	@Test
-	public void should_build_wide_row_dao_with_object_value_type() throws Exception
-	{
-		PropertyMeta<UUID, UserBean> geoPositionsMeta = PropertyMetaTestBuilder //
-				.completeBean(UUID.class, UserBean.class)
-				.field("friendsWideMap")
-				.externalTable("externalCf")
-				.type(PropertyType.WIDE_MAP)
-				.build();
-
-		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		propertyMetas.put("friendsWideMap", geoPositionsMeta);
-
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setWideRow(true);
-		entityMeta.setTableName("cf");
-		entityMeta.setIdClass(Long.class);
-		entityMeta.setPropertyMetas(propertyMetas);
-
-		entityMetaMap.put(CompleteBean.class, entityMeta);
-
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, false);
-
-		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
-
-		assertThat(columnFamilyDao).isNotNull();
-		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
-
-		Pair<Class<Long>, Class<String>> rowAndValueClases = Whitebox.getInternalState(
-				columnFamilyDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Long.class);
-		assertThat(rowAndValueClases.right).isSameAs(String.class);
-	}
-
-	@Test
-	public void should_build_wide_row_dao_with_counter_type() throws Exception
-	{
-		PropertyMeta<String, Counter> geoPositionsMeta = PropertyMetaTestBuilder //
-				.completeBean(String.class, Counter.class)
-				.field("popularTopics")
-				.externalTable("externalCf")
-				.type(PropertyType.COUNTER_WIDE_MAP)
-				.build();
-
-		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		propertyMetas.put("popularTopics", geoPositionsMeta);
-
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setWideRow(true);
-		entityMeta.setTableName("cf");
-		entityMeta.setIdClass(Long.class);
-		entityMeta.setPropertyMetas(propertyMetas);
-
-		entityMetaMap.put(CompleteBean.class, entityMeta);
-
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, false);
-
-		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
-
-		assertThat(columnFamilyDao).isNotNull();
-		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
-
-		Pair<Class<Long>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(
-				columnFamilyDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Long.class);
-		assertThat(rowAndValueClases.right).isSameAs(Long.class);
-	}
-
-	@Test
-	public void should_build_wide_row_dao_for_join_entity() throws Exception
-	{
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdClass(Long.class);
-
-		PropertyMeta<Long, UserBean> joinUsersMeta = PropertyMetaTestBuilder //
-				.completeBean(Long.class, UserBean.class)
-				.field("joinUsers")
-				.externalTable("externalCf")
-				.joinMeta(joinMeta)
-				.type(PropertyType.JOIN_WIDE_MAP)
-				.idClass(Long.class)
-				.build();
-
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.build();
-
-		HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-		propertyMetas.put("joinUsers", joinUsersMeta);
-
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setWideRow(true);
-		entityMeta.setTableName("cf");
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setPropertyMetas(propertyMetas);
-
-		entityMetaMap.put(CompleteBean.class, entityMeta);
-
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap,
-				configContext, false);
-
-		ThriftGenericWideRowDao columnFamilyDao = context.findWideRowDao("externalCf");
-
-		assertThat(columnFamilyDao).isNotNull();
-		assertThat(columnFamilyDao.getColumnFamily()).isEqualTo("externalCf");
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "cluster")).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "keyspace")).isSameAs(keyspace);
-		assertThat(Whitebox.getInternalState(columnFamilyDao, "columnNameSerializer")).isSameAs(
-				COMPOSITE_SRZ);
-
-		Pair<Class<Long>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(
-				columnFamilyDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Long.class);
-		assertThat(rowAndValueClases.right).isSameAs(Long.class);
-	}
 }

@@ -2,7 +2,7 @@ package info.archinnov.achilles.helper;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.KeyValue;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class EntityMapper {
 
     private static final Logger log = LoggerFactory.getLogger(EntityMapper.class);
 
-    protected MethodInvoker invoker = new MethodInvoker();
+    protected ReflectionInvoker invoker = new ReflectionInvoker();
 
     protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta<?, ?> listMeta, Object value) {
         String propertyName = listMeta.getPropertyName();

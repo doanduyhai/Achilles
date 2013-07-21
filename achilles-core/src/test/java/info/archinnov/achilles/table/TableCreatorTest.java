@@ -7,6 +7,7 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesTableCreatorTest
@@ -63,12 +63,12 @@ public class TableCreatorTest
         prepareData(wideMapMeta);
         idMeta.setValueClass(Long.class);
 
-        doCallRealMethod().when(creator).validateOrCreateColumnFamilies(entityMetaMap,
+        doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap,
                 configContext, false);
 
-        creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
+        creator.validateOrCreateTables(entityMetaMap, configContext, false);
 
-        verify(creator).validateOrCreateCFForWideMap(wideMapMeta, Long.class, true, "externalCF",
+        verify(creator).validateOrCreateTableForWideMap(wideMapMeta, Long.class, true, "externalCF",
                 "TestBean");
     }
 
@@ -77,20 +77,20 @@ public class TableCreatorTest
     {
         prepareData();
 
-        doCallRealMethod().when(creator).validateOrCreateColumnFamilies(entityMetaMap,
+        doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap,
                 configContext, false);
-        creator.validateOrCreateColumnFamilies(entityMetaMap, configContext, false);
-        verify(creator).validateOrCreateCFForEntity(entityMeta, true);
+        creator.validateOrCreateTables(entityMetaMap, configContext, false);
+        verify(creator).validateOrCreateTableForEntity(entityMeta, true);
     }
 
     @Test
     public void should_validate_or_create_for_counter() throws Exception
     {
         HashMap<Class<?>, EntityMeta> metaMap = new HashMap<Class<?>, EntityMeta>();
-        doCallRealMethod().when(creator).validateOrCreateColumnFamilies(metaMap, configContext,
+        doCallRealMethod().when(creator).validateOrCreateTables(metaMap, configContext,
                 true);
-        creator.validateOrCreateColumnFamilies(metaMap, configContext, true);
-        verify(creator).validateOrCreateCFForCounter(true);
+        creator.validateOrCreateTables(metaMap, configContext, true);
+        verify(creator).validateOrCreateTableForCounter(true);
     }
 
     private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas) throws Exception

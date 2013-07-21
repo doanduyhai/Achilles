@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 
 /**
@@ -30,29 +30,29 @@ public class PropertyTypeTest {
         assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
         assertThat(PropertyType.LIST.isLazy()).isFalse();
         assertThat(PropertyType.MAP.isLazy()).isFalse();
-        assertThat(PropertyType.COMPOUND_ID.isLazy()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isLazy()).isFalse();
     }
 
     @Test
     public void should_test_is_join_column() throws Exception {
-        assertThat(PropertyType.ID.isJoinColumn()).isFalse();
-        assertThat(PropertyType.SIMPLE.isJoinColumn()).isFalse();
-        assertThat(PropertyType.LIST.isJoinColumn()).isFalse();
-        assertThat(PropertyType.MAP.isJoinColumn()).isFalse();
-        assertThat(PropertyType.COUNTER.isJoinColumn()).isFalse();
-        assertThat(PropertyType.LAZY_SIMPLE.isJoinColumn()).isFalse();
-        assertThat(PropertyType.LAZY_LIST.isJoinColumn()).isFalse();
-        assertThat(PropertyType.LAZY_SET.isJoinColumn()).isFalse();
-        assertThat(PropertyType.LAZY_MAP.isJoinColumn()).isFalse();
-        assertThat(PropertyType.WIDE_MAP.isJoinColumn()).isFalse();
-        assertThat(PropertyType.COUNTER_WIDE_MAP.isJoinColumn()).isFalse();
-        assertThat(PropertyType.COMPOUND_ID.isJoinColumn()).isFalse();
+        assertThat(PropertyType.ID.isJoin()).isFalse();
+        assertThat(PropertyType.SIMPLE.isJoin()).isFalse();
+        assertThat(PropertyType.LIST.isJoin()).isFalse();
+        assertThat(PropertyType.MAP.isJoin()).isFalse();
+        assertThat(PropertyType.COUNTER.isJoin()).isFalse();
+        assertThat(PropertyType.LAZY_SIMPLE.isJoin()).isFalse();
+        assertThat(PropertyType.LAZY_LIST.isJoin()).isFalse();
+        assertThat(PropertyType.LAZY_SET.isJoin()).isFalse();
+        assertThat(PropertyType.LAZY_MAP.isJoin()).isFalse();
+        assertThat(PropertyType.WIDE_MAP.isJoin()).isFalse();
+        assertThat(PropertyType.COUNTER_WIDE_MAP.isJoin()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isJoin()).isFalse();
 
-        assertThat(PropertyType.JOIN_SIMPLE.isJoinColumn()).isTrue();
-        assertThat(PropertyType.JOIN_LIST.isJoinColumn()).isTrue();
-        assertThat(PropertyType.JOIN_SET.isJoinColumn()).isTrue();
-        assertThat(PropertyType.JOIN_MAP.isJoinColumn()).isTrue();
-        assertThat(PropertyType.JOIN_WIDE_MAP.isJoinColumn()).isTrue();
+        assertThat(PropertyType.JOIN_SIMPLE.isJoin()).isTrue();
+        assertThat(PropertyType.JOIN_LIST.isJoin()).isTrue();
+        assertThat(PropertyType.JOIN_SET.isJoin()).isTrue();
+        assertThat(PropertyType.JOIN_MAP.isJoin()).isTrue();
+        assertThat(PropertyType.JOIN_WIDE_MAP.isJoin()).isTrue();
     }
 
     @Test
@@ -73,7 +73,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isWideMap()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isWideMap()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isWideMap()).isTrue();
-        assertThat(PropertyType.COMPOUND_ID.isWideMap()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isWideMap()).isFalse();
     }
 
     @Test
@@ -94,7 +94,7 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isCounter()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isCounter()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isCounter()).isFalse();
-        assertThat(PropertyType.COMPOUND_ID.isCounter()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isCounter()).isFalse();
     }
 
     @Test
@@ -115,28 +115,50 @@ public class PropertyTypeTest {
         assertThat(PropertyType.JOIN_SET.isProxyType()).isFalse();
         assertThat(PropertyType.JOIN_MAP.isProxyType()).isFalse();
         assertThat(PropertyType.JOIN_WIDE_MAP.isProxyType()).isTrue();
-        assertThat(PropertyType.COMPOUND_ID.isProxyType()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isProxyType()).isFalse();
     }
 
     @Test
     public void should_test_is_multikey() throws Exception {
-        assertThat(PropertyType.COUNTER.isCompoundId()).isFalse();
-        assertThat(PropertyType.LAZY_SIMPLE.isCompoundId()).isFalse();
-        assertThat(PropertyType.LAZY_LIST.isCompoundId()).isFalse();
-        assertThat(PropertyType.LAZY_SET.isCompoundId()).isFalse();
-        assertThat(PropertyType.LAZY_MAP.isCompoundId()).isFalse();
-        assertThat(PropertyType.WIDE_MAP.isCompoundId()).isFalse();
-        assertThat(PropertyType.COUNTER_WIDE_MAP.isCompoundId()).isFalse();
-        assertThat(PropertyType.JOIN_SIMPLE.isCompoundId()).isFalse();
-        assertThat(PropertyType.JOIN_LIST.isCompoundId()).isFalse();
-        assertThat(PropertyType.JOIN_SET.isCompoundId()).isFalse();
-        assertThat(PropertyType.JOIN_MAP.isCompoundId()).isFalse();
-        assertThat(PropertyType.JOIN_WIDE_MAP.isCompoundId()).isFalse();
+        assertThat(PropertyType.COUNTER.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.LAZY_SIMPLE.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.LAZY_LIST.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.LAZY_SET.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.LAZY_MAP.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.WIDE_MAP.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.COUNTER_WIDE_MAP.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.JOIN_SIMPLE.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.JOIN_LIST.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.JOIN_SET.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.JOIN_MAP.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.JOIN_WIDE_MAP.isEmbeddedId()).isFalse();
 
-        assertThat(PropertyType.ID.isCompoundId()).isFalse();
-        assertThat(PropertyType.SIMPLE.isCompoundId()).isFalse();
-        assertThat(PropertyType.LIST.isCompoundId()).isFalse();
-        assertThat(PropertyType.MAP.isCompoundId()).isFalse();
-        assertThat(PropertyType.COMPOUND_ID.isCompoundId()).isTrue();
+        assertThat(PropertyType.ID.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.SIMPLE.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.LIST.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.MAP.isEmbeddedId()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isEmbeddedId()).isTrue();
+    }
+
+    @Test
+    public void should_test_is_valid_clustered_value() throws Exception {
+        assertThat(PropertyType.COUNTER.isValidClusteredValueType()).isTrue();
+        assertThat(PropertyType.LAZY_SIMPLE.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.LAZY_LIST.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.LAZY_SET.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.LAZY_MAP.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.WIDE_MAP.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.COUNTER_WIDE_MAP.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.JOIN_SIMPLE.isValidClusteredValueType()).isTrue();
+        assertThat(PropertyType.JOIN_LIST.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.JOIN_SET.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.JOIN_MAP.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.JOIN_WIDE_MAP.isValidClusteredValueType()).isFalse();
+
+        assertThat(PropertyType.ID.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.SIMPLE.isValidClusteredValueType()).isTrue();
+        assertThat(PropertyType.LIST.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.MAP.isValidClusteredValueType()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isValidClusteredValueType()).isFalse();
     }
 }

@@ -9,6 +9,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -18,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesCollectionWrapperTest
@@ -87,7 +87,7 @@ public class CollectionWrapperTest
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(proxifier.unproxy("a")).thenReturn("a");
+		when(proxifier.unwrap("a")).thenReturn("a");
 		wrapper.add("a");
 
 		assertThat(target).hasSize(1);
@@ -101,7 +101,7 @@ public class CollectionWrapperTest
 	{
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(proxifier.unproxy("a")).thenReturn("a");
+		when(proxifier.unwrap("a")).thenReturn("a");
 		when(dirtyMap.containsKey(setter)).thenReturn(true);
 		wrapper.add("a");
 
@@ -118,11 +118,11 @@ public class CollectionWrapperTest
 
 		wrapper.setProxifier(proxifier);
 
-		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+		when(proxifier.unwrap(any(Collection.class))).thenReturn((Collection) list);
 
 		wrapper.addAll(list);
 
-		verify(proxifier).unproxy(list);
+		verify(proxifier).unwrap(list);
 
 		assertThat(target).hasSize(2);
 		assertThat(target.get(0)).isEqualTo("a");
@@ -175,7 +175,7 @@ public class CollectionWrapperTest
 	public void should_return_true_on_contains() throws Exception
 	{
 		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b"));
-		when(proxifier.unproxy("a")).thenReturn("a");
+		when(proxifier.unwrap("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
 
@@ -185,7 +185,7 @@ public class CollectionWrapperTest
 		ListWrapper<String> wrapper = prepareListWrapper(Arrays.asList("a", "b", "c", "d"));
 
 		List<String> check = Arrays.asList("a", "c");
-		when(proxifier.unproxy(check)).thenReturn(check);
+		when(proxifier.unwrap(check)).thenReturn(check);
 		assertThat(wrapper.containsAll(check)).isTrue();
 	}
 
@@ -203,7 +203,7 @@ public class CollectionWrapperTest
 		target.add("a");
 		target.add("b");
 		ListWrapper<String> wrapper = prepareListWrapper(target);
-		when(proxifier.unproxy("a")).thenReturn("a");
+		when(proxifier.unwrap("a")).thenReturn("a");
 		wrapper.remove("a");
 
 		assertThat(target).hasSize(1);
@@ -241,7 +241,7 @@ public class CollectionWrapperTest
 		wrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+		when(proxifier.unwrap(any(Collection.class))).thenReturn((Collection) list);
 
 		wrapper.removeAll(list);
 
@@ -281,7 +281,7 @@ public class CollectionWrapperTest
 		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+		when(proxifier.unwrap(any(Collection.class))).thenReturn((Collection) list);
 
 		wrapper.retainAll(list);
 
@@ -303,7 +303,7 @@ public class CollectionWrapperTest
 		ListWrapper<String> wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "b", "c");
-		when(proxifier.unproxy(any(Collection.class))).thenReturn((Collection) list);
+		when(proxifier.unwrap(any(Collection.class))).thenReturn((Collection) list);
 
 		wrapper.retainAll(list);
 
@@ -361,7 +361,7 @@ public class CollectionWrapperTest
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
 
-		when(context.newPersistenceContext(eq(entityMeta), any())).thenReturn(joinContext);
+		when(context.createContextForJoin(eq(entityMeta), any())).thenReturn(joinContext);
 
 		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
 		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);
@@ -399,7 +399,7 @@ public class CollectionWrapperTest
 		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
 		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
 
-		when(context.newPersistenceContext(eq(entityMeta), any())).thenReturn(joinContext);
+		when(context.createContextForJoin(eq(entityMeta), any())).thenReturn(joinContext);
 
 		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
 		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);

@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class EntityValidator<CONTEXT extends PersistenceContext> {
     private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
 
-    private MethodInvoker invoker = new MethodInvoker();
+    private ReflectionInvoker invoker = new ReflectionInvoker();
     private EntityProxifier<CONTEXT> proxifier;
 
     public EntityValidator(EntityProxifier<CONTEXT> proxifier) {
@@ -53,20 +53,6 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
                 Validator.validateNotNull(component, "The entity " + entity.getClass().getCanonicalName()
                         + " clustered key '" + idMeta.getPropertyName() + "' components should not be null");
             }
-        }
-    }
-
-    public void validateNotWideRow(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
-        log.debug("Validate entity {} is not a wide row", entity);
-
-        Validator.validateNotNull(entity, "Entity should not be null");
-
-        Class<?> baseClass = proxifier.deriveBaseClass(entity);
-        EntityMeta entityMeta = entityMetaMap.get(baseClass);
-
-        if (entityMeta.isWideRow()) {
-            throw new IllegalArgumentException("This operation is not allowed for the wide row '"
-                    + entity.getClass().getCanonicalName());
         }
     }
 

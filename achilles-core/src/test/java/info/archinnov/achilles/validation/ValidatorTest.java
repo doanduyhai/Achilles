@@ -1,16 +1,16 @@
 package info.archinnov.achilles.validation;
 
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.test.parser.entity.UserBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Test;
+
 
 /**
  * ValidatorTest
@@ -124,38 +124,19 @@ public class ValidatorTest
 		Validator.validateInstantiable(array.getClass());
 	}
 
-	@Test
-	public void should_validate_primitive_as_serializable() throws Exception
-	{
-		Validator.validateSerializable(long.class, "");
-	}
-
-	@Test
-	public void should_validate_enum_as_serializable() throws Exception
-	{
-
-		Validator.validateSerializable(PropertyType.class, "");
-	}
-
-	@Test
-	public void should_validate_allowed_types_as_serializable() throws Exception
-	{
-
-		Validator.validateSerializable(UUID.class, "");
-	}
-
-	@Test(expected = AchillesBeanMappingException.class)
-	public void should_exception_when_not_serializable() throws Exception
-	{
-		Validator.validateSerializable(Validator.class, "");
-	}
-
 	@Test(expected = AchillesException.class)
 	public void should_exception_when_map_size_does_not_match() throws Exception
 	{
 		HashMap<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "1");
 		Validator.validateSize(map, 2, "");
+	}
+
+	@Test(expected = AchillesException.class)
+	public void should_exception_when_not_implements_comparable() throws Exception
+	{
+		Validator.validateComparable(UserBean.class, "");
+
 	}
 
 	class TestNoArgConstructor

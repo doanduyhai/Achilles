@@ -23,12 +23,13 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftTableCreator extends TableCreator
-{
+public class ThriftTableCreator extends TableCreator {
     private static final Logger log = LoggerFactory.getLogger(ThriftTableCreator.class);
     private Cluster cluster;
     private Keyspace keyspace;
-    private ThriftTableHelper thriftTableHelper = new ThriftTableHelper();
+    private ThriftColumnFamilyFactory columnFamilyFactory = new ThriftColumnFamilyFactory();
+    private ThriftColumnFamilyValidator columnFamilyValidator = new ThriftColumnFamilyValidator();
+
     private List<ColumnFamilyDefinition> cfDefs;
     public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
     private Set<String> columnFamilyNames = new HashSet<String>();
@@ -41,20 +42,16 @@ public class ThriftTableCreator extends TableCreator
         Validator.validateNotNull(keyspaceDef, "The keyspace '" + keyspace.getKeyspaceName()
                 + "' provided by configuration does not exist");
 
-        if (keyspaceDef != null && keyspaceDef.getCfDefs() != null)
-        {
+        if (keyspaceDef != null && keyspaceDef.getCfDefs() != null) {
             cfDefs = keyspaceDef.getCfDefs();
         }
 
     }
 
-    protected ColumnFamilyDefinition discoverColumnFamily(String columnFamilyName)
-    {
+    protected ColumnFamilyDefinition discoverTable(String columnFamilyName) {
         log.debug("Start discovery of column family {}", columnFamilyName);
-        for (ColumnFamilyDefinition cfDef : this.cfDefs)
-        {
-            if (StringUtils.equals(cfDef.getName(), columnFamilyName))
-            {
+        for (ColumnFamilyDefinition cfDef : this.cfDefs) {
+            if (StringUtils.equals(cfDef.getName(), columnFamilyName)) {
                 log.debug("Existing column family {} found", columnFamilyName);
                 return cfDef;
             }
@@ -62,138 +59,93 @@ public class ThriftTableCreator extends TableCreator
         return null;
     }
 
-    protected void addColumnFamily(ColumnFamilyDefinition cfDef)
-    {
-        if (!columnFamilyNames.contains(cfDef.getName()))
-        {
+    protected void addTable(ColumnFamilyDefinition cfDef) {
+        if (!columnFamilyNames.contains(cfDef.getName())) {
             columnFamilyNames.add(cfDef.getName());
             cluster.addColumnFamily(cfDef, true);
         }
 
     }
 
-    protected void createColumnFamily(EntityMeta entityMeta)
-    {
+    protected void createTable(EntityMeta entityMeta) {
         log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
         String columnFamilyName = entityMeta.getTableName();
-        if (!columnFamilyNames.contains(columnFamilyName))
-        {
+        if (!columnFamilyNames.contains(columnFamilyName)) {
             ColumnFamilyDefinition cfDef;
-            if (entityMeta.isWideRow())
-            {
-
-                PropertyMeta<?, ?> propertyMeta = entityMeta
-                        .getPropertyMetas()
-                        .values()
-                        .iterator()
-                        .next();
-                cfDef = thriftTableHelper.buildWideRowCF(keyspace.getKeyspaceName(), propertyMeta,
-                        entityMeta.getIdMeta().getValueClass(), columnFamilyName,
-                        entityMeta.getClassName());
-            }
-            else
-            {
-                cfDef = this.thriftTableHelper.buildEntityCF(entityMeta,
-                        this.keyspace.getKeyspaceName());
+            if (entityMeta.isClusteredEntity()) {
+                cfDef = columnFamilyFactory.createClusteredEntityCF(this.keyspace.getKeyspaceName(), entityMeta);
+            } else {
+                cfDef = columnFamilyFactory.createEntityCF(entityMeta, this.keyspace.getKeyspaceName());
 
             }
-            this.addColumnFamily(cfDef);
+            this.addTable(cfDef);
         }
 
     }
 
     @Override
-    protected void validateOrCreateCFForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
-            boolean forceColumnFamilyCreation, String externalColumnFamilyName, String entityName)
-    {
+    protected void validateOrCreateTableForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
+            boolean forceTableCreation, String externalTableName, String entityName) {
 
-        ColumnFamilyDefinition cfDef = discoverColumnFamily(externalColumnFamilyName);
-        if (cfDef == null)
-        {
-            if (forceColumnFamilyCreation)
-            {
-                log.debug("Force creation of column family for propertyMeta {}",
-                        propertyMeta.getPropertyName());
+        ColumnFamilyDefinition cfDef = discoverTable(externalTableName);
+        if (cfDef == null) {
+            if (forceTableCreation) {
+                log.debug("Force creation of column family for propertyMeta {}", propertyMeta.getPropertyName());
 
-                cfDef = thriftTableHelper.buildWideRowCF(keyspace.getKeyspaceName(), propertyMeta,
-                        keyClass, externalColumnFamilyName, entityName);
-                this.addColumnFamily(cfDef);
-            }
-            else
-            {
-                throw new AchillesInvalidColumnFamilyException("The required column family '"
-                        + externalColumnFamilyName + "' does not exist for field '"
-                        + propertyMeta.getPropertyName() + "' of entity '"
+                cfDef = columnFamilyFactory.createWideRowCF(keyspace.getKeyspaceName(), propertyMeta, keyClass,
+                        externalTableName, entityName);
+                this.addTable(cfDef);
+            } else {
+                throw new AchillesInvalidColumnFamilyException("The required column family '" + externalTableName
+                        + "' does not exist for field '" + propertyMeta.getPropertyName() + "' of entity '"
                         + propertyMeta.getEntityClassName() + "'");
             }
-        }
-        else
-        {
-            this.thriftTableHelper.validateWideRowWithPropertyMeta(cfDef, propertyMeta,
-                    externalColumnFamilyName);
+        } else {
+            columnFamilyValidator.validateWideRowForProperty(cfDef, propertyMeta, externalTableName);
         }
     }
 
     @Override
-    protected void validateOrCreateCFForEntity(EntityMeta entityMeta,
-            boolean forceColumnFamilyCreation)
-    {
-        ColumnFamilyDefinition cfDef = this.discoverColumnFamily(entityMeta.getTableName());
-        if (cfDef == null)
-        {
-            if (forceColumnFamilyCreation)
-            {
-                log.debug("Force creation of column family for entityMeta {}",
-                        entityMeta.getClassName());
+    protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceTableCreation) {
+        ColumnFamilyDefinition cfDef = this.discoverTable(entityMeta.getTableName());
+        if (cfDef == null) {
+            if (forceTableCreation) {
+                log.debug("Force creation of column family for entityMeta {}", entityMeta.getClassName());
 
-                createColumnFamily(entityMeta);
-            }
-            else
-            {
+                createTable(entityMeta);
+            } else {
                 throw new AchillesInvalidColumnFamilyException("The required column family '"
-                        + entityMeta.getTableName() + "' does not exist for entity '"
-                        + entityMeta.getClassName() + "'");
+                        + entityMeta.getTableName() + "' does not exist for entity '" + entityMeta.getClassName()
+                        + "'");
             }
-        }
-        else
-        {
-            this.thriftTableHelper.validateCFWithEntityMeta(cfDef, entityMeta);
+        } else {
+            columnFamilyValidator.validateCFForEntity(cfDef, entityMeta);
         }
     }
 
     @Override
-    protected void validateOrCreateCFForCounter(boolean forceColumnFamilyCreation)
-    {
-        ColumnFamilyDefinition cfDef = this.discoverColumnFamily(AchillesCounter.THRIFT_COUNTER_CF);
-        if (cfDef == null)
-        {
-            if (forceColumnFamilyCreation)
-            {
+    protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
+        ColumnFamilyDefinition cfDef = this.discoverTable(AchillesCounter.THRIFT_COUNTER_CF);
+        if (cfDef == null) {
+            if (forceColumnFamilyCreation) {
                 log.debug("Force creation of column family for counters");
 
                 this.createCounterColumnFamily();
-            }
-            else
-            {
+            } else {
                 throw new AchillesInvalidColumnFamilyException("The required column family '"
                         + AchillesCounter.THRIFT_COUNTER_CF + "' does not exist");
             }
-        }
-        else
-        {
-            this.thriftTableHelper.validateCounterCF(cfDef);
+        } else {
+            columnFamilyValidator.validateCounterCF(cfDef);
         }
 
     }
 
-    private void createCounterColumnFamily()
-    {
+    private void createCounterColumnFamily() {
         log.debug("Creating generic counter column family");
-        if (!columnFamilyNames.contains(AchillesCounter.THRIFT_COUNTER_CF))
-        {
-            ColumnFamilyDefinition cfDef = thriftTableHelper.buildCounterCF(this.keyspace
-                    .getKeyspaceName());
-            this.addColumnFamily(cfDef);
+        if (!columnFamilyNames.contains(AchillesCounter.THRIFT_COUNTER_CF)) {
+            ColumnFamilyDefinition cfDef = columnFamilyFactory.createCounterCF(this.keyspace.getKeyspaceName());
+            this.addTable(cfDef);
         }
     }
 }

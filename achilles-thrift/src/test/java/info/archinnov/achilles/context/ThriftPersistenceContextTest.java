@@ -16,14 +16,14 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.proxy.MethodInvoker;
-
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.HashSet;
-
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.mutation.Mutator;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,9 +36,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
-
 /**
  * ThriftPersistenceContextTest
  * 
@@ -49,360 +46,381 @@ import testBuilders.PropertyMetaTestBuilder;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftPersistenceContextTest
 {
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private ThriftPersistenceContext context;
+    private ThriftPersistenceContext context;
 
-	@Mock
-	private MethodInvoker introspector;
+    @Mock
+    private ReflectionInvoker introspector;
 
-	private EntityMeta entityMeta;
-	private PropertyMeta<Void, Long> idMeta;
+    private EntityMeta entityMeta;
+    private PropertyMeta<Void, Long> idMeta;
 
-	private EntityMeta joinMeta;
-	private PropertyMeta<Void, Long> joinIdMeta;
+    private EntityMeta joinMeta;
+    private PropertyMeta<Void, Long> joinIdMeta;
 
-	@Mock
-	private ThriftDaoContext thriftDaoContext;
+    @Mock
+    private ThriftDaoContext thriftDaoContext;
 
-	@Mock
-	private ThriftConsistencyLevelPolicy policy;
+    @Mock
+    private ThriftConsistencyLevelPolicy policy;
 
-	@Mock
-	private ThriftGenericEntityDao entityDao;
+    @Mock
+    private ThriftGenericEntityDao entityDao;
 
-	@Mock
-	private ThriftGenericWideRowDao wideRowDao;
+    @Mock
+    private ThriftGenericWideRowDao wideRowDao;
 
-	@Mock
-	private Mutator<Long> mutator;
+    @Mock
+    private Mutator<Long> mutator;
 
-	@Mock
-	private ThriftImmediateFlushContext flushContext;
+    @Mock
+    private ThriftImmediateFlushContext flushContext;
 
-	@Mock
-	private ThriftConsistencyContext consistencyContext;
+    @Mock
+    private ThriftConsistencyContext consistencyContext;
 
-	@Mock
-	private ThriftEntityProxifier proxifier;
+    @Mock
+    private ThriftEntityProxifier proxifier;
 
-	@Mock
-	private ThriftEntityPersister persister;
+    @Mock
+    private ThriftEntityPersister persister;
 
-	@Mock
-	private ThriftEntityMerger merger;
+    @Mock
+    private ThriftEntityMerger merger;
 
-	@Mock
-	private ThriftEntityLoader loader;
+    @Mock
+    private ThriftEntityLoader loader;
 
-	@Mock
-	private EntityRefresher<ThriftPersistenceContext> refresher;
+    @Mock
+    private EntityRefresher<ThriftPersistenceContext> refresher;
 
-	@Captor
-	private ArgumentCaptor<SafeExecutionContext<Void>> voidExecCaptor;
+    @Captor
+    private ArgumentCaptor<SafeExecutionContext<Void>> voidExecCaptor;
 
-	@Captor
-	private ArgumentCaptor<SafeExecutionContext<CompleteBean>> execCaptor;
+    @Captor
+    private ArgumentCaptor<SafeExecutionContext<CompleteBean>> execCaptor;
 
-	private ConfigurationContext configContext = new ConfigurationContext();
+    private ConfigurationContext configContext = new ConfigurationContext();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private UserBean bean;
+    private UserBean bean;
 
-	@Before
-	public void setUp() throws Exception
-	{
+    @Before
+    public void setUp() throws Exception
+    {
 
-		bean = new UserBean();
-		bean.setUserId(RandomUtils.nextLong());
+        bean = new UserBean();
+        bean.setUserId(RandomUtils.nextLong());
 
-		idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.type(PropertyType.SIMPLE)
-				.accessors()
-				.build();
+        idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.SIMPLE)
+                .accessors()
+                .build();
 
-		configContext.setConsistencyPolicy(policy);
-		entityMeta = new EntityMeta();
-		entityMeta.setTableName("table");
-		entityMeta.setWideRow(false);
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setEntityClass(CompleteBean.class);
+        configContext.setConsistencyPolicy(policy);
+        entityMeta = new EntityMeta();
+        entityMeta.setTableName("table");
+        entityMeta.setClusteredEntity(false);
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setEntityClass(CompleteBean.class);
 
-		when(flushContext.getConsistencyContext()).thenReturn(consistencyContext);
-		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
+        when(flushContext.getConsistencyContext()).thenReturn(consistencyContext);
+        when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 
-		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity, new HashSet<String>());
-	}
+        context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+                flushContext, entity, new HashSet<String>());
+    }
 
-	@Test
-	public void should_init_with_entity() throws Exception
-	{
+    @Test
+    public void should_init_with_entity() throws Exception
+    {
 
-		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
-		assertThat(context.getEntity()).isEqualTo(entity);
-		assertThat(context.getEntityMeta()).isSameAs(entityMeta);
-		assertThat(context.getEntityDao()).isSameAs(entityDao);
-	}
+        assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
+        assertThat(context.getEntity()).isEqualTo(entity);
+        assertThat(context.getEntityMeta()).isSameAs(entityMeta);
+        assertThat(context.getEntityDao()).isSameAs(entityDao);
+    }
 
-	@Test
-	public void should_init_with_type_and_primary_key() throws Exception
-	{
-		entityMeta.setWideRow(true);
-		when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
-
-		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, CompleteBean.class, entity.getId(), new HashSet<String>());
-
-		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
-		assertThat(context.getEntity()).isNull();
-		assertThat(context.getEntityMeta()).isSameAs(entityMeta);
-		assertThat(context.getWideRowDao()).isSameAs(wideRowDao);
-	}
-
-	@Test
-	public void should_spawn_child_context_with_join_entity() throws Exception
-	{
-		prepareJoinContext();
-
-		ThriftPersistenceContext joinContext = context.newPersistenceContext(joinMeta, bean);
-
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
-		assertThat(joinContext.getEntity()).isEqualTo(bean);
-		assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(UserBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
-		assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
-
-	}
-
-	@Test
-	public void should_spawn_child_context_with_id() throws Exception
-	{
-		prepareJoinContext();
-
-		ThriftPersistenceContext joinContext = (ThriftPersistenceContext) context
-				.newPersistenceContext(UserBean.class, joinMeta, bean.getUserId());
+    @Test
+    public void should_init_with_type_and_primary_key() throws Exception
+    {
+        entityMeta.setClusteredEntity(true);
+        when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
+
+        context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+                flushContext, CompleteBean.class, entity.getId(), new HashSet<String>());
+
+        assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
+        assertThat(context.getEntity()).isNull();
+        assertThat(context.getEntityMeta()).isSameAs(entityMeta);
+        assertThat(context.getWideRowDao()).isSameAs(wideRowDao);
+    }
+
+    @Test
+    public void should_spawn_child_context_with_join_entity() throws Exception
+    {
+        prepareJoinContext();
+
+        ThriftPersistenceContext joinContext = context.createContextForJoin(joinMeta, bean);
+
+        assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
+        assertThat(joinContext.getEntity()).isEqualTo(bean);
+        assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(UserBean.class);
+        assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
+        assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
+
+    }
+
+    @Test
+    public void should_spawn_child_context_with_id() throws Exception
+    {
+        prepareJoinContext();
+
+        ThriftPersistenceContext joinContext = (ThriftPersistenceContext) context
+                .createContextForJoin(UserBean.class, joinMeta, bean.getUserId());
+
+        assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
+        assertThat(joinContext.getEntity()).isNull();
+        assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(UserBean.class);
+        assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
+        assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
+    }
 
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
-		assertThat(joinContext.getEntity()).isNull();
-		assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(UserBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
-		assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
-	}
+    @Test
+    public void should_duplicate_with_embedded_id() throws Exception
+    {
+        CompoundKey embeddedId = new CompoundKey();
+
+        ThriftPersistenceContext duplicate = context.duplicateWithPrimaryKey(embeddedId);
+
+        assertThat(duplicate.getPrimaryKey()).isSameAs(embeddedId);
+    }
+
+    @Test
+    public void should_duplicate_for_new_entity() throws Exception
+    {
+        Long primaryKey = RandomUtils.nextLong();
+        CompleteBean bean = new CompleteBean();
+        bean.setId(primaryKey);
+        ThriftPersistenceContext duplicate = context.duplicate(bean);
 
-	@Test
-	public void should_persist() throws Exception
-	{
-		Whitebox.setInternalState(context, "persister", persister);
+        assertThat(duplicate.getPrimaryKey()).isSameAs(primaryKey);
+    }
 
-		context.persist();
+    @Test
+    public void should_persist() throws Exception
+    {
+        Whitebox.setInternalState(context, "persister", persister);
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
-		voidExecCaptor.getValue().execute();
-		verify(persister).persist(context);
-		verify(flushContext).flush();
-	}
+        context.persist();
 
-	@Test
-	public void should_merge() throws Exception
-	{
-		Whitebox.setInternalState(context, "merger", merger);
-		when(merger.merge(context, entity)).thenReturn(entity);
+        verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
+        voidExecCaptor.getValue().execute();
+        verify(persister).persist(context);
+        verify(flushContext).flush();
+    }
 
-		context.merge(entity);
+    @Test
+    public void should_merge() throws Exception
+    {
+        Whitebox.setInternalState(context, "merger", merger);
+        when(merger.merge(context, entity)).thenReturn(entity);
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(execCaptor.capture());
-		CompleteBean merged = execCaptor.getValue().execute();
+        context.merge(entity);
 
-		assertThat(merged).isSameAs(entity);
-		verify(flushContext).flush();
-	}
+        verify(consistencyContext).executeWithWriteConsistencyLevel(execCaptor.capture());
+        CompleteBean merged = execCaptor.getValue().execute();
+
+        assertThat(merged).isSameAs(entity);
+        verify(flushContext).flush();
+    }
+
+    @Test
+    public void should_remove() throws Exception
+    {
+        Whitebox.setInternalState(context, "persister", persister);
+
+        context.remove();
 
-	@Test
-	public void should_remove() throws Exception
-	{
-		Whitebox.setInternalState(context, "persister", persister);
-
-		context.remove();
+        verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
+        voidExecCaptor.getValue().execute();
+
+        verify(persister).remove(context);
+        verify(flushContext).flush();
+    }
+
+    @Test
+    public void should_find() throws Exception
+    {
+        Whitebox.setInternalState(context, "loader", loader);
+        Whitebox.setInternalState(context, "proxifier", proxifier);
+
+        when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+        when(consistencyContext.executeWithReadConsistencyLevel(execCaptor.capture())).thenReturn(
+                entity);
+
+        CompleteBean actual = context.find(CompleteBean.class);
+
+        CompleteBean actual2 = execCaptor.getValue().execute();
+
+        assertThat(actual).isSameAs(entity);
+        assertThat(actual2).isSameAs(entity);
+    }
+
+    @Test
+    public void should_not_find() throws Exception
+    {
+        Whitebox.setInternalState(context, "loader", loader);
+        Whitebox.setInternalState(context, "proxifier", proxifier);
+
+        when(loader.load(context, CompleteBean.class)).thenReturn(null);
+        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+
+        context.find(CompleteBean.class);
+
+        verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
+        CompleteBean actual = execCaptor.getValue().execute();
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
-		voidExecCaptor.getValue().execute();
-
-		verify(persister).remove(context);
-		verify(flushContext).flush();
-	}
-
-	@Test
-	public void should_find() throws Exception
-	{
-		Whitebox.setInternalState(context, "loader", loader);
-		Whitebox.setInternalState(context, "proxifier", proxifier);
-
-		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
-		when(consistencyContext.executeWithReadConsistencyLevel(execCaptor.capture())).thenReturn(
-				entity);
-
-		CompleteBean actual = context.find(CompleteBean.class);
-
-		CompleteBean actual2 = execCaptor.getValue().execute();
-
-		assertThat(actual).isSameAs(entity);
-		assertThat(actual2).isSameAs(entity);
-	}
-
-	@Test
-	public void should_not_find() throws Exception
-	{
-		Whitebox.setInternalState(context, "loader", loader);
-		Whitebox.setInternalState(context, "proxifier", proxifier);
-
-		when(loader.load(context, CompleteBean.class)).thenReturn(null);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
-
-		context.find(CompleteBean.class);
+        assertThat(actual).isNull();
+    }
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
-		CompleteBean actual = execCaptor.getValue().execute();
+    @Test
+    public void should_get_reference() throws Exception
+    {
+        context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+                flushContext, entity, new HashSet<String>());
 
-		assertThat(actual).isNull();
-	}
+        Whitebox.setInternalState(context, "loader", loader);
+        Whitebox.setInternalState(context, "proxifier", proxifier);
 
-	@Test
-	public void should_get_reference() throws Exception
-	{
-		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-				flushContext, entity, new HashSet<String>());
+        when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
-		Whitebox.setInternalState(context, "loader", loader);
-		Whitebox.setInternalState(context, "proxifier", proxifier);
+        context.getReference(CompleteBean.class);
 
-		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+        verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
+        CompleteBean actual = execCaptor.getValue().execute();
 
-		context.getReference(CompleteBean.class);
+        assertThat(context.isLoadEagerFields()).isFalse();
+        assertThat(actual).isSameAs(entity);
+    }
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
-		CompleteBean actual = execCaptor.getValue().execute();
+    @Test
+    public void should_refresh() throws Exception
+    {
+        Whitebox.setInternalState(context, "refresher", refresher);
 
-		assertThat(context.isLoadEagerFields()).isFalse();
-		assertThat(actual).isSameAs(entity);
-	}
+        context.refresh();
 
-	@Test
-	public void should_refresh() throws Exception
-	{
-		Whitebox.setInternalState(context, "refresher", refresher);
+        verify(consistencyContext).executeWithReadConsistencyLevel(voidExecCaptor.capture());
+        voidExecCaptor.getValue().execute();
 
-		context.refresh();
+        verify(refresher).refresh(context);
+    }
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(voidExecCaptor.capture());
-		voidExecCaptor.getValue().execute();
+    @Test
+    public void should_find_entity_dao() throws Exception
+    {
+        assertThat(context.findEntityDao("table")).isSameAs(entityDao);
+    }
 
-		verify(refresher).refresh(context);
-	}
+    @Test
+    public void should_find_wide_row_dao() throws Exception
+    {
+        when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
+        assertThat(context.findWideRowDao("table")).isSameAs(wideRowDao);
+    }
 
-	@Test
-	public void should_find_entity_dao() throws Exception
-	{
-		assertThat(context.findEntityDao("table")).isSameAs(entityDao);
-	}
+    @Test
+    public void should_get_counter_dao() throws Exception
+    {
+        ThriftCounterDao counterDao = mock(ThriftCounterDao.class);
 
-	@Test
-	public void should_find_wide_row_dao() throws Exception
-	{
-		when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
-		assertThat(context.findWideRowDao("table")).isSameAs(wideRowDao);
-	}
+        when(thriftDaoContext.getCounterDao()).thenReturn(counterDao);
+        assertThat(context.getCounterDao()).isSameAs(counterDao);
+    }
 
-	@Test
-	public void should_get_counter_dao() throws Exception
-	{
-		ThriftCounterDao counterDao = mock(ThriftCounterDao.class);
+    @Test
+    public void should_get_entity_mutator() throws Exception
+    {
+        Mutator<Object> mutator = mock(Mutator.class);
 
-		when(thriftDaoContext.getCounterDao()).thenReturn(counterDao);
-		assertThat(context.getCounterDao()).isSameAs(counterDao);
-	}
+        when(flushContext.getEntityMutator("table")).thenReturn(mutator);
+        assertThat(context.getEntityMutator("table")).isSameAs(mutator);
+    }
 
-	@Test
-	public void should_get_entity_mutator() throws Exception
-	{
-		Mutator<Object> mutator = mock(Mutator.class);
+    @Test
+    public void should_get_wide_row_mutator() throws Exception
+    {
+        Mutator<Object> mutator = mock(Mutator.class);
 
-		when(flushContext.getEntityMutator("table")).thenReturn(mutator);
-		assertThat(context.getEntityMutator("table")).isSameAs(mutator);
-	}
+        when(flushContext.getWideRowMutator("table")).thenReturn(mutator);
+        assertThat(context.getWideRowMutator("table")).isSameAs(mutator);
+    }
 
-	@Test
-	public void should_get_wide_row_mutator() throws Exception
-	{
-		Mutator<Object> mutator = mock(Mutator.class);
+    @Test
+    public void should_get_counter_mutator() throws Exception
+    {
+        Mutator<Object> mutator = mock(Mutator.class);
 
-		when(flushContext.getWideRowMutator("table")).thenReturn(mutator);
-		assertThat(context.getWideRowMutator("table")).isSameAs(mutator);
-	}
+        when(flushContext.getCounterMutator()).thenReturn(mutator);
+        assertThat(context.getCounterMutator()).isSameAs(mutator);
+    }
 
-	@Test
-	public void should_get_counter_mutator() throws Exception
-	{
-		Mutator<Object> mutator = mock(Mutator.class);
+    @Test
+    public void should_execute_with_read_consistency_level() throws Exception
+    {
+        SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
 
-		when(flushContext.getCounterMutator()).thenReturn(mutator);
-		assertThat(context.getCounterMutator()).isSameAs(mutator);
-	}
+        when(consistencyContext.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM))
+                .thenReturn(entity);
 
-	@Test
-	public void should_execute_with_read_consistency_level() throws Exception
-	{
-		SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
+        CompleteBean actual = context.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM);
 
-		when(consistencyContext.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM))
-				.thenReturn(entity);
+        assertThat(actual).isSameAs(entity);
 
-		CompleteBean actual = context.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM);
+    }
 
-		assertThat(actual).isSameAs(entity);
+    @Test
+    public void should_execute_with_write_consistency_level() throws Exception
+    {
+        SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
 
-	}
+        when(consistencyContext.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM))
+                .thenReturn(entity);
 
-	@Test
-	public void should_execute_with_write_consistency_level() throws Exception
-	{
-		SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
+        CompleteBean actual = context.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM);
 
-		when(consistencyContext.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM))
-				.thenReturn(entity);
+        assertThat(actual).isSameAs(entity);
+    }
 
-		CompleteBean actual = context.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM);
+    private void prepareJoinContext() throws Exception
+    {
+        bean = new UserBean();
+        bean.setUserId(123L);
 
-		assertThat(actual).isSameAs(entity);
-	}
+        joinIdMeta = PropertyMetaTestBuilder//
+                .of(UserBean.class, Void.class, Long.class)
+                .field("userId")
+                .accessors()
+                .type(PropertyType.SIMPLE)
+                .build();
 
-	private void prepareJoinContext() throws Exception
-	{
-		bean = new UserBean();
-		bean.setUserId(123L);
+        joinMeta = new EntityMeta();
 
-		joinIdMeta = PropertyMetaTestBuilder//
-				.of(UserBean.class, Void.class, Long.class)
-				.field("userId")
-				.accessors()
-				.type(PropertyType.SIMPLE)
-				.build();
+        joinMeta.setTableName("joinTable");
+        joinMeta.setClusteredEntity(false);
+        joinMeta.setIdMeta(joinIdMeta);
+        joinMeta.setEntityClass(UserBean.class);
+        joinMeta.setClusteredEntity(false);
 
-		joinMeta = new EntityMeta();
-
-		joinMeta.setTableName("joinTable");
-		joinMeta.setWideRow(false);
-		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setEntityClass(UserBean.class);
-		joinMeta.setWideRow(false);
-
-		when(thriftDaoContext.findEntityDao("joinTable")).thenReturn(entityDao);
-	}
+        when(thriftDaoContext.findEntityDao("joinTable")).thenReturn(entityDao);
+    }
 
 }

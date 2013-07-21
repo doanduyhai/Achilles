@@ -25,7 +25,7 @@ public class ThriftKeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 	private static final Logger log = LoggerFactory.getLogger(ThriftKeyValueIteratorImpl.class);
 
 	private ThriftKeyValueFactory factory = new ThriftKeyValueFactory();
-	protected ThriftAbstractSliceIterator<HColumn<Composite, V>> achillesSliceIterator;
+	protected ThriftAbstractSliceIterator<HColumn<Composite, V>> sliceIterator;
 	private PropertyMeta<K, V> propertyMeta;
 	private ThriftPersistenceContext context;
 
@@ -36,25 +36,25 @@ public class ThriftKeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 			PropertyMeta<K, V> propertyMeta)
 	{
 		this.context = context;
-		this.achillesSliceIterator = columnSliceIterator;
+		this.sliceIterator = columnSliceIterator;
 		this.propertyMeta = propertyMeta;
 	}
 
 	@Override
 	public boolean hasNext()
 	{
-		log.trace("Does the {} has next value ? ", achillesSliceIterator.type());
-		return this.achillesSliceIterator.hasNext();
+		log.trace("Does the {} has next value ? ", sliceIterator.type());
+		return this.sliceIterator.hasNext();
 	}
 
 	@Override
 	public KeyValue<K, V> next()
 	{
-		log.trace("Get next key/value from the {} ", achillesSliceIterator.type());
+		log.trace("Get next key/value from the {} ", sliceIterator.type());
 		KeyValue<K, V> keyValue = null;
-		if (this.achillesSliceIterator.hasNext())
+		if (this.sliceIterator.hasNext())
 		{
-			HColumn<Composite, V> column = this.achillesSliceIterator.next();
+			HColumn<Composite, V> column = this.sliceIterator.next();
 			keyValue = factory.createKeyValue(context, propertyMeta, column);
 		}
 		else
@@ -67,11 +67,11 @@ public class ThriftKeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 	@Override
 	public K nextKey()
 	{
-		log.trace("Get next key from the {} ", achillesSliceIterator.type());
+		log.trace("Get next key from the {} ", sliceIterator.type());
 		K key = null;
-		if (this.achillesSliceIterator.hasNext())
+		if (this.sliceIterator.hasNext())
 		{
-			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			HColumn<Composite, ?> column = this.sliceIterator.next();
 			key = factory.createKey(propertyMeta, column);
 		}
 		else
@@ -84,11 +84,11 @@ public class ThriftKeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 	@Override
 	public V nextValue()
 	{
-		log.trace("Get next value from the {} ", achillesSliceIterator.type());
+		log.trace("Get next value from the {} ", sliceIterator.type());
 		V value = null;
-		if (this.achillesSliceIterator.hasNext())
+		if (this.sliceIterator.hasNext())
 		{
-			HColumn<Composite, V> column = this.achillesSliceIterator.next();
+			HColumn<Composite, V> column = this.sliceIterator.next();
 			value = factory.createValue(context, propertyMeta, column);
 		}
 		else
@@ -101,11 +101,11 @@ public class ThriftKeyValueIteratorImpl<K, V> implements KeyValueIterator<K, V>
 	@Override
 	public Integer nextTtl()
 	{
-		log.trace("Get next ttl from the {} ", achillesSliceIterator.type());
+		log.trace("Get next ttl from the {} ", sliceIterator.type());
 		Integer ttl = null;
-		if (this.achillesSliceIterator.hasNext())
+		if (this.sliceIterator.hasNext())
 		{
-			HColumn<Composite, ?> column = this.achillesSliceIterator.next();
+			HColumn<Composite, ?> column = this.sliceIterator.next();
 			ttl = factory.createTtl(column);
 		}
 		else

@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,8 +41,13 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 		return baseClass;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T buildProxy(T entity, CONTEXT context)
+	{
+		return buildProxy(entity, context, new HashSet<Method>());
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T buildProxy(T entity, CONTEXT context, Set<Method> alreadyLoaded)
 	{
 
 		if (entity == null)
@@ -53,7 +59,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(entity.getClass());
-		enhancer.setCallback(buildInterceptor(context, entity));
+		enhancer.setCallback(buildInterceptor(context, entity, alreadyLoaded));
 
 		return (T) enhancer.create();
 	}
@@ -63,10 +69,18 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 	{
 		log.debug("Get real entity from proxy {} ", proxy);
 
-		Factory factory = (Factory) proxy;
-		EntityInterceptor<CONTEXT, ?> interceptor = (EntityInterceptor<CONTEXT, ?>) factory
-				.getCallback(0);
-		return (T) interceptor.getTarget();
+		if (isProxy(proxy))
+		{
+			Factory factory = (Factory) proxy;
+			EntityInterceptor<CONTEXT, ?> interceptor = (EntityInterceptor<CONTEXT, ?>) factory
+					.getCallback(0);
+			return (T) interceptor.getTarget();
+		}
+		else
+		{
+			return proxy;
+		}
+
 	}
 
 	public boolean isProxy(Object entity)
@@ -94,7 +108,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 		}
 	}
 
-	public <T> T unproxy(T proxy)
+	public <T> T unwrap(T proxy)
 	{
 		log.debug("Unproxying object {} ", proxy);
 
@@ -116,7 +130,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 		}
 	}
 
-	public <K, V> Entry<K, V> unproxy(Entry<K, V> entry)
+	public <K, V> Entry<K, V> unwrap(Entry<K, V> entry)
 	{
 		V value = entry.getValue();
 		if (isProxy(value))
@@ -127,37 +141,38 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext>
 		return entry;
 	}
 
-	public <T> Collection<T> unproxy(Collection<T> proxies)
+	public <T> Collection<T> unwrap(Collection<T> proxies)
 	{
 		Collection<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{
-			result.add(unproxy(proxy));
+			result.add(unwrap(proxy));
 		}
 		return result;
 	}
 
-	public <T> List<T> unproxy(List<T> proxies)
+	public <T> List<T> unwrap(List<T> proxies)
 	{
 		List<T> result = new ArrayList<T>();
 		for (T proxy : proxies)
 		{
-			result.add(this.unproxy(proxy));
+			result.add(this.unwrap(proxy));
 		}
 
 		return result;
 	}
 
-	public <T> Set<T> unproxy(Set<T> proxies)
+	public <T> Set<T> unwrap(Set<T> proxies)
 	{
 		Set<T> result = new HashSet<T>();
 		for (T proxy : proxies)
 		{
-			result.add(this.unproxy(proxy));
+			result.add(this.unwrap(proxy));
 		}
 
 		return result;
 	}
 
-	public abstract <T> EntityInterceptor<CONTEXT, T> buildInterceptor(CONTEXT context, T entity);
+	public abstract <T> EntityInterceptor<CONTEXT, T> buildInterceptor(CONTEXT context, T entity,
+			Set<Method> alreadyLoaded);
 }

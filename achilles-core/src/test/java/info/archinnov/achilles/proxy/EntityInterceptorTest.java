@@ -1,7 +1,7 @@
 package info.archinnov.achilles.proxy;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -12,6 +12,10 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.proxy.wrapper.MapWrapper;
 import info.archinnov.achilles.proxy.wrapper.SetWrapper;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -20,8 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -31,8 +33,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * AchillesEntityInterceptorTest
@@ -100,8 +100,8 @@ public class EntityInterceptorTest
         bean = CompleteBeanTestBuilder.builder().id(key).buid();
         interceptor.setTarget(bean);
 
-        doCallRealMethod().when(interceptor).setKey(key);
-        interceptor.setKey(key);
+        doCallRealMethod().when(interceptor).setPrimaryKey(key);
+        interceptor.setPrimaryKey(key);
 
         doCallRealMethod().when(interceptor).setContext(context);
         interceptor.setContext(context);
@@ -174,7 +174,7 @@ public class EntityInterceptorTest
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
         assertThat(actual).isEqualTo(rawValue);
-        verify(loader).loadPropertyIntoObject(bean, key, context, propertyMeta);
+        verify(loader).loadPropertyIntoObject(context, bean, propertyMeta);
     }
 
     @Test
@@ -248,7 +248,7 @@ public class EntityInterceptorTest
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
         when(proxy.invoke(bean, args)).thenReturn(rawValue);
-        when(context.newPersistenceContext(null, rawValue)).thenReturn(joinContext);
+        when(context.createContextForJoin(null, rawValue)).thenReturn(joinContext);
         when(proxifier.buildProxy(rawValue, joinContext)).thenReturn(rawValue);
 
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
@@ -500,24 +500,6 @@ public class EntityInterceptorTest
     }
 
     @Test
-    public void should_return_wide_row_wrapper() throws Throwable
-    {
-        PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("tweets")
-                .accessors()
-                .type(PropertyType.WIDE_MAP)
-                .build();
-
-        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isWideRow()).thenReturn(true);
-        when(interceptor.buildWideRowWrapper(propertyMeta)).thenReturn(rawValue);
-        Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-        assertThat(actual).isSameAs(rawValue);
-    }
-
-    @Test
     public void should_return_wide_map_wrapper() throws Throwable
     {
         PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
@@ -528,7 +510,7 @@ public class EntityInterceptorTest
                 .build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isWideRow()).thenReturn(false);
+        when(context.isClusteredEntity()).thenReturn(false);
         when(interceptor.buildWideMapWrapper(propertyMeta)).thenReturn(rawValue);
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
@@ -546,7 +528,7 @@ public class EntityInterceptorTest
                 .build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isWideRow()).thenReturn(false);
+        when(context.isClusteredEntity()).thenReturn(false);
         when(interceptor.buildCounterWideMapWrapper(propertyMeta)).thenReturn(rawValue);
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
@@ -564,7 +546,7 @@ public class EntityInterceptorTest
                 .build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isWideRow()).thenReturn(false);
+        when(context.isClusteredEntity()).thenReturn(false);
         when(interceptor.buildJoinWideMapWrapper(propertyMeta)).thenReturn(rawValue);
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 

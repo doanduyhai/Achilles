@@ -1,12 +1,15 @@
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,8 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import mapping.entity.CompleteBean;
-import mapping.entity.UserBean;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.NoOp;
@@ -28,8 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import testBuilders.CompleteBeanTestBuilder;
 
 /**
  * AchillesEntityProxifierTest
@@ -97,9 +96,11 @@ public class EntityProxifierTest
 
 		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		when(proxifier.buildInterceptor(context, entity)).thenReturn(interceptor);
+		when(proxifier.buildInterceptor(eq(context), eq(entity), any(HashSet.class))).thenReturn(
+				interceptor);
 
 		doCallRealMethod().when(proxifier).buildProxy(entity, context);
+		doCallRealMethod().when(proxifier).buildProxy(eq(entity), eq(context), any(HashSet.class));
 
 		CompleteBean proxy = proxifier.buildProxy(entity, context);
 
@@ -129,10 +130,24 @@ public class EntityProxifierTest
 		enhancer.setCallback(interceptor);
 		UserBean proxy = (UserBean) enhancer.create();
 
+		doCallRealMethod().when(proxifier).isProxy(any());
 		doCallRealMethod().when(proxifier).getRealObject(any());
 		UserBean actual = proxifier.getRealObject(proxy);
 
 		assertThat(actual).isSameAs(realObject);
+	}
+
+	@Test
+	public void should_return_object_when_get_real_object_called_on_non_proxified_entity()
+			throws Exception
+	{
+		UserBean realObject = new UserBean();
+		doCallRealMethod().when(proxifier).isProxy(realObject);
+		doCallRealMethod().when(proxifier).getRealObject(realObject);
+
+		UserBean actual = proxifier.getRealObject(realObject);
+		assertThat(actual).isSameAs(realObject);
+
 	}
 
 	@Test
@@ -195,8 +210,8 @@ public class EntityProxifierTest
 	@Test
 	public void should_return_null_when_unproxying_null() throws Exception
 	{
-		doCallRealMethod().when(proxifier).unproxy(any());
-		assertThat(proxifier.unproxy((Object) null)).isNull();
+		doCallRealMethod().when(proxifier).unwrap(any());
+		assertThat(proxifier.unwrap((Object) null)).isNull();
 	}
 
 	@Test
@@ -205,8 +220,8 @@ public class EntityProxifierTest
 	{
 		CompleteBean realObject = new CompleteBean();
 		when(proxifier.isProxy(realObject)).thenReturn(false);
-		doCallRealMethod().when(proxifier).unproxy(any());
-		CompleteBean actual = proxifier.unproxy(realObject);
+		doCallRealMethod().when(proxifier).unwrap(any());
+		CompleteBean actual = proxifier.unwrap(realObject);
 
 		assertThat(actual).isSameAs(realObject);
 	}
@@ -219,8 +234,8 @@ public class EntityProxifierTest
 		when(proxifier.isProxy(realObject)).thenReturn(true);
 		when(proxifier.getRealObject(realObject)).thenReturn(realObject);
 
-		doCallRealMethod().when(proxifier).unproxy(any());
-		CompleteBean actual = proxifier.unproxy(realObject);
+		doCallRealMethod().when(proxifier).unwrap(any());
+		CompleteBean actual = proxifier.unwrap(realObject);
 
 		assertThat(actual).isSameAs(realObject);
 	}
@@ -234,9 +249,9 @@ public class EntityProxifierTest
 		Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
 
 		when(proxifier.isProxy(completeBean)).thenReturn(false);
-		doCallRealMethod().when(proxifier).unproxy(entry);
+		doCallRealMethod().when(proxifier).unwrap(entry);
 
-		Entry<Integer, CompleteBean> actual = proxifier.unproxy(entry);
+		Entry<Integer, CompleteBean> actual = proxifier.unwrap(entry);
 		assertThat(actual).isSameAs(entry);
 		assertThat(actual.getValue()).isSameAs(completeBean);
 	}
@@ -252,9 +267,9 @@ public class EntityProxifierTest
 
 		when(proxifier.isProxy(completeBean)).thenReturn(true);
 		when(proxifier.getRealObject(completeBean)).thenReturn(realObject);
-		doCallRealMethod().when(proxifier).unproxy(entry);
+		doCallRealMethod().when(proxifier).unwrap(entry);
 
-		Entry<Integer, CompleteBean> actual = proxifier.unproxy(entry);
+		Entry<Integer, CompleteBean> actual = proxifier.unwrap(entry);
 		assertThat(actual).isSameAs(entry);
 		assertThat(actual.getValue()).isSameAs(realObject);
 	}
@@ -268,10 +283,10 @@ public class EntityProxifierTest
 		Collection<CompleteBean> proxies = new ArrayList<CompleteBean>();
 		proxies.add(proxy);
 
-		when(proxifier.unproxy(proxy)).thenReturn(realObject);
-		doCallRealMethod().when(proxifier).unproxy(proxies);
+		when(proxifier.unwrap(proxy)).thenReturn(realObject);
+		doCallRealMethod().when(proxifier).unwrap(proxies);
 
-		Collection<CompleteBean> actual = proxifier.unproxy(proxies);
+		Collection<CompleteBean> actual = proxifier.unwrap(proxies);
 
 		assertThat(actual).containsExactly(realObject);
 	}
@@ -284,10 +299,10 @@ public class EntityProxifierTest
 		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
 		proxies.add(proxy);
 
-		when(proxifier.unproxy(proxy)).thenReturn(realObject);
-		doCallRealMethod().when(proxifier).unproxy(proxies);
+		when(proxifier.unwrap(proxy)).thenReturn(realObject);
+		doCallRealMethod().when(proxifier).unwrap(proxies);
 
-		Collection<CompleteBean> actual = proxifier.unproxy(proxies);
+		Collection<CompleteBean> actual = proxifier.unwrap(proxies);
 
 		assertThat(actual).containsExactly(realObject);
 	}
@@ -300,10 +315,10 @@ public class EntityProxifierTest
 		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
 		proxies.add(proxy);
 
-		when(proxifier.unproxy(proxy)).thenReturn(realObject);
-		doCallRealMethod().when(proxifier).unproxy(proxies);
+		when(proxifier.unwrap(proxy)).thenReturn(realObject);
+		doCallRealMethod().when(proxifier).unwrap(proxies);
 
-		Collection<CompleteBean> actual = proxifier.unproxy(proxies);
+		Collection<CompleteBean> actual = proxifier.unwrap(proxies);
 
 		assertThat(actual).containsExactly(realObject);
 	}

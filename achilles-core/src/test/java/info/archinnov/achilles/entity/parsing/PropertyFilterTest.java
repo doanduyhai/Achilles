@@ -2,15 +2,15 @@ package info.archinnov.achilles.entity.parsing;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
+import info.archinnov.achilles.test.parser.entity.ParentBean;
 
 import java.lang.reflect.Field;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Test;
 
-import parser.entity.BeanWithClusteredId;
-import parser.entity.ParentBean;
 
 /**
  * AchillesPropertyFilterTest

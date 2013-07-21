@@ -1,9 +1,7 @@
 package info.archinnov.achilles.validation;
 
-import static info.archinnov.achilles.helper.PropertyHelper.*;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -22,6 +20,14 @@ public class Validator
     public static void validateNotBlank(String arg, String message)
     {
         if (StringUtils.isBlank(arg))
+        {
+            throw new AchillesException(message);
+        }
+    }
+
+    public static void validateNull(Object arg, String message)
+    {
+        if (arg != null)
         {
             throw new AchillesException(message);
         }
@@ -76,16 +82,11 @@ public class Validator
         }
     }
 
-    public static void validateSerializable(Class<?> clazz, String message)
+    public static void validateComparable(Class<?> type, String message)
     {
-        if (clazz.isPrimitive() || clazz.isEnum() || isSupportedType(clazz))
+        if (!Comparable.class.isAssignableFrom(type))
         {
-            return;
-        }
-
-        if (!Serializable.class.isAssignableFrom(clazz))
-        {
-            throw new AchillesBeanMappingException(message);
+            throw new AchillesException(message);
         }
     }
 
@@ -139,6 +140,15 @@ public class Validator
         {
             throw new AchillesBeanMappingException("Cannot instantiate the class '" + canonicalName
                     + "'");
+        }
+    }
+
+    public static <T> void validateInstanceOf(Object entity, Class<T> targetClass, String message)
+    {
+        validateNotNull(entity, message);
+        if (!targetClass.isInstance(entity))
+        {
+            throw new AchillesException(message);
         }
     }
 

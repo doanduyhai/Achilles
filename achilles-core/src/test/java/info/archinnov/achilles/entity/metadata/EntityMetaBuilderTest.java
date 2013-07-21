@@ -4,6 +4,9 @@ import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
@@ -11,13 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.CompleteBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import parser.entity.Bean;
-import testBuilders.PropertyMetaTestBuilder;
 
 /**
  * EntityMetaBuilderTest
@@ -122,10 +122,10 @@ public class EntityMetaBuilderTest
                 .className("Bean")
                 .propertyMetas(propertyMetas)
                 .columnFamilyName("toto")
-                .wideRow(true)
+                .clusteredEntity(true)
                 .build();
 
-        assertThat(meta.isWideRow()).isTrue();
+        assertThat(meta.isClusteredEntity()).isTrue();
     }
 
     @Test

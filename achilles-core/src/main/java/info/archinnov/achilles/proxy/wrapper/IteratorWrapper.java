@@ -31,7 +31,7 @@ public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iter
         if (isJoin()) {
             log.trace("Build proxy for join entity for property {} of entity class {} upon next() call",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-            PersistenceContext joinContext = context.newPersistenceContext(propertyMeta.joinMeta(), value);
+            PersistenceContext joinContext = context.createContextForJoin(propertyMeta.joinMeta(), value);
             return proxifier.buildProxy(value, joinContext);
         } else {
             return value;

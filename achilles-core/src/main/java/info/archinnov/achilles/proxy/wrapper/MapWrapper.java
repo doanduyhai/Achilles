@@ -51,7 +51,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public boolean containsValue(Object value)
 	{
-		return this.target.containsValue(proxifier.unproxy(value));
+		return this.target.containsValue(proxifier.unwrap(value));
 	}
 
 	@Override
@@ -137,7 +137,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), value,
 						key);
 
-		V result = this.target.put(key, proxifier.unproxy(value));
+		V result = this.target.put(key, proxifier.unwrap(value));
 		this.markDirty();
 		return result;
 	}
@@ -148,7 +148,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 		Map<K, V> map = new HashMap<K, V>();
 		for (Entry<? extends K, ? extends V> entry : m.entrySet())
 		{
-			map.put(entry.getKey(), proxifier.unproxy(entry.getValue()));
+			map.put(entry.getKey(), proxifier.unwrap(entry.getValue()));
 		}
 
 		log.trace(
@@ -162,7 +162,7 @@ public class MapWrapper<K, V> extends AbstractWrapper<K, V> implements Map<K, V>
 	@Override
 	public V remove(Object key)
 	{
-		Object unproxy = proxifier.unproxy(key);
+		Object unproxy = proxifier.unwrap(key);
 		if (this.target.containsKey(unproxy))
 		{
 			log

@@ -23,7 +23,6 @@ public class ThriftCounterWrapper implements Counter
 {
 	private static final Logger log = LoggerFactory.getLogger(ThriftCounterWrapper.class);
 
-	
 	private Object key;
 	private Composite columnName;
 	private ThriftAbstractDao counterDao;

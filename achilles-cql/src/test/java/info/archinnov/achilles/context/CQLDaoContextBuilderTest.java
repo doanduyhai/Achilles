@@ -6,11 +6,11 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;

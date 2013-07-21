@@ -4,6 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class ListWrapperTest
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(proxifier.unproxy("a")).thenReturn("a");
+		when(proxifier.unwrap("a")).thenReturn("a");
 		listWrapper.add(0, "a");
 
 		assertThat(target).hasSize(1);
@@ -73,7 +73,7 @@ public class ListWrapperTest
 		listWrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("b", "c");
-		when(proxifier.unproxy(list)).thenReturn(list);
+		when(proxifier.unwrap(list)).thenReturn(list);
 
 		listWrapper.addAll(1, list);
 
@@ -109,7 +109,7 @@ public class ListWrapperTest
 		target.add("b");
 		target.add("c");
 		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(proxifier.unproxy("d")).thenReturn("d");
+		when(proxifier.unwrap("d")).thenReturn("d");
 		listWrapper.set(1, "d");
 
 		assertThat(target).hasSize(3);
@@ -127,7 +127,7 @@ public class ListWrapperTest
 		ListIterator<String> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
 		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
-		when(proxifier.unproxy("c")).thenReturn("c");
+		when(proxifier.unwrap("c")).thenReturn("c");
 		listIteratorWrapper.add("c");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -143,7 +143,7 @@ public class ListWrapperTest
 		List<String> subListWrapper = prepareListWrapper(target).subList(0, 1);
 
 		assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
-		when(proxifier.unproxy("d")).thenReturn("d");
+		when(proxifier.unwrap("d")).thenReturn("d");
 		subListWrapper.add("d");
 
 		verify(dirtyMap).put(setter, propertyMeta);

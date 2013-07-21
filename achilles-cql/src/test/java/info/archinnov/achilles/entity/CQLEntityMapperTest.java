@@ -6,17 +6,17 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-import info.archinnov.achilles.proxy.MethodInvoker;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.util.Arrays;
 import java.util.List;
-import mapping.entity.CompleteBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.CompleteBeanTestBuilder;
-import testBuilders.PropertyMetaTestBuilder;
 import com.datastax.driver.core.Row;
 
 /**
@@ -34,7 +34,7 @@ public class CQLEntityMapperTest
     private CQLEntityMapper entityMapper;
 
     @Mock
-    private MethodInvoker invoker;
+    private ReflectionInvoker invoker;
 
     @Mock
     private CQLRowMethodInvoker cqlRowInvoker;
@@ -138,7 +138,7 @@ public class CQLEntityMapperTest
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
-                .type(PropertyType.COMPOUND_ID)
+                .type(PropertyType.EMBEDDED_ID)
                 .compNames("name")
                 .build();
 

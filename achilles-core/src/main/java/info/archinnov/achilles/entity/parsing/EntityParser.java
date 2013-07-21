@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
-import info.archinnov.achilles.annotations.WideRow;
+import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -51,7 +50,6 @@ public class EntityParser
         Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
                 .findConsistencyLevels(entityClass, context.getConfigurableCLPolicy());
 
-        context.setWideRow(entityClass.getAnnotation(WideRow.class) != null ? true : false);
         context.setCurrentConsistencyLevels(consistencyLevels);
         context.setCurrentColumnFamilyName(columnFamilyName);
 
@@ -67,7 +65,8 @@ public class EntityParser
             }
             if (filter.hasAnnotation(field, EmbeddedId.class))
             {
-                propertyContext.hasMultiKeyPrimaryKey(true);
+                context.setClusteredEntity(true);
+                propertyContext.isEmbeddedId(true);
                 idMeta = parser.parse(propertyContext);
             }
             else if (filter.hasAnnotation(field, Column.class))
@@ -100,14 +99,14 @@ public class EntityParser
 
         // Finish validation of property metas and wide row
         validator.validatePropertyMetas(context);
-        validator.validateWideRows(context);
+        validator.validateClusteredEntities(context);
 
         EntityMeta entityMeta = entityMetaBuilder(idMeta)
                 .entityClass(entityClass)
                 .className(entityClass.getCanonicalName())
                 .columnFamilyName(columnFamilyName)
                 .propertyMetas(context.getPropertyMetas())
-                .wideRow(context.isWideRow())
+                .clusteredEntity(context.isClusteredEntity())
                 .consistencyLevels(context.getCurrentConsistencyLevels())
                 .build();
 
@@ -135,7 +134,7 @@ public class EntityParser
             PropertyMeta<?, ?> propertyMeta = entry.getKey();
             EntityMeta joinEntityMeta = entityMetaMap.get(clazz);
 
-            validator.validateJoinEntityNotWideRow(propertyMeta, joinEntityMeta);
+            validator.validateJoinEntityNotClusteredEntity(propertyMeta, joinEntityMeta);
 
             propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
 

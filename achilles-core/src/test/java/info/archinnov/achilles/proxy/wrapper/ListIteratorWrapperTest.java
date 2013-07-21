@@ -4,13 +4,13 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class ListIteratorWrapperTest
 	@Test
 	public void should_mark_dirty_on_set() throws Exception
 	{
-		when(proxifier.unproxy(1)).thenReturn(1);
+		when(proxifier.unwrap(1)).thenReturn(1);
 		wrapper.next();
 		wrapper.set(1);
 

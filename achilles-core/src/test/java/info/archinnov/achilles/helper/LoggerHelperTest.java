@@ -2,11 +2,11 @@ package info.archinnov.achilles.helper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import mapping.entity.CompleteBean;
 
 import org.junit.Test;
 

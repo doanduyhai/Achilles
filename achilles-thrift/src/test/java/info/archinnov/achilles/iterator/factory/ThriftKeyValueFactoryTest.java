@@ -1,18 +1,23 @@
 package info.archinnov.achilles.iterator.factory;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import static testBuilders.PropertyMetaTestBuilder.*;
+import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.helper.ThriftJoinEntityHelper;
+import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.test.builders.CompositeTestBuilder;
+import info.archinnov.achilles.test.builders.HColumnTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
 import java.util.ArrayList;
@@ -20,8 +25,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mapping.entity.TweetCompoundKey;
-import mapping.entity.UserBean;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
@@ -34,8 +37,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import testBuilders.CompositeTestBuilder;
-import testBuilders.HColumnTestBuilder;
 import com.google.common.base.Function;
 
 /**
@@ -64,7 +65,7 @@ public class ThriftKeyValueFactoryTest
     private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
     @Mock
-    private ThriftJoinEntityHelper joinHelper;
+    private ThriftJoinEntityLoader joinHelper;
 
     @Mock
     private ThriftEntityProxifier proxifier;
@@ -110,8 +111,8 @@ public class ThriftKeyValueFactoryTest
 
         when(joinHelper.loadJoinEntities(eq(UserBean.class), //
                 joinIdsCaptor.capture(), eq(joinMeta), eq(joinEntityDao))).thenReturn(map);
-        when(context.newPersistenceContext(joinMeta, bean1)).thenReturn(joinContext1);
-        when(context.newPersistenceContext(joinMeta, bean2)).thenReturn(joinContext2);
+        when(context.createContextForJoin(joinMeta, bean1)).thenReturn(joinContext1);
+        when(context.createContextForJoin(joinMeta, bean2)).thenReturn(joinContext2);
         when(proxifier.buildProxy(bean1, joinContext1)).thenReturn(bean1);
         when(proxifier.buildProxy(bean2, joinContext2)).thenReturn(bean2);
     }

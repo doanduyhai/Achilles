@@ -3,12 +3,12 @@ package info.archinnov.achilles.entity.metadata.util;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 
-import testBuilders.PropertyMetaTestBuilder;
 
 import com.google.common.collect.Collections2;
 

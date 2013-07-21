@@ -48,10 +48,10 @@ public class PersistenceContextTest
 	@Test
 	public void should_return_wide_row() throws Exception
 	{
-		doCallRealMethod().when(context).isWideRow();
+		doCallRealMethod().when(context).isClusteredEntity();
 
-		when(entityMeta.isWideRow()).thenReturn(true);
-		assertThat(context.isWideRow()).isTrue();
+		when(entityMeta.isClusteredEntity()).thenReturn(true);
+		assertThat(context.isClusteredEntity()).isTrue();
 	}
 
 	@Test

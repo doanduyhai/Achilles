@@ -5,14 +5,14 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import mapping.entity.CompleteBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import testBuilders.PropertyMetaTestBuilder;
 import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -48,7 +48,7 @@ public class CQLEntityInterceptorBuilderTest {
 
         assertThat(interceptor.getContext()).isSameAs(context);
         assertThat(interceptor.getTarget()).isSameAs(entity);
-        assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+        assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
         assertThat(interceptor.getAlreadyLoaded()).containsOnly(idMeta.getGetter());
     }
 
@@ -77,7 +77,7 @@ public class CQLEntityInterceptorBuilderTest {
 
         assertThat(interceptor.getContext()).isSameAs(context);
         assertThat(interceptor.getTarget()).isSameAs(entity);
-        assertThat(interceptor.getKey()).isEqualTo(entity.getId());
+        assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
         assertThat(interceptor.getAlreadyLoaded()).isEmpty();
     }
 }
