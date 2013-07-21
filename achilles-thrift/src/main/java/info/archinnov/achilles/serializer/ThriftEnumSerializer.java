@@ -19,16 +19,14 @@ public class ThriftEnumSerializer<E extends Enum<E>> extends AbstractSerializer<
         if (enumInstance == null) {
             return null;
         }
-        String enumValue = enumInstance.ordinal() + "=" + enumInstance.name();
-        return STRING_SRZ.toByteBuffer(enumValue);
+        return STRING_SRZ.toByteBuffer(enumInstance.name());
     }
 
     @Override
     public Enum<E> fromByteBuffer(ByteBuffer byteBuffer) {
 
         String enumValue = STRING_SRZ.fromByteBuffer(byteBuffer);
-        String[] enumSplit = enumValue.split("=");
-        return Enum.valueOf(type, enumSplit[1]);
+        return Enum.valueOf(type, enumValue);
     }
 
     @Override

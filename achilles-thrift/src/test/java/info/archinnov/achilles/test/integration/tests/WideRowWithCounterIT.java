@@ -101,7 +101,7 @@ public class WideRowWithCounterIT
 
         em.remove(entity);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         assertThat(em.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
 
