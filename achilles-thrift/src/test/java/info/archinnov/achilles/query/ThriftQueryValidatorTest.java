@@ -5,14 +5,10 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,90 +29,67 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftQueryValidatorTest
 {
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	@InjectMocks
-	private ThriftQueryValidator validator;
+    @InjectMocks
+    private ThriftQueryValidator validator;
 
-	@Mock
-	private ThriftCompoundKeyValidator compoundKeyValidator;
+    @Mock
+    private ThriftCompoundKeyValidator compoundKeyValidator;
 
-	@Mock
-	private ThriftCompoundKeyMapper mapper;
+    @Mock
+    private ThriftCompoundKeyMapper mapper;
 
-	@Mock
-	private PropertyMeta<?, ?> pm;
+    @Mock
+    private PropertyMeta<?, ?> pm;
 
-	@Captor
-	private ArgumentCaptor<List<Method>> gettersCaptor;
+    @Captor
+    private ArgumentCaptor<List<Method>> gettersCaptor;
 
-	@Test
-	public void should_validate_single_keys_ascending() throws Exception
-	{
-		when(pm.isSingleKey()).thenReturn(true);
+    @Test
+    public void should_validate_single_keys_ascending() throws Exception
+    {
+        when(pm.isSingleKey()).thenReturn(true);
 
-		validator.validateBoundsForQuery(pm, 10L, 11L, ASCENDING);
-	}
+        validator.validateBoundsForQuery(pm, 10L, 11L, ASCENDING);
+    }
 
-	@Test
-	public void should_validate_single_keys_descending() throws Exception
-	{
-		when(pm.isSingleKey()).thenReturn(true);
+    @Test
+    public void should_validate_single_keys_descending() throws Exception
+    {
+        when(pm.isSingleKey()).thenReturn(true);
 
-		validator.validateBoundsForQuery(pm, 12L, 11L, DESCENDING);
-	}
+        validator.validateBoundsForQuery(pm, 12L, 11L, DESCENDING);
+    }
 
-	@Test
-	public void should_validate_compound_keys() throws Exception
-	{
-		when(pm.isSingleKey()).thenReturn(false);
+    @Test
+    public void should_validate_compound_keys() throws Exception
+    {
+        when(pm.isSingleKey()).thenReturn(false);
 
-		CompoundKey start = new CompoundKey();
-		CompoundKey end = new CompoundKey();
+        CompoundKey start = new CompoundKey();
+        CompoundKey end = new CompoundKey();
 
-		List<Method> getters = Arrays.<Method> asList();
-		List<Object> startComps = Arrays.<Object> asList();
-		List<Object> endComps = Arrays.<Object> asList();
+        List<Method> getters = Arrays.<Method> asList();
+        List<Object> startComps = Arrays.<Object> asList();
+        List<Object> endComps = Arrays.<Object> asList();
 
-		when(pm.getComponentGetters()).thenReturn(getters);
-		when(mapper.fromCompoundToComponents(start, getters)).thenReturn(startComps);
-		when(mapper.fromCompoundToComponents(end, getters)).thenReturn(endComps);
+        when(pm.getComponentGetters()).thenReturn(getters);
+        when(mapper.fromCompoundToComponents(start, getters)).thenReturn(startComps);
+        when(mapper.fromCompoundToComponents(end, getters)).thenReturn(endComps);
 
-		validator.validateBoundsForQuery(pm, start, end, ASCENDING);
+        validator.validateBoundsForQuery(pm, start, end, ASCENDING);
 
-		verify(compoundKeyValidator).validateComponentsForQuery(startComps, endComps, ASCENDING);
-	}
+        verify(compoundKeyValidator).validateComponentsForQuery(startComps, endComps, ASCENDING);
+    }
 
-	@Test
-	public void should_validate_when_any_key_null() throws Exception
-	{
-		validator.validateBoundsForQuery(pm, null, 11L, ASCENDING);
-		validator.validateBoundsForQuery(pm, 11L, null, ASCENDING);
-		validator.validateBoundsForQuery(pm, null, null, ASCENDING);
-	}
+    @Test
+    public void should_validate_when_any_key_null() throws Exception
+    {
+        validator.validateBoundsForQuery(pm, null, 11L, ASCENDING);
+        validator.validateBoundsForQuery(pm, 11L, null, ASCENDING);
+        validator.validateBoundsForQuery(pm, null, null, ASCENDING);
+    }
 
-	@Test
-	public void should_exception_when_incorrect_ascending_order() throws Exception
-	{
-		when(pm.isSingleKey()).thenReturn(true);
-
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("For range query, start value should be lesser or equal to end value");
-
-		validator.validateBoundsForQuery(pm, 12L, 11L, ASCENDING);
-	}
-
-	@Test
-	public void should_exception_when_incorrect_descending_order() throws Exception
-	{
-		when(pm.isSingleKey()).thenReturn(true);
-
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("For reverse range query, start value should be greater or equal to end value");
-
-		validator.validateBoundsForQuery(pm, 10L, 11L, DESCENDING);
-	}
 }

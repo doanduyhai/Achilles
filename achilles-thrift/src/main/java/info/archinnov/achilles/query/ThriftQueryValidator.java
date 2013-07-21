@@ -1,18 +1,17 @@
 package info.archinnov.achilles.query;
 
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * WideMapQueryValidator
+ * ThriftQueryValidator
  * 
  * @author DuyHai DOAN
  * 
@@ -32,20 +31,9 @@ public class ThriftQueryValidator
         {
             if (propertyMeta.isSingleKey())
             {
-                @SuppressWarnings("unchecked")
-                Comparable<K> startComp = (Comparable<K>) start;
-
-                if (ASCENDING.equals(ordering))
-                {
-                    Validator.validateTrue(startComp.compareTo(end) <= 0,
-                            "For range query, start value should be lesser or equal to end value");
-                }
-                else
-                {
-                    Validator
-                            .validateTrue(startComp.compareTo(end) >= 0,
-                                    "For reverse range query, start value should be greater or equal to end value");
-                }
+                compoundKeyValidator.validateComponentsForQuery(Arrays.<Object> asList(start),
+                        Arrays.<Object> asList(end),
+                        ordering);
             }
             else
             {

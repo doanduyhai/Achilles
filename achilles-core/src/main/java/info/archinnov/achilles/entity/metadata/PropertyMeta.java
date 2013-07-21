@@ -332,6 +332,49 @@ public class PropertyMeta<K, V>
         return consistencyLevels != null ? consistencyLevels.right : null;
     }
 
+    ////////////////////// CQL
+
+    public Object getKeyFromCassandra(Object cassandraValue)
+    {
+        return convertValueFromCassandra(keyClass, cassandraValue);
+    }
+
+    public Object getValueFromCassandra(Object cassandraValue)
+    {
+        if (type.isJoin())
+        {
+            return joinIdMeta().getValueFromCassandra(cassandraValue);
+        }
+        else {
+            return convertValueFromCassandra(valueClass, cassandraValue);
+        }
+    }
+
+    public Object convertValueFromCassandra(Class<?> targetType, Object cassandraValue)
+    {
+        if (isSupportedType(targetType))
+        {
+            return cassandraValue;
+        }
+        else if (cassandraValue instanceof String)
+        {
+            try {
+                return objectMapper.readValue((String) cassandraValue, targetType);
+            } catch (Exception e) {
+                throw new AchillesException("Error while deserializing value '" + cassandraValue + "' to type '"
+                        + targetType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
+                        + entityClassName + "'", e);
+            }
+        }
+        else
+        {
+            throw new AchillesException("Error while deserializing value '" + cassandraValue + "' to type '"
+                    + targetType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
+                    + entityClassName + "'");
+        }
+    }
+
+    /////////////////////// End CQL
     public PropertyType type()
     {
         return type;

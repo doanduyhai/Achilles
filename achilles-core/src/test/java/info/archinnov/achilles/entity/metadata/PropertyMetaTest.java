@@ -740,4 +740,67 @@ public class PropertyMetaTest
         assertThat(idMeta.isEmbeddedId()).isFalse();
     }
 
+    @Test
+    public void should_get_value_from_cassandra_for_join_id() throws Exception
+    {
+
+        Long cassandraValue = 11L;
+        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .type(SIMPLE)
+                .build();
+
+        EntityMeta joinMeta = new EntityMeta();
+        joinMeta.setIdMeta(joinIdMeta);
+
+        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+                .valueClass(UserBean.class)
+                .type(JOIN_SIMPLE)
+                .joinMeta(joinMeta)
+                .mapper(objectMapper)
+                .build();
+
+        Object actual = pm.getValueFromCassandra(cassandraValue);
+
+        assertThat(actual).isEqualTo(11L);
+    }
+
+    @Test
+    public void should_get_value_from_cassandra_for_string() throws Exception
+    {
+        Object cassandraValue = "string";
+        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .type(SIMPLE)
+                .build();
+
+        Object actual = pm.getValueFromCassandra(cassandraValue);
+
+        assertThat(actual).isEqualTo("string");
+    }
+
+    @Test
+    public void should_get_value_from_cassandra_for_serialized_entity() throws Exception
+    {
+        UserBean bean = new UserBean();
+        bean.setUserId(11L);
+        bean.setName("name");
+
+        String serialized = objectMapper.writeValueAsString(bean);
+
+        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+                .valueClass(UserBean.class)
+                .type(SIMPLE)
+                .mapper(objectMapper)
+                .build();
+
+        Object actual = pm.getValueFromCassandra(serialized);
+
+        assertThat(actual).isInstanceOf(UserBean.class);
+
+        UserBean actualBean = (UserBean) actual;
+
+        assertThat(actualBean.getUserId()).isEqualTo(11L);
+        assertThat(actualBean.getName()).isEqualTo("name");
+    }
 }

@@ -34,22 +34,22 @@ public class CQLCompoundKeyMapper
 
 		for (int i = 0; i < componentNames.size(); i++)
 		{
-			String component = componentNames.get(i);
+			String componentName = componentNames.get(i);
 			Class<?> clazz = componentClasses.get(i);
-			if (row.isNull(component))
+			if (row.isNull(componentName))
 			{
-				throw new AchillesException("Error, the component '" + component
+				throw new AchillesException("Error, the component '" + componentName
 						+ "' from @CompoundKey class '"
 						+ pm.getValueClass() + "' cannot be found from Cassandra");
 			}
 			else if (clazz.isEnum())
 			{
-				mapEnumValue(row, compoundKey, values, bySetter, componentSetters, i, component,
+				mapEnumValue(row, compoundKey, values, bySetter, componentSetters, i, componentName,
 						clazz);
 			}
 			else
 			{
-				mapValue(row, compoundKey, values, bySetter, componentSetters, i, component, clazz);
+				mapValue(row, compoundKey, values, bySetter, componentSetters, i, componentName, clazz);
 			}
 		}
 

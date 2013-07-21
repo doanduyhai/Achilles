@@ -60,10 +60,10 @@ public class WideMapWithEnumCompoundKeyIT
         wideMapWithEnumKey.insert(IMAGE, "image");
 
         Composite startComp = new Composite();
-        startComp.addComponent(0, "0=AUDIO", ComponentEquality.EQUAL);
+        startComp.addComponent(0, "AUDIO", ComponentEquality.EQUAL);
 
         Composite endComp = new Composite();
-        endComp.addComponent(0, "2=IMAGE", ComponentEquality.GREATER_THAN_EQUAL);
+        endComp.addComponent(0, "IMAGE", ComponentEquality.GREATER_THAN_EQUAL);
 
         List<Pair<Composite, String>> columns = dao.findColumnsRange(entity.getId(), startComp,
                 endComp, false, 20);

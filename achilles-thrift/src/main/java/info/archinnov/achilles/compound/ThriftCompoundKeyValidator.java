@@ -5,6 +5,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ public class ThriftCompoundKeyValidator
     private static final Logger log = LoggerFactory.getLogger(ThriftCompoundKeyValidator.class);
 
     private ThriftCompoundKeyMapper mapper = new ThriftCompoundKeyMapper();
+    private ComponentComparator comparator = new ComponentComparator();
 
     public void validatePartitionKey(PropertyMeta<?, ?> pm, Object... partitionKeys)
     {
@@ -110,12 +112,10 @@ public class ThriftCompoundKeyValidator
 
         for (int i = 0; i <= Math.min(indexStart, indexEnd); i++)
         {
-
-            @SuppressWarnings("unchecked")
-            Comparable<Object> startValue = (Comparable<Object>) startComponentValues
-                    .get(i);
+            Object startValue = startComponentValues.get(i);
             Object endValue = endComponentValues.get(i);
-            int comparisonResult = startValue.compareTo(endValue);
+            int comparisonResult = comparator.compare(startValue, endValue);
+
             if (ASCENDING.equals(ordering))
             {
                 Validator
@@ -141,6 +141,32 @@ public class ThriftCompoundKeyValidator
                     return;
             }
 
+        }
+    }
+
+    private static class ComponentComparator implements Comparator<Object> {
+
+        @Override
+        public int compare(Object o1, Object o2) {
+            if (o1.getClass().isEnum() && o2.getClass().isEnum())
+            {
+                String name1 = ((Enum) o1).name();
+                String name2 = ((Enum) o2).name();
+
+                return name1.compareTo(name2);
+            }
+            else if (Comparable.class.isAssignableFrom(o1.getClass())
+                    && Comparable.class.isAssignableFrom(o2.getClass()))
+            {
+                Comparable<Object> comp1 = (Comparable<Object>) o1;
+                Comparable<Object> comp2 = (Comparable<Object>) o2;
+
+                return comp1.compareTo(comp2);
+            }
+            else {
+                throw new IllegalArgumentException("Type '" + o1.getClass().getCanonicalName() + "' or type '"
+                        + o2.getClass().getCanonicalName() + "' should implements Comparable");
+            }
         }
     }
 }
