@@ -100,7 +100,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
     public List<KeyValue<K, Counter>> find(K start, K end, final int count, BoundingMode bounds,
             final OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         final Composite[] queryComps = thriftCompositeFactory.createForQuery(propertyMeta, start,
                 end, bounds, ordering);
@@ -128,7 +128,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
     public List<Counter> findValues(K start, K end, final int count, BoundingMode bounds,
             final OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         final Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -157,7 +157,7 @@ public class ThriftCounterWideMapWrapper<K> extends ThriftAbstractWideMapWrapper
     public List<K> findKeys(K start, K end, final int count, BoundingMode bounds,
             final OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
         final Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
 

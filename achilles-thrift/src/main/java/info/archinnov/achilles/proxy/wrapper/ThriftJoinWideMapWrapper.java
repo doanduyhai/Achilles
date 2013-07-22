@@ -98,7 +98,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
             OrderingMode ordering)
     {
 
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -119,7 +119,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -137,7 +137,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery( //
                 propertyMeta, start, end, bounds, ordering);
@@ -194,7 +194,7 @@ public class ThriftJoinWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper
     @Override
     public void remove(K start, K end, BoundingMode bounds)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end,
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end,
                 OrderingMode.ASCENDING);
 
         Composite[] queryComps = thriftCompositeFactory.createForQuery(//

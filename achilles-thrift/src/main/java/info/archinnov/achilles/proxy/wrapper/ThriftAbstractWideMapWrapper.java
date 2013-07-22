@@ -1,6 +1,7 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.entity.operations.EntityValidator;
@@ -8,7 +9,6 @@ import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.iterator.factory.ThriftIteratorFactory;
 import info.archinnov.achilles.iterator.factory.ThriftKeyValueFactory;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
-import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
@@ -30,7 +30,7 @@ public abstract class ThriftAbstractWideMapWrapper<K, V> implements WideMap<K, V
     protected EntityValidator<ThriftPersistenceContext> validator = new EntityValidator<ThriftPersistenceContext>(
             new ThriftEntityProxifier());
 
-    protected ThriftQueryValidator queryValidator = new ThriftQueryValidator();
+    protected ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
     protected ThriftKeyValueFactory thriftKeyValueFactory = new ThriftKeyValueFactory();
     protected ThriftIteratorFactory thriftIteratorFactory = new ThriftIteratorFactory();
     protected ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();

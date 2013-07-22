@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -131,12 +130,13 @@ public class CQLTableBuilder {
     private String generateTable() {
         StringBuilder ddl = new StringBuilder();
 
-        ddl.append("CREATE TABLE ");
+        ddl.append("\n");
+        ddl.append("\tCREATE TABLE ");
         ddl.append(tableName).append("(\n");
 
         for (Entry<String, String> columnEntry : columns.entrySet())
         {
-            ddl.append("\t");
+            ddl.append("\t\t");
             ddl.append(columnEntry.getKey());
             ddl.append(" ");
             ddl.append(columnEntry.getValue());
@@ -144,7 +144,7 @@ public class CQLTableBuilder {
         }
         for (Entry<String, String> listEntry : lists.entrySet())
         {
-            ddl.append("\t");
+            ddl.append("\t\t");
             ddl.append(listEntry.getKey());
             ddl.append(" list<");
             ddl.append(listEntry.getValue());
@@ -153,7 +153,7 @@ public class CQLTableBuilder {
         }
         for (Entry<String, String> setEntry : sets.entrySet())
         {
-            ddl.append("\t");
+            ddl.append("\t\t");
             ddl.append(setEntry.getKey());
             ddl.append(" set<");
             ddl.append(setEntry.getValue());
@@ -162,7 +162,7 @@ public class CQLTableBuilder {
         }
         for (Entry<String, Pair<String, String>> mapEntry : maps.entrySet())
         {
-            ddl.append("\t");
+            ddl.append("\t\t");
             ddl.append(mapEntry.getKey());
             ddl.append(" map<");
             ddl.append(mapEntry.getValue().left);
@@ -172,12 +172,12 @@ public class CQLTableBuilder {
             ddl.append(",\n");;
         }
 
-        ddl.append("\t");
+        ddl.append("\t\t");
         ddl.append("PRIMARY KEY(");
         ddl.append(StringUtils.join(primaryKeys, ", "));
         ddl.append(")\n");
 
-        ddl.append(")");
+        ddl.append("\t)");
 
         // Add comments
         ddl.append(" WITH COMMENT = '").append(comment).append("'");
@@ -191,7 +191,8 @@ public class CQLTableBuilder {
 
         StringBuilder ddl = new StringBuilder();
 
-        ddl.append("CREATE TABLE ");
+        ddl.append("\n");
+        ddl.append("\tCREATE TABLE ");
         ddl.append(tableName).append("(\n");
 
         for (Entry<String, String> columnEntry : columns.entrySet())
@@ -199,7 +200,7 @@ public class CQLTableBuilder {
             String columnName = columnEntry.getKey();
             String valueType = columnEntry.getValue();
 
-            ddl.append("\t");
+            ddl.append("\t\t");
             ddl.append(columnName);
             ddl.append(" ");
             if (primaryKeys.contains(columnName))
@@ -215,12 +216,12 @@ public class CQLTableBuilder {
             ddl.append(",\n");
         }
 
-        ddl.append("\t");
+        ddl.append("\t\t");
         ddl.append("PRIMARY KEY(");
         ddl.append(StringUtils.join(primaryKeys, ", "));
         ddl.append(")\n");
 
-        ddl.append(")");
+        ddl.append("\t)");
 
         // Add comments
         ddl.append(" WITH COMMENT = '").append(comment).append("'");

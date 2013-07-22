@@ -170,18 +170,18 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE tableName(\n" +
-                "\tlongCol bigint,\n" +
-                "\tjoinCol uuid,\n" +
-                "\tid bigint,\n" +
-                "\tlongListCol list<bigint>,\n" +
-                "\tjoinListCol list<uuid>,\n" +
-                "\tlongSetCol set<bigint>,\n" +
-                "\tjoinSetCol set<uuid>,\n" +
-                "\tlongMapCol map<int,bigint>,\n" +
-                "\tjoinMapCol map<int,uuid>,\n" +
-                "\tPRIMARY KEY(id)\n" +
-                ") WITH COMMENT = 'Create table for entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE tableName(\n" +
+                "\t\tlongCol bigint,\n" +
+                "\t\tjoinCol uuid,\n" +
+                "\t\tid bigint,\n" +
+                "\t\tlongListCol list<bigint>,\n" +
+                "\t\tjoinListCol list<uuid>,\n" +
+                "\t\tlongSetCol set<bigint>,\n" +
+                "\t\tjoinSetCol set<uuid>,\n" +
+                "\t\tlongMapCol map<int,bigint>,\n" +
+                "\t\tjoinMapCol map<int,uuid>,\n" +
+                "\t\tPRIMARY KEY(id)\n" +
+                "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
     }
 
     @Test
@@ -221,13 +221,13 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE tableName(\n" +
-                "\tlongCol bigint,\n" +
-                "\tindex bigint,\n" +
-                "\tcount int,\n" +
-                "\tuuid uuid,\n" +
-                "\tPRIMARY KEY(index, count, uuid)\n" +
-                ") WITH COMMENT = 'Create table for entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE tableName(\n" +
+                "\t\tlongCol bigint,\n" +
+                "\t\tindex bigint,\n" +
+                "\t\tcount int,\n" +
+                "\t\tuuid uuid,\n" +
+                "\t\tPRIMARY KEY(index, count, uuid)\n" +
+                "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
 
     }
 
@@ -286,12 +286,12 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE externalTableName(\n" +
-                "\tid bigint,\n" +
-                "\twide_map_key int,\n" +
-                "\twideMapCol bigint,\n" +
-                "\tPRIMARY KEY(id, wide_map_key)\n" +
-                ") WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
+                "\t\tid bigint,\n" +
+                "\t\twide_map_key int,\n" +
+                "\t\twideMapCol bigint,\n" +
+                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
+                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
     }
 
     @Test
@@ -322,14 +322,14 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE externalTableName(\n" +
-                "\tid bigint,\n" +
-                "\tindex bigint,\n" +
-                "\tcount int,\n" +
-                "\tuuid uuid,\n" +
-                "\twideMapCol bigint,\n" +
-                "\tPRIMARY KEY(id, index, count, uuid)\n" +
-                ") WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
+                "\t\tid bigint,\n" +
+                "\t\tindex bigint,\n" +
+                "\t\tcount int,\n" +
+                "\t\tuuid uuid,\n" +
+                "\t\twideMapCol bigint,\n" +
+                "\t\tPRIMARY KEY(id, index, count, uuid)\n" +
+                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
     }
 
     @Test
@@ -358,12 +358,12 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE externalTableName(\n" +
-                "\tid bigint,\n" +
-                "\twide_map_key int,\n" +
-                "\twideMapCol counter,\n" +
-                "\tPRIMARY KEY(id, wide_map_key)\n" +
-                ") WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
+                "\t\tid bigint,\n" +
+                "\t\twide_map_key int,\n" +
+                "\t\twideMapCol counter,\n" +
+                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
+                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
     }
 
     @Test
@@ -402,12 +402,12 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE externalTableName(\n" +
-                "\tid bigint,\n" +
-                "\twide_map_key int,\n" +
-                "\twideMapCol uuid,\n" +
-                "\tPRIMARY KEY(id, wide_map_key)\n" +
-                ") WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
+                "\t\tid bigint,\n" +
+                "\t\twide_map_key int,\n" +
+                "\t\twideMapCol uuid,\n" +
+                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
+                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
     }
 
     @Test
@@ -461,16 +461,16 @@ public class CQLTableCreatorTest {
 
         verify(session).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("CREATE TABLE " + CQL_COUNTER_TABLE + "(\n" +
-                "\t" + CQL_COUNTER_FQCN + " text,\n" +
-                "\t" + CQL_COUNTER_PRIMARY_KEY + " text,\n" +
-                "\t" + CQL_COUNTER_PROPERTY_NAME + " text,\n" +
-                "\t" + CQL_COUNTER_VALUE + " counter,\n" +
-                "\tPRIMARY KEY(" +
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE " + CQL_COUNTER_TABLE + "(\n" +
+                "\t\t" + CQL_COUNTER_FQCN + " text,\n" +
+                "\t\t" + CQL_COUNTER_PRIMARY_KEY + " text,\n" +
+                "\t\t" + CQL_COUNTER_PROPERTY_NAME + " text,\n" +
+                "\t\t" + CQL_COUNTER_VALUE + " counter,\n" +
+                "\t\tPRIMARY KEY(" +
                 CQL_COUNTER_FQCN + ", " +
                 CQL_COUNTER_PRIMARY_KEY + ", " +
                 CQL_COUNTER_PROPERTY_NAME + ")\n" +
-                ") WITH COMMENT = 'Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"'");
+                "\t) WITH COMMENT = 'Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"'");
     }
 
     @Test

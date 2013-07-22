@@ -1,9 +1,10 @@
-package info.archinnov.achilles.query.builder;
+package info.archinnov.achilles.query.slice;
 
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.operations.QueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import java.util.Iterator;
 import java.util.List;
@@ -14,10 +15,12 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public abstract class DefaultQueryBuilder<T> extends AbstractQueryBuilder<T> {
+public abstract class DefaultQueryBuilder<T> extends RootQueryBuilder<T> {
 
-    public DefaultQueryBuilder(ThriftQueryExecutor queryExecutor, Class<T> entityClass, EntityMeta meta) {
-        super(queryExecutor, entityClass, meta);
+    public DefaultQueryBuilder(QueryExecutor queryExecutor,
+            CompoundKeyValidator compoundKeyValidator,
+            Class<T> entityClass, EntityMeta meta) {
+        super(queryExecutor, compoundKeyValidator, entityClass, meta);
     }
 
     /**

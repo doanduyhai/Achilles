@@ -1,21 +1,18 @@
-package info.archinnov.achilles.query.builder;
+package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
+import info.archinnov.achilles.entity.operations.QueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.query.ClusteredQuery;
-import info.archinnov.achilles.query.ThriftQueryValidator;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,24 +30,18 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AbstractQueryBuilderTest
+public class RootQueryBuilderTest
 {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private AbstractQueryBuilder<ClusteredEntity> builder;
+    private RootQueryBuilder<ClusteredEntity> builder;
 
     private Class<ClusteredEntity> entityClass = ClusteredEntity.class;
 
     @Mock
-    private ThriftQueryExecutor queryExecutor;
-
-    @Mock
-    private ThriftDaoContext daoContext;
-
-    @Mock
-    private ThriftConsistencyLevelPolicy consistencyPolicy;
+    private QueryExecutor queryExecutor;
 
     @Mock
     private ConfigurationContext configContext;
@@ -62,10 +53,7 @@ public class AbstractQueryBuilderTest
     private PropertyMeta<?, ?> idMeta;
 
     @Mock
-    private ThriftQueryValidator validator;
-
-    @Mock
-    private ThriftCompoundKeyValidator compoundKeyValidator;
+    private CompoundKeyValidator compoundKeyValidator;
 
     @Before
     public void setUp()
@@ -180,7 +168,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get();
 
@@ -192,7 +180,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get(5);
 
@@ -205,7 +193,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(Arrays.asList(entity));
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
 
@@ -219,7 +207,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(Arrays.asList(entity));
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         ClusteredEntity actual = builder.partitionKey(partitionKey)
@@ -236,7 +224,7 @@ public class AbstractQueryBuilderTest
     public void should_return_null_when_no_first() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(new ArrayList<ClusteredEntity>());
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(new ArrayList<ClusteredEntity>());
 
         ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
 
@@ -250,7 +238,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3);
 
@@ -262,7 +250,7 @@ public class AbstractQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3, clusteringComponents);
@@ -278,7 +266,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(Arrays.asList(entity));
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         ClusteredEntity actual = builder
                 .partitionKey(partitionKey)
@@ -296,7 +284,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(Arrays.asList(entity));
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
@@ -318,7 +306,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getLast(6);
 
@@ -332,7 +320,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(ClusteredQuery.class))).thenReturn(list);
+        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         List<ClusteredEntity> actual = builder
@@ -352,7 +340,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
-        when(queryExecutor.iterator(any(ClusteredQuery.class))).thenReturn(iterator);
+        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator();
 
         assertThat(actual).isSameAs(iterator);
@@ -365,7 +353,7 @@ public class AbstractQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
-        when(queryExecutor.iterator(any(ClusteredQuery.class))).thenReturn(iterator);
+        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
                 .iteratorWithComponents(clusteringComponents);
 
@@ -381,7 +369,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
-        when(queryExecutor.iterator(any(ClusteredQuery.class))).thenReturn(iterator);
+        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator(7);
 
         assertThat(Whitebox.getInternalState(builder, "batchSize")).isEqualTo(7);
@@ -395,7 +383,7 @@ public class AbstractQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
-        when(queryExecutor.iterator(any(ClusteredQuery.class))).thenReturn(iterator);
+        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
                 .iteratorWithComponents(7, clusteringComponents);
 
@@ -412,7 +400,7 @@ public class AbstractQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         builder.partitionKey(partitionKey).remove();
 
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -422,7 +410,7 @@ public class AbstractQueryBuilderTest
         builder.partitionKey(partitionKey).remove(8);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(8);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -432,7 +420,7 @@ public class AbstractQueryBuilderTest
         builder.partitionKey(partitionKey).removeFirstOccurence();
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -447,7 +435,7 @@ public class AbstractQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -457,7 +445,7 @@ public class AbstractQueryBuilderTest
         builder.partitionKey(partitionKey).removeFirst(9);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -470,7 +458,7 @@ public class AbstractQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -482,7 +470,7 @@ public class AbstractQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
 
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -496,7 +484,7 @@ public class AbstractQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -507,7 +495,7 @@ public class AbstractQueryBuilderTest
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -521,6 +509,6 @@ public class AbstractQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(ClusteredQuery.class));
+        verify(queryExecutor).remove(any(SliceQuery.class));
     }
 }

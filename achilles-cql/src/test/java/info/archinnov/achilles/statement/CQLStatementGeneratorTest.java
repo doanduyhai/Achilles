@@ -90,8 +90,8 @@ public class CQLStatementGeneratorTest {
         UUID uuid1 = new UUID(10, 11);
 
         // /////////////////////////// Same number of components
-        List<Comparable> startValues = Arrays.<Comparable> asList(uuid1, "author", 1);
-        List<Comparable> endValues = Arrays.<Comparable> asList(uuid1, "author", 2);
+        List<Comparable<?>> startValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
+        List<Comparable<?>> endValues = Arrays.<Comparable<?>> asList(uuid1, "author", 2);
 
         Statement statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
                 BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());
@@ -118,8 +118,8 @@ public class CQLStatementGeneratorTest {
                 "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1 AND c<=2;");
 
         // ///////////////////// More components for start compound key
-        startValues = Arrays.<Comparable> asList(uuid1, "author", 1);
-        endValues = Arrays.<Comparable> asList(uuid1, "author", null);
+        startValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
+        endValues = Arrays.<Comparable<?>> asList(uuid1, "author", null);
 
         statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
                 BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());
@@ -146,8 +146,8 @@ public class CQLStatementGeneratorTest {
                 "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1;");
 
         // ///////////////////// More components for end compound key
-        startValues = Arrays.<Comparable> asList(uuid1, "author", null);
-        endValues = Arrays.<Comparable> asList(uuid1, "author", 1);
+        startValues = Arrays.<Comparable<?>> asList(uuid1, "author", null);
+        endValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
 
         statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
                 BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());

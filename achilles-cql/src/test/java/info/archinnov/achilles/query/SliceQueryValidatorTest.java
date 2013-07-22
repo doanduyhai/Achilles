@@ -48,15 +48,15 @@ public class SliceQueryValidatorTest {
 
     @Test
     public void should_find_last_non_null_index() throws Exception {
-        List<Comparable> components = Arrays.<Comparable> asList("a", "b", "c");
+        List<Comparable<?>> components = Arrays.<Comparable<?>> asList("a", "b", "c");
         int actual = validator.findLastNonNullIndexForComponents(components);
         assertThat(actual).isEqualTo(2);
 
-        components = Arrays.<Comparable> asList("a", "b", null, null);
+        components = Arrays.<Comparable<?>> asList("a", "b", null, null);
         actual = validator.findLastNonNullIndexForComponents(components);
         assertThat(actual).isEqualTo(1);
 
-        components = Arrays.<Comparable> asList();
+        components = Arrays.<Comparable<?>> asList();
         actual = validator.findLastNonNullIndexForComponents(components);
         assertThat(actual).isEqualTo(-1);
 
@@ -66,20 +66,20 @@ public class SliceQueryValidatorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_exception_when_null_component_in_middle_of_clustering_keys() throws Exception {
-        List<Comparable> components = Arrays.<Comparable> asList("a", null, "c");
+        List<Comparable<?>> components = Arrays.<Comparable<?>> asList("a", null, "c");
         validator.findLastNonNullIndexForComponents(components);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void should_exception_when_null_component_at_beginning_of_clustering_keys() throws Exception {
-        List<Comparable> components = Arrays.<Comparable> asList(null, null, "c");
+        List<Comparable<?>> components = Arrays.<Comparable<?>> asList(null, null, "c");
         validator.findLastNonNullIndexForComponents(components);
     }
 
     @Test
     public void should_validate_single_key() throws Exception {
         pm.setCompound(false);
-        validator.validateClusteringKeys(pm, Arrays.<Comparable> asList(10L), Arrays.<Comparable> asList(11L));
+        validator.validateClusteringKeys(pm, Arrays.<Comparable<?>> asList(10L), Arrays.<Comparable<?>> asList(11L));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class SliceQueryValidatorTest {
         exception.expect(AchillesException.class);
         exception
                 .expectMessage("Start clustering last component should be strictly 'less' than end clustering last component: [[11],[10]");
-        validator.validateClusteringKeys(pm, Arrays.<Comparable> asList(11L), Arrays.<Comparable> asList(10L));
+        validator.validateClusteringKeys(pm, Arrays.<Comparable<?>> asList(11L), Arrays.<Comparable<?>> asList(10L));
     }
 
     @Test
@@ -96,40 +96,40 @@ public class SliceQueryValidatorTest {
         UUID uuid1 = new UUID(10, 11);
         UUID uuid2 = new UUID(10, 12);
 
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "author", 3);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "author", 4);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "author", 3);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "author", 4);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, "author", 3);
-        end = Arrays.<Comparable> asList(uuid1, "author", null);
+        start = Arrays.<Comparable<?>> asList(uuid1, "author", 3);
+        end = Arrays.<Comparable<?>> asList(uuid1, "author", null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, "author", null);
-        end = Arrays.<Comparable> asList(uuid1, "author", 3);
+        start = Arrays.<Comparable<?>> asList(uuid1, "author", null);
+        end = Arrays.<Comparable<?>> asList(uuid1, "author", 3);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, "a", null);
-        end = Arrays.<Comparable> asList(uuid1, "b", null);
+        start = Arrays.<Comparable<?>> asList(uuid1, "a", null);
+        end = Arrays.<Comparable<?>> asList(uuid1, "b", null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, "a", null);
-        end = Arrays.<Comparable> asList(uuid1, null, null);
+        start = Arrays.<Comparable<?>> asList(uuid1, "a", null);
+        end = Arrays.<Comparable<?>> asList(uuid1, null, null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, null, null);
-        end = Arrays.<Comparable> asList(uuid1, "b", null);
+        start = Arrays.<Comparable<?>> asList(uuid1, null, null);
+        end = Arrays.<Comparable<?>> asList(uuid1, "b", null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, null, null);
-        end = Arrays.<Comparable> asList(uuid2, null, null);
+        start = Arrays.<Comparable<?>> asList(uuid1, null, null);
+        end = Arrays.<Comparable<?>> asList(uuid2, null, null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(null, null, null);
-        end = Arrays.<Comparable> asList(uuid2, null, null);
+        start = Arrays.<Comparable<?>> asList(null, null, null);
+        end = Arrays.<Comparable<?>> asList(uuid2, null, null);
         validator.validateClusteringKeys(pm, start, end);
 
-        start = Arrays.<Comparable> asList(uuid1, null, null);
-        end = Arrays.<Comparable> asList(null, null, null);
+        start = Arrays.<Comparable<?>> asList(uuid1, null, null);
+        end = Arrays.<Comparable<?>> asList(null, null, null);
         validator.validateClusteringKeys(pm, start, end);
 
         validator.validateClusteringKeys(pm, start, null);
@@ -140,8 +140,8 @@ public class SliceQueryValidatorTest {
     public void should_exception_when_components_strictly_equal() throws Exception {
         UUID uuid1 = new UUID(10, 12);
 
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", null);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", null);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", null);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", null);
 
         exception.expect(AchillesException.class);
         exception
@@ -154,8 +154,8 @@ public class SliceQueryValidatorTest {
     public void should_exception_when_all_components_strictly_equal() throws Exception {
         UUID uuid1 = new UUID(10, 12);
 
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", 10);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", 10);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", 10);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", 10);
 
         exception.expect(AchillesException.class);
         exception
@@ -168,8 +168,8 @@ public class SliceQueryValidatorTest {
     public void should_exception_when_too_many_end_components() throws Exception {
         UUID uuid1 = new UUID(10, 11);
 
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, null, null);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", 1);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, null, null);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", 1);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("There should be no more than 1 component difference between clustering keys: [["
@@ -181,8 +181,8 @@ public class SliceQueryValidatorTest {
     public void should_exception_when_too_many_start_components() throws Exception {
         UUID uuid1 = new UUID(10, 11);
 
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", 1);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, null, null);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", 1);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, null, null);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("There should be no more than 1 component difference between clustering keys: [["
@@ -193,8 +193,8 @@ public class SliceQueryValidatorTest {
     @Test
     public void should_exception_when_components_are_not_equal_case1() throws Exception {
         UUID uuid1 = new UUID(10, 11);
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", 1);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "b", 2);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", 1);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "b", 2);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("2th component for clustering keys should be equal: [[" + uuid1 + ",a,1],[" + uuid1
@@ -205,8 +205,8 @@ public class SliceQueryValidatorTest {
     @Test
     public void should_exception_when_components_are_not_equal_case2() throws Exception {
         UUID uuid1 = new UUID(10, 11);
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", null);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "b", 2);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", null);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "b", 2);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("2th component for clustering keys should be equal: [[" + uuid1 + ",a,],[" + uuid1
@@ -217,8 +217,8 @@ public class SliceQueryValidatorTest {
     @Test
     public void should_exception_when_last_components_are_equal() throws Exception {
         UUID uuid1 = new UUID(10, 11);
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", 1L);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", 1L);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", 1L);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", 1L);
 
         exception.expect(AchillesException.class);
         exception
@@ -230,8 +230,8 @@ public class SliceQueryValidatorTest {
     @Test
     public void should_exception_when_last_components_not_same_type() throws Exception {
         UUID uuid1 = new UUID(10, 11);
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, "a", 1);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", 1L);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, "a", 1);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", 1L);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("3th component for clustering keys should be of same type: [[" + uuid1 + ",a,1],["
@@ -242,8 +242,8 @@ public class SliceQueryValidatorTest {
     @Test
     public void should_exception_when_last_commont_components_not_same_type() throws Exception {
         UUID uuid1 = new UUID(10, 11);
-        List<Comparable> start = Arrays.<Comparable> asList(uuid1, 10L, null);
-        List<Comparable> end = Arrays.<Comparable> asList(uuid1, "a", 1L);
+        List<Comparable<?>> start = Arrays.<Comparable<?>> asList(uuid1, 10L, null);
+        List<Comparable<?>> end = Arrays.<Comparable<?>> asList(uuid1, "a", 1L);
 
         exception.expect(AchillesException.class);
         exception.expectMessage("2th component for clustering keys should be of same type: [[" + uuid1 + ",10,],["

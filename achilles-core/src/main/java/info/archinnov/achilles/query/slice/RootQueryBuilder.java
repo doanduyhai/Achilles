@@ -1,23 +1,23 @@
-package info.archinnov.achilles.query.builder;
+package info.archinnov.achilles.query.slice;
 
-import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
-import info.archinnov.achilles.dao.ThriftAbstractDao;
+import static info.archinnov.achilles.query.SliceQuery.*;
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
-import info.archinnov.achilles.query.ClusteredQuery;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AbstractQueryBuilder<T>
+public abstract class RootQueryBuilder<T>
 {
 
-    protected ThriftQueryExecutor queryExecutor;
+    protected QueryExecutor queryExecutor;
+    protected CompoundKeyValidator compoundKeyValidator;
     protected Class<T> entityClass;
     protected EntityMeta meta;
 
@@ -28,45 +28,44 @@ public abstract class AbstractQueryBuilder<T>
     private OrderingMode ordering = OrderingMode.ASCENDING;
     private BoundingMode bounding = BoundingMode.INCLUSIVE_BOUNDS;
     private ConsistencyLevel consistencyLevel;
-    private int limit = ThriftAbstractDao.DEFAULT_LENGTH;
-    private int batchSize = ThriftAbstractDao.DEFAULT_LENGTH;
+    private int limit = DEFAULT_LIMIT;
+    private int batchSize = DEFAULT_BATCH_SIZE;
     private boolean limitHasBeenSet = false;
     private boolean orderingHasBeenSet = false;
 
-    private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
-    protected ThriftCompoundKeyMapper mapper = new ThriftCompoundKeyMapper();
-
-    AbstractQueryBuilder(ThriftQueryExecutor queryExecutor, Class<T> entityClass,
-            EntityMeta meta)
+    RootQueryBuilder(QueryExecutor queryExecutor,
+            CompoundKeyValidator compoundKeyValidator,
+            Class<T> entityClass, EntityMeta meta)
     {
         this.queryExecutor = queryExecutor;
+        this.compoundKeyValidator = compoundKeyValidator;
         this.entityClass = entityClass;
         this.meta = meta;
         this.idMeta = meta.getIdMeta();
     }
 
-    protected AbstractQueryBuilder<T> partitionKey(Object partitionKey)
+    protected RootQueryBuilder<T> partitionKey(Object partitionKey)
     {
         compoundKeyValidator.validatePartitionKey(idMeta, partitionKey);
         this.partitionKey = partitionKey;
         return this;
     }
 
-    protected AbstractQueryBuilder<T> fromClusteringsInternal(Object... clusteringComponents)
+    protected RootQueryBuilder<T> fromClusteringsInternal(Object... clusteringComponents)
     {
         compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
         fromClusterings = clusteringComponents;
         return this;
     }
 
-    protected AbstractQueryBuilder<T> toClusteringsInternal(Object... clusteringComponents)
+    protected RootQueryBuilder<T> toClusteringsInternal(Object... clusteringComponents)
     {
         compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
         toClusterings = clusteringComponents;
         return this;
     }
 
-    protected AbstractQueryBuilder<T> ordering(OrderingMode ordering)
+    protected RootQueryBuilder<T> ordering(OrderingMode ordering)
     {
         Validator.validateNotNull(ordering,
                 "Ordering mode for slice query for entity '" + meta.getClassName()
@@ -76,7 +75,7 @@ public abstract class AbstractQueryBuilder<T>
         return this;
     }
 
-    protected AbstractQueryBuilder<T> bounding(BoundingMode boundingMode)
+    protected RootQueryBuilder<T> bounding(BoundingMode boundingMode)
     {
         Validator.validateNotNull(boundingMode,
                 "Bounding mode for slice query for entity '" + meta.getClassName()
@@ -86,7 +85,7 @@ public abstract class AbstractQueryBuilder<T>
         return this;
     }
 
-    protected AbstractQueryBuilder<T> consistencyLevel(ConsistencyLevel consistencyLevel)
+    protected RootQueryBuilder<T> consistencyLevel(ConsistencyLevel consistencyLevel)
     {
         Validator.validateNotNull(consistencyLevel,
                 "ConsistencyLevel for slice query for entity '" + meta.getClassName()
@@ -96,7 +95,7 @@ public abstract class AbstractQueryBuilder<T>
         return this;
     }
 
-    protected AbstractQueryBuilder<T> limit(int limit)
+    protected RootQueryBuilder<T> limit(int limit)
     {
         this.limit = limit;
         limitHasBeenSet = true;
@@ -105,14 +104,14 @@ public abstract class AbstractQueryBuilder<T>
 
     protected List<T> get()
     {
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.get(clusteredQuery);
     }
 
     protected List<T> get(int n)
     {
         limit = n;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.get(clusteredQuery);
     }
 
@@ -124,7 +123,7 @@ public abstract class AbstractQueryBuilder<T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getFirst()");
         limit = 1;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         List<T> result = queryExecutor.get(clusteredQuery);
         if (result.isEmpty())
             return null;
@@ -140,7 +139,7 @@ public abstract class AbstractQueryBuilder<T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getFirst(int n)");
         limit = n;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.get(clusteredQuery);
     }
 
@@ -155,7 +154,7 @@ public abstract class AbstractQueryBuilder<T>
                 "You should not set 'limit' parameter when calling getLast()");
         limit = 1;
         ordering = OrderingMode.DESCENDING;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         List<T> result = queryExecutor.get(clusteredQuery);
         if (result.isEmpty())
             return null;
@@ -174,13 +173,13 @@ public abstract class AbstractQueryBuilder<T>
                 "You should not set 'limit' parameter when calling getLast(int n)");
         limit = n;
         ordering = OrderingMode.DESCENDING;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.get(clusteredQuery);
     }
 
     protected Iterator<T> iterator()
     {
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.iterator(clusteredQuery);
     }
 
@@ -189,14 +188,14 @@ public abstract class AbstractQueryBuilder<T>
         fromClusteringsInternal(clusteringComponents);
         toClusteringsInternal(clusteringComponents);
 
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.iterator(clusteredQuery);
     }
 
     protected Iterator<T> iterator(int batchSize)
     {
         this.batchSize = batchSize;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.iterator(clusteredQuery);
     }
 
@@ -205,13 +204,13 @@ public abstract class AbstractQueryBuilder<T>
         fromClusteringsInternal(clusteringComponents);
         toClusteringsInternal(clusteringComponents);
         this.batchSize = batchSize;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         return queryExecutor.iterator(clusteredQuery);
     }
 
     protected void remove()
     {
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
@@ -220,7 +219,7 @@ public abstract class AbstractQueryBuilder<T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling remove(int n)");
         limit = n;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
@@ -232,7 +231,7 @@ public abstract class AbstractQueryBuilder<T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeFirst()");
         limit = 1;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
@@ -244,7 +243,7 @@ public abstract class AbstractQueryBuilder<T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeFirst(int n)");
         limit = n;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
@@ -259,7 +258,7 @@ public abstract class AbstractQueryBuilder<T>
                 "You should not set 'limit' parameter when calling removeLast()");
         limit = 1;
         ordering = OrderingMode.DESCENDING;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
@@ -274,13 +273,13 @@ public abstract class AbstractQueryBuilder<T>
                 "You should not set 'limit' parameter when calling removeLast(int n)");
         limit = n;
         ordering = OrderingMode.DESCENDING;
-        ClusteredQuery<T> clusteredQuery = buildClusterQuery();
+        SliceQuery<T> clusteredQuery = buildClusterQuery();
         queryExecutor.remove(clusteredQuery);
     }
 
-    protected ClusteredQuery<T> buildClusterQuery()
+    protected SliceQuery<T> buildClusterQuery()
     {
-        return new ClusteredQuery<T>(entityClass, meta, partitionKey, fromClusterings,
+        return new SliceQuery<T>(entityClass, meta, partitionKey, fromClusterings,
                 toClusterings, ordering,
                 bounding, consistencyLevel, limit, batchSize);
     }

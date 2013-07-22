@@ -7,10 +7,9 @@ import static info.archinnov.achilles.type.OrderingMode.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -51,10 +50,7 @@ public class ThriftCompositeFactoryTest
     private ThriftCompoundKeyMapper compoundKeyMapper;
 
     @Mock
-    private ThriftQueryValidator queryValidator;
-
-    @Mock
-    private ThriftCompoundKeyValidator compoundKeyValidator;
+    private CompoundKeyValidator compoundKeyValidator;
 
     @Mock
     private PropertyMeta<Integer, String> wideMapMeta;
@@ -65,6 +61,8 @@ public class ThriftCompositeFactoryTest
     @Before
     public void setUp()
     {
+        //Whitebox.setInternalState(factory, "compoundKeyValidator", compoundKeyValidator);
+
         when(wideMapMeta.isCompound()).thenReturn(false);
         when(wideMapMeta.getPropertyName()).thenReturn("property");
         when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
@@ -330,26 +328,20 @@ public class ThriftCompositeFactoryTest
                         GREATER_THAN_EQUAL
                 });
 
-        when(
-                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm,
-                        LESS_THAN_EQUAL)).thenReturn(
-                from);
-        when(
-                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm,
-                        GREATER_THAN_EQUAL))
-                .thenReturn(to);
+        when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm,
+                LESS_THAN_EQUAL)).thenReturn(from);
+
+        when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm,
+                GREATER_THAN_EQUAL)).thenReturn(to);
 
         Composite[] composites = factory.createForClusteredQuery(pm, clusteringFrom,
-                clusteringTo,
-                EXCLUSIVE_BOUNDS,
-                DESCENDING);
+                clusteringTo, EXCLUSIVE_BOUNDS, DESCENDING);
 
         assertThat(composites[0]).isSameAs(from);
         assertThat(composites[1]).isSameAs(to);
 
         verify(compoundKeyValidator).validateCompoundKeysForClusteredQuery(pm, clusteringFrom,
-                clusteringTo,
-                DESCENDING);
+                clusteringTo, DESCENDING);
 
     }
 }

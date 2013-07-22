@@ -26,10 +26,10 @@ public class SliceQueryBuilder {
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
 
         List<Method> componentGetters = idMeta.getComponentGetters();
-        List<String> componentNames = idMeta.getCQLComponentNames();
+        List<String> componentNames = idMeta.getComponentNames();
 
-        List<Comparable> startValues = Lists.newArrayList();
-        List<Comparable> endValues = Lists.newArrayList();
+        List<Comparable<?>> startValues = Lists.newArrayList();
+        List<Comparable<?>> endValues = Lists.newArrayList();
         //        if (from != null) {
         //            startValues = invoker.determineMultiKeyValues(from, componentGetters);
         //        }

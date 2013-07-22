@@ -10,7 +10,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
-import info.archinnov.achilles.query.ClusteredQuery;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class ThriftQueryExecutorImpl
 {
 	private ThriftCompositeFactory compositeFactory = new ThriftCompositeFactory();
 
-	public <T> List<HColumn<Composite, Object>> findColumns(final ClusteredQuery<T> query,
+	public <T> List<HColumn<Composite, Object>> findColumns(final SliceQuery<T> query,
 			ThriftPersistenceContext context)
 	{
 		EntityMeta meta = query.getMeta();
@@ -56,7 +56,7 @@ public class ThriftQueryExecutorImpl
 	}
 
 	public <T> ThriftSliceIterator<Object, Object> getColumnsIterator(
-			final ClusteredQuery<T> query,
+			final SliceQuery<T> query,
 			ThriftPersistenceContext context)
 	{
 		EntityMeta meta = query.getMeta();
@@ -82,7 +82,7 @@ public class ThriftQueryExecutorImpl
 	}
 
 	public <T> ThriftJoinSliceIterator<Object, Object, Object> getJoinColumnsIterator(
-			final ClusteredQuery<T> query,
+			final SliceQuery<T> query,
 			ThriftPersistenceContext context)
 	{
 		EntityMeta meta = query.getMeta();
@@ -136,7 +136,7 @@ public class ThriftQueryExecutorImpl
 
 	}
 
-	public <T> List<HCounterColumn<Composite>> findCounterColumns(final ClusteredQuery<T> query,
+	public <T> List<HCounterColumn<Composite>> findCounterColumns(final SliceQuery<T> query,
 			ThriftPersistenceContext context)
 	{
 		EntityMeta meta = query.getMeta();
@@ -162,7 +162,7 @@ public class ThriftQueryExecutorImpl
 	}
 
 	public <T> ThriftCounterSliceIterator<Object> getCounterColumnsIterator(
-			final ClusteredQuery<T> query,
+			final SliceQuery<T> query,
 			ThriftPersistenceContext context)
 	{
 		EntityMeta meta = query.getMeta();

@@ -19,7 +19,7 @@ import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.query.ClusteredQuery;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -82,7 +82,7 @@ public class ThriftQueryExecutorTest
 	private ThriftQueryExecutorImpl executorImpl;
 
 	@Mock
-	private ClusteredQuery<BeanWithClusteredId> query;
+	private SliceQuery<BeanWithClusteredId> query;
 
 	private PropertyMeta<?, ?> idMeta;
 

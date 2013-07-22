@@ -14,7 +14,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
-import info.archinnov.achilles.query.ClusteredQuery;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.BoundingMode;
@@ -71,7 +71,7 @@ public class ThriftQueryExecutorImplTest
 	private ThriftGenericEntityDao entityDao;
 
 	@Mock
-	private ClusteredQuery<ClusteredEntity> query;
+	private SliceQuery<ClusteredEntity> query;
 
 	@Mock
 	private PropertyMeta<?, ?> idMeta;

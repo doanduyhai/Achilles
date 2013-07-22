@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -47,13 +48,13 @@ public class PropertyMetaTestBuilder<T, K, V>
     private List<Method> componentSetters;
 
     private String externalTableName;
-
     private boolean buildAccessors;
     private Class<?> idClass;
     private ObjectMapper objectMapper;
     private PropertyMeta<Void, ?> counterIdMeta;
     private String fqcn;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+    private DataTranscoder transcoder;
 
     public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz, Class<K> keyClass,
             Class<V> valueClass)
@@ -156,6 +157,7 @@ public class PropertyMetaTestBuilder<T, K, V>
                     ConsistencyLevel.ONE);
         }
         pm.setConsistencyLevels(consistencyLevels);
+        pm.setTranscoder(transcoder);
         return pm;
     }
 
@@ -285,4 +287,11 @@ public class PropertyMetaTestBuilder<T, K, V>
         this.consistencyLevels = consistencyLevels;
         return this;
     }
+
+    public PropertyMetaTestBuilder<T, K, V> transcoder(DataTranscoder transcoder)
+    {
+        this.transcoder = transcoder;
+        return this;
+    }
+
 }

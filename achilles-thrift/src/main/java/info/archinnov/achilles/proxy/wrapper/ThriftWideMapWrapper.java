@@ -85,7 +85,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     public List<KeyValue<K, V>> find(K start, K end, int count, BoundingMode bounds,
             OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -105,7 +105,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public List<V> findValues(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -124,7 +124,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public List<K> findKeys(K start, K end, int count, BoundingMode bounds, OrderingMode ordering)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end, ordering);
 
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, ordering);
@@ -177,7 +177,7 @@ public class ThriftWideMapWrapper<K, V> extends ThriftAbstractWideMapWrapper<K, 
     @Override
     public void remove(K start, K end, BoundingMode bounds)
     {
-        queryValidator.validateBoundsForQuery(propertyMeta, start, end,
+        compoundKeyValidator.validateBoundsForQuery(propertyMeta, start, end,
                 OrderingMode.ASCENDING);
         Composite[] composites = thriftCompositeFactory.createForQuery(propertyMeta, start, end,
                 bounds, OrderingMode.ASCENDING);

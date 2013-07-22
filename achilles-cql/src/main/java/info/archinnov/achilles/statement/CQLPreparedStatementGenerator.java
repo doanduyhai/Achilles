@@ -48,7 +48,7 @@ public class CQLPreparedStatementGenerator
 
         for (PropertyMeta<?, ?> pm : fieldMetas)
         {
-            insert.value(pm.getCQLPropertyName(), bindMarker());
+            insert.value(pm.getPropertyName(), bindMarker());
         }
         return session.prepare(insert.getQueryString());
     }
@@ -85,11 +85,11 @@ public class CQLPreparedStatementGenerator
         {
             if (i == 0)
             {
-                assignments = update.with(set(pm.getCQLPropertyName(), bindMarker()));
+                assignments = update.with(set(pm.getPropertyName(), bindMarker()));
             }
             else
             {
-                assignments.and(set(pm.getCQLPropertyName(), bindMarker()));
+                assignments.and(set(pm.getPropertyName(), bindMarker()));
             }
             i++;
         }
@@ -157,14 +157,14 @@ public class CQLPreparedStatementGenerator
     {
         if (pm.isCompound())
         {
-            for (String component : pm.getCQLComponentNames())
+            for (String component : pm.getComponentNames())
             {
                 select = select.column(component);
             }
         }
         else
         {
-            select = select.column(pm.getCQLPropertyName());
+            select = select.column(pm.getPropertyName());
         }
         return select;
     }
@@ -173,14 +173,14 @@ public class CQLPreparedStatementGenerator
     {
         if (idMeta.isCompound())
         {
-            for (String component : idMeta.getCQLComponentNames())
+            for (String component : idMeta.getComponentNames())
             {
                 insert.value(component, bindMarker());
             }
         }
         else
         {
-            insert.value(idMeta.getCQLPropertyName(), bindMarker());
+            insert.value(idMeta.getPropertyName(), bindMarker());
         }
     }
 
@@ -191,7 +191,7 @@ public class CQLPreparedStatementGenerator
         {
             Select.Where where = null;
             int i = 0;
-            for (String clusteredId : idMeta.getCQLComponentNames())
+            for (String clusteredId : idMeta.getComponentNames())
             {
                 if (i == 0)
                 {
@@ -207,7 +207,7 @@ public class CQLPreparedStatementGenerator
         }
         else
         {
-            statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+            statement = from.where(eq(idMeta.getPropertyName(), bindMarker()));
         }
         return statement;
     }
@@ -219,7 +219,7 @@ public class CQLPreparedStatementGenerator
         {
             Update.Where where = null;
             int i = 0;
-            for (String clusteredId : idMeta.getCQLComponentNames())
+            for (String clusteredId : idMeta.getComponentNames())
             {
                 if (i == 0)
                 {
@@ -235,7 +235,7 @@ public class CQLPreparedStatementGenerator
         }
         else
         {
-            statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+            statement = update.where(eq(idMeta.getPropertyName(), bindMarker()));
         }
         return statement;
     }
@@ -285,7 +285,7 @@ public class CQLPreparedStatementGenerator
         {
             Delete.Where where = null;
             int i = 0;
-            for (String clusteredId : idMeta.getCQLComponentNames())
+            for (String clusteredId : idMeta.getComponentNames())
             {
                 if (i == 0)
                 {
@@ -301,7 +301,7 @@ public class CQLPreparedStatementGenerator
         }
         else
         {
-            mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+            mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
         }
         return mainStatement;
     }

@@ -38,22 +38,22 @@ public class CQLTableBuilderTest {
                 .addComment("This is a comment for 'tableName'")
                 .generateDDLScript();
 
-        assertThat(ddlScript).isEqualTo("CREATE TABLE tableName(\n" +
-                "\tlongCol bigint,\n" +
-                "\tenumCol text,\n" +
-                "\tobjectCol text,\n" +
-                "\tlistObjectCol list<text>,\n" +
-                "\tlistEnumCol list<text>,\n" +
-                "\tlistCol list<bigint>,\n" +
-                "\tsetCol set<bigint>,\n" +
-                "\tsetEnumCol set<text>,\n" +
-                "\tsetObjectCol set<text>,\n" +
-                "\tmapEnumValCol map<int,text>,\n" +
-                "\tmapEnumKeyCol map<text,bigint>,\n" +
-                "\tmapCol map<int,bigint>,\n" +
-                "\tmapObjectValCol map<int,text>,\n" +
-                "\tPRIMARY KEY(longCol, enumCol)\n" +
-                ") WITH COMMENT = 'This is a comment for \"tableName\"'");
+        assertThat(ddlScript).isEqualTo("\n\tCREATE TABLE tableName(\n" +
+                "\t\tlongCol bigint,\n" +
+                "\t\tenumCol text,\n" +
+                "\t\tobjectCol text,\n" +
+                "\t\tlistCol list<bigint>,\n" +
+                "\t\tlistEnumCol list<text>,\n" +
+                "\t\tlistObjectCol list<text>,\n" +
+                "\t\tsetCol set<bigint>,\n" +
+                "\t\tsetEnumCol set<text>,\n" +
+                "\t\tsetObjectCol set<text>,\n" +
+                "\t\tmapCol map<int,bigint>,\n" +
+                "\t\tmapEnumKeyCol map<text,bigint>,\n" +
+                "\t\tmapEnumValCol map<int,text>,\n" +
+                "\t\tmapObjectValCol map<int,text>,\n" +
+                "\t\tPRIMARY KEY(longCol, enumCol)\n" +
+                "\t) WITH COMMENT = 'This is a comment for \"tableName\"'");
 
     }
 
@@ -70,12 +70,12 @@ public class CQLTableBuilderTest {
                 .addComment("This is a comment for 'tableName'")
                 .generateDDLScript();
 
-        assertThat(ddlScript).isEqualTo("CREATE TABLE tableName(\n" +
-                "\tlongCol bigint,\n" +
-                "\tenumCol text,\n" +
-                "\tcounterColumn counter,\n" +
-                "\tPRIMARY KEY(longCol, enumCol)\n" +
-                ") WITH COMMENT = 'This is a comment for \"tableName\"'");
+        assertThat(ddlScript).isEqualTo("\n\tCREATE TABLE tableName(\n" +
+                "\t\tlongCol bigint,\n" +
+                "\t\tenumCol text,\n" +
+                "\t\tcounterColumn counter,\n" +
+                "\t\tPRIMARY KEY(longCol, enumCol)\n" +
+                "\t) WITH COMMENT = 'This is a comment for \"tableName\"'");
 
     }
 }

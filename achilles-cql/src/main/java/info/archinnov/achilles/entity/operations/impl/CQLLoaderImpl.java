@@ -130,7 +130,7 @@ public class CQLLoaderImpl
             PropertyMeta<?, ?> pm, Row row, EntityMeta joinMeta, PropertyMeta<?, ?> joinIdMeta,
             Object joinValue)
     {
-        Object joinId = cqlRowInvoker.invokeOnRowForProperty(row, pm, pm.getCQLPropertyName(),
+        Object joinId = cqlRowInvoker.invokeOnRowForProperty(row, pm, pm.getPropertyName(),
                 joinIdMeta.getValueClass());
         if (joinId != null)
         {

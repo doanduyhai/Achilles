@@ -1,23 +1,26 @@
-package info.archinnov.achilles.query.builder;
+package info.archinnov.achilles.query.slice;
 
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
+import info.archinnov.achilles.entity.operations.QueryExecutor;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 
 /**
- * ThriftFromEmbeddedIdBuilder
+ * SliceFromEmbeddedIdBuilder
  * 
  * @author DuyHai DOAN
  * 
  */
-public class ThriftFromEmbeddedIdBuilder<T> extends DefaultQueryBuilder<T>
+public class SliceFromEmbeddedIdBuilder<T> extends DefaultQueryBuilder<T>
 {
-    public ThriftFromEmbeddedIdBuilder(ThriftQueryExecutor queryExecutor, Class<T> entityClass, EntityMeta meta,
+    public SliceFromEmbeddedIdBuilder(QueryExecutor queryExecutor,
+            CompoundKeyValidator compoundKeyValidator,
+            Class<T> entityClass, EntityMeta meta,
             Object partitionKey, Object[] clusteringsFrom)
     {
-        super(queryExecutor, entityClass, meta);
+        super(queryExecutor, compoundKeyValidator, entityClass, meta);
         super.partitionKey(partitionKey);
         super.fromClusteringsInternal(clusteringsFrom);
     }
@@ -38,8 +41,7 @@ public class ThriftFromEmbeddedIdBuilder<T> extends DefaultQueryBuilder<T>
         Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "fromId should be of type '"
                 + embeddedIdClass.getCanonicalName() + "'");
 
-        List<Object> components = mapper.fromCompoundToComponents(toEmbeddedId,
-                idMeta.getComponentGetters());
+        List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
         List<Object> clusteringTo = components.subList(1, components.size());
 
         super.toClusteringsInternal(clusteringTo.toArray(new Object[clusteringTo.size()]));

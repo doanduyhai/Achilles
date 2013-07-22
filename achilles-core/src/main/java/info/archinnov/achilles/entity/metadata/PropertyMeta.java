@@ -2,6 +2,7 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
@@ -9,12 +10,9 @@ import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -49,6 +47,7 @@ public class PropertyMeta<K, V>
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     private boolean compound;
+    private DataTranscoder transcoder;
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
@@ -108,18 +107,6 @@ public class PropertyMeta<K, V>
                 log.trace("Serializing value to string");
                 return this.objectMapper.writeValueAsString(object);
             }
-        } catch (Exception e)
-        {
-            logger.error("Error while trying to serialize to JSON the object : " + object, e);
-            return null;
-        }
-    }
-
-    public String jsonSerializeValue(Object object)
-    {
-        try
-        {
-            return this.objectMapper.writeValueAsString(object);
         } catch (Exception e)
         {
             logger.error("Error while trying to serialize to JSON the object : " + object, e);
@@ -235,16 +222,6 @@ public class PropertyMeta<K, V>
         return components;
     }
 
-    public List<String> getCQLComponentNames()
-    {
-        List<String> components = new ArrayList<String>();
-        if (compoundKeyProperties != null)
-        {
-            return Collections.unmodifiableList(compoundKeyProperties.getCQLComponentNames());
-        }
-        return components;
-    }
-
     public <T> Constructor<T> getCompoundKeyConstructor()
     {
         return compoundKeyProperties != null ? compoundKeyProperties.<T> getConstructor() : null;
@@ -346,88 +323,56 @@ public class PropertyMeta<K, V>
         return consistencyLevels != null ? consistencyLevels.right : null;
     }
 
-    ////////////////////// CQL
-
-    public Object getKeyFromCassandra(Object cassandraValue)
-    {
-        return convertValueFromCassandra(keyClass, cassandraValue);
+    public Object decode(Object cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
 
-    public Object getValueFromCassandra(Object cassandraValue)
-    {
-        if (type.isJoin())
-        {
-            return joinIdMeta().getValueFromCassandra(cassandraValue);
-        }
-        else {
-            return convertValueFromCassandra(valueClass, cassandraValue);
-        }
+    public List<Object> decode(List<?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
 
-    public Collection<?> getValuesFromCassandra(Collection<?> cassandraValues)
-    {
-        List<Object> result = new ArrayList<Object>();
-        for (Object cassandraValue : cassandraValues)
-        {
-            result.add(getValueFromCassandra(cassandraValue));
-        }
-        return result;
+    public Set<Object> decode(Set<?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
 
-    public Map<?, ?> getValuesFromCassandra(Map<?, ?> cassandraValues)
-    {
-        Map<Object, Object> result = new HashMap<Object, Object>();
-        for (Entry<?, ?> entry : cassandraValues.entrySet())
-        {
-            result.put(getKeyFromCassandra(entry.getKey()), getValueFromCassandra(entry.getValue()));
-        }
-        return result;
+    public Map<Object, Object> decode(Map<?, ?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
 
-    public Object convertValueFromCassandra(Class<?> targetType, Object cassandraValue)
-    {
-        if (isSupportedType(targetType))
-        {
-            return cassandraValue;
-        }
-        else if (cassandraValue instanceof String)
-        {
-            try {
-                return objectMapper.readValue((String) cassandraValue, targetType);
-            } catch (Exception e) {
-                throw new AchillesException("Error while deserializing value '" + cassandraValue + "' to type '"
-                        + targetType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
-                        + entityClassName + "'", e);
-            }
-        }
-        else
-        {
-            throw new AchillesException("Error while deserializing value '" + cassandraValue + "' to type '"
-                    + targetType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
-                    + entityClassName + "'");
-        }
+    public Object decodeFromComponents(List<?> components) {
+        return components == null ? null : transcoder.decodeFromComponents(this, components);
     }
 
-    public Object writeValueToCassandra(Class<?> sourceType, Object value)
-    {
-        try
-        {
-            if (isSupportedType(sourceType))
-            {
-                return value;
-            }
-            else
-            {
-                return this.objectMapper.writeValueAsString(value);
-            }
-        } catch (Exception e) {
-            throw new AchillesException("Error while serializing value '" + value + "' from type '"
-                    + sourceType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
-                    + entityClassName + "'");
-        }
+    public Object encode(Object entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
     }
 
-    /////////////////////// End CQL
+    public List<Object> encode(List<?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Set<Object> encode(Set<?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Map<Object, Object> encode(Map<?, ?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public List<Object> encodeToComponents(Object compoundKey) {
+        return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey);
+    }
+
+    public String forceEncodeToJSON(Object object)
+    {
+        return transcoder.forceEncodeToJSON(object);
+    }
+
+    public Object forceDecodeFromJSON(String cassandraValue, Class<?> targetType)
+    {
+        return transcoder.forceDecodeFromJSON(cassandraValue, targetType);
+    }
+
     public PropertyType type()
     {
         return type;
@@ -441,11 +386,6 @@ public class PropertyMeta<K, V>
     public String getPropertyName()
     {
         return propertyName;
-    }
-
-    public String getCQLPropertyName()
-    {
-        return propertyName.toLowerCase();
     }
 
     public void setPropertyName(String propertyName)
@@ -582,6 +522,14 @@ public class PropertyMeta<K, V>
         this.entityClassName = entityClassName;
     }
 
+    public DataTranscoder getTranscoder() {
+        return transcoder;
+    }
+
+    public void setTranscoder(DataTranscoder transcoder) {
+        this.transcoder = transcoder;
+    }
+
     @Override
     public String toString()
     {
@@ -658,5 +606,4 @@ public class PropertyMeta<K, V>
             return false;
         return true;
     }
-
 }

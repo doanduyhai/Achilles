@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.parsing;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
@@ -53,7 +53,6 @@ public class CompoundKeyParserTest {
         assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter);
         assertThat(props.getComponentClasses()).containsExactly(String.class, int.class);
         assertThat(props.getComponentNames()).containsExactly("name", "rank");
-        assertThat(props.getCQLComponentNames()).containsExactly("name", "rank");
         assertThat(props.getCQLOrderingComponent()).isEqualTo("rank");
     }
 
@@ -72,7 +71,6 @@ public class CompoundKeyParserTest {
         assertThat(props.getComponentGetters()).containsExactly(idGetter, nameGetter);
         assertThat(props.getComponentSetters()).isEmpty();
         assertThat(props.getComponentNames()).containsExactly("primaryKey", "name");
-        assertThat(props.getCQLComponentNames()).containsExactly("primarykey", "name");
         assertThat(props.getCQLOrderingComponent()).isEqualTo("name");
     }
 

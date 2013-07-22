@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity;
 
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -10,6 +9,7 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -38,9 +38,6 @@ public class CQLEntityMapperTest
 
     @Mock
     private CQLRowMethodInvoker cqlRowInvoker;
-
-    @Mock
-    private CQLCompoundKeyMapper compoundKeyMapper;
 
     @Mock
     private Row row;
@@ -142,10 +139,11 @@ public class CQLEntityMapperTest
                 .compNames("name")
                 .build();
 
-        when(compoundKeyMapper.createFromRow(row, pm)).thenReturn("name");
+        CompoundKey compoundKey = new CompoundKey();
+        when(cqlRowInvoker.invokeOnRowForCompoundKey(row, pm)).thenReturn(compoundKey);
 
         entityMapper.setPropertyToEntity(row, pm, entity);
 
-        verify(invoker).setValueToField(entity, pm.getSetter(), "name");
+        verify(invoker).setValueToField(entity, pm.getSetter(), compoundKey);
     }
 }

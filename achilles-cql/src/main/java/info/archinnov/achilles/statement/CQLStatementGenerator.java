@@ -6,7 +6,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.query.SliceQueryValidator;
 import info.archinnov.achilles.type.BoundingMode;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
@@ -29,7 +28,7 @@ public class CQLStatementGenerator {
         generateSelectForPrimaryKey(idMeta, select);
 
         for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas()) {
-            select.column(pm.getCQLPropertyName());
+            select.column(pm.getPropertyName());
         }
         return select.from(entityMeta.getCQLTableName());
 
@@ -37,17 +36,16 @@ public class CQLStatementGenerator {
 
     private void generateSelectForPrimaryKey(PropertyMeta<?, ?> idMeta, Selection select) {
         if (idMeta.isCompound()) {
-            for (String component : idMeta.getCQLComponentNames()) {
+            for (String component : idMeta.getComponentNames()) {
                 select.column(component);
             }
         } else {
-            select.column(idMeta.getCQLPropertyName());
+            select.column(idMeta.getPropertyName());
         }
     }
 
-    public Statement generateWhereClauseForSliceQuery(List<String> componentNames, List<Comparable> startValues,
-            List<Comparable> endValues, BoundingMode boundingMode, Select select) {
-        String componentsDescription = StringUtils.join(componentNames, ",");
+    public Statement generateWhereClauseForSliceQuery(List<String> componentNames, List<Comparable<?>> startValues,
+            List<Comparable<?>> endValues, BoundingMode boundingMode, Select select) {
         int startIndex = validator.findLastNonNullIndexForComponents(startValues);
         int endIndex = validator.findLastNonNullIndexForComponents(endValues);
 
@@ -68,8 +66,8 @@ public class CQLStatementGenerator {
         return where;
     }
 
-    private void buildWhereClauseForLastComponents(List<String> componentNames, List<Comparable> startValues,
-            List<Comparable> endValues, BoundingMode boundingMode, int startIndex, Where where) {
+    private void buildWhereClauseForLastComponents(List<String> componentNames, List<Comparable<?>> startValues,
+            List<Comparable<?>> endValues, BoundingMode boundingMode, int startIndex, Where where) {
         switch (boundingMode) {
             case INCLUSIVE_BOUNDS:
                 where.and(gte(componentNames.get(startIndex), startValues.get(startIndex)));
@@ -90,8 +88,9 @@ public class CQLStatementGenerator {
         }
     }
 
-    private void buildWhereClauseForLastNonNullComponent(List<String> componentNames, List<Comparable> startValues,
-            List<Comparable> endValues, BoundingMode boundingMode, int startIndex, int endIndex, Where where) {
+    private void buildWhereClauseForLastNonNullComponent(List<String> componentNames,
+            List<Comparable<?>> startValues,
+            List<Comparable<?>> endValues, BoundingMode boundingMode, int startIndex, int endIndex, Where where) {
         if (startIndex > endIndex) {
             switch (boundingMode) {
                 case INCLUSIVE_BOUNDS:

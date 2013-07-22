@@ -45,7 +45,7 @@ public class CQLRowMethodInvokerTest
     @Before
     public void setUp()
     {
-        when(pm.getCQLPropertyName()).thenReturn("property");
+        when(pm.getPropertyName()).thenReturn("property");
         when(pm.getKeyClass()).thenReturn(Integer.class);
         when(pm.getValueClass()).thenReturn(String.class);
         when(row.isNull("property")).thenReturn(false);
@@ -57,7 +57,7 @@ public class CQLRowMethodInvokerTest
         when(pm.type()).thenReturn(PropertyType.LIST);
         List<String> list = Arrays.asList("value");
         when(row.getList("property", String.class)).thenReturn(list);
-        when(pm.getValuesFromCassandra(list)).thenReturn((List) list);
+        when(pm.decode(list)).thenReturn((List) list);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
@@ -77,7 +77,7 @@ public class CQLRowMethodInvokerTest
 
         Set<String> set = Sets.newHashSet("value");
         when(row.getSet("property", String.class)).thenReturn(set);
-        when(pm.getValuesFromCassandra(set)).thenReturn((Set) set);
+        when(pm.decode(set)).thenReturn((Set) set);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
@@ -92,7 +92,7 @@ public class CQLRowMethodInvokerTest
                 .thenReturn(String.class);
         Map<Integer, String> map = ImmutableMap.of(11, "value");
         when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
-        when(pm.getValuesFromCassandra(map)).thenReturn((Map) map);
+        when(pm.decode(map)).thenReturn((Map) map);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
@@ -106,7 +106,7 @@ public class CQLRowMethodInvokerTest
         when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
         when(row.getString("property")).thenReturn("value");
-        when(pm.getValueFromCassandra("value")).thenReturn("value");
+        when(pm.decode("value")).thenReturn("value");
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
@@ -119,7 +119,7 @@ public class CQLRowMethodInvokerTest
         when(pm.type()).thenReturn(PropertyType.ID);
 
         when(row.getString("property")).thenReturn("value");
-        when(pm.getValueFromCassandra("value")).thenReturn("value");
+        when(pm.decode("value")).thenReturn("value");
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
         assertThat(actual).isEqualTo("value");

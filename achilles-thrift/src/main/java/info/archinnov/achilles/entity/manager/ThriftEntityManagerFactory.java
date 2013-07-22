@@ -58,7 +58,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
     }
 
     /**
-     * Create a new ThriftEntityManager
+     * Create a new ThriftEntityManager. This instance of ThriftEntityManager is <strong>thread-safe</strong>
      * 
      * @return ThriftEntityManager
      */

@@ -1,6 +1,5 @@
 package info.archinnov.achilles.entity;
 
-import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.EntityMapper;
@@ -17,7 +16,6 @@ public class CQLEntityMapper extends EntityMapper
 {
 
     private CQLRowMethodInvoker cqlRowInvoker = new CQLRowMethodInvoker();
-    private CQLCompoundKeyMapper compoundKeyMapper = new CQLCompoundKeyMapper();
 
     public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity)
     {
@@ -33,7 +31,7 @@ public class CQLEntityMapper extends EntityMapper
         {
             if (pm.isCompound())
             {
-                Object compoundKey = compoundKeyMapper.createFromRow(row, pm);
+                Object compoundKey = cqlRowInvoker.invokeOnRowForCompoundKey(row, pm);
                 invoker.setValueToField(entity, pm.getSetter(), compoundKey);
             }
             else {

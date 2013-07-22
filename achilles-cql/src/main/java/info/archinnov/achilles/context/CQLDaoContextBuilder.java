@@ -4,6 +4,7 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import java.util.HashMap;
 import java.util.Map;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
@@ -63,21 +64,21 @@ public class CQLDaoContextBuilder
 
     public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap)
     {
-        Map<Class<?>, PreparedStatement> insertPSMap = Maps.transformValues(entityMetaMap,
-                insertPSTransformer);
+        Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
+                entityMetaMap, insertPSTransformer));
 
-        Map<Class<?>, PreparedStatement> selectEagerPSMap = Maps.transformValues(entityMetaMap,
-                selectEagerPSTransformer);
+        Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap<Class<?>, PreparedStatement>(
+                Maps.transformValues(entityMetaMap, selectEagerPSTransformer));
 
-        Map<Class<?>, Map<String, PreparedStatement>> removePSMap = Maps.transformValues(
-                entityMetaMap, removePSTransformer);
+        Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<Class<?>, Map<String, PreparedStatement>>(
+                Maps.transformValues(entityMetaMap, removePSTransformer));
+
         Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder
                 .newBuilder()
                 .maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE)
                 .build();
 
-        Map<CQLQueryType, PreparedStatement> counterQueryMap = queryGenerator
-                .prepareSimpleCounterQueryMap(session);
+        Map<CQLQueryType, PreparedStatement> counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
 
         return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap,
                 counterQueryMap, session);

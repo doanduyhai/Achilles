@@ -1,12 +1,14 @@
 package info.archinnov.achilles.statement;
 
-import info.archinnov.achilles.compound.CQLCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -21,13 +23,12 @@ import com.google.common.collect.FluentIterable;
 public class CQLPreparedStatementBinder
 {
     private ReflectionInvoker invoker = new ReflectionInvoker();
-    private CQLCompoundKeyMapper mapper = new CQLCompoundKeyMapper();
 
     public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
     {
         List<Object> values = new ArrayList<Object>();
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
+        Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
         values.addAll(bindPrimaryKey(primaryKey, idMeta));
 
         List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
@@ -36,12 +37,11 @@ public class CQLPreparedStatementBinder
                 .toImmutableList();
 
         List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
-        fieldMetas.remove(idMeta);
 
         for (PropertyMeta<?, ?> pm : fieldMetas)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
-            value = extractFieldFromEntity(pm, value);
+            value = encodeValueForCassandra(pm, value);
             values.add(value);
         }
         return ps.bind(values.toArray(new Object[values.size()]));
@@ -55,10 +55,10 @@ public class CQLPreparedStatementBinder
         for (PropertyMeta<?, ?> pm : pms)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
-            value = extractFieldFromEntity(pm, value);
+            value = encodeValueForCassandra(pm, value);
             values.add(value);
         }
-        Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
+        Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
         values.addAll(bindPrimaryKey(primaryKey, idMeta));
         return ps.bind(values.toArray(new Object[values.size()]));
     }
@@ -97,26 +97,40 @@ public class CQLPreparedStatementBinder
         List<Object> values = new ArrayList<Object>();
         if (idMeta.isCompound())
         {
-            values.addAll(mapper.extractComponents(primaryKey, idMeta));
+            values.addAll(idMeta.encodeToComponents(primaryKey));
         }
         else
         {
-            values.add(primaryKey);
+            values.add(idMeta.encode(primaryKey));
         }
         return values;
     }
 
-    private Object extractFieldFromEntity(PropertyMeta<?, ?> pm, Object value)
+    private Object encodeValueForCassandra(PropertyMeta<?, ?> pm, Object value)
     {
         if (value != null)
         {
-            if (pm.isJoin())
+            switch (pm.type())
             {
-                value = invoker.getPrimaryKey(value, pm.joinIdMeta());
-            }
-            else
-            {
-                value = pm.writeValueAsSupportedTypeOrString(value);
+                case SIMPLE:
+                case LAZY_SIMPLE:
+                case JOIN_SIMPLE:
+                    return pm.encode(value);
+                case LIST:
+                case LAZY_LIST:
+                case JOIN_LIST:
+                    return pm.encode((List) value);
+                case SET:
+                case LAZY_SET:
+                case JOIN_SET:
+                    return pm.encode((Set) value);
+                case MAP:
+                case LAZY_MAP:
+                case JOIN_MAP:
+                    return pm.encode((Map) value);
+                default:
+                    throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
+                            + pm.getPropertyName() + "' of type '" + pm.type().name() + "'");
             }
         }
         return value;
@@ -127,8 +141,8 @@ public class CQLPreparedStatementBinder
     {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
         String fqcn = entityMeta.getClassName();
-        String primaryKeyAsString = idMeta.jsonSerializeValue(primaryKey);
-        String propertyName = pm.getCQLPropertyName();
+        String primaryKeyAsString = idMeta.forceEncodeToJSON(primaryKey);
+        String propertyName = pm.getPropertyName();
 
         return new Object[]
         {

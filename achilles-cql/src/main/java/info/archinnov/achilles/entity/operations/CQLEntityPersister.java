@@ -37,7 +37,7 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 
             persisterImpl.persist(context);
 
-            List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetas();
+            List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
 
             Set<PropertyMeta<?, ?>> joinPMsWithCascade = FluentIterable
                     .from(allMetas)

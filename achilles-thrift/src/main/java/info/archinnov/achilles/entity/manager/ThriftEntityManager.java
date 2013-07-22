@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.manager;
 
+import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftImmediateFlushContext;
@@ -8,7 +9,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
-import info.archinnov.achilles.query.builder.SliceQueryBuilder;
+import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.HashSet;
 import java.util.Map;
@@ -72,11 +73,11 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
      */
     public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass)
     {
-        ThriftQueryExecutor queryExecutor = new ThriftQueryExecutor(configContext,
-                thriftDaoContext,
-                consistencyPolicy);
         EntityMeta meta = entityMetaMap.get(entityClass);
-        return new SliceQueryBuilder<T>(queryExecutor, entityClass, meta);
+        ThriftQueryExecutor thriftQueryExecutor = new ThriftQueryExecutor(configContext,
+                thriftDaoContext, consistencyPolicy);
+        ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
+        return new SliceQueryBuilder<T>(thriftQueryExecutor, compoundKeyValidator, entityClass, meta);
     }
 
     @Override

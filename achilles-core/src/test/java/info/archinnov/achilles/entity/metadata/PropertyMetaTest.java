@@ -3,6 +3,7 @@ package info.archinnov.achilles.entity.metadata;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
@@ -479,15 +480,6 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_get_cql_property_name() throws Exception
-    {
-        PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
-        pm.setPropertyName("Name");
-
-        assertThat(pm.getCQLPropertyName()).isEqualTo("name");
-    }
-
-    @Test
     public void should_get_cql_external_table_name() throws Exception
     {
         PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
@@ -499,10 +491,13 @@ public class PropertyMetaTest
     @Test
     public void should_serialize_as_json() throws Exception
     {
-        PropertyMeta<Void, UUID> pm = new PropertyMeta<Void, UUID>();
-        pm.setObjectMapper(objectMapper);
+        SimpleTranscoder transcoder = new SimpleTranscoder(objectMapper);
+        PropertyMeta<Void, UUID> pm =
+                new PropertyMeta<Void, UUID>();
+        pm.setType(SIMPLE);
+        pm.setTranscoder(transcoder);
 
-        assertThat(pm.jsonSerializeValue(new UUID(10, 10))).isEqualTo(
+        assertThat(pm.forceEncodeToJSON(new UUID(10, 10))).isEqualTo(
                 "\"00000000-0000-000a-0000-00000000000a\"");
     }
 
@@ -524,24 +519,6 @@ public class PropertyMetaTest
 
         assertThat(meta.getCQLOrderingComponent()).isNull();
 
-    }
-
-    @Test
-    public void should_get_cql_component_names() throws Exception
-    {
-        PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
-        multiKeyProperties.setComponentNames(Arrays.asList("Id", "aGe", "namE"));
-        meta.setCompoundKeyProperties(multiKeyProperties);
-
-        assertThat(meta.getCQLComponentNames()).containsExactly("id", "age", "name");
-    }
-
-    @Test
-    public void should_return_empty_list_when_no_cql_component_names() throws Exception
-    {
-        PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        assertThat(meta.getCQLComponentNames()).isEmpty();
     }
 
     @Test
@@ -751,67 +728,4 @@ public class PropertyMetaTest
         assertThat(idMeta.isEmbeddedId()).isFalse();
     }
 
-    @Test
-    public void should_get_value_from_cassandra_for_join_id() throws Exception
-    {
-
-        Long cassandraValue = 11L;
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(SIMPLE)
-                .build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .valueClass(UserBean.class)
-                .type(JOIN_SIMPLE)
-                .joinMeta(joinMeta)
-                .mapper(objectMapper)
-                .build();
-
-        Object actual = pm.getValueFromCassandra(cassandraValue);
-
-        assertThat(actual).isEqualTo(11L);
-    }
-
-    @Test
-    public void should_get_value_from_cassandra_for_string() throws Exception
-    {
-        Object cassandraValue = "string";
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .type(SIMPLE)
-                .build();
-
-        Object actual = pm.getValueFromCassandra(cassandraValue);
-
-        assertThat(actual).isEqualTo("string");
-    }
-
-    @Test
-    public void should_get_value_from_cassandra_for_serialized_entity() throws Exception
-    {
-        UserBean bean = new UserBean();
-        bean.setUserId(11L);
-        bean.setName("name");
-
-        String serialized = objectMapper.writeValueAsString(bean);
-
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
-                .valueClass(UserBean.class)
-                .type(SIMPLE)
-                .mapper(objectMapper)
-                .build();
-
-        Object actual = pm.getValueFromCassandra(serialized);
-
-        assertThat(actual).isInstanceOf(UserBean.class);
-
-        UserBean actualBean = (UserBean) actual;
-
-        assertThat(actualBean.getUserId()).isEqualTo(11L);
-        assertThat(actualBean.getName()).isEqualTo("name");
-    }
 }

@@ -1,10 +1,10 @@
 package info.archinnov.achilles.composite;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
@@ -28,8 +28,7 @@ public class ThriftCompositeFactory
 
     private ComponentEqualityCalculator calculator = new ComponentEqualityCalculator();
     private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
-    private ThriftQueryValidator queryValidator = new ThriftQueryValidator();
-    private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
+    private CompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
     public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T key)
     {

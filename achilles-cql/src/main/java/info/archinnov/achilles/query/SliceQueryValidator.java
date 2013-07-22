@@ -17,9 +17,8 @@ import org.slf4j.LoggerFactory;
 public class SliceQueryValidator {
     private static final Logger log = LoggerFactory.getLogger(SliceQueryValidator.class);
 
-    @SuppressWarnings("rawtypes")
-    public void validateClusteringKeys(PropertyMeta<?, ?> propertyMeta, List<Comparable> startClustering,
-            List<Comparable> endClustering) {
+    public void validateClusteringKeys(PropertyMeta<?, ?> propertyMeta, List<Comparable<?>> startClustering,
+            List<Comparable<?>> endClustering) {
 
         String startDescription = StringUtils.join(startClustering, ",");
         String endDescription = StringUtils.join(endClustering, ",");
@@ -63,8 +62,7 @@ public class SliceQueryValidator {
 
     }
 
-    @SuppressWarnings("rawtypes")
-    public int findLastNonNullIndexForComponents(List<Comparable> components) {
+    public int findLastNonNullIndexForComponents(List<Comparable<?>> components) {
         String description = StringUtils.join(components, ",");
         boolean nullFlag = false;
         int lastNotNullIndex = 0;

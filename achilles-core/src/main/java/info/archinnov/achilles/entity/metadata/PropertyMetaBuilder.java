@@ -1,5 +1,11 @@
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
@@ -67,6 +73,7 @@ public class PropertyMetaBuilder {
         meta.setCompound(isCompound);
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
+        meta.setTranscoder(determineTranscoder(isCompound));
 
         return meta;
     }
@@ -94,6 +101,43 @@ public class PropertyMetaBuilder {
     public PropertyMetaBuilder consistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
         this.consistencyLevels = consistencyLevels;
         return this;
+    }
+
+    private DataTranscoder determineTranscoder(boolean isCompound)
+    {
+        switch (type)
+        {
+            case EMBEDDED_ID:
+                return new CompoundTranscoder(objectMapper);
+            case ID:
+            case COUNTER:
+            case SIMPLE:
+            case LAZY_SIMPLE:
+            case JOIN_SIMPLE:
+                return new SimpleTranscoder(objectMapper);
+            case LIST:
+            case LAZY_LIST:
+            case JOIN_LIST:
+                return new ListTranscoder(objectMapper);
+            case SET:
+            case LAZY_SET:
+            case JOIN_SET:
+                return new SetTranscoder(objectMapper);
+            case MAP:
+            case LAZY_MAP:
+            case JOIN_MAP:
+                return new MapTranscoder(objectMapper);
+
+            case WIDE_MAP:
+            case JOIN_WIDE_MAP:
+            case COUNTER_WIDE_MAP:
+                if (isCompound)
+                    return new CompoundTranscoder(objectMapper);
+                else
+                    return new MapTranscoder(objectMapper);
+            default:
+                return null;
+        }
     }
 
 }

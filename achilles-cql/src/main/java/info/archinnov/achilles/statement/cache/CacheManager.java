@@ -73,7 +73,7 @@ public class CacheManager
     {
         if (pm.isCompound())
         {
-            return new HashSet<String>(pm.getCQLComponentNames());
+            return new HashSet<String>(pm.getComponentNames());
         }
         else
         {

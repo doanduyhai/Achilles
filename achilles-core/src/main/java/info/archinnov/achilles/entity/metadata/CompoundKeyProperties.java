@@ -6,11 +6,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 
 /**
- * MultiKeyProperties
+ * CompoundKeyProperties
  * 
  * @author DuyHai DOAN
  * 
@@ -77,11 +76,6 @@ public class CompoundKeyProperties
         return componentNames;
     }
 
-    public List<String> getCQLComponentNames()
-    {
-        return FluentIterable.from(componentNames).transform(lowerCase).toImmutableList();
-    }
-
     public void setComponentNames(List<String> componentNames)
     {
         this.componentNames = componentNames;
@@ -100,7 +94,7 @@ public class CompoundKeyProperties
     @Override
     public String toString()
     {
-        return "MultiKeyProperties [componentClasses=["
+        return "CompoundKeyProperties [componentClasses=["
                 + StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ",")
                 + "], componentNames=" + componentNames + "]";
     }
