@@ -5,7 +5,7 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.table.TableHelper;
+import info.archinnov.achilles.table.TableNameNormalizer;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import javax.persistence.ManyToMany;
@@ -76,7 +76,7 @@ public class JoinPropertyParser {
                 joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
                 idMeta.getPropertyName());
 
-        joinPropertyMeta.setExternalTableName(TableHelper
+        joinPropertyMeta.setExternalTableName(TableNameNormalizer
                 .normalizerAndValidateColumnFamilyName(externalTableName));
         joinPropertyMeta.setIdClass(idMeta.getValueClass());
         context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);

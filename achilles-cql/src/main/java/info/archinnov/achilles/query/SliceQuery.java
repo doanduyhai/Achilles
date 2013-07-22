@@ -4,8 +4,8 @@ import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Arrays;
@@ -47,10 +47,10 @@ public class SliceQuery<T> {
     public SliceQuery<T> partitionKeys(Object... partitionKeys) {
         Validator.validateNotNull(partitionKeys, "Partition keys should not be null for slice query");
         Class<?> partitionType;
-        if (idMeta.isSingleKey()) {
-            partitionType = idMeta.getValueClass();
-        } else {
+        if (idMeta.isCompound()) {
             partitionType = idMeta.getComponentClasses().get(0);
+        } else {
+            partitionType = idMeta.getValueClass();
         }
 
         for (Object partitionKey : partitionKeys) {

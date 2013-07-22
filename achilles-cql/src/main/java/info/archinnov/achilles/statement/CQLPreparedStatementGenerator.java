@@ -155,43 +155,39 @@ public class CQLPreparedStatementGenerator
 
     private Selection prepareSelectField(PropertyMeta<?, ?> pm, Selection select)
     {
-        if (pm.isSingleKey())
-        {
-            select = select.column(pm.getCQLPropertyName());
-        }
-        else
+        if (pm.isCompound())
         {
             for (String component : pm.getCQLComponentNames())
             {
                 select = select.column(component);
             }
         }
+        else
+        {
+            select = select.column(pm.getCQLPropertyName());
+        }
         return select;
     }
 
     private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
     {
-        if (idMeta.isSingleKey())
-        {
-            insert.value(idMeta.getCQLPropertyName(), bindMarker());
-        }
-        else
+        if (idMeta.isCompound())
         {
             for (String component : idMeta.getCQLComponentNames())
             {
                 insert.value(component, bindMarker());
             }
         }
+        else
+        {
+            insert.value(idMeta.getCQLPropertyName(), bindMarker());
+        }
     }
 
     private Statement prepareWhereClauseForSelect(PropertyMeta<?, ?> idMeta, Select from)
     {
         Statement statement;
-        if (idMeta.isSingleKey())
-        {
-            statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
-        }
-        else
+        if (idMeta.isCompound())
         {
             Select.Where where = null;
             int i = 0;
@@ -209,17 +205,17 @@ public class CQLPreparedStatementGenerator
             }
             statement = where;
         }
+        else
+        {
+            statement = from.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
+        }
         return statement;
     }
 
     private Statement prepareWhereClauseForUpdate(PropertyMeta<?, ?> idMeta, Assignments update)
     {
         Statement statement;
-        if (idMeta.isSingleKey())
-        {
-            statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
-        }
-        else
+        if (idMeta.isCompound())
         {
             Update.Where where = null;
             int i = 0;
@@ -236,6 +232,10 @@ public class CQLPreparedStatementGenerator
                 i++;
             }
             statement = where;
+        }
+        else
+        {
+            statement = update.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
         }
         return statement;
     }
@@ -281,11 +281,7 @@ public class CQLPreparedStatementGenerator
     private Statement prepareWhereClauseForDelete(PropertyMeta<?, ?> idMeta, Delete mainFrom)
     {
         Statement mainStatement;
-        if (idMeta.isSingleKey())
-        {
-            mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
-        }
-        else
+        if (idMeta.isCompound())
         {
             Delete.Where where = null;
             int i = 0;
@@ -302,6 +298,10 @@ public class CQLPreparedStatementGenerator
                 i++;
             }
             mainStatement = where;
+        }
+        else
+        {
+            mainStatement = mainFrom.where(eq(idMeta.getCQLPropertyName(), bindMarker()));
         }
         return mainStatement;
     }

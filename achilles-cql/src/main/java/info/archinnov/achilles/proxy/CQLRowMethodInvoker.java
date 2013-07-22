@@ -1,8 +1,11 @@
 package info.archinnov.achilles.proxy;
 
-import static info.archinnov.achilles.type.CQLTypeMapper.*;
+import static info.archinnov.achilles.cql.CQLTypeMapper.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +21,7 @@ public class CQLRowMethodInvoker
 {
     public Object invokeOnRowForFields(Row row, PropertyMeta<?, ?> pm)
     {
-        String propertyName = pm.getPropertyName();
+        String propertyName = pm.getCQLPropertyName();
         Object value = null;
         if (row != null && !row.isNull(propertyName))
         {
@@ -26,23 +29,22 @@ public class CQLRowMethodInvoker
             {
                 case LIST:
                 case LAZY_LIST:
-                    value = invokeOnRowForList(row, pm.getPropertyName(), pm.getValueClass());
+                    value = invokeOnRowForList(row, pm, propertyName, pm.getValueClass());
                     break;
                 case SET:
                 case LAZY_SET:
-                    value = invokeOnRowForSet(row, pm.getPropertyName(), pm.getValueClass());
+                    value = invokeOnRowForSet(row, pm, propertyName, pm.getValueClass());
                     break;
                 case MAP:
                 case LAZY_MAP:
                     Class<?> keyClass = pm.getKeyClass();
                     Class<?> valueClass = pm.getValueClass();
-                    value = invokeOnRowForMap(row, pm.getPropertyName(), keyClass, valueClass);
+                    value = invokeOnRowForMap(row, pm, propertyName, keyClass, valueClass);
                     break;
                 case ID:
                 case SIMPLE:
                 case LAZY_SIMPLE:
-                    Object rawValue = invokeOnRowForProperty(row, pm.getPropertyName(), pm.getValueClass());
-                    value = pm.getValueFromCassandra(rawValue);
+                    value = invokeOnRowForProperty(row, pm, propertyName, pm.getValueClass());
                     break;
                 default:
                     break;
@@ -51,45 +53,66 @@ public class CQLRowMethodInvoker
         return value;
     }
 
-    public Object invokeOnRowForProperty(Row row, String propertyName, Class<?> valueClass)
+    public Object invokeOnRowForClusteredComponent(Row row, PropertyMeta<?, ?> pm, String componentName,
+            Class<?> valueClass)
     {
         try
         {
-
-            return getRowMethod(valueClass).invoke(row, propertyName);
+            Object rawValue = getRowMethod(valueClass).invoke(row, componentName);
+            return pm.convertValueFromCassandra(valueClass, rawValue);
         } catch (Exception e)
         {
-            throw new AchillesException("Cannot retrieve property '" + propertyName
-                    + "' from CQL Row", e);
+            throw new AchillesException("Cannot retrieve property '" + componentName
+                    + "' for entity class '" + pm.getEntityClassName() + "' from CQL Row", e);
         }
     }
 
-    public List<?> invokeOnRowForList(Row row, String propertyName, Class<?> valueClass)
+    public Object invokeOnRowForProperty(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
+    {
+        try
+        {
+            Object rawValue = getRowMethod(valueClass).invoke(row, propertyName);
+            return pm.getValueFromCassandra(rawValue);
+        } catch (Exception e)
+        {
+            throw new AchillesException("Cannot retrieve property '" + propertyName
+                    + "' for entity class '" + pm.getEntityClassName() + "' from CQL Row", e);
+        }
+    }
+
+    public List<?> invokeOnRowForList(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
     {
         try {
-            return row.getList(propertyName, toCompatibleJavaType(valueClass));
+            Collection<?> rawValues = row.getList(propertyName, toCompatibleJavaType(valueClass));
+            return new ArrayList<Object>(pm.getValuesFromCassandra(rawValues));
+
         } catch (Exception e) {
             throw new AchillesException("Cannot retrieve list property '" + propertyName
                     + "' from CQL Row", e);
         }
     }
 
-    public Set<?> invokeOnRowForSet(Row row, String propertyName, Class<?> valueClass)
+    public Set<?> invokeOnRowForSet(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
     {
         try {
-            return row.getSet(propertyName, toCompatibleJavaType(valueClass));
+            Collection<?> rawValues = row.getSet(propertyName, toCompatibleJavaType(valueClass));
+            return new HashSet<Object>(pm.getValuesFromCassandra(rawValues));
+
         } catch (Exception e) {
             throw new AchillesException("Cannot retrieve set property '" + propertyName
                     + "' from CQL Row", e);
         }
     }
 
-    public Map<?, ?> invokeOnRowForMap(Row row, String propertyName, Class<?> keyClass,
+    public Map<?, ?> invokeOnRowForMap(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> keyClass,
             Class<?> valueClass)
     {
         try
         {
-            return row.getMap(propertyName, toCompatibleJavaType(valueClass), toCompatibleJavaType(valueClass));
+            Map<?, ?> rawValues = row.getMap(propertyName, toCompatibleJavaType(keyClass),
+                    toCompatibleJavaType(valueClass));
+            return pm.getValuesFromCassandra(rawValues);
+
         } catch (Exception e)
         {
             throw new AchillesException("Cannot retrieve map property '" + propertyName

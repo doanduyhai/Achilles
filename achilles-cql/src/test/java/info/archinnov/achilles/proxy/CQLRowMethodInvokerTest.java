@@ -1,7 +1,7 @@
 package info.archinnov.achilles.proxy;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
@@ -45,7 +45,7 @@ public class CQLRowMethodInvokerTest
     @Before
     public void setUp()
     {
-        when(pm.getPropertyName()).thenReturn("property");
+        when(pm.getCQLPropertyName()).thenReturn("property");
         when(pm.getKeyClass()).thenReturn(Integer.class);
         when(pm.getValueClass()).thenReturn(String.class);
         when(row.isNull("property")).thenReturn(false);
@@ -55,13 +55,13 @@ public class CQLRowMethodInvokerTest
     public void should_get_list_value_from_row() throws Exception
     {
         when(pm.type()).thenReturn(PropertyType.LIST);
-
         List<String> list = Arrays.asList("value");
         when(row.getList("property", String.class)).thenReturn(list);
+        when(pm.getValuesFromCassandra(list)).thenReturn((List) list);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
-        assertThat(actual).isSameAs(list);
+        assertThat((List) actual).containsAll(list);
     }
 
     @Test
@@ -77,10 +77,11 @@ public class CQLRowMethodInvokerTest
 
         Set<String> set = Sets.newHashSet("value");
         when(row.getSet("property", String.class)).thenReturn(set);
+        when(pm.getValuesFromCassandra(set)).thenReturn((Set) set);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
-        assertThat(actual).isSameAs(set);
+        assertThat((Set) actual).containsAll(set);
     }
 
     @Test
@@ -91,10 +92,12 @@ public class CQLRowMethodInvokerTest
                 .thenReturn(String.class);
         Map<Integer, String> map = ImmutableMap.of(11, "value");
         when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
+        when(pm.getValuesFromCassandra(map)).thenReturn((Map) map);
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
-        assertThat(actual).isSameAs(map);
+        assertThat((Map) actual).containsKey(11);
+        assertThat((Map) actual).containsValue("value");
     }
 
     @Test
@@ -103,6 +106,7 @@ public class CQLRowMethodInvokerTest
         when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
         when(row.getString("property")).thenReturn("value");
+        when(pm.getValueFromCassandra("value")).thenReturn("value");
 
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
@@ -115,7 +119,7 @@ public class CQLRowMethodInvokerTest
         when(pm.type()).thenReturn(PropertyType.ID);
 
         when(row.getString("property")).thenReturn("value");
-
+        when(pm.getValueFromCassandra("value")).thenReturn("value");
         Object actual = invoker.invokeOnRowForFields(row, pm);
 
         assertThat(actual).isEqualTo("value");
@@ -131,13 +135,6 @@ public class CQLRowMethodInvokerTest
     }
 
     @Test
-    public void should_return_null_when_not_eager_property_type() throws Exception
-    {
-        when(pm.type()).thenReturn(PropertyType.LAZY_SIMPLE);
-        assertThat(invoker.invokeOnRowForFields(row, pm)).isNull();
-    }
-
-    @Test
     public void should_exception_when_invoking_getter_from_row() throws Exception
     {
         when(pm.type()).thenReturn(PropertyType.SIMPLE);
@@ -145,7 +142,7 @@ public class CQLRowMethodInvokerTest
         when(row.getString("property")).thenThrow(new RuntimeException(""));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("Cannot retrieve property 'property' from CQL Row");
+        exception.expectMessage("Cannot retrieve property 'property' for entity class 'null' from CQL Row");
 
         invoker.invokeOnRowForFields(row, pm);
     }
@@ -160,7 +157,7 @@ public class CQLRowMethodInvokerTest
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot retrieve list property 'property' from CQL Row");
 
-        invoker.invokeOnRowForList(row, "property", String.class);
+        invoker.invokeOnRowForList(row, pm, "property", String.class);
     }
 
     @Test
@@ -173,7 +170,7 @@ public class CQLRowMethodInvokerTest
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot retrieve set property 'property' from CQL Row");
 
-        invoker.invokeOnRowForSet(row, "property", String.class);
+        invoker.invokeOnRowForSet(row, pm, "property", String.class);
     }
 
     @Test
@@ -188,6 +185,6 @@ public class CQLRowMethodInvokerTest
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot retrieve map property 'property' from CQL Row");
 
-        invoker.invokeOnRowForMap(row, "property", Integer.class, String.class);
+        invoker.invokeOnRowForMap(row, pm, "property", Integer.class, String.class);
     }
 }

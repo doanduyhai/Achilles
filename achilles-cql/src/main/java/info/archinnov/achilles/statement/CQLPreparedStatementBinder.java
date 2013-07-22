@@ -95,13 +95,13 @@ public class CQLPreparedStatementBinder
     private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta<?, ?> idMeta)
     {
         List<Object> values = new ArrayList<Object>();
-        if (idMeta.isSingleKey())
+        if (idMeta.isCompound())
         {
-            values.add(primaryKey);
+            values.addAll(mapper.extractComponents(primaryKey, idMeta));
         }
         else
         {
-            values.addAll(mapper.extractComponents(primaryKey, idMeta));
+            values.add(primaryKey);
         }
         return values;
     }

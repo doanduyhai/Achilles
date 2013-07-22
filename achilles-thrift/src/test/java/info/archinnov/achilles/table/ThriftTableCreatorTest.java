@@ -4,10 +4,7 @@ import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMe
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -213,9 +210,15 @@ public class ThriftTableCreatorTest {
     @Test
     public void should_validate_column_family_for_wide_map() throws Exception {
         PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder
-                //
-                .noClass(Integer.class, String.class).field("externalWideMap").externalTable("externalCF")
-                .type(PropertyType.WIDE_MAP).build();
+                .keyValueClass(Integer.class, String.class)
+                .field("externalWideMap")
+                .externalTable("externalCF")
+                .type(PropertyType.WIDE_MAP)
+                .idClass(Long.class)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("TestBean");
 
         BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
         externalCFDef.setName("externalCF");
@@ -225,7 +228,7 @@ public class ThriftTableCreatorTest {
 
         Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
 
-        creator.validateOrCreateTableForWideMap(wideMapMeta, Long.class, false, "externalCF", "TestBean");
+        creator.validateOrCreateTableForWideMap(meta, wideMapMeta, false);
         verify(columnFamilyValidator).validateWideRowForProperty(externalCFDef, wideMapMeta, "externalCF");
     }
 
@@ -281,12 +284,17 @@ public class ThriftTableCreatorTest {
     @Test
     public void should_create_column_family_for_wide_row_when_not_existing() throws Exception {
         PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder
-                //
-                .noClass(Integer.class, String.class).field("externalWideMap").externalTable("externalCF")
-                .type(PropertyType.WIDE_MAP).idClass(Long.class).build();
+                .keyValueClass(Integer.class, String.class)
+                .field("externalWideMap")
+                .externalTable("externalCF")
+                .type(PropertyType.WIDE_MAP)
+                .idClass(Long.class)
+                .build();
 
         prepareData(wideMapMeta);
         idMeta.setValueClass(Long.class);
+
+        meta.setClassName("TestBean");
 
         BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
         cfDef.setName("testCF");
@@ -298,7 +306,7 @@ public class ThriftTableCreatorTest {
                 columnFamilyFactory.createWideRowCF("keyspace", wideMapMeta, Long.class, "externalCF",
                         meta.getClassName())).thenReturn(externalCFDef);
 
-        creator.validateOrCreateTableForWideMap(wideMapMeta, Long.class, true, "externalCF", "TestBean");
+        creator.validateOrCreateTableForWideMap(meta, wideMapMeta, true);
 
         verify(cluster).addColumnFamily(externalCFDef, true);
     }
@@ -317,25 +325,30 @@ public class ThriftTableCreatorTest {
     @Test
     public void should_exception_because_wide_row_not_found() throws Exception {
         PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder
-                //
-                .noClass(Integer.class, String.class).field("externalWideMap").externalTable("externalCF")
-                .type(PropertyType.WIDE_MAP).idClass(Long.class).entityClassName("testEntity").build();
+                .keyValueClass(Integer.class, String.class)
+                .field("externalWideMap")
+                .externalTable("externalCF")
+                .type(PropertyType.WIDE_MAP)
+                .idClass(Long.class)
+                .entityClassName("testEntity")
+                .build();
 
         prepareData();
+
         Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
         configContext.setForceColumnFamilyCreation(false);
         exception.expect(AchillesInvalidColumnFamilyException.class);
         exception
-                .expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap' of entity 'testEntity'");
+                .expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap' of entity 'TestBean'");
 
-        creator.validateOrCreateTableForWideMap(wideMapMeta, Long.class, false, "externalCF", "testCF");
+        creator.validateOrCreateTableForWideMap(meta, wideMapMeta, false);
     }
 
     @Test
     public void should_exception_because_column_family_not_found_for_external_wide_map() throws Exception {
         PropertyMeta<Integer, String> externalWideMapMeta = PropertyMetaTestBuilder
                 //
-                .noClass(Integer.class, String.class).field("externalWideMap").externalTable("externalCF")
+                .keyValueClass(Integer.class, String.class).field("externalWideMap").externalTable("externalCF")
                 .idClass(Long.class).type(PropertyType.WIDE_MAP).build();
 
         prepareData(externalWideMapMeta);
@@ -373,7 +386,7 @@ public class ThriftTableCreatorTest {
             propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
         }
 
-        simplePropertyMeta = PropertyMetaTestBuilder.noClass(Void.class, String.class).type(SIMPLE).field("name")
+        simplePropertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class).type(SIMPLE).field("name")
                 .build();
 
         propertyMetas.put("name", simplePropertyMeta);

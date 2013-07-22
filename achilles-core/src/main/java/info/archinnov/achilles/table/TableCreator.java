@@ -14,22 +14,18 @@ import java.util.Map.Entry;
  */
 public abstract class TableCreator {
     public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
+    static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
     public void validateOrCreateTables(Map<Class<?>, EntityMeta> entityMetaMap,
             ConfigurationContext configContext, boolean hasCounter) {
         for (Entry<Class<?>, EntityMeta> entry : entityMetaMap.entrySet()) {
 
             EntityMeta entityMeta = entry.getValue();
-            for (Entry<String, PropertyMeta<?, ?>> entryMeta : entityMeta.getPropertyMetas().entrySet()) {
-                PropertyMeta<?, ?> propertyMeta = entryMeta.getValue();
-
-                if (propertyMeta.type().isWideMap()) {
-                    validateOrCreateTableForWideMap(propertyMeta, entityMeta.getIdMeta().getValueClass(),
-                            configContext.isForceColumnFamilyCreation(), propertyMeta.getExternalTableName(),
-                            entityMeta.getClassName());
+            for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta()) {
+                if (pm.isWideMap()) {
+                    validateOrCreateTableForWideMap(entityMeta, pm, configContext.isForceColumnFamilyCreation());
                 }
             }
-
             validateOrCreateTableForEntity(entityMeta, configContext.isForceColumnFamilyCreation());
         }
 
@@ -38,10 +34,10 @@ public abstract class TableCreator {
         }
     }
 
-    protected abstract void validateOrCreateTableForWideMap(PropertyMeta<?, ?> propertyMeta, Class<?> keyClass,
-            boolean forceColumnFamilyCreation, String externalColumnFamilyName, String entityName);
-
     protected abstract void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation);
+
+    protected abstract void validateOrCreateTableForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm,
+            boolean forceColumnFamilyCreation);
 
     protected abstract void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation);
 

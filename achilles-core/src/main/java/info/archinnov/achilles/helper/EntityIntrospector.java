@@ -6,7 +6,7 @@ import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.table.TableHelper;
+import info.archinnov.achilles.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
@@ -139,9 +139,9 @@ public class EntityIntrospector {
         }
 
         if (!StringUtils.isBlank(columnFamilyName)) {
-            columnFamilyName = TableHelper.normalizerAndValidateColumnFamilyName(columnFamilyName);
+            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(columnFamilyName);
         } else {
-            columnFamilyName = TableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
         }
 
         log.debug("Inferred columnFamilyName for entity {} : {}", canonicalName, columnFamilyName);

@@ -1,8 +1,9 @@
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.cql;
 
 import static com.datastax.driver.core.DataType.Name.*;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.PropertyHelper;
+import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,6 +54,7 @@ public class CQLTypeMapper
         java2CQL.put(List.class, LIST);
         java2CQL.put(Set.class, SET);
         java2CQL.put(Map.class, MAP);
+        java2CQL.put(Counter.class, COUNTER);
 
         cql2Java.put(ASCII, String.class);
         cql2Java.put(BIGINT, Long.class);

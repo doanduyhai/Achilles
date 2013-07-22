@@ -1,6 +1,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.Type.*;
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
 import static org.fest.assertions.api.Assertions.assertThat;

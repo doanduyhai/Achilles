@@ -47,7 +47,7 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
             throw new IllegalArgumentException("Cannot get primary key for entity "
                     + entity.getClass().getCanonicalName());
         }
-        if (!idMeta.isSingleKey()) {
+        if (idMeta.isCompound()) {
             for (Method getter : idMeta.getComponentGetters()) {
                 Object component = invoker.getValueFromField(id, getter);
                 Validator.validateNotNull(component, "The entity " + entity.getClass().getCanonicalName()

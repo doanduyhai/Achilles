@@ -50,7 +50,7 @@ public class PropertyMetaBuilder {
         log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
         PropertyMeta<K, V> meta = null;
-        boolean singleKey = compoundKeyProperties == null ? true : false;
+        boolean isCompound = compoundKeyProperties == null ? false : true;
         meta = new PropertyMeta<K, V>();
         meta.setObjectMapper(objectMapper);
         meta.setType(type);
@@ -64,7 +64,7 @@ public class PropertyMetaBuilder {
         meta.setJoinProperties(joinProperties);
         meta.setCompoundKeyProperties(compoundKeyProperties);
 
-        meta.setSingleKey(singleKey);
+        meta.setCompound(isCompound);
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
 
@@ -81,8 +81,8 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder multiKeyProperties(CompoundKeyProperties multiKeyProperties) {
-        this.compoundKeyProperties = multiKeyProperties;
+    public PropertyMetaBuilder compoundKeyProperties(CompoundKeyProperties compoundKeyProperties) {
+        this.compoundKeyProperties = compoundKeyProperties;
         return this;
     }
 

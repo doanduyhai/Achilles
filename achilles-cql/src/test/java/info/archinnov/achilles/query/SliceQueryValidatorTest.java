@@ -1,6 +1,6 @@
 package info.archinnov.achilles.query;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -78,13 +78,13 @@ public class SliceQueryValidatorTest {
 
     @Test
     public void should_validate_single_key() throws Exception {
-        pm.setSingleKey(true);
+        pm.setCompound(false);
         validator.validateClusteringKeys(pm, Arrays.<Comparable> asList(10L), Arrays.<Comparable> asList(11L));
     }
 
     @Test
     public void should_exception_when_single_key_not_in_correct_order() throws Exception {
-        pm.setSingleKey(true);
+        pm.setCompound(false);
         exception.expect(AchillesException.class);
         exception
                 .expectMessage("Start clustering last component should be strictly 'less' than end clustering last component: [[11],[10]");

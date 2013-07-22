@@ -50,15 +50,15 @@ public class ThriftQueryValidatorTest
     @Test
     public void should_validate_single_keys_ascending() throws Exception
     {
-        when(pm.isSingleKey()).thenReturn(true);
+        when(pm.isCompound()).thenReturn(false);
 
         validator.validateBoundsForQuery(pm, 10L, 11L, ASCENDING);
     }
 
     @Test
-    public void should_validate_single_keys_descending() throws Exception
+    public void should_validate_single_key_descending() throws Exception
     {
-        when(pm.isSingleKey()).thenReturn(true);
+        when(pm.isCompound()).thenReturn(false);
 
         validator.validateBoundsForQuery(pm, 12L, 11L, DESCENDING);
     }
@@ -66,7 +66,7 @@ public class ThriftQueryValidatorTest
     @Test
     public void should_validate_compound_keys() throws Exception
     {
-        when(pm.isSingleKey()).thenReturn(false);
+        when(pm.isCompound()).thenReturn(true);
 
         CompoundKey start = new CompoundKey();
         CompoundKey end = new CompoundKey();

@@ -71,13 +71,13 @@ public class CacheManager
 
     private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta<?, ?> pm)
     {
-        if (pm.isSingleKey())
+        if (pm.isCompound())
         {
-            return Sets.newHashSet(pm.getPropertyName());
+            return new HashSet<String>(pm.getCQLComponentNames());
         }
         else
         {
-            return new HashSet<String>(pm.getCQLComponentNames());
+            return Sets.newHashSet(pm.getPropertyName());
         }
     }
 }

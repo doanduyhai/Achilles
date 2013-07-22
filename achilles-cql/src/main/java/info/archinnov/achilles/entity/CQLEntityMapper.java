@@ -31,18 +31,18 @@ public class CQLEntityMapper extends EntityMapper
     {
         if (row != null)
         {
-            if (pm.isSingleKey())
+            if (pm.isCompound())
             {
+                Object compoundKey = compoundKeyMapper.createFromRow(row, pm);
+                invoker.setValueToField(entity, pm.getSetter(), compoundKey);
+            }
+            else {
                 String propertyName = pm.getPropertyName();
                 if (!row.isNull(propertyName))
                 {
                     Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
                     invoker.setValueToField(entity, pm.getSetter(), value);
                 }
-            }
-            else {
-                Object compoundKey = compoundKeyMapper.createFromRow(row, pm);
-                invoker.setValueToField(entity, pm.getSetter(), compoundKey);
             }
         }
     }

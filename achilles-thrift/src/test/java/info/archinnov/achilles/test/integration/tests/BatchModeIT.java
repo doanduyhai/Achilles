@@ -3,7 +3,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;

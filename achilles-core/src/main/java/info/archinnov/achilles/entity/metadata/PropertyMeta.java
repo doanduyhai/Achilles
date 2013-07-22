@@ -9,8 +9,12 @@ import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.persistence.CascadeType;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -44,7 +48,7 @@ public class PropertyMeta<K, V>
     private Class<?> idClass;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-    private boolean singleKey;
+    private boolean compound;
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
@@ -221,6 +225,16 @@ public class PropertyMeta<K, V>
         return component;
     }
 
+    public List<String> getComponentNames()
+    {
+        List<String> components = new ArrayList<String>();
+        if (compoundKeyProperties != null)
+        {
+            return compoundKeyProperties.getComponentNames();
+        }
+        return components;
+    }
+
     public List<String> getCQLComponentNames()
     {
         List<String> components = new ArrayList<String>();
@@ -350,6 +364,26 @@ public class PropertyMeta<K, V>
         }
     }
 
+    public Collection<?> getValuesFromCassandra(Collection<?> cassandraValues)
+    {
+        List<Object> result = new ArrayList<Object>();
+        for (Object cassandraValue : cassandraValues)
+        {
+            result.add(getValueFromCassandra(cassandraValue));
+        }
+        return result;
+    }
+
+    public Map<?, ?> getValuesFromCassandra(Map<?, ?> cassandraValues)
+    {
+        Map<Object, Object> result = new HashMap<Object, Object>();
+        for (Entry<?, ?> entry : cassandraValues.entrySet())
+        {
+            result.put(getKeyFromCassandra(entry.getKey()), getValueFromCassandra(entry.getValue()));
+        }
+        return result;
+    }
+
     public Object convertValueFromCassandra(Class<?> targetType, Object cassandraValue)
     {
         if (isSupportedType(targetType))
@@ -370,6 +404,25 @@ public class PropertyMeta<K, V>
         {
             throw new AchillesException("Error while deserializing value '" + cassandraValue + "' to type '"
                     + targetType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
+                    + entityClassName + "'");
+        }
+    }
+
+    public Object writeValueToCassandra(Class<?> sourceType, Object value)
+    {
+        try
+        {
+            if (isSupportedType(sourceType))
+            {
+                return value;
+            }
+            else
+            {
+                return this.objectMapper.writeValueAsString(value);
+            }
+        } catch (Exception e) {
+            throw new AchillesException("Error while serializing value '" + value + "' from type '"
+                    + sourceType.getCanonicalName() + "' for property '" + propertyName + "' of entity class '"
                     + entityClassName + "'");
         }
     }
@@ -476,14 +529,12 @@ public class PropertyMeta<K, V>
         this.joinProperties = joinProperties;
     }
 
-    public boolean isSingleKey()
-    {
-        return singleKey;
+    public boolean isCompound() {
+        return compound;
     }
 
-    public void setSingleKey(boolean singleKey)
-    {
-        this.singleKey = singleKey;
+    public void setCompound(boolean compound) {
+        this.compound = compound;
     }
 
     public void setObjectMapper(ObjectMapper objectMapper)
@@ -563,7 +614,7 @@ public class PropertyMeta<K, V>
                     .append(",");
             description.append(consistencyLevels.right.name()).append("], ");
         }
-        description.append("singleKey=").append(singleKey).append("]");
+        description.append("compound=").append(compound).append("]");
 
         return description.toString();
     }

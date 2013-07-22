@@ -100,7 +100,7 @@ public class ThriftKeyValueFactoryTest
         when(context.findEntityDao("join_cf")).thenReturn(joinEntityDao);
 
         joinMeta.setTableName("join_cf");
-        propertyMeta = noClass(Integer.class, UserBean.class) //
+        propertyMeta = keyValueClass(Integer.class, UserBean.class) //
                 .joinMeta(joinMeta)
                 //
                 .build();

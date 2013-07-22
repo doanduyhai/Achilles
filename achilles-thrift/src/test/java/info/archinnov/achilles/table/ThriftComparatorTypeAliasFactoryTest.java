@@ -58,8 +58,8 @@ public class ThriftComparatorTypeAliasFactoryTest {
 
     @Before
     public void setUp() {
-        when(wideMapMeta.isSingleKey()).thenReturn(true);
-        when(multiKeyWideMapMeta.isSingleKey()).thenReturn(false);
+        when(wideMapMeta.isCompound()).thenReturn(false);
+        when(multiKeyWideMapMeta.isCompound()).thenReturn(true);
     }
 
     @Test

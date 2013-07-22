@@ -2,13 +2,15 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.test.parser.entity.Bean;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.test.parser.entity.MyMultiKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -53,32 +55,37 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
     }
 
     @Test
-    public void should_build_multikey_id() throws Exception {
+    public void should_build_compound_id() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        CompoundKeyProperties props = new CompoundKeyProperties();
+        props.setComponentClasses(new ArrayList<Class<?>>());
+        props.setComponentGetters(new ArrayList<Method>());
+        props.setComponentSetters(new ArrayList<Method>());
+
+        PropertyMeta<Void, CompoundKey> built = PropertyMetaBuilder
                 .factory()
                 .type(EMBEDDED_ID)
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
-                .build(Void.class, String.class);
+                .compoundKeyProperties(props)
+                .build(Void.class, CompoundKey.class);
 
         assertThat(built.type()).isEqualTo(EMBEDDED_ID);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat(built.getValueClass()).isEqualTo(CompoundKey.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isTrue();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
@@ -102,7 +109,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -124,7 +131,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(Bean.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -146,7 +153,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -168,7 +175,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -190,7 +197,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -212,7 +219,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -237,7 +244,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -262,7 +269,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -287,7 +294,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
@@ -312,13 +319,13 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void should_build_multi_key_wide_map() throws Exception {
+    public void should_build_compound_wide_map() throws Exception {
 
         Iterator<Class<?>> iterator = mock(Iterator.class);
         List<Class<?>> componentClasses = mock(List.class);
@@ -338,7 +345,7 @@ public class PropertyMetaBuilderTest {
                 .type(WIDE_MAP)
                 .propertyName("prop")
                 .accessors(accessors)
-                .multiKeyProperties(props)
+                .compoundKeyProperties(props)
                 .objectMapper(objectMapper)
                 .build(MyMultiKey.class, String.class);
 
@@ -359,7 +366,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isFalse();
+        assertThat(built.isCompound()).isTrue();
         assertThat(built.type().isJoin()).isFalse();
     }
 

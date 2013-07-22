@@ -1,11 +1,12 @@
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.cql;
 
 import static com.datastax.driver.core.DataType.Name.*;
-import static info.archinnov.achilles.type.CQLTypeMapper.*;
+import static info.archinnov.achilles.cql.CQLTypeMapper.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -56,6 +57,8 @@ public class CQLTypeMapperTest
         assertThat(toCQLType(Object.class)).isSameAs(TEXT);
 
         assertThat(toCQLType(UserBean.class)).isSameAs(TEXT);
+
+        assertThat(toCQLType(Counter.class)).isSameAs(COUNTER);
 
     }
 

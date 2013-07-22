@@ -3,7 +3,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableHelper.*;
+import static info.archinnov.achilles.table.TableNameNormalizer.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;

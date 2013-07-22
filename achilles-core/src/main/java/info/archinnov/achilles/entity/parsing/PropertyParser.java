@@ -118,7 +118,7 @@ public class PropertyParser
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
-                .multiKeyProperties(compoundKeyProperties)
+                .compoundKeyProperties(compoundKeyProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels())
@@ -337,7 +337,7 @@ public class PropertyParser
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(entityClass.getCanonicalName())
                 .accessors(accessors)
-                .multiKeyProperties(multiKeyProperties)
+                .compoundKeyProperties(multiKeyProperties)
                 .counterProperties(counterProperties)
                 .consistencyLevels(context.getCurrentConsistencyLevels())
                 .build(keyClass, valueClass);

@@ -104,7 +104,7 @@ public class ThriftDaoFactoryTest {
         PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, Date.class)
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, Date.class)
                 .externalTable("externalCf").type(PropertyType.WIDE_MAP).build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -136,7 +136,7 @@ public class ThriftDaoFactoryTest {
         PropertyMeta<Void, Integer> idMeta = PropertyMetaTestBuilder //
                 .valueClass(Integer.class).build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, Counter.class)
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, Counter.class)
                 .externalTable("externalCf").type(PropertyType.COUNTER_WIDE_MAP).build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -161,7 +161,7 @@ public class ThriftDaoFactoryTest {
         PropertyMeta<Void, Integer> idMeta = PropertyMetaTestBuilder //
                 .valueClass(Integer.class).build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, UserBean.class)
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, UserBean.class)
                 .externalTable("externalCf").type(PropertyType.WIDE_MAP).build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -191,7 +191,7 @@ public class ThriftDaoFactoryTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, UserBean.class)
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, UserBean.class)
                 .externalTable("externalCf").type(PropertyType.JOIN_WIDE_MAP).joinMeta(joinMeta).build();
 
         EntityMeta entityMeta = new EntityMeta();

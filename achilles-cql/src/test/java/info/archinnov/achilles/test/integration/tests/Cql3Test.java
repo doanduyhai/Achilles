@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnMetadata;
@@ -35,7 +36,7 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
-//@Ignore
+@Ignore
 public class Cql3Test
 {
 

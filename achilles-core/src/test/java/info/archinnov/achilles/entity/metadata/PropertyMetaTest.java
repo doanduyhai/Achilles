@@ -177,7 +177,7 @@ public class PropertyMetaTest
     public void should_cast_value_as_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_SIMPLE)
                 .build();
 
@@ -192,7 +192,7 @@ public class PropertyMetaTest
     public void should_cast_value_as_supported_type() throws Exception
     {
         PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UUID.class)
+                .keyValueClass(Integer.class, UUID.class)
                 .type(PropertyType.WIDE_MAP)
                 .build();
 
@@ -207,7 +207,7 @@ public class PropertyMetaTest
     public void should_cast_value_as_string() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.WIDE_MAP)
                 .build();
 
@@ -227,7 +227,7 @@ public class PropertyMetaTest
         EntityMeta joinMeta = new EntityMeta();
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_WIDE_MAP)
                 .joinMeta(joinMeta)
                 .build();
@@ -239,7 +239,7 @@ public class PropertyMetaTest
     public void should_return_null_if_not_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.WIDE_MAP)
                 .build();
 
@@ -254,7 +254,7 @@ public class PropertyMetaTest
         joinMeta.setIdMeta(joinIdMeta);
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_WIDE_MAP)
                 .joinMeta(joinMeta)
                 .build();
@@ -295,7 +295,7 @@ public class PropertyMetaTest
         EntityMeta joinMeta = new EntityMeta();
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_WIDE_MAP)
                 .joinMeta(joinMeta)
                 .build();
@@ -307,7 +307,7 @@ public class PropertyMetaTest
     public void should_return_true_when_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_SIMPLE)
                 .build();
 
@@ -318,7 +318,7 @@ public class PropertyMetaTest
     public void should_return_true_for_isLazy() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(PropertyType.LAZY_LIST)
                 .build();
 
@@ -329,7 +329,7 @@ public class PropertyMetaTest
     public void should_return_true_for_isWideMap() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 //
                 .type(PropertyType.WIDE_MAP)
                 //
@@ -342,7 +342,7 @@ public class PropertyMetaTest
     public void should_return_true_for_isCounter_when_type_is_counter() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(PropertyType.COUNTER)
                 .build();
 
@@ -354,7 +354,7 @@ public class PropertyMetaTest
             throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(PropertyType.COUNTER_WIDE_MAP)
                 .build();
 
@@ -672,6 +672,17 @@ public class PropertyMetaTest
                 CompoundKey.class).build();
 
         assertThat(idMeta.getPartitionKeySetter()).isNull();
+    }
+
+    @Test
+    public void should_get_component_names() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compNames("a", "b")
+                .build();
+
+        assertThat(idMeta.getComponentNames()).containsExactly("a", "b");
     }
 
     @Test

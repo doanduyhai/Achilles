@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -146,7 +146,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForProperty(row, "name", Long.class)).thenReturn(11L);
+        when(cqlRowInvoker.invokeOnRowForProperty(row, pm, "name", Long.class)).thenReturn(11L);
 
         UserBean userBean = new UserBean();
         when(entityLoader.load(any(CQLPersistenceContext.class), eq(UserBean.class))).thenReturn(
@@ -168,7 +168,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForProperty(row, "name", Long.class)).thenReturn(null);
+        when(cqlRowInvoker.invokeOnRowForProperty(row, pm, "name", Long.class)).thenReturn(null);
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
@@ -187,7 +187,7 @@ public class CQLLoaderImplTest
 
         when(context.loadProperty(pm)).thenReturn(row);
         List<Long> joinIds = Arrays.asList(11L);
-        when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(joinIds);
+        when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class)).thenReturn((List) joinIds);
 
         UserBean userBean = new UserBean();
         when(entityLoader.load(any(CQLPersistenceContext.class), eq(UserBean.class))).thenReturn(
@@ -210,7 +210,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(null);
+        when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class)).thenReturn(null);
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
@@ -228,8 +228,8 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForList(row, "name", Long.class)).thenReturn(
-                new ArrayList<Long>());
+        when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class)).thenReturn(
+                new ArrayList());
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
@@ -248,7 +248,7 @@ public class CQLLoaderImplTest
 
         when(context.loadProperty(pm)).thenReturn(row);
         Set<Long> joinIds = Sets.newHashSet(11L);
-        when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(joinIds);
+        when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class)).thenReturn((Set) joinIds);
 
         UserBean userBean = new UserBean();
         when(entityLoader.load(any(CQLPersistenceContext.class), eq(UserBean.class))).thenReturn(
@@ -271,7 +271,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(null);
+        when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class)).thenReturn(null);
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
@@ -289,8 +289,8 @@ public class CQLLoaderImplTest
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForSet(row, "name", Long.class)).thenReturn(
-                new HashSet<Long>());
+        when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class)).thenReturn(
+                new HashSet());
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
@@ -301,7 +301,7 @@ public class CQLLoaderImplTest
     public void should_load_join_map_into_entity() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
                 .joinMeta(entityMeta)
@@ -309,8 +309,8 @@ public class CQLLoaderImplTest
 
         when(context.loadProperty(pm)).thenReturn(row);
         Map<Integer, Long> joinIds = ImmutableMap.of(11, 11L);
-        when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
-                joinIds);
+        when(cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class, Long.class)).thenReturn(
+                (Map) joinIds);
 
         UserBean userBean = new UserBean();
         when(entityLoader.load(any(CQLPersistenceContext.class), eq(UserBean.class))).thenReturn(
@@ -327,14 +327,14 @@ public class CQLLoaderImplTest
     public void should_not_load_join_map_into_entity_when_null() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
                 .joinMeta(entityMeta)
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
+        when(cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class, Long.class)).thenReturn(
                 null);
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
@@ -346,15 +346,15 @@ public class CQLLoaderImplTest
     public void should_not_load_join_map_into_entity_when_empty_id_map() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
                 .joinMeta(entityMeta)
                 .build();
 
         when(context.loadProperty(pm)).thenReturn(row);
-        when(cqlRowInvoker.invokeOnRowForMap(row, "name", Integer.class, Long.class)).thenReturn(
-                new HashMap<Integer, Long>());
+        when(cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class, Long.class)).thenReturn(
+                new HashMap());
 
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 

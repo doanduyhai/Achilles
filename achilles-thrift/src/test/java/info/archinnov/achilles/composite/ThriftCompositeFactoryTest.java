@@ -65,11 +65,11 @@ public class ThriftCompositeFactoryTest
     @Before
     public void setUp()
     {
-        when(wideMapMeta.isSingleKey()).thenReturn(true);
+        when(wideMapMeta.isCompound()).thenReturn(false);
         when(wideMapMeta.getPropertyName()).thenReturn("property");
         when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
 
-        when(compoundKeyWideMapMeta.isSingleKey()).thenReturn(false);
+        when(compoundKeyWideMapMeta.isCompound()).thenReturn(true);
         when(compoundKeyWideMapMeta.getPropertyName()).thenReturn("property");
     }
 

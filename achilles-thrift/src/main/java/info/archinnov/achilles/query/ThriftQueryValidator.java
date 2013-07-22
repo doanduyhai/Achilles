@@ -29,22 +29,17 @@ public class ThriftQueryValidator
                 ordering.name());
         if (start != null && end != null)
         {
-            if (propertyMeta.isSingleKey())
+            if (propertyMeta.isCompound())
             {
-                compoundKeyValidator.validateComponentsForQuery(Arrays.<Object> asList(start),
-                        Arrays.<Object> asList(end),
-                        ordering);
+                List<Method> componentGetters = propertyMeta.getComponentGetters();
+                List<Object> startComponents = mapper.fromCompoundToComponents(start, componentGetters);
+                List<Object> endComponents = mapper.fromCompoundToComponents(end, componentGetters);
+                compoundKeyValidator.validateComponentsForQuery(startComponents, endComponents, ordering);
             }
             else
             {
-                List<Method> componentGetters = propertyMeta.getComponentGetters();
-
-                List<Object> startComponents = mapper.fromCompoundToComponents(start,
-                        componentGetters);
-                List<Object> endComponents = mapper.fromCompoundToComponents(end,
-                        componentGetters);
-
-                compoundKeyValidator.validateComponentsForQuery(startComponents, endComponents,
+                compoundKeyValidator.validateComponentsForQuery(Arrays.<Object> asList(start),
+                        Arrays.<Object> asList(end),
                         ordering);
             }
         }

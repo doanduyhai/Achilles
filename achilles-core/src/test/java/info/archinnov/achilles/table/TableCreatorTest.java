@@ -1,7 +1,7 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -44,7 +44,7 @@ public class TableCreatorTest
     public void setUp() throws Exception
     {
         idMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, Long.class)
+                .keyValueClass(Void.class, Long.class)
                 .type(SIMPLE)
                 .field("id")
                 .build();
@@ -55,7 +55,7 @@ public class TableCreatorTest
     public void should_validate_or_create_for_wide_map() throws Exception
     {
         PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
-                .noClass(Integer.class, String.class)
+                .keyValueClass(Integer.class, String.class)
                 .field("externalWideMap")
                 .externalTable("externalCF")
                 .type(PropertyType.WIDE_MAP)
@@ -65,11 +65,9 @@ public class TableCreatorTest
 
         doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap,
                 configContext, false);
-
         creator.validateOrCreateTables(entityMetaMap, configContext, false);
 
-        verify(creator).validateOrCreateTableForWideMap(wideMapMeta, Long.class, true, "externalCF",
-                "TestBean");
+        verify(creator).validateOrCreateTableForWideMap(entityMeta, wideMapMeta, true);
     }
 
     @Test
@@ -103,7 +101,7 @@ public class TableCreatorTest
         }
 
         simplePropertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(SIMPLE)
                 .field("name")
                 .build();

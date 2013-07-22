@@ -44,7 +44,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * AchillesPropertyParserTest
+ * PropertyParserTest
  * 
  * @author DuyHai DOAN
  * 
@@ -789,7 +789,7 @@ public class PropertyParserTest
     {
         PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
         PropertyMeta<Long, UUID> propertyMeta = PropertyMetaTestBuilder//
-                .noClass(Long.class, UUID.class)
+                .keyValueClass(Long.class, UUID.class)
                 .type(WIDE_MAP)
                 .build();
 
@@ -858,7 +858,7 @@ public class PropertyParserTest
         assertThat(meta.getPropertyName()).isEqualTo("tweets");
         assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
         assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
-        assertThat(meta.isSingleKey()).isFalse();
+        assertThat(meta.isCompound()).isTrue();
 
         assertThat((Class<CorrectCompoundKey>) meta.getKeyClass()).isEqualTo(
                 CorrectCompoundKey.class);
@@ -903,7 +903,7 @@ public class PropertyParserTest
         assertThat(meta.getPropertyName()).isEqualTo("tweets");
         assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
         assertThat(meta.type()).isEqualTo(PropertyType.WIDE_MAP);
-        assertThat(meta.isSingleKey()).isFalse();
+        assertThat(meta.isCompound()).isTrue();
 
         assertThat((Class<CorrectMultiKeyUnorderedKeys>) meta.getKeyClass()).isEqualTo(
                 CorrectMultiKeyUnorderedKeys.class);

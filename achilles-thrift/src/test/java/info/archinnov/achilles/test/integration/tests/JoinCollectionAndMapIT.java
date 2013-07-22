@@ -2,7 +2,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;

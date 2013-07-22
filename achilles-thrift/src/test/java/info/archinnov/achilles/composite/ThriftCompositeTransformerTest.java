@@ -95,7 +95,7 @@ public class ThriftCompositeTransformerTest
 
         PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
                 //
-                .noClass(Integer.class, String.class)
+                .keyValueClass(Integer.class, String.class)
                 .type(WIDE_MAP)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
@@ -114,7 +114,7 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(comp1, "test1");
         HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
-        PropertyMeta<TweetCompoundKey, String> propertyMeta = PropertyMetaTestBuilder.noClass(
+        PropertyMeta<TweetCompoundKey, String> propertyMeta = PropertyMetaTestBuilder.keyValueClass(
                 TweetCompoundKey.class,
                 String.class).build();
 
@@ -146,7 +146,7 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
         PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, String.class)
+                .keyValueClass(Integer.class, String.class)
                 .type(WIDE_MAP)
                 .build();
 
@@ -236,7 +236,7 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2", 789);
 
         PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, String.class)
+                .keyValueClass(Integer.class, String.class)
                 .type(WIDE_MAP)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
@@ -265,7 +265,7 @@ public class ThriftCompositeTransformerTest
         HCounterColumn<Composite> hCol2 = new HCounterColumnImpl<Composite>(comp2, 12L);
 
         PropertyMeta<Integer, Counter> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, Counter.class)
+                .keyValueClass(Integer.class, Counter.class)
                 .type(WIDE_MAP)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
@@ -304,7 +304,7 @@ public class ThriftCompositeTransformerTest
         HCounterColumn<Composite> hCol1 = new HCounterColumnImpl<Composite>(comp1, 11L);
 
         PropertyMeta<Integer, Counter> pm = PropertyMetaTestBuilder
-                .noClass(Integer.class, Counter.class)
+                .keyValueClass(Integer.class, Counter.class)
                 .type(EMBEDDED_ID)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
@@ -326,7 +326,7 @@ public class ThriftCompositeTransformerTest
                 .<Object> simple(comp1, clusteredValue);
 
         PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
-                .noClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
+                .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
         PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
@@ -368,7 +368,7 @@ public class ThriftCompositeTransformerTest
         HCounterColumn<Composite> hCol1 = HColumnTestBuilder.counter(comp1, 150L);
 
         PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
-                .noClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
+                .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
         PropertyMeta<Void, Long> pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
@@ -418,7 +418,7 @@ public class ThriftCompositeTransformerTest
                 .<Object> simple(comp1, joinId);
 
         PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
-                .noClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
+                .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
         PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)

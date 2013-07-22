@@ -380,7 +380,7 @@ public class JoinPropertyParserTest
     {
 
         PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder.noClass(
+        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder.keyValueClass(
                 Integer.class, UserBean.class).build();
 
         initEntityParsingContext();

@@ -1,11 +1,6 @@
 package info.archinnov.achilles.statement;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.gt;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.lt;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.query.SliceQueryValidator;
@@ -41,12 +36,12 @@ public class CQLStatementGenerator {
     }
 
     private void generateSelectForPrimaryKey(PropertyMeta<?, ?> idMeta, Selection select) {
-        if (idMeta.isSingleKey()) {
-            select.column(idMeta.getCQLPropertyName());
-        } else {
+        if (idMeta.isCompound()) {
             for (String component : idMeta.getCQLComponentNames()) {
                 select.column(component);
             }
+        } else {
+            select.column(idMeta.getCQLPropertyName());
         }
     }
 

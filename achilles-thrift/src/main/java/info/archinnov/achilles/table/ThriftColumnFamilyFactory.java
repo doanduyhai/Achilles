@@ -1,10 +1,8 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.table.TableHelper.ACHILLES_DDL_SCRIPT;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -104,7 +102,7 @@ public class ThriftColumnFamilyFactory {
         builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
         builder.append(comparatorTypesAlias).append("'\n");
         builder.append("\t\tand default_validation_class = ").append(defaultValidationType).append("\n");
-        builder.append("\t\tand comment = 'Column family for property ").append(propertyName);
+        builder.append("\t\tand comment = 'Column family for wide map property ").append(propertyName);
         builder.append(" of entity ").append(entityName).append("'\n\n");
 
         log.debug(builder.toString());

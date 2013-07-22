@@ -38,21 +38,18 @@ public class ThriftCompositeFactory
         Composite composite = new Composite();
         String propertyName = propertyMeta.getPropertyName();
 
-        if (propertyMeta.isSingleKey())
+        if (propertyMeta.isCompound())
+        {
+            composite = compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
+        }
+        else
         {
             log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
             Validator.validateNotNull(key, "The values for the for the key of WideMap '"
                     + propertyName + "' should not be null");
 
-            Serializer<T> keySerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta
-                    .getKeyClass());
-            composite.setComponent(0, key, keySerializer, keySerializer
-                    .getComparatorType()
-                    .getTypeName());
-        }
-        else
-        {
-            composite = compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
+            Serializer<T> keySerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.getKeyClass());
+            composite.setComponent(0, key, keySerializer, keySerializer.getComparatorType().getTypeName());
         }
         return composite;
     }
@@ -64,7 +61,11 @@ public class ThriftCompositeFactory
 
         Composite composite = new Composite();
 
-        if (propertyMeta.isSingleKey())
+        if (propertyMeta.isCompound())
+        {
+            composite = compoundKeyMapper.fromCompoundToCompositeForQuery(key, propertyMeta, equality);
+        }
+        else
         {
             log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
 
@@ -77,11 +78,6 @@ public class ThriftCompositeFactory
                 Serializer<T> serializer = ThriftSerializerTypeInferer.getSerializer(key);
                 composite.setComponent(0, key, serializer, serializer.getComparatorType().getTypeName(), equality);
             }
-        }
-        else
-        {
-            composite = compoundKeyMapper.fromCompoundToCompositeForQuery(key, propertyMeta,
-                    equality);
         }
         return composite;
     }
