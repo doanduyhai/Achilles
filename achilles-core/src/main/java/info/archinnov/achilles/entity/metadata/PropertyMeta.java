@@ -327,6 +327,10 @@ public class PropertyMeta<K, V>
         return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
 
+    public Object decodeKey(Object cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decodeKey(this, cassandraValue);
+    }
+
     public List<Object> decode(List<?> cassandraValue) {
         return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
     }
@@ -345,6 +349,10 @@ public class PropertyMeta<K, V>
 
     public Object encode(Object entityValue) {
         return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Object encodeKey(Object entityValue) {
+        return entityValue == null ? null : transcoder.encodeKey(this, entityValue);
     }
 
     public List<Object> encode(List<?> entityValue) {

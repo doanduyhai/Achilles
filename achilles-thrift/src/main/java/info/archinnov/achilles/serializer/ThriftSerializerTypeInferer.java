@@ -12,10 +12,10 @@ public class ThriftSerializerTypeInferer {
             return null;
         }
 
-        if (valueClass.isEnum())
-        {
-            return new ThriftEnumSerializer(valueClass);
-        }
+        //        if (valueClass.isEnum())
+        //        {
+        //            return new ThriftEnumSerializer(valueClass);
+        //        }
 
         Serializer<T> serializer = SerializerTypeInferer.getSerializer(valueClass);
 

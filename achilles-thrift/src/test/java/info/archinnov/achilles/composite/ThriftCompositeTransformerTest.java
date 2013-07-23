@@ -11,6 +11,7 @@ import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
 import info.archinnov.achilles.test.builders.CompositeTestBuilder;
@@ -94,9 +95,9 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(comp2, "test2");
 
         PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
-                //
                 .keyValueClass(Integer.class, String.class)
                 .type(WIDE_MAP)
+                .transcoder(new MapTranscoder(mapper))
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
 
@@ -238,6 +239,7 @@ public class ThriftCompositeTransformerTest
         PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(WIDE_MAP)
+                .transcoder(new MapTranscoder(mapper))
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
                 .build();
 

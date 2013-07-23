@@ -100,7 +100,7 @@ public abstract class CompoundKeyValidator
     public abstract void validateComponentsForSliceQuery(List<Object> startComponentValues,
             List<Object> endComponentValues, OrderingMode ordering);
 
-    protected int validateNoHoleAndReturnLastNonNullIndex(List<Object> components)
+    public int validateNoHoleAndReturnLastNonNullIndex(List<Object> components)
     {
         boolean nullFlag = false;
         int lastNotNullIndex = 0;

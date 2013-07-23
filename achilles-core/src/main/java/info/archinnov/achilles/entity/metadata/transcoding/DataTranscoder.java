@@ -16,6 +16,8 @@ public interface DataTranscoder {
     // Encode
     public Object encode(PropertyMeta<?, ?> pm, Object entityValue);
 
+    public Object encodeKey(PropertyMeta<?, ?> pm, Object entityValue);
+
     public List<Object> encode(PropertyMeta<?, ?> pm, List<?> entityValue);
 
     public Set<Object> encode(PropertyMeta<?, ?> pm, Set<?> entityValue);
@@ -28,6 +30,8 @@ public interface DataTranscoder {
 
     //Decode
     public Object decode(PropertyMeta<?, ?> pm, Object cassandraValue);
+
+    public Object decodeKey(PropertyMeta<?, ?> pm, Object cassandraValue);
 
     public List<Object> decode(PropertyMeta<?, ?> pm, List<?> cassandraValue);
 

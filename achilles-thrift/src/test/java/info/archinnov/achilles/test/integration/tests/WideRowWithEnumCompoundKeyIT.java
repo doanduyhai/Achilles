@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.serializer.ThriftEnumSerializer;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.Type;
@@ -108,7 +108,7 @@ public class WideRowWithEnumCompoundKeyIT
         entity = em.merge(entity);
 
         Composite comp = new Composite();
-        comp.setComponent(0, Type.FILE, new ThriftEnumSerializer<Type>(Type.class));
+        comp.setComponent(0, "FILE", ThriftSerializerUtils.STRING_SRZ);
         Mutator<Long> mutator = dao.buildMutator();
         dao.insertColumnBatch(partitionKey, comp, "new_clustered_value",
                 Optional.<Integer> absent(), mutator);

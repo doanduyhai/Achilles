@@ -15,6 +15,7 @@ import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.proxy.wrapper.MapWrapper;
@@ -42,6 +43,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -454,6 +456,7 @@ public class ThriftEntityInterceptorTest
                 .type(EMBEDDED_ID)
                 .compGetters(Arrays.asList(userIdGetter, nameGetter))
                 .compClasses(Long.class, String.class)
+                .transcoder(new CompoundTranscoder(new ObjectMapper()))
                 .build();
 
         entityMeta.setClusteredEntity(true);

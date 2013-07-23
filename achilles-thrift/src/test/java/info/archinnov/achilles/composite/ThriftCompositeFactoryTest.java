@@ -61,8 +61,6 @@ public class ThriftCompositeFactoryTest
     @Before
     public void setUp()
     {
-        //Whitebox.setInternalState(factory, "compoundKeyValidator", compoundKeyValidator);
-
         when(wideMapMeta.isCompound()).thenReturn(false);
         when(wideMapMeta.getPropertyName()).thenReturn("property");
         when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
@@ -74,6 +72,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_for_insert() throws Exception
     {
+        when(wideMapMeta.encodeKey(12)).thenReturn(12);
         Composite comp = factory.createBaseComposite(wideMapMeta, 12);
 
         assertThat(comp.getComponents()).hasSize(1);
@@ -99,6 +98,8 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_for_query() throws Exception
     {
+        when(wideMapMeta.encodeKey(123)).thenReturn(123);
+
         Composite comp = factory.createForQuery(wideMapMeta, 123, LESS_THAN_EQUAL);
 
         assertThat(comp.getComponents()).hasSize(1);
@@ -125,6 +126,10 @@ public class ThriftCompositeFactoryTest
                         EQUAL,
                         LESS_THAN_EQUAL
                 });
+
+        when(wideMapMeta.encodeKey(12)).thenReturn(12);
+        when(wideMapMeta.encodeKey(15)).thenReturn(15);
+
         Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15,
                 INCLUSIVE_START_BOUND_ONLY, ASCENDING);
 

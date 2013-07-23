@@ -1,10 +1,9 @@
 package info.archinnov.achilles.entity.metadata.transcoding;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.Map;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,6 +35,28 @@ public class MapTranscoderTest {
     }
 
     @Test
+    public void should_encode_key() throws Exception
+    {
+        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+                .keyValueClass(Integer.class, String.class)
+                .type(JOIN_SIMPLE)
+                .build();
+
+        assertThat(transcoder.encodeKey(pm, 11)).isEqualTo(11);
+    }
+
+    @Test
+    public void should_encode_value() throws Exception
+    {
+        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+                .keyValueClass(Integer.class, String.class)
+                .type(SIMPLE)
+                .build();
+
+        assertThat(transcoder.encode(pm, "value")).isEqualTo("value");
+    }
+
+    @Test
     public void should_decode() throws Exception
     {
         PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
@@ -48,4 +69,27 @@ public class MapTranscoderTest {
         assertThat(actual).containsKey(1);
         assertThat(actual).containsValue("value");
     }
+
+    @Test
+    public void should_decode_key() throws Exception
+    {
+        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+                .keyValueClass(Integer.class, String.class)
+                .type(JOIN_SIMPLE)
+                .build();
+
+        assertThat(transcoder.decodeKey(pm, 11)).isEqualTo(11);
+    }
+
+    @Test
+    public void should_decode_value() throws Exception
+    {
+        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+                .keyValueClass(Integer.class, String.class)
+                .type(SIMPLE)
+                .build();
+
+        assertThat(transcoder.decode(pm, "value")).isEqualTo("value");
+    }
+
 }

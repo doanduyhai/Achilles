@@ -19,6 +19,16 @@ public class MapTranscoder extends AbstractTranscoder {
     }
 
     @Override
+    public Object encode(PropertyMeta<?, ?> pm, Object entityValue) {
+        return super.encode(pm, pm.getValueClass(), entityValue);
+    }
+
+    @Override
+    public Object encodeKey(PropertyMeta<?, ?> pm, Object entityValue) {
+        return super.encodeIgnoreJoin(pm.getKeyClass(), entityValue);
+    }
+
+    @Override
     public Map<Object, Object> encode(PropertyMeta<?, ?> pm, Map<?, ?> entityValue) {
         Map<Object, Object> encoded = new HashMap<Object, Object>();
         for (Entry<?, ?> entry : entityValue.entrySet())
@@ -28,6 +38,16 @@ public class MapTranscoder extends AbstractTranscoder {
             encoded.put(encodedKey, encodedValue);
         }
         return encoded;
+    }
+
+    @Override
+    public Object decode(PropertyMeta<?, ?> pm, Object cassandraValue) {
+        return super.decode(pm, pm.getValueClass(), cassandraValue);
+    }
+
+    @Override
+    public Object decodeKey(PropertyMeta<?, ?> pm, Object cassandraValue) {
+        return super.decodeIgnoreJoin(pm.getKeyClass(), cassandraValue);
     }
 
     @Override

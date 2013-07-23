@@ -163,7 +163,9 @@ public class ThriftCompositeTransformer
         }
         else
         {
-            key = hColumn.getName().get(0, keySerializer);
+            Object rawValue = hColumn.getName().get(0, keySerializer);
+            key = (K) propertyMeta.decodeKey(rawValue);
+
         }
 
         if (log.isTraceEnabled())

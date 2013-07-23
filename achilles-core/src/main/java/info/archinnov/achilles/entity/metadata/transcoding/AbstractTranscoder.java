@@ -31,6 +31,12 @@ public abstract class AbstractTranscoder implements DataTranscoder {
     }
 
     @Override
+    public Object encodeKey(PropertyMeta<?, ?> pm, Object entityValue) {
+        throw new AchillesException("Transcoder cannot encode key '" + entityValue
+                + "' for type '" + pm.type().name() + "'");
+    }
+
+    @Override
     public List<Object> encode(PropertyMeta<?, ?> pm, List<?> entityValue) {
         throw new AchillesException("Transcoder cannot encode value '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
@@ -58,6 +64,12 @@ public abstract class AbstractTranscoder implements DataTranscoder {
     @Override
     public Object decode(PropertyMeta<?, ?> pm, Object cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
+                + "' for type '" + pm.type().name() + "'");
+    }
+
+    @Override
+    public Object decodeKey(PropertyMeta<?, ?> pm, Object cassandraValue) {
+        throw new AchillesException("Transcoder cannot decode key '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 

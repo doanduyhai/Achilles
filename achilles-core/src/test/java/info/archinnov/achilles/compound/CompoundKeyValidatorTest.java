@@ -1,10 +1,12 @@
 package info.archinnov.achilles.compound;
 
 import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +17,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CompoundKeyValidatorTest
@@ -193,5 +197,36 @@ public class CompoundKeyValidatorTest
                 .expectMessage("Partition key should be equal for start and end clustering keys : [[11, a],[12, b]]");
 
         validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+    }
+
+    @Test
+    public void should_validate_components_for_slice_query() throws Exception
+    {
+        List<Object> start = Arrays.<Object> asList(11L, 12);
+        List<Object> end = Arrays.<Object> asList(11L, 13);
+
+        final List<String> witness = new ArrayList<String>();
+        doAnswer(new Answer<Void>() {
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                witness.add("witness");
+                return null;
+            }
+
+        })
+                .when(validator).validateComponentsForSliceQuery(start, end, ASCENDING);
+
+        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+
+        assertThat(witness).containsOnly("witness");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void should_exception_when_hole() throws Exception
+    {
+        List<Object> keyValues = Arrays.asList((Object) "a", null, "b");
+
+        validator.validateNoHoleAndReturnLastNonNullIndex(keyValues);
     }
 }

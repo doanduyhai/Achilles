@@ -47,8 +47,9 @@ public class ThriftCompositeFactory
             Validator.validateNotNull(key, "The values for the for the key of WideMap '"
                     + propertyName + "' should not be null");
 
-            Serializer<T> keySerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.getKeyClass());
-            composite.setComponent(0, key, keySerializer, keySerializer.getComparatorType().getTypeName());
+            Serializer<Object> keySerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.getKeyClass());
+            Object encoded = propertyMeta.encodeKey(key);
+            composite.setComponent(0, encoded, keySerializer, keySerializer.getComparatorType().getTypeName());
         }
         return composite;
     }
@@ -57,6 +58,11 @@ public class ThriftCompositeFactory
             ComponentEquality equality)
     {
         log.trace("Creating query composite for propertyMeta {}", propertyMeta.getPropertyName());
+
+        if (key == null)
+        {
+            return null;
+        }
 
         Composite composite = new Composite();
 
@@ -68,15 +74,10 @@ public class ThriftCompositeFactory
         {
             log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
 
-            if (key == null)
-            {
-                composite = null;
-            }
-            else
-            {
-                Serializer<T> serializer = ThriftSerializerTypeInferer.getSerializer(key);
-                composite.setComponent(0, key, serializer, serializer.getComparatorType().getTypeName(), equality);
-            }
+            Serializer<Object> serializer = ThriftSerializerTypeInferer.getSerializer(key);
+            Object encoded = propertyMeta.encodeKey(key);
+            composite
+                    .setComponent(0, encoded, serializer, serializer.getComparatorType().getTypeName(), equality);
         }
         return composite;
     }
