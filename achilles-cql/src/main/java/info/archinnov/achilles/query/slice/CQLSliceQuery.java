@@ -5,11 +5,12 @@ import info.archinnov.achilles.compound.CQLCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
+import info.archinnov.achilles.validation.Validator;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.cassandra.utils.Pair;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
@@ -25,11 +26,14 @@ public class CQLSliceQuery<T> {
     private List<Object> fixedComponents;
     private Object lastStartComp;
     private Object lastEndComp;
-
     private CQLCompoundKeyValidator validator = new CQLCompoundKeyValidator();
+    private ConsistencyLevel defaultReadLevel;
 
-    public CQLSliceQuery(SliceQuery<T> sliceQuery) {
+    public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {
+
+        validateClusteringComponents(sliceQuery);
         this.sliceQuery = sliceQuery;
+        this.defaultReadLevel = defaultReadLevel;
         this.fixedComponents = determineFixedComponents(sliceQuery);
         Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
         this.lastStartComp = lastComponents.left;
@@ -53,15 +57,22 @@ public class CQLSliceQuery<T> {
         return sliceQuery.getLimit();
     }
 
-    public ConsistencyLevel getConsistencyLevel() {
-        return getCQLLevel(sliceQuery.getConsistencyLevel());
+    public com.datastax.driver.core.ConsistencyLevel getConsistencyLevel() {
+        ConsistencyLevel consistencyLevel = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
+                .getConsistencyLevel();
+        return getCQLLevel(consistencyLevel);
     }
 
     public BoundingMode getBounding() {
         return sliceQuery.getBounding();
     }
 
-    public Ordering getOrdering()
+    public OrderingMode getAchillesOrdering()
+    {
+        return sliceQuery.getOrdering();
+    }
+
+    public Ordering getCQLOrdering()
     {
         OrderingMode ordering = sliceQuery.getOrdering();
         String orderingComponentName = sliceQuery.getMeta().getIdMeta().getOrderingComponent();
@@ -80,9 +91,36 @@ public class CQLSliceQuery<T> {
         return sliceQuery.getMeta().getIdMeta().getComponentNames();
     }
 
+    public String getVaryingComponentName()
+    {
+        return sliceQuery.getMeta().getIdMeta().getComponentNames().get(fixedComponents.size());
+    }
+
+    public Class<?> getVaryingComponentClass()
+    {
+        return sliceQuery.getMeta().getIdMeta().getComponentClasses().get(fixedComponents.size());
+    }
+
     public EntityMeta getMeta()
     {
         return sliceQuery.getMeta();
+    }
+
+    public Class<T> getEntityClass()
+    {
+        return sliceQuery.getEntityClass();
+    }
+
+    public int getBatchSize()
+    {
+        return sliceQuery.getBatchSize();
+    }
+
+    private void validateClusteringComponents(SliceQuery<T> sliceQuery)
+    {
+        validator.validateComponentsForSliceQuery(sliceQuery.getClusteringsFrom(), sliceQuery.getClusteringsTo(),
+                sliceQuery.getOrdering());
+
     }
 
     private List<Object> determineFixedComponents(SliceQuery<T> sliceQuery)
@@ -90,6 +128,7 @@ public class CQLSliceQuery<T> {
         List<Object> fixedComponents = new ArrayList<Object>();
 
         List<Object> startComponents = sliceQuery.getClusteringsFrom();
+
         List<Object> endComponents = sliceQuery.getClusteringsTo();
 
         int startIndex = validator.getLastNonNullIndex(startComponents);
@@ -148,5 +187,12 @@ public class CQLSliceQuery<T> {
         }
 
         return Pair.create(lastStartComp, lastEndComp);
+    }
+
+    public void validateSliceQueryForRemove()
+    {
+        Validator.validateTrue(lastStartComp == null && lastEndComp == null,
+                "CQL does not support slice delete with varying compound components");
+        Validator.validateFalse(sliceQuery.isLimitSet(), "CQL slice delete does not support LIMIT");
     }
 }

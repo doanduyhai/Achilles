@@ -132,4 +132,16 @@ public class CQLRowMethodInvoker
                     + "' from CQL Row", e);
         }
     }
+
+    public Object invokeOnRowForType(Row row, Class<?> type, String name)
+    {
+        try
+        {
+            return getRowMethod(type).invoke(row, name);
+        } catch (Exception e)
+        {
+            throw new AchillesException("Cannot retrieve column '" + name
+                    + "' of type '" + type.getCanonicalName() + "' from CQL Row", e);
+        }
+    }
 }

@@ -107,7 +107,7 @@ public class ThriftCompositeFactory
             OrderingMode ordering)
     {
 
-        compoundKeyValidator.validateCompoundKeysForClusteredQuery(idMeta, clusteringFrom,
+        compoundKeyValidator.validateComponentsForSliceQuery(idMeta, clusteringFrom,
                 clusteringTo, ordering);
         ComponentEquality[] equalities = calculator.determineEquality(bounding, ordering);
 

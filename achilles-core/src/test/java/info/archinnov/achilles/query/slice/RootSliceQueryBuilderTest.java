@@ -31,13 +31,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RootQueryBuilderTest
+public class RootSliceQueryBuilderTest
 {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private RootQueryBuilder<PersistenceContext, ClusteredEntity> builder;
+    private RootSliceQueryBuilder<PersistenceContext, ClusteredEntity> builder;
 
     private Class<ClusteredEntity> entityClass = ClusteredEntity.class;
 

@@ -79,7 +79,7 @@ public abstract class CompoundKeyValidator
         }
     }
 
-    public void validateCompoundKeysForClusteredQuery(PropertyMeta<?, ?> propertyMeta, List<Object> start,
+    public void validateComponentsForSliceQuery(PropertyMeta<?, ?> propertyMeta, List<Object> start,
             List<Object> end, OrderingMode ordering)
     {
         Validator.validateNotNull(start.get(0),

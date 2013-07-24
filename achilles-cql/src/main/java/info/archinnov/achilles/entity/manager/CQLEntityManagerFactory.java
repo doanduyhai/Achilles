@@ -46,7 +46,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
         new CQLTableCreator(cluster, session, (String) configurationMap.get(KEYSPACE_NAME_PARAM))
                 .validateOrCreateTables(entityMetaMap, configContext, hasSimpleCounter);
 
-        daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap);
+        daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap, hasSimpleCounter);
 
     }
 
@@ -56,7 +56,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
      * @return CQLEntityManager
      */
     public CQLEntityManager createEntityManager() {
-        return new CQLEntityManager(this, entityMetaMap, configContext, daoContext);
+        return new CQLEntityManager(entityMetaMap, configContext, daoContext);
     }
 
     @Override

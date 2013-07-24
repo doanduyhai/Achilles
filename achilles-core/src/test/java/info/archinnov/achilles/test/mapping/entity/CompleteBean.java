@@ -1,11 +1,10 @@
 package info.archinnov.achilles.test.mapping.entity;
 
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.CompoundKey;
+import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.WideMap;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,9 +25,6 @@ import javax.persistence.ManyToOne;
 @Entity
 public class CompleteBean
 {
-
-    public static final long serialVersionUID = 151L;
-
     @Id
     private Long id;
 
@@ -78,6 +74,13 @@ public class CompleteBean
 
     @Column(table = "popular_topics")
     private WideMap<String, Counter> popularTopics;
+
+    public CompleteBean() {
+    }
+
+    public CompleteBean(Long id) {
+        this.id = id;
+    }
 
     public Long getId()
     {

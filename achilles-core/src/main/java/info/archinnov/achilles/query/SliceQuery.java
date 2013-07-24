@@ -30,12 +30,14 @@ public class SliceQuery<T>
     private ConsistencyLevel consistencyLevel;
     private int batchSize;
     private int limit;
+    private boolean limitSet;
 
     public SliceQuery(Class<T> entityClass, EntityMeta meta, Object partitionKey,
             Object[] clusteringsFrom, Object[] clusteringsTo, OrderingMode ordering,
-            BoundingMode bounding, ConsistencyLevel consistencyLevel, int limit, int batchSize)
+            BoundingMode bounding, ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet)
     {
 
+        this.limitSet = limitSet;
         Validator.validateNotNull(partitionKey,
                 "Partition key should be set for slice query for entity class '"
                         + entityClass.getCanonicalName() + "'");
@@ -104,4 +106,9 @@ public class SliceQuery<T>
     {
         return batchSize;
     }
+
+    public boolean isLimitSet() {
+        return limitSet;
+    }
+
 }

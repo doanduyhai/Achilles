@@ -13,7 +13,7 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class SliceShortcutQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootQueryBuilder<CONTEXT, T> {
+public class SliceShortcutQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
     public SliceShortcutQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator, Class<T> entityClass,

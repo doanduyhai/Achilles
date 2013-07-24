@@ -169,7 +169,7 @@ public class CompoundKeyValidatorTest
         exception
                 .expectMessage("Partition key should not be null for start clustering key : [null, a]");
 
-        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+        validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class CompoundKeyValidatorTest
         exception
                 .expectMessage("Partition key should not be null for end clustering key : [null, b]");
 
-        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+        validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
     }
 
     @Test
@@ -196,7 +196,7 @@ public class CompoundKeyValidatorTest
         exception
                 .expectMessage("Partition key should be equal for start and end clustering keys : [[11, a],[12, b]]");
 
-        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+        validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
     }
 
     @Test
@@ -217,7 +217,7 @@ public class CompoundKeyValidatorTest
         })
                 .when(validator).validateComponentsForSliceQuery(start, end, ASCENDING);
 
-        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+        validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
 
         assertThat(witness).containsOnly("witness");
     }

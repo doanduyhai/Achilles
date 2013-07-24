@@ -39,19 +39,19 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     private ReflectionInvoker invoker = new ReflectionInvoker();
     private ThriftQueryExecutorImpl executorImpl = new ThriftQueryExecutorImpl();
 
-    public ThriftSliceQueryExecutor(ConfigurationContext configContext, ThriftDaoContext daoContext,
-            AchillesConsistencyLevelPolicy consistencyPolicy)
+    public ThriftSliceQueryExecutor(ConfigurationContext configContext, ThriftDaoContext daoContext)
     {
         super(new ThriftEntityProxifier());
         this.configContext = configContext;
         this.daoContext = daoContext;
-        this.consistencyPolicy = consistencyPolicy;
+        this.consistencyPolicy = configContext.getConsistencyPolicy();
+        defaultReadLevel = consistencyPolicy.getDefaultGlobalReadConsistencyLevel();
     }
 
     @Override
     public <T> List<T> get(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(sliceQuery);
+        ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
         EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
@@ -83,7 +83,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     @Override
     public <T> Iterator<T> iterator(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(sliceQuery);
+        ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
         EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
         Class<T> entityClass = sliceQuery.getEntityClass();
@@ -115,7 +115,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     @Override
     public <T> void remove(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(sliceQuery);
+        ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
         EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
@@ -140,29 +140,30 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
         }
     }
 
-    private <T> ThriftPersistenceContext buildContext(final SliceQuery<T> query)
+    @Override
+    protected <T> ThriftPersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery)
     {
-        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
-                consistencyPolicy, Optional.fromNullable(query.getConsistencyLevel()),
-                NO_CONSISTENCY_LEVEL, NO_TTL);
+        ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
+                .getConsistencyLevel();
 
-        Object partitionKey = query.getPartitionKey();
-        EntityMeta meta = query.getMeta();
+        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
+                consistencyPolicy, Optional.fromNullable(cl), Optional.fromNullable(cl), NO_TTL);
+
+        Object partitionKey = sliceQuery.getPartitionKey();
+        EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
 
         Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
         return new ThriftPersistenceContext(meta, configContext,
-                daoContext, flushContext, query.getEntityClass(), embeddedId, new HashSet<String>());
+                daoContext, flushContext, sliceQuery.getEntityClass(), embeddedId, new HashSet<String>());
     }
 
     @Override
     protected <T> ThriftPersistenceContext buildNewContext(final SliceQuery<T> sliceQuery, T clusteredEntity)
     {
         EntityMeta meta = sliceQuery.getMeta();
-        ConsistencyLevel consistencyLevel = sliceQuery.getConsistencyLevel();
         ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
-                consistencyPolicy, Optional.fromNullable(consistencyLevel),
-                NO_CONSISTENCY_LEVEL, NO_TTL);
+                consistencyPolicy, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
 
         return new ThriftPersistenceContext(meta, configContext, daoContext, flushContext, clusteredEntity,
                 new HashSet<String>());

@@ -1,4 +1,4 @@
-package info.archinnov.achilles.statement;
+package info.archinnov.achilles.statement.prepared;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;

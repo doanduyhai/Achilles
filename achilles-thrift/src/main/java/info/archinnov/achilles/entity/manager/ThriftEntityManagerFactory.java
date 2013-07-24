@@ -65,7 +65,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
     public ThriftEntityManager createEntityManager() {
         log.info("Create new Thrift-based Entity Manager ");
 
-        return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap), //
+        return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
                 thriftDaoContext, configContext);
     }
 

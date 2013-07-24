@@ -55,21 +55,30 @@ public class PropertyMeta<K, V>
     {
         log.trace("Getting value from string {} for property {} of entity class {}", stringValue,
                 propertyName, entityClassName);
-        try
+        if (stringValue != null)
         {
-            if (valueClass == String.class)
+            try
             {
-                log.trace("Casting value straight to string");
-                return valueClass.cast(stringValue);
-            }
-            else
+                if (valueClass == String.class)
+                {
+                    log.trace("Casting value straight to string");
+                    return valueClass.cast(stringValue);
+                }
+                else if (stringValue instanceof String)
+                {
+                    log.trace("Deserializing value from string");
+                    return this.objectMapper.readValue((String) stringValue, this.valueClass);
+                }
+                else
+                {
+                    throw new AchillesException("Error while trying to deserialize the JSON '" + stringValue);
+                }
+            } catch (Exception e)
             {
-                log.trace("Deserializing value from string");
-                return this.objectMapper.readValue((String) stringValue, this.valueClass);
+                throw new AchillesException("Error while trying to deserialize the JSON '" + stringValue);
             }
-        } catch (Exception e)
-        {
-            logger.error("Error while trying to deserialize the JSON : " + (String) stringValue, e);
+        }
+        else {
             return null;
         }
     }

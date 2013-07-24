@@ -4,8 +4,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +73,7 @@ public class CQLDaoContextBuilderTest
         when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
         when(queryGenerator.prepareSimpleCounterQueryMap(session)).thenReturn(counterQueryMap);
 
-        CQLDaoContext actual = builder.build(entityMetaMap);
+        CQLDaoContext actual = builder.build(entityMetaMap, true);
 
         assertThat(
                 (Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs"))

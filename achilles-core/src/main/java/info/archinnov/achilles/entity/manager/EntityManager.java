@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
@@ -28,7 +29,6 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
     private static final Logger log = LoggerFactory.getLogger(EntityManager.class);
 
-    protected final EntityManagerFactory entityManagerFactory;
     protected Map<Class<?>, EntityMeta> entityMetaMap;
     protected AchillesConsistencyLevelPolicy consistencyPolicy;
     protected ConfigurationContext configContext;
@@ -37,9 +37,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     protected EntityValidator<CONTEXT> entityValidator;
     protected EntityInitializer initializer = new EntityInitializer();
 
-    EntityManager(EntityManagerFactory entityManagerFactory, Map<Class<?>, EntityMeta> entityMetaMap, //
+    EntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
             ConfigurationContext configContext) {
-        this.entityManagerFactory = entityManagerFactory;
         this.entityMetaMap = entityMetaMap;
         this.configContext = configContext;
         this.consistencyPolicy = configContext.getConsistencyPolicy();
@@ -545,6 +544,16 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
         return proxifier.unwrap(proxies);
     }
+
+    /**
+     * Create a new slice query builder for entity of type T<br/>
+     * <br/>
+     * 
+     * @param entityClass
+     *            Entity class
+     * @return SliceQueryBuilder<T>
+     */
+    public abstract <T> SliceQueryBuilder<CONTEXT, T> sliceQuery(Class<T> entityClass);
 
     protected abstract CONTEXT initPersistenceContext(Object entity, Optional<ConsistencyLevel> readLevelO,
             Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttl);

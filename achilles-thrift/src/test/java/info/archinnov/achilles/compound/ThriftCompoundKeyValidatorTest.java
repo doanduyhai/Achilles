@@ -184,7 +184,7 @@ public class ThriftCompoundKeyValidatorTest {
     {
         List<Object> start = Arrays.<Object> asList(11L, "a");
         List<Object> end = Arrays.<Object> asList(11L, "b");
-        validator.validateCompoundKeysForClusteredQuery(pm, start, end, ASCENDING);
+        validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
     }
 
     //////////////////////////////////////

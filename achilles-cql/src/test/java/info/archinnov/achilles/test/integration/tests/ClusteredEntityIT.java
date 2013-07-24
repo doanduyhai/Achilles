@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
@@ -15,12 +14,7 @@ import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.Test;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update.Where;
 
 /**
  * ClusteredEntityIT
@@ -104,16 +98,6 @@ public class ClusteredEntityIT
     @Test
     public void should_refresh() throws Exception
     {
-        Where update = QueryBuilder
-                .update("clusteredtweet")
-                .with(set("content", bindMarker()))
-                .and(set("original_author_id", bindMarker()))
-                .and(set("is_a_retweet", bindMarker()))
-                .where(eq("user_id", bindMarker()))
-                .and(eq("tweet_id", bindMarker()))
-                .and(eq("creation_date", bindMarker()));
-
-        PreparedStatement updatePS = session.prepare(update.toString());
 
         Long userId = RandomUtils.nextLong();
         Long originalAuthorId = RandomUtils.nextLong();
@@ -126,11 +110,9 @@ public class ClusteredEntityIT
 
         tweet = em.merge(tweet);
 
-        BoundStatement boundStatement = updatePS.bind("New tweet", originalAuthorId, new Boolean(
-                true), userId, tweetId,
-                creationDate);
-
-        session.execute(boundStatement);
+        session.execute("update clusteredtweet set content='New tweet',original_author_id=" + originalAuthorId
+                + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId + " and creation_date="
+                + creationDate.getTime());
 
         Thread.sleep(100);
 
@@ -200,14 +182,6 @@ public class ClusteredEntityIT
         String label = "a random file";
         String newLabel = "a pdf file";
 
-        Query update = QueryBuilder
-                .update("ClusteredMessage")
-                .with(set("label", bindMarker()))
-                .where(eq("id", bindMarker()))
-                .and(eq("type", bindMarker()));
-
-        PreparedStatement updatePS = session.prepare(update.toString());
-
         long id = RandomUtils.nextLong();
         ClusteredMessageId messageId = new ClusteredMessageId(id, Type.FILE);
 
@@ -215,9 +189,7 @@ public class ClusteredEntityIT
 
         message = em.merge(message);
 
-        Query query = updatePS.bind(newLabel, id, "FILE");
-
-        session.execute(query);
+        session.execute("update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'");
 
         Thread.sleep(100);
 
@@ -230,5 +202,6 @@ public class ClusteredEntityIT
     public void tearDown()
     {
         CQLCassandraDaoTest.truncateTable("ClusteredTweet");
+        CQLCassandraDaoTest.truncateTable("ClusteredMessage");
     }
 }

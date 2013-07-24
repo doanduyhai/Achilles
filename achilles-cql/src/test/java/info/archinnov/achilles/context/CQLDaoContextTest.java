@@ -7,9 +7,9 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.statement.CQLPreparedStatementBinder;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -32,6 +32,8 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -263,6 +265,7 @@ public class CQLDaoContextTest
     {
         ResultSet resultSet = mock(ResultSet.class);
         when(session.execute(bs)).thenReturn(resultSet);
+        when(bs.preparedStatement()).thenReturn(ps);
 
         ResultSet actual = daoContext.execute(bs);
 
@@ -342,5 +345,25 @@ public class CQLDaoContextTest
         Row actual = daoContext.bindForSimpleCounterSelect(context, entityMeta, pm, 11L);
 
         assertThat(actual).isSameAs(row);
+    }
+
+    @Test
+    public void should_prepare_statement() throws Exception
+    {
+        Statement statement = new SimpleStatement("query");
+        when(session.prepare("query")).thenReturn(ps);
+
+        assertThat(daoContext.prepare(statement)).isSameAs(ps);
+    }
+
+    @Test
+    public void should_bind_and_execute_prepared_statement() throws Exception
+    {
+        ResultSet rs = mock(ResultSet.class);
+        when(ps.bind(11L, "a")).thenReturn(bs);
+        when(bs.preparedStatement()).thenReturn(ps);
+        when(session.execute(bs)).thenReturn(rs);
+
+        assertThat(daoContext.bindAndExecute(ps, 11L, "a")).isSameAs(rs);
     }
 }

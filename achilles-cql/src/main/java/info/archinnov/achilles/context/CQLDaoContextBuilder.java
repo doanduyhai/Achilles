@@ -2,8 +2,8 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
 import java.util.HashMap;
 import java.util.Map;
 import com.datastax.driver.core.PreparedStatement;
@@ -62,7 +62,7 @@ public class CQLDaoContextBuilder
         this.session = session;
     }
 
-    public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap)
+    public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter)
     {
         Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
                 entityMetaMap, insertPSTransformer));
@@ -78,8 +78,15 @@ public class CQLDaoContextBuilder
                 .maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE)
                 .build();
 
-        Map<CQLQueryType, PreparedStatement> counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
-
+        Map<CQLQueryType, PreparedStatement> counterQueryMap;
+        if (hasSimpleCounter)
+        {
+            counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
+        }
+        else
+        {
+            counterQueryMap = new HashMap<CQLQueryType, PreparedStatement>();
+        }
         return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap,
                 counterQueryMap, session);
     }

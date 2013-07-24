@@ -142,7 +142,6 @@ public class ThriftEntityManagerTest
     @Test
     public void should_create_slice_query_builder() throws Exception
     {
-
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 
         SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = em.sliceQuery(CompleteBean.class);

@@ -345,7 +345,7 @@ public class ThriftCompositeFactoryTest
         assertThat(composites[0]).isSameAs(from);
         assertThat(composites[1]).isSameAs(to);
 
-        verify(compoundKeyValidator).validateCompoundKeysForClusteredQuery(pm, clusteringFrom,
+        verify(compoundKeyValidator).validateComponentsForSliceQuery(pm, clusteringFrom,
                 clusteringTo, DESCENDING);
 
     }

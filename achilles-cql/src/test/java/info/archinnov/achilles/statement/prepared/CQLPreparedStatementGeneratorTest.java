@@ -1,4 +1,4 @@
-package info.archinnov.achilles.statement;
+package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
@@ -9,6 +9,7 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;

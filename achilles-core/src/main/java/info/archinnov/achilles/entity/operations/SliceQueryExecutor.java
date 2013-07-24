@@ -23,6 +23,7 @@ public abstract class SliceQueryExecutor<CONTEXT extends PersistenceContext> {
     public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
     protected EntityProxifier<CONTEXT> proxifier;
+    protected ConsistencyLevel defaultReadLevel;
 
     protected SliceQueryExecutor(EntityProxifier<CONTEXT> proxifier) {
         this.proxifier = proxifier;
@@ -33,6 +34,8 @@ public abstract class SliceQueryExecutor<CONTEXT extends PersistenceContext> {
     public abstract <T> Iterator<T> iterator(SliceQuery<T> sliceQuery);
 
     public abstract <T> void remove(SliceQuery<T> sliceQuery);
+
+    protected abstract <T> CONTEXT buildContextForQuery(SliceQuery<T> sliceQuery);
 
     protected abstract <T> CONTEXT buildNewContext(SliceQuery<T> sliceQuery, T clusteredEntity);
 

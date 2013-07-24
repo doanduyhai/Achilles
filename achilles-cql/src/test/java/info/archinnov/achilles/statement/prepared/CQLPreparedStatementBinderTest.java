@@ -1,4 +1,4 @@
-package info.archinnov.achilles.statement;
+package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -9,6 +9,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;

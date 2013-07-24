@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
@@ -184,6 +185,18 @@ public class CQLPersistenceContextTest
         context.bindForRemoval("table", EACH_QUORUM);
 
         verify(daoContext).bindForRemoval(context, "table", EACH_QUORUM);
+    }
+
+    @Test
+    public void should_bind_and_execute() throws Exception
+    {
+        PreparedStatement ps = mock(PreparedStatement.class);
+        ResultSet rs = mock(ResultSet.class);
+
+        when(daoContext.bindAndExecute(ps, 11L, "a")).thenReturn(rs);
+        ResultSet actual = context.bindAndExecute(ps, 11L, "a");
+
+        assertThat(actual).isSameAs(rs);
     }
 
     @Test

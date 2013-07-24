@@ -5,18 +5,21 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.statement.CQLPreparedStatementBinder;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.google.common.cache.Cache;
 
 /**
@@ -27,6 +30,10 @@ import com.google.common.cache.Cache;
  */
 public class CQLDaoContext
 {
+    private static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+
+    private static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+
     private Map<Class<?>, PreparedStatement> insertPSs;
     private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
     private Map<Class<?>, PreparedStatement> selectEagerPSs;
@@ -176,6 +183,56 @@ public class CQLDaoContext
 
     public ResultSet execute(Query query)
     {
+        logDMLStatement(query);
         return session.execute(query);
+    }
+
+    public PreparedStatement prepare(Statement statement)
+    {
+        return session.prepare(statement.getQueryString());
+    }
+
+    public ResultSet bindAndExecute(PreparedStatement ps, Object... params)
+    {
+        BoundStatement bs = ps.bind(params);
+
+        logDMLStatement(bs);
+        return session.execute(bs);
+
+    }
+
+    private void logDMLStatement(Query query)
+    {
+        if (dmlLogger.isDebugEnabled())
+        {
+            String queryType;
+            String queryString;
+            String consistencyLevel;
+            if (BoundStatement.class.isInstance(query))
+            {
+                PreparedStatement ps = BoundStatement.class.cast(query).preparedStatement();
+                queryType = "Prepared statement";
+                queryString = ps.getQueryString();
+                consistencyLevel = ps.getConsistencyLevel() == null ? "DEFAULT" : ps.getConsistencyLevel().name();
+            }
+            else if (Statement.class.isInstance(query))
+            {
+                Statement statement = Statement.class.cast(query);
+                queryType = "Simple query";
+                queryString = statement.getQueryString();
+                consistencyLevel = statement.getConsistencyLevel() == null ? "DEFAULT" : statement
+                        .getConsistencyLevel().name();
+            }
+            else
+            {
+                queryType = "Unknown query";
+                queryString = "???";
+                consistencyLevel = "UNKNWON";
+            }
+
+            dmlLogger
+                    .debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+
+        }
     }
 }

@@ -1,4 +1,4 @@
-package info.archinnov.achilles.statement;
+package info.archinnov.achilles.statement.prepared;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;

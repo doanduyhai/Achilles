@@ -37,7 +37,6 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -53,17 +52,16 @@ import com.google.common.collect.ImmutableMap;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftSliceQueryExecutorTest
 {
-    @InjectMocks
     private ThriftSliceQueryExecutor executor;
+
+    @Mock
+    private ConfigurationContext configContext;
 
     @Mock
     private ThriftDaoContext daoContext;
 
     @Mock
     private AchillesConsistencyLevelPolicy consistencyPolicy;
-
-    @Mock
-    private ConfigurationContext configContext;
 
     @Mock
     private ClusteredEntityFactory factory;
@@ -100,14 +98,18 @@ public class ThriftSliceQueryExecutorTest
     @Before
     public void setUp() throws Exception
     {
-        entity = new BeanWithClusteredId();
-        entity.setId(compoundKey);
+        when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+        when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+
+        executor = new ThriftSliceQueryExecutor(configContext, daoContext);
 
         Whitebox.setInternalState(executor, ClusteredEntityFactory.class, factory);
         Whitebox.setInternalState(executor, ThriftEntityProxifier.class, proxifier);
         Whitebox.setInternalState(executor, ReflectionInvoker.class, invoker);
         Whitebox.setInternalState(executor, ThriftQueryExecutorImpl.class, executorImpl);
 
+        entity = new BeanWithClusteredId();
+        entity.setId(compoundKey);
         Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
         idMeta = PropertyMetaTestBuilder
@@ -129,6 +131,7 @@ public class ThriftSliceQueryExecutorTest
         when(pm.getGetter()).thenReturn(valueGetter);
         when(invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey)).thenReturn(compoundKey);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+
     }
 
     @Test

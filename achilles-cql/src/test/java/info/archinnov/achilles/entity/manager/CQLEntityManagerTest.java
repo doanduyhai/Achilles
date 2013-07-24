@@ -2,6 +2,7 @@ package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -18,7 +19,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -34,8 +34,10 @@ import com.google.common.base.Optional;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEntityManagerTest
 {
-    @InjectMocks
     private CQLEntityManager manager;
+
+    @Mock
+    private CQLEntityManagerFactory factory;
 
     @Mock
     private CQLEntityProxifier proxifier;
@@ -45,6 +47,9 @@ public class CQLEntityManagerTest
 
     @Mock
     private ConfigurationContext configContext;
+
+    @Mock
+    private AchillesConsistencyLevelPolicy policy;
 
     private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
@@ -72,6 +77,10 @@ public class CQLEntityManagerTest
         meta.setTableName("table");
         meta.setEntityClass(CompleteBean.class);
 
+        when(configContext.getConsistencyPolicy()).thenReturn(policy);
+        when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+
+        manager = new CQLEntityManager(entityMetaMap, configContext, daoContext);
         Whitebox.setInternalState(manager, CQLEntityProxifier.class, proxifier);
 
         manager.setEntityMetaMap(entityMetaMap);

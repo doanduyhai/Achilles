@@ -59,7 +59,7 @@ public class ThriftBatchingEntityManagerTest
     public void setUp()
     {
         when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-        em = new ThriftBatchingEntityManager(emf, null, thriftDaoContext, configContext);
+        em = new ThriftBatchingEntityManager(null, thriftDaoContext, configContext);
         Whitebox.setInternalState(em, ThriftBatchingFlushContext.class, flushContext);
     }
 

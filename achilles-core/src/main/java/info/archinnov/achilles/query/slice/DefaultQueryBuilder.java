@@ -16,7 +16,7 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public abstract class DefaultQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootQueryBuilder<CONTEXT, T> {
+public abstract class DefaultQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
     public DefaultQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator,

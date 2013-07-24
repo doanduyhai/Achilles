@@ -14,7 +14,7 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
+public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, T>
 {
 
     protected SliceQueryExecutor<CONTEXT> sliceQueryExecutor;
@@ -34,7 +34,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
     private boolean limitHasBeenSet = false;
     private boolean orderingHasBeenSet = false;
 
-    RootQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
+    RootSliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator,
             Class<T> entityClass, EntityMeta meta)
     {
@@ -45,28 +45,28 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         this.idMeta = meta.getIdMeta();
     }
 
-    protected RootQueryBuilder<CONTEXT, T> partitionKey(Object partitionKey)
+    protected RootSliceQueryBuilder<CONTEXT, T> partitionKey(Object partitionKey)
     {
         compoundKeyValidator.validatePartitionKey(idMeta, partitionKey);
         this.partitionKey = partitionKey;
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> fromClusteringsInternal(Object... clusteringComponents)
+    protected RootSliceQueryBuilder<CONTEXT, T> fromClusteringsInternal(Object... clusteringComponents)
     {
         compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
         fromClusterings = clusteringComponents;
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> toClusteringsInternal(Object... clusteringComponents)
+    protected RootSliceQueryBuilder<CONTEXT, T> toClusteringsInternal(Object... clusteringComponents)
     {
         compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
         toClusterings = clusteringComponents;
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> ordering(OrderingMode ordering)
+    protected RootSliceQueryBuilder<CONTEXT, T> ordering(OrderingMode ordering)
     {
         Validator.validateNotNull(ordering,
                 "Ordering mode for slice query for entity '" + meta.getClassName()
@@ -76,7 +76,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> bounding(BoundingMode boundingMode)
+    protected RootSliceQueryBuilder<CONTEXT, T> bounding(BoundingMode boundingMode)
     {
         Validator.validateNotNull(boundingMode,
                 "Bounding mode for slice query for entity '" + meta.getClassName()
@@ -86,7 +86,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
+    protected RootSliceQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
     {
         Validator.validateNotNull(consistencyLevel,
                 "ConsistencyLevel for slice query for entity '" + meta.getClassName()
@@ -96,7 +96,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         return this;
     }
 
-    protected RootQueryBuilder<CONTEXT, T> limit(int limit)
+    protected RootSliceQueryBuilder<CONTEXT, T> limit(int limit)
     {
         this.limit = limit;
         limitHasBeenSet = true;
@@ -112,6 +112,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
     protected List<T> get(int n)
     {
         limit = n;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         return sliceQueryExecutor.get(clusteredQuery);
     }
@@ -124,6 +125,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getFirst()");
         limit = 1;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         List<T> result = sliceQueryExecutor.get(clusteredQuery);
         if (result.isEmpty())
@@ -140,6 +142,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getFirst(int n)");
         limit = n;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         return sliceQueryExecutor.get(clusteredQuery);
     }
@@ -154,6 +157,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getLast()");
         limit = 1;
+        limitHasBeenSet = true;
         ordering = OrderingMode.DESCENDING;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         List<T> result = sliceQueryExecutor.get(clusteredQuery);
@@ -173,6 +177,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling getLast(int n)");
         limit = n;
+        limitHasBeenSet = true;
         ordering = OrderingMode.DESCENDING;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         return sliceQueryExecutor.get(clusteredQuery);
@@ -220,6 +225,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling remove(int n)");
         limit = n;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         sliceQueryExecutor.remove(clusteredQuery);
     }
@@ -232,6 +238,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeFirst()");
         limit = 1;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         sliceQueryExecutor.remove(clusteredQuery);
     }
@@ -244,6 +251,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeFirst(int n)");
         limit = n;
+        limitHasBeenSet = true;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         sliceQueryExecutor.remove(clusteredQuery);
     }
@@ -258,6 +266,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeLast()");
         limit = 1;
+        limitHasBeenSet = true;
         ordering = OrderingMode.DESCENDING;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         sliceQueryExecutor.remove(clusteredQuery);
@@ -273,6 +282,7 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
         Validator.validateFalse(limitHasBeenSet,
                 "You should not set 'limit' parameter when calling removeLast(int n)");
         limit = n;
+        limitHasBeenSet = true;
         ordering = OrderingMode.DESCENDING;
         SliceQuery<T> clusteredQuery = buildClusterQuery();
         sliceQueryExecutor.remove(clusteredQuery);
@@ -281,7 +291,6 @@ public abstract class RootQueryBuilder<CONTEXT extends PersistenceContext, T>
     protected SliceQuery<T> buildClusterQuery()
     {
         return new SliceQuery<T>(entityClass, meta, partitionKey, fromClusterings,
-                toClusterings, ordering,
-                bounding, consistencyLevel, limit, batchSize);
+                toClusterings, ordering, bounding, consistencyLevel, limit, batchSize, limitHasBeenSet);
     }
 }

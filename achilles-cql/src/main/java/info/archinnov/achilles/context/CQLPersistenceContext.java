@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
@@ -118,6 +119,11 @@ public class CQLPersistenceContext extends PersistenceContext
             Object primaryKey)
     {
         daoContext.bindForSimpleCounterDelete(this, meta, counterMeta, primaryKey);
+    }
+
+    public ResultSet bindAndExecute(PreparedStatement ps, Object... params)
+    {
+        return daoContext.bindAndExecute(ps, params);
     }
 
     public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)

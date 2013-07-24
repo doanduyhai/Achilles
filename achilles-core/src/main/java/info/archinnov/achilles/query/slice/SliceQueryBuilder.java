@@ -19,7 +19,6 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T>
     private SliceQueryExecutor<CONTEXT> sliceQueryExecutor;
     private Class<T> entityClass;
     private EntityMeta meta;
-
     private CompoundKeyValidator compoundKeyValidator;
 
     public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
