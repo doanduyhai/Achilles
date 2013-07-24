@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -60,7 +60,7 @@ public class ThriftBatchingEntityManagerTest
     {
         when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
         em = new ThriftBatchingEntityManager(emf, null, thriftDaoContext, configContext);
-        Whitebox.setInternalState(em, "flushContext", flushContext);
+        Whitebox.setInternalState(em, ThriftBatchingFlushContext.class, flushContext);
     }
 
     @Test

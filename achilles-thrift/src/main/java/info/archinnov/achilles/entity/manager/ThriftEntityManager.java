@@ -8,7 +8,7 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.entity.operations.ThriftQueryExecutor;
+import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.HashSet;
@@ -36,6 +36,8 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
     protected ThriftDaoContext thriftDaoContext;
+    private ThriftSliceQueryExecutor queryExecutor;
+    private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
     ThriftEntityManager(EntityManagerFactory entityManagerFactory,
             Map<Class<?>, EntityMeta> entityMetaMap, //
@@ -46,6 +48,7 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
         this.thriftDaoContext = thriftDaoContext;
         super.proxifier = new ThriftEntityProxifier();
         super.entityValidator = new EntityValidator<ThriftPersistenceContext>(super.proxifier);
+        this.queryExecutor = new ThriftSliceQueryExecutor(configContext, thriftDaoContext, consistencyPolicy);
     }
 
     /**
@@ -71,13 +74,11 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
      *            Entity class
      * @return SliceQueryBuilder<T>
      */
-    public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass)
+    public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(Class<T> entityClass)
     {
         EntityMeta meta = entityMetaMap.get(entityClass);
-        ThriftQueryExecutor thriftQueryExecutor = new ThriftQueryExecutor(configContext,
-                thriftDaoContext, consistencyPolicy);
-        ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
-        return new SliceQueryBuilder<T>(thriftQueryExecutor, compoundKeyValidator, entityClass, meta);
+        return new SliceQueryBuilder<ThriftPersistenceContext, T>(queryExecutor, compoundKeyValidator, entityClass,
+                meta);
     }
 
     @Override
@@ -118,8 +119,16 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
                 new HashSet<String>());
     }
 
-    protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext)
-    {
+    protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext) {
         this.thriftDaoContext = thriftDaoContext;
     }
+
+    public void setQueryExecutor(ThriftSliceQueryExecutor queryExecutor) {
+        this.queryExecutor = queryExecutor;
+    }
+
+    public void setCompoundKeyValidator(ThriftCompoundKeyValidator compoundKeyValidator) {
+        this.compoundKeyValidator = compoundKeyValidator;
+    }
+
 }

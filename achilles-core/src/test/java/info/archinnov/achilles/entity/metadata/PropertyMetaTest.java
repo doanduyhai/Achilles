@@ -509,7 +509,7 @@ public class PropertyMetaTest
         multiKeyProperties.setComponentNames(Arrays.asList("id", "age", "name"));
         meta.setCompoundKeyProperties(multiKeyProperties);
 
-        assertThat(meta.getCQLOrderingComponent()).isEqualTo("age");
+        assertThat(meta.getOrderingComponent()).isEqualTo("age");
     }
 
     @Test
@@ -517,7 +517,7 @@ public class PropertyMetaTest
     {
         PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
 
-        assertThat(meta.getCQLOrderingComponent()).isNull();
+        assertThat(meta.getOrderingComponent()).isNull();
 
     }
 

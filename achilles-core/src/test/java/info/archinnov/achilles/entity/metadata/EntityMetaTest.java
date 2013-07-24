@@ -52,15 +52,6 @@ public class EntityMetaTest
     }
 
     @Test
-    public void should_get_cql_table_name() throws Exception
-    {
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("TaBle");
-
-        assertThat(meta.getCQLTableName()).isEqualTo("table");
-    }
-
-    @Test
     public void should_get_all_metas() throws Exception {
 
         PropertyMeta<?, ?> pm1 = new PropertyMeta<Void, String>();

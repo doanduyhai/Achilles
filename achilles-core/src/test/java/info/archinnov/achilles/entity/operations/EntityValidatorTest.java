@@ -56,7 +56,7 @@ public class EntityValidatorTest {
 
     @Before
     public void setUp() {
-        Whitebox.setInternalState(achillesEntityValidator, "invoker", invoker);
+        Whitebox.setInternalState(achillesEntityValidator, ReflectionInvoker.class, invoker);
         when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
     }
 

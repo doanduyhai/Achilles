@@ -76,8 +76,8 @@ public class CQLTableCreatorTest {
         when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
 
         creator = new CQLTableCreator(cluster, session, keyspaceName);
-        Whitebox.setInternalState(creator, "tableMetas", tableMetas);
-        Whitebox.setInternalState(creator, "validator", validator);
+        Whitebox.setInternalState(creator, Map.class, tableMetas);
+        Whitebox.setInternalState(creator, CQLTableValidator.class, validator);
     }
 
     @Test

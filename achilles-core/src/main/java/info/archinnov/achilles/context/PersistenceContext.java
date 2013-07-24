@@ -127,8 +127,6 @@ public abstract class PersistenceContext
 
     public abstract void refresh();
 
-    public abstract PersistenceContext duplicateWithPrimaryKey(Object embeddedId);
-
     public abstract PersistenceContext duplicate(Object entity);
 
     public abstract PersistenceContext createContextForJoin(EntityMeta joinMeta, Object joinEntity);

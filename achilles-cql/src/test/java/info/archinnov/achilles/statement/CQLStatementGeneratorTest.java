@@ -1,16 +1,28 @@
 package info.archinnov.achilles.statement;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.type.BoundingMode;
-import java.util.ArrayList;
+import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -21,33 +33,25 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author DuyHai DOAN
  * 
  */
+
+@RunWith(MockitoJUnitRunner.class)
 public class CQLStatementGeneratorTest {
 
-    private CQLStatementGenerator generator = new CQLStatementGenerator();
+    @InjectMocks
+    private CQLStatementGenerator generator;
+
+    @Mock
+    private SliceQueryStatementGenerator sliceQueryGenerator;
+
+    @Mock
+    private CQLSliceQuery<ClusteredEntity> sliceQuery;
+
+    @Captor
+    private ArgumentCaptor<Select> selectCaptor;
 
     @Test
     public void should_create_select_statement_for_entity_simple_id() throws Exception {
-        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
-
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .type(PropertyType.SIMPLE).build();
-
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
-                .type(PropertyType.SIMPLE).build();
-
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .type(PropertyType.SIMPLE).build();
-
-        PropertyMeta<?, ?> labelMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("label")
-                .type(PropertyType.SIMPLE).build();
-
-        eagerMetas.add(ageMeta);
-        eagerMetas.add(nameMeta);
-        eagerMetas.add(labelMeta);
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setEagerMetas(eagerMetas);
-        meta.setIdMeta(idMeta);
+        EntityMeta meta = prepareEntityMeta("id");
 
         Select select = generator.generateSelectEntity(meta);
 
@@ -56,27 +60,8 @@ public class CQLStatementGeneratorTest {
 
     @Test
     public void should_create_select_statement_for_entity_compound_id() throws Exception {
-        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
-
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
-                .type(PropertyType.SIMPLE).build();
-
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .type(PropertyType.SIMPLE).build();
-
-        PropertyMeta<?, ?> labelMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("label")
-                .type(PropertyType.SIMPLE).build();
-
-        eagerMetas.add(ageMeta);
-        eagerMetas.add(nameMeta);
-        eagerMetas.add(labelMeta);
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setEagerMetas(eagerMetas);
-        meta.setIdMeta(idMeta);
+        EntityMeta meta = prepareEntityMeta("id", "a", "b");
 
         Select select = generator.generateSelectEntity(meta);
 
@@ -84,99 +69,75 @@ public class CQLStatementGeneratorTest {
     }
 
     @Test
-    public void should_generate_where_clause_for_slice_query() throws Exception {
+    public void should_generate_slice_query() throws Exception
+    {
+        EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
+        when(sliceQuery.getMeta()).thenReturn(meta);
+        when(sliceQuery.getLimit()).thenReturn(99);
+        when(sliceQuery.getOrdering()).thenReturn(QueryBuilder.desc("comp1"));
+        when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+        when(sliceQueryGenerator.generateWhereClauseForSliceQuery(eq(sliceQuery), any(Select.class)))
+                .thenAnswer(new Answer<Statement>() {
 
-        List<String> componentNames = Arrays.asList("a", "b", "c");
-        UUID uuid1 = new UUID(10, 11);
+                    @Override
+                    public Statement answer(InvocationOnMock invocation) throws Throwable {
+                        return buildFakeWhere((Select) invocation.getArguments()[1]);
+                    }
+                });
 
-        // /////////////////////////// Same number of components
-        List<Comparable<?>> startValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
-        List<Comparable<?>> endValues = Arrays.<Comparable<?>> asList(uuid1, "author", 2);
+        Query query = generator.generateSliceQuery(sliceQuery);
 
-        Statement statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>=1 AND c<=2;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.EXCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1 AND c<2;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_START_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>=1 AND c<2;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_END_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1 AND c<=2;");
-
-        // ///////////////////// More components for start compound key
-        startValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
-        endValues = Arrays.<Comparable<?>> asList(uuid1, "author", null);
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>=1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.EXCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_START_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>=1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_END_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c>1;");
-
-        // ///////////////////// More components for end compound key
-        startValues = Arrays.<Comparable<?>> asList(uuid1, "author", null);
-        endValues = Arrays.<Comparable<?>> asList(uuid1, "author", 1);
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c<=1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.EXCLUSIVE_BOUNDS, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c<1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_START_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c<1;");
-
-        statement = generator.generateWhereClauseForSliceQuery(componentNames, startValues, endValues,
-                BoundingMode.INCLUSIVE_END_BOUND_ONLY, buildFakeSelect());
-
-        assertThat(statement.getQueryString()).isEqualTo(
-                "SELECT test FROM table WHERE a=" + uuid1 + " AND b='author' AND c<=1;");
-
+        assertThat(query.toString()).isEqualTo(
+                "SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 99;");
     }
 
-    private Select buildFakeSelect() {
-        Select select = QueryBuilder.select("test").from("table");
-        return select;
+    private EntityMeta prepareEntityMeta(String... componentNames) throws Exception
+    {
+        PropertyMeta<?, ?> idMeta;
+        if (componentNames.length > 1)
+        {
+            idMeta = PropertyMetaTestBuilder
+                    .completeBean(Void.class, CompoundKey.class)
+                    .field("id")
+                    .compNames(componentNames)
+                    .type(PropertyType.EMBEDDED_ID)
+                    .build();
+        }
+        else
+        {
+            idMeta = PropertyMetaTestBuilder
+                    .completeBean(Void.class, Long.class)
+                    .field(componentNames[0])
+                    .type(ID)
+                    .build();
+        }
+
+        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("age")
+                .type(SIMPLE).build();
+
+        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE).build();
+
+        PropertyMeta<?, ?> labelMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("label")
+                .type(SIMPLE)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setEagerMetas(Arrays.<PropertyMeta<?, ?>> asList(idMeta, ageMeta, nameMeta, labelMeta));
+        meta.setIdMeta(idMeta);
+
+        return meta;
+    }
+
+    private Statement buildFakeWhere(Select select)
+    {
+        return select.where().and(QueryBuilder.eq("fake", "fake"));
     }
 }

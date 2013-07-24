@@ -34,7 +34,7 @@ public class CompoundKeyPropertiesTest
         CompoundKeyProperties props = new CompoundKeyProperties();
         props.setComponentNames(Arrays.asList("id", "age", "label"));
 
-        assertThat(props.getCQLOrderingComponent()).isEqualTo("age");
+        assertThat(props.getOrderingComponent()).isEqualTo("age");
     }
 
     @Test
@@ -43,6 +43,6 @@ public class CompoundKeyPropertiesTest
         CompoundKeyProperties props = new CompoundKeyProperties();
         props.setComponentNames(Arrays.asList("id"));
 
-        assertThat(props.getCQLOrderingComponent()).isNull();
+        assertThat(props.getOrderingComponent()).isNull();
     }
 }

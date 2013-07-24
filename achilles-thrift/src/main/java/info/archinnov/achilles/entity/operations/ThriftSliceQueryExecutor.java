@@ -18,47 +18,41 @@ import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
-public class ThriftQueryExecutor implements QueryExecutor
+public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersistenceContext>
 {
-
-    private static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional
-            .<ConsistencyLevel> absent();
-    private static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
     private ThriftDaoContext daoContext;
     private AchillesConsistencyLevelPolicy consistencyPolicy;
     private ConfigurationContext configContext;
 
     private ClusteredEntityFactory factory = new ClusteredEntityFactory();
-    private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
     private ReflectionInvoker invoker = new ReflectionInvoker();
     private ThriftQueryExecutorImpl executorImpl = new ThriftQueryExecutorImpl();
 
-    public ThriftQueryExecutor(ConfigurationContext configContext, ThriftDaoContext daoContext,
+    public ThriftSliceQueryExecutor(ConfigurationContext configContext, ThriftDaoContext daoContext,
             AchillesConsistencyLevelPolicy consistencyPolicy)
     {
+        super(new ThriftEntityProxifier());
         this.configContext = configContext;
         this.daoContext = daoContext;
         this.consistencyPolicy = consistencyPolicy;
     }
 
     @Override
-    public <T> List<T> get(final SliceQuery<T> query)
+    public <T> List<T> get(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(query);
-        EntityMeta meta = query.getMeta();
+        ThriftPersistenceContext context = buildContext(sliceQuery);
+        EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
         List<T> clusteredEntities = null;
@@ -67,49 +61,48 @@ public class ThriftQueryExecutor implements QueryExecutor
             case JOIN_SIMPLE:
             case SIMPLE:
                 List<HColumn<Composite, Object>> hColumns = executorImpl
-                        .findColumns(query, context);
-                clusteredEntities = factory.buildClusteredEntities(query.getEntityClass(), context,
+                        .findColumns(sliceQuery, context);
+                clusteredEntities = factory.buildClusteredEntities(sliceQuery.getEntityClass(), context,
                         hColumns);
                 break;
             case COUNTER:
                 List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(
-                        query, context);
-                clusteredEntities = factory.buildCounterClusteredEntities(query.getEntityClass(),
+                        sliceQuery, context);
+                clusteredEntities = factory.buildCounterClusteredEntities(sliceQuery.getEntityClass(),
                         context, hCounterColumns);
                 break;
             default:
                 throw new AchillesException("Cannot get entities for clustered value of type '"
                         + pm.type().name() + "' and clustered entity class '"
-                        + query.getEntityClass().getCanonicalName() + "'");
+                        + sliceQuery.getEntityClass().getCanonicalName() + "'");
         }
 
-        return Lists.transform(clusteredEntities,
-                this.<T> getProxyTransformer(context, pm.getGetter()));
+        return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, Arrays.asList(pm.getGetter())));
     }
 
     @Override
-    public <T> Iterator<T> iterator(final SliceQuery<T> query)
+    public <T> Iterator<T> iterator(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(query);
-        EntityMeta meta = query.getMeta();
+        ThriftPersistenceContext context = buildContext(sliceQuery);
+        EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
-        Class<T> entityClass = query.getEntityClass();
+        Class<T> entityClass = sliceQuery.getEntityClass();
         switch (pm.type())
         {
             case SIMPLE:
                 ThriftSliceIterator<Object, Object> columnsIterator = executorImpl
-                        .getColumnsIterator(query, context);
+                        .getColumnsIterator(sliceQuery, context);
                 return new ThriftClusteredEntityIterator<T>(entityClass,
                         columnsIterator, context);
 
             case JOIN_SIMPLE:
                 ThriftJoinSliceIterator<Object, Object, Object> joinColumnsIterator = executorImpl
-                        .getJoinColumnsIterator(query, context);
+                        .getJoinColumnsIterator(sliceQuery, context);
                 return new ThriftClusteredEntityIterator<T>(entityClass,
                         joinColumnsIterator, context);
             case COUNTER:
                 ThriftCounterSliceIterator<Object> counterColumnsIterator = executorImpl
-                        .getCounterColumnsIterator(query, context);
+                        .getCounterColumnsIterator(sliceQuery, context);
                 return new ThriftCounterClusteredEntityIterator<T>(entityClass,
                         counterColumnsIterator, context);
             default:
@@ -120,10 +113,10 @@ public class ThriftQueryExecutor implements QueryExecutor
     }
 
     @Override
-    public <T> void remove(final SliceQuery<T> query)
+    public <T> void remove(final SliceQuery<T> sliceQuery)
     {
-        ThriftPersistenceContext context = buildContext(query);
-        EntityMeta meta = query.getMeta();
+        ThriftPersistenceContext context = buildContext(sliceQuery);
+        EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
         switch (pm.type())
@@ -131,19 +124,19 @@ public class ThriftQueryExecutor implements QueryExecutor
             case JOIN_SIMPLE:
             case SIMPLE:
                 List<HColumn<Composite, Object>> hColumns = executorImpl
-                        .findColumns(query, context);
-                executorImpl.removeColumns(hColumns, query.getConsistencyLevel(), context);
+                        .findColumns(sliceQuery, context);
+                executorImpl.removeColumns(hColumns, sliceQuery.getConsistencyLevel(), context);
                 break;
             case COUNTER:
                 List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(
-                        query, context);
-                executorImpl.removeCounterColumns(hCounterColumns, query.getConsistencyLevel(),
+                        sliceQuery, context);
+                executorImpl.removeCounterColumns(hCounterColumns, sliceQuery.getConsistencyLevel(),
                         context);
                 break;
             default:
                 throw new AchillesException("Cannot remove clustered value of type '"
                         + pm.type().name() + "' and clustered entity class '"
-                        + query.getEntityClass().getCanonicalName() + "'");
+                        + sliceQuery.getEntityClass().getCanonicalName() + "'");
         }
     }
 
@@ -162,18 +155,16 @@ public class ThriftQueryExecutor implements QueryExecutor
                 daoContext, flushContext, query.getEntityClass(), embeddedId, new HashSet<String>());
     }
 
-    private <T> Function<T, T> getProxyTransformer(final ThriftPersistenceContext context,
-            final Method getter)
+    @Override
+    protected <T> ThriftPersistenceContext buildNewContext(final SliceQuery<T> sliceQuery, T clusteredEntity)
     {
-        return new Function<T, T>()
-        {
-            @Override
-            public T apply(T clusteredEntity)
-            {
-                Object embeddedId = invoker.getPrimaryKey(clusteredEntity, context.getIdMeta());
-                ThriftPersistenceContext duplicate = context.duplicateWithPrimaryKey(embeddedId);
-                return proxifier.buildProxy(clusteredEntity, duplicate, Sets.newHashSet(getter));
-            }
-        };
+        EntityMeta meta = sliceQuery.getMeta();
+        ConsistencyLevel consistencyLevel = sliceQuery.getConsistencyLevel();
+        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
+                consistencyPolicy, Optional.fromNullable(consistencyLevel),
+                NO_CONSISTENCY_LEVEL, NO_TTL);
+
+        return new ThriftPersistenceContext(meta, configContext, daoContext, flushContext, clusteredEntity,
+                new HashSet<String>());
     }
 }

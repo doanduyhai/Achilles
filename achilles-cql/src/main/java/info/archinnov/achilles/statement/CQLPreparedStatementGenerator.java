@@ -35,7 +35,7 @@ public class CQLPreparedStatementGenerator
     public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta)
     {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        Insert insert = insertInto(entityMeta.getCQLTableName());
+        Insert insert = insertInto(entityMeta.getTableName());
         prepareInsertPrimaryKey(idMeta, insert);
 
         List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
@@ -61,7 +61,7 @@ public class CQLPreparedStatementGenerator
         if (!pm.isProxyType())
         {
             Selection select = prepareSelectField(pm, select());
-            Select from = select.from(entityMeta.getCQLTableName());
+            Select from = select.from(entityMeta.getTableName());
             Statement statement = prepareWhereClauseForSelect(idMeta, from);
             return session.prepare(statement.getQueryString());
         }
@@ -77,7 +77,7 @@ public class CQLPreparedStatementGenerator
             List<PropertyMeta<?, ?>> pms)
     {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        Update update = update(entityMeta.getCQLTableName());
+        Update update = update(entityMeta.getTableName());
 
         int i = 0;
         Assignments assignments = null;
@@ -107,7 +107,7 @@ public class CQLPreparedStatementGenerator
         {
             select = prepareSelectField(pm, select);
         }
-        Select from = select.from(entityMeta.getCQLTableName());
+        Select from = select.from(entityMeta.getTableName());
 
         Statement statement = prepareWhereClauseForSelect(idMeta, from);
         return session.prepare(statement.getQueryString());
@@ -246,7 +246,7 @@ public class CQLPreparedStatementGenerator
 
         Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
 
-        Delete mainFrom = QueryBuilder.delete().from(entityMeta.getCQLTableName());
+        Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
         Statement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
         removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
         for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())

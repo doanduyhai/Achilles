@@ -87,8 +87,8 @@ public class ThriftTableCreatorTest {
         when(cluster.describeKeyspace("keyspace")).thenReturn(keyspaceDefinition);
 
         creator = new ThriftTableCreator(cluster, keyspace);
-        Whitebox.setInternalState(creator, "columnFamilyFactory", columnFamilyFactory);
-        Whitebox.setInternalState(creator, "columnFamilyValidator", columnFamilyValidator);
+        Whitebox.setInternalState(creator, ThriftColumnFamilyFactory.class, columnFamilyFactory);
+        Whitebox.setInternalState(creator, ThriftColumnFamilyValidator.class, columnFamilyValidator);
         Whitebox.setInternalState(creator, "columnFamilyNames", columnFamilyNames);
     }
 
@@ -386,7 +386,8 @@ public class ThriftTableCreatorTest {
             propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
         }
 
-        simplePropertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class).type(SIMPLE).field("name")
+        simplePropertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class).type(SIMPLE)
+                .field("name")
                 .build();
 
         propertyMetas.put("name", simplePropertyMeta);

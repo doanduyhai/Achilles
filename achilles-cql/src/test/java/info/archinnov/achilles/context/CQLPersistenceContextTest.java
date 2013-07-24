@@ -16,7 +16,6 @@ import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
@@ -94,11 +93,11 @@ public class CQLPersistenceContextTest
         meta.setEntityClass(CompleteBean.class);
 
         Whitebox.setInternalState(context, "entityMeta", meta);
-        Whitebox.setInternalState(context, "loader", loader);
-        Whitebox.setInternalState(context, "merger", merger);
-        Whitebox.setInternalState(context, "persister", persister);
-        Whitebox.setInternalState(context, "refresher", refresher);
-        Whitebox.setInternalState(context, "proxifier", proxifier);
+        Whitebox.setInternalState(context, CQLEntityLoader.class, loader);
+        Whitebox.setInternalState(context, CQLEntityMerger.class, merger);
+        Whitebox.setInternalState(context, CQLEntityPersister.class, persister);
+        Whitebox.setInternalState(context, EntityRefresher.class, refresher);
+        Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
         Whitebox.setInternalState(context, "initializer", initializer);
     }
 
@@ -123,16 +122,6 @@ public class CQLPersistenceContextTest
         assertThat((Class) joinContext.getEntityClass()).isSameAs(CompleteBean.class);
         assertThat(joinContext.getEntityMeta()).isSameAs(meta);
         assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
-    }
-
-    @Test
-    public void should_duplicate_with_embedded_id() throws Exception
-    {
-        CompoundKey embeddedId = new CompoundKey();
-
-        CQLPersistenceContext joinContext = context.duplicateWithPrimaryKey(embeddedId);
-
-        assertThat(joinContext.getPrimaryKey()).isSameAs(embeddedId);
     }
 
     @Test

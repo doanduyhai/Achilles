@@ -53,7 +53,7 @@ public class CompoundKeyParserTest {
         assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter);
         assertThat(props.getComponentClasses()).containsExactly(String.class, int.class);
         assertThat(props.getComponentNames()).containsExactly("name", "rank");
-        assertThat(props.getCQLOrderingComponent()).isEqualTo("rank");
+        assertThat(props.getOrderingComponent()).isEqualTo("rank");
     }
 
     @Test
@@ -71,7 +71,7 @@ public class CompoundKeyParserTest {
         assertThat(props.getComponentGetters()).containsExactly(idGetter, nameGetter);
         assertThat(props.getComponentSetters()).isEmpty();
         assertThat(props.getComponentNames()).containsExactly("primaryKey", "name");
-        assertThat(props.getCQLOrderingComponent()).isEqualTo("name");
+        assertThat(props.getOrderingComponent()).isEqualTo("name");
     }
 
     @Test

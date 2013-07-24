@@ -1,8 +1,9 @@
 package info.archinnov.achilles.query.slice;
 
 import info.archinnov.achilles.compound.CompoundKeyValidator;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
@@ -15,12 +16,12 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public abstract class DefaultQueryBuilder<T> extends RootQueryBuilder<T> {
+public abstract class DefaultQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootQueryBuilder<CONTEXT, T> {
 
-    public DefaultQueryBuilder(QueryExecutor queryExecutor,
+    public DefaultQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator,
             Class<T> entityClass, EntityMeta meta) {
-        super(queryExecutor, compoundKeyValidator, entityClass, meta);
+        super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
     }
 
     /**
@@ -32,7 +33,7 @@ public abstract class DefaultQueryBuilder<T> extends RootQueryBuilder<T> {
      * 
      * @return DefaultQueryBuilder<T>
      */
-    public DefaultQueryBuilder<T> ordering(OrderingMode ordering) {
+    public DefaultQueryBuilder<CONTEXT, T> ordering(OrderingMode ordering) {
         super.ordering(ordering);
         return this;
     }
@@ -46,19 +47,19 @@ public abstract class DefaultQueryBuilder<T> extends RootQueryBuilder<T> {
      * 
      * @return DefaultQueryBuilder<T>
      */
-    public DefaultQueryBuilder<T> bounding(BoundingMode boundingMode)
+    public DefaultQueryBuilder<CONTEXT, T> bounding(BoundingMode boundingMode)
     {
         super.bounding(boundingMode);
         return this;
     }
 
-    public DefaultQueryBuilder<T> consistencyLevel(ConsistencyLevel consistencyLevel)
+    public DefaultQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
     {
         super.consistencyLevel(consistencyLevel);
         return this;
     }
 
-    public DefaultQueryBuilder<T> limit(int limit)
+    public DefaultQueryBuilder<CONTEXT, T> limit(int limit)
     {
         super.limit(limit);
         return this;

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.iterator;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -51,7 +51,7 @@ public class ThriftKeyValueIteratorImplTest
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(iterator, "factory", factory);
+        Whitebox.setInternalState(iterator, ThriftKeyValueFactory.class, factory);
         when(multiKeyWideMapMeta.getKeyClass()).thenReturn(CorrectCompoundKey.class);
     }
 

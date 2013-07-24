@@ -1,15 +1,16 @@
 package info.archinnov.achilles.statement;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.query.SliceQueryValidator;
-import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import java.util.List;
+import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
-import com.datastax.driver.core.querybuilder.Select.Where;
+import com.google.common.collect.FluentIterable;
 
 /**
  * CQLStringStatementGenerator
@@ -18,7 +19,22 @@ import com.datastax.driver.core.querybuilder.Select.Where;
  * 
  */
 public class CQLStatementGenerator {
-    private SliceQueryValidator validator = new SliceQueryValidator();
+
+    private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
+
+    public <T> Query generateSliceQuery(CQLSliceQuery<T> sliceQuery)
+    {
+        EntityMeta meta = sliceQuery.getMeta();
+
+        Select select = generateSelectEntity(meta);
+        select = select.limit(sliceQuery.getLimit());
+        select.orderBy(sliceQuery.getOrdering());
+
+        Statement where = sliceQueryGenerator.generateWhereClauseForSliceQuery(sliceQuery, select);
+
+        return where.setConsistencyLevel(sliceQuery.getConsistencyLevel());
+
+    }
 
     public Select generateSelectEntity(EntityMeta entityMeta) {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
@@ -27,11 +43,15 @@ public class CQLStatementGenerator {
 
         generateSelectForPrimaryKey(idMeta, select);
 
-        for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas()) {
+        List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
+                .from(entityMeta.getEagerMetas())
+                .filter(PropertyType.excludeIdType)
+                .toImmutableList();
+
+        for (PropertyMeta<?, ?> pm : eagerMetas) {
             select.column(pm.getPropertyName());
         }
-        return select.from(entityMeta.getCQLTableName());
-
+        return select.from(entityMeta.getTableName());
     }
 
     private void generateSelectForPrimaryKey(PropertyMeta<?, ?> idMeta, Selection select) {
@@ -44,75 +64,4 @@ public class CQLStatementGenerator {
         }
     }
 
-    public Statement generateWhereClauseForSliceQuery(List<String> componentNames, List<Comparable<?>> startValues,
-            List<Comparable<?>> endValues, BoundingMode boundingMode, Select select) {
-        int startIndex = validator.findLastNonNullIndexForComponents(startValues);
-        int endIndex = validator.findLastNonNullIndexForComponents(endValues);
-
-        Where where = select.where();
-        if (startIndex == endIndex) {
-            for (int i = 0; i < startIndex; i++) {
-                where.and(eq(componentNames.get(i), startValues.get(i)));
-            }
-            buildWhereClauseForLastComponents(componentNames, startValues, endValues, boundingMode, startIndex, where);
-
-        } else {
-            for (int i = 0; i <= Math.min(startIndex, endIndex); i++) {
-                where.and(eq(componentNames.get(i), startValues.get(i)));
-            }
-            buildWhereClauseForLastNonNullComponent(componentNames, startValues, endValues, boundingMode, startIndex,
-                    endIndex, where);
-        }
-        return where;
-    }
-
-    private void buildWhereClauseForLastComponents(List<String> componentNames, List<Comparable<?>> startValues,
-            List<Comparable<?>> endValues, BoundingMode boundingMode, int startIndex, Where where) {
-        switch (boundingMode) {
-            case INCLUSIVE_BOUNDS:
-                where.and(gte(componentNames.get(startIndex), startValues.get(startIndex)));
-                where.and(lte(componentNames.get(startIndex), endValues.get(startIndex)));
-                break;
-            case EXCLUSIVE_BOUNDS:
-                where.and(gt(componentNames.get(startIndex), startValues.get(startIndex)));
-                where.and(lt(componentNames.get(startIndex), endValues.get(startIndex)));
-                break;
-            case INCLUSIVE_START_BOUND_ONLY:
-                where.and(gte(componentNames.get(startIndex), startValues.get(startIndex)));
-                where.and(lt(componentNames.get(startIndex), endValues.get(startIndex)));
-                break;
-            case INCLUSIVE_END_BOUND_ONLY:
-                where.and(gt(componentNames.get(startIndex), startValues.get(startIndex)));
-                where.and(lte(componentNames.get(startIndex), endValues.get(startIndex)));
-                break;
-        }
-    }
-
-    private void buildWhereClauseForLastNonNullComponent(List<String> componentNames,
-            List<Comparable<?>> startValues,
-            List<Comparable<?>> endValues, BoundingMode boundingMode, int startIndex, int endIndex, Where where) {
-        if (startIndex > endIndex) {
-            switch (boundingMode) {
-                case INCLUSIVE_BOUNDS:
-                case INCLUSIVE_START_BOUND_ONLY:
-                    where.and(gte(componentNames.get(startIndex), startValues.get(startIndex)));
-                    break;
-                case EXCLUSIVE_BOUNDS:
-                case INCLUSIVE_END_BOUND_ONLY:
-                    where.and(gt(componentNames.get(startIndex), startValues.get(startIndex)));
-                    break;
-            }
-        } else {
-            switch (boundingMode) {
-                case INCLUSIVE_BOUNDS:
-                case INCLUSIVE_END_BOUND_ONLY:
-                    where.and(lte(componentNames.get(endIndex), endValues.get(endIndex)));
-                    break;
-                case EXCLUSIVE_BOUNDS:
-                case INCLUSIVE_START_BOUND_ONLY:
-                    where.and(lt(componentNames.get(endIndex), endValues.get(endIndex)));
-                    break;
-            }
-        }
-    }
 }

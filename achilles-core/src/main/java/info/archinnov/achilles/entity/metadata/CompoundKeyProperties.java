@@ -31,12 +31,12 @@ public class CompoundKeyProperties
         }
     };
 
-    public String getCQLOrderingComponent()
+    public String getOrderingComponent()
     {
         String component = null;
         if (componentNames.size() > 1)
         {
-            return componentNames.get(1).toLowerCase();
+            return componentNames.get(1);
         }
         return component;
     }

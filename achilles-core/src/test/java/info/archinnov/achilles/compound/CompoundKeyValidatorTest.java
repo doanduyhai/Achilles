@@ -229,4 +229,22 @@ public class CompoundKeyValidatorTest
 
         validator.validateNoHoleAndReturnLastNonNullIndex(keyValues);
     }
+
+    @Test
+    public void should_return_last_non_null_index_when_all_components_not_null() throws Exception
+    {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, "name", 12.0))).isEqualTo(2);
+    }
+
+    @Test
+    public void should_return_last_non_null_index_when_some_components_are_null() throws Exception
+    {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, null))).isEqualTo(0);
+    }
+
+    @Test
+    public void should_return_last_non_null_index_when_hole_in_component() throws Exception
+    {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, 12))).isEqualTo(0);
+    }
 }

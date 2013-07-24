@@ -1,8 +1,9 @@
 package info.archinnov.achilles.query.slice;
 
 import info.archinnov.achilles.compound.CompoundKeyValidator;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 
 /**
  * SliceToClusteringsBuilder
@@ -10,14 +11,14 @@ import info.archinnov.achilles.entity.operations.QueryExecutor;
  * @author DuyHai DOAN
  * 
  */
-public class SliceToClusteringsBuilder<T> extends DefaultQueryBuilder<T> {
+public class SliceToClusteringsBuilder<CONTEXT extends PersistenceContext, T> extends DefaultQueryBuilder<CONTEXT, T> {
 
-    public SliceToClusteringsBuilder(QueryExecutor queryExecutor,
+    public SliceToClusteringsBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator, Class<T> entityClass,
             EntityMeta meta,
             Object partitionKey,
             Object... toClusteringKeys) {
-        super(queryExecutor, compoundKeyValidator, entityClass, meta);
+        super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
         super.partitionKey(partitionKey);
         super.toClusteringsInternal(toClusteringKeys);
     }
@@ -31,7 +32,7 @@ public class SliceToClusteringsBuilder<T> extends DefaultQueryBuilder<T> {
      * 
      * @return DefaultQueryBuilder<T>
      */
-    public DefaultQueryBuilder<T> fromClusterings(Object... clusteringComponents)
+    public DefaultQueryBuilder<CONTEXT, T> fromClusterings(Object... clusteringComponents)
     {
         super.fromClusteringsInternal(clusteringComponents);
         return this;

@@ -202,12 +202,12 @@ public class PropertyMeta<K, V>
         return compClasses;
     }
 
-    public String getCQLOrderingComponent()
+    public String getOrderingComponent()
     {
         String component = null;
         if (compoundKeyProperties != null)
         {
-            return compoundKeyProperties.getCQLOrderingComponent();
+            return compoundKeyProperties.getOrderingComponent();
         }
         return component;
     }

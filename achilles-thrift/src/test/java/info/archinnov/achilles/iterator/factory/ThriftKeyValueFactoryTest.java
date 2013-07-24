@@ -1,9 +1,9 @@
 package info.archinnov.achilles.iterator.factory;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.INT_SRZ;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.keyValueClass;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -65,7 +65,7 @@ public class ThriftKeyValueFactoryTest
     private PropertyMeta<Integer, UserBean> joinPropertyMeta;
 
     @Mock
-    private ThriftJoinEntityLoader joinHelper;
+    private ThriftJoinEntityLoader joinLoader;
 
     @Mock
     private ThriftEntityProxifier proxifier;
@@ -92,8 +92,8 @@ public class ThriftKeyValueFactoryTest
     @Before
     public void setUp() throws Exception
     {
-        Whitebox.setInternalState(factory, "proxifier", proxifier);
-        Whitebox.setInternalState(factory, "joinHelper", joinHelper);
+        Whitebox.setInternalState(factory, ThriftEntityProxifier.class, proxifier);
+        Whitebox.setInternalState(factory, ThriftJoinEntityLoader.class, joinLoader);
         Whitebox
                 .setInternalState(factory, "thriftCompositeTransformer", thriftCompositeTransformer);
 
@@ -109,7 +109,7 @@ public class ThriftKeyValueFactoryTest
         map.put(joinId1, bean1);
         map.put(joinId2, bean2);
 
-        when(joinHelper.loadJoinEntities(eq(UserBean.class), //
+        when(joinLoader.loadJoinEntities(eq(UserBean.class), //
                 joinIdsCaptor.capture(), eq(joinMeta), eq(joinEntityDao))).thenReturn(map);
         when(context.createContextForJoin(joinMeta, bean1)).thenReturn(joinContext1);
         when(context.createContextForJoin(joinMeta, bean2)).thenReturn(joinContext2);
@@ -228,7 +228,7 @@ public class ThriftKeyValueFactoryTest
         List<UserBean> builtList = factory.createJoinValueList(context, propertyMeta, hCols);
 
         assertThat(builtList).isEmpty();
-        verifyZeroInteractions(thriftCompositeTransformer, joinHelper);
+        verifyZeroInteractions(thriftCompositeTransformer, joinLoader);
     }
 
     @SuppressWarnings(
@@ -399,7 +399,7 @@ public class ThriftKeyValueFactoryTest
                 propertyMeta, hCols);
 
         assertThat(builtList).isEmpty();
-        verifyZeroInteractions(thriftCompositeTransformer, joinHelper);
+        verifyZeroInteractions(thriftCompositeTransformer, joinLoader);
     }
 
     @Test

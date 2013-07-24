@@ -113,13 +113,6 @@ public class ThriftPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public ThriftPersistenceContext duplicateWithPrimaryKey(Object embeddedId)
-    {
-        return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-                flushContext.duplicateWithoutTtl(), entityClass, embeddedId, new HashSet<String>());
-    }
-
-    @Override
     public ThriftPersistenceContext duplicate(Object entity)
     {
         return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,

@@ -97,9 +97,6 @@ public abstract class CompoundKeyValidator
                 end.subList(0, end.size()), ordering);
     }
 
-    public abstract void validateComponentsForSliceQuery(List<Object> startComponentValues,
-            List<Object> endComponentValues, OrderingMode ordering);
-
     public int validateNoHoleAndReturnLastNonNullIndex(List<Object> components)
     {
         boolean nullFlag = false;
@@ -124,6 +121,21 @@ public abstract class CompoundKeyValidator
 
         return lastNotNullIndex;
     }
+
+    public int getLastNonNullIndex(List<Object> components)
+    {
+        for (int i = 0; i < components.size(); i++)
+        {
+            if (components.get(i) == null)
+            {
+                return i - 1;
+            }
+        }
+        return components.size() - 1;
+    }
+
+    public abstract void validateComponentsForSliceQuery(List<Object> startComponents,
+            List<Object> endComponents, OrderingMode ordering);
 
     protected static class ComponentComparator implements Comparator<Object> {
 

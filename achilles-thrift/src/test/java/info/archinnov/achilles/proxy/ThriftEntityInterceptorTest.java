@@ -5,6 +5,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ThriftAbstractFlushContext;
 import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -16,6 +17,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
+import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.proxy.wrapper.MapWrapper;
@@ -172,18 +174,17 @@ public class ThriftEntityInterceptorTest
                 .wideRowDaosMap(columnFamilyDaosMap)
                 .build();
 
-        Whitebox.setInternalState(context, "flushContext", flushContext);
-
         interceptor = ThriftEntityInterceptorBuilder.builder(context, entity).build();
-        Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
 
         interceptor.setPrimaryKey(key);
-        Whitebox.setInternalState(interceptor, "loader", loader);
         interceptor.setDirtyMap(dirtyMap);
         interceptor.setContext(context);
         when(entityDaosMap.get("join_cf")).thenReturn(entityDao);
-
         when(flushContext.duplicateWithoutTtl()).thenReturn(flushContext);
+
+        Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
+        Whitebox.setInternalState(context, ThriftAbstractFlushContext.class, flushContext);
+        Whitebox.setInternalState(interceptor, "loader", loader);
     }
 
     @Test

@@ -49,10 +49,6 @@ public class EntityMeta {
         return tableName;
     }
 
-    public String getCQLTableName() {
-        return tableName.toLowerCase();
-    }
-
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }

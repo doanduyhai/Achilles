@@ -78,13 +78,6 @@ public class CQLPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public CQLPersistenceContext duplicateWithPrimaryKey(Object embeddedId)
-    {
-        return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(), entityClass, embeddedId, new HashSet<String>());
-    }
-
-    @Override
     public CQLPersistenceContext duplicate(Object entity)
     {
         return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicateWithoutTtl(),

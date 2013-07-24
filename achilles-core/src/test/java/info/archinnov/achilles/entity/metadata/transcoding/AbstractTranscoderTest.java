@@ -59,8 +59,8 @@ public class AbstractTranscoderTest {
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(transcoder, "objectMapper", objectMapper);
-        Whitebox.setInternalState(transcoder, "invoker", invoker);
+        Whitebox.setInternalState(transcoder, ObjectMapper.class, objectMapper);
+        Whitebox.setInternalState(transcoder, ReflectionInvoker.class, invoker);
     }
 
     @Test

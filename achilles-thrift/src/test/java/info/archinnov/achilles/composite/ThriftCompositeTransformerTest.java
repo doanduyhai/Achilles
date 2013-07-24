@@ -83,7 +83,7 @@ public class ThriftCompositeTransformerTest
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(transformer, "compoundKeyMapper", compoundKeyMapper);
+        Whitebox.setInternalState(transformer, ThriftCompoundKeyMapper.class, compoundKeyMapper);
     }
 
     @Test

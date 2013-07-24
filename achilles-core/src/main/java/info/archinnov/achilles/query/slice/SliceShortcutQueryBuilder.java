@@ -1,8 +1,9 @@
 package info.archinnov.achilles.query.slice;
 
 import info.archinnov.achilles.compound.CompoundKeyValidator;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,12 +13,12 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class SliceShortcutQueryBuilder<T> extends RootQueryBuilder<T> {
+public class SliceShortcutQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootQueryBuilder<CONTEXT, T> {
 
-    public SliceShortcutQueryBuilder(QueryExecutor queryExecutor,
+    public SliceShortcutQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator, Class<T> entityClass,
             EntityMeta meta, Object partitionKey) {
-        super(queryExecutor, compoundKeyValidator, entityClass, meta);
+        super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
         super.partitionKey(partitionKey);
     }
 
@@ -30,10 +31,10 @@ public class SliceShortcutQueryBuilder<T> extends RootQueryBuilder<T> {
      * 
      * @return ThriftFromClusteringsBuilder<T>
      */
-    public SliceFromClusteringsBuilder<T> fromClusterings(Object... clusteringComponents)
+    public SliceFromClusteringsBuilder<CONTEXT, T> fromClusterings(Object... clusteringComponents)
     {
-        return new SliceFromClusteringsBuilder<T>(queryExecutor, compoundKeyValidator, entityClass, meta,
-                partitionKey, clusteringComponents);
+        return new SliceFromClusteringsBuilder<CONTEXT, T>(sliceQueryExecutor, compoundKeyValidator, entityClass,
+                meta, partitionKey, clusteringComponents);
     }
 
     /**
@@ -45,9 +46,9 @@ public class SliceShortcutQueryBuilder<T> extends RootQueryBuilder<T> {
      * 
      * @return ThriftToClusteringsBuilder<T>
      */
-    public SliceToClusteringsBuilder<T> toClusterings(Object... clusteringComponents)
+    public SliceToClusteringsBuilder<CONTEXT, T> toClusterings(Object... clusteringComponents)
     {
-        return new SliceToClusteringsBuilder<T>(queryExecutor, compoundKeyValidator, entityClass, meta,
+        return new SliceToClusteringsBuilder<CONTEXT, T>(sliceQueryExecutor, compoundKeyValidator, entityClass, meta,
                 clusteringComponents, clusteringComponents);
     }
 

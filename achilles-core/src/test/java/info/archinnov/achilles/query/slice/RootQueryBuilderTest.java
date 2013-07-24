@@ -8,9 +8,10 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -36,12 +37,12 @@ public class RootQueryBuilderTest
     public ExpectedException exception = ExpectedException.none();
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private RootQueryBuilder<ClusteredEntity> builder;
+    private RootQueryBuilder<PersistenceContext, ClusteredEntity> builder;
 
     private Class<ClusteredEntity> entityClass = ClusteredEntity.class;
 
     @Mock
-    private QueryExecutor queryExecutor;
+    private SliceQueryExecutor<PersistenceContext> sliceQueryExecutor;
 
     @Mock
     private ConfigurationContext configContext;
@@ -58,11 +59,12 @@ public class RootQueryBuilderTest
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(builder, "queryExecutor", queryExecutor);
+        Whitebox.setInternalState(builder, "sliceQueryExecutor", sliceQueryExecutor);
         Whitebox.setInternalState(builder, "entityClass", (Object) entityClass);
         Whitebox.setInternalState(builder, "compoundKeyValidator", compoundKeyValidator);
         Whitebox.setInternalState(builder, "meta", meta);
         Whitebox.setInternalState(builder, "idMeta", idMeta);
+
         when(meta.getIdMeta()).thenReturn((PropertyMeta) idMeta);
         when(meta.getClassName()).thenReturn("entityClass");
         doCallRealMethod().when(builder).partitionKey(any());
@@ -168,7 +170,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get();
 
@@ -180,7 +182,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get(5);
 
@@ -193,7 +195,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
 
@@ -207,7 +209,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         ClusteredEntity actual = builder.partitionKey(partitionKey)
@@ -224,7 +226,7 @@ public class RootQueryBuilderTest
     public void should_return_null_when_no_first() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(new ArrayList<ClusteredEntity>());
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(new ArrayList<ClusteredEntity>());
 
         ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
 
@@ -238,7 +240,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3);
 
@@ -250,7 +252,7 @@ public class RootQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3, clusteringComponents);
@@ -266,7 +268,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         ClusteredEntity actual = builder
                 .partitionKey(partitionKey)
@@ -284,7 +286,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity();
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
@@ -306,7 +308,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getLast(6);
 
@@ -320,7 +322,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
 
         List<ClusteredEntity> list = mock(List.class);
-        when(queryExecutor.get(any(SliceQuery.class))).thenReturn(list);
+        when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         List<ClusteredEntity> actual = builder
@@ -340,7 +342,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
-        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
+        when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator();
 
         assertThat(actual).isSameAs(iterator);
@@ -353,7 +355,7 @@ public class RootQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
-        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
+        when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
                 .iteratorWithComponents(clusteringComponents);
 
@@ -369,7 +371,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
-        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
+        when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator(7);
 
         assertThat(Whitebox.getInternalState(builder, "batchSize")).isEqualTo(7);
@@ -383,7 +385,7 @@ public class RootQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
-        when(queryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
+        when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
         Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
                 .iteratorWithComponents(7, clusteringComponents);
 
@@ -400,7 +402,7 @@ public class RootQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         builder.partitionKey(partitionKey).remove();
 
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -410,7 +412,7 @@ public class RootQueryBuilderTest
         builder.partitionKey(partitionKey).remove(8);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(8);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -420,7 +422,7 @@ public class RootQueryBuilderTest
         builder.partitionKey(partitionKey).removeFirstOccurence();
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -435,7 +437,7 @@ public class RootQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -445,7 +447,7 @@ public class RootQueryBuilderTest
         builder.partitionKey(partitionKey).removeFirst(9);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -458,7 +460,7 @@ public class RootQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -470,7 +472,7 @@ public class RootQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
 
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -484,7 +486,7 @@ public class RootQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -495,7 +497,7 @@ public class RootQueryBuilderTest
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 
     @Test
@@ -509,6 +511,6 @@ public class RootQueryBuilderTest
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
         assertThat(Whitebox.getInternalState(builder, "toClusterings")).isEqualTo(clusteringComponents);
-        verify(queryExecutor).remove(any(SliceQuery.class));
+        verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
 }

@@ -1,9 +1,10 @@
 package info.archinnov.achilles.query.slice;
 
 import info.archinnov.achilles.compound.CompoundKeyValidator;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.QueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 
@@ -13,14 +14,15 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class SliceFromEmbeddedIdBuilder<T> extends DefaultQueryBuilder<T>
+public class SliceFromEmbeddedIdBuilder<CONTEXT extends PersistenceContext, T> extends
+        DefaultQueryBuilder<CONTEXT, T>
 {
-    public SliceFromEmbeddedIdBuilder(QueryExecutor queryExecutor,
+    public SliceFromEmbeddedIdBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
             CompoundKeyValidator compoundKeyValidator,
             Class<T> entityClass, EntityMeta meta,
             Object partitionKey, Object[] clusteringsFrom)
     {
-        super(queryExecutor, compoundKeyValidator, entityClass, meta);
+        super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
         super.partitionKey(partitionKey);
         super.fromClusteringsInternal(clusteringsFrom);
     }
@@ -34,7 +36,7 @@ public class SliceFromEmbeddedIdBuilder<T> extends DefaultQueryBuilder<T>
      * 
      * @return DefaultQueryBuilder<T>
      */
-    public DefaultQueryBuilder<T> toEmbeddedId(Object toEmbeddedId)
+    public DefaultQueryBuilder<CONTEXT, T> toEmbeddedId(Object toEmbeddedId)
     {
         Class<?> embeddedIdClass = meta.getIdClass();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();

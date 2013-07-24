@@ -61,7 +61,7 @@ public class ThriftJoinSliceIteratorTest
     private Iterator<HColumn<Composite, Object>> columnsIterator;
 
     @Mock
-    private ThriftJoinEntityLoader joinHelper;
+    private ThriftJoinEntityLoader joinLoader;
 
     @Mock
     private ThriftGenericEntityDao joinEntityDao;
@@ -137,12 +137,12 @@ public class ThriftJoinSliceIteratorTest
         when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
         List<Long> keys = Arrays.asList(joinId1, joinId2, joinId3);
-        when(joinHelper.loadJoinEntities(UserBean.class, keys, joinEntityMeta, joinEntityDao))
+        when(joinLoader.loadJoinEntities(UserBean.class, keys, joinEntityMeta, joinEntityDao))
                 .thenReturn(entitiesMap);
 
         iterator = new ThriftJoinSliceIterator<Long, Integer, UserBean>(policy, joinEntityDao,
                 columnFamily, propertyMeta, query, start, end, false, 10);
-        Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
+        Whitebox.setInternalState(iterator, ThriftJoinEntityLoader.class, joinLoader);
 
         when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
         when(columnsIterator.hasNext()).thenReturn(true, true, true, false);
@@ -211,16 +211,16 @@ public class ThriftJoinSliceIteratorTest
 
         when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
         when(
-                joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
+                joinLoader.loadJoinEntities(UserBean.class, Arrays.asList(joinId1, joinId2),
                         joinEntityMeta, joinEntityDao)).thenReturn(entitiesMap);
         when(
-                joinHelper.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta,
+                joinLoader.loadJoinEntities(UserBean.class, Arrays.asList(joinId3), joinEntityMeta,
                         joinEntityDao)).thenReturn(entitiesMap);
 
         iterator = new ThriftJoinSliceIterator<Long, Integer, UserBean>(policy, joinEntityDao,
                 columnFamily, propertyMeta, query, start, end, false, count);
 
-        Whitebox.setInternalState(iterator, "joinHelper", joinHelper);
+        Whitebox.setInternalState(iterator, ThriftJoinEntityLoader.class, joinLoader);
 
         assertThat(iterator.hasNext()).isEqualTo(true);
         HColumn<Composite, UserBean> h1 = iterator.next();
