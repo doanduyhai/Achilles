@@ -3,7 +3,7 @@ package info.archinnov.achilles.table;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Arrays;
@@ -30,18 +30,19 @@ public class CQLTableCreator extends TableCreator {
     private Map<String, TableMetadata> tableMetas;
     private Set<String> tableNames = new HashSet<String>();
 
-    private CQLTableValidator validator = new CQLTableValidator();
+    private CQLTableValidator validator;
 
     public CQLTableCreator(Cluster cluster, Session session, String keyspaceName) {
         this.cluster = cluster;
         this.session = session;
         this.keyspaceName = keyspaceName;
         this.tableMetas = fetchTableMetaData();
+        validator = new CQLTableValidator(cluster, keyspaceName);
     }
 
     @Override
     protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
-        String tableName = entityMeta.getTableName();
+        String tableName = entityMeta.getTableName().toLowerCase();
         if (tableMetas.containsKey(tableName))
         {
             validator.validateForEntity(entityMeta, tableMetas.get(tableName));
@@ -55,7 +56,7 @@ public class CQLTableCreator extends TableCreator {
             }
             else
             {
-                throw new AchillesInvalidColumnFamilyException("The required table '"
+                throw new AchillesInvalidTableException("The required table '"
                         + tableName + "' does not exist for entity '" + entityMeta.getClassName()
                         + "'");
             }
@@ -84,7 +85,7 @@ public class CQLTableCreator extends TableCreator {
             }
             else
             {
-                throw new AchillesInvalidColumnFamilyException("The required table '" + externalTableName
+                throw new AchillesInvalidTableException("The required table '" + externalTableName
                         + "' does not exist for field '" + propertyName + "' of entity '"
                         + entityName + "'");
             }
@@ -115,7 +116,7 @@ public class CQLTableCreator extends TableCreator {
             }
             else
             {
-                throw new AchillesInvalidColumnFamilyException("The required generic table '" + CQL_COUNTER_TABLE
+                throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
                         + "' does not exist");
             }
         }
@@ -220,7 +221,8 @@ public class CQLTableCreator extends TableCreator {
         Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
         KeyspaceMetadata keyspaceMeta = cluster.getMetadata().getKeyspace(keyspaceName);
 
-        Validator.validateNotNull(keyspaceMeta, "Keyspace '" + keyspaceName + "' doest not exist or cannot be found");
+        Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '" + keyspaceName
+                + "' doest not exist or cannot be found");
 
         for (TableMetadata tableMeta : keyspaceMeta.getTables())
         {

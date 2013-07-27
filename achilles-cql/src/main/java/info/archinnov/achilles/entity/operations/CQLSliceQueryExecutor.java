@@ -1,12 +1,11 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.context.CQLImmediateFlushContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.CQLSliceQueryIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
@@ -14,13 +13,11 @@ import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Row;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 /**
@@ -35,12 +32,13 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
     private ReflectionInvoker invoker = new ReflectionInvoker();
     private CQLEntityMapper mapper = new CQLEntityMapper();
     private CQLDaoContext daoContext;
-    private ConfigurationContext configContext;
+    private CQLPersistenceContextFactory contextFactory;
 
-    public CQLSliceQueryExecutor(ConfigurationContext configContext, CQLDaoContext daoContext) {
+    public CQLSliceQueryExecutor(CQLPersistenceContextFactory contextFactory, ConfigurationContext configContext,
+            CQLDaoContext daoContext) {
         super(new CQLEntityProxifier());
+        this.contextFactory = contextFactory;
         this.daoContext = daoContext;
-        this.configContext = configContext;
         defaultReadLevel = configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel();
     }
 
@@ -88,29 +86,16 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
     @Override
     protected <T> CQLPersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery)
     {
+
         ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
                 .getConsistencyLevel();
-        CQLImmediateFlushContext flushContext = new CQLImmediateFlushContext(daoContext,
-                Optional.fromNullable(cl), Optional.fromNullable(cl), NO_TTL);
-
-        Object partitionKey = sliceQuery.getPartitionKey();
-        EntityMeta meta = sliceQuery.getMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-
-        Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
-        return new CQLPersistenceContext(meta, configContext, daoContext, flushContext, sliceQuery.getEntityClass(),
-                embeddedId, new HashSet<String>());
+        return contextFactory.newContextForSliceQuery(sliceQuery.getEntityClass(), sliceQuery.getPartitionKey(), cl);
     }
 
     @Override
     protected <T> CQLPersistenceContext buildNewContext(SliceQuery<T> sliceQuery, T clusteredEntity)
     {
-        EntityMeta meta = sliceQuery.getMeta();
-        CQLImmediateFlushContext flushContext = new CQLImmediateFlushContext(daoContext,
-                NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
-
-        return new CQLPersistenceContext(meta, configContext, daoContext, flushContext,
-                clusteredEntity, new HashSet<String>());
+        return contextFactory.newContext(clusteredEntity);
     }
 
 }

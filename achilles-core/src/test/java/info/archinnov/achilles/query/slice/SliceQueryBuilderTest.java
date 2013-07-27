@@ -18,7 +18,6 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -34,7 +33,6 @@ import org.powermock.reflect.Whitebox;
 public class SliceQueryBuilderTest
 {
 
-    @InjectMocks
     private SliceQueryBuilder<PersistenceContext, ClusteredEntity> builder;
 
     @Mock
@@ -68,18 +66,19 @@ public class SliceQueryBuilderTest
 
         meta.setIdMeta(idMeta);
 
-        Whitebox.setInternalState(builder, EntityMeta.class, meta);
+        builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(sliceQueryExecutor,
+                compoundKeyValidator, ClusteredEntity.class, meta);
+        Whitebox.setInternalState(builder, "meta", meta);
     }
 
     @Test
     public void should_set_partition_key_and_create_builder() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        SliceShortcutQueryBuilder<PersistenceContext, ClusteredEntity> shortCutBuilder = builder
+        SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceShortcutQueryBuilder shortCutBuilder = builder
                 .partitionKey(partitionKey);
 
         assertThat(shortCutBuilder).isNotNull();
-        assertThat(shortCutBuilder.partitionKey).isSameAs(partitionKey);
     }
 
     @Test
@@ -92,13 +91,10 @@ public class SliceQueryBuilderTest
         List<Object> components = Arrays.<Object> asList(partitionKey, name);
         when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(components);
 
-        SliceFromEmbeddedIdBuilder<PersistenceContext, ClusteredEntity> embeddedIdBuilder = builder
+        SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceFromEmbeddedIdBuilder embeddedIdBuilder = builder
                 .fromEmbeddedId(compoundKey);
 
         assertThat(embeddedIdBuilder).isNotNull();
-        assertThat(embeddedIdBuilder.partitionKey).isSameAs(partitionKey);
-
-        assertThat(((Object[]) Whitebox.getInternalState(embeddedIdBuilder, "fromClusterings"))[0]).isSameAs(name);
     }
 
     @Test
@@ -111,12 +107,10 @@ public class SliceQueryBuilderTest
         List<Object> components = Arrays.<Object> asList(partitionKey, name);
         when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(components);
 
-        SliceToEmbeddedIdBuilder<PersistenceContext, ClusteredEntity> embeddedIdBuilder = builder
+        SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
                 .toEmbeddedId(compoundKey);
 
         assertThat(embeddedIdBuilder).isNotNull();
-        assertThat(embeddedIdBuilder.partitionKey).isSameAs(partitionKey);
 
-        assertThat(((Object[]) Whitebox.getInternalState(embeddedIdBuilder, "toClusterings"))[0]).isSameAs(name);
     }
 }

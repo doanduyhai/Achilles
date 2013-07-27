@@ -4,6 +4,7 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -25,12 +26,12 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager
 
     private ThriftBatchingFlushContext flushContext;
 
-    ThriftBatchingEntityManager(
-            Map<Class<?>, EntityMeta> entityMetaMap, ThriftDaoContext thriftDaoContext,
+    ThriftBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap,
+            ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext,
             ConfigurationContext configContext)
     {
-        super(entityMetaMap, thriftDaoContext, configContext);
-        this.flushContext = new ThriftBatchingFlushContext(thriftDaoContext, consistencyPolicy,
+        super(entityMetaMap, contextFactory, daoContext, configContext);
+        this.flushContext = new ThriftBatchingFlushContext(daoContext, consistencyPolicy,
                 NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
     }
 

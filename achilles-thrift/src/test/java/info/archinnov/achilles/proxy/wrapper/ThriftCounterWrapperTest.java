@@ -4,7 +4,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
@@ -48,9 +47,6 @@ public class ThriftCounterWrapperTest
     private ThriftPersistenceContext context;
 
     @Mock
-    private ThriftConsistencyLevelPolicy policy;
-
-    @Mock
     private EntityValidator<ThriftPersistenceContext> validator;
 
     @Captor
@@ -75,7 +71,6 @@ public class ThriftCounterWrapperTest
         wrapper.setCounterDao(counterDao);
         wrapper.setReadLevel(readLevel);
         wrapper.setWriteLevel(writeLevel);
-        when(context.getPolicy()).thenReturn(policy);
         when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
     }
 

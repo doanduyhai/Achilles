@@ -3,15 +3,14 @@ package info.archinnov.achilles.entity.manager;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
-import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import java.util.HashSet;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,18 +35,21 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
     protected ThriftDaoContext daoContext;
+    protected ThriftPersistenceContextFactory contextFactory;
     private ThriftSliceQueryExecutor sliceQueryExecutor;
     private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
     ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
-            ThriftDaoContext thriftDaoContext, //
+            ThriftPersistenceContextFactory contextFactory,
+            ThriftDaoContext daoContext, //
             ConfigurationContext configContext)
     {
         super(entityMetaMap, configContext);
-        this.daoContext = thriftDaoContext;
+        this.contextFactory = contextFactory;
+        this.daoContext = daoContext;
         super.proxifier = new ThriftEntityProxifier();
         super.entityValidator = new EntityValidator<ThriftPersistenceContext>(super.proxifier);
-        this.sliceQueryExecutor = new ThriftSliceQueryExecutor(configContext, thriftDaoContext);
+        this.sliceQueryExecutor = new ThriftSliceQueryExecutor(contextFactory, configContext);
     }
 
     /**
@@ -61,7 +63,7 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
      */
     public ThriftBatchingEntityManager batchingEntityManager()
     {
-        return new ThriftBatchingEntityManager(entityMetaMap,
+        return new ThriftBatchingEntityManager(entityMetaMap, contextFactory,
                 daoContext, configContext);
     }
 
@@ -78,57 +80,37 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     {
         EntityMeta meta = entityMetaMap.get(entityClass);
         return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator,
-                entityClass,
-                meta);
+                entityClass, meta);
     }
 
     @Override
-    protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass,
-            Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+    protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey,
+            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
     {
-        log.trace("Initializing new persistence context for entity class {} and primary key {}",
-                entityClass.getCanonicalName(), primaryKey);
-
-        EntityMeta entityMeta = entityMetaMap.get(entityClass);
-
-        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(
-                daoContext,
-                consistencyPolicy, readLevelO, writeLevelO, ttlO);
-
-        ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, configContext,
-                daoContext,
-                flushContext, entityClass, primaryKey, new HashSet<String>());
-        return context;
+        return contextFactory.newContext(entityClass, primaryKey, readLevelO, writeLevelO, ttlO);
     }
 
     @Override
     protected ThriftPersistenceContext initPersistenceContext(Object entity,
-            Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
     {
-        log.trace("Initializing new persistence context for entity {}", entity);
-
-        EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
-        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(
-                daoContext, consistencyPolicy, readLevelO, writeLevelO, ttlO);
-
-        return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
-                flushContext, entity,
-                new HashSet<String>());
+        return contextFactory.newContext(entity, readLevelO, writeLevelO, ttlO);
     }
 
     protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext) {
         this.daoContext = thriftDaoContext;
     }
 
-    public void setQueryExecutor(ThriftSliceQueryExecutor queryExecutor) {
+    protected void setQueryExecutor(ThriftSliceQueryExecutor queryExecutor) {
         this.sliceQueryExecutor = queryExecutor;
     }
 
-    public void setCompoundKeyValidator(ThriftCompoundKeyValidator compoundKeyValidator) {
+    protected void setCompoundKeyValidator(ThriftCompoundKeyValidator compoundKeyValidator) {
         this.compoundKeyValidator = compoundKeyValidator;
+    }
+
+    protected void setContextFactory(ThriftPersistenceContextFactory contextFactory) {
+        this.contextFactory = contextFactory;
     }
 
 }

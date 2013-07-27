@@ -45,7 +45,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
         this.idMeta = meta.getIdMeta();
     }
 
-    protected RootSliceQueryBuilder<CONTEXT, T> partitionKey(Object partitionKey)
+    protected RootSliceQueryBuilder<CONTEXT, T> partitionKeyInternal(Object partitionKey)
     {
         compoundKeyValidator.validatePartitionKey(idMeta, partitionKey);
         this.partitionKey = partitionKey;

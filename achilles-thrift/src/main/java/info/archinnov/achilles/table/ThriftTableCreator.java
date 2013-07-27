@@ -3,7 +3,7 @@ package info.archinnov.achilles.table;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +55,7 @@ public class ThriftTableCreator extends TableCreator {
 
                 createTable(entityMeta);
             } else {
-                throw new AchillesInvalidColumnFamilyException("The required column family '"
+                throw new AchillesInvalidTableException("The required column family '"
                         + entityMeta.getTableName() + "' does not exist for entity '" + entityMeta.getClassName()
                         + "'");
             }
@@ -82,7 +82,7 @@ public class ThriftTableCreator extends TableCreator {
                         externalTableName, entityName);
                 this.addTable(cfDef);
             } else {
-                throw new AchillesInvalidColumnFamilyException("The required column family '" + externalTableName
+                throw new AchillesInvalidTableException("The required column family '" + externalTableName
                         + "' does not exist for field '" + pm.getPropertyName() + "' of entity '"
                         + entityName + "'");
             }
@@ -100,7 +100,7 @@ public class ThriftTableCreator extends TableCreator {
 
                 this.createCounterColumnFamily();
             } else {
-                throw new AchillesInvalidColumnFamilyException("The required column family '"
+                throw new AchillesInvalidTableException("The required column family '"
                         + AchillesCounter.THRIFT_COUNTER_CF + "' does not exist");
             }
         } else {

@@ -9,6 +9,8 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 
 /**
@@ -18,6 +20,8 @@ import com.google.common.base.Optional;
  * 
  */
 public class ThriftPersistenceContextFactory implements PersistenceContextFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContextFactory.class);
 
     private ThriftDaoContext daoContext;
     private ConfigurationContext configContext;
@@ -67,6 +71,9 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
     public ThriftPersistenceContext newContextForBatch(Class<?> entityClass,
             Object primaryKey, ThriftAbstractFlushContext<?> flushContext)
     {
+        log.trace("Initializing new persistence context for entity class {} and primary key {}",
+                entityClass.getCanonicalName(), primaryKey);
+
         Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
         Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
         EntityMeta meta = entityMetaMap.get(entityClass);
@@ -76,9 +83,9 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
 
     @Override
     public ThriftPersistenceContext newContext(Object entity, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
     {
+        log.trace("Initializing new persistence context for entity {}", entity);
         Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
         Class<?> entityClass = proxifier.deriveBaseClass(entity);
         EntityMeta meta = entityMetaMap.get(entityClass);
@@ -96,9 +103,7 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
 
     @Override
     public ThriftPersistenceContext newContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
     {
         Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
         Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");

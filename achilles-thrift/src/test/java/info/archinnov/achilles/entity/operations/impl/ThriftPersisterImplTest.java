@@ -1,18 +1,10 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftImmediateFlushContext;
@@ -137,9 +129,13 @@ public class ThriftPersisterImplTest {
         entityMeta = new EntityMeta();
         entityMeta.setTableName("cf");
         context = ThriftPersistenceContextTestBuilder
-                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()).entity(entity)
-                .thriftImmediateFlushContext(flushContext).entityDao(entityDao).wideRowDao(wideRowDao)
-                .wideRowDaosMap(wideRowDaosMap).entityDaosMap(entityDaosMap).build();
+                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+                .entity(entity)
+                .thriftImmediateFlushContext(flushContext)
+                .entityDao(entityDao).wideRowDao(wideRowDao)
+                .wideRowDaosMap(wideRowDaosMap)
+                .entityDaosMap(entityDaosMap)
+                .build();
         when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
         when(flushContext.getTtlO()).thenReturn(ttlO);
 
@@ -536,9 +532,13 @@ public class ThriftPersisterImplTest {
     public void should_remove_entity_having_external_wide_map() throws Exception {
 
         PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
-                //
-                .completeBean(UUID.class, String.class).field("geoPositions").type(PropertyType.WIDE_MAP)
-                .externalTable("external_cf").idClass(Long.class).accessors().build();
+                .completeBean(UUID.class, String.class)
+                .field("geoPositions")
+                .type(PropertyType.WIDE_MAP)
+                .externalTable("external_cf")
+                .idClass(Long.class)
+                .accessors()
+                .build();
 
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));

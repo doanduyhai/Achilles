@@ -11,7 +11,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
@@ -316,7 +316,7 @@ public class ThriftTableCreatorTest {
         prepareData();
         Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
         configContext.setForceColumnFamilyCreation(false);
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The required column family 'testCF' does not exist for entity 'TestBean'");
 
         creator.validateOrCreateTableForEntity(meta, false);
@@ -337,7 +337,7 @@ public class ThriftTableCreatorTest {
 
         Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
         configContext.setForceColumnFamilyCreation(false);
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap' of entity 'TestBean'");
 
@@ -359,7 +359,7 @@ public class ThriftTableCreatorTest {
 
         Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef));
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The required column family 'externalCF' does not exist for field 'externalWideMap'");
 
         creator.validateOrCreateTables(entityMetaMap, configContext, false);
@@ -371,7 +371,7 @@ public class ThriftTableCreatorTest {
         Whitebox.setInternalState(creator, "cfDefs", new ArrayList<ColumnFamilyDefinition>());
         configContext.setForceColumnFamilyCreation(false);
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The required column family '" + AchillesCounter.THRIFT_COUNTER_CF
                 + "' does not exist");
 

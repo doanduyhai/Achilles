@@ -60,7 +60,7 @@ public class ThriftEntityManagerFactoryTest
 
         ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
 
-        assertThat(Whitebox.getInternalState(em, "thriftDaoContext")).isSameAs(daoContext);
+        assertThat(Whitebox.getInternalState(em, ThriftDaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(em, "configContext")).isSameAs(configContext);
         Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox.getInternalState(em,
                 "entityMetaMap");

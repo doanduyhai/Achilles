@@ -2,6 +2,7 @@ package info.archinnov.achilles.validation;
 
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -168,6 +169,14 @@ public class Validator
         }
     }
 
+    public static void validateTableTrue(boolean condition, String message)
+    {
+        if (!condition)
+        {
+            throw new AchillesInvalidTableException(message);
+        }
+    }
+
     public static void validateFalse(boolean condition, String message)
     {
         if (condition)
@@ -181,6 +190,14 @@ public class Validator
         if (condition)
         {
             throw new AchillesBeanMappingException(message);
+        }
+    }
+
+    public static void validateTableFalse(boolean condition, String message)
+    {
+        if (condition)
+        {
+            throw new AchillesInvalidTableException(message);
         }
     }
 }

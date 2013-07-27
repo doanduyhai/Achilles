@@ -1,10 +1,11 @@
 package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -49,6 +50,9 @@ public class CQLEntityManagerTest
     private ConfigurationContext configContext;
 
     @Mock
+    private CQLPersistenceContextFactory contextFactory;
+
+    @Mock
     private AchillesConsistencyLevelPolicy policy;
 
     private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
@@ -80,7 +84,7 @@ public class CQLEntityManagerTest
         when(configContext.getConsistencyPolicy()).thenReturn(policy);
         when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
-        manager = new CQLEntityManager(entityMetaMap, configContext, daoContext);
+        manager = new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
         Whitebox.setInternalState(manager, CQLEntityProxifier.class, proxifier);
 
         manager.setEntityMetaMap(entityMetaMap);
@@ -90,29 +94,28 @@ public class CQLEntityManagerTest
     @Test
     public void should_init_persistence_context_with_entity() throws Exception
     {
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(entity))
-                .thenReturn(CompleteBean.class);
+        CQLPersistenceContext context = mock(CQLPersistenceContext.class);
+        when(contextFactory.newContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(context);
 
-        CQLPersistenceContext context = manager.initPersistenceContext(entity, noConsistency,
+        CQLPersistenceContext actual = manager.initPersistenceContext(entity, noConsistency,
                 noConsistency, noTtl);
 
-        assertThat(context.getConfigContext()).isSameAs(configContext);
-        assertThat(context.getEntity()).isSameAs(entity);
-        assertThat(context.getEntityMeta()).isSameAs(meta);
-        assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
-        assertThat(context.getTableName()).isEqualTo("table");
+        assertThat(actual).isSameAs(context);
+
     }
 
     @Test
     public void should_init_persistence_context_with_type_and_id() throws Exception
     {
-        CQLPersistenceContext context = manager.initPersistenceContext(CompleteBean.class,
+        CQLPersistenceContext context = mock(CQLPersistenceContext.class);
+        when(contextFactory.newContext(CompleteBean.class, entity.getId(), noConsistency, noConsistency, noTtl))
+                .thenReturn(
+                        context);
+
+        CQLPersistenceContext actual = manager.initPersistenceContext(CompleteBean.class,
                 entity.getId(), noConsistency, noConsistency, noTtl);
 
-        assertThat(context.getConfigContext()).isSameAs(configContext);
-        assertThat(context.getEntity()).isNull();
-        assertThat(context.getEntityMeta()).isSameAs(meta);
-        assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
-        assertThat(context.getTableName()).isEqualTo("table");
+        assertThat(actual).isSameAs(context);
+
     }
 }

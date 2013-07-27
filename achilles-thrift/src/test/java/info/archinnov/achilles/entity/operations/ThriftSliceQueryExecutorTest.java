@@ -7,8 +7,8 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.clustered.ClusteredEntityFactory;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftQueryExecutorImpl;
@@ -58,7 +58,7 @@ public class ThriftSliceQueryExecutorTest
     private ConfigurationContext configContext;
 
     @Mock
-    private ThriftDaoContext daoContext;
+    private ThriftPersistenceContextFactory contextFactory;
 
     @Mock
     private AchillesConsistencyLevelPolicy consistencyPolicy;
@@ -101,11 +101,10 @@ public class ThriftSliceQueryExecutorTest
         when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
         when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
-        executor = new ThriftSliceQueryExecutor(configContext, daoContext);
+        executor = new ThriftSliceQueryExecutor(contextFactory, configContext);
+        executor.proxifier = proxifier;
 
         Whitebox.setInternalState(executor, ClusteredEntityFactory.class, factory);
-        Whitebox.setInternalState(executor, ThriftEntityProxifier.class, proxifier);
-        Whitebox.setInternalState(executor, ReflectionInvoker.class, invoker);
         Whitebox.setInternalState(executor, ThriftQueryExecutorImpl.class, executorImpl);
 
         entity = new BeanWithClusteredId();

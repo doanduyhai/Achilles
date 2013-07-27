@@ -1,7 +1,7 @@
 package info.archinnov.achilles.table;
 
 import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class TableNameNormalizer {
             String className = cfName.replaceAll(".+\\.(.+)", "$1");
             return normalizerAndValidateColumnFamilyName(className);
         } else {
-            throw new AchillesInvalidColumnFamilyException("The table name '" + cfName
+            throw new AchillesInvalidTableException("The table name '" + cfName
                     + "' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
         }
     }

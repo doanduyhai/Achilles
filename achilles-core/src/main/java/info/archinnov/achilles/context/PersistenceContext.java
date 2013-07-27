@@ -13,7 +13,7 @@ import org.apache.commons.lang.ObjectUtils;
 import com.google.common.base.Optional;
 
 /**
- * AchillesPersistenceContext
+ * PersistenceContext
  * 
  * @author DuyHai DOAN
  * 

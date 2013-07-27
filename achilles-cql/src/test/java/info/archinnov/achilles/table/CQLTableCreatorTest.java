@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -235,7 +235,7 @@ public class CQLTableCreatorTest {
     public void should_validate_table_when_already_exists() throws Exception
     {
         TableMetadata tableMetadata = mock(TableMetadata.class);
-        tableMetas.put("tableName", tableMetadata);
+        tableMetas.put("tablename", tableMetadata);
 
         meta = new EntityMeta();
         meta.setTableName("tableName");
@@ -254,8 +254,8 @@ public class CQLTableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
-        exception.expectMessage("The required table 'tableName' does not exist for entity 'entityName'");
+        exception.expect(AchillesInvalidTableException.class);
+        exception.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
 
         creator.validateOrCreateTableForEntity(meta, false);
     }
@@ -447,7 +447,7 @@ public class CQLTableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The required table 'externalTableName' does not exist for field 'wideMapCol' of entity 'entityName'");
 
@@ -489,7 +489,7 @@ public class CQLTableCreatorTest {
     public void should_exception_when_achilles_counter_table_does_not_exist() throws Exception
     {
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
 

@@ -3,9 +3,8 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.clustered.ClusteredEntityFactory;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ThriftDaoContext;
-import info.archinnov.achilles.context.ThriftImmediateFlushContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftQueryExecutorImpl;
@@ -15,35 +14,29 @@ import info.archinnov.achilles.iterator.ThriftCounterClusteredEntityIterator;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
 import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersistenceContext>
 {
 
-    private ThriftDaoContext daoContext;
     private AchillesConsistencyLevelPolicy consistencyPolicy;
-    private ConfigurationContext configContext;
 
     private ClusteredEntityFactory factory = new ClusteredEntityFactory();
-    private ReflectionInvoker invoker = new ReflectionInvoker();
     private ThriftQueryExecutorImpl executorImpl = new ThriftQueryExecutorImpl();
+    private ThriftPersistenceContextFactory contextFactory;
 
-    public ThriftSliceQueryExecutor(ConfigurationContext configContext, ThriftDaoContext daoContext)
+    public ThriftSliceQueryExecutor(ThriftPersistenceContextFactory contextFactory, ConfigurationContext configContext)
     {
         super(new ThriftEntityProxifier());
-        this.configContext = configContext;
-        this.daoContext = daoContext;
+        this.contextFactory = contextFactory;
         this.consistencyPolicy = configContext.getConsistencyPolicy();
         defaultReadLevel = consistencyPolicy.getDefaultGlobalReadConsistencyLevel();
     }
@@ -145,27 +138,12 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     {
         ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
                 .getConsistencyLevel();
-
-        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
-                consistencyPolicy, Optional.fromNullable(cl), Optional.fromNullable(cl), NO_TTL);
-
-        Object partitionKey = sliceQuery.getPartitionKey();
-        EntityMeta meta = sliceQuery.getMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-
-        Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
-        return new ThriftPersistenceContext(meta, configContext,
-                daoContext, flushContext, sliceQuery.getEntityClass(), embeddedId, new HashSet<String>());
+        return contextFactory.newContextForSliceQuery(sliceQuery.getEntityClass(), sliceQuery.getPartitionKey(), cl);
     }
 
     @Override
     protected <T> ThriftPersistenceContext buildNewContext(final SliceQuery<T> sliceQuery, T clusteredEntity)
     {
-        EntityMeta meta = sliceQuery.getMeta();
-        ThriftImmediateFlushContext flushContext = new ThriftImmediateFlushContext(daoContext,
-                consistencyPolicy, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
-
-        return new ThriftPersistenceContext(meta, configContext, daoContext, flushContext, clusteredEntity,
-                new HashSet<String>());
+        return contextFactory.newContext(clusteredEntity);
     }
 }

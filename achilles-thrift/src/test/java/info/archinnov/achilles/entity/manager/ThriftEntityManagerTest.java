@@ -1,21 +1,19 @@
 package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Map;
@@ -63,13 +61,13 @@ public class ThriftEntityManagerTest
     private ThriftEntityProxifier proxifier;
 
     @Mock
-    private ThriftDaoContext thriftDaoContext;
+    private ThriftDaoContext daoContext;
 
     @Mock
     private ConfigurationContext configContext;
 
     @Mock
-    private ThriftConsistencyLevelPolicy consistencyPolicy;
+    private ThriftPersistenceContextFactory contextFactory;
 
     private ThriftSliceQueryExecutor queryExecutor;
 
@@ -88,55 +86,42 @@ public class ThriftEntityManagerTest
     @Before
     public void setUp() throws Exception
     {
-        em.setConsistencyPolicy(consistencyPolicy);
+        em.setContextFactory(contextFactory);
         em.setQueryExecutor(queryExecutor);
         em.setCompoundKeyValidator(compoundKeyValidator);
         em.setProxifier(proxifier);
         em.setEntityMetaMap(entityMetaMap);
         em.setConfigContext(configContext);
-        em.setThriftDaoContext(thriftDaoContext);
+        em.setThriftDaoContext(daoContext);
     }
 
     @Test
     public void should_init_persistence_context_with_class_and_primary_key() throws Exception
     {
-        prepareDataForPersistenceContext();
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
+        ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
+        when(contextFactory.newContext(CompleteBean.class, entity.getId(), noConsistency, noConsistency, noTtl))
+                .thenReturn(context);
 
-        ThriftPersistenceContext context = em.initPersistenceContext(CompleteBean.class,
+        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+        when(daoContext.findEntityDao("table")).thenReturn(entityDao);
+
+        ThriftPersistenceContext actual = em.initPersistenceContext(CompleteBean.class,
                 entity.getId(), noConsistency, noConsistency, noTtl);
 
-        assertThat(context.getEntityMeta()).isSameAs(entityMeta);
-        assertThat(context.getConfigContext()).isSameAs(configContext);
-        assertThat(context.getEntity()).isNull();
-        assertThat(context.getPrimaryKey()).isSameAs(entity.getId());
-        assertThat((Class<CompleteBean>) context.getEntityClass()).isSameAs(CompleteBean.class);
-        assertThat(context.getEntityDao()).isSameAs(entityDao);
-        assertThat(context.getPolicy()).isSameAs(consistencyPolicy);
-        assertThat(context.isBatchMode()).isFalse();
+        assertThat(actual).isSameAs(context);
     }
 
     @Test
     public void should_init_persistence_context_with_entity() throws Exception
     {
-        prepareDataForPersistenceContext();
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(entity))
-                .thenReturn(CompleteBean.class);
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
+        ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
+        when(contextFactory.newContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(context);
 
-        ThriftPersistenceContext context = em.initPersistenceContext(entity, noConsistency,
+        ThriftPersistenceContext actual = em.initPersistenceContext(entity, noConsistency,
                 noConsistency, noTtl);
 
-        assertThat(context.getEntityMeta()).isSameAs(entityMeta);
-        assertThat(context.getConfigContext()).isSameAs(configContext);
-        assertThat(context.getEntity()).isSameAs(entity);
-        assertThat(context.getPrimaryKey()).isSameAs(entity.getId());
-        assertThat((Class<CompleteBean>) context.getEntityClass()).isSameAs(CompleteBean.class);
-        assertThat(context.getEntityDao()).isSameAs(entityDao);
-        assertThat(context.getPolicy()).isSameAs(consistencyPolicy);
-        assertThat(context.isBatchMode()).isFalse();
+        assertThat(actual).isSameAs(context);
+
     }
 
     @Test
@@ -150,22 +135,5 @@ public class ThriftEntityManagerTest
         assertThat(Whitebox.getInternalState(builder, "sliceQueryExecutor")).isSameAs(queryExecutor);
         assertThat(Whitebox.getInternalState(builder, "meta")).isSameAs(entityMeta);
         assertThat(Whitebox.getInternalState(builder, "entityClass")).isEqualTo(CompleteBean.class);
-    }
-
-    private void prepareDataForPersistenceContext() throws Exception
-    {
-        idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .accessors()
-                .type(PropertyType.SIMPLE)
-                .build();
-
-        when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
-        when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-        when((Class) entityMeta.getEntityClass()).thenReturn(CompleteBean.class);
-        when(entityMeta.getTableName()).thenReturn("table");
-        when(entityMeta.isClusteredEntity()).thenReturn(false);
-        when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
     }
 }

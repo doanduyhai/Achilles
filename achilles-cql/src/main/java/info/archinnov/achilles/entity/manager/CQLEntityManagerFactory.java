@@ -7,6 +7,7 @@ import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.consistency.CQLConsistencyLevelPolicy;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLDaoContextBuilder;
+import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.table.CQLTableCreator;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -27,6 +28,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
     private Cluster cluster;
     private Session session;
     private CQLDaoContext daoContext;
+    private CQLPersistenceContextFactory contextFactory;
 
     /**
      * Create a new CQLEntityManagerFactory with a configuration map
@@ -47,7 +49,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
                 .validateOrCreateTables(entityMetaMap, configContext, hasSimpleCounter);
 
         daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap, hasSimpleCounter);
-
+        contextFactory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
     }
 
     /**
@@ -56,7 +58,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
      * @return CQLEntityManager
      */
     public CQLEntityManager createEntityManager() {
-        return new CQLEntityManager(entityMetaMap, configContext, daoContext);
+        return new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
     }
 
     @Override

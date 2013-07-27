@@ -7,6 +7,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -38,7 +39,10 @@ public class ThriftBatchingEntityManagerTest
     private ThriftBatchingEntityManager em;
 
     @Mock
-    private ThriftDaoContext thriftDaoContext;
+    private ThriftPersistenceContextFactory contextFactory;
+
+    @Mock
+    private ThriftDaoContext daoContext;
 
     @Mock
     private ConfigurationContext configContext;
@@ -59,7 +63,7 @@ public class ThriftBatchingEntityManagerTest
     public void setUp()
     {
         when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-        em = new ThriftBatchingEntityManager(null, thriftDaoContext, configContext);
+        em = new ThriftBatchingEntityManager(null, contextFactory, daoContext, configContext);
         Whitebox.setInternalState(em, ThriftBatchingFlushContext.class, flushContext);
     }
 

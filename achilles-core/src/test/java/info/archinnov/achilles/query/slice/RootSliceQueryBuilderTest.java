@@ -67,13 +67,13 @@ public class RootSliceQueryBuilderTest
 
         when(meta.getIdMeta()).thenReturn((PropertyMeta) idMeta);
         when(meta.getClassName()).thenReturn("entityClass");
-        doCallRealMethod().when(builder).partitionKey(any());
+        doCallRealMethod().when(builder).partitionKeyInternal(any());
     }
 
     @Test
     public void should_set_partition_keys() throws Exception
     {
-        builder.partitionKey(11L);
+        builder.partitionKeyInternal(11L);
 
         verify(compoundKeyValidator).validatePartitionKey(idMeta, 11L);
 
@@ -83,7 +83,7 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_clustering_from() throws Exception
     {
-        builder.partitionKey(10L).fromClusteringsInternal(11L, "a", 12);
+        builder.partitionKeyInternal(10L).fromClusteringsInternal(11L, "a", 12);
 
         verify(compoundKeyValidator).validateClusteringKeys(idMeta, 11L, "a", 12);
 
@@ -95,7 +95,7 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_clustering_to() throws Exception
     {
-        builder.partitionKey(10L).toClusteringsInternal(11L, "a", 12);
+        builder.partitionKeyInternal(10L).toClusteringsInternal(11L, "a", 12);
 
         verify(compoundKeyValidator).validateClusteringKeys(idMeta, 11L, "a", 12);
 
@@ -106,7 +106,7 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_ordering() throws Exception
     {
-        builder.partitionKey(10L).ordering(DESCENDING);
+        builder.partitionKeyInternal(10L).ordering(DESCENDING);
 
         assertThat(builder.buildClusterQuery().getOrdering()).isEqualTo(DESCENDING);
     }
@@ -118,13 +118,13 @@ public class RootSliceQueryBuilderTest
         exception
                 .expectMessage("Ordering mode for slice query for entity 'entityClass' should not be null");
 
-        builder.partitionKey(10L).ordering(null);
+        builder.partitionKeyInternal(10L).ordering(null);
     }
 
     @Test
     public void should_set_bounding_mode() throws Exception
     {
-        builder.partitionKey(10L).bounding(EXCLUSIVE_BOUNDS);
+        builder.partitionKeyInternal(10L).bounding(EXCLUSIVE_BOUNDS);
 
         assertThat(builder.buildClusterQuery().getBounding()).isEqualTo(EXCLUSIVE_BOUNDS);
     }
@@ -136,13 +136,13 @@ public class RootSliceQueryBuilderTest
         exception
                 .expectMessage("Bounding mode for slice query for entity 'entityClass' should not be null");
 
-        builder.partitionKey(10L).bounding(null);
+        builder.partitionKeyInternal(10L).bounding(null);
     }
 
     @Test
     public void should_set_consistency_level() throws Exception
     {
-        builder.partitionKey(10L).consistencyLevel(EACH_QUORUM);
+        builder.partitionKeyInternal(10L).consistencyLevel(EACH_QUORUM);
 
         assertThat(builder.buildClusterQuery().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
     }
@@ -154,13 +154,13 @@ public class RootSliceQueryBuilderTest
         exception
                 .expectMessage("ConsistencyLevel for slice query for entity 'entityClass' should not be null");
 
-        builder.partitionKey(10L).consistencyLevel(null);
+        builder.partitionKeyInternal(10L).consistencyLevel(null);
     }
 
     @Test
     public void should_set_limit() throws Exception
     {
-        builder.partitionKey(10L).limit(53);
+        builder.partitionKeyInternal(10L).limit(53);
 
         assertThat(builder.buildClusterQuery().getLimit()).isEqualTo(53);
     }
@@ -172,7 +172,7 @@ public class RootSliceQueryBuilderTest
         List<ClusteredEntity> list = mock(List.class);
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
-        List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get();
+        List<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).get();
 
         assertThat(actual).isSameAs(list);
     }
@@ -184,7 +184,7 @@ public class RootSliceQueryBuilderTest
         List<ClusteredEntity> list = mock(List.class);
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
-        List<ClusteredEntity> actual = builder.partitionKey(partitionKey).get(5);
+        List<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).get(5);
 
         assertThat(actual).isSameAs(list);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(5);
@@ -197,7 +197,7 @@ public class RootSliceQueryBuilderTest
         ClusteredEntity entity = new ClusteredEntity();
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
-        ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
+        ClusteredEntity actual = builder.partitionKeyInternal(partitionKey).getFirstOccurence();
 
         assertThat(actual).isSameAs(entity);
 
@@ -212,7 +212,7 @@ public class RootSliceQueryBuilderTest
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
-        ClusteredEntity actual = builder.partitionKey(partitionKey)
+        ClusteredEntity actual = builder.partitionKeyInternal(partitionKey)
                 .getFirstOccurence(clusteringComponents);
 
         assertThat(actual).isSameAs(entity);
@@ -228,7 +228,7 @@ public class RootSliceQueryBuilderTest
         Long partitionKey = RandomUtils.nextLong();
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(new ArrayList<ClusteredEntity>());
 
-        ClusteredEntity actual = builder.partitionKey(partitionKey).getFirstOccurence();
+        ClusteredEntity actual = builder.partitionKeyInternal(partitionKey).getFirstOccurence();
 
         assertThat(actual).isNull();
 
@@ -242,7 +242,7 @@ public class RootSliceQueryBuilderTest
         List<ClusteredEntity> list = mock(List.class);
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
-        List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3);
+        List<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).getFirst(3);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(3);
     }
@@ -255,7 +255,7 @@ public class RootSliceQueryBuilderTest
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
-        List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getFirst(3, clusteringComponents);
+        List<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).getFirst(3, clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(3);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
@@ -271,7 +271,7 @@ public class RootSliceQueryBuilderTest
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(Arrays.asList(entity));
 
         ClusteredEntity actual = builder
-                .partitionKey(partitionKey)
+                .partitionKeyInternal(partitionKey)
                 .getLastOccurence();
 
         assertThat(actual).isSameAs(entity);
@@ -291,7 +291,7 @@ public class RootSliceQueryBuilderTest
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
         ClusteredEntity actual = builder
-                .partitionKey(partitionKey)
+                .partitionKeyInternal(partitionKey)
                 .getLastOccurence(clusteringComponents);
 
         assertThat(actual).isSameAs(entity);
@@ -310,7 +310,7 @@ public class RootSliceQueryBuilderTest
         List<ClusteredEntity> list = mock(List.class);
         when(sliceQueryExecutor.get(any(SliceQuery.class))).thenReturn(list);
 
-        List<ClusteredEntity> actual = builder.partitionKey(partitionKey).getLast(6);
+        List<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).getLast(6);
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(6);
@@ -326,7 +326,7 @@ public class RootSliceQueryBuilderTest
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
         List<ClusteredEntity> actual = builder
-                .partitionKey(partitionKey)
+                .partitionKeyInternal(partitionKey)
                 .getLast(6, clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
@@ -343,7 +343,7 @@ public class RootSliceQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
         when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
-        Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator();
+        Iterator<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).iterator();
 
         assertThat(actual).isSameAs(iterator);
     }
@@ -356,7 +356,7 @@ public class RootSliceQueryBuilderTest
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
         when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
-        Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
+        Iterator<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey)
                 .iteratorWithComponents(clusteringComponents);
 
         assertThat(actual).isSameAs(iterator);
@@ -372,7 +372,7 @@ public class RootSliceQueryBuilderTest
         Iterator<ClusteredEntity> iterator = mock(Iterator.class);
 
         when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
-        Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey).iterator(7);
+        Iterator<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey).iterator(7);
 
         assertThat(Whitebox.getInternalState(builder, "batchSize")).isEqualTo(7);
         assertThat(actual).isSameAs(iterator);
@@ -386,7 +386,7 @@ public class RootSliceQueryBuilderTest
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
         when(sliceQueryExecutor.iterator(any(SliceQuery.class))).thenReturn(iterator);
-        Iterator<ClusteredEntity> actual = builder.partitionKey(partitionKey)
+        Iterator<ClusteredEntity> actual = builder.partitionKeyInternal(partitionKey)
                 .iteratorWithComponents(7, clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "batchSize")).isEqualTo(7);
@@ -400,7 +400,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).remove();
+        builder.partitionKeyInternal(partitionKey).remove();
 
         verify(sliceQueryExecutor).remove(any(SliceQuery.class));
     }
@@ -409,7 +409,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove_n() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).remove(8);
+        builder.partitionKeyInternal(partitionKey).remove(8);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(8);
         verify(sliceQueryExecutor).remove(any(SliceQuery.class));
@@ -419,7 +419,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove_first() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).removeFirstOccurence();
+        builder.partitionKeyInternal(partitionKey).removeFirstOccurence();
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         verify(sliceQueryExecutor).remove(any(SliceQuery.class));
@@ -432,7 +432,7 @@ public class RootSliceQueryBuilderTest
 
         Object[] clusteringComponents = new Object[] { 1, "name" };
 
-        builder.partitionKey(partitionKey).removeFirstOccurence(clusteringComponents);
+        builder.partitionKeyInternal(partitionKey).removeFirstOccurence(clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
@@ -444,7 +444,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove_first_n() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).removeFirst(9);
+        builder.partitionKeyInternal(partitionKey).removeFirst(9);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
         verify(sliceQueryExecutor).remove(any(SliceQuery.class));
@@ -455,7 +455,7 @@ public class RootSliceQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         Object[] clusteringComponents = new Object[] { 1, "name" };
-        builder.partitionKey(partitionKey).removeFirst(9, clusteringComponents);
+        builder.partitionKeyInternal(partitionKey).removeFirst(9, clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(9);
         assertThat(Whitebox.getInternalState(builder, "fromClusterings")).isEqualTo(clusteringComponents);
@@ -467,7 +467,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove_last() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).removeLastOccurence();
+        builder.partitionKeyInternal(partitionKey).removeLastOccurence();
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
@@ -480,7 +480,7 @@ public class RootSliceQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         Object[] clusteringComponents = new Object[] { 1, "name" };
-        builder.partitionKey(partitionKey).removeLastOccurence(clusteringComponents);
+        builder.partitionKeyInternal(partitionKey).removeLastOccurence(clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(1);
@@ -493,7 +493,7 @@ public class RootSliceQueryBuilderTest
     public void should_remove_last_n() throws Exception
     {
         Long partitionKey = RandomUtils.nextLong();
-        builder.partitionKey(partitionKey).removeLast(10);
+        builder.partitionKeyInternal(partitionKey).removeLast(10);
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
@@ -505,7 +505,7 @@ public class RootSliceQueryBuilderTest
     {
         Long partitionKey = RandomUtils.nextLong();
         Object[] clusteringComponents = new Object[] { 1, "name" };
-        builder.partitionKey(partitionKey).removeLast(10, clusteringComponents);
+        builder.partitionKeyInternal(partitionKey).removeLast(10, clusteringComponents);
 
         assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
         assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);

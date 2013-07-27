@@ -1,7 +1,7 @@
 package info.archinnov.achilles.table;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,7 +25,7 @@ public class TableNameNormalizerTest
     {
         String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The table name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
         TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);

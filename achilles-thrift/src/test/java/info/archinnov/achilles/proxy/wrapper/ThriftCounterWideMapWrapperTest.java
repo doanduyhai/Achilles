@@ -9,7 +9,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
@@ -94,9 +93,6 @@ public class ThriftCounterWideMapWrapperTest
     @Captor
     private ArgumentCaptor<SafeExecutionContext<ThriftCounterSliceIterator<Long>>> iterExecCaptor;
 
-    @Mock
-    private ThriftConsistencyLevelPolicy policy;
-
     private Long id = 12L;
     private Integer key = 11;
     private String fqcn = "fqcn";
@@ -111,7 +107,6 @@ public class ThriftCounterWideMapWrapperTest
     {
         wrapper.setId(id);
         when(thriftCompositeFactory.createKeyForCounter(fqcn, id, idMeta)).thenReturn(keyComp);
-        when(context.getPolicy()).thenReturn(policy);
         when(propertyMeta.getReadConsistencyLevel()).thenReturn(readLevel);
         when(propertyMeta.getWriteConsistencyLevel()).thenReturn(writeLevel);
     }
@@ -332,7 +327,6 @@ public class ThriftCounterWideMapWrapperTest
     public void should_not_get_with_consistency_level() throws Exception
     {
         wrapper.get(10, EACH_QUORUM);
-        verifyZeroInteractions(policy);
     }
 
     @Test
@@ -340,7 +334,6 @@ public class ThriftCounterWideMapWrapperTest
     {
         when(thriftCompositeFactory.createBaseComposite(propertyMeta, key)).thenReturn(comp);
         wrapper.insert(10, CounterBuilder.incr());
-        verifyZeroInteractions(policy);
     }
 
     @Test
