@@ -40,7 +40,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
     @Override
     public Object decodeFromComponents(PropertyMeta<?, ?> pm, List<?> components)
     {
-        Constructor<?> constructor = pm.getCompoundKeyConstructor();
+        Constructor<?> constructor = pm.getEmbeddedIdConstructor();
         List<Method> componentSetters = pm.getComponentSetters();
 
         List<Object> decodedComponents = new ArrayList<Object>();
@@ -52,7 +52,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
         }
 
         Object compoundKey;
-        if (pm.hasDefaultConstructorForCompoundKey())
+        if (pm.hasDefaultConstructorForEmbeddedId())
         {
             compoundKey = injectValuesBySetter(decodedComponents, constructor, componentSetters);
         }

@@ -4,6 +4,7 @@ import info.archinnov.achilles.context.FlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -125,7 +126,7 @@ public abstract class PersistenceContext
         return entityMeta.getAllMetasExceptIdMeta().get(0);
     }
 
-    public abstract void refresh();
+    public abstract void refresh() throws AchillesStaleObjectStateException;
 
     public abstract PersistenceContext duplicate(Object entity);
 
@@ -247,4 +248,15 @@ public abstract class PersistenceContext
     {
         this.loadEagerFields = loadEagerFields;
     }
+
+    public Optional<ConsistencyLevel> getReadConsistencyLevel()
+    {
+        return flushContext.getReadConsistencyLevel();
+    }
+
+    public Optional<ConsistencyLevel> getWriteConsistencyLevel()
+    {
+        return flushContext.getReadConsistencyLevel();
+    }
+
 }

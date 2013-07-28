@@ -11,8 +11,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.lang.reflect.Field;
@@ -283,37 +281,6 @@ public class JoinPropertyParserTest
                 .isEqualTo(UserBean.class);
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_parse_external_join_wide_map() throws Exception
-    {
-
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder.keyValueClass(
-                Integer.class, UserBean.class).build();
-
-        initEntityParsingContext();
-
-        parser.fillJoinWideMap(entityContext, idMeta, propertyMeta, "externalTableName");
-
-        assertThat(propertyMeta.getExternalTableName()).isEqualTo("externalTableName");
-        assertThat((Class<Long>) propertyMeta.getIdClass()).isEqualTo(Long.class);
-
-        assertThat(
-                (PropertyMeta<Integer, UserBean>) entityContext
-                        .getPropertyMetas()
-                        .values()
-                        .iterator()
-                        .next()).isSameAs(propertyMeta);
-
-        assertThat(joinPropertyMetaToBeFilled).hasSize(1);
-        assertThat(
-                (PropertyMeta<Integer, UserBean>) joinPropertyMetaToBeFilled
-                        .keySet()
-                        .iterator()
-                        .next()).isSameAs(propertyMeta);
-    }
-
     private <T> PropertyParsingContext newJoinParsingContext(Class<T> entityClass, Field field)
     {
         entityContext = new EntityParsingContext( //
@@ -324,12 +291,5 @@ public class JoinPropertyParserTest
         context.setJoinColumn(true);
 
         return context;
-    }
-
-    private void initEntityParsingContext()
-    {
-        entityContext = new EntityParsingContext( //
-                joinPropertyMetaToBeFilled, //
-                configContext, CompleteBean.class);
     }
 }

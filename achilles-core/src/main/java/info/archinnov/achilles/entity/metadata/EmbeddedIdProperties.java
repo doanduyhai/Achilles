@@ -5,31 +5,21 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
- * CompoundKeyProperties
+ * EmbeddedIdProperties
  * 
  * @author DuyHai DOAN
  * 
  */
-public class CompoundKeyProperties
+public class EmbeddedIdProperties
 {
     private List<Class<?>> componentClasses;
     private List<String> componentNames;
     private List<Method> componentGetters;
     private List<Method> componentSetters;
     private Constructor<?> constructor;
-
-    private Function<String, String> lowerCase = new Function<String, String>()
-    {
-        @Override
-        public String apply(String name)
-        {
-            return name.toLowerCase();
-        }
-    };
 
     public String getOrderingComponent()
     {

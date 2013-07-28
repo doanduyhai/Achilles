@@ -26,7 +26,7 @@ public class ThriftPersistenceContextTestBuilder
     private EntityMeta entityMeta;
     private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
     private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
-    private ThriftCounterDao thriftCounterDao;
+    private ThriftCounterDao counterDao;
     private ThriftConsistencyLevelPolicy policy;
     private boolean ensureJoinConsistency;
     private Object entity;
@@ -54,11 +54,11 @@ public class ThriftPersistenceContextTestBuilder
     }
 
     public ThriftPersistenceContextTestBuilder(EntityMeta entityMeta,
-            ThriftCounterDao thriftCounterDao, ThriftConsistencyLevelPolicy policy,
+            ThriftCounterDao counterDao, ThriftConsistencyLevelPolicy policy,
             Class<?> entityClass, Object primaryKey)
     {
         this.entityMeta = entityMeta;
-        this.thriftCounterDao = thriftCounterDao;
+        this.counterDao = counterDao;
         this.policy = policy;
         this.entityClass = entityClass;
         this.primaryKey = primaryKey;
@@ -67,7 +67,7 @@ public class ThriftPersistenceContextTestBuilder
     public ThriftPersistenceContext build()
     {
         ThriftDaoContext thriftDaoContext = new ThriftDaoContext(entityDaosMap,
-                columnFamilyDaosMap, thriftCounterDao);
+                columnFamilyDaosMap, counterDao);
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setConsistencyPolicy(policy);
         configContext.setEnsureJoinConsistency(ensureJoinConsistency);

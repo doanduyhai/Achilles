@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -400,7 +401,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * @param entity
      *            Entity to be refreshed
      */
-    public void refresh(Object entity) {
+    public void refresh(Object entity) throws AchillesStaleObjectStateException {
         if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
         }
@@ -419,7 +420,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * @param readLevel
      *            Consistency Level for read
      */
-    public void refresh(final Object entity, ConsistencyLevel readLevel) {
+    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
         if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
         }
@@ -427,7 +428,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         this.refresh(entity, Optional.fromNullable(readLevel));
     }
 
-    void refresh(final Object entity, Optional<ConsistencyLevel> readLevelO) {
+    void refresh(final Object entity, Optional<ConsistencyLevel> readLevelO) throws AchillesStaleObjectStateException {
         entityValidator.validateEntity(entity, entityMetaMap);
         proxifier.ensureProxy(entity);
         CONTEXT context = initPersistenceContext(entity, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);

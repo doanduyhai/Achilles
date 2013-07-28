@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.SetWrapperBuilder;
+import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +52,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
             throws Throwable
     {
-        log.trace("Method {} called for entity of class {}", method.getName(), target
-                .getClass()
-                .getCanonicalName());
+        log.trace("Method {} called for entity of class {}", method.getName(), target.getClass().getCanonicalName());
 
         if (idGetter.equals(method))
         {
@@ -187,7 +186,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         return result;
     }
 
-    protected abstract Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
+    protected abstract Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
 
     private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
             throws Throwable

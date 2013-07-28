@@ -53,6 +53,28 @@ public class CQLPreparedStatementGenerator
         return session.prepare(insert.getQueryString());
     }
 
+    public PreparedStatement prepareInsertPSForClusteredCounter(Session session, EntityMeta entityMeta)
+    {
+        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+
+        Insert insert = insertInto(entityMeta.getTableName());
+        prepareInsertPrimaryKey(idMeta, insert);
+
+        List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+                .from(entityMeta.getAllMetasExceptIdMeta())
+                .filter(PropertyType.excludeCounterType)
+                .toImmutableList();
+
+        List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+        fieldMetas.remove(idMeta);
+
+        for (PropertyMeta<?, ?> pm : fieldMetas)
+        {
+            insert.value(pm.getPropertyName(), bindMarker());
+        }
+        return session.prepare(insert.getQueryString());
+    }
+
     public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta,
             PropertyMeta<?, ?> pm)
     {
@@ -153,9 +175,37 @@ public class CQLPreparedStatementGenerator
         return counterPSMap;
     }
 
+    public Map<CQLQueryType, PreparedStatement> prepareClusteredCounterQueryMap(Session session, EntityMeta meta)
+    {
+        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta<?, ?> counterMeta = meta.getFirstMeta();
+        String tableName = meta.getTableName();
+        String counterName = counterMeta.getPropertyName();
+
+        Statement incrStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(incr(counterName, 100L)));
+        String incr = incrStatement.getQueryString().replaceAll("100", "?");
+
+        Statement decrStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(decr(counterName, 100L)));
+        String decr = decrStatement.getQueryString().replaceAll("100", "?");
+
+        Statement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
+        String select = selectStatement.getQueryString();
+
+        Statement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
+        String delete = deleteStatement.getQueryString();
+
+        Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap<AchillesCounter.CQLQueryType, PreparedStatement>();
+        clusteredCounterPSMap.put(INCR, session.prepare(incr.toString()));
+        clusteredCounterPSMap.put(DECR, session.prepare(decr.toString()));
+        clusteredCounterPSMap.put(SELECT, session.prepare(select.toString()));
+        clusteredCounterPSMap.put(DELETE, session.prepare(delete.toString()));
+
+        return clusteredCounterPSMap;
+    }
+
     private Selection prepareSelectField(PropertyMeta<?, ?> pm, Selection select)
     {
-        if (pm.isCompound())
+        if (pm.isEmbeddedId())
         {
             for (String component : pm.getComponentNames())
             {
@@ -171,7 +221,7 @@ public class CQLPreparedStatementGenerator
 
     private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
     {
-        if (idMeta.isCompound())
+        if (idMeta.isEmbeddedId())
         {
             for (String component : idMeta.getComponentNames())
             {
@@ -187,7 +237,7 @@ public class CQLPreparedStatementGenerator
     private Statement prepareWhereClauseForSelect(PropertyMeta<?, ?> idMeta, Select from)
     {
         Statement statement;
-        if (idMeta.isCompound())
+        if (idMeta.isEmbeddedId())
         {
             Select.Where where = null;
             int i = 0;
@@ -215,7 +265,7 @@ public class CQLPreparedStatementGenerator
     private Statement prepareWhereClauseForUpdate(PropertyMeta<?, ?> idMeta, Assignments update)
     {
         Statement statement;
-        if (idMeta.isCompound())
+        if (idMeta.isEmbeddedId())
         {
             Update.Where where = null;
             int i = 0;
@@ -257,7 +307,7 @@ public class CQLPreparedStatementGenerator
     private Statement prepareWhereClauseForDelete(PropertyMeta<?, ?> idMeta, Delete mainFrom)
     {
         Statement mainStatement;
-        if (idMeta.isCompound())
+        if (idMeta.isEmbeddedId())
         {
             Delete.Where where = null;
             int i = 0;

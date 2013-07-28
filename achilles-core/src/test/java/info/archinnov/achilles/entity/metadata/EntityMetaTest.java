@@ -9,6 +9,7 @@ import info.archinnov.achilles.type.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * EntityMetaTest
@@ -83,5 +84,77 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
 
         assertThat(entityMeta.getAllMetasExceptIdMeta()).containsExactly(pm1);
+    }
+
+    @Test
+    public void should_return_true_for_is_clustered_counter() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isTrue();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_not_clustered() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(false);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_more_than_one_property() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+
+        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta, "count",
+                counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
     }
 }

@@ -85,13 +85,13 @@ public class ThriftPersisterImplTest {
     @Mock
     private ThriftGenericWideRowDao wideRowDao;
 
+    @Mock
+    private ThriftCounterDao counterDao;
+
     private EntityMeta entityMeta;
 
     @Mock
     private ThriftCompositeFactory thriftCompositeFactory;
-
-    @Mock
-    private ThriftCounterDao thriftCounterDao;
 
     @Mock
     private Mutator<Object> entityMutator;
@@ -128,10 +128,11 @@ public class ThriftPersisterImplTest {
         entityMeta = new EntityMeta();
         entityMeta.setTableName("cf");
         context = ThriftPersistenceContextTestBuilder
-                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+                .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
                 .entity(entity)
                 .thriftImmediateFlushContext(flushContext)
-                .entityDao(entityDao).wideRowDao(wideRowDao)
+                .entityDao(entityDao)
+                .wideRowDao(wideRowDao)
                 .wideRowDaosMap(wideRowDaosMap)
                 .entityDaosMap(entityDaosMap)
                 .build();
@@ -156,7 +157,7 @@ public class ThriftPersisterImplTest {
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         Composite comp = new Composite();
-        when(thriftCompositeFactory.createBaseComposite(idMeta, entity.getId())).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         when(flushContext.getTtlO()).thenReturn(ttlO);
@@ -179,7 +180,7 @@ public class ThriftPersisterImplTest {
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         Composite comp = new Composite();
-        when(thriftCompositeFactory.createBaseComposite(idMeta, entity.getId())).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getTtlO()).thenReturn(ttlO);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
@@ -212,7 +213,7 @@ public class ThriftPersisterImplTest {
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         Composite comp = new Composite();
-        when(thriftCompositeFactory.createBaseComposite(idMeta, entity.getId())).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when((Mutator) flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
 
@@ -246,7 +247,7 @@ public class ThriftPersisterImplTest {
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         Composite comp = new Composite();
-        when(thriftCompositeFactory.createBaseComposite(idMeta, entity.getId())).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         when(flushContext.getTtlO()).thenReturn(ttlO);
@@ -280,7 +281,7 @@ public class ThriftPersisterImplTest {
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         Composite comp = new Composite();
-        when(thriftCompositeFactory.createBaseComposite(idMeta, entity.getId())).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         when(flushContext.getTtlO()).thenReturn(ttlO);
@@ -304,7 +305,10 @@ public class ThriftPersisterImplTest {
     public void should_batch_simple_property() throws Exception {
 
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class).field("name").accessors().build();
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .build();
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
@@ -314,6 +318,38 @@ public class ThriftPersisterImplTest {
         persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
 
         verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue", ttlO, entityMutator);
+
+    }
+
+    @Test
+    public void should_persist_counter_property() throws Exception {
+
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.
+                completeBean(Void.class, Long.class)
+                .field("id")
+                .type(ID)
+                .build();
+
+        entityMeta.setIdMeta(idMeta);
+
+        PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .fqcn("fqcn")
+                .accessors()
+                .build();
+
+        Counter counterValue = CounterBuilder.incr(10L);
+        when(invoker.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(counterValue);
+
+        Composite rowKey = new Composite();
+        Composite name = new Composite();
+        when(thriftCompositeFactory.createKeyForCounter("fqcn", entity.getId(), idMeta)).thenReturn(rowKey);
+        when(thriftCompositeFactory.createBaseForCounterGet(propertyMeta)).thenReturn(name);
+
+        persisterImpl.persistCounter(context, propertyMeta);
+
+        verify(counterDao).incrementCounter(rowKey, name, 10L);
 
     }
 
@@ -551,7 +587,7 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.remove(context);
 
-        verify(thriftCounterDao).removeCounterBatch(keyComp, comp, counterMutator);
+        verify(counterDao).removeCounterBatch(keyComp, comp, counterMutator);
 
     }
 
@@ -579,7 +615,7 @@ public class ThriftPersisterImplTest {
 
         Composite comp = new Composite();
 
-        when(thriftCompositeFactory.createBaseComposite(idMeta, compoundKey)).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
 
@@ -601,7 +637,7 @@ public class ThriftPersisterImplTest {
 
         Composite comp = new Composite();
 
-        when(thriftCompositeFactory.createBaseComposite(idMeta, compoundKey)).thenReturn(comp);
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
 

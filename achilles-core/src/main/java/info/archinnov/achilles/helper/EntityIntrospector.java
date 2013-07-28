@@ -8,7 +8,6 @@ import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -119,12 +118,7 @@ public class EntityIntrospector {
         Method[] accessors = new Method[2];
 
         accessors[0] = findGetter(beanClass, field);
-        if (field.getType() == Counter.class) {
-            accessors[1] = null;
-        }
-        else {
-            accessors[1] = findSetter(beanClass, field);
-        }
+        accessors[1] = findSetter(beanClass, field);
 
         return accessors;
     }

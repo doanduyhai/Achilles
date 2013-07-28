@@ -66,7 +66,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_compound_id() throws Exception {
 
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setComponentClasses(new ArrayList<Class<?>>());
         props.setComponentGetters(new ArrayList<Method>());
         props.setComponentSetters(new ArrayList<Method>());
@@ -78,7 +78,7 @@ public class PropertyMetaBuilderTest {
                 .accessors(accessors)
                 .objectMapper(objectMapper)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
-                .compoundKeyProperties(props)
+                .embeddedIdProperties(props)
                 .build(Void.class, CompoundKey.class);
 
         assertThat(built.type()).isEqualTo(EMBEDDED_ID);
@@ -87,7 +87,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(CompoundKey.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isTrue();
+        assertThat(built.isEmbeddedId()).isTrue();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);

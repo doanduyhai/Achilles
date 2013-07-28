@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.parsing;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorMissingJsonPropertyAnnotation;
@@ -46,7 +46,7 @@ public class CompoundKeyParserTest {
         Method rankSetter = CorrectCompoundKey.class.getMethod("setRank", int.class);
         Constructor<?> constructor = CorrectCompoundKey.class.getConstructor();
 
-        CompoundKeyProperties props = parser.parseCompoundKey(CorrectCompoundKey.class);
+        EmbeddedIdProperties props = parser.parseCompoundKey(CorrectCompoundKey.class);
 
         assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
         assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter);
@@ -64,7 +64,7 @@ public class CompoundKeyParserTest {
 
         Constructor<?> constructor = CompoundKeyByConstructor.class.getConstructor(Long.class, String.class);
 
-        CompoundKeyProperties props = parser.parseCompoundKey(CompoundKeyByConstructor.class);
+        EmbeddedIdProperties props = parser.parseCompoundKey(CompoundKeyByConstructor.class);
 
         assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
         assertThat(props.getComponentClasses()).containsExactly(Long.class, String.class);

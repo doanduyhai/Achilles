@@ -29,7 +29,7 @@ public class CQLEntityMapper extends EntityMapper
     {
         if (row != null)
         {
-            if (pm.isCompound())
+            if (pm.isEmbeddedId())
             {
                 Object compoundKey = cqlRowInvoker.invokeOnRowForCompoundKey(row, pm);
                 invoker.setValueToField(entity, pm.getSetter(), compoundKey);

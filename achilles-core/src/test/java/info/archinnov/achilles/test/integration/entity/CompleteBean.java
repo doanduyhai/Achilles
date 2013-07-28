@@ -147,6 +147,10 @@ public class CompleteBean
         return version;
     }
 
+    public void setVersion(Counter version) {
+        this.version = version;
+    }
+
     public List<Tweet> getFavoriteTweets() {
         return favoriteTweets;
     }

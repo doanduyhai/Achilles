@@ -11,13 +11,13 @@ import org.junit.Test;
  * @author DuyHai DOAN
  * 
  */
-public class CompoundKeyPropertiesTest
+public class EmbeddedIdPropertiesTest
 {
     @Test
     public void should_to_string() throws Exception
     {
         List<Class<?>> componentClasses = Arrays.<Class<?>> asList(Integer.class, String.class);
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setComponentClasses(componentClasses);
         props.setComponentNames(Arrays.asList("id", "age"));
 
@@ -31,7 +31,7 @@ public class CompoundKeyPropertiesTest
     @Test
     public void should_get_cql_ordering_component() throws Exception
     {
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setComponentNames(Arrays.asList("id", "age", "label"));
 
         assertThat(props.getOrderingComponent()).isEqualTo("age");
@@ -40,7 +40,7 @@ public class CompoundKeyPropertiesTest
     @Test
     public void should_return_null_if_no_cql_ordering_component() throws Exception
     {
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setComponentNames(Arrays.asList("id"));
 
         assertThat(props.getOrderingComponent()).isNull();

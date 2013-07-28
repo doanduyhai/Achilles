@@ -16,8 +16,10 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -68,6 +71,8 @@ public class CQLDaoContextTest
     @Mock
     private Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
+    private Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap = new HashMap<Class<?>, Map<CQLQueryType, PreparedStatement>>();
+
     @Mock
     private Session session;
 
@@ -101,9 +106,11 @@ public class CQLDaoContextTest
         Whitebox.setInternalState(daoContext, "selectEagerPSs", selectEagerPSs);
         Whitebox.setInternalState(daoContext, "removePSs", removePSs);
         Whitebox.setInternalState(daoContext, "counterQueryMap", counterQueryMap);
+        Whitebox.setInternalState(daoContext, "clusteredCounterQueryMap", clusteredCounterQueryMap);
         Whitebox.setInternalState(daoContext, Session.class, session);
-
+        clusteredCounterQueryMap.clear();
         entityMeta = new EntityMeta();
+        entityMeta.setEntityClass(CompleteBean.class);
         entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE,
                 EACH_QUORUM));
 
@@ -272,8 +279,9 @@ public class CQLDaoContextTest
         assertThat(actual).isSameAs(resultSet);
     }
 
+    // Simple counter
     @Test
-    public void should_bind_counter_increment() throws Exception
+    public void should_bind_simple_counter_increment() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -281,17 +289,18 @@ public class CQLDaoContextTest
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
-        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, 11L, 2L))
+        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
                 .thenReturn(bs);
 
-        daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 11L, 2L);
+        daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
 
         verify(context).pushBoundStatement(bs, EACH_QUORUM);
     }
 
     @Test
-    public void should_bind_counter_decrement() throws Exception
+    public void should_bind_simple_counter_increment_with_runtime_consistency() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -299,17 +308,52 @@ public class CQLDaoContextTest
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
+        when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
+        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
+                .thenReturn(bs);
+
+        daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
+
+        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+    }
+
+    @Test
+    public void should_increment_simple_counter() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+        when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
+        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
+                .thenReturn(bs);
+
+        daoContext.incrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+
+        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_decrement_simple_counter() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
         when(counterQueryMap.get(CQLQueryType.DECR)).thenReturn(ps);
-        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, 11L, 2L))
+        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
                 .thenReturn(bs);
 
-        daoContext.bindForSimpleCounterDecrement(context, entityMeta, pm, 11L, 2L);
+        daoContext.decrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
     }
 
     @Test
-    public void should_bind_counter_delete() throws Exception
+    public void should_get_simple_counter() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -317,6 +361,50 @@ public class CQLDaoContextTest
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
+        when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
+        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
+
+        ResultSet resultSet = mock(ResultSet.class);
+        Row row = mock(Row.class);
+        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
+
+        Row actual = daoContext.getSimpleCounter(context, pm, EACH_QUORUM);
+
+        assertThat(actual).isSameAs(row);
+    }
+
+    @Test
+    public void should_get_simple_counter_with_default_consistency() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+
+        when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
+        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
+
+        ResultSet resultSet = mock(ResultSet.class);
+        Row row = mock(Row.class);
+        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
+
+        Row actual = daoContext.getSimpleCounter(context, pm, null);
+
+        assertThat(actual).isSameAs(row);
+    }
+
+    @Test
+    public void should_bind_simple_counter_delete() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
         when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
 
@@ -326,7 +414,25 @@ public class CQLDaoContextTest
     }
 
     @Test
-    public void should_bind_counter_select() throws Exception
+    public void should_bind_simple_counter_delete_with_runtime_consistency() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
+        when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
+        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+
+        daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
+
+        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+    }
+
+    //Clustered counter
+    @Test
+    public void should_bind_clustered_counter_increment() throws Exception
     {
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -334,17 +440,145 @@ public class CQLDaoContextTest
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
-        when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
-        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, 11L)).thenReturn(bs);
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
+                .thenReturn(bs);
+
+        daoContext.bindForClusteredCounterIncrement(context, entityMeta, pm, 2L);
+
+        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_bind_clustered_counter_increment_with_runtime_consistency() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
+                .thenReturn(bs);
+
+        daoContext.bindForClusteredCounterIncrement(context, entityMeta, pm, 2L);
+
+        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+    }
+
+    @Test
+    public void should_increment_clustered_counter() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
+                .thenReturn(bs);
+
+        daoContext.incrementClusteredCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+
+        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_decrement_clustered_counter() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DECR, ps));
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
+                .thenReturn(bs);
+
+        daoContext.decrementClusteredCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+
+        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_get_clustered_counter() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.SELECT, ps));
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
         when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
 
-        Row actual = daoContext.bindForSimpleCounterSelect(context, entityMeta, pm, 11L);
+        Row actual = daoContext.getClusteredCounter(context, pm, EACH_QUORUM);
 
         assertThat(actual).isSameAs(row);
+    }
+
+    @Test
+    public void should_get_clustered_counter_with_default_consistency() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.SELECT, ps));
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
+
+        ResultSet resultSet = mock(ResultSet.class);
+        Row row = mock(Row.class);
+        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
+
+        Row actual = daoContext.getClusteredCounter(context, pm, null);
+
+        assertThat(actual).isSameAs(row);
+    }
+
+    @Test
+    public void should_bind_clustered_counter_delete() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+
+        daoContext.bindForClusteredCounterDelete(context, entityMeta, pm, 11L);
+
+        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_bind_clustered_counter_delete_with_runtime_consistency() throws Exception
+    {
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
+                .build();
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+
+        daoContext.bindForClusteredCounterDelete(context, entityMeta, pm, 11L);
+
+        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
     }
 
     @Test

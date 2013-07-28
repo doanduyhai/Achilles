@@ -437,15 +437,6 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_get_cql_external_table_name() throws Exception
-    {
-        PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
-        pm.setExternalTableName("taBLe");
-
-        assertThat(pm.getCQLExternalTableName()).isEqualTo("table");
-    }
-
-    @Test
     public void should_serialize_as_json() throws Exception
     {
         SimpleTranscoder transcoder = new SimpleTranscoder(objectMapper);
@@ -462,9 +453,9 @@ public class PropertyMetaTest
     public void should_get_cql_ordering_component() throws Exception
     {
         PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
+        EmbeddedIdProperties multiKeyProperties = new EmbeddedIdProperties();
         multiKeyProperties.setComponentNames(Arrays.asList("id", "age", "name"));
-        meta.setCompoundKeyProperties(multiKeyProperties);
+        meta.setEmbeddedIdProperties(multiKeyProperties);
 
         assertThat(meta.getOrderingComponent()).isEqualTo("age");
     }
@@ -484,13 +475,13 @@ public class PropertyMetaTest
         Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
                 .getConstructor(Long.class,
                         String.class);
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.<CompoundKeyByConstructor> getCompoundKeyConstructor()).isSameAs(
+        assertThat(meta.<CompoundKeyByConstructor> getEmbeddedIdConstructor()).isSameAs(
                 constructor);
     }
 
@@ -498,7 +489,7 @@ public class PropertyMetaTest
     public void should_return_null_when_no_compound_key_constructor() throws Exception
     {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        assertThat(meta.getCompoundKeyConstructor()).isNull();
+        assertThat(meta.getEmbeddedIdConstructor()).isNull();
     }
 
     @Test
@@ -506,13 +497,13 @@ public class PropertyMetaTest
     {
 
         Constructor<TweetCompoundKey> constructor = TweetCompoundKey.class.getConstructor();
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isTrue();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isTrue();
     }
 
     @Test
@@ -522,20 +513,20 @@ public class PropertyMetaTest
         Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
                 .getConstructor(Long.class,
                         String.class);
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isFalse();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
     }
 
     @Test
     public void should_return_false_when_no_compound_key_constructor() throws Exception
     {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isFalse();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
     }
 
     @Test

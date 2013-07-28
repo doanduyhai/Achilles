@@ -30,7 +30,7 @@ public class PropertyMetaBuilder {
     private CounterProperties counterProperties;
 
     private JoinProperties joinProperties;
-    private CompoundKeyProperties compoundKeyProperties;
+    private EmbeddedIdProperties embeddedIdProperties;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static PropertyMetaBuilder factory() {
@@ -56,7 +56,7 @@ public class PropertyMetaBuilder {
         log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
         PropertyMeta<K, V> meta = null;
-        boolean isCompound = compoundKeyProperties == null ? false : true;
+        boolean isCompound = embeddedIdProperties == null ? false : true;
         meta = new PropertyMeta<K, V>();
         meta.setObjectMapper(objectMapper);
         meta.setType(type);
@@ -68,7 +68,7 @@ public class PropertyMetaBuilder {
         meta.setSetter(accessors[1]);
 
         meta.setJoinProperties(joinProperties);
-        meta.setCompoundKeyProperties(compoundKeyProperties);
+        meta.setEmbeddedIdProperties(embeddedIdProperties);
 
         meta.setCompound(isCompound);
         meta.setCounterProperties(counterProperties);
@@ -88,8 +88,8 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder compoundKeyProperties(CompoundKeyProperties compoundKeyProperties) {
-        this.compoundKeyProperties = compoundKeyProperties;
+    public PropertyMetaBuilder embeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
+        this.embeddedIdProperties = embeddedIdProperties;
         return this;
     }
 

@@ -52,4 +52,8 @@ public class EntityWithConsistencyLevelOnClassAndField
     {
         return count;
     }
+
+    public void setCount(Counter count) {
+        this.count = count;
+    }
 }

@@ -85,7 +85,7 @@ public class CQLStatementGenerator {
     }
 
     private void generateSelectForPrimaryKey(PropertyMeta<?, ?> idMeta, Selection select) {
-        if (idMeta.isCompound()) {
+        if (idMeta.isEmbeddedId()) {
             for (String component : idMeta.getComponentNames()) {
                 select.column(component);
             }

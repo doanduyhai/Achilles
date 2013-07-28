@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -14,6 +15,8 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +34,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -90,7 +94,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
-
+        when(entityMeta.isClusteredCounter()).thenReturn(false);
     }
 
     @Test
@@ -116,6 +120,70 @@ public class CQLLoaderImplTest
 
         assertThat(actual).isNull();
         verifyZeroInteractions(mapper);
+    }
+
+    @Test
+    public void should_eager_load_clustered_counter_entity_with_runtime_consistency() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(PropertyType.COUNTER)
+                .build();
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+        when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
+
+        CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
+
+        assertThat(actual).isInstanceOf(CompleteBean.class);
+
+        verifyZeroInteractions(mapper);
+    }
+
+    @Test
+    public void should_eager_load_clustered_counter_entity_with_default_consistency() throws Exception
+    {
+        Long counterValue = RandomUtils.nextLong();
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(PropertyType.COUNTER)
+                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(EACH_QUORUM, EACH_QUORUM))
+                .build();
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+        when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
+
+        CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
+
+        assertThat(actual).isInstanceOf(CompleteBean.class);
+
+        verifyZeroInteractions(mapper);
+    }
+
+    @Test
+    public void should_return_null_for_eager_load_clusterd_counter_when_not_found() throws Exception
+    {
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(PropertyType.COUNTER)
+                .build();
+
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+        when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(null);
+
+        CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
+
+        assertThat(actual).isNull();
     }
 
     @Test

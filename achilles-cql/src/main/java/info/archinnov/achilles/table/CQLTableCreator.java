@@ -8,10 +8,8 @@ import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
@@ -22,13 +20,10 @@ import com.datastax.driver.core.TableMetadata;
 public class CQLTableCreator extends TableCreator {
     private static final Logger log = LoggerFactory.getLogger(CQLTableCreator.class);
 
-    private static final String SINGLE_WIDE_MAP_KEY = "wide_map_key";
-
     private Session session;
     private String keyspaceName;
     private Cluster cluster;
     private Map<String, TableMetadata> tableMetas;
-    private Set<String> tableNames = new HashSet<String>();
 
     private CQLTableValidator validator;
 
@@ -98,94 +93,79 @@ public class CQLTableCreator extends TableCreator {
     private void createTableForEntity(EntityMeta entityMeta) {
         log.debug("Creating table for entityMeta {}", entityMeta.getClassName());
         String tableName = entityMeta.getTableName();
-        if (!tableNames.contains(tableName))
+
+        if (entityMeta.isClusteredCounter())
         {
-            CQLTableBuilder builder = CQLTableBuilder.createTable(tableName);
-            for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())
-            {
-                String propertyName = pm.getPropertyName();
-                Class<?> keyClass = pm.getKeyClass();
-                Class<?> valueClass = pm.getValueClass();
-                switch (pm.type())
-                {
-                    case SIMPLE:
-                    case LAZY_SIMPLE:
-                        builder.addColumn(propertyName, valueClass);
-                        break;
-                    case LIST:
-                    case LAZY_LIST:
-                        builder.addList(propertyName, valueClass);
-                        break;
-                    case SET:
-                    case LAZY_SET:
-                        builder.addSet(propertyName, valueClass);
-                        break;
-                    case MAP:
-                    case LAZY_MAP:
-                        builder.addMap(propertyName, keyClass, pm.getValueClass());
-                        break;
-                    case JOIN_SIMPLE:
-                        builder.addColumn(propertyName, pm.joinIdMeta().getValueClass());
-                        break;
-                    case JOIN_LIST:
-                        builder.addList(propertyName, pm.joinIdMeta().getValueClass());
-                        break;
-                    case JOIN_SET:
-                        builder.addSet(propertyName, pm.joinIdMeta().getValueClass());
-                        break;
-                    case JOIN_MAP:
-                        builder.addMap(propertyName, keyClass, pm.joinIdMeta().getValueClass());
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            buildPrimaryKeys(entityMeta.getIdMeta(), builder);
-            builder.addComment("Create table for entity '" + entityMeta.getClassName() + "'");
-
-            session.execute(builder.generateDDLScript());
-
-            tableNames.add(tableName);
+            createTableForClusteredCounter(entityMeta);
+        }
+        else
+        {
+            createTable(entityMeta, tableName);
         }
     }
 
-    private void createTableForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm) {
-        log.debug("Creating table for wide map {} for entity {}", pm.getPropertyName(), meta.getClassName());
-
-        String externalTableName = pm.getExternalTableName();
-        if (!tableNames.contains(externalTableName))
+    private void createTable(EntityMeta entityMeta, String tableName) {
+        CQLTableBuilder builder = CQLTableBuilder.createTable(tableName);
+        for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())
         {
-
-            CQLTableBuilder builder;
-            if (pm.isCounter())
+            String propertyName = pm.getPropertyName();
+            Class<?> keyClass = pm.getKeyClass();
+            Class<?> valueClass = pm.getValueClass();
+            switch (pm.type())
             {
-                builder = CQLTableBuilder.createCounterTable(externalTableName);
+                case SIMPLE:
+                case LAZY_SIMPLE:
+                    builder.addColumn(propertyName, valueClass);
+                    break;
+                case LIST:
+                case LAZY_LIST:
+                    builder.addList(propertyName, valueClass);
+                    break;
+                case SET:
+                case LAZY_SET:
+                    builder.addSet(propertyName, valueClass);
+                    break;
+                case MAP:
+                case LAZY_MAP:
+                    builder.addMap(propertyName, keyClass, pm.getValueClass());
+                    break;
+                case JOIN_SIMPLE:
+                    builder.addColumn(propertyName, pm.joinIdMeta().getValueClass());
+                    break;
+                case JOIN_LIST:
+                    builder.addList(propertyName, pm.joinIdMeta().getValueClass());
+                    break;
+                case JOIN_SET:
+                    builder.addSet(propertyName, pm.joinIdMeta().getValueClass());
+                    break;
+                case JOIN_MAP:
+                    builder.addMap(propertyName, keyClass, pm.joinIdMeta().getValueClass());
+                    break;
+                default:
+                    break;
             }
-            else
-            {
-                builder = CQLTableBuilder.createTable(externalTableName);
-            }
-            PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-            buildPrimaryKeys(idMeta, builder);
-            buildPrimaryKeys(pm, builder);
 
-            if (pm.isJoin())
-            {
-                builder.addColumn(pm.getPropertyName(), pm.joinIdMeta().getValueClass());
-            }
-            else
-            {
-                builder.addColumn(pm.getPropertyName(), pm.getValueClass());
-            }
-
-            builder.addComment("Create table for wide map property '" + pm.getPropertyName() + "' of entity '"
-                    + meta.getClassName() + "'");
-
-            session.execute(builder.generateDDLScript());
-
-            tableNames.add(externalTableName);
         }
+        buildPrimaryKeys(entityMeta.getIdMeta(), builder);
+        builder.addComment("Create table for entity '" + entityMeta.getClassName() + "'");
+        session.execute(builder.generateDDLScript());
+    }
+
+    private void createTableForClusteredCounter(EntityMeta meta) {
+        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+
+        log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
+
+        CQLTableBuilder builder = CQLTableBuilder.createCounterTable(meta.getTableName());
+        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        buildPrimaryKeys(idMeta, builder);
+        builder.addColumn(pm.getPropertyName(), pm.getValueClass());
+
+        builder.addComment("Create table for counter property '" + pm.getPropertyName() + "' of entity '"
+                + meta.getClassName() + "'");
+
+        session.execute(builder.generateDDLScript());
+
     }
 
     private Map<String, TableMetadata> fetchTableMetaData()
@@ -214,6 +194,7 @@ public class CQLTableCreator extends TableCreator {
                 builder.addColumn(componentName, componentClasses.get(i));
                 builder.addPrimaryKey(componentName);
             }
+            System.out.println(" builder.primaryKeys = " + builder.toString());
         }
         else
         {

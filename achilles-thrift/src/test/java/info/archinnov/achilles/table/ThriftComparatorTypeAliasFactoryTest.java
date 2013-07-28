@@ -3,7 +3,7 @@ package info.archinnov.achilles.table;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
@@ -41,7 +41,7 @@ public class ThriftComparatorTypeAliasFactoryTest {
     private PropertyMeta<CompoundKeyWithEnum, String> compoundKeyWithEnumWideMeta;
 
     @Mock
-    private CompoundKeyProperties compoundKeyProperties;
+    private EmbeddedIdProperties embeddedIdProperties;
 
     @Mock
     private PropertyMeta<CorrectCompoundKey, String> multiKeyWideMapMeta;

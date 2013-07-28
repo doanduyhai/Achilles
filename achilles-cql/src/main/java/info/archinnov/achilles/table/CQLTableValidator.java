@@ -31,6 +31,15 @@ public class CQLTableValidator {
 
     public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        if (entityMeta.isClusteredCounter())
+        {
+
+        }
+        validateTable(entityMeta, tableMetadata, idMeta);
+
+    }
+
+    private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, PropertyMeta<?, ?> idMeta) {
         if (idMeta.isEmbeddedId())
         {
             List<String> componentNames = idMeta.getComponentNames();
@@ -69,12 +78,6 @@ public class CQLTableValidator {
                     break;
             }
         }
-
-    }
-
-    public void validateForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm, TableMetadata tableMetadata) {
-        // TODO Auto-generated method stub
-
     }
 
     public void validateAchillesCounter() {

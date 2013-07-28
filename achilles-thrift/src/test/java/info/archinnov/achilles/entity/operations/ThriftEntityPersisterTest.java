@@ -1,10 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -92,8 +89,10 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_persist_simple_property() throws Exception {
-        PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder.valueClass(String.class)
-                .type(PropertyType.SIMPLE).build();
+        PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .type(PropertyType.SIMPLE)
+                .build();
 
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("simpleMeta", simpleMeta));
 
@@ -101,6 +100,21 @@ public class ThriftEntityPersisterTest {
 
         verify(persisterImpl).removeEntityBatch(context);
         verify(persisterImpl).batchPersistSimpleProperty(context, simpleMeta);
+    }
+
+    @Test
+    public void should_persist_counter_property() throws Exception {
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .type(PropertyType.COUNTER)
+                .build();
+
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("counterMeta", counterMeta));
+
+        persister.persist(context);
+
+        verify(persisterImpl).removeEntityBatch(context);
+        verify(persisterImpl).persistCounter(context, counterMeta);
     }
 
     @Test

@@ -8,7 +8,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,12 +65,21 @@ public class CQLTableValidatorTest {
                 .type(ID)
                 .build();
 
+        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
         when(columnMetadata.getType()).thenReturn(DataType.bigint());
+
+        when(tableMetadata.getColumn("name")).thenReturn(columnMetadataForField);
+        when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
         validator.validateForEntity(entityMeta, tableMetadata);
     }
@@ -86,8 +94,14 @@ public class CQLTableValidatorTest {
                 .type(EMBEDDED_ID)
                 .build();
 
+        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("string")
+                .type(SIMPLE)
+                .build();
+
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("string", nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
@@ -97,6 +111,9 @@ public class CQLTableValidatorTest {
         ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
         when(tableMetadata.getColumn("name")).thenReturn(nameMetadata);
         when(nameMetadata.getType()).thenReturn(DataType.text());
+
+        when(tableMetadata.getColumn("string")).thenReturn(columnMetadataForField);
+        when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
         validator.validateForEntity(entityMeta, tableMetadata);
     }

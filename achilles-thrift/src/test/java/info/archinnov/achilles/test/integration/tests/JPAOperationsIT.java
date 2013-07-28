@@ -2,16 +2,18 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableNameNormalizer.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -24,6 +26,7 @@ import java.util.List;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -45,6 +48,8 @@ public class JPAOperationsIT
 
     private ThriftGenericEntityDao dao = getEntityDao(
             normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
+
+    private ThriftCounterDao counterDao = getCounterDao();
 
     private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
@@ -74,6 +79,7 @@ public class JPAOperationsIT
                 .addPreference(1, "FR")
                 .addPreference(2, "Paris")
                 .addPreference(3, "75014")
+                .version(CounterBuilder.incr(15L))
                 .buid();
 
         em.persist(bean);
@@ -151,6 +157,15 @@ public class JPAOperationsIT
         assertThat(bar.left.get(1, STRING_SRZ)).isEqualTo("friends");
         assertThat(bar.right).isEqualTo("bar");
 
+        Composite counterRowKey = new Composite();
+        counterRowKey.setComponent(0, CompleteBean.class.getCanonicalName(), STRING_SRZ);
+        counterRowKey.setComponent(1, bean.getId().toString(), STRING_SRZ);
+
+        Composite counterName = new Composite();
+        counterName.addComponent(0, "version", ComponentEquality.EQUAL);
+
+        Long version = counterDao.getCounterValue(counterRowKey, counterName);
+        assertThat(version).isEqualTo(15L);
     }
 
     @Test
@@ -682,6 +697,26 @@ public class JPAOperationsIT
         assertThat(bean.getName()).isEqualTo("DuyHai_modified");
         assertThat(bean.getFriends()).hasSize(3);
         assertThat(bean.getFriends().get(2)).isEqualTo("qux");
+
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void should_exception_when_staled_object_during_refresh() throws Exception
+    {
+
+        CompleteBean bean = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("DuyHai")
+                .buid();
+
+        bean = em.merge(bean);
+
+        Mutator<Object> mutator = dao.buildMutator();
+        dao.removeRowBatch(bean.getId(), mutator);
+        dao.executeMutator(mutator);
+
+        em.refresh(bean);
 
     }
 

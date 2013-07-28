@@ -25,12 +25,12 @@ import org.junit.rules.ExpectedException;
 import com.google.common.base.Optional;
 
 /**
- * WideRowIT
+ * ClusteredEntityIT
  * 
  * @author DuyHai DOAN
  * 
  */
-public class WideRowIT
+public class ClusteredEntityIT
 {
     @Rule
     public ExpectedException exception = ExpectedException.none();

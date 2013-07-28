@@ -92,10 +92,32 @@ public class CQLPreparedStatementBinder
         return ps.bind(values);
     }
 
+    public BoundStatement bindForClusteredCounterIncrementDecrement(PreparedStatement ps,
+            EntityMeta entityMeta, PropertyMeta<?, ?> pm, Object primaryKey, Long increment)
+    {
+        List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        Object[] keys = primarykeys.toArray(new Object[primarykeys.size()]);
+        return ps.bind(ArrayUtils.add(keys, 0, increment));
+    }
+
+    public BoundStatement bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+            PropertyMeta<?, ?> pm, Object primaryKey)
+    {
+        List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
+    }
+
+    public BoundStatement bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+            PropertyMeta<?, ?> pm, Object primaryKey)
+    {
+        List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
+    }
+
     private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta<?, ?> idMeta)
     {
         List<Object> values = new ArrayList<Object>();
-        if (idMeta.isCompound())
+        if (idMeta.isEmbeddedId())
         {
             values.addAll(idMeta.encodeToComponents(primaryKey));
         }

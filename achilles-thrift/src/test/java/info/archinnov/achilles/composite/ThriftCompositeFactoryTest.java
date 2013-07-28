@@ -51,44 +51,28 @@ public class ThriftCompositeFactoryTest
     private CompoundKeyValidator compoundKeyValidator;
 
     @Mock
-    private PropertyMeta<Integer, String> wideMapMeta;
-
-    @Mock
-    private PropertyMeta<TweetCompoundKey, String> compoundKeyWideMapMeta;
+    private PropertyMeta<Void, CompoundKey> embeddedIdMeta;
 
     @Before
     public void setUp()
     {
-        when(wideMapMeta.isCompound()).thenReturn(false);
-        when(wideMapMeta.getPropertyName()).thenReturn("property");
-        when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
 
-        when(compoundKeyWideMapMeta.isCompound()).thenReturn(true);
-        when(compoundKeyWideMapMeta.getPropertyName()).thenReturn("property");
+        when(embeddedIdMeta.isEmbeddedId()).thenReturn(true);
+        when(embeddedIdMeta.getPropertyName()).thenReturn("property");
     }
 
     @Test
-    public void should_create_for_insert() throws Exception
-    {
-        when(wideMapMeta.encodeKey(12)).thenReturn(12);
-        Composite comp = factory.createBaseComposite(wideMapMeta, 12);
-
-        assertThat(comp.getComponents()).hasSize(1);
-        assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(12);
-    }
-
-    @Test
-    public void should_create_for_compound_key_insert() throws Exception
+    public void should_create_for_embedded_id_insert() throws Exception
     {
         TweetCompoundKey tweetKey = new TweetCompoundKey();
         Composite comp = new Composite();
 
         when(
                 compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(tweetKey,
-                        compoundKeyWideMapMeta))
+                        embeddedIdMeta))
                 .thenReturn(comp);
 
-        Composite actual = factory.createBaseComposite(compoundKeyWideMapMeta, tweetKey);
+        Composite actual = factory.createCompositeForClustered(embeddedIdMeta, tweetKey);
 
         assertThat(actual).isSameAs(comp);
     }

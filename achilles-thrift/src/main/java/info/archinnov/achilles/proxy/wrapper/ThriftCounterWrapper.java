@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.validation.Validator;
 import me.prettyprint.hector.api.beans.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ public class ThriftCounterWrapper implements Counter
     @Override
     public Long get(ConsistencyLevel readLevel)
     {
+        Validator.validateNotNull(readLevel, "Read consistency level for counter get should not be null");
+
         log.trace("Get counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 readLevel.name());
@@ -87,6 +90,8 @@ public class ThriftCounterWrapper implements Counter
 
     public void incr(ConsistencyLevel writeLevel)
     {
+        Validator.validateNotNull(readLevel, "Write consistency level for counter incr should not be null");
+
         log.trace("Increment counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 writeLevel);
@@ -125,6 +130,8 @@ public class ThriftCounterWrapper implements Counter
     @Override
     public void incr(final Long increment, ConsistencyLevel writeLevel)
     {
+        Validator.validateNotNull(readLevel, "Write consistency level for counter incr should not be null");
+
         log.trace(
                 "Increment counter value for property {} of entity {} of {}  with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
@@ -163,6 +170,8 @@ public class ThriftCounterWrapper implements Counter
     @Override
     public void decr(ConsistencyLevel writeLevel)
     {
+        Validator.validateNotNull(readLevel, "Write consistency level for counter decr should not be null");
+
         log.trace("Decrement counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 writeLevel);
@@ -200,6 +209,8 @@ public class ThriftCounterWrapper implements Counter
     @Override
     public void decr(final Long decrement, ConsistencyLevel writeLevel)
     {
+        Validator.validateNotNull(readLevel, "Write consistency level for counter decr should not be null");
+
         log.trace(
                 "Decrement counter value for property {} of entity {} pof {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),

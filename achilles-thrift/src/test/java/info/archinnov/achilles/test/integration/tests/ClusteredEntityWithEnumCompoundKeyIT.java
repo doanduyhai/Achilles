@@ -17,7 +17,7 @@ import org.junit.After;
 import org.junit.Test;
 import com.google.common.base.Optional;
 
-public class WideRowWithEnumCompoundKeyIT
+public class ClusteredEntityWithEnumCompoundKeyIT
 {
 
     private ThriftGenericWideRowDao dao = getColumnFamilyDao(

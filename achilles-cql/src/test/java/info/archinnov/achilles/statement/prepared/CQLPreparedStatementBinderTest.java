@@ -506,4 +506,90 @@ public class CQLPreparedStatementBinderTest
 
         assertThat(binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
     }
+
+    @Test
+    public void should_bind_for_clustered_counter_increment_decrement() throws Exception
+    {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .transcoder(transcoder)
+                .type(ID)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("counter")
+                .transcoder(transcoder)
+                .build();
+
+        Long primaryKey = RandomUtils.nextLong();
+        Long counter = RandomUtils.nextLong();
+
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        when(ps.bind(counter, primaryKey)).thenReturn(bs);
+
+        assertThat(binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta, primaryKey, counter))
+                .isSameAs(bs);
+    }
+
+    @Test
+    public void should_bind_for_clustered_counter_select() throws Exception
+    {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .transcoder(transcoder)
+                .type(ID)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("counter")
+                .transcoder(transcoder)
+                .build();
+
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        when(ps.bind(primaryKey)).thenReturn(bs);
+
+        assertThat(binder.bindForClusteredCounterSelect(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+    }
+
+    @Test
+    public void should_bind_for_clustered_counter_delete() throws Exception
+    {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .transcoder(transcoder)
+                .type(ID)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("counter")
+                .transcoder(transcoder)
+                .build();
+
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        when(ps.bind(primaryKey)).thenReturn(bs);
+
+        assertThat(binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+    }
 }

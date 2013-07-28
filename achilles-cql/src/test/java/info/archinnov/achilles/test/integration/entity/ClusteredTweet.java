@@ -93,4 +93,12 @@ public class ClusteredTweet
     {
         return favoriteCount;
     }
+
+    public void setRetweetCount(Counter retweetCount) {
+        this.retweetCount = retweetCount;
+    }
+
+    public void setFavoriteCount(Counter favoriteCount) {
+        this.favoriteCount = favoriteCount;
+    }
 }

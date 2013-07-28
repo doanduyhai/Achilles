@@ -5,12 +5,9 @@ import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.validation.Validator;
 import java.util.List;
-import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import org.slf4j.Logger;
@@ -30,28 +27,10 @@ public class ThriftCompositeFactory
     private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
     private CompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
-    public <K, V, T> Composite createBaseComposite(PropertyMeta<K, V> propertyMeta, T key)
+    public <K, V, T> Composite createCompositeForClustered(PropertyMeta<K, V> propertyMeta, T key)
     {
         log.trace("Creating base composite for propertyMeta {}", propertyMeta.getPropertyName());
-
-        Composite composite = new Composite();
-        String propertyName = propertyMeta.getPropertyName();
-
-        if (propertyMeta.isCompound())
-        {
-            composite = compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
-        }
-        else
-        {
-            log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
-            Validator.validateNotNull(key, "The values for the for the key of WideMap '"
-                    + propertyName + "' should not be null");
-
-            Serializer<Object> keySerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.getKeyClass());
-            Object encoded = propertyMeta.encodeKey(key);
-            composite.setComponent(0, encoded, keySerializer, keySerializer.getComparatorType().getTypeName());
-        }
-        return composite;
+        return compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
     }
 
     public Composite[] createForClusteredQuery(PropertyMeta<?, ?> idMeta,

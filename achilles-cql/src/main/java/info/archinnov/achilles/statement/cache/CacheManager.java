@@ -71,7 +71,7 @@ public class CacheManager
 
     private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta<?, ?> pm)
     {
-        if (pm.isCompound())
+        if (pm.isEmbeddedId())
         {
             return new HashSet<String>(pm.getComponentNames());
         }

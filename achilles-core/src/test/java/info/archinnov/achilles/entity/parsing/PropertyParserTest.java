@@ -7,7 +7,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -135,12 +135,12 @@ public class PropertyParserTest
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
         assertThat(meta.getValueClass()).isEqualTo(CompoundKey.class);
-        CompoundKeyProperties compoundKeyProperties = meta.getCompoundKeyProperties();
-        assertThat(compoundKeyProperties).isNotNull();
-        assertThat(compoundKeyProperties.getComponentClasses()).contains(Long.class, String.class);
-        assertThat(compoundKeyProperties.getComponentNames()).contains("id", "name");
-        assertThat(compoundKeyProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
-        assertThat(compoundKeyProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
+        EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
+        assertThat(embeddedIdProperties).isNotNull();
+        assertThat(embeddedIdProperties.getComponentClasses()).contains(Long.class, String.class);
+        assertThat(embeddedIdProperties.getComponentNames()).contains("id", "name");
+        assertThat(embeddedIdProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
+        assertThat(embeddedIdProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
         assertThat(context.getPropertyMetas()).hasSize(1);
 
     }
@@ -250,6 +250,11 @@ public class PropertyParserTest
             public Counter getCounter() {
                 return counter;
             }
+
+            public void setCounter(Counter counter) {
+                this.counter = counter;
+            }
+
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("counter"));
@@ -276,6 +281,9 @@ public class PropertyParserTest
                 return counter;
             }
 
+            public void setCounter(Counter counter) {
+                this.counter = counter;
+            }
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("counter"));
@@ -324,6 +332,10 @@ public class PropertyParserTest
 
             public Counter getCounter() {
                 return counter;
+            }
+
+            public void setCounter(Counter counter) {
+                this.counter = counter;
             }
         }
 

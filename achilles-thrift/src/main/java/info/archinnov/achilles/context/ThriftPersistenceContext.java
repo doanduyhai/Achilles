@@ -10,6 +10,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.HashSet;
@@ -194,7 +195,7 @@ public class ThriftPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public void refresh()
+    public void refresh() throws AchillesStaleObjectStateException
     {
         flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
                 new SafeExecutionContext<Void>()
@@ -202,7 +203,11 @@ public class ThriftPersistenceContext extends PersistenceContext
                     @Override
                     public Void execute()
                     {
-                        refresher.refresh(ThriftPersistenceContext.this);
+                        try {
+                            refresher.refresh(ThriftPersistenceContext.this);
+                        } catch (AchillesStaleObjectStateException e) {
+                            throw new RuntimeException(e);
+                        }
                         return null;
                     }
                 });

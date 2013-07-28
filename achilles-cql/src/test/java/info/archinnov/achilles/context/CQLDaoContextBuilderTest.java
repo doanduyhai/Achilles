@@ -4,8 +4,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +22,7 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.cache.Cache;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * CQLDaoContextBuilderTest
@@ -66,6 +70,13 @@ public class CQLDaoContextBuilderTest
     {
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
         EntityMeta meta = new EntityMeta();
+        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(PropertyType.SIMPLE)
+                .build();
+
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);
 
         when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);

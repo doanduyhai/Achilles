@@ -1,8 +1,8 @@
 package info.archinnov.achilles.test.builders;
 
 import info.archinnov.achilles.annotations.CompoundKey;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -46,7 +46,6 @@ public class PropertyMetaTestBuilder<T, K, V>
     private List<Method> componentGetters;
     private List<Method> componentSetters;
 
-    private String externalTableName;
     private boolean buildAccessors;
     private Class<?> idClass;
     private ObjectMapper objectMapper;
@@ -116,16 +115,16 @@ public class PropertyMetaTestBuilder<T, K, V>
         if (componentClasses != null || componentNames != null || componentGetters != null
                 || componentSetters != null)
         {
-            CompoundKeyProperties compoundKeyProps = new CompoundKeyProperties();
+            EmbeddedIdProperties compoundKeyProps = new EmbeddedIdProperties();
             compoundKeyProps.setComponentClasses(componentClasses);
             compoundKeyProps.setComponentNames(componentNames);
             compoundKeyProps.setComponentGetters(componentGetters);
             compoundKeyProps.setComponentSetters(componentSetters);
 
-            pm.setCompoundKeyProperties(compoundKeyProps);
+            pm.setEmbeddedIdProperties(compoundKeyProps);
         }
 
-        if (pm.getCompoundKeyProperties() != null
+        if (pm.getEmbeddedIdProperties() != null
                 || keyClass.getAnnotation(CompoundKey.class) != null
                 || (type != null && type.isEmbeddedId()))
         {
@@ -134,11 +133,6 @@ public class PropertyMetaTestBuilder<T, K, V>
         else
         {
             pm.setCompound(false);
-        }
-
-        if (externalTableName != null)
-        {
-            pm.setExternalTableName(externalTableName);
         }
 
         if (counterIdMeta != null || fqcn != null)
@@ -192,12 +186,6 @@ public class PropertyMetaTestBuilder<T, K, V>
     public PropertyMetaTestBuilder<T, K, V> cascadeTypes(CascadeType... cascadeTypes)
     {
         this.cascadeTypes.addAll(Arrays.asList(cascadeTypes));
-        return this;
-    }
-
-    public PropertyMetaTestBuilder<T, K, V> externalTable(String externalTableName)
-    {
-        this.externalTableName = externalTableName;
         return this;
     }
 

@@ -6,7 +6,9 @@ import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -53,6 +55,7 @@ public class JPAOperationsIT
                 .addPreference(1, "FR")
                 .addPreference(2, "Paris")
                 .addPreference(3, "75014")
+                .version(CounterBuilder.incr(15L))
                 .buid();
 
         em.persist(bean);
@@ -75,6 +78,12 @@ public class JPAOperationsIT
         assertThat(preferences).containsValue("FR");
         assertThat(preferences).containsValue("Paris");
         assertThat(preferences).containsValue("75014");
+
+        row = session.execute("select counter_value from achilles_counter_table where fqcn = '"
+                + CompleteBean.class.getCanonicalName() + "' and primary_key='" + bean.getId()
+                + "' and property_name='version'").one();
+
+        assertThat(row.getLong("counter_value")).isEqualTo(15L);
 
     }
 
@@ -499,6 +508,23 @@ public class JPAOperationsIT
         assertThat(bean.getName()).isEqualTo("DuyHai_modified");
         assertThat(bean.getFriends()).hasSize(3);
         assertThat(bean.getFriends().get(2)).isEqualTo("qux");
+    }
+
+    @Test(expected = AchillesStaleObjectStateException.class)
+    public void should_exception_when_staled_object_during_refresh() throws Exception
+    {
+
+        CompleteBean bean = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("DuyHai")
+                .buid();
+
+        bean = em.merge(bean);
+
+        session.execute("DELETE FROM completebean WHERE id=" + bean.getId());
+
+        em.refresh(bean);
     }
 
     @Test

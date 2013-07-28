@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -8,6 +9,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -25,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.google.common.collect.Sets;
 
 /**
  * CQLPersisterImplTest
@@ -81,6 +84,38 @@ public class CQLPersisterImplTest
         persisterImpl.persist(context);
 
         verify(context).bindForInsert();
+    }
+
+    @Test
+    public void should_persist_counters() throws Exception
+    {
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .accessors()
+                .build();
+
+        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(12L));
+
+        persisterImpl.persistCounters(context, Sets.<PropertyMeta<?, ?>> newHashSet(counterMeta));
+
+        verify(context).bindForSimpleCounterIncrement(counterMeta, 12L);
+    }
+
+    @Test
+    public void should_not_persist_counters_when_no_counter_set() throws Exception
+    {
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .accessors()
+                .build();
+
+        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+
+        persisterImpl.persistCounters(context, Sets.<PropertyMeta<?, ?>> newHashSet(counterMeta));
+
+        verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta), any(Long.class));
     }
 
     @Test
@@ -155,6 +190,6 @@ public class CQLPersisterImplTest
 
         persisterImpl.removeLinkedCounters(context);
 
-        verify(context).bindForSimpleCounterRemoval(entityMeta, counterMeta, entity.getId());
+        verify(context).bindForSimpleCounterRemoval(counterMeta);
     }
 }

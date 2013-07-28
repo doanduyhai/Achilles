@@ -1,8 +1,7 @@
 package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
-import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
-import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
+import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.counter.AchillesCounter;

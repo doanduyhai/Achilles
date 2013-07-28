@@ -292,7 +292,7 @@ public class EntityIntrospectorTest
 
         assertThat(accessors).hasSize(2);
         assertThat(accessors[0].getName()).isEqualTo("getCount");
-        assertThat(accessors[1]).isNull();
+        assertThat(accessors[1].getName()).isEqualTo("setCount");
     }
 
     @Test

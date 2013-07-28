@@ -9,6 +9,8 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.builder.ThriftCounterWrapperBuilder;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
 import me.prettyprint.hector.api.beans.Composite;
 
 /**
@@ -31,9 +33,9 @@ public class ThriftEntityInterceptor<T> extends
     }
 
     @Override
-    protected Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
+    protected Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
     {
-        Object result;
+        Counter result;
         Object rowKey;
         Composite comp;
         ThriftAbstractDao counterDao;
@@ -54,11 +56,16 @@ public class ThriftEntityInterceptor<T> extends
             counterDao = context.getCounterDao();
         }
 
+        ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
+                .getReadConsistencyLevel().get() : propertyMeta.getReadConsistencyLevel();
+        ConsistencyLevel writeLevel = context.getWriteConsistencyLevel().isPresent() ? context
+                .getWriteConsistencyLevel().get() : propertyMeta.getWriteConsistencyLevel();
+
         result = ThriftCounterWrapperBuilder.builder(context) //
                 .counterDao(counterDao)
                 .columnName(comp)
-                .readLevel(propertyMeta.getReadConsistencyLevel())
-                .writeLevel(propertyMeta.getWriteConsistencyLevel())
+                .readLevel(readLevel)
+                .writeLevel(writeLevel)
                 .key(rowKey)
                 .build();
         return result;

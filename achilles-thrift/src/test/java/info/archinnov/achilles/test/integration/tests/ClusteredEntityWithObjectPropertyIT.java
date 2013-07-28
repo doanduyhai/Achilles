@@ -20,7 +20,7 @@ import org.junit.After;
 import org.junit.Test;
 import com.google.common.base.Optional;
 
-public class WideRowWithObjectPropertyIT
+public class ClusteredEntityWithObjectPropertyIT
 {
 
     private ThriftGenericWideRowDao dao = getColumnFamilyDao(

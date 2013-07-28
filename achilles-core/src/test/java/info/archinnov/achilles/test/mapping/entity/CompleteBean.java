@@ -146,6 +146,10 @@ public class CompleteBean
         return count;
     }
 
+    public void setCount(Counter count) {
+        this.count = count;
+    }
+
     public Map<Integer, UserBean> getUsersMap()
     {
         return usersMap;

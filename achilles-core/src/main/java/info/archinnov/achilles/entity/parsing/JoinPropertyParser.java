@@ -3,9 +3,7 @@ package info.archinnov.achilles.entity.parsing;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.table.TableNameNormalizer;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import javax.persistence.ManyToMany;
@@ -65,22 +63,6 @@ public class JoinPropertyParser {
         context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta, joinPropertyMeta.getValueClass());
 
         return joinPropertyMeta;
-    }
-
-    public void fillJoinWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
-            PropertyMeta<?, ?> joinPropertyMeta, String externalTableName) {
-        log.debug("Filling join wide map meta {} of entity class {} with id meta {} info",
-                joinPropertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                idMeta.getPropertyName());
-
-        joinPropertyMeta.setExternalTableName(TableNameNormalizer
-                .normalizerAndValidateColumnFamilyName(externalTableName));
-        joinPropertyMeta.setIdClass(idMeta.getValueClass());
-        context.getPropertyMetas().put(joinPropertyMeta.getPropertyName(), joinPropertyMeta);
-        context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta, joinPropertyMeta.getValueClass());
-
-        log.trace("Complete join wide map property {} of entity class {} : {}", joinPropertyMeta.getPropertyName(),
-                context.getCurrentEntityClass().getCanonicalName(), joinPropertyMeta);
     }
 
     private JoinProperties findCascadeType(String entityFQN, Field field) {

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -16,6 +17,23 @@ import com.google.common.collect.FluentIterable;
  * 
  */
 public class EntityMeta {
+
+    public static final Predicate<EntityMeta> clusteredCounter = new Predicate<EntityMeta>() {
+        @Override
+        public boolean apply(EntityMeta meta)
+        {
+            return meta.isClusteredCounter();
+        }
+    };
+
+    public static final Predicate<EntityMeta> excludeClusteredCounter = new Predicate<EntityMeta>() {
+        @Override
+        public boolean apply(EntityMeta meta)
+        {
+            return !meta.isClusteredCounter();
+        }
+    };
+
     private Class<?> entityClass;
     private String className;
     private String tableName;
@@ -157,5 +175,14 @@ public class EntityMeta {
 
     public PropertyMeta<?, ?> getFirstMeta() {
         return getAllMetasExceptIdMeta().get(0);
+    }
+
+    public boolean isClusteredCounter()
+    {
+        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
+        int propertyCount = allMetasExceptIdMeta.size();
+        PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.get(0);
+
+        return clusteredEntity && propertyCount == 1 && firstMeta.isCounter();
     }
 }

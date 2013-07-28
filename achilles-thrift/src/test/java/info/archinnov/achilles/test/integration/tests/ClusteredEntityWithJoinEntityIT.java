@@ -1,141 +1,124 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.ClusteredKey;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithJoinEntity;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithJoinEntity.ClusteredKey;
+import info.archinnov.achilles.test.integration.entity.User;
 import java.util.Iterator;
 import java.util.List;
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * WideRowWithCounterIT
- * 
- * @author DuyHai DOAN
- * 
- */
-public class WideRowWithCounterIT
+public class ClusteredEntityWithJoinEntityIT
 {
 
     private ThriftGenericWideRowDao dao = getColumnFamilyDao(
-            normalizerAndValidateColumnFamilyName("clustered_with_counter_value"),
+            normalizerAndValidateColumnFamilyName("clustered_with_join_value"),
             Long.class,
-            Long.class);
+            User.class);
 
     private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-    private ClusteredEntityWithCounter entity;
+    private ClusteredEntityWithJoinEntity entity;
 
     private ClusteredKey compoundKey;
 
     @Test
     public void should_persist_and_find() throws Exception
     {
-        long counterValue = RandomUtils.nextLong();
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
-
-        entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+        User user = new User(RandomUtils.nextLong(), "firstname", "lastname");
+        entity = new ClusteredEntityWithJoinEntity(compoundKey, user);
 
         em.persist(entity);
 
-        ClusteredEntityWithCounter found = em.find(ClusteredEntityWithCounter.class, compoundKey);
+        ClusteredEntityWithJoinEntity found = em.find(ClusteredEntityWithJoinEntity.class, compoundKey);
 
         assertThat(found.getId()).isEqualTo(compoundKey);
-        assertThat(found.getCounter().get()).isEqualTo(counterValue);
+        User proxifiedUser = found.getFriend();
+        assertThat(em.unwrap(proxifiedUser)).isEqualTo(user);
     }
 
     @Test
     public void should_merge_and_get_reference() throws Exception
     {
-        long counterValue = RandomUtils.nextLong();
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
-        entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+        User user = new User(RandomUtils.nextLong(), "firstname", "lastname");
+        entity = new ClusteredEntityWithJoinEntity(compoundKey, user);
 
         em.merge(entity);
 
-        ClusteredEntityWithCounter found = em.getReference(ClusteredEntityWithCounter.class,
+        ClusteredEntityWithJoinEntity found = em.getReference(ClusteredEntityWithJoinEntity.class,
                 compoundKey);
 
         assertThat(found.getId()).isEqualTo(compoundKey);
-        assertThat(found.getCounter().get()).isEqualTo(counterValue);
+        User proxifiedUser = found.getFriend();
+        assertThat(em.unwrap(proxifiedUser)).isEqualTo(user);
     }
 
     @Test
     public void should_merge_modifications() throws Exception
     {
-        long counterValue = RandomUtils.nextLong();
-        long incr = RandomUtils.nextLong();
 
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
-
-        entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+        User user = new User(RandomUtils.nextLong(), "firstname", "lastname");
+        User newUser = new User(RandomUtils.nextLong(), "new_firstname", "new_lastname");
+        entity = new ClusteredEntityWithJoinEntity(compoundKey, user);
 
         entity = em.merge(entity);
 
-        entity.getCounter().incr(incr);
+        entity.setFriend(newUser);
+        em.merge(entity);
 
-        entity = em.find(ClusteredEntityWithCounter.class, compoundKey);
+        entity = em.find(ClusteredEntityWithJoinEntity.class, compoundKey);
 
-        assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
+        User proxifiedUser = entity.getFriend();
+        assertThat(em.unwrap(proxifiedUser)).isEqualTo(newUser);
     }
 
-    // Problem with counter removal
-    @Ignore
     @Test
     public void should_remove() throws Exception
     {
-        long counterValue = RandomUtils.nextLong();
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
-
-        entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+        User user = new User(RandomUtils.nextLong(), "firstname", "lastname");
+        entity = new ClusteredEntityWithJoinEntity(compoundKey, user);
 
         entity = em.merge(entity);
 
         em.remove(entity);
 
-        Thread.sleep(2000);
-
-        assertThat(em.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
+        assertThat(em.find(ClusteredEntityWithJoinEntity.class, compoundKey)).isNull();
 
     }
 
     @Test
     public void should_refresh() throws Exception
     {
-        long counterValue = RandomUtils.nextLong();
-        long incr = RandomUtils.nextLong();
 
         long partitionKey = RandomUtils.nextLong();
-        String name = "name";
-        compoundKey = new ClusteredKey(partitionKey, name);
+        compoundKey = new ClusteredKey(partitionKey, "name");
+        User user = new User(RandomUtils.nextLong(), "firstname", "lastname");
+        User newUser = new User(RandomUtils.nextLong(), "new_firstname", "new_lastname");
 
-        entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+        entity = new ClusteredEntityWithJoinEntity(compoundKey, user);
 
         entity = em.merge(entity);
 
-        Composite comp = new Composite();
-        comp.setComponent(0, name, STRING_SRZ);
-        Mutator<Long> mutator = dao.buildMutator();
-        dao.incrementCounter(partitionKey, comp, incr);
-        dao.executeMutator(mutator);
-
-        // Wait for the counter to be removed
-        Thread.sleep(100);
+        ClusteredEntityWithJoinEntity anotherEntity = em.find(ClusteredEntityWithJoinEntity.class,
+                compoundKey);
+        anotherEntity.setFriend(newUser);
+        em.merge(anotherEntity);
 
         em.refresh(entity);
 
-        assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
+        User proxifiedUser = entity.getFriend();
+        assertThat(em.unwrap(proxifiedUser)).isEqualTo(newUser);
 
     }
 
@@ -143,7 +126,7 @@ public class WideRowWithCounterIT
     public void should_query_with_default_params() throws Exception
     {
         long partitionKey = RandomUtils.nextLong();
-        List<ClusteredEntityWithCounter> entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+        List<ClusteredEntityWithJoinEntity> entities = em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .partitionKey(partitionKey)
                 .fromClusterings("name2")
                 .toClusterings("name4")
@@ -153,7 +136,7 @@ public class WideRowWithCounterIT
 
         insertValues(partitionKey, 5);
 
-        entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+        entities = em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .partitionKey(partitionKey)
                 .fromClusterings("name2")
                 .toClusterings("name4")
@@ -161,30 +144,30 @@ public class WideRowWithCounterIT
 
         assertThat(entities).hasSize(3);
 
-        assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
+        assertThat(entities.get(0).getFriend().getId()).isEqualTo(2);
         assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
-        assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
+        assertThat(entities.get(1).getFriend().getId()).isEqualTo(3);
         assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
-        assertThat(entities.get(2).getCounter().get()).isEqualTo(4);
+        assertThat(entities.get(2).getFriend().getId()).isEqualTo(4);
         assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
 
-        entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+        entities = em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .fromEmbeddedId(new ClusteredKey(partitionKey, "name2"))
                 .toEmbeddedId(new ClusteredKey(partitionKey, "name4"))
                 .get();
 
         assertThat(entities).hasSize(3);
 
-        assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
+        assertThat(entities.get(0).getFriend().getId()).isEqualTo(2);
         assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
-        assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
+        assertThat(entities.get(1).getFriend().getId()).isEqualTo(3);
         assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
-        assertThat(entities.get(2).getCounter().get()).isEqualTo(4);
+        assertThat(entities.get(2).getFriend().getId()).isEqualTo(4);
         assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
         assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
     }
@@ -195,40 +178,40 @@ public class WideRowWithCounterIT
         long partitionKey = RandomUtils.nextLong();
         insertValues(partitionKey, 5);
 
-        Iterator<ClusteredEntityWithCounter> iter = em.sliceQuery(ClusteredEntityWithCounter.class)
+        Iterator<ClusteredEntityWithJoinEntity> iter = em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .partitionKey(partitionKey)
                 .iterator();
 
         assertThat(iter.hasNext()).isTrue();
-        ClusteredEntityWithCounter next = iter.next();
+        ClusteredEntityWithJoinEntity next = iter.next();
         assertThat(next.getId().getId()).isEqualTo(partitionKey);
         assertThat(next.getId().getName()).isEqualTo("name1");
-        assertThat(next.getCounter().get()).isEqualTo(1L);
+        assertThat(next.getFriend().getId()).isEqualTo(1L);
         assertThat(iter.hasNext()).isTrue();
 
         assertThat(iter.hasNext()).isTrue();
         next = iter.next();
         assertThat(next.getId().getId()).isEqualTo(partitionKey);
         assertThat(next.getId().getName()).isEqualTo("name2");
-        assertThat(next.getCounter().get()).isEqualTo(2L);
+        assertThat(next.getFriend().getId()).isEqualTo(2L);
 
         assertThat(iter.hasNext()).isTrue();
         next = iter.next();
         assertThat(next.getId().getId()).isEqualTo(partitionKey);
         assertThat(next.getId().getName()).isEqualTo("name3");
-        assertThat(next.getCounter().get()).isEqualTo(3L);
+        assertThat(next.getFriend().getId()).isEqualTo(3L);
 
         assertThat(iter.hasNext()).isTrue();
         next = iter.next();
         assertThat(next.getId().getId()).isEqualTo(partitionKey);
         assertThat(next.getId().getName()).isEqualTo("name4");
-        assertThat(next.getCounter().get()).isEqualTo(4L);
+        assertThat(next.getFriend().getId()).isEqualTo(4L);
 
         assertThat(iter.hasNext()).isTrue();
         next = iter.next();
         assertThat(next.getId().getId()).isEqualTo(partitionKey);
         assertThat(next.getId().getName()).isEqualTo("name5");
-        assertThat(next.getCounter().get()).isEqualTo(5L);
+        assertThat(next.getFriend().getId()).isEqualTo(5L);
         assertThat(iter.hasNext()).isFalse();
     }
 
@@ -238,31 +221,28 @@ public class WideRowWithCounterIT
         long partitionKey = RandomUtils.nextLong();
         insertValues(partitionKey, 5);
 
-        em.sliceQuery(ClusteredEntityWithCounter.class)
+        em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .partitionKey(partitionKey)
                 .fromClusterings("name2")
                 .toClusterings("name4")
                 .remove();
 
-        // Wait until counter column is really removed because of absence of tombstone
-        Thread.sleep(1000);
-
-        List<ClusteredEntityWithCounter> entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+        List<ClusteredEntityWithJoinEntity> entities = em.sliceQuery(ClusteredEntityWithJoinEntity.class)
                 .partitionKey(partitionKey)
                 .get(100);
 
         assertThat(entities).hasSize(2);
 
-        assertThat(entities.get(0).getCounter().get()).isEqualTo(1L);
-        assertThat(entities.get(1).getCounter().get()).isEqualTo(5L);
+        assertThat(entities.get(0).getFriend().getId()).isEqualTo(1L);
+        assertThat(entities.get(1).getFriend().getId()).isEqualTo(5L);
     }
 
     private void insertClusteredEntity(Long partitionKey, String name,
-            Long clusteredCounter)
+            User friend)
     {
         ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
-        ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(embeddedId,
-                CounterBuilder.incr(clusteredCounter));
+        ClusteredEntityWithJoinEntity entity = new ClusteredEntityWithJoinEntity(embeddedId,
+                friend);
         em.persist(entity);
     }
 
@@ -272,7 +252,8 @@ public class WideRowWithCounterIT
 
         for (int i = 1; i <= count; i++)
         {
-            insertClusteredEntity(partitionKey, namePrefix + i, new Long(i));
+            User user = new User(new Long(i), "firstname" + i, "lastname" + i);
+            insertClusteredEntity(partitionKey, namePrefix + i, user);
         }
     }
 

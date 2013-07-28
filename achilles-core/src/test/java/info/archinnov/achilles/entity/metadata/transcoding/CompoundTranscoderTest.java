@@ -86,7 +86,7 @@ public class CompoundTranscoderTest {
                 .compSetters(userIdSetter, namesetter)
                 .build();
 
-        pm.getCompoundKeyProperties().setConstructor(constructor);
+        pm.getEmbeddedIdProperties().setConstructor(constructor);
 
         Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
 
@@ -112,7 +112,7 @@ public class CompoundTranscoderTest {
                 .compClasses(Long.class, String.class)
                 .build();
 
-        pm.getCompoundKeyProperties().setConstructor(constructor);
+        pm.getEmbeddedIdProperties().setConstructor(constructor);
 
         Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
 

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.CascadeType;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
@@ -41,8 +40,7 @@ public class PropertyMeta<K, V>
     private Method setter;
     private CounterProperties counterProperties;
     private JoinProperties joinProperties;
-    private CompoundKeyProperties compoundKeyProperties;
-    private String externalTableName;
+    private EmbeddedIdProperties embeddedIdProperties;
     private Class<?> idClass;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
@@ -164,9 +162,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentGetters()
     {
         List<Method> compGetters = new ArrayList<Method>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compGetters = compoundKeyProperties.getComponentGetters();
+            compGetters = embeddedIdProperties.getComponentGetters();
         }
         return compGetters;
     }
@@ -174,9 +172,9 @@ public class PropertyMeta<K, V>
     public Method getPartitionKeyGetter()
     {
         Method getter = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            getter = compoundKeyProperties.getComponentGetters().get(0);
+            getter = embeddedIdProperties.getComponentGetters().get(0);
         }
         return getter;
     }
@@ -184,9 +182,9 @@ public class PropertyMeta<K, V>
     public Method getPartitionKeySetter()
     {
         Method getter = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            getter = compoundKeyProperties.getComponentSetters().get(0);
+            getter = embeddedIdProperties.getComponentSetters().get(0);
         }
         return getter;
     }
@@ -194,9 +192,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentSetters()
     {
         List<Method> compSetters = new ArrayList<Method>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compSetters = compoundKeyProperties.getComponentSetters();
+            compSetters = embeddedIdProperties.getComponentSetters();
         }
         return compSetters;
     }
@@ -204,9 +202,9 @@ public class PropertyMeta<K, V>
     public List<Class<?>> getComponentClasses()
     {
         List<Class<?>> compClasses = new ArrayList<Class<?>>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compClasses = compoundKeyProperties.getComponentClasses();
+            compClasses = embeddedIdProperties.getComponentClasses();
         }
         return compClasses;
     }
@@ -214,9 +212,9 @@ public class PropertyMeta<K, V>
     public String getOrderingComponent()
     {
         String component = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            return compoundKeyProperties.getOrderingComponent();
+            return embeddedIdProperties.getOrderingComponent();
         }
         return component;
     }
@@ -224,21 +222,21 @@ public class PropertyMeta<K, V>
     public List<String> getComponentNames()
     {
         List<String> components = new ArrayList<String>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            return compoundKeyProperties.getComponentNames();
+            return embeddedIdProperties.getComponentNames();
         }
         return components;
     }
 
-    public <T> Constructor<T> getCompoundKeyConstructor()
+    public <T> Constructor<T> getEmbeddedIdConstructor()
     {
-        return compoundKeyProperties != null ? compoundKeyProperties.<T> getConstructor() : null;
+        return embeddedIdProperties != null ? embeddedIdProperties.<T> getConstructor() : null;
     }
 
-    public boolean hasDefaultConstructorForCompoundKey()
+    public boolean hasDefaultConstructorForEmbeddedId()
     {
-        return compoundKeyProperties != null ? compoundKeyProperties
+        return embeddedIdProperties != null ? embeddedIdProperties
                 .getConstructor()
                 .getParameterTypes().length == 0 : false;
     }
@@ -440,15 +438,14 @@ public class PropertyMeta<K, V>
         this.setter = setter;
     }
 
-    // TODO to be removed
-    public CompoundKeyProperties getCompoundKeyProperties()
+    public EmbeddedIdProperties getEmbeddedIdProperties()
     {
-        return compoundKeyProperties;
+        return embeddedIdProperties;
     }
 
-    public void setCompoundKeyProperties(CompoundKeyProperties multiKeyProperties)
+    public void setEmbeddedIdProperties(EmbeddedIdProperties embeddedIdProperties)
     {
-        this.compoundKeyProperties = multiKeyProperties;
+        this.embeddedIdProperties = embeddedIdProperties;
     }
 
     public Class<?> getIdClass()
@@ -504,21 +501,6 @@ public class PropertyMeta<K, V>
         this.consistencyLevels = consistencyLevels;
     }
 
-    public String getExternalTableName()
-    {
-        return externalTableName;
-    }
-
-    public String getCQLExternalTableName()
-    {
-        return externalTableName.toLowerCase();
-    }
-
-    public void setExternalTableName(String externalTableName)
-    {
-        this.externalTableName = externalTableName;
-    }
-
     public String getEntityClassName()
     {
         return entityClassName;
@@ -555,11 +537,8 @@ public class PropertyMeta<K, V>
         if (joinProperties != null)
             description.append("joinProperties=").append(joinProperties).append(", ");
 
-        if (compoundKeyProperties != null)
-            description.append("multiKeyProperties=").append(compoundKeyProperties).append(", ");
-
-        if (StringUtils.isNotBlank(externalTableName))
-            description.append("externalCfName=").append(externalTableName).append(", ");
+        if (embeddedIdProperties != null)
+            description.append("multiKeyProperties=").append(embeddedIdProperties).append(", ");
 
         if (consistencyLevels != null)
         {

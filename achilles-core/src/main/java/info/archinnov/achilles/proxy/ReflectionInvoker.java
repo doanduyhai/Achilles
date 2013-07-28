@@ -136,7 +136,7 @@ public class ReflectionInvoker
             PropertyMeta<?, ?> idMeta,
             Object partitionKey)
     {
-        Constructor<Object> constructor = idMeta.getCompoundKeyConstructor();
+        Constructor<Object> constructor = idMeta.getEmbeddedIdConstructor();
         Object newInstance;
         try
         {

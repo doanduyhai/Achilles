@@ -2,6 +2,7 @@ package info.archinnov.achilles.proxy;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.google.common.base.Optional;
 
 /**
  * ThriftEntityInterceptorTest
@@ -99,7 +101,7 @@ public class ThriftEntityInterceptorTest
     private ThriftPersistenceContext context;
 
     @Mock
-    private ThriftCounterDao thriftCounterDao;
+    private ThriftCounterDao counterDao;
 
     @Mock
     private ThriftConsistencyLevelPolicy policy;
@@ -162,14 +164,17 @@ public class ThriftEntityInterceptorTest
         entityMeta.setClusteredEntity(false);
         entityMeta.setEagerGetters(eagerGetters);
 
+        when(flushContext.getReadConsistencyLevel()).thenReturn(Optional.fromNullable(ONE));
+        when(flushContext.getWriteConsistencyLevel()).thenReturn(Optional.fromNullable(ONE));
+
         context = ThriftPersistenceContextTestBuilder //
-                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId())
+                .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
                 .entity(entity)
                 .entityDao(entityDao)
                 .entityDaosMap(entityDaosMap)
                 .wideRowDaosMap(columnFamilyDaosMap)
                 .build();
-
+        context.setFlushContext(flushContext);
         interceptor = ThriftEntityInterceptorBuilder.builder(context, entity).build();
 
         interceptor.setPrimaryKey(key);

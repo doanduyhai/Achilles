@@ -4,7 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factor
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.allowedTypes;
 import info.archinnov.achilles.annotations.CompoundKey;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -105,12 +105,12 @@ public class PropertyParser
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = EMBEDDED_ID;
 
-        CompoundKeyProperties compoundKeyProperties = parseCompoundKey(field.getType());
+        EmbeddedIdProperties embeddedIdProperties = parseCompoundKey(field.getType());
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
-                .compoundKeyProperties(compoundKeyProperties)
+                .embeddedIdProperties(embeddedIdProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels())
@@ -351,14 +351,14 @@ public class PropertyParser
                 (Class<V>) actualTypeArguments[1]);
     }
 
-    private CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
+    private EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)
     {
         log.trace("Parsing compound key class", keyClass.getCanonicalName());
-        CompoundKeyProperties compoundKeyProperties = null;
+        EmbeddedIdProperties embeddedIdProperties = null;
 
         if (keyClass.getAnnotation(CompoundKey.class) != null)
         {
-            compoundKeyProperties = compoundKeyParser.parseCompoundKey(keyClass);
+            embeddedIdProperties = compoundKeyParser.parseCompoundKey(keyClass);
         }
         else
         {
@@ -371,8 +371,8 @@ public class PropertyParser
                                     + "' is not allowed as WideMap key. Did you forget to add @CompoundKey annotation ?");
         }
 
-        log.trace("Built compound key properties", compoundKeyProperties);
-        return compoundKeyProperties;
+        log.trace("Built compound key properties", embeddedIdProperties);
+        return embeddedIdProperties;
     }
 
     private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context,

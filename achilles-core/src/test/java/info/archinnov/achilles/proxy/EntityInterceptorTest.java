@@ -227,12 +227,13 @@ public class EntityInterceptorTest
                 .build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(interceptor.buildCounterWrapper(propertyMeta)).thenReturn(rawValue);
-        when(proxy.invoke(bean, args)).thenReturn(rawValue);
+        Counter counterWrapper = mock(Counter.class);
+        when(interceptor.buildCounterWrapper(propertyMeta)).thenReturn(counterWrapper);
+        when(proxy.invoke(bean, args)).thenReturn(counterWrapper);
 
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
-        assertThat(actual).isSameAs(rawValue);
+        assertThat(actual).isSameAs(counterWrapper);
     }
 
     @Test

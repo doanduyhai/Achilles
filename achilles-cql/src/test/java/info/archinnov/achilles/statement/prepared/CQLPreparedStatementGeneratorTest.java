@@ -2,6 +2,7 @@ package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
@@ -467,5 +468,48 @@ public class CQLPreparedStatementGeneratorTest
                         + CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME
                         + " = ?");
 
+    }
+
+    @Test
+    public void should_prepare_clustered_counter_queries() throws Exception
+    {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(SIMPLE)
+                .build();
+
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("counter")
+                .type(COUNTER)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("counterTable");
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("counter", counterMeta));
+
+        PreparedStatement incrPs = mock(PreparedStatement.class);
+        PreparedStatement decrPs = mock(PreparedStatement.class);
+        PreparedStatement selectPs = mock(PreparedStatement.class);
+        PreparedStatement deletePs = mock(PreparedStatement.class);
+
+        when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
+
+        Map<CQLQueryType, PreparedStatement> actual = generator.prepareClusteredCounterQueryMap(session, meta);
+
+        assertThat(actual.get(INCR)).isSameAs(incrPs);
+        assertThat(actual.get(DECR)).isSameAs(decrPs);
+        assertThat(actual.get(SELECT)).isSameAs(selectPs);
+        assertThat(actual.get(DELETE)).isSameAs(deletePs);
+
+        List<String> queries = queryCaptor.getAllValues();
+
+        assertThat(queries).hasSize(4);
+        assertThat(queries.get(0)).isEqualTo("UPDATE counterTable SET counter=counter+? WHERE id=?;");
+        assertThat(queries.get(1)).isEqualTo("UPDATE counterTable SET counter=counter-? WHERE id=?;");
+        assertThat(queries.get(2)).isEqualTo("SELECT counter FROM counterTable WHERE id=?;");
+        assertThat(queries.get(3)).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
     }
 }

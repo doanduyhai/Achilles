@@ -7,6 +7,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,11 +35,26 @@ public class CQLLoaderImpl
         EntityMeta entityMeta = context.getEntityMeta();
 
         T entity = null;
-        Row row = context.eagerLoadEntity();
-        if (row != null)
+
+        if (entityMeta.isClusteredCounter())
         {
-            entity = invoker.instanciate(entityClass);
-            mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+            PropertyMeta<?, ?> counterMeta = entityMeta.getFirstMeta();
+            ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
+                    .getReadConsistencyLevel().get() : counterMeta.getReadConsistencyLevel();
+            Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
+            if (counterValue != null)
+            {
+                entity = invoker.instanciate(entityClass);
+            }
+        }
+        else
+        {
+            Row row = context.eagerLoadEntity();
+            if (row != null)
+            {
+                entity = invoker.instanciate(entityClass);
+                mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+            }
         }
         return entity;
     }

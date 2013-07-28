@@ -197,11 +197,11 @@ public class ReflectionInvokerTest
 
 		Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
 				.getDeclaredConstructor(Long.class, String.class);
-		idMeta.getCompoundKeyProperties().setConstructor(constructor);
+		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
 		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(
 				idMeta, partitionKey);
-		idMeta.getCompoundKeyProperties().setConstructor(constructor);
+		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
 		assertThat(actual).isNotNull();
 		CompoundKeyByConstructor compoundKey = (CompoundKeyByConstructor) actual;
@@ -222,7 +222,7 @@ public class ReflectionInvokerTest
 				.build();
 		Constructor<CompoundKey> constructor = CompoundKey.class
 				.getDeclaredConstructor();
-		idMeta.getCompoundKeyProperties().setConstructor(constructor);
+		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
 		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
 
