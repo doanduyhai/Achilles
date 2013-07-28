@@ -1,12 +1,10 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.type.WideMap;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 
 /**
@@ -25,18 +23,6 @@ public class User {
 
     @Column
     private String lastname;
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinColumn(table = "user_tweets")
-    private WideMap<Integer, Tweet> tweets;
-
-    @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinColumn(table = "user_timeline")
-    private WideMap<Long, Tweet> timeline;
-
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinColumn(table = "retweets_cf")
-    private WideMap<Integer, Tweet> retweets;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn
@@ -73,18 +59,6 @@ public class User {
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
-    }
-
-    public WideMap<Integer, Tweet> getTweets() {
-        return tweets;
-    }
-
-    public WideMap<Long, Tweet> getTimeline() {
-        return timeline;
-    }
-
-    public WideMap<Integer, Tweet> getRetweets() {
-        return retweets;
     }
 
     public User getReferrer() {

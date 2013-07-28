@@ -7,15 +7,10 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
-import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndWideMapCounter;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.WideMap;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,286 +24,157 @@ import org.junit.rules.ExpectedException;
  */
 public class ConsistencyLevelPriorityOrderingIT
 {
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
-	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+    private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
-	private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
-	private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
+    private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
-	// Normal type
-	@Test
-	public void should_override_mapping_on_class_by_runtime_value_on_batch_mode_for_normal_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		long id = RandomUtils.nextLong();
-		entity.setId(id);
-		entity.setName("name");
+    // Normal type
+    @Test
+    public void should_override_mapping_on_class_by_runtime_value_on_batch_mode_for_normal_type()
+            throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        long id = RandomUtils.nextLong();
+        entity.setId(id);
+        entity.setName("name");
 
-		em.persist(entity);
+        em.persist(entity);
 
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(ONE, ONE);
-		logAsserter.prepareLogLevel();
+        ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
+        batchEm.startBatch(ONE, ONE);
+        logAsserter.prepareLogLevel();
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+        entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 
-		logAsserter.assertConsistencyLevels(ONE, ONE);
-		batchEm.endBatch();
+        logAsserter.assertConsistencyLevels(ONE, ONE);
+        batchEm.endBatch();
 
-		assertThatConsistencyLevelsAreReinitialized();
-		assertThat(entity.getName()).isEqualTo("name");
+        assertThatConsistencyLevelsAreReinitialized();
+        assertThat(entity.getName()).isEqualTo("name");
 
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Error when loading entity type '"
-						+ EntityWithConsistencyLevelOnClassAndField.class.getCanonicalName()
-						+ "' with key '"
-						+ id
-						+ "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-		em.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
-	}
+        expectedEx.expect(AchillesException.class);
+        expectedEx
+                .expectMessage("Error when loading entity type '"
+                        + EntityWithConsistencyLevelOnClassAndField.class.getCanonicalName()
+                        + "' with key '"
+                        + id
+                        + "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+        em.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+    }
 
-	@Test
-	public void should_not_override_batch_mode_level_by_runtime_value_for_normal_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name sdfsdf");
-		em.persist(entity);
+    @Test
+    public void should_not_override_batch_mode_level_by_runtime_value_for_normal_type()
+            throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        entity.setId(RandomUtils.nextLong());
+        entity.setName("name sdfsdf");
+        em.persist(entity);
 
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
+        ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
 
-		batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+        batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
 
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        expectedEx.expect(AchillesException.class);
+        expectedEx
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
-	}
+        entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
+    }
 
-	// WideMap type
-	@Test
-	public void should_override_mapping_on_class_by_mapping_on_field_for_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
+    // Counter type
+    @Test
+    public void should_override_mapping_on_class_by_mapping_on_field_for_counter_type()
+            throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        entity.setId(RandomUtils.nextLong());
+        entity.setName("name");
+        entity = em.merge(entity);
 
-		entity = em.merge(entity);
-		WideMap<Integer, String> widemap = entity.getWideMap();
-		widemap.insert(10, "10");
+        Counter counter = entity.getCount();
+        counter.incr(10L);
 
-		logAsserter.prepareLogLevel();
-		assertThat(widemap.get(10)).isEqualTo("10");
-		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.QUORUM);
-		assertThatConsistencyLevelsAreReinitialized();
-	}
+        logAsserter.prepareLogLevel();
+        assertThat(counter.get()).isEqualTo(10L);
+        logAsserter.assertConsistencyLevels(ONE, ONE);
+        assertThatConsistencyLevelsAreReinitialized();
+    }
 
-	@Test
-	public void should_override_mapping_on_field_by_batch_mode_value_for_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
+    @Test
+    public void should_override_mapping_on_field_by_batch_value_for_counter_type() throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        entity.setId(RandomUtils.nextLong());
+        entity.setName("name");
 
-		entity = em.merge(entity);
+        ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
+        batchEm.startBatch(EACH_QUORUM, ONE);
+        entity = batchEm.merge(entity);
 
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(ONE, ONE);
-		logAsserter.prepareLogLevel();
+        Counter counter = entity.getCount();
+        counter.incr(10L);
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
-		WideMap<Integer, String> wideMapEachQuorumWrite = entity.getWideMapEachQuorumWrite();
-		wideMapEachQuorumWrite.insert(10, "10");
+        expectedEx.expect(HInvalidRequestException.class);
+        expectedEx
+                .expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
-		batchEm.endBatch();
-		logAsserter.assertConsistencyLevels(ONE, ONE);
-		assertThatConsistencyLevelsAreReinitialized();
+        counter.get();
 
-		assertThat(wideMapEachQuorumWrite.get(10)).isEqualTo("10");
+    }
 
-		entity = em.merge(entity);
+    @Test
+    public void should_override_mapping_on_field_by_runtime_value_for_counter_type()
+            throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        entity.setId(RandomUtils.nextLong());
+        entity.setName("name");
+        entity = em.merge(entity);
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+        Counter counter = entity.getCount();
+        counter.incr(10L);
+        assertThat(counter.get()).isEqualTo(10L);
 
-		entity.getWideMapEachQuorumWrite().insert(10, "10");
-	}
+        expectedEx.expect(HInvalidRequestException.class);
+        expectedEx
+                .expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
-	@Test
-	public void should_override_mapping_on_fields_by_runtime_value_on_widemap_api_for_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = em.merge(entity);
-		WideMap<Integer, String> wideMapEachQuorumWrite = entity.getWideMapEachQuorumWrite();
+        counter.get(EACH_QUORUM);
+    }
 
-		wideMapEachQuorumWrite.insert(10, "10", ConsistencyLevel.ONE);
+    @Test
+    public void should_not_override_batch_level_by_runtime_value_for_counter_type()
+            throws Exception
+    {
+        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
+        entity.setId(RandomUtils.nextLong());
+        entity.setName("name");
 
-		assertThat(wideMapEachQuorumWrite.get(10)).isEqualTo("10");
+        ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
+        batchEm.startBatch(ONE, ONE);
+        entity = batchEm.merge(entity);
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-		wideMapEachQuorumWrite.insert(10, "10");
-	}
+        Counter counter = entity.getCount();
+        counter.incr(10L);
+        assertThat(counter.get()).isEqualTo(10L);
 
-	@Test
-	public void should_not_override_batch_mode_level_by_runtime_value_on_widemap_api_for_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = em.merge(entity);
+        expectedEx.expect(AchillesException.class);
+        expectedEx
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(ONE, EACH_QUORUM);
-		entity = batchEm.merge(entity);
+        counter.get(EACH_QUORUM);
+    }
 
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-
-		entity.getWideMap().insert(10, "10", ONE);
-	}
-
-	// Counter type
-	@Test
-	public void should_override_mapping_on_class_by_mapping_on_field_for_counter_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = em.merge(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-
-		logAsserter.prepareLogLevel();
-		assertThat(counter.get()).isEqualTo(10L);
-		logAsserter.assertConsistencyLevels(ONE, ONE);
-		assertThatConsistencyLevelsAreReinitialized();
-	}
-
-	@Test
-	public void should_override_mapping_on_field_by_batch_value_for_counter_type() throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(EACH_QUORUM, ONE);
-		entity = batchEm.merge(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		counter.get();
-
-	}
-
-	@Test
-	public void should_override_mapping_on_field_by_runtime_value_for_counter_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = em.merge(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-		assertThat(counter.get()).isEqualTo(10L);
-
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
-
-		counter.get(EACH_QUORUM);
-	}
-
-	@Test
-	public void should_not_override_batch_level_by_runtime_value_for_counter_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(ONE, ONE);
-		entity = batchEm.merge(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-		assertThat(counter.get()).isEqualTo(10L);
-
-		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-
-		counter.get(EACH_QUORUM);
-	}
-
-	// Counter WideMap type
-	@Test
-	public void should_override_mapping_on_class_by_runtime_value_for_counter_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndWideMapCounter entity = new EntityWithConsistencyLevelOnClassAndWideMapCounter();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-
-		entity = em.merge(entity);
-
-		entity.getCounterWideMap().insert(11, CounterBuilder.incr());
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-		entity.getCounterWideMap().get(11).incr(EACH_QUORUM);
-	}
-
-	@Test
-	public void should_override_mapping_on_class_by_batch_value_for_counter_widemap_type()
-			throws Exception
-	{
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = em.merge(entity);
-
-		ThriftBatchingEntityManager batchEm = em.batchingEntityManager();
-		batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
-		entity = batchEm.merge(entity);
-
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-
-		entity.getCounterWideMap().insert(11, CounterBuilder.incr());
-	}
-
-	private void assertThatConsistencyLevelsAreReinitialized()
-	{
-		assertThat(policy.getCurrentReadLevel()).isNull();
-		assertThat(policy.getCurrentWriteLevel()).isNull();
-	}
+    private void assertThatConsistencyLevelsAreReinitialized()
+    {
+        assertThat(policy.getCurrentReadLevel()).isNull();
+        assertThat(policy.getCurrentWriteLevel()).isNull();
+    }
 
 }

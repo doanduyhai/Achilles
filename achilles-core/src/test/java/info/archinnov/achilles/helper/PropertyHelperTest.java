@@ -1,16 +1,11 @@
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -119,44 +114,6 @@ public class PropertyHelperTest
     public void should_not_find_counter_if_not_long_type() throws Exception
     {
 
-    }
-
-    @Test
-    public void should_find_any_any_consistency_level() throws Exception
-    {
-        class Test
-        {
-            @Consistency(read = ANY, write = LOCAL_QUORUM)
-            private WideMap<Integer, String> field;
-        }
-
-        when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ONE);
-        when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ONE);
-
-        Pair<ConsistencyLevel, ConsistencyLevel> levels = helper.findConsistencyLevels(
-                Test.class.getDeclaredField("field"), policy);
-
-        assertThat(levels.left).isEqualTo(ANY);
-        assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
-    }
-
-    @Test
-    public void should_find_quorum_consistency_level_by_default() throws Exception
-    {
-        class Test
-        {
-            @SuppressWarnings("unused")
-            private WideMap<Integer, String> field;
-        }
-
-        when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.QUORUM);
-        when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.QUORUM);
-
-        Pair<ConsistencyLevel, ConsistencyLevel> levels = helper.findConsistencyLevels(
-                Test.class.getDeclaredField("field"), policy);
-
-        assertThat(levels.left).isEqualTo(ConsistencyLevel.QUORUM);
-        assertThat(levels.right).isEqualTo(ConsistencyLevel.QUORUM);
     }
 
     @Test

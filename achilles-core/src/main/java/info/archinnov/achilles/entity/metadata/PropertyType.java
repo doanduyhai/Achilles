@@ -24,13 +24,10 @@ public enum PropertyType {
     LAZY_LIST(30), //
     LAZY_SET(30), //
     LAZY_MAP(30), //
-    WIDE_MAP(30), //
-    COUNTER_WIDE_MAP(30), //
     JOIN_SIMPLE(30), //
     JOIN_LIST(30), //
     JOIN_SET(30), //
-    JOIN_MAP(30), //
-    JOIN_WIDE_MAP(30);
+    JOIN_MAP(30);
 
     private final int flag;
 
@@ -48,39 +45,22 @@ public enum PropertyType {
                 || this == LAZY_LIST //
                 || this == LAZY_SET //
                 || this == LAZY_MAP //
-                || this == WIDE_MAP //
-                || this == COUNTER_WIDE_MAP //
                 || this == JOIN_SIMPLE //
                 || this == JOIN_LIST //
                 || this == JOIN_SET //
-                || this == JOIN_MAP //
-        || this == JOIN_WIDE_MAP);
+        || this == JOIN_MAP);
     }
 
     public boolean isJoin() {
         return (this == JOIN_SIMPLE //
                 || this == JOIN_LIST //
                 || this == JOIN_SET //
-                || this == JOIN_MAP //
-        || this == JOIN_WIDE_MAP);
-    }
-
-    public boolean isWideMap() {
-        return (this == WIDE_MAP //
-                || this == COUNTER_WIDE_MAP //
-        || this == JOIN_WIDE_MAP);
+        || this == JOIN_MAP //
+        );
     }
 
     public boolean isCounter() {
-        return (this == COUNTER //
-        || this == COUNTER_WIDE_MAP);
-    }
-
-    public boolean isProxyType() {
-        return (this == COUNTER //
-                || this == COUNTER_WIDE_MAP //
-                || this == WIDE_MAP //
-        || this == JOIN_WIDE_MAP);
+        return (this == COUNTER);
     }
 
     public boolean isEmbeddedId() {
@@ -99,9 +79,7 @@ public enum PropertyType {
     public static PropertyTypeFilter joinSimpleType = new PropertyTypeFilter(JOIN_SIMPLE);
     public static PropertyTypeFilter joinCollectionType = new PropertyTypeFilter(JOIN_LIST, JOIN_SET);
     public static PropertyTypeFilter joinMapType = new PropertyTypeFilter(JOIN_MAP);
-    public static PropertyTypeFilter wideMapType = new PropertyTypeFilter(WIDE_MAP, JOIN_WIDE_MAP, COUNTER_WIDE_MAP);
-    public static PropertyTypeFilter isProxyType = new PropertyTypeFilter(COUNTER, COUNTER_WIDE_MAP, WIDE_MAP,
-            JOIN_WIDE_MAP);
+    public static PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
 
     public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
     public static PropertyTypeFilter lazyNonProxyType = new PropertyTypeFilter(SIMPLE, LAZY_SIMPLE, LIST, LAZY_LIST,
@@ -109,8 +87,7 @@ public enum PropertyType {
 
     public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
 
-    public static PropertyTypeExclude excludeProxyType = new PropertyTypeExclude(COUNTER, COUNTER_WIDE_MAP, WIDE_MAP,
-            JOIN_WIDE_MAP);
+    public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
 
     public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET, MAP,
             LAZY_MAP, JOIN_LIST, JOIN_SET, JOIN_MAP);

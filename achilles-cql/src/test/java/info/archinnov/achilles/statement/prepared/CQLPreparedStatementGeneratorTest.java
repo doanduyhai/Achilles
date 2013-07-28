@@ -2,14 +2,12 @@ package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,17 +69,17 @@ public class CQLPreparedStatementGeneratorTest
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> proxyTypeMeta = PropertyMetaTestBuilder
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
-                .field("proxyType")
-                .type(PropertyType.WIDE_MAP)
+                .field("counter")
+                .type(PropertyType.COUNTER)
                 .build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
         meta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, "name", nameMeta, "proxyType", proxyTypeMeta));
+                ("id", idMeta, "name", nameMeta, "counter", counterMeta));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -253,13 +251,13 @@ public class CQLPreparedStatementGeneratorTest
     }
 
     @Test
-    public void should_exception_when_preparing_select_for_proxy_type() throws Exception
+    public void should_exception_when_preparing_select_for_counter_type() throws Exception
     {
 
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
-                .field("widemap")
-                .type(PropertyType.WIDE_MAP)
+                .field("count")
+                .type(PropertyType.COUNTER)
                 .build();
 
         EntityMeta meta = new EntityMeta();
@@ -267,7 +265,7 @@ public class CQLPreparedStatementGeneratorTest
 
         exception.expect(IllegalArgumentException.class);
         exception
-                .expectMessage("Cannot prepare statement for property 'widemap' of entity 'entity' because it is of proxy type");
+                .expectMessage("Cannot prepare statement for property 'count' of entity 'entity' because it is a counter type");
 
         generator.prepareSelectFieldPS(session, meta, nameMeta);
 
@@ -400,110 +398,6 @@ public class CQLPreparedStatementGeneratorTest
     }
 
     @Test
-    public void should_remove_entity_having_wide_map() throws Exception
-    {
-
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .type(PropertyType.SIMPLE)
-                .build();
-
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("widemap")
-                .type(PropertyType.WIDE_MAP)
-                .externalTable("external_table")
-                .build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
-
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
-
-        assertThat(actual).hasSize(2);
-        assertThat(actual).containsKey("table");
-        assertThat(actual).containsKey("external_table");
-        assertThat(actual).containsValue(ps);
-        assertThat(actual).containsValue(ps2);
-        assertThat(queryCaptor.getAllValues()).contains("DELETE  FROM table WHERE id=?;",
-                "DELETE  FROM external_table WHERE id=?;");
-    }
-
-    @Test
-    public void should_remove_entity_having_join_wide_map() throws Exception
-    {
-
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .type(PropertyType.SIMPLE)
-                .build();
-
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("join_widemap")
-                .type(PropertyType.JOIN_WIDE_MAP)
-                .externalTable("join_external_table")
-                .build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
-
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
-
-        assertThat(actual).hasSize(2);
-        assertThat(actual).containsKey("table");
-        assertThat(actual).containsKey("join_external_table");
-        assertThat(actual).containsValue(ps);
-        assertThat(actual).containsValue(ps2);
-        assertThat(queryCaptor.getAllValues()).contains("DELETE  FROM table WHERE id=?;",
-                "DELETE  FROM join_external_table WHERE id=?;");
-    }
-
-    @Test
-    public void should_remove_entity_having_counter_wide_map() throws Exception
-    {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .type(PropertyType.SIMPLE)
-                .build();
-
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("counter_widemap")
-                .type(PropertyType.COUNTER_WIDE_MAP)
-                .externalTable("counter_external_table")
-                .build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
-
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
-
-        assertThat(actual).hasSize(2);
-        assertThat(actual).containsKey("table");
-        assertThat(actual).containsKey("counter_external_table");
-        assertThat(actual).containsValue(ps);
-        assertThat(actual).containsValue(ps2);
-        assertThat(queryCaptor.getAllValues()).contains("DELETE  FROM table WHERE id=?;",
-                "DELETE  FROM counter_external_table WHERE id=?;");
-    }
-
-    @Test
     public void should_remove_entity_having_counter() throws Exception
     {
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
@@ -527,16 +421,10 @@ public class CQLPreparedStatementGeneratorTest
 
         Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
-        assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(1);
         assertThat(actual).containsKey("table");
-        assertThat(actual).containsKey(AchillesCounter.CQL_COUNTER_TABLE);
         assertThat(actual).containsValue(ps);
-        assertThat(actual).containsValue(ps2);
-        assertThat(queryCaptor.getAllValues()).contains(
-                "DELETE  FROM table WHERE id=?;",
-                "DELETE  FROM " + AchillesCounter.CQL_COUNTER_TABLE + " WHERE "
-                        + AchillesCounter.CQL_COUNTER_FQCN + "=? AND "
-                        + AchillesCounter.CQL_COUNTER_PRIMARY_KEY + "=?;");
+        assertThat(queryCaptor.getAllValues()).containsOnly("DELETE  FROM table WHERE id=?;");
     }
 
     @Test

@@ -108,7 +108,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
             PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
             Object joinId;
-            if (propertyMeta.isWideMap() || propertyMeta.isJoin())
+            if (propertyMeta.isJoin())
             {
                 joinId = joinIdMeta.castValue(hColumn.getValue());
             }

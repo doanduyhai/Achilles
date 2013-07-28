@@ -54,54 +54,6 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public <K, V, T> Composite createForQuery(PropertyMeta<K, V> propertyMeta, T key,
-            ComponentEquality equality)
-    {
-        log.trace("Creating query composite for propertyMeta {}", propertyMeta.getPropertyName());
-
-        if (key == null)
-        {
-            return null;
-        }
-
-        Composite composite = new Composite();
-
-        if (propertyMeta.isCompound())
-        {
-            composite = compoundKeyMapper.fromCompoundToCompositeForQuery(key, propertyMeta, equality);
-        }
-        else
-        {
-            log.trace("PropertyMeta {} is single key", propertyMeta.getPropertyName());
-
-            Serializer<Object> serializer = ThriftSerializerTypeInferer.getSerializer(key);
-            Object encoded = propertyMeta.encodeKey(key);
-            composite
-                    .setComponent(0, encoded, serializer, serializer.getComparatorType().getTypeName(), equality);
-        }
-        return composite;
-    }
-
-    public <K, V> Composite[] createForQuery(PropertyMeta<K, V> propertyMeta, K start, K end,
-            BoundingMode bounds, OrderingMode ordering)
-    {
-        log
-                .trace("Creating query composite for propertyMeta {} with start {}, end {}, bounding mode {} and orderging {}",
-                        propertyMeta.getPropertyName(), start, end, bounds.name(), ordering.name());
-
-        ComponentEquality[] equalities = calculator.determineEquality(bounds, ordering);
-
-        Composite from = createForQuery(propertyMeta, start, equalities[0]);
-        Composite to = createForQuery(propertyMeta, end, equalities[1]);
-
-        return new Composite[]
-        {
-                from,
-                to
-        };
-
-    }
-
     public Composite[] createForClusteredQuery(PropertyMeta<?, ?> idMeta,
             List<Object> clusteringFrom, List<Object> clusteringTo, BoundingMode bounding,
             OrderingMode ordering)

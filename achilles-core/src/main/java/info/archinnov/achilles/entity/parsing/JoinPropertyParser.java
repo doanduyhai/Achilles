@@ -58,9 +58,6 @@ public class JoinPropertyParser {
             case LAZY_MAP:
                 joinPropertyMeta.setType(JOIN_MAP);
                 break;
-            case WIDE_MAP:
-                joinPropertyMeta.setType(JOIN_WIDE_MAP);
-                break;
             default:
                 break;
         }

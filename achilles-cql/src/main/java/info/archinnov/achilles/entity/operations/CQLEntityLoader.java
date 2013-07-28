@@ -51,7 +51,7 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
             PropertyMeta<?, V> pm)
     {
         PropertyType type = pm.type();
-        if (!type.isProxyType())
+        if (!type.isCounter())
         {
             if (type.isJoin())
             {

@@ -2,7 +2,6 @@ package info.archinnov.achilles.table;
 
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
@@ -61,33 +60,6 @@ public class ThriftTableCreator extends TableCreator {
             }
         } else {
             columnFamilyValidator.validateCFForEntity(cfDef, entityMeta);
-        }
-    }
-
-    @Override
-    protected void validateOrCreateTableForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm, boolean forceTableCreation) {
-
-        String entityName = meta.getClassName();
-        String externalTableName = pm.getExternalTableName();
-        Class<?> idClass = pm.getIdClass();
-
-        ColumnFamilyDefinition cfDef = discoverTable(externalTableName);
-
-        if (cfDef == null) {
-            String propertyName = pm.getPropertyName();
-            if (forceTableCreation) {
-                log.debug("Force creation of column family for propertyMeta {}", propertyName);
-
-                cfDef = columnFamilyFactory.createWideRowCF(keyspace.getKeyspaceName(), pm, idClass,
-                        externalTableName, entityName);
-                this.addTable(cfDef);
-            } else {
-                throw new AchillesInvalidTableException("The required column family '" + externalTableName
-                        + "' does not exist for field '" + pm.getPropertyName() + "' of entity '"
-                        + entityName + "'");
-            }
-        } else {
-            columnFamilyValidator.validateWideRowForProperty(cfDef, pm, externalTableName);
         }
     }
 

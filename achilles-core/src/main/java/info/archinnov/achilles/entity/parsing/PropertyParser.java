@@ -11,14 +11,11 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
-import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -71,7 +68,6 @@ public class PropertyParser
         {
             propertyMeta = parseSetProperty(context);
         }
-
         else if (Map.class.isAssignableFrom(fieldType))
         {
             propertyMeta = parseMapProperty(context);
@@ -79,10 +75,6 @@ public class PropertyParser
         else if (Counter.class.isAssignableFrom(fieldType))
         {
             propertyMeta = parseCounterProperty(context);
-        }
-        else if (WideMap.class.isAssignableFrom(fieldType))
-        {
-            propertyMeta = parseWideMapProperty(context);
         }
         else if (context.isEmbeddedId())
         {
@@ -300,69 +292,6 @@ public class PropertyParser
 
     }
 
-    protected <K, V> PropertyMeta<K, V> parseWideMapProperty(PropertyParsingContext context)
-    {
-        log.debug("Parsing property {} as wide map property of entity class {}",
-                context.getCurrentPropertyName(),
-                context.getCurrentEntityClass().getCanonicalName());
-
-        validator.validateWideMapGenerics(context);
-
-        Class<?> entityClass = context.getCurrentEntityClass();
-        Field field = context.getCurrentField();
-        PropertyType type = PropertyType.WIDE_MAP;
-        CompoundKeyProperties multiKeyProperties = null;
-        CounterProperties counterProperties = null;
-
-        Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
-        Class<K> keyClass = types.left;
-        Class<V> valueClass = types.right;
-        boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
-
-        // Multi Key
-        multiKeyProperties = parseCompoundKey(keyClass);
-
-        if (isCounterValueType)
-        {
-            counterProperties = new CounterProperties(entityClass.getCanonicalName());
-            type = COUNTER_WIDE_MAP;
-        }
-
-        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-
-        PropertyMeta<K, V> propertyMeta = factory()
-                //
-                .objectMapper(context.getCurrentObjectMapper())
-                .type(type)
-                .propertyName(context.getCurrentPropertyName())
-                .entityClassName(entityClass.getCanonicalName())
-                .accessors(accessors)
-                .compoundKeyProperties(multiKeyProperties)
-                .counterProperties(counterProperties)
-                .consistencyLevels(context.getCurrentConsistencyLevels())
-                .build(keyClass, valueClass);
-
-        if (isCounterValueType)
-        {
-            if (propertyHelper.hasConsistencyAnnotation(context.getCurrentField()))
-            {
-                throw new AchillesBeanMappingException(
-                        "Counter WideMap type '"
-                                + entityClass.getCanonicalName()
-                                + "' does not support @ConsistencyLevel annotation. Only runtime consistency level is allowed");
-            }
-            context.getCounterMetas().add(propertyMeta);
-        }
-
-        saveWideMapForDeferredBinding(context, propertyMeta);
-        fillWideMapCustomConsistencyLevels(context, propertyMeta);
-
-        log.trace("Built wide map property meta for property {} of entity class {} : {}",
-                propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                propertyMeta);
-        return propertyMeta;
-    }
-
     public void fillWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
             PropertyMeta<?, ?> propertyMeta,
             String externalTableName)
@@ -444,76 +373,6 @@ public class PropertyParser
 
         log.trace("Built compound key properties", compoundKeyProperties);
         return compoundKeyProperties;
-    }
-
-    private void saveWideMapForDeferredBinding(PropertyParsingContext context,
-            PropertyMeta<?, ?> propertyMeta)
-    {
-        log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
-
-        String externalCFName;
-
-        Class<?> entityClass = context.getCurrentEntityClass();
-        if (context.isClusteredEntity())
-        {
-            externalCFName = context.getCurrentColumnFamilyName();
-            Validator
-                    .validateBeanMappingFalse(
-                            StringUtils.isBlank(context.getCurrentExternalTableName()),
-                            "External Column Family should be defined for WideMap property '"
-                                    + propertyMeta.getPropertyName()
-                                    + "' of entity '"
-                                    + entityClass.getCanonicalName()
-                                    + "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
-        }
-        else
-        {
-            externalCFName = context.getCurrentExternalTableName();
-            Validator
-                    .validateBeanMappingFalse(
-                            StringUtils.isBlank(externalCFName),
-                            "External Column Family should be defined for WideMap property '"
-                                    + propertyMeta.getPropertyName()
-                                    + "' of entity '"
-                                    + entityClass.getCanonicalName()
-                                    + "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
-
-        }
-        propertyMeta.setExternalTableName(externalCFName);
-        if (context.isJoinColumn())
-        {
-            context.getJoinWideMaps().put(propertyMeta, externalCFName);
-        }
-        else
-        {
-            context.getWideMaps().put(propertyMeta, externalCFName);
-        }
-
-    }
-
-    private void fillWideMapCustomConsistencyLevels(PropertyParsingContext context,
-            PropertyMeta<?, ?> propertyMeta)
-    {
-        log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
-        boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(context
-                .getCurrentField());
-        String externalTableName = context.getCurrentExternalTableName();
-
-        if (isCustomConsistencyLevel)
-        {
-            Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-                    .findConsistencyLevels(
-                            context.getCurrentField(), context.getConfigurableCLPolicy());
-
-            context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left,
-                    externalTableName);
-            context.getConfigurableCLPolicy().setConsistencyLevelForWrite(consistencyLevels.right,
-                    externalTableName);
-
-            propertyMeta.setConsistencyLevels(consistencyLevels);
-
-            log.trace("Found custom consistency levels : {}", consistencyLevels);
-        }
     }
 
     private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context,

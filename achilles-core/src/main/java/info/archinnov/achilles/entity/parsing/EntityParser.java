@@ -88,12 +88,6 @@ public class EntityParser
         // First validate id meta
         validator.validateHasIdMeta(entityClass, idMeta);
 
-        // Deferred external wide map fields parsing
-        processWideMap(context, idMeta);
-
-        // Deferred external join wide map fields parsing
-        processJoinWideMap(context, columnFamilyName, idMeta);
-
         // Deferred counter property meta completion
         completeCounterPropertyMeta(context, idMeta);
 
@@ -159,33 +153,6 @@ public class EntityParser
                 .getClass()
                 .getCanonicalName(), entityClass.getCanonicalName());
         context.setCurrentObjectMapper(objectMapper);
-    }
-
-    private void processWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta)
-    {
-        for (Entry<PropertyMeta<?, ?>, String> entry : context.getWideMaps().entrySet())
-        {
-            PropertyMeta<?, ?> externalWideMapMeta = entry.getKey();
-
-            log.debug("Fill wide map meta {} of entity class {}", externalWideMapMeta
-                    .getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
-
-            parser.fillWideMap(context, idMeta, externalWideMapMeta, entry.getValue());
-        }
-    }
-
-    private void processJoinWideMap(EntityParsingContext context, String columnFamilyName,
-            PropertyMeta<?, ?> idMeta)
-    {
-        for (Entry<PropertyMeta<?, ?>, String> entry : context.getJoinWideMaps().entrySet())
-        {
-            PropertyMeta<?, ?> joinExternalWideMapMeta = entry.getKey();
-
-            log.debug("Fill join wide map meta {} of entity class {}", joinExternalWideMapMeta
-                    .getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
-
-            joinParser.fillJoinWideMap(context, idMeta, joinExternalWideMapMeta, entry.getValue());
-        }
     }
 
     private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta<?, ?> idMeta)

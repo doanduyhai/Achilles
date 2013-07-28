@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,25 +48,6 @@ public class TableCreatorTest
                 .field("id")
                 .build();
         configContext.setForceColumnFamilyCreation(true);
-    }
-
-    @Test
-    public void should_validate_or_create_for_wide_map() throws Exception
-    {
-        PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder //
-                .keyValueClass(Integer.class, String.class)
-                .field("externalWideMap")
-                .externalTable("externalCF")
-                .type(PropertyType.WIDE_MAP)
-                .build();
-        prepareData(wideMapMeta);
-        idMeta.setValueClass(Long.class);
-
-        doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap,
-                configContext, false);
-        creator.validateOrCreateTables(entityMetaMap, configContext, false);
-
-        verify(creator).validateOrCreateTableForWideMap(entityMeta, wideMapMeta, true);
     }
 
     @Test

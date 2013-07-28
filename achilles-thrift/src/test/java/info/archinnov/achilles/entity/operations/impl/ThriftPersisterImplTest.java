@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
@@ -529,29 +528,6 @@ public class ThriftPersisterImplTest {
     }
 
     @Test
-    public void should_remove_entity_having_external_wide_map() throws Exception {
-
-        PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("geoPositions")
-                .type(PropertyType.WIDE_MAP)
-                .externalTable("external_cf")
-                .idClass(Long.class)
-                .accessors()
-                .build();
-
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));
-
-        wideRowDaosMap.put("external_cf", wideRowDao);
-        when(flushContext.getWideRowMutator("external_cf")).thenReturn(wideRowMutator);
-
-        persisterImpl.remove(context);
-        verify(entityDao).removeRowBatch(entity.getId(), entityMutator);
-        verify(wideRowDao).removeRowBatch(entity.getId(), wideRowMutator);
-    }
-
-    @Test
     public void should_remove_entity_having_simple_counter() throws Exception {
         String fqcn = CompleteBean.class.getCanonicalName();
 
@@ -576,31 +552,6 @@ public class ThriftPersisterImplTest {
         persisterImpl.remove(context);
 
         verify(thriftCounterDao).removeCounterBatch(keyComp, comp, counterMutator);
-
-    }
-
-    @Test
-    public void should_remove_entity_having_widemap_counter() throws Exception {
-        String fqcn = CompleteBean.class.getCanonicalName();
-
-        PropertyMeta<Void, Long> counterIdMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, Long.class).field("id").accessors().build();
-        PropertyMeta<String, Counter> propertyMeta = PropertyMetaTestBuilder
-                //
-                .completeBean(String.class, Counter.class).field("popularTopics").type(PropertyType.COUNTER_WIDE_MAP)
-                .accessors().counterIdMeta(counterIdMeta).fqcn(fqcn)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)).build();
-
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));
-
-        Composite keyComp = new Composite();
-        when(thriftCompositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(keyComp);
-        when(flushContext.getCounterMutator()).thenReturn(counterMutator);
-
-        persisterImpl.remove(context);
-
-        verify(thriftCounterDao).removeCounterRowBatch(keyComp, counterMutator);
 
     }
 

@@ -1,21 +1,16 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import static javax.persistence.CascadeType.*;
+import static javax.persistence.CascadeType.ALL;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.WideMap;
-
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 /**
@@ -28,125 +23,112 @@ import javax.persistence.ManyToOne;
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
 public class Bean
 {
-	public static final long serialVersionUID = 1L;
+    public static final long serialVersionUID = 1L;
 
-	@Id
-	private Long id;
+    @Id
+    private Long id;
 
-	@Column
-	private String name;
+    @Column
+    private String name;
 
-	@Column(name = "age_in_year")
-	private Long age;
+    @Column(name = "age_in_year")
+    private Long age;
 
-	// un-mapped field
-	private String label;
+    // un-mapped field
+    private String label;
 
-	@Lazy
-	@Column
-	private List<String> friends;
+    @Lazy
+    @Column
+    private List<String> friends;
 
-	@Column
-	private Set<String> followers;
+    @Column
+    private Set<String> followers;
 
-	@Column
-	private Map<Integer, String> preferences;
+    @Column
+    private Map<Integer, String> preferences;
 
-	@ManyToOne(cascade = ALL)
-	@JoinColumn
-	private UserBean creator;
+    @ManyToOne(cascade = ALL)
+    @JoinColumn
+    private UserBean creator;
 
-	@ManyToMany(cascade =
-	{
-			PERSIST,
-			MERGE
-	})
-	@JoinColumn(name = "linked_users", table = "linked_users")
-	private WideMap<String, UserBean> users;
+    public Long getId()
+    {
+        return id;
+    }
 
-	public Long getId()
-	{
-		return id;
-	}
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
 
-	public void setId(Long id)
-	{
-		this.id = id;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public String getName()
-	{
-		return name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public Long getAge()
+    {
+        return age;
+    }
 
-	public Long getAge()
-	{
-		return age;
-	}
+    public void setAge(Long age)
+    {
+        this.age = age;
+    }
 
-	public void setAge(Long age)
-	{
-		this.age = age;
-	}
+    public List<String> getFriends()
+    {
+        return friends;
+    }
 
-	public List<String> getFriends()
-	{
-		return friends;
-	}
+    public void setFriends(List<String> friends)
+    {
+        this.friends = friends;
+    }
 
-	public void setFriends(List<String> friends)
-	{
-		this.friends = friends;
-	}
+    public Set<String> getFollowers()
+    {
+        return followers;
+    }
 
-	public Set<String> getFollowers()
-	{
-		return followers;
-	}
+    public void setFollowers(Set<String> followers)
+    {
+        this.followers = followers;
+    }
 
-	public void setFollowers(Set<String> followers)
-	{
-		this.followers = followers;
-	}
+    public Map<Integer, String> getPreferences()
+    {
+        return preferences;
+    }
 
-	public Map<Integer, String> getPreferences()
-	{
-		return preferences;
-	}
+    public void setPreferences(Map<Integer, String> preferences)
+    {
+        this.preferences = preferences;
+    }
 
-	public void setPreferences(Map<Integer, String> preferences)
-	{
-		this.preferences = preferences;
-	}
+    public UserBean getCreator()
+    {
+        return creator;
+    }
 
-	public UserBean getCreator()
-	{
-		return creator;
-	}
+    public void setCreator(UserBean creator)
+    {
+        this.creator = creator;
+    }
 
-	public void setCreator(UserBean creator)
-	{
-		this.creator = creator;
-	}
+    public String getLabel()
+    {
+        return label;
+    }
 
-	public WideMap<String, UserBean> getUsers()
-	{
-		return users;
-	}
-
-	public String getLabel()
-	{
-		return label;
-	}
-
-	public void setLabel(String label)
-	{
-		this.label = label;
-	}
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
 
 }

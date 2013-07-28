@@ -13,7 +13,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -100,8 +99,7 @@ public class PropertyMetaTestBuilder<T, K, V>
             Field declaredField = clazz.getDeclaredField(field);
             pm.setGetter(achillesEntityIntrospector.findGetter(clazz, declaredField));
             Class<?> fieldClass = declaredField.getType();
-            if (!WideMap.class.isAssignableFrom(fieldClass)
-                    && !Counter.class.isAssignableFrom(fieldClass))
+            if (!Counter.class.isAssignableFrom(fieldClass))
             {
                 pm.setSetter(achillesEntityIntrospector.findSetter(clazz, declaredField));
             }

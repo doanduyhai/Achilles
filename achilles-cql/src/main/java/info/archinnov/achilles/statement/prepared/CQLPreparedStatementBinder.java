@@ -33,7 +33,7 @@ public class CQLPreparedStatementBinder
 
         List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
-                .filter(PropertyType.excludeProxyType)
+                .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
         List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);

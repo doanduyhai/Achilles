@@ -1,11 +1,9 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.type.WideMap;
-
+import java.util.Map;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-
 
 /**
  * BeanWithJoinColumnAsEntity
@@ -16,29 +14,28 @@ import javax.persistence.JoinColumn;
 @Entity
 public class BeanWithJoinColumnAsEntity
 {
-	@Id
-	private Long id;
+    @Id
+    private Long id;
 
-	@JoinColumn
-	private WideMap<Integer, Bean> wide;
+    @JoinColumn
+    private Map<Integer, Bean> map;
 
-	public Long getId()
-	{
-		return id;
-	}
+    public Long getId()
+    {
+        return id;
+    }
 
-	public void setId(Long id)
-	{
-		this.id = id;
-	}
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
 
-	public WideMap<Integer, Bean> getWide()
-	{
-		return wide;
-	}
+    public Map<Integer, Bean> getMap() {
+        return map;
+    }
 
-	public void setWide(WideMap<Integer, Bean> wide)
-	{
-		this.wide = wide;
-	}
+    public void setMap(Map<Integer, Bean> map) {
+        this.map = map;
+    }
+
 }

@@ -128,13 +128,6 @@ public class PropertyMetaBuilder {
             case JOIN_MAP:
                 return new MapTranscoder(objectMapper);
 
-            case WIDE_MAP:
-            case JOIN_WIDE_MAP:
-            case COUNTER_WIDE_MAP:
-                if (isCompound)
-                    return new CompoundTranscoder(objectMapper);
-                else
-                    return new MapTranscoder(objectMapper);
             default:
                 return null;
         }

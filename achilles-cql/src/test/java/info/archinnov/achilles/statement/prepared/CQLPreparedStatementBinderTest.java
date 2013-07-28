@@ -9,7 +9,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -106,16 +105,16 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
                 .completeBean(UUID.class, String.class)
-                .field("geoPositions")
-                .type(PropertyType.WIDE_MAP)
+                .field("count")
+                .type(PropertyType.COUNTER)
                 .accessors()
                 .build();
 
         entityMeta.setIdMeta(idMeta);
         entityMeta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, name, nameMeta, "age", ageMeta, "wideMap", wideMapMeta));
+                ("id", idMeta, name, nameMeta, "age", ageMeta, "count", counterMeta));
 
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
         when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);

@@ -66,6 +66,7 @@ public class CQLPersisterImplTest
     public void setUp()
     {
         when(context.getEntity()).thenReturn(entity);
+        when(context.getPrimaryKey()).thenReturn(entity.getId());
         when(context.getEntityMeta()).thenReturn(entityMeta);
 
         when(entityMeta.getAllMetas()).thenReturn(allMetas);
@@ -141,20 +142,19 @@ public class CQLPersisterImplTest
     }
 
     @Test
-    public void should_remove_linked_tables() throws Exception
+    public void should_remove_linked_counters() throws Exception
     {
-        PropertyMeta<?, ?> wideMapMeta = PropertyMetaTestBuilder
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
-                .type(PropertyType.WIDE_MAP)
-                .externalTable("external_table")
+                .type(PropertyType.COUNTER)
                 .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
                 .build();
 
-        allMetas.add(wideMapMeta);
+        allMetas.add(counterMeta);
 
-        persisterImpl.removeLinkedTables(context);
+        persisterImpl.removeLinkedCounters(context);
 
-        verify(context).bindForRemoval("external_table", EACH_QUORUM);
+        verify(context).bindForSimpleCounterRemoval(entityMeta, counterMeta, entity.getId());
     }
 }

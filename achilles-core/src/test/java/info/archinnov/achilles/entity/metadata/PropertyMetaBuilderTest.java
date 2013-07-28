@@ -3,7 +3,6 @@ package info.archinnov.achilles.entity.metadata;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
@@ -11,13 +10,10 @@ import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.test.parser.entity.MyMultiKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -312,80 +308,6 @@ public class PropertyMetaBuilderTest {
         assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
-    }
-
-    @Test
-    public void should_build_wide_map() throws Exception {
-
-        PropertyMeta<Integer, String> built = PropertyMetaBuilder
-                .factory()
-                .type(WIDE_MAP)
-                .propertyName("prop")
-                .accessors(accessors)
-                .objectMapper(objectMapper)
-                .build(Integer.class, String.class);
-
-        assertThat(built.type()).isEqualTo(WIDE_MAP);
-        assertThat(built.getPropertyName()).isEqualTo("prop");
-
-        assertThat(built.getKey(12)).isInstanceOf(Integer.class);
-        assertThat(built.getKeyClass()).isEqualTo(Integer.class);
-
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
-
-        assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isFalse();
-        assertThat(built.type().isJoin()).isFalse();
-        assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_build_compound_wide_map() throws Exception {
-
-        Iterator<Class<?>> iterator = mock(Iterator.class);
-        List<Class<?>> componentClasses = mock(List.class);
-        List<Method> componentGetters = mock(List.class);
-        List<Method> componentSetters = mock(List.class);
-        when(componentClasses.size()).thenReturn(1);
-        when(componentClasses.iterator()).thenReturn(iterator);
-        when(iterator.hasNext()).thenReturn(false);
-
-        CompoundKeyProperties props = new CompoundKeyProperties();
-        props.setComponentClasses(componentClasses);
-        props.setComponentGetters(componentGetters);
-        props.setComponentSetters(componentSetters);
-
-        PropertyMeta<MyMultiKey, String> built = PropertyMetaBuilder
-                .factory()
-                .type(WIDE_MAP)
-                .propertyName("prop")
-                .accessors(accessors)
-                .compoundKeyProperties(props)
-                .objectMapper(objectMapper)
-                .build(MyMultiKey.class, String.class);
-
-        assertThat(built.type()).isEqualTo(WIDE_MAP);
-        assertThat(built.getPropertyName()).isEqualTo("prop");
-
-        MyMultiKey multiKey = new MyMultiKey();
-        assertThat(built.getKey(multiKey)).isInstanceOf(MyMultiKey.class);
-        assertThat(built.getKeyClass()).isEqualTo(MyMultiKey.class);
-
-        assertThat(built.getComponentClasses()).isSameAs(componentClasses);
-
-        assertThat(built.getComponentGetters()).isSameAs(componentGetters);
-
-        assertThat(built.getComponentSetters()).isSameAs(componentSetters);
-
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
-
-        assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isTrue();
-        assertThat(built.type().isJoin()).isFalse();
-        assertThat(built.getTranscoder()).isInstanceOf(CompoundTranscoder.class);
     }
 
     private String writeString(Object value) throws Exception {

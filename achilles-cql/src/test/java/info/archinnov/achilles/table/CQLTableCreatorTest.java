@@ -10,7 +10,6 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.Counter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,7 +29,6 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * CQLTableCreatorTest
@@ -201,15 +199,15 @@ public class CQLTableCreatorTest {
                 .field("longCol")
                 .build();
 
-        PropertyMeta<Integer, Long> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, Long.class)
-                .type(WIDE_MAP)
-                .field("wideMapCol")
+        PropertyMeta<Void, Long> counterColPM = PropertyMetaTestBuilder
+                .keyValueClass(Void.class, Long.class)
+                .type(COUNTER)
+                .field("counterCol")
                 .build();
 
         Map<String, PropertyMeta<?, ?>> propertyMetas = new LinkedHashMap<String, PropertyMeta<?, ?>>();
         propertyMetas.put("longCol", longColPM);
-        propertyMetas.put("wideMapCol", wideMapColPM);
+        propertyMetas.put("counterCol", counterColPM);
 
         meta = new EntityMeta();
         meta.setPropertyMetas(propertyMetas);
@@ -258,200 +256,6 @@ public class CQLTableCreatorTest {
         exception.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
 
         creator.validateOrCreateTableForEntity(meta, false);
-    }
-
-    @Test
-    public void should_create_table_for_wide_map() throws Exception
-    {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(ID)
-                .field("id")
-                .build();
-
-        PropertyMeta<Integer, Long> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, Long.class)
-                .type(WIDE_MAP)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .build();
-
-        meta = new EntityMeta();
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("wideMapCol", wideMapColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, true);
-
-        verify(session).execute(stringCaptor.capture());
-
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
-                "\t\tid bigint,\n" +
-                "\t\twide_map_key int,\n" +
-                "\t\twideMapCol bigint,\n" +
-                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
-                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
-    }
-
-    @Test
-    public void should_create_table_for_compound_wide_map() throws Exception
-    {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(ID)
-                .field("id")
-                .build();
-
-        PropertyMeta<CompoundKey, Long> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(CompoundKey.class, Long.class)
-                .type(WIDE_MAP)
-                .compNames("index", "count", "uuid")
-                .compClasses(Long.class, Integer.class, UUID.class)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .build();
-
-        meta = new EntityMeta();
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("wideMapCol", wideMapColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, true);
-
-        verify(session).execute(stringCaptor.capture());
-
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
-                "\t\tid bigint,\n" +
-                "\t\tindex bigint,\n" +
-                "\t\tcount int,\n" +
-                "\t\tuuid uuid,\n" +
-                "\t\twideMapCol bigint,\n" +
-                "\t\tPRIMARY KEY(id, index, count, uuid)\n" +
-                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
-    }
-
-    @Test
-    public void should_create_table_for_counter_wide_map() throws Exception
-    {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(ID)
-                .field("id")
-                .build();
-
-        PropertyMeta<Integer, Counter> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, Counter.class)
-                .type(COUNTER_WIDE_MAP)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .build();
-
-        meta = new EntityMeta();
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("wideMapCol", wideMapColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, true);
-
-        verify(session).execute(stringCaptor.capture());
-
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
-                "\t\tid bigint,\n" +
-                "\t\twide_map_key int,\n" +
-                "\t\twideMapCol counter,\n" +
-                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
-                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
-    }
-
-    @Test
-    public void should_create_table_for_join_wide_map() throws Exception
-    {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(ID)
-                .field("id")
-                .build();
-
-        PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder
-                .valueClass(UUID.class)
-                .type(ID)
-                .field("joinId")
-                .build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta<Integer, UserBean> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, UserBean.class)
-                .type(JOIN_WIDE_MAP)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .joinMeta(joinMeta)
-                .build();
-
-        meta = new EntityMeta();
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("wideMapCol", wideMapColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, true);
-
-        verify(session).execute(stringCaptor.capture());
-
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE TABLE externalTableName(\n" +
-                "\t\tid bigint,\n" +
-                "\t\twide_map_key int,\n" +
-                "\t\twideMapCol uuid,\n" +
-                "\t\tPRIMARY KEY(id, wide_map_key)\n" +
-                "\t) WITH COMMENT = 'Create table for wide map property \"wideMapCol\" of entity \"entityName\"'");
-    }
-
-    @Test
-    public void should_validate_table_when_wide_map_already_exists() throws Exception
-    {
-        PropertyMeta<Integer, Long> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, Long.class)
-                .type(WIDE_MAP)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .build();
-
-        TableMetadata tableMetadata = mock(TableMetadata.class);
-        tableMetas.put("externalTableName", tableMetadata);
-
-        meta = new EntityMeta();
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, false);
-
-        verify(validator).validateForWideMap(meta, wideMapColPM, tableMetadata);
-        verifyZeroInteractions(session);
-    }
-
-    @Test
-    public void should_exception_when_wide_map_table_does_not_exist() throws Exception
-    {
-        PropertyMeta<Integer, Long> wideMapColPM = PropertyMetaTestBuilder
-                .keyValueClass(Integer.class, Long.class)
-                .type(WIDE_MAP)
-                .externalTable("externalTableName")
-                .field("wideMapCol")
-                .build();
-
-        meta = new EntityMeta();
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-
-        exception.expect(AchillesInvalidTableException.class);
-        exception
-                .expectMessage("The required table 'externalTableName' does not exist for field 'wideMapCol' of entity 'entityName'");
-
-        creator.validateOrCreateTableForWideMap(meta, wideMapColPM, false);
     }
 
     @Test

@@ -297,13 +297,6 @@ public class ThriftPersisterImpl {
         List<PropertyMeta<?, ?>> pms = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta()).toImmutableList();
 
         for (PropertyMeta<?, ?> propertyMeta : pms) {
-            if (propertyMeta.isWideMap()) {
-                if (propertyMeta.isCounter()) {
-                    removeCounterWideMap(context, propertyMeta);
-                } else {
-                    removeWideMap(context, primaryKey, propertyMeta);
-                }
-            }
             if (propertyMeta.isCounter()) {
                 removeSimpleCounter(context, propertyMeta);
             }
@@ -331,15 +324,6 @@ public class ThriftPersisterImpl {
 
     }
 
-    private void removeWideMap(ThriftPersistenceContext context, Object primaryKey, PropertyMeta<?, ?> propertyMeta) {
-        log.trace("Batch removing wideMap property {} of class {} and primary key {}",
-                propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-
-        String externalColumnFamilyName = propertyMeta.getExternalTableName();
-        ThriftGenericWideRowDao findColumnFamilyDao = context.findWideRowDao(externalColumnFamilyName);
-        findColumnFamilyDao.removeRowBatch(primaryKey, context.getWideRowMutator(externalColumnFamilyName));
-    }
-
     public void removePropertyBatch(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
         Composite start = thriftCompositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL);
         Composite end = thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
@@ -362,15 +346,5 @@ public class ThriftPersisterImpl {
                 propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
         context.getCounterDao().removeCounterBatch(keyComp, com, context.getCounterMutator());
-    }
-
-    private void removeCounterWideMap(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
-
-        log.trace("Batch removing counter wideMap property {} of class {} and primary key {}",
-                propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-
-        Composite keyComp = thriftCompositeFactory.createKeyForCounter(propertyMeta.fqcn(), context.getPrimaryKey(),
-                propertyMeta.counterIdMeta());
-        context.getCounterDao().removeCounterRowBatch(keyComp, context.getCounterMutator());
     }
 }

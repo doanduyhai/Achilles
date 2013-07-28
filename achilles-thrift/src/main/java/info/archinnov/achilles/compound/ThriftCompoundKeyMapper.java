@@ -22,36 +22,6 @@ public class ThriftCompoundKeyMapper
 
     private ThriftCompoundKeyValidator validator = new ThriftCompoundKeyValidator();
 
-    public <K, V> K fromCompositeToCompound(PropertyMeta<K, V> pm, List<Component<?>> components)
-    {
-        if (log.isTraceEnabled())
-        {
-            log.trace("Build compound key {} from composite components {}", pm.getPropertyName(),
-                    format(components));
-        }
-
-        K compoundKey;
-        List<Class<?>> componentClasses = pm.getComponentClasses();
-
-        List<Serializer<Object>> serializers = FluentIterable
-                .from(componentClasses)
-                .transform(classToSerializer)
-                .toImmutableList();
-
-        int componentCount = components.size();
-
-        List<Object> componentValues = new ArrayList<Object>();
-        for (int i = 0; i < componentCount; i++)
-        {
-            Component<?> comp = components.get(i);
-            componentValues.add(serializers.get(i).fromByteBuffer(comp.getBytes()));
-        }
-        compoundKey = (K) pm.decodeFromComponents(componentValues);
-        log.trace("Built compound key : {}", compoundKey);
-
-        return compoundKey;
-    }
-
     public <V> V fromCompositeToEmbeddedId(PropertyMeta<?, V> pm, List<Component<?>> components,
             Object partitionKey)
     {
@@ -112,18 +82,8 @@ public class ThriftCompoundKeyMapper
         }
 
         Composite composite = new Composite();
-        List<Object> columnComponents;
-        List<Class<?>> columnClasses;
-        if (pm.isEmbeddedId())
-        {
-            columnComponents = components.subList(1, components.size());
-            columnClasses = pm.getComponentClasses().subList(1, pm.getComponentClasses().size());
-        }
-        else
-        {
-            columnComponents = components;
-            columnClasses = pm.getComponentClasses();
-        }
+        List<Object> columnComponents = components.subList(1, components.size());
+        List<Class<?>> columnClasses = pm.getComponentClasses().subList(1, pm.getComponentClasses().size());
 
         log.trace("Build composite from components {} to persist @CompoundKey {} ",
                 columnComponents, propertyName);
@@ -150,36 +110,14 @@ public class ThriftCompoundKeyMapper
         return composite;
     }
 
-    public Composite fromCompoundToCompositeForQuery(Object compoundKey, PropertyMeta<?, ?> pm,
-            ComponentEquality equality)
-    {
-        String propertyName = pm.getPropertyName();
-        log.trace("Build composite from key {} to query @CompoundKey {} ", compoundKey,
-                propertyName);
-
-        List<Object> components = pm.encodeToComponents(compoundKey);
-        return fromComponentsToCompositeForQuery(components, pm, equality);
-    }
-
     public Composite fromComponentsToCompositeForQuery(List<Object> components,
             PropertyMeta<?, ?> pm,
             ComponentEquality equality)
     {
         String propertyName = pm.getPropertyName();
 
-        List<Object> columnComponents;
-        List<Class<?>> columnClasses;
-
-        if (pm.isEmbeddedId())
-        {
-            columnComponents = components.subList(1, components.size());
-            columnClasses = pm.getComponentClasses().subList(1, pm.getComponentClasses().size());
-        }
-        else
-        {
-            columnComponents = components;
-            columnClasses = pm.getComponentClasses();
-        }
+        List<Object> columnComponents = components.subList(1, components.size());
+        List<Class<?>> columnClasses = pm.getComponentClasses().subList(1, pm.getComponentClasses().size());
 
         log.trace("Build composite from components {} to query @CompoundKey {} ", columnComponents,
                 propertyName);
@@ -194,8 +132,7 @@ public class ThriftCompoundKeyMapper
         int srzCount = serializers.size();
 
         Validator.validateTrue(srzCount >= columnComponents.size(), "There should be at most "
-                + srzCount
-                + " values for the @CompoundKey '" + propertyName + "'");
+                + srzCount + " values for the @CompoundKey '" + propertyName + "'");
 
         int lastNotNullIndex = validator.validateNoHoleAndReturnLastNonNullIndex(columnComponents);
 

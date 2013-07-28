@@ -65,34 +65,6 @@ public class CQLTableCreator extends TableCreator {
     }
 
     @Override
-    protected void validateOrCreateTableForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm,
-            boolean forceColumnFamilyCreation) {
-
-        String entityName = meta.getClassName();
-        String externalTableName = pm.getExternalTableName();
-
-        if (tableMetas.containsKey(externalTableName))
-        {
-            validator.validateForWideMap(meta, pm, tableMetas.get(externalTableName));
-        }
-        else
-        {
-            String propertyName = pm.getPropertyName();
-            if (forceColumnFamilyCreation)
-            {
-                log.debug("Force creation of column family for propertyMeta {}", pm.getPropertyName());
-                createTableForWideMap(meta, pm);
-            }
-            else
-            {
-                throw new AchillesInvalidTableException("The required table '" + externalTableName
-                        + "' does not exist for field '" + propertyName + "' of entity '"
-                        + entityName + "'");
-            }
-        }
-    }
-
-    @Override
     protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
         if (tableMetas.containsKey(CQL_COUNTER_TABLE))
         {
@@ -232,7 +204,7 @@ public class CQLTableCreator extends TableCreator {
     }
 
     private void buildPrimaryKeys(PropertyMeta<?, ?> pm, CQLTableBuilder builder) {
-        if (pm.isCompound())
+        if (pm.isEmbeddedId())
         {
             List<String> componentNames = pm.getComponentNames();
             List<Class<?>> componentClasses = pm.getComponentClasses();
@@ -242,11 +214,6 @@ public class CQLTableCreator extends TableCreator {
                 builder.addColumn(componentName, componentClasses.get(i));
                 builder.addPrimaryKey(componentName);
             }
-        }
-        else if (pm.isWideMap())
-        {
-            builder.addColumn(SINGLE_WIDE_MAP_KEY, pm.getKeyClass());
-            builder.addPrimaryKey(SINGLE_WIDE_MAP_KEY);
         }
         else
         {

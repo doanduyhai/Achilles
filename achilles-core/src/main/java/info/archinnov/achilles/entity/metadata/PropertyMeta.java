@@ -273,19 +273,9 @@ public class PropertyMeta<K, V>
         return this.type.isLazy();
     }
 
-    public boolean isWideMap()
-    {
-        return this.type.isWideMap();
-    }
-
     public boolean isCounter()
     {
         return this.type.isCounter();
-    }
-
-    public boolean isProxyType()
-    {
-        return this.type.isProxyType();
     }
 
     public boolean isEmbeddedId()

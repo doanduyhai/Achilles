@@ -61,25 +61,6 @@ public class ThriftCompoundKeyMapperTest
     private DataTranscoder transcoder;
 
     @Test
-    public void should_build_compound_key() throws Exception
-    {
-        TweetCompoundKey compoundKey = new TweetCompoundKey();
-        UUID uuid1 = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-        HColumn<Composite, String> hCol1 = buildHColumn(buildComposite("author1", uuid1, 11),
-                "val1");
-
-        List<Class<?>> componentValues = Arrays.<Class<?>> asList(String.class, UUID.class, Integer.class);
-        when(compoundKeyMeta.getComponentClasses()).thenReturn(componentValues);
-        when(compoundKeyMeta.decodeFromComponents(any(List.class))).thenReturn(compoundKey);
-
-        TweetCompoundKey actual = mapper.fromCompositeToCompound(compoundKeyMeta, hCol1
-                .getName().getComponents());
-
-        assertThat(actual).isSameAs(compoundKey);
-    }
-
-    @Test
     public void should_build_embedded_id() throws Exception
     {
         Long userId = RandomUtils.nextLong();
@@ -98,24 +79,6 @@ public class ThriftCompoundKeyMapperTest
                 .getName().getComponents(), userId);
 
         assertThat(actual).isSameAs(compoundKey);
-    }
-
-    @Test
-    public void should_create_composite_for_compound_key_insert() throws Exception
-    {
-        Long id = RandomUtils.nextLong();
-        CompoundKeyWithEnum compoundKey = new CompoundKeyWithEnum();
-
-        when(compoundKeyMeta.encodeToComponents(compoundKey)).thenReturn(Arrays.<Object> asList(id, "EMBEDDED_ID"));
-        when(compoundKeyMeta.isEmbeddedId()).thenReturn(false);
-        when(compoundKeyMeta.getComponentClasses()).thenReturn(
-                Arrays.<Class<?>> asList(Long.class, PropertyType.class));
-
-        Composite comp = mapper.fromCompoundToCompositeForInsertOrGet(compoundKey, compoundKeyMeta);
-
-        assertThat(comp.getComponents()).hasSize(2);
-        assertThat(comp.getComponents().get(0).getValue(LONG_SRZ)).isEqualTo(id);
-        assertThat(comp.getComponents().get(1).getValue(STRING_SRZ)).isEqualTo("EMBEDDED_ID");
     }
 
     @Test
@@ -154,47 +117,17 @@ public class ThriftCompoundKeyMapperTest
     }
 
     @Test
-    public void should_create_composite_for_compound_key_query() throws Exception
+    public void should_create_composite_from_components_for_query() throws Exception
     {
         UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
 
-        when(compoundKeyMeta.isEmbeddedId()).thenReturn(false);
         when(compoundKeyMeta.getComponentClasses()).thenReturn(
                 Arrays.<Class<?>> asList(UUID.class, String.class, Integer.class));
 
-        TweetCompoundKey tweetMultiKey = new TweetCompoundKey(uuid, "a", 15);
+        List<Object> components = Arrays.<Object> asList(uuid, "a", 15);
 
-        when(compoundKeyMeta.encodeToComponents(tweetMultiKey)).thenReturn(Arrays.<Object> asList(uuid, "a", 15));
-        when(validator.validateNoHoleAndReturnLastNonNullIndex(any(List.class))).thenReturn(2);
-        Composite comp = mapper.fromCompoundToCompositeForQuery(tweetMultiKey, compoundKeyMeta,
-                LESS_THAN_EQUAL);
-
-        assertThat(comp.getComponents()).hasSize(3);
-
-        assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
-        assertThat(comp.getComponent(0).getValue()).isEqualTo(uuid);
-
-        assertThat(comp.getComponent(1).getEquality()).isEqualTo(EQUAL);
-        assertThat(comp.getComponent(1).getValue()).isEqualTo("a");
-
-        assertThat(comp.getComponent(2).getEquality()).isEqualTo(LESS_THAN_EQUAL);
-        assertThat(comp.getComponent(2).getValue()).isEqualTo(15);
-    }
-
-    @Test
-    public void should_create_composite_for_embedded_id_query() throws Exception
-    {
-        UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-        when(compoundKeyMeta.isEmbeddedId()).thenReturn(true);
-        when(compoundKeyMeta.getComponentClasses()).thenReturn(
-                Arrays.<Class<?>> asList(UUID.class, String.class, Integer.class));
-
-        TweetCompoundKey tweetMultiKey = new TweetCompoundKey(uuid, "a", 15);
-
-        when(compoundKeyMeta.encodeToComponents(tweetMultiKey)).thenReturn(Arrays.<Object> asList(uuid, "a", 15));
         when(validator.validateNoHoleAndReturnLastNonNullIndex(any(List.class))).thenReturn(1);
-        Composite comp = mapper.fromCompoundToCompositeForQuery(tweetMultiKey, compoundKeyMeta,
+        Composite comp = mapper.fromComponentsToCompositeForQuery(components, compoundKeyMeta,
                 LESS_THAN_EQUAL);
 
         assertThat(comp.getComponents()).hasSize(2);
@@ -204,37 +137,6 @@ public class ThriftCompoundKeyMapperTest
 
         assertThat(comp.getComponent(1).getEquality()).isEqualTo(LESS_THAN_EQUAL);
         assertThat(comp.getComponent(1).getValue()).isEqualTo(15);
-    }
-
-    @Test
-    public void should_exception_when_more_values_than_components() throws Exception
-    {
-        UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-        when(compoundKeyMeta.isEmbeddedId()).thenReturn(false);
-        when(compoundKeyMeta.getPropertyName()).thenReturn("compound_key");
-        when(compoundKeyMeta.getComponentClasses()).thenReturn(
-                Arrays.<Class<?>> asList(UUID.class, String.class));
-
-        TweetCompoundKey tweetMultiKey = new TweetCompoundKey(uuid, "a", null);
-        when(compoundKeyMeta.encodeToComponents(tweetMultiKey)).thenReturn(Arrays.<Object> asList(uuid, "a", null));
-
-        expectedEx.expect(AchillesException.class);
-        expectedEx
-                .expectMessage("There should be at most 2 values for the @CompoundKey 'compound_key'");
-
-        mapper.fromCompoundToCompositeForQuery(tweetMultiKey, compoundKeyMeta, LESS_THAN_EQUAL);
-
-    }
-
-    private Composite buildComposite(String author, UUID uuid, int retweetCount)
-    {
-        Composite composite = new Composite();
-        composite.setComponent(0, author, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(1, uuid, UUID_SRZ, UUID_SRZ.getComparatorType().getTypeName());
-        composite.setComponent(2, retweetCount, INT_SRZ, INT_SRZ.getComparatorType().getTypeName());
-
-        return composite;
     }
 
     private Composite buildComposite(String name)

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.helper.LoggerHelper.*;
+import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -10,7 +10,6 @@ import info.archinnov.achilles.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -120,9 +119,10 @@ public class EntityIntrospector {
         Method[] accessors = new Method[2];
 
         accessors[0] = findGetter(beanClass, field);
-        if (field.getType() == WideMap.class || field.getType() == Counter.class) {
+        if (field.getType() == Counter.class) {
             accessors[1] = null;
-        } else {
+        }
+        else {
             accessors[1] = findSetter(beanClass, field);
         }
 

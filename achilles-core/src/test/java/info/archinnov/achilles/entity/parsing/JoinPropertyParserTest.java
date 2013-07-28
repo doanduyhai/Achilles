@@ -1,10 +1,8 @@
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
@@ -17,13 +15,11 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.WideMap;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -285,93 +281,6 @@ public class JoinPropertyParserTest
         assertThat(context.getJoinWideMaps()).isEmpty();
         assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
                 .isEqualTo(UserBean.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_parse_join_widemap() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @ManyToMany(cascade =
-            {
-                    PERSIST,
-                    MERGE
-            })
-            @JoinColumn(table = "join_users_xxx")
-            private WideMap<UUID, UserBean> users;
-
-            public WideMap<UUID, UserBean> getUsers()
-            {
-                return users;
-            }
-
-            public void setUsers(WideMap<UUID, UserBean> users)
-            {
-                this.users = users;
-            }
-
-        }
-        PropertyParsingContext context = newJoinParsingContext(Test.class,
-                Test.class.getDeclaredField("users"));
-        PropertyMeta<?, ?> meta = parser.parseJoin(context);
-        assertThat(meta.type()).isEqualTo(PropertyType.JOIN_WIDE_MAP);
-        JoinProperties joinProperties = meta.getJoinProperties();
-        assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-        assertThat(context.getJoinWideMaps()).containsValue("join_users_xxx");
-        assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
-                .isEqualTo(UserBean.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_fill_external_widemap_hashmap() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @ManyToMany
-            @JoinColumn(table = "tablename")
-            private WideMap<Integer, UserBean> users;
-
-            public WideMap<Integer, UserBean> getUsers()
-            {
-                return users;
-            }
-        }
-        PropertyParsingContext context = newJoinParsingContext(Test.class,
-                Test.class.getDeclaredField("users"));
-        PropertyMeta<Integer, UserBean> meta = (PropertyMeta<Integer, UserBean>) parser
-                .parseJoin(context);
-
-        Map<PropertyMeta<?, ?>, String> joinExternalWideMaps = context.getJoinWideMaps();
-        assertThat(
-                (PropertyMeta<Integer, UserBean>) joinExternalWideMaps.keySet().iterator().next())
-                .isSameAs(meta);
-    }
-
-    @Test
-    public void should_set_external_join_widemap_consistency_level() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            @ManyToMany
-            @JoinColumn(table = "tablename")
-            @Consistency(read = QUORUM, write = ConsistencyLevel.ALL)
-            private WideMap<Integer, UserBean> users;
-
-            public WideMap<Integer, UserBean> getUsers()
-            {
-                return users;
-            }
-        }
-        PropertyParsingContext context = newJoinParsingContext(Test.class,
-                Test.class.getDeclaredField("users"));
-        PropertyMeta<?, ?> propertyMeta = parser.parseJoin(context);
-        assertThat(propertyMeta.getReadConsistencyLevel()).isEqualTo(QUORUM);
-        assertThat(propertyMeta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
     }
 
     @SuppressWarnings("unchecked")

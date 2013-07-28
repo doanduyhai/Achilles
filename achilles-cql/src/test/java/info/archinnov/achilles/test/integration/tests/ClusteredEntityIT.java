@@ -191,7 +191,7 @@ public class ClusteredEntityIT
 
         session.execute("update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'");
 
-        Thread.sleep(100);
+        Thread.sleep(1000);
 
         em.refresh(message);
 

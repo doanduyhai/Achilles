@@ -17,15 +17,11 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
-import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.proxy.wrapper.MapWrapper;
 import info.archinnov.achilles.proxy.wrapper.SetWrapper;
-import info.archinnov.achilles.proxy.wrapper.ThriftCounterWideMapWrapper;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
-import info.archinnov.achilles.proxy.wrapper.ThriftJoinWideMapWrapper;
-import info.archinnov.achilles.proxy.wrapper.ThriftWideMapWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -482,106 +478,12 @@ public class ThriftEntityInterceptorTest
         assertThat(columnName.getComponent(0).getValue(STRING_SRZ)).isEqualTo(name);
     }
 
-    @Test
-    public void should_create_widemap_wrapper() throws Throwable
-    {
-        CompleteBean bean = new CompleteBean();
-        Method preferencesGetter = CompleteBean.class.getDeclaredMethod("getPreferences");
-
-        when(getterMetas.containsKey(preferencesGetter)).thenReturn(true);
-        when(getterMetas.get(preferencesGetter)).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(WIDE_MAP);
-
-        Object wideMapWrapper = this.interceptor.intercept(bean, preferencesGetter, (Object[]) null, proxy);
-
-        assertThat(wideMapWrapper).isInstanceOf(ThriftWideMapWrapper.class);
-        assertThat(((ThriftWideMapWrapper) wideMapWrapper).getInterceptor()).isSameAs(interceptor);
-    }
-
-    @Test
-    public void should_create_counter_wide_map_wrapper() throws Throwable
-    {
-        CompleteBean bean = new CompleteBean();
-        Method popularTopicsGetter = CompleteBean.class.getDeclaredMethod("getPopularTopics");
-
-        when(getterMetas.containsKey(popularTopicsGetter)).thenReturn(true);
-        when(getterMetas.get(popularTopicsGetter)).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(COUNTER_WIDE_MAP);
-
-        Object counterWideMapWrapper = this.interceptor.intercept(bean, popularTopicsGetter,
-                (Object[]) null, proxy);
-
-        assertThat(counterWideMapWrapper).isInstanceOf(ThriftCounterWideMapWrapper.class);
-        assertThat(((ThriftCounterWideMapWrapper) counterWideMapWrapper).getInterceptor())
-                .isSameAs(interceptor);
-    }
-
-    @Test
-    public void should_create_join_widemap_wrapper() throws Throwable
-    {
-        CompleteBean bean = new CompleteBean();
-        Method friendsWideMapGetter = CompleteBean.class.getDeclaredMethod("getFriendsWideMap");
-
-        when(getterMetas.containsKey(friendsWideMapGetter)).thenReturn(true);
-        when(getterMetas.get(friendsWideMapGetter)).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-
-        Object name = this.interceptor.intercept(bean, friendsWideMapGetter, (Object[]) null, proxy);
-
-        assertThat(name).isInstanceOf(ThriftJoinWideMapWrapper.class);
-        assertThat(((ThriftJoinWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
-    }
-
-    @Test
-    public void should_create_wide_map_wrapper() throws Throwable
-    {
-        CompleteBean bean = new CompleteBean();
-        Method externalWideMapGetter = CompleteBean.class.getDeclaredMethod("getGeoPositions");
-        ThriftGenericWideRowDao externalWideMapDao = mock(ThriftGenericWideRowDao.class);
-
-        when(getterMetas.containsKey(externalWideMapGetter)).thenReturn(true);
-        when(getterMetas.get(externalWideMapGetter)).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(WIDE_MAP);
-        when(propertyMeta.getExternalTableName()).thenReturn("geo_positions");
-        when(propertyMeta.getIdClass()).thenReturn(Long.class);
-
-        when(columnFamilyDaosMap.get("geo_positions")).thenReturn(externalWideMapDao);
-
-        Object externalWideMap = this.interceptor.intercept(bean, externalWideMapGetter,
-                (Object[]) null, proxy);
-
-        assertThat(externalWideMap).isInstanceOf(ThriftWideMapWrapper.class);
-        Object dao = Whitebox.getInternalState(externalWideMap, "dao");
-
-        assertThat(dao).isNotNull();
-        assertThat(dao).isSameAs(externalWideMapDao);
-        assertThat(((ThriftWideMapWrapper) externalWideMap).getInterceptor()).isSameAs(interceptor);
-    }
-
-    @Test
-    public void should_create_join_wide_map_wrapper() throws Throwable
-    {
-        CompleteBean bean = new CompleteBean();
-        Method joinUsersGetter = CompleteBean.class.getDeclaredMethod("getJoinUsers");
-
-        when(getterMetas.containsKey(joinUsersGetter)).thenReturn(true);
-        when(getterMetas.get(joinUsersGetter)).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(JOIN_WIDE_MAP);
-        when(propertyMeta.getExternalTableName()).thenReturn("join_users");
-        when(propertyMeta.getIdClass()).thenReturn(Long.class);
-
-        Object name = this.interceptor.intercept(bean, joinUsersGetter, (Object[]) null, proxy);
-
-        assertThat(name).isInstanceOf(ThriftJoinWideMapWrapper.class);
-        assertThat(((ThriftJoinWideMapWrapper) name).getInterceptor()).isSameAs(interceptor);
-    }
-
     @Test(expected = UnsupportedOperationException.class)
-    public void should_exception_when_call_setter_on_wide_map() throws Throwable
+    public void should_exception_when_call_setter_on_counter() throws Throwable
     {
         when(setterMetas.containsKey(nameMeta.getGetter())).thenReturn(true);
         when(setterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
-        when(propertyMeta.type()).thenReturn(PropertyType.WIDE_MAP);
+        when(propertyMeta.type()).thenReturn(PropertyType.COUNTER);
 
         this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
     }

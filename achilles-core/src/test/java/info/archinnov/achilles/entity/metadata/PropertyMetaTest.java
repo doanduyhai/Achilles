@@ -9,7 +9,6 @@ import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
-import info.archinnov.achilles.type.KeyValue;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -102,23 +101,6 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_get_key_value_from_string() throws Exception
-    {
-        PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
-        propertyMeta.setObjectMapper(objectMapper);
-
-        KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "12", 456, 10L);
-        String keyValueString = objectMapper.writeValueAsString(keyValue);
-
-        KeyValue<Integer, String> converted = propertyMeta.getKeyValueFromString(keyValueString);
-
-        assertThat(converted.getKey()).isEqualTo(keyValue.getKey());
-        assertThat(converted.getValue()).isEqualTo(keyValue.getValue());
-        assertThat(converted.getTtl()).isEqualTo(keyValue.getTtl());
-        assertThat(converted.getTimestamp()).isEqualTo(10L);
-    }
-
-    @Test
     public void should_write_value_to_string() throws Exception
     {
         PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
@@ -194,7 +176,7 @@ public class PropertyMetaTest
     {
         PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UUID.class)
-                .type(PropertyType.WIDE_MAP)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         Object uuid = new UUID(10L, 100L);
@@ -209,7 +191,7 @@ public class PropertyMetaTest
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
-                .type(PropertyType.WIDE_MAP)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         UserBean bean = new UserBean();
@@ -229,7 +211,7 @@ public class PropertyMetaTest
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -241,7 +223,7 @@ public class PropertyMetaTest
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
-                .type(PropertyType.WIDE_MAP)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         assertThat(propertyMeta.joinMeta()).isNull();
@@ -256,7 +238,7 @@ public class PropertyMetaTest
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -297,7 +279,7 @@ public class PropertyMetaTest
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -327,36 +309,11 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_return_true_for_isWideMap() throws Exception
-    {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .keyValueClass(Void.class, String.class)
-                //
-                .type(PropertyType.WIDE_MAP)
-                //
-                .build();
-
-        assertThat(propertyMeta.isWideMap()).isTrue();
-    }
-
-    @Test
     public void should_return_true_for_isCounter_when_type_is_counter() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
                 .keyValueClass(Void.class, String.class)
                 .type(PropertyType.COUNTER)
-                .build();
-
-        assertThat(propertyMeta.isCounter()).isTrue();
-    }
-
-    @Test
-    public void should_return_true_for_isCounter_when_type_is_counter_external_widemap()
-            throws Exception
-    {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .keyValueClass(Void.class, String.class)
-                .type(PropertyType.COUNTER_WIDE_MAP)
                 .build();
 
         assertThat(propertyMeta.isCounter()).isTrue();

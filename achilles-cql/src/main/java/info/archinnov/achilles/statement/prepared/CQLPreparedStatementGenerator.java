@@ -40,7 +40,7 @@ public class CQLPreparedStatementGenerator
 
         List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
-                .filter(PropertyType.excludeProxyType)
+                .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
         List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
@@ -58,18 +58,18 @@ public class CQLPreparedStatementGenerator
     {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
-        if (!pm.isProxyType())
+        if (pm.isCounter())
+        {
+            throw new IllegalArgumentException("Cannot prepare statement for property '"
+                    + pm.getPropertyName() + "' of entity '" + entityMeta.getClassName()
+                    + "' because it is a counter type");
+        }
+        else
         {
             Selection select = prepareSelectField(pm, select());
             Select from = select.from(entityMeta.getTableName());
             Statement statement = prepareWhereClauseForSelect(idMeta, from);
             return session.prepare(statement.getQueryString());
-        }
-        else
-        {
-            throw new IllegalArgumentException("Cannot prepare statement for property '"
-                    + pm.getPropertyName() + "' of entity '" + entityMeta.getClassName()
-                    + "' because it is of proxy type");
         }
     }
 
@@ -240,7 +240,8 @@ public class CQLPreparedStatementGenerator
         return statement;
     }
 
-    public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta)
+    public Map<String, PreparedStatement> prepareRemovePSs(Session session,
+            EntityMeta entityMeta)
     {
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
@@ -249,32 +250,7 @@ public class CQLPreparedStatementGenerator
         Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
         Statement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
         removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
-        for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())
-        {
-            switch (pm.type())
-            {
-                case WIDE_MAP:
-                case JOIN_WIDE_MAP:
-                case COUNTER_WIDE_MAP:
-                    Delete wideMapFrom = QueryBuilder.delete().from(pm.getCQLExternalTableName());
-                    Statement wideMapStatement = prepareWhereClauseForDelete(idMeta, wideMapFrom);
-                    removePSs.put(pm.getExternalTableName(),
-                            session.prepare(wideMapStatement.getQueryString()));
-                    break;
 
-                case COUNTER:
-                    Statement counterStatement = QueryBuilder
-                            .delete()
-                            .from(AchillesCounter.CQL_COUNTER_TABLE)
-                            .where(eq(AchillesCounter.CQL_COUNTER_FQCN, bindMarker()))
-                            .and(eq(AchillesCounter.CQL_COUNTER_PRIMARY_KEY, bindMarker()));
-                    removePSs.put(AchillesCounter.CQL_COUNTER_TABLE,
-                            session.prepare(counterStatement.getQueryString()));
-                    break;
-                default:
-                    break;
-            }
-        }
         return removePSs;
     }
 

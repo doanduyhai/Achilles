@@ -111,7 +111,7 @@ public class ThriftJoinSliceIteratorTest
                 .build();
 
         joinEntityMeta.setIdMeta(idMeta);
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
         when(propertyMeta.isJoin()).thenReturn(true);
         when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
         when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);
@@ -182,7 +182,7 @@ public class ThriftJoinSliceIteratorTest
                 .build();
 
         joinEntityMeta.setIdMeta(idMeta);
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_WIDE_MAP);
+        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
         when(propertyMeta.isJoin()).thenReturn(true);
         when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
         when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);

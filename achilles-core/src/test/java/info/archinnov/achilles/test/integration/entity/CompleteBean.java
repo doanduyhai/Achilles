@@ -1,11 +1,9 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.CompoundKey;
+import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.WideMap;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,27 +51,12 @@ public class CompleteBean
     @Column
     private Map<Integer, String> preferences;
 
-    @Column(table = "complete_bean_tweets")
-    private WideMap<UUID, String> tweets;
-
-    @Column(table = "complete_bean_user_tweets")
-    private WideMap<UserTweetKey, String> userTweets;
-
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn
     private Tweet welcomeTweet;
 
-    @Column(table = "complete_bean_widemap")
-    private WideMap<Integer, String> wideMap;
-
-    @Column(table = "complete_bean_multi_key_widemap")
-    private WideMap<UserTweetKey, String> multiKeyWideMap;
-
     @Column
     private Counter version;
-
-    @Column(table = "complete_bean_popular_topics")
-    private WideMap<String, Counter> popularTopics;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn
@@ -149,26 +132,6 @@ public class CompleteBean
         this.age = age;
     }
 
-    public WideMap<UUID, String> getTweets()
-    {
-        return tweets;
-    }
-
-    public void setTweets(WideMap<UUID, String> tweets)
-    {
-        this.tweets = tweets;
-    }
-
-    public WideMap<UserTweetKey, String> getUserTweets()
-    {
-        return userTweets;
-    }
-
-    public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
-    {
-        this.userTweets = userTweets;
-    }
-
     public Tweet getWelcomeTweet()
     {
         return welcomeTweet;
@@ -179,24 +142,9 @@ public class CompleteBean
         this.welcomeTweet = welcomeTweet;
     }
 
-    public WideMap<Integer, String> getWideMap()
-    {
-        return wideMap;
-    }
-
-    public WideMap<UserTweetKey, String> getMultiKeyWideMap()
-    {
-        return multiKeyWideMap;
-    }
-
     public Counter getVersion()
     {
         return version;
-    }
-
-    public WideMap<String, Counter> getPopularTopics()
-    {
-        return popularTopics;
     }
 
     public List<Tweet> getFavoriteTweets() {

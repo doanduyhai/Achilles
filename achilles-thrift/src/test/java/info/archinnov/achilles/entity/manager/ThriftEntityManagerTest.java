@@ -9,7 +9,6 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
@@ -51,8 +50,6 @@ public class ThriftEntityManagerTest
 
     @Mock
     private EntityMeta entityMeta;
-
-    private PropertyMeta<Void, Long> idMeta;
 
     @Mock
     private ThriftGenericEntityDao entityDao;

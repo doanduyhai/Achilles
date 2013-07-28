@@ -2,7 +2,6 @@ package info.archinnov.achilles.table;
 
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -19,14 +18,7 @@ public abstract class TableCreator {
     public void validateOrCreateTables(Map<Class<?>, EntityMeta> entityMetaMap,
             ConfigurationContext configContext, boolean hasCounter) {
         for (Entry<Class<?>, EntityMeta> entry : entityMetaMap.entrySet()) {
-
-            EntityMeta entityMeta = entry.getValue();
-            for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta()) {
-                if (pm.isWideMap()) {
-                    validateOrCreateTableForWideMap(entityMeta, pm, configContext.isForceColumnFamilyCreation());
-                }
-            }
-            validateOrCreateTableForEntity(entityMeta, configContext.isForceColumnFamilyCreation());
+            validateOrCreateTableForEntity(entry.getValue(), configContext.isForceColumnFamilyCreation());
         }
 
         if (hasCounter) {
@@ -35,9 +27,6 @@ public abstract class TableCreator {
     }
 
     protected abstract void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation);
-
-    protected abstract void validateOrCreateTableForWideMap(EntityMeta meta, PropertyMeta<?, ?> pm,
-            boolean forceColumnFamilyCreation);
 
     protected abstract void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation);
 

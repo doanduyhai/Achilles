@@ -202,7 +202,7 @@ public class ThriftSliceQueryExecutorTest
     @Test(expected = AchillesException.class)
     public void should_exception_when_get_clustered_entities_of_wrong_value_type() throws Exception
     {
-        when(pm.type()).thenReturn(WIDE_MAP);
+        when(pm.type()).thenReturn(MAP);
 
         executor.get(query);
 
@@ -256,7 +256,7 @@ public class ThriftSliceQueryExecutorTest
     @Test(expected = AchillesException.class)
     public void should_exception_when_get_iterator_on_wrong_valuetype() throws Exception
     {
-        when(pm.type()).thenReturn(WIDE_MAP);
+        when(pm.type()).thenReturn(MAP);
 
         executor.iterator(query);
 
@@ -314,7 +314,7 @@ public class ThriftSliceQueryExecutorTest
     public void should_exception_when_remove_clustered_entities_of_wrong_value_type()
             throws Exception
     {
-        when(pm.type()).thenReturn(WIDE_MAP);
+        when(pm.type()).thenReturn(MAP);
 
         executor.remove(query);
 

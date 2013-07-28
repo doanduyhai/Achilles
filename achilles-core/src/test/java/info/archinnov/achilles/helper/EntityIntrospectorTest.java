@@ -1,8 +1,8 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * AchillesEntityIntrospectorTest
+ * EntityIntrospectorTest
  * 
  * @author DuyHai DOAN
  * 
@@ -282,17 +282,6 @@ public class EntityIntrospectorTest
         assertThat(accessors).hasSize(2);
         assertThat(accessors[0].getName()).isEqualTo("getFriends");
         assertThat(accessors[1].getName()).isEqualTo("setFriends");
-    }
-
-    @Test
-    public void should_find_accessors_from_widemap_type() throws Exception
-    {
-        Method[] accessors = introspector.findAccessors(CompleteBean.class,
-                CompleteBean.class.getDeclaredField("tweets"));
-
-        assertThat(accessors).hasSize(2);
-        assertThat(accessors[0].getName()).isEqualTo("getTweets");
-        assertThat(accessors[1]).isNull();
     }
 
     @Test

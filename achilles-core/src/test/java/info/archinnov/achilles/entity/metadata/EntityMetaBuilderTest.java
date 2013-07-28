@@ -1,9 +1,9 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
@@ -102,30 +102,6 @@ public class EntityMetaBuilderTest
 
         assertThat(meta.getClassName()).isEqualTo("Bean");
         assertThat(meta.getTableName()).isEqualTo("toto");
-    }
-
-    @Test
-    public void should_build_meta_for_wide_row() throws Exception
-    {
-
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-        PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
-        wideMapMeta.setValueClass(String.class);
-        wideMapMeta.setType(PropertyType.WIDE_MAP);
-        propertyMetas.put("name", wideMapMeta);
-
-        when(idMeta.getValueClass()).thenReturn(Long.class);
-
-        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
-
-        EntityMeta meta = entityMetaBuilder(idMeta)
-                .className("Bean")
-                .propertyMetas(propertyMetas)
-                .columnFamilyName("toto")
-                .clusteredEntity(true)
-                .build();
-
-        assertThat(meta.isClusteredEntity()).isTrue();
     }
 
     @Test

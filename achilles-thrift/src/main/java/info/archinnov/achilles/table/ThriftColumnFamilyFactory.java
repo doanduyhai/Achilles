@@ -59,57 +59,6 @@ public class ThriftColumnFamilyFactory {
         return cfDef;
     }
 
-    public <ID> ColumnFamilyDefinition createWideRowCF(String keyspaceName, PropertyMeta<?, ?> propertyMeta,
-            Class<ID> keyClass, String columnFamilyName, String entityName) {
-        Class<?> valueClass = propertyMeta.getValueClass();
-
-        Serializer<?> keySerializer = ThriftSerializerTypeInferer.getSerializer(keyClass);
-        String keyValidationType = keySerializer.getComparatorType().getTypeName();
-
-        String comparatorTypesAlias = comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(propertyMeta,
-                true);
-
-        ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName, columnFamilyName,
-                ComparatorType.COMPOSITETYPE);
-
-        cfDef.setKeyValidationClass(keyValidationType);
-        cfDef.setComparatorTypeAlias(comparatorTypesAlias);
-
-        Serializer<?> valueSerializer;
-        String defaultValidationType;
-        if (propertyMeta.isCounter()) {
-            valueSerializer = LONG_SRZ;
-            defaultValidationType = COUNTERTYPE.getTypeName();
-        } else if (propertyMeta.isJoin()) {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.joinIdMeta().getValueClass());
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        } else {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(valueClass);
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        }
-
-        cfDef.setDefaultValidationClass(defaultValidationType);
-        cfDef.setComment("Column family for property '" + columnFamilyName + "' of entity '" + entityName + "'");
-
-        String propertyName = propertyMeta.getPropertyName();
-
-        StringBuilder builder = new StringBuilder("\n\n");
-        builder.append("Create wide row column family for property ");
-        builder.append("'").append(propertyName).append("' of entity '");
-        builder.append(entityName).append("' : \n");
-        builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
-        builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
-        builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
-        builder.append(comparatorTypesAlias).append("'\n");
-        builder.append("\t\tand default_validation_class = ").append(defaultValidationType).append("\n");
-        builder.append("\t\tand comment = 'Column family for wide map property ").append(propertyName);
-        builder.append(" of entity ").append(entityName).append("'\n\n");
-
-        log.debug(builder.toString());
-
-        return cfDef;
-    }
-
     public ColumnFamilyDefinition createClusteredEntityCF(String keyspaceName, EntityMeta entityMeta) {
 
         String tableName = entityMeta.getTableName();

@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static com.google.common.collect.Collections2.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static com.google.common.collect.Collections2.filter;
+import static info.archinnov.achilles.entity.metadata.PropertyType.counterType;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -63,26 +63,18 @@ public class CQLPersisterImpl
     {
         EntityMeta entityMeta = context.getEntityMeta();
         context.bindForRemoval(entityMeta.getTableName(), entityMeta.getWriteConsistencyLevel());
-        removeLinkedTables(context);
+        removeLinkedCounters(context);
     }
 
-    protected void removeLinkedTables(CQLPersistenceContext context)
+    protected void removeLinkedCounters(CQLPersistenceContext context)
     {
         EntityMeta entityMeta = context.getEntityMeta();
 
         List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
-        Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, isProxyType);
+        Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, counterType);
         for (PropertyMeta<?, ?> pm : proxyMetas)
         {
-            if (pm.type() == COUNTER)
-            {
-                context.bindForSimpleCounterRemoval(entityMeta, pm, context.getPrimaryKey());
-            }
-            else
-            {
-                context.bindForRemoval(pm.getExternalTableName(), pm.getWriteConsistencyLevel());
-            }
-
+            context.bindForSimpleCounterRemoval(entityMeta, pm, context.getPrimaryKey());
         }
     }
 
