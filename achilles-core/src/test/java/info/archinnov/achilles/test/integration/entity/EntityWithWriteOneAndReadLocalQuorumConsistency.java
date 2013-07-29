@@ -5,6 +5,7 @@ import info.archinnov.achilles.annotations.Consistency;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * BeanWithWriteOneAndReadLocalQuorumConsistency
@@ -14,6 +15,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Consistency(read = LOCAL_QUORUM, write = ONE)
+@Table(name = "consistency_test2")
 public class EntityWithWriteOneAndReadLocalQuorumConsistency
 {
 

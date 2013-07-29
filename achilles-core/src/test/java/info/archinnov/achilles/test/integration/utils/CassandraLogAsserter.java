@@ -21,18 +21,18 @@ import org.apache.log4j.WriterAppender;
 public class CassandraLogAsserter
 {
 	private static final String STORAGE_PROXY_LOGGER = "org.apache.cassandra.service.StorageProxy";
-	private Logger thriftLogger = Logger.getLogger(STORAGE_PROXY_LOGGER);
+	private Logger storageProxyLogger = Logger.getLogger(STORAGE_PROXY_LOGGER);
 	private WriterAppender writerAppender;
 	private ByteArrayOutputStream logStream;
 
 	public void prepareLogLevel()
 	{
 		logStream = new ByteArrayOutputStream();
-		thriftLogger.setLevel(Level.TRACE);
+		storageProxyLogger.setLevel(Level.TRACE);
 		writerAppender = new WriterAppender();
 		writerAppender.setWriter(new OutputStreamWriter(logStream));
 		writerAppender.setLayout(new PatternLayout("%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
-		thriftLogger.addAppender(writerAppender);
+		storageProxyLogger.addAppender(writerAppender);
 
 	}
 
@@ -57,8 +57,8 @@ public class CassandraLogAsserter
 		finally
 		{
 			logStream = null;
-			thriftLogger.setLevel(Level.WARN);
-			thriftLogger.removeAppender(writerAppender);
+			storageProxyLogger.setLevel(Level.WARN);
+			storageProxyLogger.removeAppender(writerAppender);
 		}
 	}
 }

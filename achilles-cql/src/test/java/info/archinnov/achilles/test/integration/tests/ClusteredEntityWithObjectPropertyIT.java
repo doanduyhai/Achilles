@@ -15,7 +15,7 @@ import org.junit.After;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 
-public class WideRowWithObjectPropertyIT
+public class ClusteredEntityWithObjectPropertyIT
 {
 
     private CQLEntityManager em = CQLCassandraDaoTest.getEm();

@@ -112,9 +112,9 @@ public class CQLPersistenceContext extends PersistenceContext
         daoContext.bindForUpdate(this, pms);
     }
 
-    public void bindForRemoval(String tableName, ConsistencyLevel writeLevel)
+    public void bindForRemoval(String tableName)
     {
-        daoContext.bindForRemoval(this, tableName, writeLevel);
+        daoContext.bindForRemoval(this, tableName);
     }
 
     // Simple counter

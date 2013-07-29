@@ -1,207 +1,548 @@
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
+import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.test.integration.entity.ClusteredMessage;
-import info.archinnov.achilles.test.integration.entity.ClusteredMessageId;
-import info.archinnov.achilles.test.integration.entity.ClusteredMessageId.Type;
-import info.archinnov.achilles.test.integration.entity.ClusteredTweet;
-import info.archinnov.achilles.test.integration.entity.ClusteredTweetId;
-import java.util.Date;
-import java.util.UUID;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 
 /**
- * ClusteredEntityIT
+ * WideRowIT
  * 
  * @author DuyHai DOAN
  * 
  */
 public class ClusteredEntityIT
 {
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+
+    private Session session = CQLCassandraDaoTest.getCqlSession();
+
+    private ClusteredEntity entity;
+
+    private ClusteredKey compoundKey;
 
     @Test
     public void should_persist_and_find() throws Exception
     {
-        Long userId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        Date creationDate = new Date();
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
-        ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+        em.persist(entity);
 
-        em.persist(tweet);
+        ClusteredEntity found = em.find(ClusteredEntity.class, compoundKey);
 
-        ClusteredTweet found = em.find(ClusteredTweet.class, id);
-
-        assertThat(found.getContent()).isEqualTo("this is a tweet");
-        assertThat(found.getOriginalAuthorId()).isEqualTo(userId);
-        assertThat(found.getIsARetweet()).isFalse();
+        assertThat(found.getId()).isEqualTo(compoundKey);
+        assertThat(found.getValue()).isEqualTo("clustered_value");
     }
 
     @Test
-    public void should_merge() throws Exception
+    public void should_merge_and_get_reference() throws Exception
     {
-        Long userId = RandomUtils.nextLong();
-        Long originalAuthorId = RandomUtils.nextLong();
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        Date creationDate = new Date();
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
+        em.merge(entity);
 
-        ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
-        tweet = em.merge(tweet);
+        ClusteredEntity found = em.getReference(ClusteredEntity.class, compoundKey);
 
-        tweet.setContent("this is a new tweet2");
-        tweet.setIsARetweet(true);
-        tweet.setOriginalAuthorId(originalAuthorId);
+        assertThat(found.getId()).isEqualTo(compoundKey);
+        assertThat(found.getValue()).isEqualTo("clustered_value");
+    }
 
-        em.merge(tweet);
+    @Test
+    public void should_merge_modifications() throws Exception
+    {
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
-        ClusteredTweet found = em.find(ClusteredTweet.class, id);
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        assertThat(found.getContent()).isEqualTo("this is a new tweet2");
-        assertThat(found.getOriginalAuthorId()).isEqualTo(originalAuthorId);
-        assertThat(found.getIsARetweet()).isTrue();
+        entity = em.merge(entity);
+
+        entity.setValue("new_clustered_value");
+        em.merge(entity);
+
+        entity = em.find(ClusteredEntity.class, compoundKey);
+
+        assertThat(entity.getValue()).isEqualTo("new_clustered_value");
     }
 
     @Test
     public void should_remove() throws Exception
     {
-        Long userId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        Date creationDate = new Date();
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
-        ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+        entity = em.merge(entity);
 
-        tweet = em.merge(tweet);
+        em.remove(entity);
 
-        em.remove(tweet);
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNull();
 
-        ClusteredTweet found = em.find(ClusteredTweet.class, id);
-
-        assertThat(found).isNull();
     }
 
     @Test
     public void should_refresh() throws Exception
     {
 
-        Long userId = RandomUtils.nextLong();
-        Long originalAuthorId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-        Date creationDate = new Date();
+        long partitionKey = RandomUtils.nextLong();
+        int count = RandomUtils.nextInt();
+        String name = "name";
+        compoundKey = new ClusteredKey(partitionKey, count, name);
 
-        ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+        entity = em.merge(entity);
 
-        tweet = em.merge(tweet);
+        session.execute("update clustered set value='new_clustered_value' where id=" + partitionKey +
+                " and count=" + count + " and name='" + name + "'");
 
-        session.execute("update clusteredtweet set content='New tweet',original_author_id=" + originalAuthorId
-                + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId + " and creation_date="
-                + creationDate.getTime());
+        em.refresh(entity);
 
-        Thread.sleep(100);
+        assertThat(entity.getValue()).isEqualTo("new_clustered_value");
 
-        em.refresh(tweet);
-
-        assertThat(tweet.getContent()).isEqualTo("New tweet");
-        assertThat(tweet.getOriginalAuthorId()).isEqualTo(originalAuthorId);
-        assertThat(tweet.getIsARetweet()).isTrue();
     }
 
     @Test
-    public void should_persist_and_find_entity_having_compound_id_with_enum() throws Exception
+    public void should_query_with_default_params() throws Exception
     {
-        long id = RandomUtils.nextLong();
-        ClusteredMessageId messageId = new ClusteredMessageId(id, Type.TEXT);
+        long partitionKey = RandomUtils.nextLong();
+        List<ClusteredEntity> entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1, "name2")
+                .toClusterings(1, "name4")
+                .get();
 
-        ClusteredMessage message = new ClusteredMessage(messageId, "a message");
+        assertThat(entities).isEmpty();
 
-        em.persist(message);
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+        entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1, "name2")
+                .toClusterings(1, "name4")
+                .get();
 
-        ClusteredMessageId foundCompoundKey = found.getId();
-        assertThat(foundCompoundKey.getId()).isEqualTo(id);
-        assertThat(foundCompoundKey.getType()).isEqualTo(Type.TEXT);
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 2);
+        assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(0).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 3);
+        assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(1).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 4);
+        assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(2).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
+
+        entities = em.sliceQuery(ClusteredEntity.class)
+                .fromEmbeddedId(new ClusteredKey(partitionKey, 1, "name2"))
+                .toEmbeddedId(new ClusteredKey(partitionKey, 1, "name4"))
+                .get();
+
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 2);
+        assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(0).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 3);
+        assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(1).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 4);
+        assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
+        assertThat(entities.get(2).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
     }
 
     @Test
-    public void should_merge_entity_having_compound_id_with_enum() throws Exception
+    public void should_check_for_common_operation_on_found_clustered_entity() throws Exception
     {
-        long id = RandomUtils.nextLong();
-        ClusteredMessageId messageId = new ClusteredMessageId(id, Type.IMAGE);
+        long partitionKey = RandomUtils.nextLong();
+        insertValues(partitionKey, 1, 1);
 
-        ClusteredMessage message = new ClusteredMessage(messageId, "an image");
+        ClusteredEntity clusteredEntity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirstOccurence();
 
-        message = em.merge(message);
+        // Check for merge
+        clusteredEntity.setValue("dirty");
+        em.merge(clusteredEntity);
 
-        message.setLabel("a JPEG image");
+        ClusteredEntity check = em.find(ClusteredEntity.class, clusteredEntity.getId());
+        assertThat(check.getValue()).isEqualTo("dirty");
 
-        em.merge(message);
+        //Check for refresh
+        check.setValue("dirty_again");
+        em.merge(check);
 
-        ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+        em.refresh(clusteredEntity);
+        assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
-        assertThat(found.getLabel()).isEqualTo("a JPEG image");
+        //Check for remove
+        em.remove(clusteredEntity);
+        assertThat(em.find(ClusteredEntity.class, clusteredEntity.getId())).isNull();
     }
 
     @Test
-    public void should_remove_entity_having_compound_id_with_enum() throws Exception
+    public void should_query_with_custom_params() throws Exception
     {
-        long id = RandomUtils.nextLong();
-        ClusteredMessageId messageId = new ClusteredMessageId(id, Type.AUDIO);
+        long partitionKey = RandomUtils.nextLong();
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        ClusteredMessage message = new ClusteredMessage(messageId, "an mp3");
+        List<ClusteredEntity> entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1, "name4")
+                .toClusterings(1, "name1")
+                .bounding(INCLUSIVE_END_BOUND_ONLY)
+                .ordering(DESCENDING)
+                .limit(2)
+                .get();
 
-        message = em.merge(message);
+        assertThat(entities).hasSize(2);
 
-        em.remove(message);
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 3);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 2);
 
-        ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+        entities = em.sliceQuery(ClusteredEntity.class)
+                .fromEmbeddedId(new ClusteredKey(partitionKey, 1, "name4"))
+                .toEmbeddedId(new ClusteredKey(partitionKey, 1, "name1"))
+                .bounding(INCLUSIVE_END_BOUND_ONLY)
+                .ordering(DESCENDING)
+                .limit(4)
+                .get();
 
-        assertThat(found).isNull();
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 3);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 2);
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 1);
+
     }
 
     @Test
-    public void should_refresh_entity_having_compound_id_with_enum() throws Exception
+    public void should_query_with_consistency_level() throws Exception
     {
-        String label = "a random file";
-        String newLabel = "a pdf file";
+        Long partitionKey = RandomUtils.nextLong();
+        insertValues(partitionKey, 1, 5);
 
-        long id = RandomUtils.nextLong();
-        ClusteredMessageId messageId = new ClusteredMessageId(id, Type.FILE);
+        exception.expect(InvalidQueryException.class);
+        exception
+                .expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
 
-        ClusteredMessage message = new ClusteredMessage(messageId, label);
+        em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1, "name2")
+                .toClusterings(1, "name4")
+                .consistencyLevel(EACH_QUORUM)
+                .get();
+    }
 
-        message = em.merge(message);
+    @Test
+    public void should_query_with_getFirst() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        ClusteredEntity entity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirstOccurence();
 
-        session.execute("update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'");
+        assertThat(entity).isNull();
 
-        Thread.sleep(1000);
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-        em.refresh(message);
+        entity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirstOccurence();
 
-        assertThat(message.getLabel()).isEqualTo("a pdf file");
+        assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
+
+        entity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirstOccurence();
+
+        assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
+
+        List<ClusteredEntity> entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirst(3);
+
+        assertThat(entities).hasSize(3);
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 1);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 2);
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 3);
+
+        insertClusteredEntity(partitionKey, 4, "name41", clusteredValuePrefix + 41);
+        insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
+
+        entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getFirst(3, 4);
+
+        assertThat(entities).hasSize(2);
+
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 41);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 42);
+
+    }
+
+    @Test
+    public void should_query_with_getLast() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+
+        ClusteredEntity entity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getLastOccurence();
+
+        assertThat(entity).isNull();
+
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
+
+        entity = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getLastOccurence();
+
+        assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
+
+        List<ClusteredEntity> entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getLast(3);
+
+        assertThat(entities).hasSize(3);
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 5);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 4);
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 3);
+
+        insertClusteredEntity(partitionKey, 4, "name41", clusteredValuePrefix + 41);
+        insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
+        insertClusteredEntity(partitionKey, 4, "name43", clusteredValuePrefix + 43);
+        insertClusteredEntity(partitionKey, 4, "name44", clusteredValuePrefix + 44);
+
+        entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .getLast(3, 4);
+
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 44);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 43);
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 42);
+
+    }
+
+    @Test
+    public void should_iterate_with_default_params() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
+
+        Iterator<ClusteredEntity> iter = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .iterator();
+
+        assertThat(iter.hasNext()).isTrue();
+        ClusteredEntity next = iter.next();
+        assertThat(next.getValue()).isEqualTo(clusteredValuePrefix + 1);
+        assertThat(next.getId().getId()).isEqualTo(partitionKey);
+        assertThat(next.getId().getCount()).isEqualTo(1);
+        assertThat(next.getId().getName()).isEqualTo("name1");
+        assertThat(iter.hasNext()).isTrue();
+
+        assertThat(iter.hasNext()).isTrue();
+        next = iter.next();
+        assertThat(next.getId().getId()).isEqualTo(partitionKey);
+        assertThat(next.getId().getCount()).isEqualTo(1);
+        assertThat(next.getId().getName()).isEqualTo("name2");
+        assertThat(next.getValue()).isEqualTo(clusteredValuePrefix + 2);
+
+        assertThat(iter.hasNext()).isTrue();
+        next = iter.next();
+        assertThat(next.getId().getId()).isEqualTo(partitionKey);
+        assertThat(next.getId().getCount()).isEqualTo(1);
+        assertThat(next.getId().getName()).isEqualTo("name3");
+        assertThat(next.getValue()).isEqualTo(clusteredValuePrefix + 3);
+
+        assertThat(iter.hasNext()).isTrue();
+        next = iter.next();
+        assertThat(next.getId().getId()).isEqualTo(partitionKey);
+        assertThat(next.getId().getCount()).isEqualTo(1);
+        assertThat(next.getId().getName()).isEqualTo("name4");
+        assertThat(next.getValue()).isEqualTo(clusteredValuePrefix + 4);
+
+        assertThat(iter.hasNext()).isTrue();
+        next = iter.next();
+        assertThat(next.getId().getId()).isEqualTo(partitionKey);
+        assertThat(next.getId().getCount()).isEqualTo(1);
+        assertThat(next.getId().getName()).isEqualTo("name5");
+        assertThat(next.getValue()).isEqualTo(clusteredValuePrefix + 5);
+        assertThat(iter.hasNext()).isFalse();
+    }
+
+    @Test
+    public void should_check_for_common_operation_on_found_clustered_entity_by_iterator() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        insertValues(partitionKey, 1, 1);
+
+        Iterator<ClusteredEntity> iter = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .iterator();
+
+        iter.hasNext();
+        ClusteredEntity clusteredEntity = iter.next();
+
+        // Check for merge
+        clusteredEntity.setValue("dirty");
+        em.merge(clusteredEntity);
+
+        ClusteredEntity check = em.find(ClusteredEntity.class, clusteredEntity.getId());
+        assertThat(check.getValue()).isEqualTo("dirty");
+
+        //Check for refresh
+        check.setValue("dirty_again");
+        em.merge(check);
+
+        em.refresh(clusteredEntity);
+        assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
+
+        //Check for remove
+        em.remove(clusteredEntity);
+        assertThat(em.find(ClusteredEntity.class, clusteredEntity.getId())).isNull();
+    }
+
+    @Test
+    public void should_iterate_with_custom_params() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
+
+        Iterator<ClusteredEntity> iter = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1, "name2")
+                .toClusterings(1)
+                .iterator(2);
+
+        assertThat(iter.hasNext()).isTrue();
+        assertThat(iter.next().getValue()).isEqualTo(clusteredValuePrefix + 2);
+        assertThat(iter.hasNext()).isTrue();
+        assertThat(iter.next().getValue()).isEqualTo(clusteredValuePrefix + 3);
+        assertThat(iter.hasNext()).isTrue();
+        assertThat(iter.next().getValue()).isEqualTo(clusteredValuePrefix + 4);
+        assertThat(iter.hasNext()).isTrue();
+        assertThat(iter.next().getValue()).isEqualTo(clusteredValuePrefix + 5);
+        assertThat(iter.hasNext()).isFalse();
+    }
+
+    @Test
+    public void should_remove_with_default_params() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        String clusteredValuePrefix = insertValues(partitionKey, 1, 2);
+        insertValues(partitionKey, 2, 3);
+        insertValues(partitionKey, 3, 1);
+
+        em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(2)
+                .toClusterings(2)
+                .remove();
+
+        List<ClusteredEntity> entities = em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .get(100);
+
+        assertThat(entities).hasSize(3);
+
+        assertThat(entities.get(0).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 1);
+        assertThat(entities.get(1).getId().getCount()).isEqualTo(1);
+        assertThat(entities.get(1).getValue()).isEqualTo(clusteredValuePrefix + 2);
+
+        assertThat(entities.get(2).getId().getCount()).isEqualTo(3);
+        assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 1);
+    }
+
+    @Test
+    public void should_exception_when_remove_with_varying_components() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        insertValues(partitionKey, 1, 5);
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("CQL does not support slice delete with varying compound components");
+
+        em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .fromClusterings(1)
+                .toClusterings(1, "name2")
+                .ordering(DESCENDING)
+                .limit(2)
+                .remove();
+
+    }
+
+    @Test
+    public void should_exception_when_remove_with_limit() throws Exception
+    {
+        long partitionKey = RandomUtils.nextLong();
+        insertValues(partitionKey, 1, 5);
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("CQL slice delete does not support LIMIT");
+
+        em.sliceQuery(ClusteredEntity.class)
+                .partitionKey(partitionKey)
+                .remove(3);
+
+    }
+
+    private String insertValues(long partitionKey, int countValue, int size)
+    {
+        String namePrefix = "name";
+        String clusteredValuePrefix = "value";
+
+        for (int i = 1; i <= size; i++)
+        {
+            insertClusteredEntity(partitionKey, countValue, namePrefix + i, clusteredValuePrefix + i);
+        }
+        return clusteredValuePrefix;
+    }
+
+    private void insertClusteredEntity(Long partitionKey, int count, String name,
+            String clusteredValue)
+    {
+        ClusteredKey embeddedId = new ClusteredKey(partitionKey, count, name);
+        ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
+        em.persist(entity);
     }
 
     @After
     public void tearDown()
     {
-        CQLCassandraDaoTest.truncateTable("ClusteredTweet");
-        CQLCassandraDaoTest.truncateTable("ClusteredMessage");
+        truncateTable("clustered");
     }
 }

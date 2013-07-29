@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 
@@ -83,7 +82,6 @@ public class ClusteredEntityWithCounterIT
     }
 
     // Problem with counter removal
-    @Ignore
     @Test
     public void should_remove() throws Exception
     {

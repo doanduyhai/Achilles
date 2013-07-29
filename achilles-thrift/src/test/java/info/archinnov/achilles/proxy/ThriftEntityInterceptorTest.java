@@ -175,6 +175,7 @@ public class ThriftEntityInterceptorTest
                 .wideRowDaosMap(columnFamilyDaosMap)
                 .build();
         context.setFlushContext(flushContext);
+
         interceptor = ThriftEntityInterceptorBuilder.builder(context, entity).build();
 
         interceptor.setPrimaryKey(key);

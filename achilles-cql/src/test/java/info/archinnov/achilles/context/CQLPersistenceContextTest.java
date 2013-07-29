@@ -185,9 +185,9 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_removal() throws Exception
     {
-        context.bindForRemoval("table", EACH_QUORUM);
+        context.bindForRemoval("table");
 
-        verify(daoContext).bindForRemoval(context, "table", EACH_QUORUM);
+        verify(daoContext).bindForRemoval(context, "table");
     }
 
     @Test

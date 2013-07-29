@@ -12,7 +12,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.Test;
 
-public class WideRowWithJoinEntityIT
+public class ClusteredEntityWithJoinEntityIT
 {
 
     private CQLEntityManager em = CQLCassandraDaoTest.getEm();

@@ -35,6 +35,7 @@ public class CQLPersisterImpl
     {
         Object entity = context.getEntity();
         PropertyMeta<?, ?> counterMeta = context.getFirstMeta();
+        Long count = 0L;
         Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
         if (counter != null)
         {
@@ -44,8 +45,9 @@ public class CQLPersisterImpl
                             + counterMeta.getEntityClassName() + "'  should be of type '"
                             + CounterImpl.class.getCanonicalName() + "'");
             CounterImpl counterValue = (CounterImpl) counter;
-            context.bindForClusteredCounterIncrement(counterMeta, counterValue.get());
+            count = counterValue.get();
         }
+        context.bindForClusteredCounterIncrement(counterMeta, count);
     }
 
     public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> counterMetas)
@@ -99,8 +101,15 @@ public class CQLPersisterImpl
     public void remove(CQLPersistenceContext context)
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        context.bindForRemoval(entityMeta.getTableName(), entityMeta.getWriteConsistencyLevel());
-        removeLinkedCounters(context);
+        if (entityMeta.isClusteredCounter())
+        {
+            context.bindForClusteredCounterRemoval(entityMeta.getFirstMeta());
+        }
+        else
+        {
+            context.bindForRemoval(entityMeta.getTableName());
+            removeLinkedCounters(context);
+        }
     }
 
     protected void removeLinkedCounters(CQLPersistenceContext context)

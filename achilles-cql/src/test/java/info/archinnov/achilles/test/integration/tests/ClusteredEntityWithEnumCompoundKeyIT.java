@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 
-public class WideRowWithEnumCompoundKeyIT
+public class ClusteredEntityWithEnumCompoundKeyIT
 {
 
     private CQLEntityManager em = CQLCassandraDaoTest.getEm();

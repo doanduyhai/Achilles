@@ -15,6 +15,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,6 +85,41 @@ public class CQLPersisterImplTest
         persisterImpl.persist(context);
 
         verify(context).bindForInsert();
+    }
+
+    @Test
+    public void should_persist_clustered_counter() throws Exception
+    {
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .accessors()
+                .build();
+        Counter counter = CounterBuilder.incr();
+
+        when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(counter);
+
+        persisterImpl.persistClusteredCounter(context);
+
+        verify(context).bindForClusteredCounterIncrement(counterMeta, 1L);
+    }
+
+    @Test
+    public void should_persist_clustered_counter_with_0() throws Exception
+    {
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .accessors()
+                .build();
+
+        when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+
+        persisterImpl.persistClusteredCounter(context);
+
+        verify(context).bindForClusteredCounterIncrement(counterMeta, 0L);
     }
 
     @Test
@@ -168,12 +204,30 @@ public class CQLPersisterImplTest
     @Test
     public void should_remove() throws Exception
     {
+        when(entityMeta.isClusteredCounter()).thenReturn(false);
         when(entityMeta.getTableName()).thenReturn("table");
         when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
 
         persisterImpl.remove(context);
 
-        verify(context).bindForRemoval("table", EACH_QUORUM);
+        verify(context).bindForRemoval("table");
+    }
+
+    @Test
+    public void should_remove_clustered_counter() throws Exception
+    {
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .accessors()
+                .build();
+
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+
+        persisterImpl.remove(context);
+
+        verify(context).bindForClusteredCounterRemoval(counterMeta);
     }
 
     @Test
@@ -192,4 +246,5 @@ public class CQLPersisterImplTest
 
         verify(context).bindForSimpleCounterRemoval(counterMeta);
     }
+
 }
