@@ -56,11 +56,11 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
         }
     }
 
-    public void validateNoPendingBatch(PersistenceContext context) {
-        log.debug("Validate no pending batch");
-        Validator
-                .validateFalse(
-                        context.isBatchMode(),
-                        "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+    public void validateNotClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap)
+    {
+        Class<?> baseClass = proxifier.deriveBaseClass(entity);
+        EntityMeta entityMeta = entityMetaMap.get(baseClass);
+        Validator.validateFalse(entityMeta.isClusteredCounter(), "The entity '" + entity
+                + "' is a clustered counter and does not support insert/update with TTL");
     }
 }

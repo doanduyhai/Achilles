@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -40,6 +42,9 @@ import com.google.common.collect.Sets;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersisterImplTest
 {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     @InjectMocks
     private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
@@ -84,7 +89,7 @@ public class CQLPersisterImplTest
     {
         persisterImpl.persist(context);
 
-        verify(context).bindForInsert();
+        verify(context).pushInsertStatement();
     }
 
     @Test
@@ -102,11 +107,11 @@ public class CQLPersisterImplTest
 
         persisterImpl.persistClusteredCounter(context);
 
-        verify(context).bindForClusteredCounterIncrement(counterMeta, 1L);
+        verify(context).pushClusteredCounterIncrementStatement(counterMeta, 1L);
     }
 
     @Test
-    public void should_persist_clustered_counter_with_0() throws Exception
+    public void should_exception_when_null_value_for_clustered_counter() throws Exception
     {
         PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
@@ -117,9 +122,11 @@ public class CQLPersisterImplTest
         when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
         when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
 
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Cannot insert clustered counter entity '" + entity
+                + "' with null clustered counter value");
         persisterImpl.persistClusteredCounter(context);
 
-        verify(context).bindForClusteredCounterIncrement(counterMeta, 0L);
     }
 
     @Test

@@ -1,10 +1,7 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENSURE_CONSISTENCY_ON_JOIN_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.KEYSPACE_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -69,6 +66,11 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest {
 
     public static Keyspace getKeyspace() {
         return keyspace;
+    }
+
+    public static ThriftEntityManagerFactory getEmf()
+    {
+        return emf;
     }
 
     public static ThriftEntityManager getEm() {

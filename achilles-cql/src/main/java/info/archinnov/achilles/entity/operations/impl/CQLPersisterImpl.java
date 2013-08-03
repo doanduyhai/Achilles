@@ -28,14 +28,13 @@ public class CQLPersisterImpl
 
     public void persist(CQLPersistenceContext context)
     {
-        context.bindForInsert();
+        context.pushInsertStatement();
     }
 
     public void persistClusteredCounter(CQLPersistenceContext context)
     {
         Object entity = context.getEntity();
         PropertyMeta<?, ?> counterMeta = context.getFirstMeta();
-        Long count = 0L;
         Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
         if (counter != null)
         {
@@ -45,9 +44,14 @@ public class CQLPersisterImpl
                             + counterMeta.getEntityClassName() + "'  should be of type '"
                             + CounterImpl.class.getCanonicalName() + "'");
             CounterImpl counterValue = (CounterImpl) counter;
-            count = counterValue.get();
+            context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.get());
         }
-        context.bindForClusteredCounterIncrement(counterMeta, count);
+        else
+        {
+            throw new IllegalStateException("Cannot insert clustered counter entity '" + entity
+                    + "' with null clustered counter value");
+        }
+
     }
 
     public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> counterMetas)

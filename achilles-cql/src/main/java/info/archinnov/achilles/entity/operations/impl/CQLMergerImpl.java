@@ -32,7 +32,7 @@ public class CQLMergerImpl implements Merger<CQLPersistenceContext>
 			List<PropertyMeta<?, ?>> sortedDirtyMetas = new ArrayList<PropertyMeta<?, ?>>(
 					dirtyMap.values());
 			Collections.sort(sortedDirtyMetas, comparator);
-			context.bindForUpdate(sortedDirtyMetas);
+			context.pushUpdateStatement(sortedDirtyMetas);
 			dirtyMap.clear();
 		}
 	}

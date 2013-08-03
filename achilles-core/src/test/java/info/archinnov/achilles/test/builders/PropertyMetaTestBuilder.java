@@ -7,7 +7,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -149,8 +154,47 @@ public class PropertyMetaTestBuilder<T, K, V>
                     ConsistencyLevel.ONE);
         }
         pm.setConsistencyLevels(consistencyLevels);
-        pm.setTranscoder(transcoder);
+        setTranscoder(pm);
         return pm;
+    }
+
+    private void setTranscoder(PropertyMeta<K, V> pm) {
+        if (transcoder != null)
+        {
+            pm.setTranscoder(transcoder);
+        }
+        else if (type != null)
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            switch (type) {
+                case ID:
+                case SIMPLE:
+                case LAZY_SIMPLE:
+                case JOIN_SIMPLE:
+                    pm.setTranscoder(new SimpleTranscoder(objectMapper));
+                    break;
+                case LIST:
+                case LAZY_LIST:
+                case JOIN_LIST:
+                    pm.setTranscoder(new ListTranscoder(objectMapper));
+                    break;
+                case SET:
+                case LAZY_SET:
+                case JOIN_SET:
+                    pm.setTranscoder(new SetTranscoder(objectMapper));
+                    break;
+                case MAP:
+                case LAZY_MAP:
+                case JOIN_MAP:
+                    pm.setTranscoder(new MapTranscoder(objectMapper));
+                    break;
+                case EMBEDDED_ID:
+                    pm.setTranscoder(new CompoundTranscoder(objectMapper));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     public PropertyMetaTestBuilder<T, K, V> field(String field)

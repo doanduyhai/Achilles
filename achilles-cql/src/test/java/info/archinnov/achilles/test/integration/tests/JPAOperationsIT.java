@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
@@ -101,6 +102,31 @@ public class JPAOperationsIT
     }
 
     @Test
+    public void should_cascade_persist_with_ttl() throws Exception
+    {
+        Tweet tweet = new Tweet();
+        tweet.setContent("this is a welcome tweet");
+        tweet.setId(TimeUUIDUtils.getUniqueTimeUUIDinMillis());
+
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+        entity.setWelcomeTweet(tweet);
+
+        // Persist entity with ttl = 2 secs
+        em.persist(entity, 2);
+
+        assertThat(em.find(CompleteBean.class, entity.getId())).isNotNull();
+
+        Thread.sleep(3000);
+
+        assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
+
+        Tweet foundTweet = em.find(Tweet.class, tweet.getId());
+
+        assertThat(foundTweet).isNotNull();
+        assertThat(foundTweet.getContent()).isEqualTo(tweet.getContent());
+    }
+
+    @Test
     public void should_overwrite_existing_values_on_persist() throws Exception
     {
         CompleteBean entity = CompleteBeanTestBuilder.builder()
@@ -173,6 +199,40 @@ public class JPAOperationsIT
         entity = em.find(CompleteBean.class, entity.getId());
         assertThat(entity.getFavoriteTweets()).isNull();
 
+    }
+
+    @Test
+    public void should_cascade_merge_with_ttl() throws Exception
+    {
+        Tweet tweet = new Tweet();
+        tweet.setContent("this is a welcome tweet");
+        tweet.setId(TimeUUIDUtils.getUniqueTimeUUIDinMillis());
+
+        CompleteBean entity = CompleteBeanTestBuilder.builder()
+                .randomId()
+                .name("DuyHai")
+                .buid();
+        entity.setWelcomeTweet(tweet);
+
+        em.persist(entity);
+
+        entity = em.find(CompleteBean.class, entity.getId());
+
+        entity.getWelcomeTweet().setContent("modified welcomed tweet");
+        entity.setName("DuyHai2");
+
+        // Merge with ttl = 2 secs
+        em.merge(entity, 2);
+
+        Thread.sleep(3000);
+
+        CompleteBean foundEntity = em.find(CompleteBean.class, entity.getId());
+
+        assertThat(foundEntity.getName()).isNull();
+
+        Tweet foundTweet = em.find(Tweet.class, tweet.getId());
+
+        assertThat(foundTweet.getContent()).isEqualTo("modified welcomed tweet");
     }
 
     @Test

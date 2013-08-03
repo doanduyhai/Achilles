@@ -63,8 +63,8 @@ public class JoinCollectionAndMapIT
         tweet4 = TweetTestBuilder.tweet().randomId().content("tweet4").buid();
         tweet5 = TweetTestBuilder.tweet().randomId().content("tweet5").buid();
 
-        friend1 = UserTestBuilder.user().id(1L).firstname("friend1").buid();
-        friend2 = UserTestBuilder.user().id(2L).firstname("friend2").buid();
+        friend1 = UserTestBuilder.user().randomId().firstname("friend1").buid();
+        friend2 = UserTestBuilder.user().randomId().firstname("friend2").buid();
     }
 
     @Test
@@ -138,7 +138,9 @@ public class JoinCollectionAndMapIT
         expectedEx
                 .expectMessage("The entity '"
                         + User.class.getCanonicalName()
-                        + "' with id '1' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
+                        + "' with id '"
+                        + friend1.getId()
+                        + "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
         em.persist(bean);
     }
 

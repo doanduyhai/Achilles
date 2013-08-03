@@ -1,21 +1,12 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.context.ThriftBatchingFlushContext;
-import info.archinnov.achilles.dao.ThriftAbstractDao;
-import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.common.CQLCassandraDaoTest;
+import info.archinnov.achilles.context.CQLBatchingFlushContext;
+import info.archinnov.achilles.entity.manager.CQLBatchingEntityManager;
+import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
@@ -24,20 +15,19 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
-import info.archinnov.achilles.type.Pair;
-import java.util.Map;
-import java.util.UUID;
-import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.mutation.Mutator;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.google.common.base.Optional;
 
 /**
  * BatchModeIT
@@ -51,23 +41,11 @@ public class BatchModeIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private ThriftGenericEntityDao tweetDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
+    private CQLEntityManagerFactory emf = CQLCassandraDaoTest.getEmf();
 
-    private ThriftGenericEntityDao userDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()), Long.class);
+    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
 
-    private ThriftGenericEntityDao completeBeanDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()),
-            Long.class);
-
-    private ThriftCounterDao thriftCounterDao = getCounterDao();
-
-    private ThriftEntityManagerFactory emf = ThriftCassandraDaoTest.getEmf();
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
-
-    private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
+    private Session session = CQLCassandraDaoTest.getCqlSession();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -85,7 +63,7 @@ public class BatchModeIT
     public void should_batch_counters() throws Exception
     {
         // Start batch
-        ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+        CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -100,24 +78,26 @@ public class BatchModeIT
         entity.getVersion().incr(10L);
         batchEm.merge(entity);
 
-        Composite labelComposite = new Composite();
-        labelComposite.addComponent(0, LAZY_SIMPLE.flag(), EQUAL);
-        labelComposite.addComponent(1, "label", EQUAL);
-        labelComposite.addComponent(2, 0, EQUAL);
+        Row result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
+        assertThat(result).isNull();
 
-        assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isNull();
-
-        Composite counterKey = createCounterKey(CompleteBean.class, entity.getId());
-        Composite versionCounterName = createCounterName("version");
-
-        assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
+        result = session.execute("SELECT counter_value from achilles_counter_table where fqcn='"
+                + CompleteBean.class.getCanonicalName()
+                + "' and primary_key='" + entity.getId()
+                + "' and property_name='version'").one();
+        assertThat(result.getLong("counter_value")).isEqualTo(10L);
 
         // Flush
         batchEm.endBatch();
 
-        assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isEqualTo("label");
+        result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
+        assertThat(result.getString("label")).isEqualTo("label");
 
-        assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
+        result = session.execute("SELECT counter_value from achilles_counter_table where fqcn='"
+                + CompleteBean.class.getCanonicalName()
+                + "' and primary_key='" + entity.getId()
+                + "' and property_name='version'").one();
+        assertThat(result.getLong("counter_value")).isEqualTo(10L);
         assertThatBatchContextHasBeenReset(batchEm);
     }
 
@@ -129,7 +109,7 @@ public class BatchModeIT
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+        CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
         batchEm.merge(bean);
@@ -161,7 +141,6 @@ public class BatchModeIT
         assertThat(foundUser.getFirstname()).isEqualTo("fn");
         assertThat(foundUser.getLastname()).isEqualTo("ln");
         assertThatBatchContextHasBeenReset(batchEm);
-        assertThatConsistencyLevelHasBeenReset();
     }
 
     @Test
@@ -173,7 +152,7 @@ public class BatchModeIT
                 .buid();
 
         // Start batch
-        ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+        CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
         try
@@ -183,7 +162,6 @@ public class BatchModeIT
         {
             batchEm.cleanBatch();
             assertThatBatchContextHasBeenReset(batchEm);
-            assertThatConsistencyLevelHasBeenReset();
 
             assertThat(batchEm.find(Tweet.class, tweet.getId())).isNull();
         }
@@ -217,7 +195,7 @@ public class BatchModeIT
         em.persist(tweet1);
 
         // Start batch
-        ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+        CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
         batchEm.startBatch(QUORUM, ALL);
@@ -235,7 +213,6 @@ public class BatchModeIT
 
         logAsserter.assertConsistencyLevels(QUORUM, ALL);
         assertThatBatchContextHasBeenReset(batchEm);
-        assertThatConsistencyLevelHasBeenReset();
     }
 
     @Test
@@ -247,7 +224,7 @@ public class BatchModeIT
         em.persist(tweet1);
 
         // Start batch
-        ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+        CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
         batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
@@ -259,63 +236,35 @@ public class BatchModeIT
         } catch (Exception e)
         {
             assertThatBatchContextHasBeenReset(batchEm);
-            assertThatConsistencyLevelHasBeenReset();
         }
 
         Thread.sleep(1000);
         logAsserter.prepareLogLevel();
         batchEm.persist(tweet2);
-        logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
-        assertThatConsistencyLevelHasBeenReset();
+        batchEm.endBatch();
+        logAsserter.assertConsistencyLevels(ONE, ONE);
     }
 
-    private void assertThatConsistencyLevelHasBeenReset()
+    private void assertThatBatchContextHasBeenReset(CQLBatchingEntityManager batchEm)
     {
-        assertThat(policy.getCurrentReadLevel()).isNull();
-        assertThat(policy.getCurrentWriteLevel()).isNull();
-    }
+        CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
+        Optional<ConsistencyLevel> readLevelO = Whitebox.getInternalState(flushContext, "readLevelO");
+        Optional<ConsistencyLevel> writeLevelO = Whitebox.getInternalState(flushContext, "writeLevelO");
+        Optional<Integer> ttlO = Whitebox.getInternalState(flushContext, "ttlO");
+        List<BoundStatement> boundStatements = Whitebox.getInternalState(flushContext, "boundStatements");
 
-    private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm)
-    {
-        ThriftBatchingFlushContext flushContext = Whitebox
-                .getInternalState(batchEm, "flushContext");
-        Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = Whitebox.getInternalState(
-                flushContext, "mutatorMap");
-        boolean hasCustomConsistencyLevels = (Boolean) Whitebox.getInternalState(flushContext,
-                "hasCustomConsistencyLevels");
-
-        assertThat(mutatorMap).isEmpty();
-        assertThat(hasCustomConsistencyLevels).isFalse();
-
-    }
-
-    private <T> Composite createCounterKey(Class<T> clazz, Long id)
-    {
-        Composite comp = new Composite();
-        comp.setComponent(0, clazz.getCanonicalName(), STRING_SRZ);
-        comp.setComponent(1, id.toString(), STRING_SRZ);
-        return comp;
-    }
-
-    private Composite createCounterName(String propertyName)
-    {
-        Composite composite = new Composite();
-        composite.addComponent(0, propertyName, ComponentEquality.EQUAL);
-        return composite;
+        assertThat(readLevelO.isPresent()).isFalse();
+        assertThat(writeLevelO.isPresent()).isFalse();
+        assertThat(ttlO.isPresent()).isFalse();
+        assertThat(boundStatements).isEmpty();
     }
 
     @After
     public void tearDown()
     {
-        tweetDao.truncate();
-        userDao.truncate();
-        completeBeanDao.truncate();
+        CQLCassandraDaoTest.truncateTable("CompleteBean");
+        CQLCassandraDaoTest.truncateTable("Tweet");
+        CQLCassandraDaoTest.truncateTable("User");
     }
 
-    @AfterClass
-    public static void cleanUp()
-    {
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
-    }
 }

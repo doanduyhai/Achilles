@@ -16,6 +16,7 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 
 /**
@@ -38,6 +39,9 @@ public class CQLImmediateFlushContextTest
     private BoundStatement bs;
 
     @Mock
+    private Statement statement;
+
+    @Mock
     private Query query;
 
     @Before
@@ -56,7 +60,7 @@ public class CQLImmediateFlushContextTest
     }
 
     @Test
-    public void should_push_statement_with_consistency() throws Exception
+    public void should_push_bound_statement_with_consistency() throws Exception
     {
         List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
         Whitebox.setInternalState(context, "boundStatements", boundStatements);
@@ -68,7 +72,7 @@ public class CQLImmediateFlushContextTest
     }
 
     @Test
-    public void should_push_statement_with_consistency_overriden_by_current_level()
+    public void should_push_bound_statement_with_consistency_overriden_by_current_level()
             throws Exception
     {
         List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
@@ -79,6 +83,32 @@ public class CQLImmediateFlushContextTest
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
         assertThat(boundStatements).containsOnly(bs);
+    }
+
+    @Test
+    public void should_push_statement_with_consistency() throws Exception
+    {
+        List<Statement> statements = new ArrayList<Statement>();
+        Whitebox.setInternalState(context, "statements", statements);
+
+        context.pushStatement(statement, EACH_QUORUM);
+
+        verify(statement).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+        assertThat(statements).containsOnly(statement);
+    }
+
+    @Test
+    public void should_push_statement_with_consistency_overriden_by_current_level()
+            throws Exception
+    {
+        List<Statement> statements = new ArrayList<Statement>();
+        Whitebox.setInternalState(context, "statements", statements);
+
+        context.setWriteConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
+        context.pushStatement(statement, EACH_QUORUM);
+
+        verify(statement).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        assertThat(statements).containsOnly(statement);
     }
 
     @Test
@@ -94,30 +124,22 @@ public class CQLImmediateFlushContextTest
     }
 
     @Test
-    public void should_execute_immediate_with_consistency_level_overriden_by_current_level()
-            throws Exception
-    {
-        ResultSet result = mock(ResultSet.class);
-        when(daoContext.execute(query)).thenReturn(result);
-
-        context.setReadConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
-        ResultSet actual = context.executeImmediateWithConsistency(query, EACH_QUORUM);
-
-        assertThat(actual).isSameAs(result);
-        verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-    }
-
-    @Test
     public void should_flush() throws Exception
     {
         List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
         boundStatements.add(bs);
+        List<Statement> statements = new ArrayList<Statement>();
+        statements.add(statement);
+
         Whitebox.setInternalState(context, "boundStatements", boundStatements);
+        Whitebox.setInternalState(context, "statements", statements);
 
         context.flush();
 
         verify(daoContext).execute(bs);
+        verify(daoContext).execute(statement);
         assertThat(boundStatements).isEmpty();
+        assertThat(statements).isEmpty();
     }
 
     @Test
@@ -130,5 +152,17 @@ public class CQLImmediateFlushContextTest
         CQLImmediateFlushContext actual = context.duplicateWithoutTtl();
 
         assertThat(actual.ttlO.isPresent()).isFalse();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_exception_when_calling_start_batch() throws Exception
+    {
+        context.startBatch();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_exception_when_calling_end_batch() throws Exception
+    {
+        context.endBatch();
     }
 }

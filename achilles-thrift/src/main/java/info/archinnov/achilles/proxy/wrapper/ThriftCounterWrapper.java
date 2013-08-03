@@ -4,8 +4,6 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
-import info.archinnov.achilles.entity.operations.EntityValidator;
-import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.validation.Validator;
@@ -29,8 +27,6 @@ public class ThriftCounterWrapper implements Counter
     private ThriftPersistenceContext context;
     private ConsistencyLevel readLevel;
     private ConsistencyLevel writeLevel;
-    private EntityValidator<ThriftPersistenceContext> validator = new EntityValidator<ThriftPersistenceContext>(
-            new ThriftEntityProxifier());
 
     public ThriftCounterWrapper(ThriftPersistenceContext context) {
         this.context = context;
@@ -59,7 +55,7 @@ public class ThriftCounterWrapper implements Counter
         log.trace("Get counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 readLevel.name());
-        validator.validateNoPendingBatch(context);
+
         return context.executeWithReadConsistencyLevel(new SafeExecutionContext<Long>()
         {
             @Override
@@ -96,7 +92,6 @@ public class ThriftCounterWrapper implements Counter
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 writeLevel);
 
-        validator.validateNoPendingBatch(context);
         context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
         {
             @Override
@@ -137,7 +132,6 @@ public class ThriftCounterWrapper implements Counter
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 increment, writeLevel);
 
-        validator.validateNoPendingBatch(context);
         context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
         {
             @Override
@@ -176,7 +170,6 @@ public class ThriftCounterWrapper implements Counter
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 writeLevel);
 
-        validator.validateNoPendingBatch(context);
         context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
         {
             @Override
@@ -216,7 +209,6 @@ public class ThriftCounterWrapper implements Counter
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
                 decrement, writeLevel);
 
-        validator.validateNoPendingBatch(context);
         context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>()
         {
             @Override

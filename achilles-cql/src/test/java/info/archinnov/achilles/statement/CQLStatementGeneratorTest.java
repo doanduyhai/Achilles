@@ -10,10 +10,15 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.prepared.CQLSliceQueryPreparedStatementGenerator;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -28,8 +33,11 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * CQLStringStatementGeneratorTest
@@ -58,6 +66,8 @@ public class CQLStatementGeneratorTest {
 
     @Captor
     private ArgumentCaptor<Statement> statementCaptor;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void should_create_select_statement_for_entity_simple_id() throws Exception {
@@ -149,6 +159,205 @@ public class CQLStatementGeneratorTest {
 
         assertThat(query.toString()).isEqualTo(
                 "DELETE  FROM table WHERE fake='fake';");
+    }
+
+    @Test
+    public void should_generate_insert_for_simple_id() throws Exception
+    {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id").accessors()
+                .type(ID).build();
+
+        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("age").accessors()
+                .type(SIMPLE).build();
+
+        PropertyMeta<?, ?> followersMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("followers").accessors()
+                .type(SET).build();
+
+        PropertyMeta<?, ?> preferencesMeta = PropertyMetaTestBuilder
+                .completeBean(Integer.class, String.class)
+                .field("preferences").accessors()
+                .type(MAP).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of(
+                "id", idMeta,
+                "age", ageMeta,
+                "followers", followersMeta,
+                "preferences", preferencesMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Long age = RandomUtils.nextLong();
+        CompleteBean entity = CompleteBeanTestBuilder
+                .builder()
+                .id(id)
+                .age(age)
+                .addFollowers("john", "helen")
+                .addPreference(1, "FR")
+                .addPreference(2, "Paris")
+                .buid();
+
+        Insert insert = generator.generateInsert(entity, meta);
+
+        assertThat(insert.getQueryString()).isEqualTo(
+                "INSERT INTO table(id,age,followers,preferences) VALUES (" + id + "," + age
+                        + ",{'helen','john'},{1:'FR',2:'Paris'});");
+
+    }
+
+    @Test
+    public void should_generate_insert_for_clustered_id() throws Exception
+    {
+        Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
+        Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
+        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compNames("id", "name")
+                .compClasses(Long.class, String.class)
+                .compGetters(userIdGetter, nameGetter)
+                .field("id")
+                .type(EMBEDDED_ID).build();
+        idMeta.setGetter(idGetter);
+
+        PropertyMeta<?, ?> valueMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("value")
+                .type(SIMPLE).build();
+        valueMeta.setGetter(valueGetter);
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "value", valueMeta));
+        meta.setIdMeta(idMeta);
+
+        Long userId = RandomUtils.nextLong();
+        ClusteredEntity entity = new ClusteredEntity();
+        CompoundKey embeddedId = new CompoundKey();
+        embeddedId.setUserId(userId);
+        embeddedId.setName("name");
+        entity.setId(embeddedId);
+        entity.setValue("value");
+
+        Insert insert = generator.generateInsert(entity, meta);
+
+        assertThat(insert.getQueryString()).isEqualTo(
+                "INSERT INTO table(id,name,value) VALUES (" + userId + ",'name','value');");
+
+    }
+
+    @Test
+    public void should_generate_update_for_simple_id() throws Exception
+    {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id").accessors()
+                .type(ID).build();
+
+        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("age").accessors()
+                .type(SIMPLE).build();
+
+        PropertyMeta<?, ?> friendsMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("friends").accessors()
+                .type(LAZY_LIST).build();
+
+        PropertyMeta<?, ?> followersMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("followers").accessors()
+                .type(SET).build();
+
+        PropertyMeta<?, ?> preferencesMeta = PropertyMetaTestBuilder
+                .completeBean(Integer.class, String.class)
+                .field("preferences").accessors()
+                .type(MAP).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of(
+                "id", idMeta,
+                "age", ageMeta,
+                "followers", followersMeta,
+                "preferences", preferencesMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Long age = RandomUtils.nextLong();
+        CompleteBean entity = CompleteBeanTestBuilder
+                .builder()
+                .id(id)
+                .age(age)
+                .addFriends("foo", "bar")
+                .addFollowers("john", "helen")
+                .addPreference(1, "FR")
+                .addPreference(2, "Paris")
+                .buid();
+
+        Update.Assignments update = generator.generateUpdateFields(entity, meta,
+                Arrays.<PropertyMeta<?, ?>> asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
+
+        assertThat(update.getQueryString())
+                .isEqualTo(
+                        "UPDATE table SET age="
+                                + age
+                                + ",friends=['foo','bar'],followers={'helen','john'},preferences={1:'FR',2:'Paris'} WHERE id="
+                                + id + ";");
+
+    }
+
+    @Test
+    public void should_generate_update_for_clustered_id() throws Exception
+    {
+        Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
+        Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
+        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compNames("id", "name")
+                .compClasses(Long.class, String.class)
+                .compGetters(userIdGetter, nameGetter)
+                .field("id")
+                .type(EMBEDDED_ID).build();
+        idMeta.setGetter(idGetter);
+
+        PropertyMeta<?, ?> valueMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("value")
+                .type(SIMPLE).build();
+        valueMeta.setGetter(valueGetter);
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "value", valueMeta));
+        meta.setIdMeta(idMeta);
+
+        Long userId = RandomUtils.nextLong();
+        ClusteredEntity entity = new ClusteredEntity();
+        CompoundKey embeddedId = new CompoundKey();
+        embeddedId.setUserId(userId);
+        embeddedId.setName("name");
+        entity.setId(embeddedId);
+        entity.setValue("value");
+
+        Update.Assignments update = generator.generateUpdateFields(entity, meta,
+                Arrays.<PropertyMeta<?, ?>> asList(valueMeta));
+
+        assertThat(update.getQueryString()).isEqualTo(
+                "UPDATE table SET value='value' WHERE id=" + userId + " AND name='name';");
+
     }
 
     private EntityMeta prepareEntityMeta(String... componentNames) throws Exception

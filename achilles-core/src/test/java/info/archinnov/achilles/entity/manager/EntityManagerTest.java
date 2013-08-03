@@ -1,14 +1,10 @@
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.entity.manager.EntityManager.NO_CONSISTENCY_LEVEL;
-import static info.archinnov.achilles.entity.manager.EntityManager.NO_TTL;
+import static info.archinnov.achilles.entity.manager.EntityManager.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -146,6 +142,7 @@ public class EntityManagerTest {
         em.persist(entity, 150);
 
         verify(entityValidator).validateEntity(entity, entityMetaMap);
+        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
         verify(context).persist();
 
         assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
@@ -163,6 +160,7 @@ public class EntityManagerTest {
         em.persist(entity, 150, EACH_QUORUM);
 
         verify(entityValidator).validateEntity(entity, entityMetaMap);
+        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
         verify(context).persist();
 
         assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
@@ -221,7 +219,7 @@ public class EntityManagerTest {
         CompleteBean mergedEntity = em.merge(entity, 150, EACH_QUORUM);
 
         verify(entityValidator).validateEntity(entity, entityMetaMap);
-
+        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
         assertThat(mergedEntity).isSameAs(entity);
 
         assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
@@ -240,7 +238,7 @@ public class EntityManagerTest {
         CompleteBean mergedEntity = em.merge(entity, 150);
 
         verify(entityValidator).validateEntity(entity, entityMetaMap);
-
+        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
         assertThat(mergedEntity).isSameAs(entity);
         assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
     }

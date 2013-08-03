@@ -29,6 +29,20 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     }
 
     /**
+     * Query using provided consistency level<br/>
+     * <br/>
+     * 
+     * @param consistencyLevel
+     *            consistency level
+     * @return SliceQueryBuilder
+     */
+    public SliceQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
+    {
+        super.consistencyLevel(consistencyLevel);
+        return this;
+    }
+
+    /**
      * Query by partition key and clustering components<br/>
      * <br/>
      * 
@@ -73,7 +87,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
      * @param toEmbeddedId
      *            To embeddedId
      * 
-     * @return ThriftToEmbeddedIdBuilder<T>
+     * @return ThriftToEmbeddedIdBuilder
      */
     public SliceToEmbeddedIdBuilder toEmbeddedId(Object toEmbeddedId)
     {
@@ -103,7 +117,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param clusteringComponents
          *            From clustering components
          * 
-         * @return ThriftFromClusteringsBuilder<T>
+         * @return SliceFromClusteringsBuilder
          */
         public SliceFromClusteringsBuilder fromClusterings(Object... clusteringComponents)
         {
@@ -118,12 +132,55 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param clusteringComponents
          *            To clustering components
          * 
-         * @return ThriftToClusteringsBuilder<T>
+         * @return SliceToClusteringsBuilder
          */
         public SliceToClusteringsBuilder toClusterings(Object... clusteringComponents)
         {
             SliceQueryBuilder.super.toClusteringsInternal(clusteringComponents);
             return new SliceToClusteringsBuilder();
+        }
+
+        /**
+         * Query using provided consistency level<br/>
+         * <br/>
+         * 
+         * @param consistencyLevel
+         *            consistency level
+         * @return SliceShortcutQueryBuilder
+         */
+        public SliceShortcutQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel)
+        {
+            SliceQueryBuilder.super.consistencyLevel(consistencyLevel);
+            return this;
+        }
+
+        /**
+         * Set ordering<br/>
+         * <br/>
+         * 
+         * @param ordering
+         *            ordering mode: ASCENDING or DESCENDING
+         * 
+         * @return SliceShortcutQueryBuilder
+         */
+        public SliceShortcutQueryBuilder ordering(OrderingMode ordering) {
+            SliceQueryBuilder.super.ordering(ordering);
+            return this;
+        }
+
+        /**
+         * Set bounding mode<br/>
+         * <br/>
+         * 
+         * @param boundingMode
+         *            bounding mode: ASCENDING or DESCENDING
+         * 
+         * @return SliceShortcutQueryBuilder
+         */
+        public SliceShortcutQueryBuilder bounding(BoundingMode boundingMode)
+        {
+            SliceQueryBuilder.super.bounding(boundingMode);
+            return this;
         }
 
         /**
@@ -316,7 +373,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param toEmbeddedId
          *            To embeddedId
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder toEmbeddedId(Object toEmbeddedId)
         {
@@ -346,7 +403,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param fromEmbeddedId
          *            From embeddedId
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder fromEmbeddedId(Object fromEmbeddedId)
         {
@@ -377,7 +434,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param clusteringComponents
          *            To clustering components
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder toClusterings(Object... clusteringComponents)
         {
@@ -398,7 +455,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param clusteringComponents
          *            From clustering components
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder fromClusterings(Object... clusteringComponents)
         {
@@ -419,7 +476,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param ordering
          *            ordering mode: ASCENDING or DESCENDING
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder ordering(OrderingMode ordering) {
             SliceQueryBuilder.super.ordering(ordering);
@@ -433,7 +490,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          * @param boundingMode
          *            bounding mode: ASCENDING or DESCENDING
          * 
-         * @return DefaultQueryBuilder<T>
+         * @return DefaultQueryBuilder
          */
         public DefaultQueryBuilder bounding(BoundingMode boundingMode)
         {
@@ -441,43 +498,106 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
             return this;
         }
 
+        /**
+         * Set consistency level<br/>
+         * <br/>
+         * 
+         * @param consistencyLevel
+         *            consistency level: ONE,TWO,THREE,QUORUM,LOCAL_QUORUM,EACH_QUORUM or ALL
+         * 
+         * @return DefaultQueryBuilder
+         */
         public DefaultQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel)
         {
             SliceQueryBuilder.super.consistencyLevel(consistencyLevel);
             return this;
         }
 
+        /**
+         * Set limit<br/>
+         * <br/>
+         * 
+         * @param limit
+         *            limit to the number of returned rows
+         * 
+         * @return DefaultQueryBuilder
+         */
         public DefaultQueryBuilder limit(int limit)
         {
             SliceQueryBuilder.super.limit(limit);
             return this;
         }
 
+        /**
+         * Get entities<br/>
+         * <br/>
+         * 
+         * 
+         * @return List<T>
+         */
         public List<T> get()
         {
             return SliceQueryBuilder.super.get();
         }
 
+        /**
+         * Get first n entities<br/>
+         * <br/>
+         * 
+         * 
+         * @return List<T>
+         */
         public List<T> get(int n)
         {
             return SliceQueryBuilder.super.get(n);
         }
 
+        /**
+         * Iterator on entities<br/>
+         * <br/>
+         * 
+         * 
+         * @return Iterator<T>
+         */
         public Iterator<T> iterator()
         {
             return SliceQueryBuilder.super.iterator();
         }
 
+        /**
+         * Iterator on entities with batchSize<br/>
+         * <br/>
+         * 
+         * @param batchSize
+         *            maximum number of rows to fetch on each batch
+         * 
+         * @return Iterator<T>
+         */
         public Iterator<T> iterator(int batchSize)
         {
             return SliceQueryBuilder.super.iterator(batchSize);
         }
 
+        /**
+         * Remove matched entities<br/>
+         * <br/>
+         * 
+         * @return Iterator<T>
+         */
         public void remove()
         {
             SliceQueryBuilder.super.remove();
         }
 
+        /**
+         * Remove first n matched entities<br/>
+         * <br/>
+         * 
+         * @param n
+         *            first n matched entities
+         * 
+         * @return Iterator<T>
+         */
         public void remove(int n)
         {
             SliceQueryBuilder.super.remove(n);

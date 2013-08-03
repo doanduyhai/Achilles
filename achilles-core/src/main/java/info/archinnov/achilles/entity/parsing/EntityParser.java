@@ -91,8 +91,8 @@ public class EntityParser
         // Deferred counter property meta completion
         completeCounterPropertyMeta(context, idMeta);
 
-        // Finish validation of property metas and wide row
-        validator.validatePropertyMetas(context);
+        // Finish validation of property metas
+        validator.validatePropertyMetas(context, idMeta);
         validator.validateClusteredEntities(context);
 
         EntityMeta entityMeta = entityMetaBuilder(idMeta)

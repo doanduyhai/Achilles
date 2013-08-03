@@ -19,6 +19,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 
 /**
  * CQLPersistenceContext
@@ -102,14 +103,14 @@ public class CQLPersistenceContext extends PersistenceContext
         return daoContext.loadProperty(this, pm);
     }
 
-    public void bindForInsert()
+    public void pushInsertStatement()
     {
-        daoContext.bindForInsert(this);
+        daoContext.pushInsertStatement(this);
     }
 
-    public void bindForUpdate(List<PropertyMeta<?, ?>> pms)
+    public void pushUpdateStatement(List<PropertyMeta<?, ?>> pms)
     {
-        daoContext.bindForUpdate(this, pms);
+        daoContext.pushUpdateStatement(this, pms);
     }
 
     public void bindForRemoval(String tableName)
@@ -149,9 +150,9 @@ public class CQLPersistenceContext extends PersistenceContext
     }
 
     // Clustered counter
-    public void bindForClusteredCounterIncrement(PropertyMeta<?, ?> counterMeta, Long increment)
+    public void pushClusteredCounterIncrementStatement(PropertyMeta<?, ?> counterMeta, Long increment)
     {
-        daoContext.bindForClusteredCounterIncrement(this, entityMeta, counterMeta, increment);
+        daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
     }
 
     public void incrementClusteredCounter(PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistency)
@@ -187,6 +188,11 @@ public class CQLPersistenceContext extends PersistenceContext
     public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
     {
         flushContext.pushBoundStatement(boundStatement, writeLevel);
+    }
+
+    public void pushStatement(Statement boundStatement, ConsistencyLevel writeLevel)
+    {
+        flushContext.pushStatement(boundStatement, writeLevel);
     }
 
     public ResultSet executeImmediateWithConsistency(BoundStatement bs,

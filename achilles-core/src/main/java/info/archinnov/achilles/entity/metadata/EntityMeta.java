@@ -174,15 +174,25 @@ public class EntityMeta {
     }
 
     public PropertyMeta<?, ?> getFirstMeta() {
-        return getAllMetasExceptIdMeta().get(0);
+
+        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
+
+        if (allMetasExceptIdMeta.isEmpty())
+            return null;
+        else
+            return allMetasExceptIdMeta.get(0);
     }
 
     public boolean isClusteredCounter()
     {
+        boolean isClusteredCounter = false;
         List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
         int propertyCount = allMetasExceptIdMeta.size();
-        PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.get(0);
-
-        return clusteredEntity && propertyCount == 1 && firstMeta.isCounter();
+        if (propertyCount > 0)
+        {
+            PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.get(0);
+            isClusteredCounter = clusteredEntity && propertyCount == 1 && firstMeta.isCounter();
+        }
+        return isClusteredCounter;
     }
 }

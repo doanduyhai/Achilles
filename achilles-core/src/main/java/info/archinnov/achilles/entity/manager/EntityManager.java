@@ -88,7 +88,6 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public void persist(final Object entity, int ttl) {
         log.debug("Persisting entity '{}' with ttl {}", entity, ttl);
-
         persist(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
     }
 
@@ -115,6 +114,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
 
+        if (ttlO.isPresent())
+        {
+            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+        }
         if (proxifier.isProxy(entity)) {
             throw new IllegalStateException(
                     "Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
@@ -260,6 +263,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
     <T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
+        if (ttlO.isPresent())
+        {
+            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+        }
         CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, writeLevelO, ttlO);
         return context.<T> merge(entity);
 

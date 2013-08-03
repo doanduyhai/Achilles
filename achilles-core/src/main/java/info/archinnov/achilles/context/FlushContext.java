@@ -4,7 +4,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import com.google.common.base.Optional;
 
 /**
- * AchillesFlushContext
+ * FlushContext
  * 
  * @author DuyHai DOAN
  * 

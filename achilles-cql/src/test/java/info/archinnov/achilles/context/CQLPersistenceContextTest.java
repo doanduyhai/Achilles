@@ -168,18 +168,18 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_insert() throws Exception
     {
-        context.bindForInsert();
+        context.pushInsertStatement();
 
-        verify(daoContext).bindForInsert(context);
+        verify(daoContext).pushInsertStatement(context);
     }
 
     @Test
     public void should_bind_for_update() throws Exception
     {
         List<PropertyMeta<?, ?>> pms = Arrays.asList();
-        context.bindForUpdate(pms);
+        context.pushUpdateStatement(pms);
 
-        verify(daoContext).bindForUpdate(context, pms);
+        verify(daoContext).pushUpdateStatement(context, pms);
     }
 
     @Test
@@ -272,9 +272,9 @@ public class CQLPersistenceContextTest
     {
         PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
 
-        context.bindForClusteredCounterIncrement(counterMeta, 11L);
+        context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
-        verify(daoContext).bindForClusteredCounterIncrement(context, meta, counterMeta, 11L);
+        verify(daoContext).pushClusteredCounterIncrementStatement(context, meta, counterMeta, 11L);
     }
 
     @Test

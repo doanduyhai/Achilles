@@ -7,6 +7,7 @@ import java.util.List;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 
 /**
@@ -24,6 +25,7 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     protected CQLDaoContext daoContext;
 
     protected List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
+    protected List<Statement> statements = new ArrayList<Statement>();
 
     public CQLAbstractFlushContext(CQLDaoContext daoContext, Optional<ConsistencyLevel> readLevelO,
             Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
@@ -48,24 +50,12 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     }
 
     @Override
-    public void startBatch()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void endBatch()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void cleanUp()
     {
-        // TODO Auto-generated method stub
-
+        reinitConsistencyLevels();
+        boundStatements.clear();
+        statements.clear();
+        ttlO = Optional.<Integer> absent();
     }
 
     protected void doFlush()
@@ -74,7 +64,12 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
         {
             daoContext.execute(bs);
         }
-        boundStatements.clear();
+        for (Statement statement : statements)
+        {
+            daoContext.execute(statement);
+        }
+
+        cleanUp();
 
     }
 
@@ -93,7 +88,8 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     @Override
     public void reinitConsistencyLevels()
     {
-        // TODO Auto-generated method stub
+        readLevelO = Optional.<ConsistencyLevel> absent();
+        writeLevelO = Optional.<ConsistencyLevel> absent();
 
     }
 
@@ -111,18 +107,24 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
         boundStatements.add(boundStatement);
     }
 
-    public ResultSet executeImmediateWithConsistency(Query query,
-            ConsistencyLevel readConsistencyLevel)
+    public void pushStatement(Statement statement,
+            ConsistencyLevel writeConsistencyLevel)
     {
-        if (readLevelO.isPresent())
+        if (writeLevelO.isPresent())
         {
-            query.setConsistencyLevel(getCQLLevel(readLevelO.get()));
+            statement.setConsistencyLevel(getCQLLevel(writeLevelO.get()));
         }
         else
         {
-            query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
+            statement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
         }
+        statements.add(statement);
+    }
 
+    public ResultSet executeImmediateWithConsistency(Query query,
+            ConsistencyLevel readConsistencyLevel)
+    {
+        query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
         return daoContext.execute(query);
     }
 

@@ -7,6 +7,7 @@ import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
@@ -25,6 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -36,6 +39,10 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.datastax.driver.core.querybuilder.Using;
 import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
@@ -55,6 +62,9 @@ public class CQLDaoContextTest
 
     @InjectMocks
     private CQLDaoContext daoContext;
+
+    @Mock
+    private CQLStatementGenerator statementGenerator;
 
     @Mock
     private Map<Class<?>, PreparedStatement> insertPSs;
@@ -89,10 +99,25 @@ public class CQLDaoContextTest
     private EntityMeta entityMeta;
 
     @Mock
+    private Insert insert;
+
+    @Mock
+    private Insert.Options insertOptions;
+
+    @Mock
+    private Assignments update;
+
+    @Mock
+    private Update.Options updateOptions;
+
+    @Mock
     private PreparedStatement ps;
 
     @Mock
     private BoundStatement bs;
+
+    @Captor
+    ArgumentCaptor<Using> usingCaptor;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -108,6 +133,7 @@ public class CQLDaoContextTest
         Whitebox.setInternalState(daoContext, "counterQueryMap", counterQueryMap);
         Whitebox.setInternalState(daoContext, "clusteredCounterQueryMap", clusteredCounterQueryMap);
         Whitebox.setInternalState(daoContext, Session.class, session);
+        Whitebox.setInternalState(daoContext, CQLStatementGenerator.class, statementGenerator);
         clusteredCounterQueryMap.clear();
         entityMeta = new EntityMeta();
         entityMeta.setEntityClass(CompleteBean.class);
@@ -125,18 +151,37 @@ public class CQLDaoContextTest
     }
 
     @Test
-    public void should_bind_for_insert() throws Exception
+    public void should_push_insert_without_ttl() throws Exception
     {
+        when(context.getTttO()).thenReturn(Optional.<Integer> absent());
         entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
         when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
         when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bs);
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
-        daoContext.bindForInsert(context);
+        daoContext.pushInsertStatement(context);
         verify(context).pushBoundStatement(bs, ALL);
     }
 
     @Test
-    public void should_bind_for_update() throws Exception
+    public void should_push_insert_with_ttl() throws Exception
+    {
+        int ttl = 115;
+        when(context.getTttO()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+
+        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
+
+        when(statementGenerator.generateInsert(entity, entityMeta)).thenReturn(insert);
+        when(insert.using(usingCaptor.capture())).thenReturn(insertOptions);
+
+        daoContext.pushInsertStatement(context);
+        verify(context).pushStatement(insertOptions, ALL);
+        assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
+    }
+
+    @Test
+    public void should_push_update_without_ttl() throws Exception
     {
         PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -149,13 +194,43 @@ public class CQLDaoContextTest
                 .build();
 
         List<PropertyMeta<?, ?>> pms = Arrays.asList(nameMeta, ageMeta);
+        when(context.getTttO()).thenReturn(Optional.<Integer> absent());
         when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms))
                 .thenReturn(ps);
         when(binder.bindForUpdate(ps, entityMeta, pms, entity)).thenReturn(bs);
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 
-        daoContext.bindForUpdate(context, pms);
+        daoContext.pushUpdateStatement(context, pms);
         verify(context).pushBoundStatement(bs, EACH_QUORUM);
+
+    }
+
+    @Test
+    public void should_push_update_with_ttl() throws Exception
+    {
+        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+
+        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("age")
+                .build();
+
+        List<PropertyMeta<?, ?>> pms = Arrays.asList(nameMeta, ageMeta);
+
+        int ttl = 15465;
+        when(context.getTttO()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+
+        when(statementGenerator.generateUpdateFields(entity, entityMeta, pms)).thenReturn(update);
+        when(update.using(usingCaptor.capture())).thenReturn(updateOptions);
+
+        daoContext.pushUpdateStatement(context, pms);
+        verify(context).pushStatement(updateOptions, EACH_QUORUM);
+        assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
     }
 
     @Test
@@ -414,39 +489,41 @@ public class CQLDaoContextTest
 
     //Clustered counter
     @Test
-    public void should_bind_clustered_counter_increment() throws Exception
+    public void should_push_clustered_counter_increment() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
+        when(context.getTttO()).thenReturn(Optional.<Integer> absent());
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
-        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(), 2L))
                 .thenReturn(bs);
 
-        daoContext.bindForClusteredCounterIncrement(context, entityMeta, pm, 2L);
+        daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
         verify(context).pushBoundStatement(bs, EACH_QUORUM);
     }
 
     @Test
-    public void should_bind_clustered_counter_increment_with_runtime_consistency() throws Exception
+    public void should_push_clustered_counter_increment_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
+        when(context.getTttO()).thenReturn(Optional.<Integer> absent());
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
-        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
+        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(), 2L))
                 .thenReturn(bs);
 
-        daoContext.bindForClusteredCounterIncrement(context, entityMeta, pm, 2L);
+        daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
         verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
     }
@@ -455,15 +532,17 @@ public class CQLDaoContextTest
     public void should_increment_clustered_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .build();
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
-        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
+        when(
+                binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(),
+                        counterValue))
                 .thenReturn(bs);
 
-        daoContext.incrementClusteredCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+        daoContext.incrementClusteredCounter(context, entityMeta, counterMeta, counterValue, EACH_QUORUM);
 
         verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
     }
@@ -472,15 +551,17 @@ public class CQLDaoContextTest
     public void should_decrement_clustered_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .build();
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DECR, ps));
-        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
+        when(
+                binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(),
+                        counterValue))
                 .thenReturn(bs);
 
-        daoContext.decrementClusteredCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+        daoContext.decrementClusteredCounter(context, entityMeta, counterMeta, counterValue, EACH_QUORUM);
 
         verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
     }
@@ -488,21 +569,21 @@ public class CQLDaoContextTest
     @Test
     public void should_get_clustered_counter() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
 
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.SELECT, ps));
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, counterMeta, entity.getId())).thenReturn(bs);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
         when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
 
-        Row actual = daoContext.getClusteredCounter(context, pm, EACH_QUORUM);
+        Row actual = daoContext.getClusteredCounter(context, counterMeta, EACH_QUORUM);
 
         assertThat(actual).isSameAs(row);
     }
@@ -510,16 +591,16 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_clustered_counter_delete() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bs);
 
-        daoContext.bindForClusteredCounterDelete(context, entityMeta, pm, 11L);
+        daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
         verify(context).pushBoundStatement(bs, EACH_QUORUM);
     }
@@ -527,16 +608,16 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_clustered_counter_delete_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
-                .valueClass(String.class)
-                .field("name")
+        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
         when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bs);
 
-        daoContext.bindForClusteredCounterDelete(context, entityMeta, pm, 11L);
+        daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
         verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
     }

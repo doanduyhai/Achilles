@@ -1,10 +1,12 @@
 package info.archinnov.achilles.context;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
@@ -20,6 +22,10 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 
 /**
@@ -44,6 +50,7 @@ public class CQLDaoContext
 
     private CQLPreparedStatementBinder binder = new CQLPreparedStatementBinder();
     private CacheManager cacheManager = new CacheManager();
+    private CQLStatementGenerator statementGenerator = new CQLStatementGenerator();
 
     public CQLDaoContext(Map<Class<?>, PreparedStatement> insertPSs,
             Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
@@ -62,25 +69,44 @@ public class CQLDaoContext
         this.session = session;
     }
 
-    public void bindForInsert(CQLPersistenceContext context)
+    public void pushInsertStatement(CQLPersistenceContext context)
     {
         EntityMeta entityMeta = context.getEntityMeta();
         Class<?> entityClass = context.getEntityClass();
-        PreparedStatement ps = insertPSs.get(entityClass);
-        BoundStatement bs = binder.bindForInsert(ps, entityMeta, context.getEntity());
-
+        Optional<Integer> ttlO = context.getTttO();
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-        context.pushBoundStatement(bs, writeLevel);
+        if (ttlO.isPresent())
+        {
+            Insert insert = statementGenerator.generateInsert(context.getEntity(), entityMeta);
+            Insert.Options options = insert.using(ttl(ttlO.get()));
+            context.pushStatement(options, writeLevel);
+        }
+        else
+        {
+            PreparedStatement ps = insertPSs.get(entityClass);
+            BoundStatement bs = binder.bindForInsert(ps, entityMeta, context.getEntity());
+            context.pushBoundStatement(bs, writeLevel);
+        }
     }
 
-    public void bindForUpdate(CQLPersistenceContext context, List<PropertyMeta<?, ?>> pms)
+    public void pushUpdateStatement(CQLPersistenceContext context, List<PropertyMeta<?, ?>> pms)
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache,
-                context, pms);
-        BoundStatement bs = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-        context.pushBoundStatement(bs, writeLevel);
+        Optional<Integer> ttlO = context.getTttO();
+        if (ttlO.isPresent())
+        {
+            Assignments update = statementGenerator.generateUpdateFields(context.getEntity(), entityMeta, pms);
+            Update.Options options = update.using(ttl(ttlO.get()));
+            context.pushStatement(options, writeLevel);
+        }
+        else
+        {
+            PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache,
+                    context, pms);
+            BoundStatement bs = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
+            context.pushBoundStatement(bs, writeLevel);
+        }
     }
 
     public boolean checkForEntityExistence(CQLPersistenceContext context)
@@ -174,13 +200,13 @@ public class CQLDaoContext
     }
 
     // Clustered counter
-    public void bindForClusteredCounterIncrement(CQLPersistenceContext context, EntityMeta meta,
+    public void pushClusteredCounterIncrementStatement(CQLPersistenceContext context, EntityMeta meta,
             PropertyMeta<?, ?> counterMeta, Long increment)
     {
+        ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
         BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), increment);
-        ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
         context.pushBoundStatement(bs, writeLevel);
     }
 
@@ -288,7 +314,8 @@ public class CQLDaoContext
                 PreparedStatement ps = BoundStatement.class.cast(query).preparedStatement();
                 queryType = "Prepared statement";
                 queryString = ps.getQueryString();
-                consistencyLevel = ps.getConsistencyLevel() == null ? "DEFAULT" : ps.getConsistencyLevel().name();
+                consistencyLevel = query.getConsistencyLevel() == null ? "DEFAULT" : query.getConsistencyLevel()
+                        .name();
             }
             else if (Statement.class.isInstance(query))
             {

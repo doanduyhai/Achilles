@@ -25,6 +25,7 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
     private CQLCompoundKeyValidator compoundKeyValidator = new CQLCompoundKeyValidator();
     private CQLSliceQueryExecutor sliceQueryExecutor;
     private CQLPersistenceContextFactory contextFactory;
+    protected CQLDaoContext daoContext;
 
     protected CQLEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
             CQLPersistenceContextFactory contextFactory,
@@ -32,6 +33,7 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
             ConfigurationContext configContext)
     {
         super(entityMetaMap, configContext);
+        this.daoContext = daoContext;
         super.proxifier = new CQLEntityProxifier();
         super.entityValidator = new EntityValidator<CQLPersistenceContext>(proxifier);
         this.contextFactory = contextFactory;

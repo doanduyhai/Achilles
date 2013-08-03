@@ -6,6 +6,7 @@ import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -37,6 +38,8 @@ public class ConsistencyLevelIT
     public ExpectedException expectedEx = ExpectedException.none();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+
+    private ThriftEntityManagerFactory emf = ThriftCassandraDaoTest.getEmf();
 
     private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
@@ -281,7 +284,7 @@ public class ConsistencyLevelIT
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
         logAsserter.prepareLogLevel();
-        ThriftBatchingEntityManager batchingEm = em.batchingEntityManager();
+        ThriftBatchingEntityManager batchingEm = emf.createBatchingEntityManager();
         batchingEm.startBatch(ONE, QUORUM);
         batchingEm.persist(entity);
         batchingEm.persist(tweet);

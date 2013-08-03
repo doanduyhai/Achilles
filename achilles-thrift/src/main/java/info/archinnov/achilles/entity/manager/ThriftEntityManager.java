@@ -53,21 +53,6 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     }
 
     /**
-     * Create a new state-full EntityManager for batch handling <br/>
-     * <br/>
-     * 
-     * <strong>WARNING : This EntityManager is state-full and not thread-safe. In case of exception, you MUST not
-     * re-use it but create another one</strong>
-     * 
-     * @return a new state-full EntityManager
-     */
-    public ThriftBatchingEntityManager batchingEntityManager()
-    {
-        return new ThriftBatchingEntityManager(entityMetaMap, contextFactory,
-                daoContext, configContext);
-    }
-
-    /**
      * Create a new slice query builder for entity of type T<br/>
      * <br/>
      * 

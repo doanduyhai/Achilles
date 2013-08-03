@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
-import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import me.prettyprint.hector.api.beans.Composite;
@@ -46,9 +45,6 @@ public class ThriftCounterWrapperTest
     @Mock
     private ThriftPersistenceContext context;
 
-    @Mock
-    private EntityValidator<ThriftPersistenceContext> validator;
-
     @Captor
     private ArgumentCaptor<SafeExecutionContext<Void>> voidExecCaptor;
 
@@ -66,7 +62,6 @@ public class ThriftCounterWrapperTest
     {
         wrapper = new ThriftCounterWrapper(context);
         Whitebox.setInternalState(wrapper, "key", key);
-        Whitebox.setInternalState(wrapper, "validator", validator);
         wrapper.setColumnName(columnName);
         wrapper.setCounterDao(counterDao);
         wrapper.setReadLevel(readLevel);
@@ -96,7 +91,6 @@ public class ThriftCounterWrapperTest
 
         assertThat(value).isEqualTo(10L);
         assertThat(longExecCaptor.getValue().execute()).isEqualTo(10L);
-        verify(validator).validateNoPendingBatch(context);
     }
 
     @Test
@@ -119,7 +113,6 @@ public class ThriftCounterWrapperTest
         verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
         voidExecCaptor.getValue().execute();
 
-        verify(validator).validateNoPendingBatch(context);
         verify(counterDao).incrementCounter(key, columnName, 1L);
     }
 
@@ -141,7 +134,6 @@ public class ThriftCounterWrapperTest
         verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
         voidExecCaptor.getValue().execute();
 
-        verify(validator).validateNoPendingBatch(context);
         verify(counterDao).incrementCounter(key, columnName, 10L);
 
     }
@@ -165,7 +157,6 @@ public class ThriftCounterWrapperTest
         verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
         voidExecCaptor.getValue().execute();
 
-        verify(validator).validateNoPendingBatch(context);
         verify(counterDao).decrementCounter(key, columnName, 1L);
     }
 
@@ -188,7 +179,6 @@ public class ThriftCounterWrapperTest
         verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
         voidExecCaptor.getValue().execute();
 
-        verify(validator).validateNoPendingBatch(context);
         verify(counterDao).decrementCounter(key, columnName, 10L);
     }
 }

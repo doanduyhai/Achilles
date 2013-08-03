@@ -61,6 +61,22 @@ public class ClusteredEntityIT
     }
 
     @Test
+    public void should_persist_with_ttl() throws Exception
+    {
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
+
+        em.persist(entity, 2);
+
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNotNull();
+
+        Thread.sleep(2000);
+
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNull();
+    }
+
+    @Test
     public void should_merge_and_get_reference() throws Exception
     {
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
@@ -90,6 +106,20 @@ public class ClusteredEntityIT
         entity = em.find(ClusteredEntity.class, compoundKey);
 
         assertThat(entity.getValue()).isEqualTo("new_clustered_value");
+    }
+
+    @Test
+    public void should_merge_with_ttl() throws Exception
+    {
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
+        entity = em.merge(entity, 2);
+
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNotNull();
+
+        Thread.sleep(2000);
+
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNull();
     }
 
     @Test

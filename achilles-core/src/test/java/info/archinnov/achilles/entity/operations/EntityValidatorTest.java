@@ -4,8 +4,10 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.lang.reflect.Method;
@@ -34,7 +36,7 @@ public class EntityValidatorTest {
     public ExpectedException exception = ExpectedException.none();
 
     @InjectMocks
-    private EntityValidator<PersistenceContext> achillesEntityValidator;
+    private EntityValidator<PersistenceContext> entityValidator;
 
     @Mock
     private ReflectionInvoker invoker;
@@ -56,7 +58,7 @@ public class EntityValidatorTest {
 
     @Before
     public void setUp() {
-        Whitebox.setInternalState(achillesEntityValidator, ReflectionInvoker.class, invoker);
+        Whitebox.setInternalState(entityValidator, ReflectionInvoker.class, invoker);
         when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
     }
 
@@ -68,7 +70,7 @@ public class EntityValidatorTest {
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
 
-        achillesEntityValidator.validateEntity(bean, entityMetaMap);
+        entityValidator.validateEntity(bean, entityMetaMap);
     }
 
     @Test
@@ -82,7 +84,7 @@ public class EntityValidatorTest {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
 
-        achillesEntityValidator.validateEntity(bean, entityMetaMap);
+        entityValidator.validateEntity(bean, entityMetaMap);
     }
 
     @Test
@@ -101,7 +103,7 @@ public class EntityValidatorTest {
         when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
         when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
 
-        achillesEntityValidator.validateEntity(bean, entityMeta);
+        entityValidator.validateEntity(bean, entityMeta);
     }
 
     @Test
@@ -110,8 +112,23 @@ public class EntityValidatorTest {
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
         when(idMeta.isCompound()).thenReturn(false);
 
-        achillesEntityValidator.validateEntity(bean, entityMeta);
+        entityValidator.validateEntity(bean, entityMeta);
+    }
 
+    @Test
+    public void should_validate_not_clustered_counter() throws Exception
+    {
+        ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
+        when((Class<ClusteredEntityWithCounter>) proxifier.deriveBaseClass(entity)).thenReturn(
+                ClusteredEntityWithCounter.class);
+        when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("The entity '" + entity
+                + "' is a clustered counter and does not support insert/update with TTL");
+
+        entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
     }
 
 }

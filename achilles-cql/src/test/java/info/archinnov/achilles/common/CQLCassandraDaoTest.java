@@ -68,6 +68,10 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
         return CASSANDRA_CQL_TEST_PORT;
     }
 
+    public static CQLEntityManagerFactory getEmf() {
+        return emf;
+    }
+
     public static CQLEntityManager getEm() {
         return em;
     }

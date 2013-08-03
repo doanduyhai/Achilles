@@ -6,14 +6,12 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.type.ConsistencyLevel;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.base.Optional;
 
 /**
@@ -26,108 +24,164 @@ import com.google.common.base.Optional;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftConsistencyContextTest
 {
-	@InjectMocks
-	private ThriftConsistencyContext context;
+    private Optional<ConsistencyLevel> NO_CONSISTENCY = Optional.<ConsistencyLevel> absent();
+    @InjectMocks
+    private ThriftConsistencyContext context;
 
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
+    @Mock
+    private AchillesConsistencyLevelPolicy policy;
 
-	@Mock
-	private SafeExecutionContext<String> executionContext;
+    @Mock
+    private SafeExecutionContext<String> executionContext;
 
-	@Before
-	public void setUp()
-	{
-		when(executionContext.execute()).thenReturn("result");
-	}
+    @Before
+    public void setUp()
+    {
+        when(executionContext.execute()).thenReturn("result");
+    }
 
-	@Test
-	public void should_set_read_consistency_level() throws Exception
-	{
-		context.setReadConsistencyLevel(Optional.fromNullable(ONE));
-		verify(policy).setCurrentReadLevel(ConsistencyLevel.ONE);
-	}
+    @Test
+    public void should_set_read_consistency_level() throws Exception
+    {
+        context.setReadConsistencyLevel(Optional.fromNullable(ONE));
+        verify(policy).setCurrentReadLevel(ConsistencyLevel.ONE);
+    }
 
-	@Test
-	public void should_not_set_read_consistency_level_when_null() throws Exception
-	{
-		context.setReadConsistencyLevel(Optional.<ConsistencyLevel> absent());
-		verifyZeroInteractions(policy);
-	}
+    @Test
+    public void should_not_set_read_consistency_level_when_null() throws Exception
+    {
+        context.setReadConsistencyLevel(NO_CONSISTENCY);
+        verifyZeroInteractions(policy);
+    }
 
-	@Test
-	public void should_set_write_consistency_level() throws Exception
-	{
-		context.setWriteConsistencyLevel(Optional.fromNullable(ONE));
-		verify(policy).setCurrentWriteLevel(ConsistencyLevel.ONE);
-	}
+    @Test
+    public void should_set_write_consistency_level() throws Exception
+    {
+        context.setWriteConsistencyLevel(Optional.fromNullable(ONE));
+        verify(policy).setCurrentWriteLevel(ConsistencyLevel.ONE);
+    }
 
-	@Test
-	public void should_not_set_write_consistency_level_when_null() throws Exception
-	{
-		context.setWriteConsistencyLevel(Optional.<ConsistencyLevel> absent());
-		verifyZeroInteractions(policy);
-	}
+    @Test
+    public void should_not_set_write_consistency_level_when_null() throws Exception
+    {
+        context.setWriteConsistencyLevel(NO_CONSISTENCY);
+        verifyZeroInteractions(policy);
+    }
 
-	@Test
-	public void should_reinit_consistency_levels() throws Exception
-	{
-		context.reinitConsistencyLevels();
-		verify(policy).reinitCurrentConsistencyLevels();
-		verify(policy).reinitDefaultConsistencyLevels();
-	}
+    @Test
+    public void should_reinit_consistency_levels() throws Exception
+    {
+        context.reinitConsistencyLevels();
+        verify(policy).reinitCurrentConsistencyLevels();
+        verify(policy).reinitDefaultConsistencyLevels();
+    }
 
-	@Test
-	public void should_execute_with_read_consistency_level() throws Exception
-	{
+    @Test
+    public void should_execute_with_read_consistency_level() throws Exception
+    {
 
-		context = new ThriftConsistencyContext(policy, Optional.fromNullable(ALL),
-				Optional.<ConsistencyLevel> absent());
-		String result = context.executeWithReadConsistencyLevel(executionContext);
+        context = new ThriftConsistencyContext(policy, Optional.fromNullable(ALL),
+                NO_CONSISTENCY);
+        String result = context.executeWithReadConsistencyLevel(executionContext);
 
-		assertThat(result).isEqualTo("result");
+        assertThat(result).isEqualTo("result");
 
-		verify(policy).setCurrentReadLevel(ALL);
-		verify(policy).reinitCurrentConsistencyLevels();
-		verify(policy).reinitDefaultConsistencyLevels();
-	}
+        verify(policy).setCurrentReadLevel(ALL);
+        verify(policy).reinitCurrentConsistencyLevels();
+        verify(policy).reinitDefaultConsistencyLevels();
+    }
 
-	@Test
-	public void should_execute_with_no_read_consistency_level() throws Exception
-	{
-		context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
-				Optional.<ConsistencyLevel> absent());
-		String result = context.executeWithReadConsistencyLevel(executionContext);
+    @Test
+    public void should_execute_with_runtime_read_consistency_level() throws Exception
+    {
 
-		assertThat(result).isEqualTo("result");
+        context = new ThriftConsistencyContext(policy, NO_CONSISTENCY,
+                NO_CONSISTENCY);
+        String result = context.executeWithReadConsistencyLevel(executionContext, QUORUM);
 
-		verifyZeroInteractions(policy);
-	}
+        assertThat(result).isEqualTo("result");
 
-	@Test
-	public void should_execute_with_write_consistency_level() throws Exception
-	{
+        verify(policy).setCurrentReadLevel(QUORUM);
+        verify(policy).reinitCurrentConsistencyLevels();
+        verify(policy).reinitDefaultConsistencyLevels();
+    }
 
-		context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
-				Optional.fromNullable(ALL));
-		String result = context.executeWithWriteConsistencyLevel(executionContext);
+    @Test
+    public void should_execute_with_no_runtime_read_consistency_level()
+            throws Exception
+    {
 
-		assertThat(result).isEqualTo("result");
+        context = new ThriftConsistencyContext(policy, NO_CONSISTENCY, NO_CONSISTENCY);
+        String result = context.executeWithReadConsistencyLevel(executionContext, null);
 
-		verify(policy).setCurrentWriteLevel(ALL);
-		verify(policy).reinitCurrentConsistencyLevels();
-		verify(policy).reinitDefaultConsistencyLevels();
-	}
+        assertThat(result).isEqualTo("result");
 
-	@Test
-	public void should_execute_with_no_write_consistency_level() throws Exception
-	{
-		context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
-				Optional.<ConsistencyLevel> absent());
-		String result = context.executeWithWriteConsistencyLevel(executionContext);
+        verifyZeroInteractions(policy);
+    }
 
-		assertThat(result).isEqualTo("result");
+    @Test
+    public void should_execute_with_no_read_consistency_level() throws Exception
+    {
+        context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
+                Optional.<ConsistencyLevel> absent());
+        String result = context.executeWithReadConsistencyLevel(executionContext);
 
-		verifyZeroInteractions(policy);
-	}
+        assertThat(result).isEqualTo("result");
+
+        verifyZeroInteractions(policy);
+    }
+
+    @Test
+    public void should_execute_with_write_consistency_level() throws Exception
+    {
+
+        context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
+                Optional.fromNullable(ALL));
+        String result = context.executeWithWriteConsistencyLevel(executionContext);
+
+        assertThat(result).isEqualTo("result");
+
+        verify(policy).setCurrentWriteLevel(ALL);
+        verify(policy).reinitCurrentConsistencyLevels();
+        verify(policy).reinitDefaultConsistencyLevels();
+    }
+
+    @Test
+    public void should_execute_with_no_write_consistency_level() throws Exception
+    {
+        context = new ThriftConsistencyContext(policy, Optional.<ConsistencyLevel> absent(),
+                Optional.<ConsistencyLevel> absent());
+        String result = context.executeWithWriteConsistencyLevel(executionContext);
+
+        assertThat(result).isEqualTo("result");
+
+        verifyZeroInteractions(policy);
+    }
+
+    @Test
+    public void should_execute_with_runtime_write_consistency_level() throws Exception
+    {
+        context = new ThriftConsistencyContext(policy, NO_CONSISTENCY,
+                NO_CONSISTENCY);
+        String result = context.executeWithWriteConsistencyLevel(executionContext, QUORUM);
+
+        assertThat(result).isEqualTo("result");
+
+        verify(policy).setCurrentWriteLevel(QUORUM);
+        verify(policy).reinitCurrentConsistencyLevels();
+        verify(policy).reinitDefaultConsistencyLevels();
+    }
+
+    @Test
+    public void should_execute_with_no_runtime_write_consistency_level()
+            throws Exception
+    {
+
+        context = new ThriftConsistencyContext(policy, NO_CONSISTENCY, NO_CONSISTENCY);
+        String result = context.executeWithWriteConsistencyLevel(executionContext, null);
+
+        assertThat(result).isEqualTo("result");
+
+        verifyZeroInteractions(policy);
+    }
 }
