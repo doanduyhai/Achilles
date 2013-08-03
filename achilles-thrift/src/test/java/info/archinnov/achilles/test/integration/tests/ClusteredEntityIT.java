@@ -138,6 +138,21 @@ public class ClusteredEntityIT
     }
 
     @Test
+    public void should_remove_by_id() throws Exception
+    {
+        compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+
+        entity = new ClusteredEntity(compoundKey, "clustered_value");
+
+        entity = em.merge(entity);
+
+        em.removeById(ClusteredEntity.class, entity.getId());
+
+        assertThat(em.find(ClusteredEntity.class, compoundKey)).isNull();
+
+    }
+
+    @Test
     public void should_refresh() throws Exception
     {
 

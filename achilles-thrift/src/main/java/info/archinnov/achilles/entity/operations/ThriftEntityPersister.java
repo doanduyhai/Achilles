@@ -275,20 +275,16 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 
     private void removeClusteredEntity(ThriftPersistenceContext context)
     {
-        Object entity = context.getEntity();
-        Object compoundKey = context.getPrimaryKey();
+        Object embeddedId = context.getPrimaryKey();
         String className = context.getEntityClass().getCanonicalName();
 
-        Validator.validateNotNull(compoundKey,
-                "Compound key should be provided for clustered entity '" + className
+        Validator.validateNotNull(embeddedId,
+                "Embedded id should be provided for clustered entity '" + className
                         + "' persistence");
-        Validator.validateNotNull(entity, "Entity should be provided for clustered entity '"
-                + className
-                + "' persistence");
 
         PropertyMeta<?, ?> idMeta = context.getIdMeta();
 
-        Object partitionKey = invoker.getPartitionKey(compoundKey, idMeta);
+        Object partitionKey = invoker.getPartitionKey(embeddedId, idMeta);
 
         persisterImpl.removeClusteredEntity(context, partitionKey);
     }

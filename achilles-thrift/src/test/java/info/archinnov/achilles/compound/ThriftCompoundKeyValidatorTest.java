@@ -191,7 +191,7 @@ public class ThriftCompoundKeyValidatorTest {
     @Test
     public void should_validate_single_keys_ascending() throws Exception
     {
-        when(pm.isCompound()).thenReturn(false);
+        when(pm.isEmbeddedId()).thenReturn(false);
 
         validator.validateBoundsForQuery(pm, 10L, 11L, ASCENDING);
     }
@@ -199,7 +199,7 @@ public class ThriftCompoundKeyValidatorTest {
     @Test
     public void should_validate_single_key_descending() throws Exception
     {
-        when(pm.isCompound()).thenReturn(false);
+        when(pm.isEmbeddedId()).thenReturn(false);
 
         validator.validateBoundsForQuery(pm, 12L, 11L, DESCENDING);
     }
@@ -207,7 +207,7 @@ public class ThriftCompoundKeyValidatorTest {
     @Test
     public void should_validate_compound_keys() throws Exception
     {
-        when(pm.isCompound()).thenReturn(true);
+        when(pm.isEmbeddedId()).thenReturn(true);
 
         CompoundKey start = new CompoundKey();
         CompoundKey end = new CompoundKey();

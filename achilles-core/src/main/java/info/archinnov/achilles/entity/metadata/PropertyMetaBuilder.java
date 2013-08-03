@@ -70,7 +70,6 @@ public class PropertyMetaBuilder {
         meta.setJoinProperties(joinProperties);
         meta.setEmbeddedIdProperties(embeddedIdProperties);
 
-        meta.setCompound(isCompound);
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
         meta.setTranscoder(determineTranscoder(isCompound));

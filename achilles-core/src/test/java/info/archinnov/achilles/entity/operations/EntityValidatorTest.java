@@ -93,7 +93,7 @@ public class EntityValidatorTest {
         CompoundKey clusteredId = new CompoundKey(11L, "name");
 
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(clusteredId);
-        when(idMeta.isCompound()).thenReturn(true);
+        when(idMeta.isEmbeddedId()).thenReturn(true);
 
         Method userIdGetter = CompoundKey.class.getMethod("getUserId");
         Method nameGetter = CompoundKey.class.getMethod("getName");
@@ -110,7 +110,7 @@ public class EntityValidatorTest {
     public void should_validate_simple_id() throws Exception {
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
         when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
-        when(idMeta.isCompound()).thenReturn(false);
+        when(idMeta.isEmbeddedId()).thenReturn(false);
 
         entityValidator.validateEntity(bean, entityMeta);
     }

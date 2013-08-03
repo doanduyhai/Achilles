@@ -191,7 +191,7 @@ public class EntityParserTest {
         assertThat((Class<CompoundKey>) meta.getIdClass()).isEqualTo(CompoundKey.class);
         PropertyMeta<Void, CompoundKey> idMeta = (PropertyMeta<Void, CompoundKey>) meta.getIdMeta();
 
-        assertThat(idMeta.isCompound()).isTrue();
+        assertThat(idMeta.isEmbeddedId()).isTrue();
         assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
 
     }

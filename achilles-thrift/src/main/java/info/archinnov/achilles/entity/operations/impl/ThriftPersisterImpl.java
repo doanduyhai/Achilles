@@ -332,14 +332,14 @@ public class ThriftPersisterImpl {
     }
 
     public void removeClusteredEntity(ThriftPersistenceContext context, Object partitionKey) {
-        Object compoundKey = context.getPrimaryKey();
+        Object embeddedId = context.getPrimaryKey();
         EntityMeta meta = context.getEntityMeta();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
         String tableName = meta.getTableName();
 
-        Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey);
+        Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, embeddedId);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);

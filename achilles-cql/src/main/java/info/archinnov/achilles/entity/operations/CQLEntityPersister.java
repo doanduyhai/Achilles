@@ -87,7 +87,6 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
     @Override
     public void remove(CQLPersistenceContext context)
     {
-        CQLPersistenceContext cqlContext = context;
-        persisterImpl.remove(cqlContext);
+        persisterImpl.remove(context);
     }
 }

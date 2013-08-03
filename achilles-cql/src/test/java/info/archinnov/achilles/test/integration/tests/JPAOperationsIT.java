@@ -457,6 +457,33 @@ public class JPAOperationsIT
         assertThat(rows).isEmpty();
     }
 
+    @Test
+    public void should_remove_by_id() throws Exception
+    {
+        CompleteBean bean = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("DuyHai")
+                .age(35L)
+                .addFriends("foo", "bar")
+                .addFollowers("George", "Paul")
+                .addPreference(1, "FR")
+                .addPreference(2, "Paris")
+                .addPreference(3, "75014")
+                .buid();
+
+        bean = em.merge(bean);
+
+        em.removeById(CompleteBean.class, bean.getId());
+
+        assertThat(em.find(CompleteBean.class, bean.getId())).isNull();
+
+        List<Row> rows = session
+                .execute("select * from completebean where id=" + bean.getId())
+                .all();
+        assertThat(rows).isEmpty();
+    }
+
     @Test(expected = IllegalStateException.class)
     public void should_exception_when_removing_transient_entity() throws Exception
     {

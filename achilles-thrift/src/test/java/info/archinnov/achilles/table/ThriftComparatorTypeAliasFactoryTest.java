@@ -44,81 +44,19 @@ public class ThriftComparatorTypeAliasFactoryTest {
     private EmbeddedIdProperties embeddedIdProperties;
 
     @Mock
-    private PropertyMeta<CorrectCompoundKey, String> multiKeyWideMapMeta;
+    private PropertyMeta<CorrectCompoundKey, String> embeddedIdMeta;
 
     @Mock
-    private PropertyMeta<Integer, String> wideMapMeta;
+    private PropertyMeta<Integer, String> idMeta;
 
     @Mock
     private List<Method> componentGetters;
 
     @Before
     public void setUp() {
-        when(wideMapMeta.isCompound()).thenReturn(false);
-        when(multiKeyWideMapMeta.isCompound()).thenReturn(true);
+        when(idMeta.isEmbeddedId()).thenReturn(false);
+        when(embeddedIdMeta.isEmbeddedId()).thenReturn(true);
     }
-
-    //    @Test
-    //    public void should_determine_composite_type_alias_for_column_family_check() throws Exception {
-    //        EntityMeta entityMeta = new EntityMeta();
-    //        PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
-    //        propertyMeta.setType(PropertyType.WIDE_MAP);
-    //        propertyMeta.setKeyClass(Integer.class);
-    //        Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
-    //        propertyMap.put("map", propertyMeta);
-    //        entityMeta.setPropertyMetas(propertyMap);
-    //
-    //        String compatatorTypeAlias = factory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, false);
-    //
-    //        assertThat(compatatorTypeAlias).isEqualTo("CompositeType(org.apache.cassandra.db.marshal.BytesType)");
-    //    }
-
-    //    @Test
-    //    public void should_determine_composite_type_alias_for_column_family() throws Exception {
-    //        EntityMeta entityMeta = new EntityMeta();
-    //        PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
-    //        propertyMeta.setType(PropertyType.WIDE_MAP);
-    //        propertyMeta.setKeyClass(Integer.class);
-    //        Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
-    //        propertyMap.put("map", propertyMeta);
-    //        entityMeta.setPropertyMetas(propertyMap);
-    //
-    //        String compatatorTypeAlias = factory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, true);
-    //
-    //        assertThat(compatatorTypeAlias).isEqualTo("(BytesType)");
-    //    }
-
-    //    @Test
-    //    public void should_determine_composite_type_alias_for_multikey_column_family() throws Exception {
-    //        EntityMeta entityMeta = new EntityMeta();
-    //        PropertyMeta<TweetCompoundKey, String> propertyMeta = new PropertyMeta<TweetCompoundKey, String>();
-    //        propertyMeta.setType(PropertyType.WIDE_MAP);
-    //        propertyMeta.setKeyClass(TweetCompoundKey.class);
-    //        Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
-    //        propertyMap.put("values", propertyMeta);
-    //        entityMeta.setPropertyMetas(propertyMap);
-    //
-    //        String compatatorTypeAlias = factory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, true);
-    //
-    //        assertThat(compatatorTypeAlias).isEqualTo("(UUIDType,UTF8Type,BytesType)");
-    //    }
-
-    //    @Test
-    //    public void should_determine_composite_type_alias_for_multikey_column_family_check() throws Exception {
-    //        EntityMeta entityMeta = new EntityMeta();
-    //        PropertyMeta<TweetCompoundKey, String> propertyMeta = new PropertyMeta<TweetCompoundKey, String>();
-    //        propertyMeta.setType(PropertyType.WIDE_MAP);
-    //        propertyMeta.setKeyClass(TweetCompoundKey.class);
-    //        Map<String, PropertyMeta<?, ?>> propertyMap = Maps.newHashMap();
-    //        propertyMap.put("values", propertyMeta);
-    //        entityMeta.setPropertyMetas(propertyMap);
-    //
-    //        String compatatorTypeAlias = factory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, false);
-    //
-    //        assertThat(compatatorTypeAlias)
-    //                .isEqualTo(
-    //                        "CompositeType(org.apache.cassandra.db.marshal.UUIDType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.BytesType)");
-    //    }
 
     @Test
     public void should_determine_composite_type_alias_for_clustered_entity_creation() throws Exception {

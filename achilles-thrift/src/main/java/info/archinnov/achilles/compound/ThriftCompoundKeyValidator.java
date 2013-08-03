@@ -26,7 +26,7 @@ public class ThriftCompoundKeyValidator extends CompoundKeyValidator {
                 ordering.name());
         if (start != null && end != null)
         {
-            if (propertyMeta.isCompound())
+            if (propertyMeta.isEmbeddedId())
             {
                 List<Object> startComponents = propertyMeta.encodeToComponents(start);
                 List<Object> endComponents = propertyMeta.encodeToComponents(end);

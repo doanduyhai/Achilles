@@ -1,12 +1,13 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.entity.manager.EntityManager.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
 import info.archinnov.achilles.entity.operations.EntityMerger;
@@ -117,7 +118,7 @@ public class EntityManagerTest {
     @Test
     public void should_persist_with_consistency() throws Exception {
         when(proxifier.isProxy(entity)).thenReturn(false);
-        when(em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), levelOCaptor.capture(), eq(NO_TTL)))
+        when(em.initPersistenceContext(eq(entity), levelOCaptor.capture(), levelOCaptor.capture(), eq(NO_TTL)))
                 .thenReturn(context);
         doCallRealMethod().when(em).persist(entity, EACH_QUORUM);
         doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
@@ -127,7 +128,8 @@ public class EntityManagerTest {
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(context).persist();
 
-        assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isEqualTo(EACH_QUORUM);
     }
 
     @Test
@@ -152,7 +154,7 @@ public class EntityManagerTest {
     public void should_persist_with_ttl_and_consistency_level() throws Exception {
         when(proxifier.isProxy(entity)).thenReturn(false);
         when(
-                em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), levelOCaptor.capture(),
+                em.initPersistenceContext(eq(entity), levelOCaptor.capture(), levelOCaptor.capture(),
                         ttlOCaptor.capture())).thenReturn(context);
         doCallRealMethod().when(em).persist(entity, 150, EACH_QUORUM);
         doCallRealMethod().when(em).persist(eq(entity), any(Optional.class), any(Optional.class));
@@ -163,7 +165,8 @@ public class EntityManagerTest {
         verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
         verify(context).persist();
 
-        assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isEqualTo(EACH_QUORUM);
         assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
     }
 
@@ -193,7 +196,7 @@ public class EntityManagerTest {
 
     @Test
     public void should_merge_with_consistency() throws Exception {
-        when(em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), levelOCaptor.capture(), eq(NO_TTL)))
+        when(em.initPersistenceContext(eq(entity), levelOCaptor.capture(), levelOCaptor.capture(), eq(NO_TTL)))
                 .thenReturn(context);
         when(context.merge(entity)).thenReturn(entity);
         doCallRealMethod().when(em).merge(entity, EACH_QUORUM);
@@ -204,30 +207,12 @@ public class EntityManagerTest {
         verify(entityValidator).validateEntity(entity, entityMetaMap);
 
         assertThat(mergedEntity).isSameAs(entity);
-        assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isEqualTo(EACH_QUORUM);
     }
 
     @Test
     public void should_merge_with_ttl() throws Exception {
-        when(
-                em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), levelOCaptor.capture(),
-                        ttlOCaptor.capture())).thenReturn(context);
-        when(context.merge(entity)).thenReturn(entity);
-        doCallRealMethod().when(em).merge(entity, 150, EACH_QUORUM);
-        doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
-
-        CompleteBean mergedEntity = em.merge(entity, 150, EACH_QUORUM);
-
-        verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
-        assertThat(mergedEntity).isSameAs(entity);
-
-        assertThat(levelOCaptor.getValue().get()).isEqualTo(EACH_QUORUM);
-        assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
-    }
-
-    @Test
-    public void should_merge_with_ttl_and_consistency() throws Exception {
         when(
                 em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), eq(NO_CONSISTENCY_LEVEL),
                         ttlOCaptor.capture())).thenReturn(context);
@@ -244,6 +229,26 @@ public class EntityManagerTest {
     }
 
     @Test
+    public void should_merge_with_consistency_and_ttl() throws Exception {
+        when(
+                em.initPersistenceContext(eq(entity), levelOCaptor.capture(), levelOCaptor.capture(),
+                        ttlOCaptor.capture())).thenReturn(context);
+        when(context.merge(entity)).thenReturn(entity);
+        doCallRealMethod().when(em).merge(entity, 150, EACH_QUORUM);
+        doCallRealMethod().when(em).merge(eq(entity), any(Optional.class), any(Optional.class));
+
+        CompleteBean mergedEntity = em.merge(entity, 150, EACH_QUORUM);
+
+        verify(entityValidator).validateEntity(entity, entityMetaMap);
+        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
+        assertThat(mergedEntity).isSameAs(entity);
+
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isEqualTo(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isEqualTo(EACH_QUORUM);
+        assertThat(ttlOCaptor.getValue().get()).isEqualTo(150);
+    }
+
+    @Test
     public void should_remove() throws Exception {
         doCallRealMethod().when(em).remove(entity);
         doCallRealMethod().when(em).remove(eq(entity), any(Optional.class));
@@ -255,8 +260,23 @@ public class EntityManagerTest {
     }
 
     @Test
+    public void should_remove_by_id() throws Exception {
+        doCallRealMethod().when(em).removeById(CompleteBean.class, primaryKey);
+
+        when(em.initPersistenceContext(CompleteBean.class, primaryKey, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL,
+                NO_TTL)).thenReturn(context);
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
+
+        em.removeById(CompleteBean.class, primaryKey);
+
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
+        verify(context).remove();
+    }
+
+    @Test
     public void should_remove_with_consistency() throws Exception {
-        when(em.initPersistenceContext(eq(entity), eq(NO_CONSISTENCY_LEVEL), levelOCaptor.capture(), eq(NO_TTL)))
+        when(em.initPersistenceContext(eq(entity), levelOCaptor.capture(), levelOCaptor.capture(), eq(NO_TTL)))
                 .thenReturn(context);
         doCallRealMethod().when(em).remove(entity, EACH_QUORUM);
         doCallRealMethod().when(em).remove(eq(entity), any(Optional.class));
@@ -265,7 +285,27 @@ public class EntityManagerTest {
 
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(proxifier).ensureProxy(entity);
-        assertThat(levelOCaptor.getValue().get()).isSameAs(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isSameAs(EACH_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isSameAs(EACH_QUORUM);
+    }
+
+    @Test
+    public void should_remove_by_id_with_consistency() throws Exception {
+        doCallRealMethod().when(em).removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
+
+        when(
+                em.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), levelOCaptor.capture(),
+                        levelOCaptor.capture(),
+                        eq(NO_TTL))).thenReturn(context);
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
+
+        em.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
+
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
+        verify(context).remove();
+        assertThat(levelOCaptor.getAllValues().get(0).get()).isEqualTo(LOCAL_QUORUM);
+        assertThat(levelOCaptor.getAllValues().get(1).get()).isEqualTo(LOCAL_QUORUM);
     }
 
     @Test
@@ -274,9 +314,11 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
         when(context.find(CompleteBean.class)).thenReturn(entity);
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.find(CompleteBean.class, primaryKey);
-
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
         assertThat(bean).isSameAs(entity);
     }
 
@@ -289,9 +331,12 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
         when(context.find(CompleteBean.class)).thenReturn(entity);
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.find(CompleteBean.class, primaryKey, EACH_QUORUM);
 
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
         assertThat(bean).isSameAs(entity);
         assertThat(levelOCaptor.getValue().get()).isSameAs(EACH_QUORUM);
     }
@@ -302,8 +347,12 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey);
         doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
+
         CompleteBean bean = em.getReference(CompleteBean.class, primaryKey);
 
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
         assertThat(bean).isSameAs(entity);
     }
 
@@ -316,8 +365,12 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
         doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
+        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        when(context.getIdMeta()).thenReturn(idMeta);
+
         CompleteBean bean = em.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
         assertThat(bean).isSameAs(entity);
         assertThat(levelOCaptor.getValue().get()).isSameAs(EACH_QUORUM);
     }

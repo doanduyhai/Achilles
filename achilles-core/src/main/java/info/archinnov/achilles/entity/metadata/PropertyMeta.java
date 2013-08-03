@@ -44,7 +44,6 @@ public class PropertyMeta<K, V>
     private Class<?> idClass;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-    private boolean compound;
     private DataTranscoder transcoder;
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
@@ -473,14 +472,6 @@ public class PropertyMeta<K, V>
         this.joinProperties = joinProperties;
     }
 
-    public boolean isCompound() {
-        return compound;
-    }
-
-    public void setCompound(boolean compound) {
-        this.compound = compound;
-    }
-
     public void setObjectMapper(ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
@@ -548,7 +539,6 @@ public class PropertyMeta<K, V>
                     .append(",");
             description.append(consistencyLevels.right.name()).append("], ");
         }
-        description.append("compound=").append(compound).append("]");
 
         return description.toString();
     }

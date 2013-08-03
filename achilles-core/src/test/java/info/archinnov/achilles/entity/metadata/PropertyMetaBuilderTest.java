@@ -56,7 +56,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
@@ -112,7 +112,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
     }
@@ -135,7 +135,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(Bean.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
     }
@@ -158,7 +158,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
     }
@@ -181,7 +181,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
     }
@@ -204,7 +204,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
     }
@@ -227,7 +227,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
     }
@@ -253,7 +253,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }
@@ -279,7 +279,6 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isCompound()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }
@@ -305,7 +304,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isCompound()).isFalse();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }

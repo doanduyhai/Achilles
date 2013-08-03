@@ -5,7 +5,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
-import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +47,15 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
             throw new IllegalArgumentException("Cannot get primary key for entity "
                     + entity.getClass().getCanonicalName());
         }
-        if (idMeta.isCompound()) {
-            for (Method getter : idMeta.getComponentGetters()) {
-                Object component = invoker.getValueFromField(id, getter);
-                Validator.validateNotNull(component, "The entity " + entity.getClass().getCanonicalName()
-                        + " clustered key '" + idMeta.getPropertyName() + "' components should not be null");
+        validatePrimaryKey(idMeta, id);
+    }
+
+    public void validatePrimaryKey(PropertyMeta<?, ?> idMeta, Object primaryKey) {
+        if (idMeta.isEmbeddedId()) {
+            List<Object> components = idMeta.encodeToComponents(primaryKey);
+            for (Object component : components) {
+                Validator.validateNotNull(component, "The clustered key '" + idMeta.getPropertyName()
+                        + "' components should not be null");
             }
         }
     }

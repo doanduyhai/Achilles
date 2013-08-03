@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.builders;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -127,17 +126,6 @@ public class PropertyMetaTestBuilder<T, K, V>
             compoundKeyProps.setComponentSetters(componentSetters);
 
             pm.setEmbeddedIdProperties(compoundKeyProps);
-        }
-
-        if (pm.getEmbeddedIdProperties() != null
-                || keyClass.getAnnotation(CompoundKey.class) != null
-                || (type != null && type.isEmbeddedId()))
-        {
-            pm.setCompound(true);
-        }
-        else
-        {
-            pm.setCompound(false);
         }
 
         if (counterIdMeta != null || fqcn != null)

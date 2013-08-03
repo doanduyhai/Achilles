@@ -95,7 +95,7 @@ public class JoinCollectionAndMapIT
         Set<Long> friendsId = row.getSet("friends", Long.class);
 
         assertThat(friendsId).hasSize(2);
-        assertThat(friendsId).containsExactly(friend1.getId(), friend2.getId());
+        assertThat(friendsId).contains(friend1.getId(), friend2.getId());
 
         row = session.execute("select tweets from EntityWithJoinCollectionAndMap where id=" + bean.getId())
                 .one();

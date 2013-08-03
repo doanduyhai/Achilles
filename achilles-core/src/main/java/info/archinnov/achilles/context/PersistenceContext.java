@@ -46,8 +46,7 @@ public abstract class PersistenceContext
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Object entity,
-            FlushContext<?> flushContext, Set<String> entitiesIdentity)
+            Object entity, FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
 
@@ -60,8 +59,7 @@ public abstract class PersistenceContext
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Class<?> entityClass,
-            Object primaryKey, FlushContext<?> flushContext, Set<String> entitiesIdentity)
+            Class<?> entityClass, Object primaryKey, FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
 
