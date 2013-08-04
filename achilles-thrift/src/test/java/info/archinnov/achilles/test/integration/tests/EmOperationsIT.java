@@ -1,51 +1,74 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
+import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.common.ThriftCassandraDaoTest;
+import info.archinnov.achilles.composite.ThriftCompositeFactory;
+import info.archinnov.achilles.dao.ThriftCounterDao;
+import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
+import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
+import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 
 /**
- * JPAOperationsIT
+ * EmOperationsIT
  * 
  * @author DuyHai DOAN
  * 
  */
-public class JPAOperationsIT
+public class EmOperationsIT
 {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    private ThriftGenericEntityDao dao = getEntityDao(
+            normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private ThriftCounterDao counterDao = getCounterDao();
+
+    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+
+    private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private byte[] START_EAGER = new byte[]
+    {
+            0
+    };
+    private byte[] END_EAGER = new byte[]
+    {
+            20
+    };
 
     @Test
     public void should_persist() throws Exception
     {
-
         CompleteBean bean = CompleteBeanTestBuilder
                 .builder()
                 .randomId()
@@ -61,31 +84,88 @@ public class JPAOperationsIT
 
         em.persist(bean);
 
-        Row row = session.execute(
-                "select name,age_in_years,friends,followers,preferences from completebean where id = "
-                        + bean.getId()).one();
+        Composite startCompositeForEagerFetch = new Composite();
+        startCompositeForEagerFetch.addComponent(0, START_EAGER, ComponentEquality.EQUAL);
 
-        assertThat(row.getString("name")).isEqualTo("DuyHai");
-        assertThat(row.getLong("age_in_years")).isEqualTo(35L);
-        assertThat(row.getList("friends", String.class)).containsExactly("foo", "bar");
-        assertThat(row.getSet("followers", String.class)).containsOnly("George", "Paul");
+        Composite endCompositeForEagerFetch = new Composite();
+        endCompositeForEagerFetch.addComponent(0, END_EAGER, ComponentEquality.GREATER_THAN_EQUAL);
 
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+        List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(),
+                startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
-        assertThat(preferences).containsKey(1);
-        assertThat(preferences).containsKey(2);
-        assertThat(preferences).containsKey(3);
+        assertThat(columns).hasSize(8);
 
-        assertThat(preferences).containsValue("FR");
-        assertThat(preferences).containsValue("Paris");
-        assertThat(preferences).containsValue("75014");
+        Pair<Composite, String> primaryKey = columns.get(0);
 
-        row = session.execute("select counter_value from achilles_counter_table where fqcn = '"
-                + CompleteBean.class.getCanonicalName() + "' and primary_key='" + bean.getId()
-                + "' and property_name='version'").one();
+        Pair<Composite, String> age = columns.get(1);
 
-        assertThat(row.getLong("counter_value")).isEqualTo(15L);
+        Pair<Composite, String> George = columns.get(2);
+        Pair<Composite, String> Paul = columns.get(3);
 
+        Pair<Composite, String> name = columns.get(4);
+
+        Pair<Composite, String> FR = columns.get(5);
+        Pair<Composite, String> Paris = columns.get(6);
+        Pair<Composite, String> _75014 = columns.get(7);
+
+        assertThat(primaryKey.left.get(1, STRING_SRZ)).isEqualTo("id");
+        assertThat(Long.parseLong(primaryKey.right)).isEqualTo(bean.getId());
+
+        assertThat(age.left.get(1, STRING_SRZ)).isEqualTo("age_in_years");
+        assertThat(readLong(age.right)).isEqualTo(35L);
+
+        assertThat(name.left.get(1, STRING_SRZ)).isEqualTo("name");
+        assertThat(name.right).isEqualTo("DuyHai");
+
+        assertThat(George.left.get(1, STRING_SRZ)).isEqualTo("followers");
+        assertThat(George.right).isIn("George", "Paul");
+        assertThat(Paul.left.get(1, STRING_SRZ)).isEqualTo("followers");
+        assertThat(Paul.right).isIn("George", "Paul");
+
+        assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
+        KeyValue<Integer, String> country = readKeyValue(FR.right);
+        assertThat(country.getKey()).isEqualTo(1);
+        assertThat(country.getValue()).isEqualTo("FR");
+
+        assertThat(Paris.left.get(1, STRING_SRZ)).isEqualTo("preferences");
+        KeyValue<Integer, String> city = readKeyValue(Paris.right);
+        assertThat(city.getKey()).isEqualTo(2);
+        assertThat(city.getValue()).isEqualTo("Paris");
+
+        assertThat(_75014.left.get(1, STRING_SRZ)).isEqualTo("preferences");
+        KeyValue<Integer, String> zipCode = readKeyValue(_75014.right);
+        assertThat(zipCode.getKey()).isEqualTo(3);
+        assertThat(zipCode.getValue()).isEqualTo("75014");
+
+        startCompositeForEagerFetch = new Composite();
+        startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+        startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+
+        endCompositeForEagerFetch = new Composite();
+        endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+        endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.GREATER_THAN_EQUAL);
+
+        columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
+                endCompositeForEagerFetch, false, 20);
+        assertThat(columns).hasSize(2);
+
+        Pair<Composite, String> foo = columns.get(0);
+        Pair<Composite, String> bar = columns.get(1);
+
+        assertThat(foo.left.get(1, STRING_SRZ)).isEqualTo("friends");
+        assertThat(foo.right).isEqualTo("foo");
+        assertThat(bar.left.get(1, STRING_SRZ)).isEqualTo("friends");
+        assertThat(bar.right).isEqualTo("bar");
+
+        Composite counterRowKey = new Composite();
+        counterRowKey.setComponent(0, CompleteBean.class.getCanonicalName(), STRING_SRZ);
+        counterRowKey.setComponent(1, bean.getId().toString(), STRING_SRZ);
+
+        Composite counterName = new Composite();
+        counterName.addComponent(0, "version", ComponentEquality.EQUAL);
+
+        Long version = counterDao.getCounterValue(counterRowKey, counterName);
+        assertThat(version).isEqualTo(15L);
     }
 
     @Test
@@ -98,7 +178,6 @@ public class JPAOperationsIT
         CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
         assertThat(found).isNotNull();
-        assertThat(found.getId()).isEqualTo(bean.getId());
     }
 
     @Test
@@ -114,8 +193,6 @@ public class JPAOperationsIT
         // Persist entity with ttl = 2 secs
         em.persist(entity, 2);
 
-        assertThat(em.find(CompleteBean.class, entity.getId())).isNotNull();
-
         Thread.sleep(3000);
 
         assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
@@ -127,7 +204,7 @@ public class JPAOperationsIT
     }
 
     @Test
-    public void should_overwrite_existing_values_on_persist() throws Exception
+    public void should_clean_collections_and_maps_before_persist() throws Exception
     {
         CompleteBean entity = CompleteBeanTestBuilder.builder()
                 .randomId()
@@ -170,11 +247,6 @@ public class JPAOperationsIT
 
         assertThat(persistedWelcomeTweet).isNotNull();
         assertThat(persistedWelcomeTweet.getContent()).isEqualTo("Welcome");
-
-        CompleteBean persistedBean = em.find(CompleteBean.class, bean.getId());
-
-        assertThat(persistedBean).isNotNull();
-        assertThat(persistedBean.getName()).isEqualTo("DuyHai");
     }
 
     @Test
@@ -197,7 +269,7 @@ public class JPAOperationsIT
         em.merge(entity);
 
         entity = em.find(CompleteBean.class, entity.getId());
-        assertThat(entity.getFavoriteTweets()).isNull();
+        assertThat(entity.getFavoriteTweets()).isEmpty();
 
     }
 
@@ -248,6 +320,7 @@ public class JPAOperationsIT
         assertThat(found).isInstanceOf(Factory.class);
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void should_find_lazy_simple() throws Exception
     {
@@ -263,8 +336,7 @@ public class JPAOperationsIT
         CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
         Factory factory = (Factory) found;
-        CQLEntityInterceptor<CompleteBean> interceptor = (CQLEntityInterceptor<CompleteBean>) factory
-                .getCallback(0);
+        ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
         Method getLabel = CompleteBean.class.getDeclaredMethod("getLabel");
         String label = (String) getLabel.invoke(interceptor.getTarget());
@@ -277,6 +349,11 @@ public class JPAOperationsIT
         assertThat(lazyLabel).isEqualTo("label");
     }
 
+    @SuppressWarnings(
+    {
+            "rawtypes",
+            "unchecked"
+    })
     @Test
     public void should_find_lazy_list() throws Exception
     {
@@ -296,8 +373,7 @@ public class JPAOperationsIT
         CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
         Factory factory = (Factory) found;
-        CQLEntityInterceptor<CompleteBean> interceptor = (CQLEntityInterceptor<CompleteBean>) factory
-                .getCallback(0);
+        ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
         Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
         List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
@@ -341,14 +417,56 @@ public class JPAOperationsIT
         assertThat(merged.getPreferences()).hasSize(2);
         assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
 
-        Row row = session.execute("select * from completebean where id=" + bean.getId()).one();
+        Composite composite = new Composite();
+        composite.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
+        composite.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
+        composite.addComponent(2, 0, ComponentEquality.EQUAL);
 
-        assertThat(row.getLong("age_in_years")).isEqualTo(100L);
-        assertThat(row.getList("friends", String.class)).containsExactly("bob", "alice", "eve");
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
-        assertThat(preferences.get(1)).isEqualTo("FR");
-        assertThat(preferences.get(2)).isEqualTo("New York");
+        assertThat(readLong(dao.<Long, String> getValue(bean.getId(), composite))).isEqualTo(100L);
 
+        Composite startCompositeForEagerFetch = new Composite();
+        startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
+                ComponentEquality.EQUAL);
+        startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+        startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
+
+        Composite endCompositeForEagerFetch = new Composite();
+        endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(),
+                ComponentEquality.EQUAL);
+        endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+        endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
+
+        List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(),
+                startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
+
+        assertThat(columns).hasSize(3);
+
+        Pair<Composite, String> eve = columns.get(2);
+
+        assertThat(eve.left.get(1, STRING_SRZ)).isEqualTo("friends");
+        assertThat(eve.right).isEqualTo("eve");
+
+        startCompositeForEagerFetch = new Composite();
+        startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
+                ComponentEquality.EQUAL);
+        startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+        startCompositeForEagerFetch.addComponent(2, 0, ComponentEquality.EQUAL);
+
+        endCompositeForEagerFetch = new Composite();
+        endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+        endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+        endCompositeForEagerFetch.addComponent(2, 2, ComponentEquality.GREATER_THAN_EQUAL);
+
+        columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
+                endCompositeForEagerFetch, false, 20);
+
+        assertThat(columns).hasSize(2);
+
+        Pair<Composite, String> FR = columns.get(0);
+
+        assertThat(FR.left.get(1, STRING_SRZ)).isEqualTo("preferences");
+        KeyValue<Integer, String> mapValue = readKeyValue(FR.right);
+        assertThat(mapValue.getValue()).isEqualTo("FR");
     }
 
     @Test
@@ -417,6 +535,7 @@ public class JPAOperationsIT
     @Test
     public void should_return_same_entity_as_merged_bean_when_managed() throws Exception
     {
+
         CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
         bean.setWelcomeTweet(tweet);
@@ -449,12 +568,15 @@ public class JPAOperationsIT
 
         em.remove(bean);
 
-        assertThat(em.find(CompleteBean.class, bean.getId())).isNull();
+        CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
 
-        List<Row> rows = session
-                .execute("select * from completebean where id=" + bean.getId())
-                .all();
-        assertThat(rows).isEmpty();
+        assertThat(foundBean).isNull();
+
+        List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), null, null,
+                false, 20);
+
+        assertThat(columns).hasSize(0);
+
     }
 
     @Test
@@ -476,12 +598,15 @@ public class JPAOperationsIT
 
         em.removeById(CompleteBean.class, bean.getId());
 
-        assertThat(em.find(CompleteBean.class, bean.getId())).isNull();
+        CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
 
-        List<Row> rows = session
-                .execute("select * from completebean where id=" + bean.getId())
-                .all();
-        assertThat(rows).isEmpty();
+        assertThat(foundBean).isNull();
+
+        List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), null, null,
+                false, 20);
+
+        assertThat(columns).hasSize(0);
+
     }
 
     @Test(expected = IllegalStateException.class)
@@ -586,18 +711,26 @@ public class JPAOperationsIT
 
         nameMeta.setPropertyName("name");
 
-        session.execute("UPDATE completebean SET name='DuyHai_modified' WHERE id=" + bean.getId());
-        session.execute("UPDATE completebean SET friends=friends + ['qux'] WHERE id="
-                + bean.getId());
+        Composite nameComposite = thriftCompositeFactory.createForBatchInsertSingleValue(nameMeta);
+        dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
+
+        PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
+        listLazyMeta.setType(LAZY_LIST);
+        listLazyMeta.setPropertyName("friends");
+
+        Composite friend3Composite = thriftCompositeFactory.createForBatchInsertMultiValue(
+                listLazyMeta, 2);
+        dao.setValue(bean.getId(), friend3Composite, "qux");
 
         em.refresh(bean);
 
         assertThat(bean.getName()).isEqualTo("DuyHai_modified");
         assertThat(bean.getFriends()).hasSize(3);
         assertThat(bean.getFriends().get(2)).isEqualTo("qux");
+
     }
 
-    @Test(expected = AchillesStaleObjectStateException.class)
+    @Test(expected = RuntimeException.class)
     public void should_exception_when_staled_object_during_refresh() throws Exception
     {
 
@@ -609,9 +742,12 @@ public class JPAOperationsIT
 
         bean = em.merge(bean);
 
-        session.execute("DELETE FROM completebean WHERE id=" + bean.getId());
+        Mutator<Object> mutator = dao.buildMutator();
+        dao.removeRowBatch(bean.getId(), mutator);
+        dao.executeMutator(mutator);
 
         em.refresh(bean);
+
     }
 
     @Test
@@ -630,6 +766,7 @@ public class JPAOperationsIT
         bean = em.merge(bean);
 
         assertThat(bean.getLabel()).isEqualTo("label");
+
     }
 
     @Test
@@ -653,9 +790,42 @@ public class JPAOperationsIT
         assertThat(bean.getAge()).isNull();
     }
 
+    @Test
+    public void should_not_exception_when_loading_column_family_with_unmapped_property()
+            throws Exception
+    {
+        CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
+                .buid();
+
+        em.persist(bean);
+
+        Composite composite = new Composite();
+        composite.addComponent(0, SIMPLE.flag(), ComponentEquality.EQUAL);
+        composite.addComponent(1, "unmappedProperty", ComponentEquality.EQUAL);
+        composite.addComponent(2, 0, ComponentEquality.EQUAL);
+
+        dao.setValue(bean.getId(), composite, "this is an unmapped property");
+
+        bean = em.find(CompleteBean.class, bean.getId());
+
+        assertThat(bean.getName()).isEqualTo("DuyHai");
+
+    }
+
+    private Long readLong(String value) throws Exception
+    {
+        return this.objectMapper.readValue(value, Long.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private KeyValue<Integer, String> readKeyValue(String value) throws Exception
+    {
+        return this.objectMapper.readValue(value, KeyValue.class);
+    }
+
     @After
     public void tearDown()
     {
-        truncateTable("CompleteBean");
+        dao.truncate();
     }
 }

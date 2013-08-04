@@ -1,20 +1,25 @@
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
+import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessage;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId.Type;
 import info.archinnov.achilles.test.integration.entity.ClusteredTweet;
 import info.archinnov.achilles.test.integration.entity.ClusteredTweetId;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Date;
 import java.util.UUID;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 
 /**
  * ClusteredEntityIT
@@ -189,11 +194,16 @@ public class ClusteredEntityIT2
 
         message = em.merge(message);
 
-        session.execute("update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'");
+        String updateQuery = "update ClusteredMessage set label='" + newLabel
+                + "' where id=" + id + " and type='FILE'";
+
+        CQLDaoContext daoContext = Whitebox.getInternalState(em, CQLDaoContext.class);
+
+        daoContext.execute(new SimpleStatement(updateQuery));
 
         Thread.sleep(2000);
 
-        em.refresh(message);
+        em.refresh(message, ConsistencyLevel.ALL);
 
         assertThat(message.getLabel()).isEqualTo("a pdf file");
     }
@@ -201,7 +211,7 @@ public class ClusteredEntityIT2
     @After
     public void tearDown()
     {
-        CQLCassandraDaoTest.truncateTable("ClusteredTweet");
-        CQLCassandraDaoTest.truncateTable("ClusteredMessage");
+        truncateTable("ClusteredTweet");
+        truncateTable("ClusteredMessage");
     }
 }

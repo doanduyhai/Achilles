@@ -302,6 +302,10 @@ public class CQLDaoContext
 
     }
 
+    public Session getSession() {
+        return session;
+    }
+
     private void logDMLStatement(Query query)
     {
         if (dmlLogger.isDebugEnabled())
@@ -361,4 +365,5 @@ public class CQLDaoContext
                 .getWriteConsistencyLevel().get() : counterMeta.getWriteConsistencyLevel();
         return consistency;
     }
+
 }

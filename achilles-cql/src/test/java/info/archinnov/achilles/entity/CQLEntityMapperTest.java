@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -9,15 +10,26 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import org.apache.cassandra.cql3.ColumnIdentifier;
+import org.apache.cassandra.cql3.ColumnSpecification;
+import org.apache.cassandra.db.marshal.LongType;
+import org.apache.cassandra.db.marshal.UTF8Type;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * CQLEntityMapperTest
@@ -43,7 +55,13 @@ public class CQLEntityMapperTest
     private Row row;
 
     @Mock
+    private ColumnDefinitions columnDefs;
+
+    @Mock
     private EntityMeta entityMeta;
+
+    private Definition def1;
+    private Definition def2;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -146,4 +164,92 @@ public class CQLEntityMapperTest
 
         verify(invoker).setValueToField(entity, pm.getSetter(), compoundKey);
     }
+
+    @Test
+    public void should_map_row_to_entity() throws Exception
+    {
+        Long id = RandomUtils.nextLong();
+        String name = "name";
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .accessors()
+                .build();
+
+        Map<String, PropertyMeta<?, ?>> propertiesMap = ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta);
+
+        ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
+        ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
+
+        ColumnIdentifier iden2 = new ColumnIdentifier(UTF8Type.instance.decompose(name), UTF8Type.instance);
+        ColumnSpecification spec2 = new ColumnSpecification("keyspace", "name", iden2, UTF8Type.instance);
+
+        def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
+        def2 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec2);
+
+        when(row.getColumnDefinitions()).thenReturn(columnDefs);
+        when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
+
+        when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
+
+        when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+
+        CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class, row, propertiesMap);
+
+        assertThat(actual).isSameAs(entity);
+        verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
+    }
+
+    @Test
+    public void should_skip_mapping_join_column() throws Exception
+    {
+        Long id = RandomUtils.nextLong();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .accessors()
+                .build();
+
+        PropertyMeta<?, ?> userMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.JOIN_SIMPLE)
+                .build();
+
+        Map<String, PropertyMeta<?, ?>> propertiesMap = ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta,
+                "user", userMeta);
+
+        ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
+        ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
+
+        ColumnIdentifier iden2 = new ColumnIdentifier(UTF8Type.instance.decompose("user"), UTF8Type.instance);
+        ColumnSpecification spec2 = new ColumnSpecification("keyspace", "user", iden2, UTF8Type.instance);
+
+        def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
+        def2 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec2);
+
+        when(row.getColumnDefinitions()).thenReturn(columnDefs);
+        when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
+
+        when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
+
+        when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+
+        CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class, row, propertiesMap);
+
+        assertThat(actual).isSameAs(entity);
+        verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
+        verify(cqlRowInvoker, never()).invokeOnRowForFields(row, userMeta);
+    }
+
+    @Test
+    public void should_return_null_when_no_column_found() throws Exception
+    {
+        when(row.getColumnDefinitions()).thenReturn(null);
+        CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class, row, null);
+        assertThat(actual).isNull();
+    }
+
 }
