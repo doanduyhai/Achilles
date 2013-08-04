@@ -79,7 +79,6 @@ public class PropertyHelper
     public PropertyHelper() {
     }
 
-    @SuppressWarnings("unchecked")
     public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)
     {
         log.debug("Infer parameterized value class for collection type {} of entity class {} ",
@@ -92,7 +91,8 @@ public class PropertyHelper
             Type[] actualTypeArguments = pt.getActualTypeArguments();
             if (actualTypeArguments.length > 0)
             {
-                valueClass = (Class<T>) actualTypeArguments[actualTypeArguments.length - 1];
+                Type type = actualTypeArguments[actualTypeArguments.length - 1];
+                valueClass = getClassFromType(type);
             }
             else
             {
@@ -170,5 +170,22 @@ public class PropertyHelper
 
         log.trace("Found consistency levels : {} / {}", defaultGlobalRead, defaultGlobalWrite);
         return new Pair<ConsistencyLevel, ConsistencyLevel>(defaultGlobalRead, defaultGlobalWrite);
+    }
+
+    public <T> Class<T> getClassFromType(Type type)
+    {
+        if (type instanceof ParameterizedType)
+        {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return (Class<T>) parameterizedType.getRawType();
+        }
+        else if (type instanceof Class)
+        {
+            return (Class<T>) type;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Cannot determine java class of type '" + type + "'");
+        }
     }
 }

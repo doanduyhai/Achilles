@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * AchillesPropertyHelperTest
+ * PropertyHelperTest
  * 
  * @author DuyHai DOAN
  * 
@@ -56,6 +56,22 @@ public class PropertyHelperTest
         Class<String> infered = helper.inferValueClassForListOrSet(type, Test.class);
 
         assertThat(infered).isEqualTo(String.class);
+    }
+
+    @Test
+    public void should_infer_parameterized_value_class_from_list() throws Exception
+    {
+        @SuppressWarnings("unused")
+        class Test
+        {
+            private List<Class<Void>> friends;
+        }
+
+        Type type = Test.class.getDeclaredField("friends").getGenericType();
+
+        Class<Class> infered = helper.inferValueClassForListOrSet(type, Test.class);
+
+        assertThat(infered).isEqualTo(Class.class);
     }
 
     @Test

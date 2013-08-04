@@ -13,7 +13,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -531,6 +530,41 @@ public class PropertyParserTest
         assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
     }
 
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void should_parse_map_with_parameterized_value() throws Exception
+    {
+        @SuppressWarnings("unused")
+        class Test
+        {
+            @Column
+            private Map<Integer, List<String>> map;
+
+            public Map<Integer, List<String>> getMap() {
+                return map;
+            }
+
+            public void setMap(Map<Integer, List<String>> map) {
+                this.map = map;
+            }
+
+        }
+        PropertyParsingContext context = newContext(Test.class,
+                Test.class.getDeclaredField("map"));
+        PropertyMeta<?, ?> meta = parser.parse(context);
+
+        assertThat(meta.getPropertyName()).isEqualTo("map");
+        assertThat((Class) meta.getValueClass()).isEqualTo(List.class);
+        assertThat(meta.type()).isEqualTo(PropertyType.MAP);
+
+        assertThat((Class<Integer>) meta.getKeyClass()).isEqualTo(Integer.class);
+
+        assertThat(meta.getGetter().getName()).isEqualTo("getMap");
+        assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
+        assertThat(meta.getSetter().getName()).isEqualTo("setMap");
+        assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
+    }
+
     private <T> PropertyParsingContext newContext(Class<T> entityClass, Field field)
     {
         entityContext = new EntityParsingContext( //
@@ -538,13 +572,6 @@ public class PropertyParserTest
                 configContext, entityClass);
 
         return entityContext.newPropertyContext(field);
-    }
-
-    private void initEntityParsingContext()
-    {
-        entityContext = new EntityParsingContext( //
-                joinPropertyMetaToBeFilled, //
-                configContext, CompleteBean.class);
     }
 
 }

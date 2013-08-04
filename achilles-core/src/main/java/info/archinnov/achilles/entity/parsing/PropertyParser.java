@@ -4,8 +4,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factor
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.allowedTypes;
 import info.archinnov.achilles.annotations.CompoundKey;
-import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -275,7 +275,6 @@ public class PropertyParser
         PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
         PropertyMeta<K, V> mapMeta = factory()
-                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -336,7 +335,6 @@ public class PropertyParser
 
     }
 
-    @SuppressWarnings("unchecked")
     private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field)
     {
         log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
@@ -347,8 +345,10 @@ public class PropertyParser
         ParameterizedType pt = (ParameterizedType) genericType;
         Type[] actualTypeArguments = pt.getActualTypeArguments();
 
-        return new Pair<Class<K>, Class<V>>((Class<K>) actualTypeArguments[0],
-                (Class<V>) actualTypeArguments[1]);
+        Class<K> keyClass = propertyHelper.getClassFromType(actualTypeArguments[0]);
+        Class<V> valueClass = propertyHelper.getClassFromType(actualTypeArguments[1]);
+
+        return new Pair<Class<K>, Class<V>>(keyClass, valueClass);
     }
 
     private EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)
