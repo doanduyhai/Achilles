@@ -4,21 +4,18 @@ import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factor
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.allowedTypes;
 import info.archinnov.achilles.annotations.CompoundKey;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
-import info.archinnov.achilles.validation.Validator;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -71,7 +68,6 @@ public class PropertyParser
         {
             propertyMeta = parseSetProperty(context);
         }
-
         else if (Map.class.isAssignableFrom(fieldType))
         {
             propertyMeta = parseMapProperty(context);
@@ -79,10 +75,6 @@ public class PropertyParser
         else if (Counter.class.isAssignableFrom(fieldType))
         {
             propertyMeta = parseCounterProperty(context);
-        }
-        else if (WideMap.class.isAssignableFrom(fieldType))
-        {
-            propertyMeta = parseWideMapProperty(context);
         }
         else if (context.isEmbeddedId())
         {
@@ -113,12 +105,12 @@ public class PropertyParser
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = EMBEDDED_ID;
 
-        CompoundKeyProperties compoundKeyProperties = parseCompoundKey(field.getType());
+        EmbeddedIdProperties embeddedIdProperties = parseCompoundKey(field.getType());
         PropertyMeta<Void, ?> propertyMeta = factory()
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
-                .multiKeyProperties(compoundKeyProperties)
+                .embeddedIdProperties(embeddedIdProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels())
@@ -283,7 +275,6 @@ public class PropertyParser
         PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
         PropertyMeta<K, V> mapMeta = factory()
-                //
                 .objectMapper(context.getCurrentObjectMapper())
                 .type(type)
                 .propertyName(context.getCurrentPropertyName())
@@ -298,69 +289,6 @@ public class PropertyParser
 
         return mapMeta;
 
-    }
-
-    protected <K, V> PropertyMeta<K, V> parseWideMapProperty(PropertyParsingContext context)
-    {
-        log.debug("Parsing property {} as wide map property of entity class {}",
-                context.getCurrentPropertyName(),
-                context.getCurrentEntityClass().getCanonicalName());
-
-        validator.validateWideMapGenerics(context);
-
-        Class<?> entityClass = context.getCurrentEntityClass();
-        Field field = context.getCurrentField();
-        PropertyType type = PropertyType.WIDE_MAP;
-        CompoundKeyProperties multiKeyProperties = null;
-        CounterProperties counterProperties = null;
-
-        Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
-        Class<K> keyClass = types.left;
-        Class<V> valueClass = types.right;
-        boolean isCounterValueType = Counter.class.isAssignableFrom(valueClass);
-
-        // Multi Key
-        multiKeyProperties = parseCompoundKey(keyClass);
-
-        if (isCounterValueType)
-        {
-            counterProperties = new CounterProperties(entityClass.getCanonicalName());
-            type = COUNTER_WIDE_MAP;
-        }
-
-        Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-
-        PropertyMeta<K, V> propertyMeta = factory()
-                //
-                .objectMapper(context.getCurrentObjectMapper())
-                .type(type)
-                .propertyName(context.getCurrentPropertyName())
-                .entityClassName(entityClass.getCanonicalName())
-                .accessors(accessors)
-                .multiKeyProperties(multiKeyProperties)
-                .counterProperties(counterProperties)
-                .consistencyLevels(context.getCurrentConsistencyLevels())
-                .build(keyClass, valueClass);
-
-        if (isCounterValueType)
-        {
-            if (propertyHelper.hasConsistencyAnnotation(context.getCurrentField()))
-            {
-                throw new AchillesBeanMappingException(
-                        "Counter WideMap type '"
-                                + entityClass.getCanonicalName()
-                                + "' does not support @ConsistencyLevel annotation. Only runtime consistency level is allowed");
-            }
-            context.getCounterMetas().add(propertyMeta);
-        }
-
-        saveWideMapForDeferredBinding(context, propertyMeta);
-        fillWideMapCustomConsistencyLevels(context, propertyMeta);
-
-        log.trace("Built wide map property meta for property {} of entity class {} : {}",
-                propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
-                propertyMeta);
-        return propertyMeta;
     }
 
     public void fillWideMap(EntityParsingContext context, PropertyMeta<?, ?> idMeta,
@@ -407,7 +335,6 @@ public class PropertyParser
 
     }
 
-    @SuppressWarnings("unchecked")
     private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field)
     {
         log.trace("Determine generic types for field Map<K,V> {} of entity class {}",
@@ -418,18 +345,20 @@ public class PropertyParser
         ParameterizedType pt = (ParameterizedType) genericType;
         Type[] actualTypeArguments = pt.getActualTypeArguments();
 
-        return new Pair<Class<K>, Class<V>>((Class<K>) actualTypeArguments[0],
-                (Class<V>) actualTypeArguments[1]);
+        Class<K> keyClass = propertyHelper.getClassFromType(actualTypeArguments[0]);
+        Class<V> valueClass = propertyHelper.getClassFromType(actualTypeArguments[1]);
+
+        return Pair.create(keyClass, valueClass);
     }
 
-    private CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
+    private EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)
     {
         log.trace("Parsing compound key class", keyClass.getCanonicalName());
-        CompoundKeyProperties compoundKeyProperties = null;
+        EmbeddedIdProperties embeddedIdProperties = null;
 
         if (keyClass.getAnnotation(CompoundKey.class) != null)
         {
-            compoundKeyProperties = compoundKeyParser.parseCompoundKey(keyClass);
+            embeddedIdProperties = compoundKeyParser.parseCompoundKey(keyClass);
         }
         else
         {
@@ -442,78 +371,8 @@ public class PropertyParser
                                     + "' is not allowed as WideMap key. Did you forget to add @CompoundKey annotation ?");
         }
 
-        log.trace("Built compound key properties", compoundKeyProperties);
-        return compoundKeyProperties;
-    }
-
-    private void saveWideMapForDeferredBinding(PropertyParsingContext context,
-            PropertyMeta<?, ?> propertyMeta)
-    {
-        log.trace("Saving wide map meta {} for deferred binding", propertyMeta);
-
-        String externalCFName;
-
-        Class<?> entityClass = context.getCurrentEntityClass();
-        if (context.isClusteredEntity())
-        {
-            externalCFName = context.getCurrentColumnFamilyName();
-            Validator
-                    .validateBeanMappingFalse(
-                            StringUtils.isBlank(context.getCurrentExternalTableName()),
-                            "External Column Family should be defined for WideMap property '"
-                                    + propertyMeta.getPropertyName()
-                                    + "' of entity '"
-                                    + entityClass.getCanonicalName()
-                                    + "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
-        }
-        else
-        {
-            externalCFName = context.getCurrentExternalTableName();
-            Validator
-                    .validateBeanMappingFalse(
-                            StringUtils.isBlank(externalCFName),
-                            "External Column Family should be defined for WideMap property '"
-                                    + propertyMeta.getPropertyName()
-                                    + "' of entity '"
-                                    + entityClass.getCanonicalName()
-                                    + "'. Did you forget to add 'table' attribute to @Column/@JoinColumn annotation ?");
-
-        }
-        propertyMeta.setExternalTableName(externalCFName);
-        if (context.isJoinColumn())
-        {
-            context.getJoinWideMaps().put(propertyMeta, externalCFName);
-        }
-        else
-        {
-            context.getWideMaps().put(propertyMeta, externalCFName);
-        }
-
-    }
-
-    private void fillWideMapCustomConsistencyLevels(PropertyParsingContext context,
-            PropertyMeta<?, ?> propertyMeta)
-    {
-        log.trace("Determining wide map meta {} custom consistency levels", propertyMeta);
-        boolean isCustomConsistencyLevel = propertyHelper.hasConsistencyAnnotation(context
-                .getCurrentField());
-        String externalTableName = context.getCurrentExternalTableName();
-
-        if (isCustomConsistencyLevel)
-        {
-            Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-                    .findConsistencyLevels(
-                            context.getCurrentField(), context.getConfigurableCLPolicy());
-
-            context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left,
-                    externalTableName);
-            context.getConfigurableCLPolicy().setConsistencyLevelForWrite(consistencyLevels.right,
-                    externalTableName);
-
-            propertyMeta.setConsistencyLevels(consistencyLevels);
-
-            log.trace("Found custom consistency levels : {}", consistencyLevels);
-        }
+        log.trace("Built compound key properties", embeddedIdProperties);
+        return embeddedIdProperties;
     }
 
     private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context,

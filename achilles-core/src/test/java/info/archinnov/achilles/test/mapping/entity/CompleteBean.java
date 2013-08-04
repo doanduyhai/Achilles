@@ -1,11 +1,9 @@
 package info.archinnov.achilles.test.mapping.entity;
 
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.CompoundKey;
+import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.WideMap;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +12,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 /**
@@ -26,9 +23,6 @@ import javax.persistence.ManyToOne;
 @Entity
 public class CompleteBean
 {
-
-    public static final long serialVersionUID = 151L;
-
     @Id
     private Long id;
 
@@ -53,31 +47,19 @@ public class CompleteBean
     @Column
     private Map<Integer, UserBean> usersMap;
 
-    @Column
-    private WideMap<UUID, String> tweets;
-
-    @Column(table = "user_tweets")
-    private WideMap<UserTweetKey, String> userTweets;
-
-    @Column(table = "geo_positions")
-    private WideMap<UUID, String> geoPositions;
-
-    @Column(table = "friend_widemap")
-    private WideMap<String, UserBean> friendsWideMap;
-
     @ManyToOne
     @JoinColumn
     private UserBean user;
 
-    @ManyToMany
-    @JoinColumn(table = "join_users")
-    private WideMap<Long, UserBean> joinUsers;
-
     @Column
     private Counter count;
 
-    @Column(table = "popular_topics")
-    private WideMap<String, Counter> popularTopics;
+    public CompleteBean() {
+    }
+
+    public CompleteBean(Long id) {
+        this.id = id;
+    }
 
     public Long getId()
     {
@@ -149,26 +131,6 @@ public class CompleteBean
         this.age = age;
     }
 
-    public WideMap<UUID, String> getTweets()
-    {
-        return tweets;
-    }
-
-    public void setTweets(WideMap<UUID, String> tweets)
-    {
-        this.tweets = tweets;
-    }
-
-    public WideMap<UserTweetKey, String> getUserTweets()
-    {
-        return userTweets;
-    }
-
-    public void setUserTweets(WideMap<UserTweetKey, String> userTweets)
-    {
-        this.userTweets = userTweets;
-    }
-
     public UserBean getUser()
     {
         return user;
@@ -179,29 +141,13 @@ public class CompleteBean
         this.user = user;
     }
 
-    public WideMap<UUID, String> getGeoPositions()
-    {
-        return geoPositions;
-    }
-
-    public void setGeoPositions(WideMap<UUID, String> geoPositions)
-    {
-        this.geoPositions = geoPositions;
-    }
-
-    public WideMap<Long, UserBean> getJoinUsers()
-    {
-        return joinUsers;
-    }
-
     public Counter getCount()
     {
         return count;
     }
 
-    public WideMap<String, Counter> getPopularTopics()
-    {
-        return popularTopics;
+    public void setCount(Counter count) {
+        this.count = count;
     }
 
     public Map<Integer, UserBean> getUsersMap()
@@ -212,11 +158,6 @@ public class CompleteBean
     public void setUsersMap(Map<Integer, UserBean> usersMap)
     {
         this.usersMap = usersMap;
-    }
-
-    public WideMap<String, UserBean> getFriendsWideMap()
-    {
-        return friendsWideMap;
     }
 
     @CompoundKey

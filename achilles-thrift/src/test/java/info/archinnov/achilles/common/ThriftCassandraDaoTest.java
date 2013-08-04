@@ -1,10 +1,7 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENSURE_CONSISTENCY_ON_JOIN_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.KEYSPACE_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
@@ -12,7 +9,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Map;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
@@ -71,24 +68,29 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest {
         return keyspace;
     }
 
+    public static ThriftEntityManagerFactory getEmf()
+    {
+        return emf;
+    }
+
     public static ThriftEntityManager getEm() {
         return emf.createEntityManager();
     }
 
     public static <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass) {
-        return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, new Pair<Class<K>, Class<String>>(
+        return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, Pair.create(
                 keyClass, String.class));
     }
 
     public static <K, V> ThriftGenericWideRowDao getColumnFamilyDao(String columnFamily, Class<K> keyClass,
             Class<V> valueClass) {
 
-        return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, new Pair<Class<K>, Class<V>>(
+        return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, Pair.create(
                 keyClass, valueClass));
     }
 
     public static ThriftCounterDao getCounterDao() {
-        Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = new Pair<Class<Composite>, Class<Long>>(
+        Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair.create(
                 Composite.class, Long.class);
         return new ThriftCounterDao(cluster, keyspace, policy, rowkeyAndValueClasses);
     }

@@ -2,20 +2,17 @@ package info.archinnov.achilles.composite;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.type.BoundingMode.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
+import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.query.ThriftQueryValidator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.BoundingMode;
-import info.archinnov.achilles.type.OrderingMode;
 import java.util.Arrays;
 import java.util.List;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -51,129 +48,33 @@ public class ThriftCompositeFactoryTest
     private ThriftCompoundKeyMapper compoundKeyMapper;
 
     @Mock
-    private ThriftQueryValidator queryValidator;
+    private CompoundKeyValidator compoundKeyValidator;
 
     @Mock
-    private ThriftCompoundKeyValidator compoundKeyValidator;
-
-    @Mock
-    private PropertyMeta<Integer, String> wideMapMeta;
-
-    @Mock
-    private PropertyMeta<TweetCompoundKey, String> compoundKeyWideMapMeta;
+    private PropertyMeta<Void, CompoundKey> embeddedIdMeta;
 
     @Before
     public void setUp()
     {
-        when(wideMapMeta.isSingleKey()).thenReturn(true);
-        when(wideMapMeta.getPropertyName()).thenReturn("property");
-        when(wideMapMeta.getKeyClass()).thenReturn(Integer.class);
 
-        when(compoundKeyWideMapMeta.isSingleKey()).thenReturn(false);
-        when(compoundKeyWideMapMeta.getPropertyName()).thenReturn("property");
+        when(embeddedIdMeta.isEmbeddedId()).thenReturn(true);
+        when(embeddedIdMeta.getPropertyName()).thenReturn("property");
     }
 
     @Test
-    public void should_create_for_insert() throws Exception
-    {
-        Composite comp = factory.createBaseComposite(wideMapMeta, 12);
-
-        assertThat(comp.getComponents()).hasSize(1);
-        assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(12);
-    }
-
-    @Test
-    public void should_create_for_compound_key_insert() throws Exception
+    public void should_create_for_embedded_id_insert() throws Exception
     {
         TweetCompoundKey tweetKey = new TweetCompoundKey();
         Composite comp = new Composite();
 
         when(
                 compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(tweetKey,
-                        compoundKeyWideMapMeta))
+                        embeddedIdMeta))
                 .thenReturn(comp);
 
-        Composite actual = factory.createBaseComposite(compoundKeyWideMapMeta, tweetKey);
+        Composite actual = factory.createCompositeForClustered(embeddedIdMeta, tweetKey);
 
         assertThat(actual).isSameAs(comp);
-    }
-
-    @Test
-    public void should_create_for_query() throws Exception
-    {
-        Composite comp = factory.createForQuery(wideMapMeta, 123, LESS_THAN_EQUAL);
-
-        assertThat(comp.getComponents()).hasSize(1);
-        assertThat((Integer) comp.getComponents().get(0).getValue()).isEqualTo(123);
-        assertThat(comp.getComponents().get(0).getEquality()).isEqualTo(LESS_THAN_EQUAL);
-    }
-
-    @Test
-    public void should_create_null_for_query() throws Exception
-    {
-        Composite comp = factory.createForQuery(wideMapMeta, null, LESS_THAN_EQUAL);
-        assertThat(comp).isNull();
-    }
-
-    @Test
-    public void should_create_composites_for_query() throws Exception
-    {
-
-        when(
-                calculator.determineEquality(INCLUSIVE_START_BOUND_ONLY,
-                        OrderingMode.ASCENDING)) //
-                .thenReturn(new ComponentEquality[]
-                {
-                        EQUAL,
-                        LESS_THAN_EQUAL
-                });
-        Composite[] composites = factory.createForQuery(wideMapMeta, 12, 15,
-                INCLUSIVE_START_BOUND_ONLY, ASCENDING);
-
-        assertThat(composites).hasSize(2);
-        assertThat(composites[0].getComponent(0).getEquality()).isEqualTo(EQUAL);
-        assertThat(composites[0].getComponent(0).getValue()).isEqualTo(12);
-        assertThat(composites[1].getComponent(0).getEquality()).isEqualTo(LESS_THAN_EQUAL);
-        assertThat(composites[1].getComponent(0).getValue()).isEqualTo(15);
-
-    }
-
-    @Test
-    public void should_create_compound_key_composites_for_query() throws Exception
-    {
-        TweetCompoundKey tweetKey1 = new TweetCompoundKey();
-        TweetCompoundKey tweetKey2 = new TweetCompoundKey();
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-
-        when(
-                calculator.determineEquality(BoundingMode.INCLUSIVE_END_BOUND_ONLY,
-                        OrderingMode.ASCENDING)) //
-                .thenReturn(new ComponentEquality[]
-                {
-                        LESS_THAN_EQUAL,
-                        GREATER_THAN_EQUAL
-                });
-
-        when(
-                compoundKeyMapper.fromCompoundToCompositeForQuery(tweetKey1,
-                        compoundKeyWideMapMeta,
-                        LESS_THAN_EQUAL))
-                .thenReturn(comp1);
-        when(
-                compoundKeyMapper.fromCompoundToCompositeForQuery(tweetKey2,
-                        compoundKeyWideMapMeta,
-                        GREATER_THAN_EQUAL))
-                .thenReturn(comp2);
-
-        Composite[] composites = factory.createForQuery(
-                compoundKeyWideMapMeta, tweetKey1, tweetKey2,
-                BoundingMode.INCLUSIVE_END_BOUND_ONLY,
-                OrderingMode.ASCENDING);
-
-        assertThat(composites).hasSize(2);
-        assertThat(composites[0]).isSameAs(comp1);
-        assertThat(composites[1]).isSameAs(comp2);
     }
 
     @Test
@@ -330,26 +231,20 @@ public class ThriftCompositeFactoryTest
                         GREATER_THAN_EQUAL
                 });
 
-        when(
-                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm,
-                        LESS_THAN_EQUAL)).thenReturn(
-                from);
-        when(
-                compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm,
-                        GREATER_THAN_EQUAL))
-                .thenReturn(to);
+        when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm,
+                LESS_THAN_EQUAL)).thenReturn(from);
+
+        when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm,
+                GREATER_THAN_EQUAL)).thenReturn(to);
 
         Composite[] composites = factory.createForClusteredQuery(pm, clusteringFrom,
-                clusteringTo,
-                EXCLUSIVE_BOUNDS,
-                DESCENDING);
+                clusteringTo, EXCLUSIVE_BOUNDS, DESCENDING);
 
         assertThat(composites[0]).isSameAs(from);
         assertThat(composites[1]).isSameAs(to);
 
-        verify(compoundKeyValidator).validateCompoundKeysForClusteredQuery(pm, clusteringFrom,
-                clusteringTo,
-                DESCENDING);
+        verify(compoundKeyValidator).validateComponentsForSliceQuery(pm, clusteringFrom,
+                clusteringTo, DESCENDING);
 
     }
 }

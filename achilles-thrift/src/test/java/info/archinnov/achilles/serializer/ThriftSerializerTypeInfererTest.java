@@ -1,8 +1,7 @@
 package info.archinnov.achilles.serializer;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static org.fest.assertions.api.Assertions.*;
-import info.archinnov.achilles.test.integration.entity.CompoundKeyWithEnum;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.test.integration.entity.User;
 import java.io.Serializable;
 import org.junit.Test;
@@ -13,12 +12,6 @@ public class ThriftSerializerTypeInfererTest {
     public void should_return_string_serializer_for_non_native_class() throws Exception {
         assertThat(ThriftSerializerTypeInferer.<String> getSerializer(User.class)).isEqualTo(
                 ThriftSerializerUtils.STRING_SRZ);
-    }
-
-    @Test
-    public void should_return_string_serializer_for_enum_class() throws Exception {
-        assertThat(ThriftSerializerTypeInferer.<String> getSerializer(CompoundKeyWithEnum.Type.class)).isInstanceOf(
-                ThriftEnumSerializer.class);
     }
 
     @Test

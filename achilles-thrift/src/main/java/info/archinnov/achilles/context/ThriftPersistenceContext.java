@@ -1,6 +1,5 @@
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -11,6 +10,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.HashSet;
@@ -35,15 +35,14 @@ public class ThriftPersistenceContext extends PersistenceContext
     private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
     private EntityRefresher<ThriftPersistenceContext> refresher;
 
-    private ThriftDaoContext thriftDaoContext;
+    private ThriftDaoContext daoContext;
     private ThriftGenericEntityDao entityDao;
     private ThriftGenericWideRowDao wideRowDao;
     private ThriftAbstractFlushContext<?> flushContext;
-    private AchillesConsistencyLevelPolicy policy;
 
     public ThriftPersistenceContext(EntityMeta entityMeta, //
             ConfigurationContext configContext, //
-            ThriftDaoContext thriftDaoContext, //
+            ThriftDaoContext daoContext, //
             ThriftAbstractFlushContext<?> flushContext, //
             Object entity, Set<String> entitiesIdentity)
     {
@@ -51,13 +50,13 @@ public class ThriftPersistenceContext extends PersistenceContext
         log.trace("Create new persistence context for instance {} of class {}", entity,
                 entityMeta.getClassName());
 
-        initCollaborators(thriftDaoContext, flushContext);
+        initCollaborators(daoContext, flushContext);
         initDaos();
     }
 
     public ThriftPersistenceContext(EntityMeta entityMeta, //
             ConfigurationContext configContext, //
-            ThriftDaoContext thriftDaoContext, //
+            ThriftDaoContext daoContext, //
             ThriftAbstractFlushContext<?> flushContext, //
             Class<?> entityClass, Object primaryKey, Set<String> entitiesIdentity)
     {
@@ -65,7 +64,7 @@ public class ThriftPersistenceContext extends PersistenceContext
         log.trace("Create new persistence context for instance {} of class {}", entity,
                 entityClass.getCanonicalName());
 
-        initCollaborators(thriftDaoContext, flushContext);
+        initCollaborators(daoContext, flushContext);
         initDaos();
     }
 
@@ -73,8 +72,7 @@ public class ThriftPersistenceContext extends PersistenceContext
             ThriftAbstractFlushContext<?> flushContext)
     {
         refresher = new EntityRefresher<ThriftPersistenceContext>(loader, proxifier);
-        policy = configContext.getConsistencyPolicy();
-        this.thriftDaoContext = thriftDaoContext;
+        this.daoContext = thriftDaoContext;
         this.flushContext = flushContext;
     }
 
@@ -83,11 +81,11 @@ public class ThriftPersistenceContext extends PersistenceContext
         String tableName = entityMeta.getTableName();
         if (entityMeta.isClusteredEntity())
         {
-            this.wideRowDao = thriftDaoContext.findWideRowDao(tableName);
+            this.wideRowDao = daoContext.findWideRowDao(tableName);
         }
         else
         {
-            this.entityDao = thriftDaoContext.findEntityDao(tableName);
+            this.entityDao = daoContext.findEntityDao(tableName);
         }
     }
 
@@ -97,7 +95,7 @@ public class ThriftPersistenceContext extends PersistenceContext
         log.trace("Spawn new persistence context for instance {} of join class {}", joinEntity,
                 joinMeta.getClassName());
 
-        return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
+        return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
                 flushContext.duplicateWithoutTtl(), joinEntity, entitiesIdentity);
     }
 
@@ -108,21 +106,14 @@ public class ThriftPersistenceContext extends PersistenceContext
         log.trace("Spawn new persistence context for primary key {} of join class {}", joinId,
                 joinMeta.getClassName());
 
-        return new ThriftPersistenceContext(joinMeta, configContext, thriftDaoContext,
+        return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
                 flushContext.duplicateWithoutTtl(), entityClass, joinId, entitiesIdentity);
-    }
-
-    @Override
-    public ThriftPersistenceContext duplicateWithPrimaryKey(Object embeddedId)
-    {
-        return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-                flushContext.duplicateWithoutTtl(), entityClass, embeddedId, new HashSet<String>());
     }
 
     @Override
     public ThriftPersistenceContext duplicate(Object entity)
     {
-        return new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
+        return new ThriftPersistenceContext(entityMeta, configContext, daoContext,
                 flushContext.duplicateWithoutTtl(), entity, new HashSet<String>());
     }
 
@@ -204,7 +195,7 @@ public class ThriftPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public void refresh()
+    public void refresh() throws AchillesStaleObjectStateException
     {
         flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
                 new SafeExecutionContext<Void>()
@@ -212,7 +203,11 @@ public class ThriftPersistenceContext extends PersistenceContext
                     @Override
                     public Void execute()
                     {
-                        refresher.refresh(ThriftPersistenceContext.this);
+                        try {
+                            refresher.refresh(ThriftPersistenceContext.this);
+                        } catch (AchillesStaleObjectStateException e) {
+                            throw new RuntimeException(e);
+                        }
                         return null;
                     }
                 });
@@ -257,17 +252,17 @@ public class ThriftPersistenceContext extends PersistenceContext
 
     public ThriftGenericEntityDao findEntityDao(String tableName)
     {
-        return thriftDaoContext.findEntityDao(tableName);
+        return daoContext.findEntityDao(tableName);
     }
 
     public ThriftGenericWideRowDao findWideRowDao(String tableName)
     {
-        return thriftDaoContext.findWideRowDao(tableName);
+        return daoContext.findWideRowDao(tableName);
     }
 
     public ThriftCounterDao getCounterDao()
     {
-        return thriftDaoContext.getCounterDao();
+        return daoContext.getCounterDao();
     }
 
     public Mutator<Object> getEntityMutator(String tableName)
@@ -293,11 +288,6 @@ public class ThriftPersistenceContext extends PersistenceContext
     public ThriftGenericWideRowDao getWideRowDao()
     {
         return wideRowDao;
-    }
-
-    public AchillesConsistencyLevelPolicy getPolicy()
-    {
-        return policy;
     }
 
 }

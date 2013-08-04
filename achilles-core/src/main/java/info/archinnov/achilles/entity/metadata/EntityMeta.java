@@ -1,12 +1,13 @@
 package info.archinnov.achilles.entity.metadata;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -16,6 +17,23 @@ import com.google.common.collect.FluentIterable;
  * 
  */
 public class EntityMeta {
+
+    public static final Predicate<EntityMeta> clusteredCounter = new Predicate<EntityMeta>() {
+        @Override
+        public boolean apply(EntityMeta meta)
+        {
+            return meta.isClusteredCounter();
+        }
+    };
+
+    public static final Predicate<EntityMeta> excludeClusteredCounter = new Predicate<EntityMeta>() {
+        @Override
+        public boolean apply(EntityMeta meta)
+        {
+            return !meta.isClusteredCounter();
+        }
+    };
+
     private Class<?> entityClass;
     private String className;
     private String tableName;
@@ -47,10 +65,6 @@ public class EntityMeta {
 
     public String getTableName() {
         return tableName;
-    }
-
-    public String getCQLTableName() {
-        return tableName.toLowerCase();
     }
 
     public void setTableName(String tableName) {
@@ -160,6 +174,25 @@ public class EntityMeta {
     }
 
     public PropertyMeta<?, ?> getFirstMeta() {
-        return getAllMetasExceptIdMeta().get(0);
+
+        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
+
+        if (allMetasExceptIdMeta.isEmpty())
+            return null;
+        else
+            return allMetasExceptIdMeta.get(0);
+    }
+
+    public boolean isClusteredCounter()
+    {
+        boolean isClusteredCounter = false;
+        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
+        int propertyCount = allMetasExceptIdMeta.size();
+        if (propertyCount > 0)
+        {
+            PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.get(0);
+            isClusteredCounter = clusteredEntity && propertyCount == 1 && firstMeta.isCounter();
+        }
+        return isClusteredCounter;
     }
 }

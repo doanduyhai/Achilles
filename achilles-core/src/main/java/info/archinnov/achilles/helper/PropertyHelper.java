@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -79,7 +79,6 @@ public class PropertyHelper
     public PropertyHelper() {
     }
 
-    @SuppressWarnings("unchecked")
     public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass)
     {
         log.debug("Infer parameterized value class for collection type {} of entity class {} ",
@@ -92,7 +91,8 @@ public class PropertyHelper
             Type[] actualTypeArguments = pt.getActualTypeArguments();
             if (actualTypeArguments.length > 0)
             {
-                valueClass = (Class<T>) actualTypeArguments[actualTypeArguments.length - 1];
+                Type type = actualTypeArguments[actualTypeArguments.length - 1];
+                valueClass = getClassFromType(type);
             }
             else
             {
@@ -169,6 +169,23 @@ public class PropertyHelper
         }
 
         log.trace("Found consistency levels : {} / {}", defaultGlobalRead, defaultGlobalWrite);
-        return new Pair<ConsistencyLevel, ConsistencyLevel>(defaultGlobalRead, defaultGlobalWrite);
+        return Pair.create(defaultGlobalRead, defaultGlobalWrite);
+    }
+
+    public <T> Class<T> getClassFromType(Type type)
+    {
+        if (type instanceof ParameterizedType)
+        {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return (Class<T>) parameterizedType.getRawType();
+        }
+        else if (type instanceof Class)
+        {
+            return (Class<T>) type;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Cannot determine java class of type '" + type + "'");
+        }
     }
 }

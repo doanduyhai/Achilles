@@ -1,8 +1,8 @@
 package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -13,7 +13,7 @@ import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * AchillesEntityIntrospectorTest
+ * EntityIntrospectorTest
  * 
  * @author DuyHai DOAN
  * 
@@ -285,17 +285,6 @@ public class EntityIntrospectorTest
     }
 
     @Test
-    public void should_find_accessors_from_widemap_type() throws Exception
-    {
-        Method[] accessors = introspector.findAccessors(CompleteBean.class,
-                CompleteBean.class.getDeclaredField("tweets"));
-
-        assertThat(accessors).hasSize(2);
-        assertThat(accessors[0].getName()).isEqualTo("getTweets");
-        assertThat(accessors[1]).isNull();
-    }
-
-    @Test
     public void should_find_accessors_from_counter_type() throws Exception
     {
         Method[] accessors = introspector.findAccessors(CompleteBean.class,
@@ -303,7 +292,7 @@ public class EntityIntrospectorTest
 
         assertThat(accessors).hasSize(2);
         assertThat(accessors[0].getName()).isEqualTo("getCount");
-        assertThat(accessors[1]).isNull();
+        assertThat(accessors[1].getName()).isEqualTo("setCount");
     }
 
     @Test

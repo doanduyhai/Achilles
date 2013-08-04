@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

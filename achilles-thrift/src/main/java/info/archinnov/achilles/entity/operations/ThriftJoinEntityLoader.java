@@ -4,7 +4,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.HashMap;

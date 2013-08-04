@@ -1,10 +1,8 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.table.TableHelper.ACHILLES_DDL_SCRIPT;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -55,57 +53,6 @@ public class ThriftColumnFamilyFactory {
         builder.append("\t\tand default_validation_class = ").append(ComparatorType.UTF8TYPE.getTypeName())
                 .append("\n");
         builder.append("\t\tand comment = 'Column family for entity ").append(entityName).append("'\n\n");
-
-        log.debug(builder.toString());
-
-        return cfDef;
-    }
-
-    public <ID> ColumnFamilyDefinition createWideRowCF(String keyspaceName, PropertyMeta<?, ?> propertyMeta,
-            Class<ID> keyClass, String columnFamilyName, String entityName) {
-        Class<?> valueClass = propertyMeta.getValueClass();
-
-        Serializer<?> keySerializer = ThriftSerializerTypeInferer.getSerializer(keyClass);
-        String keyValidationType = keySerializer.getComparatorType().getTypeName();
-
-        String comparatorTypesAlias = comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(propertyMeta,
-                true);
-
-        ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName, columnFamilyName,
-                ComparatorType.COMPOSITETYPE);
-
-        cfDef.setKeyValidationClass(keyValidationType);
-        cfDef.setComparatorTypeAlias(comparatorTypesAlias);
-
-        Serializer<?> valueSerializer;
-        String defaultValidationType;
-        if (propertyMeta.isCounter()) {
-            valueSerializer = LONG_SRZ;
-            defaultValidationType = COUNTERTYPE.getTypeName();
-        } else if (propertyMeta.isJoin()) {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(propertyMeta.joinIdMeta().getValueClass());
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        } else {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(valueClass);
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        }
-
-        cfDef.setDefaultValidationClass(defaultValidationType);
-        cfDef.setComment("Column family for property '" + columnFamilyName + "' of entity '" + entityName + "'");
-
-        String propertyName = propertyMeta.getPropertyName();
-
-        StringBuilder builder = new StringBuilder("\n\n");
-        builder.append("Create wide row column family for property ");
-        builder.append("'").append(propertyName).append("' of entity '");
-        builder.append(entityName).append("' : \n");
-        builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
-        builder.append("\t\twith key_validation_class = ").append(keyValidationType).append("\n");
-        builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
-        builder.append(comparatorTypesAlias).append("'\n");
-        builder.append("\t\tand default_validation_class = ").append(defaultValidationType).append("\n");
-        builder.append("\t\tand comment = 'Column family for property ").append(propertyName);
-        builder.append(" of entity ").append(entityName).append("'\n\n");
 
         log.debug(builder.toString());
 

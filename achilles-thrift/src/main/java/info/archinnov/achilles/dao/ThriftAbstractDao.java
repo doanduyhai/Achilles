@@ -1,8 +1,7 @@
 package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
-import static me.prettyprint.hector.api.factory.HFactory.createCounterSliceQuery;
-import static me.prettyprint.hector.api.factory.HFactory.createSliceQuery;
+import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.counter.AchillesCounter;
@@ -12,7 +11,7 @@ import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.cassandra.model.HCounterColumnImpl;
@@ -106,7 +105,7 @@ public abstract class ThriftAbstractDao
             @Override
             public Pair<Composite, V> apply(HColumn<Composite, V> hColumn)
             {
-                return new Pair<Composite, V>(hColumn.getName(), hColumn.getValue());
+                return Pair.create(hColumn.getName(), hColumn.getValue());
             }
         };
     }

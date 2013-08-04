@@ -2,17 +2,18 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.persistence.CascadeType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
@@ -39,12 +40,11 @@ public class PropertyMeta<K, V>
     private Method setter;
     private CounterProperties counterProperties;
     private JoinProperties joinProperties;
-    private CompoundKeyProperties compoundKeyProperties;
-    private String externalTableName;
+    private EmbeddedIdProperties embeddedIdProperties;
     private Class<?> idClass;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-    private boolean singleKey;
+    private DataTranscoder transcoder;
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
@@ -52,21 +52,30 @@ public class PropertyMeta<K, V>
     {
         log.trace("Getting value from string {} for property {} of entity class {}", stringValue,
                 propertyName, entityClassName);
-        try
+        if (stringValue != null)
         {
-            if (valueClass == String.class)
+            try
             {
-                log.trace("Casting value straight to string");
-                return valueClass.cast(stringValue);
-            }
-            else
+                if (valueClass == String.class)
+                {
+                    log.trace("Casting value straight to string");
+                    return valueClass.cast(stringValue);
+                }
+                else if (stringValue instanceof String)
+                {
+                    log.trace("Deserializing value from string");
+                    return this.objectMapper.readValue((String) stringValue, this.valueClass);
+                }
+                else
+                {
+                    throw new AchillesException("Error while trying to deserialize the JSON '" + stringValue);
+                }
+            } catch (Exception e)
             {
-                log.trace("Deserializing value from string");
-                return this.objectMapper.readValue((String) stringValue, this.valueClass);
+                throw new AchillesException("Error while trying to deserialize the JSON '" + stringValue);
             }
-        } catch (Exception e)
-        {
-            logger.error("Error while trying to deserialize the JSON : " + (String) stringValue, e);
+        }
+        else {
             return null;
         }
     }
@@ -104,18 +113,6 @@ public class PropertyMeta<K, V>
                 log.trace("Serializing value to string");
                 return this.objectMapper.writeValueAsString(object);
             }
-        } catch (Exception e)
-        {
-            logger.error("Error while trying to serialize to JSON the object : " + object, e);
-            return null;
-        }
-    }
-
-    public String jsonSerializeValue(Object object)
-    {
-        try
-        {
-            return this.objectMapper.writeValueAsString(object);
         } catch (Exception e)
         {
             logger.error("Error while trying to serialize to JSON the object : " + object, e);
@@ -164,9 +161,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentGetters()
     {
         List<Method> compGetters = new ArrayList<Method>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compGetters = compoundKeyProperties.getComponentGetters();
+            compGetters = embeddedIdProperties.getComponentGetters();
         }
         return compGetters;
     }
@@ -174,9 +171,9 @@ public class PropertyMeta<K, V>
     public Method getPartitionKeyGetter()
     {
         Method getter = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            getter = compoundKeyProperties.getComponentGetters().get(0);
+            getter = embeddedIdProperties.getComponentGetters().get(0);
         }
         return getter;
     }
@@ -184,9 +181,9 @@ public class PropertyMeta<K, V>
     public Method getPartitionKeySetter()
     {
         Method getter = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            getter = compoundKeyProperties.getComponentSetters().get(0);
+            getter = embeddedIdProperties.getComponentSetters().get(0);
         }
         return getter;
     }
@@ -194,9 +191,9 @@ public class PropertyMeta<K, V>
     public List<Method> getComponentSetters()
     {
         List<Method> compSetters = new ArrayList<Method>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compSetters = compoundKeyProperties.getComponentSetters();
+            compSetters = embeddedIdProperties.getComponentSetters();
         }
         return compSetters;
     }
@@ -204,41 +201,41 @@ public class PropertyMeta<K, V>
     public List<Class<?>> getComponentClasses()
     {
         List<Class<?>> compClasses = new ArrayList<Class<?>>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            compClasses = compoundKeyProperties.getComponentClasses();
+            compClasses = embeddedIdProperties.getComponentClasses();
         }
         return compClasses;
     }
 
-    public String getCQLOrderingComponent()
+    public String getOrderingComponent()
     {
         String component = null;
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            return compoundKeyProperties.getCQLOrderingComponent();
+            return embeddedIdProperties.getOrderingComponent();
         }
         return component;
     }
 
-    public List<String> getCQLComponentNames()
+    public List<String> getComponentNames()
     {
         List<String> components = new ArrayList<String>();
-        if (compoundKeyProperties != null)
+        if (embeddedIdProperties != null)
         {
-            return Collections.unmodifiableList(compoundKeyProperties.getCQLComponentNames());
+            return embeddedIdProperties.getComponentNames();
         }
         return components;
     }
 
-    public <T> Constructor<T> getCompoundKeyConstructor()
+    public <T> Constructor<T> getEmbeddedIdConstructor()
     {
-        return compoundKeyProperties != null ? compoundKeyProperties.<T> getConstructor() : null;
+        return embeddedIdProperties != null ? embeddedIdProperties.<T> getConstructor() : null;
     }
 
-    public boolean hasDefaultConstructorForCompoundKey()
+    public boolean hasDefaultConstructorForEmbeddedId()
     {
-        return compoundKeyProperties != null ? compoundKeyProperties
+        return embeddedIdProperties != null ? embeddedIdProperties
                 .getConstructor()
                 .getParameterTypes().length == 0 : false;
     }
@@ -273,19 +270,9 @@ public class PropertyMeta<K, V>
         return this.type.isLazy();
     }
 
-    public boolean isWideMap()
-    {
-        return this.type.isWideMap();
-    }
-
     public boolean isCounter()
     {
         return this.type.isCounter();
-    }
-
-    public boolean isProxyType()
-    {
-        return this.type.isProxyType();
     }
 
     public boolean isEmbeddedId()
@@ -332,6 +319,64 @@ public class PropertyMeta<K, V>
         return consistencyLevels != null ? consistencyLevels.right : null;
     }
 
+    public Object decode(Object cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
+    }
+
+    public Object decodeKey(Object cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decodeKey(this, cassandraValue);
+    }
+
+    public List<Object> decode(List<?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
+    }
+
+    public Set<Object> decode(Set<?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
+    }
+
+    public Map<Object, Object> decode(Map<?, ?> cassandraValue) {
+        return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
+    }
+
+    public Object decodeFromComponents(List<?> components) {
+        return components == null ? null : transcoder.decodeFromComponents(this, components);
+    }
+
+    public Object encode(Object entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Object encodeKey(Object entityValue) {
+        return entityValue == null ? null : transcoder.encodeKey(this, entityValue);
+    }
+
+    public List<Object> encode(List<?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Set<Object> encode(Set<?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public Map<Object, Object> encode(Map<?, ?> entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
+
+    public List<Object> encodeToComponents(Object compoundKey) {
+        return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey);
+    }
+
+    public String forceEncodeToJSON(Object object)
+    {
+        return transcoder.forceEncodeToJSON(object);
+    }
+
+    public Object forceDecodeFromJSON(String cassandraValue, Class<?> targetType)
+    {
+        return transcoder.forceDecodeFromJSON(cassandraValue, targetType);
+    }
+
     public PropertyType type()
     {
         return type;
@@ -345,11 +390,6 @@ public class PropertyMeta<K, V>
     public String getPropertyName()
     {
         return propertyName;
-    }
-
-    public String getCQLPropertyName()
-    {
-        return propertyName.toLowerCase();
     }
 
     public void setPropertyName(String propertyName)
@@ -397,15 +437,14 @@ public class PropertyMeta<K, V>
         this.setter = setter;
     }
 
-    // TODO to be removed
-    public CompoundKeyProperties getCompoundKeyProperties()
+    public EmbeddedIdProperties getEmbeddedIdProperties()
     {
-        return compoundKeyProperties;
+        return embeddedIdProperties;
     }
 
-    public void setCompoundKeyProperties(CompoundKeyProperties multiKeyProperties)
+    public void setEmbeddedIdProperties(EmbeddedIdProperties embeddedIdProperties)
     {
-        this.compoundKeyProperties = multiKeyProperties;
+        this.embeddedIdProperties = embeddedIdProperties;
     }
 
     public Class<?> getIdClass()
@@ -433,16 +472,6 @@ public class PropertyMeta<K, V>
         this.joinProperties = joinProperties;
     }
 
-    public boolean isSingleKey()
-    {
-        return singleKey;
-    }
-
-    public void setSingleKey(boolean singleKey)
-    {
-        this.singleKey = singleKey;
-    }
-
     public void setObjectMapper(ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
@@ -463,21 +492,6 @@ public class PropertyMeta<K, V>
         this.consistencyLevels = consistencyLevels;
     }
 
-    public String getExternalTableName()
-    {
-        return externalTableName;
-    }
-
-    public String getCQLExternalTableName()
-    {
-        return externalTableName.toLowerCase();
-    }
-
-    public void setExternalTableName(String externalTableName)
-    {
-        this.externalTableName = externalTableName;
-    }
-
     public String getEntityClassName()
     {
         return entityClassName;
@@ -486,6 +500,14 @@ public class PropertyMeta<K, V>
     public void setEntityClassName(String entityClassName)
     {
         this.entityClassName = entityClassName;
+    }
+
+    public DataTranscoder getTranscoder() {
+        return transcoder;
+    }
+
+    public void setTranscoder(DataTranscoder transcoder) {
+        this.transcoder = transcoder;
     }
 
     @Override
@@ -506,11 +528,8 @@ public class PropertyMeta<K, V>
         if (joinProperties != null)
             description.append("joinProperties=").append(joinProperties).append(", ");
 
-        if (compoundKeyProperties != null)
-            description.append("multiKeyProperties=").append(compoundKeyProperties).append(", ");
-
-        if (StringUtils.isNotBlank(externalTableName))
-            description.append("externalCfName=").append(externalTableName).append(", ");
+        if (embeddedIdProperties != null)
+            description.append("multiKeyProperties=").append(embeddedIdProperties).append(", ");
 
         if (consistencyLevels != null)
         {
@@ -520,7 +539,6 @@ public class PropertyMeta<K, V>
                     .append(",");
             description.append(consistencyLevels.right.name()).append("], ");
         }
-        description.append("singleKey=").append(singleKey).append("]");
 
         return description.toString();
     }
@@ -564,5 +582,4 @@ public class PropertyMeta<K, V>
             return false;
         return true;
     }
-
 }

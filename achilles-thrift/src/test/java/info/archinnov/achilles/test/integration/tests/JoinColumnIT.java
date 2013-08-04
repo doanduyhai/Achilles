@@ -2,7 +2,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -12,7 +12,7 @@ import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.List;
 import java.util.UUID;

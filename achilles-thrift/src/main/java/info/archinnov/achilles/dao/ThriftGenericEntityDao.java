@@ -2,7 +2,7 @@ package info.archinnov.achilles.dao;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class ThriftGenericEntityDao extends ThriftAbstractDao
 			List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 			for (HColumn<Composite, String> column : row.getColumnSlice().getColumns())
 			{
-				columns.add(new Pair<Composite, String>(column.getName(), column.getValue()));
+				columns.add(Pair.create(column.getName(), column.getValue()));
 			}
 
 			map.put(row.getKey(), columns);

@@ -5,6 +5,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.proxy.wrapper.CQLCounterWrapper;
 import info.archinnov.achilles.type.Counter;
 
 /**
@@ -23,31 +24,9 @@ public class CQLEntityInterceptor<T> extends EntityInterceptor<CQLPersistenceCon
     }
 
     @Override
-    protected Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
+    protected Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
     {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta)
-    {
-        // TODO Auto-generated method stub
-        return null;
+        return new CQLCounterWrapper(context, propertyMeta);
     }
 
 }

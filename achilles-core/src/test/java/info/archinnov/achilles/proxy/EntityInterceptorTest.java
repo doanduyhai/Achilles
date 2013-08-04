@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -228,12 +227,13 @@ public class EntityInterceptorTest
                 .build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(interceptor.buildCounterWrapper(propertyMeta)).thenReturn(rawValue);
-        when(proxy.invoke(bean, args)).thenReturn(rawValue);
+        Counter counterWrapper = mock(Counter.class);
+        when(interceptor.buildCounterWrapper(propertyMeta)).thenReturn(counterWrapper);
+        when(proxy.invoke(bean, args)).thenReturn(counterWrapper);
 
         Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
-        assertThat(actual).isSameAs(rawValue);
+        assertThat(actual).isSameAs(counterWrapper);
     }
 
     @Test
@@ -500,60 +500,6 @@ public class EntityInterceptorTest
     }
 
     @Test
-    public void should_return_wide_map_wrapper() throws Throwable
-    {
-        PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("tweets")
-                .accessors()
-                .type(PropertyType.WIDE_MAP)
-                .build();
-
-        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isClusteredEntity()).thenReturn(false);
-        when(interceptor.buildWideMapWrapper(propertyMeta)).thenReturn(rawValue);
-        Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-        assertThat(actual).isSameAs(rawValue);
-    }
-
-    @Test
-    public void should_return_counter_wide_map_wrapper() throws Throwable
-    {
-        PropertyMeta<String, Counter> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(String.class, Counter.class)
-                .field("popularTopics")
-                .accessors()
-                .type(PropertyType.COUNTER_WIDE_MAP)
-                .build();
-
-        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isClusteredEntity()).thenReturn(false);
-        when(interceptor.buildCounterWideMapWrapper(propertyMeta)).thenReturn(rawValue);
-        Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-        assertThat(actual).isSameAs(rawValue);
-    }
-
-    @Test
-    public void should_return_join_wide_map_wrapper() throws Throwable
-    {
-        PropertyMeta<Long, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(Long.class, UserBean.class)
-                .field("joinUsers")
-                .accessors()
-                .type(PropertyType.JOIN_WIDE_MAP)
-                .build();
-
-        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        when(context.isClusteredEntity()).thenReturn(false);
-        when(interceptor.buildJoinWideMapWrapper(propertyMeta)).thenReturn(rawValue);
-        Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-        assertThat(actual).isSameAs(rawValue);
-    }
-
-    @Test
     public void should_exception_when_calling_setter_on_counter() throws Throwable
     {
         PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder
@@ -570,24 +516,6 @@ public class EntityInterceptorTest
                 .expectMessage("Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
         interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
 
-    }
-
-    @Test
-    public void should_exception_when_calling_setter_on_wide_map() throws Throwable
-    {
-        PropertyMeta<UUID, String> propertyMeta = PropertyMetaTestBuilder
-                .completeBean(UUID.class, String.class)
-                .field("tweets")
-                .accessors()
-                .type(PropertyType.WIDE_MAP)
-                .build();
-
-        // No setter, use getter to simulate setter
-        setterMetas.put(propertyMeta.getGetter(), propertyMeta);
-        exception.expect(UnsupportedOperationException.class);
-        exception
-                .expectMessage("Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
-        interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
     }
 
     @Test

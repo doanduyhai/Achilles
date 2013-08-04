@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 

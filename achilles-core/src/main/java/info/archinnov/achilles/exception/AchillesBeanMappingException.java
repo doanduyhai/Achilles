@@ -8,17 +8,17 @@ package info.archinnov.achilles.exception;
  */
 public class AchillesBeanMappingException extends RuntimeException
 {
-	
+    private static final long serialVersionUID = 1L;
 
-	public AchillesBeanMappingException() {
-		super();
-	}
+    public AchillesBeanMappingException() {
+        super();
+    }
 
-	public AchillesBeanMappingException(String message) {
-		super(message);
-	}
+    public AchillesBeanMappingException(String message) {
+        super(message);
+    }
 
-	public AchillesBeanMappingException(String message, Throwable throwable) {
-		super(message, throwable);
-	}
+    public AchillesBeanMappingException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }

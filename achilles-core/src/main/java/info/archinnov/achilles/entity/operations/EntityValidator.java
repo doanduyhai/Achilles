@@ -5,7 +5,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
-import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,20 +47,24 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
             throw new IllegalArgumentException("Cannot get primary key for entity "
                     + entity.getClass().getCanonicalName());
         }
-        if (!idMeta.isSingleKey()) {
-            for (Method getter : idMeta.getComponentGetters()) {
-                Object component = invoker.getValueFromField(id, getter);
-                Validator.validateNotNull(component, "The entity " + entity.getClass().getCanonicalName()
-                        + " clustered key '" + idMeta.getPropertyName() + "' components should not be null");
+        validatePrimaryKey(idMeta, id);
+    }
+
+    public void validatePrimaryKey(PropertyMeta<?, ?> idMeta, Object primaryKey) {
+        if (idMeta.isEmbeddedId()) {
+            List<Object> components = idMeta.encodeToComponents(primaryKey);
+            for (Object component : components) {
+                Validator.validateNotNull(component, "The clustered key '" + idMeta.getPropertyName()
+                        + "' components should not be null");
             }
         }
     }
 
-    public void validateNoPendingBatch(PersistenceContext context) {
-        log.debug("Validate no pending batch");
-        Validator
-                .validateFalse(
-                        context.isBatchMode(),
-                        "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+    public void validateNotClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap)
+    {
+        Class<?> baseClass = proxifier.deriveBaseClass(entity);
+        EntityMeta entityMeta = entityMetaMap.get(baseClass);
+        Validator.validateFalse(entityMeta.isClusteredCounter(), "The entity '" + entity
+                + "' is a clustered counter and does not support insert/update with TTL");
     }
 }

@@ -11,7 +11,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,118 +97,6 @@ public class ThriftDaoFactoryTest {
                 "rowkeyAndValueClasses");
         assertThat(rowAndValueClases.left).isSameAs(Long.class);
         assertThat(rowAndValueClases.right).isSameAs(String.class);
-    }
-
-    @Test
-    public void should_create_entity_dao_with_wide_map() throws Exception {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, Long.class).field("id").build();
-
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, Date.class)
-                .externalTable("externalCf").type(PropertyType.WIDE_MAP).build();
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setTableName("cf");
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setIdClass(Long.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-
-        factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
-
-        ThriftGenericWideRowDao wideRowDao = wideRowDaosMap.get("externalCf");
-
-        assertThat(wideRowDao).isNotNull();
-        assertThat(wideRowDao.getColumnFamily()).isEqualTo("externalCf");
-        assertThat(Whitebox.getInternalState(wideRowDao, "policy")).isSameAs(consistencyPolicy);
-        assertThat(Whitebox.getInternalState(wideRowDao, "cluster")).isSameAs(cluster);
-        assertThat(Whitebox.getInternalState(wideRowDao, "keyspace")).isSameAs(keyspace);
-        assertThat(Whitebox.getInternalState(wideRowDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
-
-        Pair<Class<Long>, Class<Date>> rowAndValueClases = Whitebox.getInternalState(wideRowDao,
-                "rowkeyAndValueClasses");
-        assertThat(rowAndValueClases.left).isSameAs(Long.class);
-        assertThat(rowAndValueClases.right).isSameAs(Date.class);
-    }
-
-    @Test
-    public void should_create_entity_dao_with_counter_wide_map() throws Exception {
-        PropertyMeta<Void, Integer> idMeta = PropertyMetaTestBuilder //
-                .valueClass(Integer.class).build();
-
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, Counter.class)
-                .externalTable("externalCf").type(PropertyType.COUNTER_WIDE_MAP).build();
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setTableName("cf");
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setIdClass(Integer.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-
-        factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
-
-        ThriftGenericWideRowDao wideRowDao = wideRowDaosMap.get("externalCf");
-
-        Pair<Class<Integer>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(wideRowDao,
-                "rowkeyAndValueClasses");
-        assertThat(rowAndValueClases.left).isSameAs(Integer.class);
-        assertThat(rowAndValueClases.right).isSameAs(Long.class);
-    }
-
-    @Test
-    public void should_create_entity_dao_with_object_type_wide_map() throws Exception {
-        PropertyMeta<Void, Integer> idMeta = PropertyMetaTestBuilder //
-                .valueClass(Integer.class).build();
-
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, UserBean.class)
-                .externalTable("externalCf").type(PropertyType.WIDE_MAP).build();
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setTableName("cf");
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setIdClass(Integer.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-
-        factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
-
-        ThriftGenericWideRowDao wideRowDao = wideRowDaosMap.get("externalCf");
-
-        Pair<Class<Integer>, Class<String>> rowAndValueClases = Whitebox.getInternalState(wideRowDao,
-                "rowkeyAndValueClasses");
-        assertThat(rowAndValueClases.left).isSameAs(Integer.class);
-        assertThat(rowAndValueClases.right).isSameAs(String.class);
-    }
-
-    @Test
-    public void should_create_entity_dao_with_join_wide_map() throws Exception {
-        PropertyMeta<Void, Integer> idMeta = PropertyMetaTestBuilder //
-                .valueClass(Integer.class).build();
-
-        PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(UUID.class).build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.noClass(Integer.class, UserBean.class)
-                .externalTable("externalCf").type(PropertyType.JOIN_WIDE_MAP).joinMeta(joinMeta).build();
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setTableName("cf");
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setIdClass(Integer.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-
-        factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
-
-        ThriftGenericWideRowDao wideRowDao = wideRowDaosMap.get("externalCf");
-
-        Pair<Class<Integer>, Class<UUID>> rowAndValueClases = Whitebox.getInternalState(wideRowDao,
-                "rowkeyAndValueClasses");
-        assertThat(rowAndValueClases.left).isSameAs(Integer.class);
-        assertThat(rowAndValueClases.right).isSameAs(UUID.class);
     }
 
     @Test

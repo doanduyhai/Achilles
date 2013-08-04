@@ -1,24 +1,15 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.LONG_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.UUID_SRZ;
-import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.COUNTER_COMPARATOR_TYPE_ALIAS;
-import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.COUNTER_KEY_ALIAS;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.*;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -78,62 +69,6 @@ public class ThriftColumnFamilyFactoryTest {
         assertThat(cfDef.getName()).isEqualTo("myCF");
         assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
         assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
-    }
-
-    @Test
-    public void should_create_composite_column_family() throws Exception {
-        PropertyMeta<Integer, String> wideMapMeta = new PropertyMeta<Integer, String>();
-        wideMapMeta.setValueClass(String.class);
-        wideMapMeta.setType(PropertyType.WIDE_MAP);
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
-                "typeAlias");
-
-        ColumnFamilyDefinition cfDef = factory.createWideRowCF("keyspace", wideMapMeta, Long.class, "cf", "entity");
-
-        assertThat(cfDef.getComparatorType()).isEqualTo(ComparatorType.COMPOSITETYPE);
-        assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
-        assertThat(cfDef.getDefaultValidationClass()).isEqualTo(STRING_SRZ.getComparatorType().getTypeName());
-
-        assertThat(cfDef.getComparatorTypeAlias()).isEqualTo("typeAlias");
-
-    }
-
-    @Test
-    public void should_create_composite_column_family_with_object_type() throws Exception {
-        PropertyMeta<Integer, CompleteBean> wideMapMeta = new PropertyMeta<Integer, CompleteBean>();
-        wideMapMeta.setValueClass(CompleteBean.class);
-        wideMapMeta.setType(PropertyType.SIMPLE);
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
-                "typeAlias");
-
-        ColumnFamilyDefinition cfDef = factory.createWideRowCF("keyspace", wideMapMeta, Long.class, "cf", "entity");
-
-        assertThat(cfDef.getDefaultValidationClass()).isEqualTo(STRING_SRZ.getComparatorType().getTypeName());
-
-    }
-
-    @Test
-    public void should_create_composite_column_family_with_join_object_type() throws Exception {
-        PropertyMeta<Integer, CompleteBean> wideMapMeta = new PropertyMeta<Integer, CompleteBean>();
-        wideMapMeta.setValueClass(CompleteBean.class);
-        wideMapMeta.setType(PropertyType.JOIN_SIMPLE);
-
-        PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder.valueClass(UUID.class).build();
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-        JoinProperties joinProperties = new JoinProperties();
-        joinProperties.setEntityMeta(joinMeta);
-        wideMapMeta.setJoinProperties(joinProperties);
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(wideMapMeta, true)).thenReturn(
-                "typeAlias");
-
-        ColumnFamilyDefinition cfDef = factory.createWideRowCF("keyspace", wideMapMeta, Long.class, "cf", "entity");
-
-        assertThat(cfDef.getDefaultValidationClass()).isEqualTo(UUID_SRZ.getComparatorType().getTypeName());
-
     }
 
     @Test
@@ -219,20 +154,4 @@ public class ThriftColumnFamilyFactoryTest {
         assertThat(cfDef.getDefaultValidationClass()).isEqualTo(COUNTERTYPE.getClassName());
 
     }
-
-    @Test
-    public void should_create_counter_wide_row() throws Exception {
-        PropertyMeta<Integer, Long> counterWideMapMeta = new PropertyMeta<Integer, Long>();
-        counterWideMapMeta.setValueClass(Long.class);
-        counterWideMapMeta.setType(PropertyType.COUNTER_WIDE_MAP);
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(counterWideMapMeta, true)).thenReturn(
-                "typeAlias");
-
-        ColumnFamilyDefinition cfDef = factory.createWideRowCF("keyspace", counterWideMapMeta, Long.class, "cf",
-                "entity");
-
-        assertThat(cfDef.getDefaultValidationClass()).isEqualTo(ComparatorType.COUNTERTYPE.getTypeName());
-    }
-
 }

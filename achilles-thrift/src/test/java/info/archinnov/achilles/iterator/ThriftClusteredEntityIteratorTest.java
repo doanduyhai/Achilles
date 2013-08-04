@@ -52,7 +52,7 @@ public class ThriftClusteredEntityIteratorTest
         iterator = new ThriftClusteredEntityIterator<BeanWithClusteredId>(entityClass,
                 sliceIterator, context);
         iterator = spy(iterator);
-        Whitebox.setInternalState(iterator, "transformer", transformer);
+        Whitebox.setInternalState(iterator, ThriftCompositeTransformer.class, transformer);
     }
 
     @Test

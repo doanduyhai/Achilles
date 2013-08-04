@@ -52,9 +52,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
             throws Throwable
     {
-        log.trace("Method {} called for entity of class {}", method.getName(), target
-                .getClass()
-                .getCanonicalName());
+        log.trace("Method {} called for entity of class {}", method.getName(), target.getClass().getCanonicalName());
 
         if (idGetter.equals(method))
         {
@@ -88,7 +86,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         PropertyMeta<?, ?> propertyMeta = this.getterMetas.get(method);
 
         // Load fields into target object
-        if (!propertyMeta.isProxyType() && !this.alreadyLoaded.contains(method))
+        if (!propertyMeta.isCounter() && !this.alreadyLoaded.contains(method))
         {
             log.trace("Loading property {}", propertyMeta.getPropertyName());
 
@@ -178,27 +176,6 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                             .build();
                 }
                 break;
-            case WIDE_MAP:
-                log.trace("Build wide map wrapper for property {} of entity of class {} ",
-                        propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-
-                result = buildWideMapWrapper(propertyMeta);
-                break;
-            case COUNTER_WIDE_MAP:
-
-                log.trace("Build counter wide wrapper for property {} of entity of class {} ",
-                        propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-
-                result = buildCounterWideMapWrapper(this
-                        .<K, Counter> getPropertyMetaByProperty(method));
-                break;
-            case JOIN_WIDE_MAP:
-
-                log.trace("Build join wide wrapper for property {} of entity of class {} ",
-                        propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-
-                result = buildJoinWideMapWrapper(propertyMeta);
-                break;
             default:
                 log.trace("Return un-mapped raw value {} for property {} of entity of class {} ",
                         propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -209,13 +186,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         return result;
     }
 
-    protected abstract Object buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
-
-    protected abstract <K, V> Object buildJoinWideMapWrapper(PropertyMeta<K, V> propertyMeta);
-
-    protected abstract <K> Object buildCounterWideMapWrapper(PropertyMeta<K, Counter> propertyMeta);
-
-    protected abstract <K, V> Object buildWideMapWrapper(PropertyMeta<K, V> propertyMeta);
+    protected abstract Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
 
     private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
             throws Throwable
@@ -228,9 +199,6 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
             case COUNTER:
                 throw new UnsupportedOperationException(
                         "Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
-            case WIDE_MAP:
-                throw new UnsupportedOperationException(
-                        "Cannot set value directly to a WideMap structure. Please call the getter first to get handle on the wrapper");
             default:
                 break;
         }

@@ -16,6 +16,10 @@
 		<level value="DEBUG" />
 	</logger>
 	
+	<logger name="ACHILLES_DML_STATEMENT">
+		<level value="DEBUG" />
+	</logger>
+	
 	
 	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
 		<level value="INFO" />

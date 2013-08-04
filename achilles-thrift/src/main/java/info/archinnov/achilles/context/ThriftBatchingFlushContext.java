@@ -4,7 +4,7 @@ import static info.archinnov.achilles.context.FlushContext.FlushType.BATCH;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.Map;
 

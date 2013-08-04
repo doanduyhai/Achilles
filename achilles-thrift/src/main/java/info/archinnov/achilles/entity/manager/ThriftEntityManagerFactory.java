@@ -7,6 +7,7 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftDaoContextBuilder;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.table.ThriftTableCreator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Collections;
@@ -29,7 +30,8 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
     private Cluster cluster;
     private Keyspace keyspace;
 
-    private ThriftDaoContext thriftDaoContext;
+    private ThriftDaoContext daoContext;
+    private ThriftPersistenceContextFactory contextFactory;
 
     /**
      * Create a new ThriftEntityManagerFactoryImpl with a configuration map
@@ -52,21 +54,36 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
         boolean hasSimpleCounter = bootstrap();
         new ThriftTableCreator(cluster, keyspace).validateOrCreateTables(entityMetaMap, configContext,
                 hasSimpleCounter);
-
-        thriftDaoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap, configContext,
+        daoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap, configContext,
                 hasSimpleCounter);
+        contextFactory = new ThriftPersistenceContextFactory(daoContext, configContext, entityMetaMap);
     }
 
     /**
-     * Create a new ThriftEntityManager
+     * Create a new ThriftEntityManager. This instance of ThriftEntityManager is <strong>thread-safe</strong>
      * 
      * @return ThriftEntityManager
      */
     public ThriftEntityManager createEntityManager() {
         log.info("Create new Thrift-based Entity Manager ");
 
-        return new ThriftEntityManager(this, Collections.unmodifiableMap(entityMetaMap), //
-                thriftDaoContext, configContext);
+        return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
+                contextFactory, daoContext, configContext);
+    }
+
+    /**
+     * Create a new state-full EntityManager for batch handling <br/>
+     * <br/>
+     * 
+     * <strong>WARNING : This EntityManager is state-full and not thread-safe. In case of exception, you MUST not
+     * re-use it but create another one</strong>
+     * 
+     * @return a new state-full EntityManager
+     */
+    public ThriftBatchingEntityManager createBatchingEntityManager()
+    {
+        return new ThriftBatchingEntityManager(entityMetaMap, contextFactory,
+                daoContext, configContext);
     }
 
     @Override
@@ -87,7 +104,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
     }
 
     protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext) {
-        this.thriftDaoContext = thriftDaoContext;
+        this.daoContext = thriftDaoContext;
     }
 
 }

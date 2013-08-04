@@ -1,6 +1,6 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.type.WideMap;
+import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -18,7 +18,7 @@ public class ClusteredEntityWithNotSupportedPropertyType
     private CompoundKey id;
 
     @Column(table = "xxx")
-    private WideMap<Long, String> wideMap;
+    private Map<Long, String> map;
 
     public CompoundKey getId() {
         return id;
@@ -28,8 +28,12 @@ public class ClusteredEntityWithNotSupportedPropertyType
         this.id = id;
     }
 
-    public WideMap<Long, String> getWideMap() {
-        return wideMap;
+    public Map<Long, String> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<Long, String> map) {
+        this.map = map;
     }
 
 }

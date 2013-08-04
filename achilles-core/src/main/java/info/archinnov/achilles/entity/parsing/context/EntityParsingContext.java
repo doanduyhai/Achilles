@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;

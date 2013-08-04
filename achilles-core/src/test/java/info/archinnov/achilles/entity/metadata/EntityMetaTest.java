@@ -5,10 +5,11 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * EntityMetaTest
@@ -29,7 +30,7 @@ public class EntityMetaTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .consistencyLevels(Pair.create(ALL, ALL))
                 .build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -39,7 +40,7 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setClusteredEntity(true);
-        entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
+        entityMeta.setConsistencyLevels(Pair.create(ONE, ONE));
 
         StringBuilder toString = new StringBuilder();
         toString.append("EntityMeta [className=className, ");
@@ -49,15 +50,6 @@ public class EntityMetaTest
         toString.append("clusteredEntity=true, ");
         toString.append("consistencyLevels=[ONE,ONE]]");
         assertThat(entityMeta.toString()).isEqualTo(toString.toString());
-    }
-
-    @Test
-    public void should_get_cql_table_name() throws Exception
-    {
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("TaBle");
-
-        assertThat(meta.getCQLTableName()).isEqualTo("table");
     }
 
     @Test
@@ -92,5 +84,137 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
 
         assertThat(entityMeta.getAllMetasExceptIdMeta()).containsExactly(pm1);
+    }
+
+    @Test
+    public void should_return_true_for_is_clustered_counter() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isTrue();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_not_clustered() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(false);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_more_than_one_property() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+
+        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+
+        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class)
+                .field("count")
+                .type(COUNTER)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta, "count",
+                counterMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_value_less() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
+        entityMeta.setClusteredEntity(false);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
+        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta, "nameMeta",
+                nameMeta));
+
+        assertThat(entityMeta.isClusteredCounter()).isFalse();
+    }
+
+    @Test
+    public void should_get_first_meta() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
+        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(SIMPLE)
+                .build();
+
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta, "name", nameMeta));
+
+        assertThat((PropertyMeta) entityMeta.getFirstMeta()).isSameAs(nameMeta);
+    }
+
+    @Test
+    public void should_return_null_when_no_first_meta() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+
+        assertThat(entityMeta.getFirstMeta()).isNull();
     }
 }

@@ -106,7 +106,7 @@ public class CQLMergerImplTest
 
 		assertThat(dirtyMap).isEmpty();
 
-		verify(context).bindForUpdate(pmCaptor.capture());
+		verify(context).pushUpdateStatement(pmCaptor.capture());
 
 		assertThat(pmCaptor.getValue()).containsExactly(ageMeta, idMeta);
 	}

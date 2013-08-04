@@ -21,7 +21,6 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.HashSet;
 import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.math.RandomUtils;
@@ -192,16 +191,6 @@ public class ThriftPersistenceContextTest
     }
 
     @Test
-    public void should_duplicate_with_embedded_id() throws Exception
-    {
-        CompoundKey embeddedId = new CompoundKey();
-
-        ThriftPersistenceContext duplicate = context.duplicateWithPrimaryKey(embeddedId);
-
-        assertThat(duplicate.getPrimaryKey()).isSameAs(embeddedId);
-    }
-
-    @Test
     public void should_duplicate_for_new_entity() throws Exception
     {
         Long primaryKey = RandomUtils.nextLong();
@@ -215,7 +204,7 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_persist() throws Exception
     {
-        Whitebox.setInternalState(context, "persister", persister);
+        Whitebox.setInternalState(context, ThriftEntityPersister.class, persister);
 
         context.persist();
 
@@ -228,7 +217,7 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_merge() throws Exception
     {
-        Whitebox.setInternalState(context, "merger", merger);
+        Whitebox.setInternalState(context, ThriftEntityMerger.class, merger);
         when(merger.merge(context, entity)).thenReturn(entity);
 
         context.merge(entity);
@@ -243,7 +232,7 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_remove() throws Exception
     {
-        Whitebox.setInternalState(context, "persister", persister);
+        Whitebox.setInternalState(context, ThriftEntityPersister.class, persister);
 
         context.remove();
 
@@ -257,8 +246,8 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_find() throws Exception
     {
-        Whitebox.setInternalState(context, "loader", loader);
-        Whitebox.setInternalState(context, "proxifier", proxifier);
+        Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
+        Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
         when(loader.load(context, CompleteBean.class)).thenReturn(entity);
         when(proxifier.buildProxy(entity, context)).thenReturn(entity);
@@ -276,8 +265,8 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_not_find() throws Exception
     {
-        Whitebox.setInternalState(context, "loader", loader);
-        Whitebox.setInternalState(context, "proxifier", proxifier);
+        Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
+        Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
         when(loader.load(context, CompleteBean.class)).thenReturn(null);
         when(proxifier.buildProxy(entity, context)).thenReturn(entity);
@@ -296,8 +285,8 @@ public class ThriftPersistenceContextTest
         context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
                 flushContext, entity, new HashSet<String>());
 
-        Whitebox.setInternalState(context, "loader", loader);
-        Whitebox.setInternalState(context, "proxifier", proxifier);
+        Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
+        Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
         when(loader.load(context, CompleteBean.class)).thenReturn(entity);
         when(proxifier.buildProxy(entity, context)).thenReturn(entity);
@@ -314,7 +303,7 @@ public class ThriftPersistenceContextTest
     @Test
     public void should_refresh() throws Exception
     {
-        Whitebox.setInternalState(context, "refresher", refresher);
+        Whitebox.setInternalState(context, EntityRefresher.class, refresher);
 
         context.refresh();
 

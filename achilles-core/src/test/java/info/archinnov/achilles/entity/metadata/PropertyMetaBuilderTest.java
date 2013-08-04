@@ -2,15 +2,18 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.parser.entity.Bean;
-import info.archinnov.achilles.test.parser.entity.MyMultiKey;
+import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
+import java.util.ArrayList;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +46,7 @@ public class PropertyMetaBuilderTest {
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
+                .consistencyLevels(Pair.create(ONE, ALL))
                 .build(Void.class, String.class);
 
         assertThat(built.type()).isEqualTo(SIMPLE);
@@ -53,35 +56,42 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
     }
 
     @Test
-    public void should_build_multikey_id() throws Exception {
+    public void should_build_compound_id() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
+        props.setComponentClasses(new ArrayList<Class<?>>());
+        props.setComponentGetters(new ArrayList<Method>());
+        props.setComponentSetters(new ArrayList<Method>());
+
+        PropertyMeta<Void, CompoundKey> built = PropertyMetaBuilder
                 .factory()
                 .type(EMBEDDED_ID)
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
-                .build(Void.class, String.class);
+                .consistencyLevels(Pair.create(ONE, ALL))
+                .embeddedIdProperties(props)
+                .build(Void.class, CompoundKey.class);
 
         assertThat(built.type()).isEqualTo(EMBEDDED_ID);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat(built.getValueClass()).isEqualTo(CompoundKey.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isTrue();
         assertThat(built.type().isJoin()).isFalse();
         assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
         assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(built.getTranscoder()).isInstanceOf(CompoundTranscoder.class);
     }
 
     @Test
@@ -102,8 +112,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
     }
 
     @Test
@@ -124,8 +135,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(Bean.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
     }
 
     @Test
@@ -146,8 +158,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
     }
 
     @Test
@@ -168,8 +181,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
     }
 
     @Test
@@ -190,8 +204,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
     }
 
     @Test
@@ -212,8 +227,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
     }
 
     @Test
@@ -237,8 +253,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }
 
     @Test
@@ -262,8 +279,8 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
-        assertThat(built.isSingleKey()).isTrue();
         assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }
 
     @Test
@@ -287,80 +304,9 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
+        assertThat(built.isEmbeddedId()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
-    }
-
-    @Test
-    public void should_build_wide_map() throws Exception {
-
-        PropertyMeta<Integer, String> built = PropertyMetaBuilder
-                .factory()
-                .type(WIDE_MAP)
-                .propertyName("prop")
-                .accessors(accessors)
-                .objectMapper(objectMapper)
-                .build(Integer.class, String.class);
-
-        assertThat(built.type()).isEqualTo(WIDE_MAP);
-        assertThat(built.getPropertyName()).isEqualTo("prop");
-
-        assertThat(built.getKey(12)).isInstanceOf(Integer.class);
-        assertThat(built.getKeyClass()).isEqualTo(Integer.class);
-
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
-
-        assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isTrue();
-        assertThat(built.type().isJoin()).isFalse();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void should_build_multi_key_wide_map() throws Exception {
-
-        Iterator<Class<?>> iterator = mock(Iterator.class);
-        List<Class<?>> componentClasses = mock(List.class);
-        List<Method> componentGetters = mock(List.class);
-        List<Method> componentSetters = mock(List.class);
-        when(componentClasses.size()).thenReturn(1);
-        when(componentClasses.iterator()).thenReturn(iterator);
-        when(iterator.hasNext()).thenReturn(false);
-
-        CompoundKeyProperties props = new CompoundKeyProperties();
-        props.setComponentClasses(componentClasses);
-        props.setComponentGetters(componentGetters);
-        props.setComponentSetters(componentSetters);
-
-        PropertyMeta<MyMultiKey, String> built = PropertyMetaBuilder
-                .factory()
-                .type(WIDE_MAP)
-                .propertyName("prop")
-                .accessors(accessors)
-                .multiKeyProperties(props)
-                .objectMapper(objectMapper)
-                .build(MyMultiKey.class, String.class);
-
-        assertThat(built.type()).isEqualTo(WIDE_MAP);
-        assertThat(built.getPropertyName()).isEqualTo("prop");
-
-        MyMultiKey multiKey = new MyMultiKey();
-        assertThat(built.getKey(multiKey)).isInstanceOf(MyMultiKey.class);
-        assertThat(built.getKeyClass()).isEqualTo(MyMultiKey.class);
-
-        assertThat(built.getComponentClasses()).isSameAs(componentClasses);
-
-        assertThat(built.getComponentGetters()).isSameAs(componentGetters);
-
-        assertThat(built.getComponentSetters()).isSameAs(componentSetters);
-
-        assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
-
-        assertThat(built.type().isLazy()).isTrue();
-        assertThat(built.isSingleKey()).isFalse();
-        assertThat(built.type().isJoin()).isFalse();
+        assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
     }
 
     private String writeString(Object value) throws Exception {

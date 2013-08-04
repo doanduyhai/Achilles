@@ -1,7 +1,13 @@
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -24,7 +30,7 @@ public class PropertyMetaBuilder {
     private CounterProperties counterProperties;
 
     private JoinProperties joinProperties;
-    private CompoundKeyProperties compoundKeyProperties;
+    private EmbeddedIdProperties embeddedIdProperties;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static PropertyMetaBuilder factory() {
@@ -50,7 +56,7 @@ public class PropertyMetaBuilder {
         log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
         PropertyMeta<K, V> meta = null;
-        boolean singleKey = compoundKeyProperties == null ? true : false;
+        boolean isCompound = embeddedIdProperties == null ? false : true;
         meta = new PropertyMeta<K, V>();
         meta.setObjectMapper(objectMapper);
         meta.setType(type);
@@ -62,11 +68,11 @@ public class PropertyMetaBuilder {
         meta.setSetter(accessors[1]);
 
         meta.setJoinProperties(joinProperties);
-        meta.setCompoundKeyProperties(compoundKeyProperties);
+        meta.setEmbeddedIdProperties(embeddedIdProperties);
 
-        meta.setSingleKey(singleKey);
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
+        meta.setTranscoder(determineTranscoder(isCompound));
 
         return meta;
     }
@@ -81,8 +87,8 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder multiKeyProperties(CompoundKeyProperties multiKeyProperties) {
-        this.compoundKeyProperties = multiKeyProperties;
+    public PropertyMetaBuilder embeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
+        this.embeddedIdProperties = embeddedIdProperties;
         return this;
     }
 
@@ -94,6 +100,36 @@ public class PropertyMetaBuilder {
     public PropertyMetaBuilder consistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
         this.consistencyLevels = consistencyLevels;
         return this;
+    }
+
+    private DataTranscoder determineTranscoder(boolean isCompound)
+    {
+        switch (type)
+        {
+            case EMBEDDED_ID:
+                return new CompoundTranscoder(objectMapper);
+            case ID:
+            case COUNTER:
+            case SIMPLE:
+            case LAZY_SIMPLE:
+            case JOIN_SIMPLE:
+                return new SimpleTranscoder(objectMapper);
+            case LIST:
+            case LAZY_LIST:
+            case JOIN_LIST:
+                return new ListTranscoder(objectMapper);
+            case SET:
+            case LAZY_SET:
+            case JOIN_SET:
+                return new SetTranscoder(objectMapper);
+            case MAP:
+            case LAZY_MAP:
+            case JOIN_MAP:
+                return new MapTranscoder(objectMapper);
+
+            default:
+                return null;
+        }
     }
 
 }

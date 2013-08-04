@@ -3,7 +3,7 @@ package info.archinnov.achilles.statement.cache;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.statement.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,13 +71,13 @@ public class CacheManager
 
     private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta<?, ?> pm)
     {
-        if (pm.isSingleKey())
+        if (pm.isEmbeddedId())
         {
-            return Sets.newHashSet(pm.getPropertyName());
+            return new HashSet<String>(pm.getComponentNames());
         }
         else
         {
-            return new HashSet<String>(pm.getCQLComponentNames());
+            return Sets.newHashSet(pm.getPropertyName());
         }
     }
 }

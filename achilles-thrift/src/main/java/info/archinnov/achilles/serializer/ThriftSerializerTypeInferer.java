@@ -5,16 +5,10 @@ import me.prettyprint.hector.api.Serializer;
 
 public class ThriftSerializerTypeInferer {
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> Serializer<T> getSerializer(Class<?> valueClass) {
         if (valueClass == null)
         {
             return null;
-        }
-
-        if (valueClass.isEnum())
-        {
-            return new ThriftEnumSerializer(valueClass);
         }
 
         Serializer<T> serializer = SerializerTypeInferer.getSerializer(valueClass);

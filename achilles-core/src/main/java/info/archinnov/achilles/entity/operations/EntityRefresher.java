@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -27,9 +28,10 @@ public class EntityRefresher<CONTEXT extends PersistenceContext> {
         this.proxifier = proxifier;
     }
 
-    public <T> void refresh(CONTEXT context) {
+    public <T> void refresh(CONTEXT context) throws AchillesStaleObjectStateException {
+        Object primaryKey = context.getPrimaryKey();
         log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
-                context.getPrimaryKey());
+                primaryKey);
 
         Object entity = context.getEntity();
 
@@ -42,6 +44,11 @@ public class EntityRefresher<CONTEXT extends PersistenceContext> {
 
         Object freshEntity = loader.load(context, context.getEntityClass());
 
+        if (freshEntity == null)
+        {
+            throw new AchillesStaleObjectStateException("The entity '" + entity + "' with primary_key '"
+                    + primaryKey + "' no longer exists in Cassandra");
+        }
         interceptor.setTarget(freshEntity);
     }
 }

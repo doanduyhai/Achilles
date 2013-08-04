@@ -56,6 +56,34 @@ public class ThriftPersisterImpl {
         }
     }
 
+    public void persistCounter(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+
+        Object counter = invoker.getValueFromField(context.getEntity(), propertyMeta.getGetter());
+        String entityClassName = context.getEntityClass().getCanonicalName();
+        if (counter != null) {
+
+            PropertyMeta<?, ?> idMeta = context.getEntityMeta().getIdMeta();
+            Object primaryKey = context.getPrimaryKey();
+            Composite rowKey = thriftCompositeFactory.createKeyForCounter(propertyMeta.fqcn(), primaryKey, idMeta);
+            Composite name = thriftCompositeFactory.createBaseForCounterGet(propertyMeta);
+            if (log.isTraceEnabled()) {
+                log.trace(
+                        "Batch persisting counter property {} from entity of class {} and primary key {} with column name {}",
+                        propertyMeta.getPropertyName(), entityClassName,
+                        context.getPrimaryKey(), format(name));
+            }
+
+            Validator.validateTrue(
+                    CounterImpl.class.isAssignableFrom(counter.getClass()), "Counter clustered entity '"
+                            + entityClassName + "' value should be of type '" + CounterImpl.class.getCanonicalName()
+                            + "'");
+
+            CounterImpl counterValue = (CounterImpl) counter;
+            context.getCounterDao().incrementCounter(rowKey, name, counterValue.get());
+            System.out.println("Done");
+        }
+    }
+
     public <V> void batchPersistList(List<V> list, ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
         int count = 0;
         for (V value : list) {
@@ -211,7 +239,7 @@ public class ThriftPersisterImpl {
         String tableName = meta.getTableName();
         String className = meta.getClassName();
 
-        Composite comp = thriftCompositeFactory.createBaseComposite(idMeta, compoundKey);
+        Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
@@ -248,7 +276,7 @@ public class ThriftPersisterImpl {
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
         String tableName = meta.getTableName();
-        Composite comp = thriftCompositeFactory.createBaseComposite(idMeta, compoundKey);
+        Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
@@ -297,13 +325,6 @@ public class ThriftPersisterImpl {
         List<PropertyMeta<?, ?>> pms = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta()).toImmutableList();
 
         for (PropertyMeta<?, ?> propertyMeta : pms) {
-            if (propertyMeta.isWideMap()) {
-                if (propertyMeta.isCounter()) {
-                    removeCounterWideMap(context, propertyMeta);
-                } else {
-                    removeWideMap(context, primaryKey, propertyMeta);
-                }
-            }
             if (propertyMeta.isCounter()) {
                 removeSimpleCounter(context, propertyMeta);
             }
@@ -311,14 +332,14 @@ public class ThriftPersisterImpl {
     }
 
     public void removeClusteredEntity(ThriftPersistenceContext context, Object partitionKey) {
-        Object compoundKey = context.getPrimaryKey();
+        Object embeddedId = context.getPrimaryKey();
         EntityMeta meta = context.getEntityMeta();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
         String tableName = meta.getTableName();
 
-        Composite comp = thriftCompositeFactory.createBaseComposite(idMeta, compoundKey);
+        Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, embeddedId);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
@@ -329,15 +350,6 @@ public class ThriftPersisterImpl {
             dao.removeColumnBatch(partitionKey, comp, mutator);
         }
 
-    }
-
-    private void removeWideMap(ThriftPersistenceContext context, Object primaryKey, PropertyMeta<?, ?> propertyMeta) {
-        log.trace("Batch removing wideMap property {} of class {} and primary key {}",
-                propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-
-        String externalColumnFamilyName = propertyMeta.getExternalTableName();
-        ThriftGenericWideRowDao findColumnFamilyDao = context.findWideRowDao(externalColumnFamilyName);
-        findColumnFamilyDao.removeRowBatch(primaryKey, context.getWideRowMutator(externalColumnFamilyName));
     }
 
     public void removePropertyBatch(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
@@ -362,15 +374,5 @@ public class ThriftPersisterImpl {
                 propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
         context.getCounterDao().removeCounterBatch(keyComp, com, context.getCounterMutator());
-    }
-
-    private void removeCounterWideMap(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
-
-        log.trace("Batch removing counter wideMap property {} of class {} and primary key {}",
-                propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
-
-        Composite keyComp = thriftCompositeFactory.createKeyForCounter(propertyMeta.fqcn(), context.getPrimaryKey(),
-                propertyMeta.counterIdMeta());
-        context.getCounterDao().removeCounterRowBatch(keyComp, context.getCounterMutator());
     }
 }

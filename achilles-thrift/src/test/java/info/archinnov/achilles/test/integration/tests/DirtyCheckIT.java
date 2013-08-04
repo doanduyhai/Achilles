@@ -1,7 +1,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
-import static info.archinnov.achilles.table.TableHelper.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
@@ -13,7 +13,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.Arrays;
 import java.util.HashMap;

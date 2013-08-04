@@ -3,12 +3,12 @@ package info.archinnov.achilles.entity.metadata;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
-import info.archinnov.achilles.type.KeyValue;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -101,23 +101,6 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_get_key_value_from_string() throws Exception
-    {
-        PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
-        propertyMeta.setObjectMapper(objectMapper);
-
-        KeyValue<Integer, String> keyValue = new KeyValue<Integer, String>(12, "12", 456, 10L);
-        String keyValueString = objectMapper.writeValueAsString(keyValue);
-
-        KeyValue<Integer, String> converted = propertyMeta.getKeyValueFromString(keyValueString);
-
-        assertThat(converted.getKey()).isEqualTo(keyValue.getKey());
-        assertThat(converted.getValue()).isEqualTo(keyValue.getValue());
-        assertThat(converted.getTtl()).isEqualTo(keyValue.getTtl());
-        assertThat(converted.getTimestamp()).isEqualTo(10L);
-    }
-
-    @Test
     public void should_write_value_to_string() throws Exception
     {
         PropertyMeta<Integer, String> propertyMeta = new PropertyMeta<Integer, String>();
@@ -177,7 +160,7 @@ public class PropertyMetaTest
     public void should_cast_value_as_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_SIMPLE)
                 .build();
 
@@ -192,8 +175,8 @@ public class PropertyMetaTest
     public void should_cast_value_as_supported_type() throws Exception
     {
         PropertyMeta<Integer, UUID> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UUID.class)
-                .type(PropertyType.WIDE_MAP)
+                .keyValueClass(Integer.class, UUID.class)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         Object uuid = new UUID(10L, 100L);
@@ -207,8 +190,8 @@ public class PropertyMetaTest
     public void should_cast_value_as_string() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
-                .type(PropertyType.WIDE_MAP)
+                .keyValueClass(Integer.class, UserBean.class)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         UserBean bean = new UserBean();
@@ -227,8 +210,8 @@ public class PropertyMetaTest
         EntityMeta joinMeta = new EntityMeta();
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .keyValueClass(Integer.class, UserBean.class)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -239,8 +222,8 @@ public class PropertyMetaTest
     public void should_return_null_if_not_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
-                .type(PropertyType.WIDE_MAP)
+                .keyValueClass(Integer.class, UserBean.class)
+                .type(PropertyType.SIMPLE)
                 .build();
 
         assertThat(propertyMeta.joinMeta()).isNull();
@@ -254,8 +237,8 @@ public class PropertyMetaTest
         joinMeta.setIdMeta(joinIdMeta);
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .keyValueClass(Integer.class, UserBean.class)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -295,8 +278,8 @@ public class PropertyMetaTest
         EntityMeta joinMeta = new EntityMeta();
 
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
-                .type(PropertyType.JOIN_WIDE_MAP)
+                .keyValueClass(Integer.class, UserBean.class)
+                .type(PropertyType.JOIN_MAP)
                 .joinMeta(joinMeta)
                 .build();
 
@@ -307,7 +290,7 @@ public class PropertyMetaTest
     public void should_return_true_when_join_type() throws Exception
     {
         PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Integer.class, UserBean.class)
+                .keyValueClass(Integer.class, UserBean.class)
                 .type(PropertyType.JOIN_SIMPLE)
                 .build();
 
@@ -318,7 +301,7 @@ public class PropertyMetaTest
     public void should_return_true_for_isLazy() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(PropertyType.LAZY_LIST)
                 .build();
 
@@ -326,36 +309,11 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_return_true_for_isWideMap() throws Exception
-    {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
-                //
-                .type(PropertyType.WIDE_MAP)
-                //
-                .build();
-
-        assertThat(propertyMeta.isWideMap()).isTrue();
-    }
-
-    @Test
     public void should_return_true_for_isCounter_when_type_is_counter() throws Exception
     {
         PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
+                .keyValueClass(Void.class, String.class)
                 .type(PropertyType.COUNTER)
-                .build();
-
-        assertThat(propertyMeta.isCounter()).isTrue();
-    }
-
-    @Test
-    public void should_return_true_for_isCounter_when_type_is_counter_external_widemap()
-            throws Exception
-    {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
-                .noClass(Void.class, String.class)
-                .type(PropertyType.COUNTER_WIDE_MAP)
                 .build();
 
         assertThat(propertyMeta.isCounter()).isTrue();
@@ -479,30 +437,15 @@ public class PropertyMetaTest
     }
 
     @Test
-    public void should_get_cql_property_name() throws Exception
-    {
-        PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
-        pm.setPropertyName("Name");
-
-        assertThat(pm.getCQLPropertyName()).isEqualTo("name");
-    }
-
-    @Test
-    public void should_get_cql_external_table_name() throws Exception
-    {
-        PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
-        pm.setExternalTableName("taBLe");
-
-        assertThat(pm.getCQLExternalTableName()).isEqualTo("table");
-    }
-
-    @Test
     public void should_serialize_as_json() throws Exception
     {
-        PropertyMeta<Void, UUID> pm = new PropertyMeta<Void, UUID>();
-        pm.setObjectMapper(objectMapper);
+        SimpleTranscoder transcoder = new SimpleTranscoder(objectMapper);
+        PropertyMeta<Void, UUID> pm =
+                new PropertyMeta<Void, UUID>();
+        pm.setType(SIMPLE);
+        pm.setTranscoder(transcoder);
 
-        assertThat(pm.jsonSerializeValue(new UUID(10, 10))).isEqualTo(
+        assertThat(pm.forceEncodeToJSON(new UUID(10, 10))).isEqualTo(
                 "\"00000000-0000-000a-0000-00000000000a\"");
     }
 
@@ -510,11 +453,11 @@ public class PropertyMetaTest
     public void should_get_cql_ordering_component() throws Exception
     {
         PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
+        EmbeddedIdProperties multiKeyProperties = new EmbeddedIdProperties();
         multiKeyProperties.setComponentNames(Arrays.asList("id", "age", "name"));
-        meta.setCompoundKeyProperties(multiKeyProperties);
+        meta.setEmbeddedIdProperties(multiKeyProperties);
 
-        assertThat(meta.getCQLOrderingComponent()).isEqualTo("age");
+        assertThat(meta.getOrderingComponent()).isEqualTo("age");
     }
 
     @Test
@@ -522,26 +465,8 @@ public class PropertyMetaTest
     {
         PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
 
-        assertThat(meta.getCQLOrderingComponent()).isNull();
+        assertThat(meta.getOrderingComponent()).isNull();
 
-    }
-
-    @Test
-    public void should_get_cql_component_names() throws Exception
-    {
-        PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        CompoundKeyProperties multiKeyProperties = new CompoundKeyProperties();
-        multiKeyProperties.setComponentNames(Arrays.asList("Id", "aGe", "namE"));
-        meta.setCompoundKeyProperties(multiKeyProperties);
-
-        assertThat(meta.getCQLComponentNames()).containsExactly("id", "age", "name");
-    }
-
-    @Test
-    public void should_return_empty_list_when_no_cql_component_names() throws Exception
-    {
-        PropertyMeta<Void, String> meta = new PropertyMeta<Void, String>();
-        assertThat(meta.getCQLComponentNames()).isEmpty();
     }
 
     @Test
@@ -550,13 +475,13 @@ public class PropertyMetaTest
         Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
                 .getConstructor(Long.class,
                         String.class);
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.<CompoundKeyByConstructor> getCompoundKeyConstructor()).isSameAs(
+        assertThat(meta.<CompoundKeyByConstructor> getEmbeddedIdConstructor()).isSameAs(
                 constructor);
     }
 
@@ -564,7 +489,7 @@ public class PropertyMetaTest
     public void should_return_null_when_no_compound_key_constructor() throws Exception
     {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        assertThat(meta.getCompoundKeyConstructor()).isNull();
+        assertThat(meta.getEmbeddedIdConstructor()).isNull();
     }
 
     @Test
@@ -572,13 +497,13 @@ public class PropertyMetaTest
     {
 
         Constructor<TweetCompoundKey> constructor = TweetCompoundKey.class.getConstructor();
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isTrue();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isTrue();
     }
 
     @Test
@@ -588,20 +513,20 @@ public class PropertyMetaTest
         Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
                 .getConstructor(Long.class,
                         String.class);
-        CompoundKeyProperties props = new CompoundKeyProperties();
+        EmbeddedIdProperties props = new EmbeddedIdProperties();
         props.setConstructor(constructor);
 
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        meta.setCompoundKeyProperties(props);
+        meta.setEmbeddedIdProperties(props);
 
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isFalse();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
     }
 
     @Test
     public void should_return_false_when_no_compound_key_constructor() throws Exception
     {
         PropertyMeta<?, ?> meta = new PropertyMeta<Void, CompoundKeyByConstructor>();
-        assertThat(meta.hasDefaultConstructorForCompoundKey()).isFalse();
+        assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
     }
 
     @Test
@@ -672,6 +597,17 @@ public class PropertyMetaTest
                 CompoundKey.class).build();
 
         assertThat(idMeta.getPartitionKeySetter()).isNull();
+    }
+
+    @Test
+    public void should_get_component_names() throws Exception
+    {
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compNames("a", "b")
+                .build();
+
+        assertThat(idMeta.getComponentNames()).containsExactly("a", "b");
     }
 
     @Test

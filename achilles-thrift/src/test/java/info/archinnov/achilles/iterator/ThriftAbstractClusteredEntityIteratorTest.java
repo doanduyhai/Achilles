@@ -56,10 +56,10 @@ public class ThriftAbstractClusteredEntityIteratorTest {
     @Before
     public void setUp()
     {
-        Whitebox.setInternalState(abstractIter, "transformer", transformer);
-        Whitebox.setInternalState(abstractIter, "proxifier", proxifier);
-        Whitebox.setInternalState(abstractIter, "context", context);
-        Whitebox.setInternalState(abstractIter, "iterator", iterator);
+        Whitebox.setInternalState(abstractIter, ThriftCompositeTransformer.class, transformer);
+        Whitebox.setInternalState(abstractIter, ThriftEntityProxifier.class, proxifier);
+        Whitebox.setInternalState(abstractIter, ThriftPersistenceContext.class, context);
+        Whitebox.setInternalState(abstractIter, Iterator.class, iterator);
     }
 
     @Test

@@ -17,6 +17,7 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * AchillesEntityParsingValidatorTest
@@ -41,16 +42,22 @@ public class EntityParsingValidatorTest {
     }
 
     @Test
-    public void should_exception_when_empty_property_meta_map() throws Exception {
+    public void should_exception_when_value_less_property_meta_map() throws Exception {
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
         EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
-        context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        context.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
         exception.expect(AchillesBeanMappingException.class);
         exception
                 .expectMessage("The entity '"
                         + CompleteBean.class.getCanonicalName()
                         + "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
 
-        validator.validatePropertyMetas(context);
+        validator.validatePropertyMetas(context, idMeta);
     }
 
     @Test

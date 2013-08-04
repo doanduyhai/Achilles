@@ -3,11 +3,8 @@ package info.archinnov.achilles.entity.operations;
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
 import static javax.persistence.CascadeType.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -70,9 +67,9 @@ public class EntityMergerTest {
 
     @Before
     public void setUp() {
-        Whitebox.setInternalState(entityMerger, "merger", merger);
-        Whitebox.setInternalState(entityMerger, "persister", persister);
-        Whitebox.setInternalState(entityMerger, "proxifier", proxifier);
+        Whitebox.setInternalState(entityMerger, Merger.class, merger);
+        Whitebox.setInternalState(entityMerger, EntityPersister.class, persister);
+        Whitebox.setInternalState(entityMerger, EntityProxifier.class, proxifier);
 
         when(context.getEntity()).thenReturn(entity);
         when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);

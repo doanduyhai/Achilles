@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
@@ -44,7 +44,7 @@ public class ThriftAbstractDaoTest
 	public void setUp()
 	{
 		abstractDao = new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy,
-				new Pair<Class<Long>, Class<String>>(Long.class, String.class));
+				Pair.create(Long.class, String.class));
 	}
 
 	@Test

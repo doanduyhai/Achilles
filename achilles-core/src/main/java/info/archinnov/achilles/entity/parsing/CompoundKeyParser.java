@@ -3,7 +3,7 @@ package info.archinnov.achilles.entity.parsing;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.reflections.ReflectionUtils.*;
 import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.entity.metadata.CompoundKeyProperties;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
@@ -88,7 +88,7 @@ public class CompoundKeyParser
 		}
 	};
 
-	public CompoundKeyProperties parseCompoundKey(Class<?> keyClass)
+	public EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)
 	{
 		log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
 
@@ -110,13 +110,13 @@ public class CompoundKeyParser
 						+ keyClass.getCanonicalName()
 						+ "'");
 
-		CompoundKeyProperties compoundKeyProperties = buildComponentMetas(keyClass,
+		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(keyClass,
 				componentClasses, componentNames,
 				componentGetters, componentSetters,
 				components, constructor);
 
-		log.trace("Built compound key properties : {}", compoundKeyProperties);
-		return compoundKeyProperties;
+		log.trace("Built compound key properties : {}", embeddedIdProperties);
+		return embeddedIdProperties;
 	}
 
 	private Constructor<?> scanAnnotatedFields(Class<?> keyClass, Map<Integer, Field> components)
@@ -309,7 +309,7 @@ public class CompoundKeyParser
 						+ "'");
 	}
 
-	private CompoundKeyProperties buildComponentMetas(Class<?> keyClass,
+	private EmbeddedIdProperties buildComponentMetas(Class<?> keyClass,
 			List<Class<?>> componentClasses,
 			List<String> componentNames,
 			List<Method> componentGetters, List<Method> componentSetters,
@@ -341,13 +341,13 @@ public class CompoundKeyParser
 				"No field or constructor param with @Order annotation found in the class '"
 						+ keyClass.getCanonicalName() + "'");
 
-		CompoundKeyProperties compoundKeyProperties = new CompoundKeyProperties();
-		compoundKeyProperties.setComponentClasses(componentClasses);
-		compoundKeyProperties.setComponentNames(componentNames);
-		compoundKeyProperties.setComponentGetters(componentGetters);
-		compoundKeyProperties.setComponentSetters(componentSetters);
-		compoundKeyProperties.setConstructor(constructor);
+		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties();
+		embeddedIdProperties.setComponentClasses(componentClasses);
+		embeddedIdProperties.setComponentNames(componentNames);
+		embeddedIdProperties.setComponentGetters(componentGetters);
+		embeddedIdProperties.setComponentSetters(componentSetters);
+		embeddedIdProperties.setConstructor(constructor);
 
-		return compoundKeyProperties;
+		return embeddedIdProperties;
 	}
 }

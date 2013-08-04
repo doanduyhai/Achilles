@@ -1,5 +1,6 @@
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
@@ -7,6 +8,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -14,8 +16,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 
 /**
  * CQLPersistenceContext
@@ -78,13 +82,6 @@ public class CQLPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public CQLPersistenceContext duplicateWithPrimaryKey(Object embeddedId)
-    {
-        return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(), entityClass, embeddedId, new HashSet<String>());
-    }
-
-    @Override
     public CQLPersistenceContext duplicate(Object entity)
     {
         return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicateWithoutTtl(),
@@ -106,30 +103,96 @@ public class CQLPersistenceContext extends PersistenceContext
         return daoContext.loadProperty(this, pm);
     }
 
-    public void bindForInsert()
+    public void pushInsertStatement()
     {
-        daoContext.bindForInsert(this);
+        daoContext.pushInsertStatement(this);
     }
 
-    public void bindForUpdate(List<PropertyMeta<?, ?>> pms)
+    public void pushUpdateStatement(List<PropertyMeta<?, ?>> pms)
     {
-        daoContext.bindForUpdate(this, pms);
+        daoContext.pushUpdateStatement(this, pms);
     }
 
-    public void bindForRemoval(String tableName, ConsistencyLevel writeLevel)
+    public void bindForRemoval(String tableName)
     {
-        daoContext.bindForRemoval(this, tableName, writeLevel);
+        daoContext.bindForRemoval(this, tableName);
     }
 
-    public void bindForSimpleCounterRemoval(EntityMeta meta, PropertyMeta<?, ?> counterMeta,
-            Object primaryKey)
+    // Simple counter
+    public void bindForSimpleCounterIncrement(PropertyMeta<?, ?> counterMeta, Long increment)
     {
-        daoContext.bindForSimpleCounterDelete(this, meta, counterMeta, primaryKey);
+        daoContext.bindForSimpleCounterIncrement(this, entityMeta, counterMeta, increment);
+    }
+
+    public void incrementSimpleCounter(PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistency)
+    {
+        daoContext.incrementSimpleCounter(this, entityMeta, counterMeta, increment, consistency);
+    }
+
+    public void decrementSimpleCounter(PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistency)
+    {
+        daoContext.decrementSimpleCounter(this, entityMeta, counterMeta, decrement, consistency);
+    }
+
+    public Long getSimpleCounter(PropertyMeta<?, ?> counterMeta, ConsistencyLevel consistency)
+    {
+        Row row = daoContext.getSimpleCounter(this, counterMeta, consistency);
+        if (row != null)
+        {
+            return row.getLong(CQL_COUNTER_VALUE);
+        }
+        return null;
+    }
+
+    public void bindForSimpleCounterRemoval(PropertyMeta<?, ?> counterMeta)
+    {
+        daoContext.bindForSimpleCounterDelete(this, entityMeta, counterMeta, primaryKey);
+    }
+
+    // Clustered counter
+    public void pushClusteredCounterIncrementStatement(PropertyMeta<?, ?> counterMeta, Long increment)
+    {
+        daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
+    }
+
+    public void incrementClusteredCounter(PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistency)
+    {
+        daoContext.incrementClusteredCounter(this, entityMeta, counterMeta, increment, consistency);
+    }
+
+    public void decrementClusteredCounter(PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistency)
+    {
+        daoContext.decrementClusteredCounter(this, entityMeta, counterMeta, decrement, consistency);
+    }
+
+    public Long getClusteredCounter(PropertyMeta<?, ?> counterMeta, ConsistencyLevel readLevel)
+    {
+        Row row = daoContext.getClusteredCounter(this, counterMeta, readLevel);
+        if (row != null)
+        {
+            return row.getLong(counterMeta.getPropertyName());
+        }
+        return null;
+    }
+
+    public void bindForClusteredCounterRemoval(PropertyMeta<?, ?> counterMeta)
+    {
+        daoContext.bindForClusteredCounterDelete(this, entityMeta, counterMeta, primaryKey);
+    }
+
+    public ResultSet bindAndExecute(PreparedStatement ps, Object... params)
+    {
+        return daoContext.bindAndExecute(ps, params);
     }
 
     public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
     {
         flushContext.pushBoundStatement(boundStatement, writeLevel);
+    }
+
+    public void pushStatement(Statement boundStatement, ConsistencyLevel writeLevel)
+    {
+        flushContext.pushStatement(boundStatement, writeLevel);
     }
 
     public ResultSet executeImmediateWithConsistency(BoundStatement bs,
@@ -180,7 +243,7 @@ public class CQLPersistenceContext extends PersistenceContext
     }
 
     @Override
-    public void refresh()
+    public void refresh() throws AchillesStaleObjectStateException
     {
         refresher.refresh(this);
     }

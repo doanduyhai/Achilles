@@ -1,11 +1,7 @@
 package info.archinnov.achilles.common;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_PORT_PARAM;
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENSURE_CONSISTENCY_ON_JOIN_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
@@ -55,7 +51,7 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
         configMap.put(FORCE_CF_CREATION_PARAM, true);
         configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
-        createTables();
+        //createTables();
         emf = new CQLEntityManagerFactory(configMap);
         em = emf.createEntityManager();
     }
@@ -70,6 +66,10 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
 
     public static int getCqlPort() {
         return CASSANDRA_CQL_TEST_PORT;
+    }
+
+    public static CQLEntityManagerFactory getEmf() {
+        return emf;
     }
 
     public static CQLEntityManager getEm() {
@@ -194,5 +194,9 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
             String tableName = row.getString("columnfamily_name");
             session.execute(new SimpleStatement("truncate " + tableName));
         }
+    }
+
+    public static void truncateTable(String tableName) {
+        session.execute(new SimpleStatement("truncate " + tableName));
     }
 }

@@ -34,7 +34,7 @@ public class ReflectionInvoker
                 throw new AchillesException("Cannot get primary key value by invoking getter '"
                         + getter.getName() + "' of type '"
                         + getter.getDeclaringClass().getCanonicalName() + "' from entity '"
-                        + entity + "'");
+                        + entity + "'", e);
             }
         }
         return null;
@@ -54,7 +54,7 @@ public class ReflectionInvoker
                         + partitionKeyGetter.getName() + "' of type '"
                         + partitionKeyGetter.getDeclaringClass().getCanonicalName()
                         + "' from compoundKey '"
-                        + compoundKey + "'");
+                        + compoundKey + "'", e);
             }
         }
         return null;
@@ -136,7 +136,7 @@ public class ReflectionInvoker
             PropertyMeta<?, ?> idMeta,
             Object partitionKey)
     {
-        Constructor<Object> constructor = idMeta.getCompoundKeyConstructor();
+        Constructor<Object> constructor = idMeta.getEmbeddedIdConstructor();
         Object newInstance;
         try
         {

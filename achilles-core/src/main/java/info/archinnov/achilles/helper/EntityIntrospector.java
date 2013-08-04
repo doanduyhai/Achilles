@@ -1,16 +1,14 @@
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.helper.LoggerHelper.*;
+import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.table.TableHelper;
+import info.archinnov.achilles.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.type.WideMap;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -120,11 +118,7 @@ public class EntityIntrospector {
         Method[] accessors = new Method[2];
 
         accessors[0] = findGetter(beanClass, field);
-        if (field.getType() == WideMap.class || field.getType() == Counter.class) {
-            accessors[1] = null;
-        } else {
-            accessors[1] = findSetter(beanClass, field);
-        }
+        accessors[1] = findSetter(beanClass, field);
 
         return accessors;
     }
@@ -139,9 +133,9 @@ public class EntityIntrospector {
         }
 
         if (!StringUtils.isBlank(columnFamilyName)) {
-            columnFamilyName = TableHelper.normalizerAndValidateColumnFamilyName(columnFamilyName);
+            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(columnFamilyName);
         } else {
-            columnFamilyName = TableHelper.normalizerAndValidateColumnFamilyName(canonicalName);
+            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
         }
 
         log.debug("Inferred columnFamilyName for entity {} : {}", canonicalName, columnFamilyName);
@@ -164,7 +158,7 @@ public class EntityIntrospector {
 
         log.trace("Found consistency levels : {}/{}", defaultGlobalRead, defaultGlobalWrite);
 
-        return new Pair<ConsistencyLevel, ConsistencyLevel>(defaultGlobalRead, defaultGlobalWrite);
+        return Pair.create(defaultGlobalRead, defaultGlobalWrite);
     }
 
     public List<Field> getInheritedPrivateFields(Class<?> type) {

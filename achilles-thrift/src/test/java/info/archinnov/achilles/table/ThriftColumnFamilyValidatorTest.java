@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesInvalidColumnFamilyException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -58,7 +58,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getKeyValidationClass()).thenReturn(ASCIITYPE.getClassName());
         when(cfDef.getKeyValidationAlias()).thenReturn("(alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.AsciiType(alias)' should be '"
                         + COUNTER_KEY_CHECK + "'");
@@ -71,7 +71,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
         when(cfDef.getKeyValidationAlias()).thenReturn("(wrong_alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'achillesCounterCF' key class 'org.apache.cassandra.db.marshal.CompositeType(wrong_alias)' should be '"
                         + COUNTER_KEY_CHECK + "'");
@@ -87,7 +87,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(ASCIITYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType(alias)' should be '"
                         + COUNTER_COMPARATOR_CHECK + "'");
@@ -103,7 +103,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'achillesCounterCF' comparator type 'CompositeType(wrong_alias)' should be '"
                         + COUNTER_COMPARATOR_CHECK + "'");
@@ -120,7 +120,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorTypeAlias()).thenReturn("(org.apache.cassandra.db.marshal.UTF8Type)");
         when(cfDef.getDefaultValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'achillesCounterCF' validation class 'org.apache.cassandra.db.marshal.AsciiType' should be '"
                         + COUNTERTYPE.getClassName() + "'");
@@ -157,7 +157,7 @@ public class ThriftColumnFamilyValidatorTest {
         when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
         when(entityMeta.getTableName()).thenReturn("cf");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'cf' key class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
 
@@ -171,7 +171,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(entityMeta.getTableName()).thenReturn("cf");
         when(cfDef.getComparatorType()).thenReturn(null);
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'cf' comparator type 'null' should be '"
                 + ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
@@ -186,7 +186,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'cf' comparator type 'AsciiType(alias)' should be '"
                 + ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
@@ -213,7 +213,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn("(LongType)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'tableName' comparator type should be 'CompositeType(CounterType)'");
 
@@ -228,7 +228,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'cf' comparator type 'CompositeType(wrong_alias)' should be '"
                 + ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
@@ -326,7 +326,7 @@ public class ThriftColumnFamilyValidatorTest {
 
         when(cfDef.getKeyValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'tableName' key validation type should be '"
                 + LONG_SRZ.getComparatorType().getClassName() + "'");
         validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
@@ -351,7 +351,7 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorTypeAlias()).thenReturn(
                 "(org.apache.cassandra.db.marshal.LongType,org.apache.cassandra.db.marshal.UUIDType)");
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'tableName' comparator type should be 'CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)'");
         validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
@@ -377,7 +377,7 @@ public class ThriftColumnFamilyValidatorTest {
                 "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
         when(cfDef.getDefaultValidationClass()).thenReturn(INT_SRZ.getComparatorType().getTypeName());
 
-        exception.expect(AchillesInvalidColumnFamilyException.class);
+        exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'tableName' default validation type should be 'LongType'");
         validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
     }

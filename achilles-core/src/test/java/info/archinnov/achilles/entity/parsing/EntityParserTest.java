@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -21,12 +20,9 @@ import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedColumnName;
 import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedJoinColumnName;
-import info.archinnov.achilles.test.parser.entity.BeanWithExternalJoinWideMap;
-import info.archinnov.achilles.test.parser.entity.BeanWithExternalWideMap;
-import info.archinnov.achilles.test.parser.entity.BeanWithJoinColumnAsWideMap;
+import info.archinnov.achilles.test.parser.entity.BeanWithJoinColumnAsEntity;
 import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
 import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
-import info.archinnov.achilles.test.parser.entity.BeanWithWideMapCounter;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntityWithJoin;
@@ -108,7 +104,7 @@ public class EntityParserTest {
         assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
-        assertThat(meta.getPropertyMetas()).hasSize(8);
+        assertThat(meta.getPropertyMetas()).hasSize(7);
 
         PropertyMeta<?, ?> id = meta.getPropertyMetas().get("id");
         PropertyMeta<?, ?> name = meta.getPropertyMetas().get("name");
@@ -119,8 +115,6 @@ public class EntityParserTest {
                 "preferences");
 
         PropertyMeta<Void, UserBean> creator = (PropertyMeta<Void, UserBean>) meta.getPropertyMetas().get("creator");
-        PropertyMeta<String, UserBean> linkedUsers = (PropertyMeta<String, UserBean>) meta.getPropertyMetas().get(
-                "linked_users");
 
         assertThat(id).isNotNull();
         assertThat(name).isNotNull();
@@ -129,7 +123,6 @@ public class EntityParserTest {
         assertThat(followers).isNotNull();
         assertThat(preferences).isNotNull();
         assertThat(creator).isNotNull();
-        assertThat(linkedUsers).isNotNull();
 
         assertThat(id.getPropertyName()).isEqualTo("id");
         assertThat((Class<Long>) id.getValueClass()).isEqualTo(Long.class);
@@ -174,13 +167,7 @@ public class EntityParserTest {
         assertThat(creator.type()).isEqualTo(JOIN_SIMPLE);
         assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(CascadeType.ALL);
 
-        assertThat(linkedUsers.getPropertyName()).isEqualTo("linked_users");
-        assertThat(linkedUsers.getValueClass()).isEqualTo(UserBean.class);
-        assertThat(linkedUsers.type()).isEqualTo(JOIN_WIDE_MAP);
-        assertThat(linkedUsers.getJoinProperties().getCascadeTypes()).contains(PERSIST, MERGE);
-
         assertThat((Class) joinPropertyMetaToBeFilled.get(creator)).isEqualTo(UserBean.class);
-        assertThat((Class) joinPropertyMetaToBeFilled.get(linkedUsers)).isEqualTo(UserBean.class);
 
         assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
@@ -204,7 +191,7 @@ public class EntityParserTest {
         assertThat((Class<CompoundKey>) meta.getIdClass()).isEqualTo(CompoundKey.class);
         PropertyMeta<Void, CompoundKey> idMeta = (PropertyMeta<Void, CompoundKey>) meta.getIdMeta();
 
-        assertThat(idMeta.isSingleKey()).isFalse();
+        assertThat(idMeta.isEmbeddedId()).isTrue();
         assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
 
     }
@@ -249,50 +236,6 @@ public class EntityParserTest {
         assertThat(counterProperties).isNotNull();
         assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithSimpleCounter.class.getCanonicalName());
         assertThat((PropertyMeta<Void, Long>) counterProperties.getIdMeta()).isSameAs(idMeta);
-    }
-
-    @Test
-    public void should_parse_bean_with_widemap_counter_field() throws Exception {
-        initEntityParsingContext(BeanWithWideMapCounter.class);
-        EntityMeta meta = parser.parseEntity(entityContext);
-
-        assertThat(meta).isNotNull();
-        assertThat(entityContext.getHasSimpleCounter()).isFalse();
-        PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
-        assertThat(idMeta).isNotNull();
-        PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counters");
-        assertThat(counterMeta).isNotNull();
-
-        CounterProperties counterProperties = counterMeta.getCounterProperties();
-
-        assertThat(counterProperties).isNotNull();
-        assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithWideMapCounter.class.getCanonicalName());
-        assertThat((PropertyMeta<Void, Long>) counterProperties.getIdMeta()).isSameAs(idMeta);
-    }
-
-    @Test
-    public void should_parse_bean_with_wide_map() throws Exception {
-        initEntityParsingContext(BeanWithExternalWideMap.class);
-        EntityMeta meta = parser.parseEntity(entityContext);
-
-        assertThat(meta).isNotNull();
-        PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
-        assertThat(usersPropertyMeta.type()).isEqualTo(WIDE_MAP);
-        assertThat(usersPropertyMeta.getExternalTableName()).isEqualTo("external_users");
-        assertThat((Class<Long>) usersPropertyMeta.getIdClass()).isEqualTo(Long.class);
-    }
-
-    @Test
-    public void should_parse_bean_with_join_wide_map() throws Exception {
-        initEntityParsingContext(BeanWithExternalJoinWideMap.class);
-        EntityMeta meta = parser.parseEntity(entityContext);
-
-        assertThat(meta).isNotNull();
-        PropertyMeta<?, ?> usersPropertyMeta = meta.getPropertyMetas().get("users");
-        assertThat(usersPropertyMeta.type()).isEqualTo(JOIN_WIDE_MAP);
-        assertThat(usersPropertyMeta.getExternalTableName()).isEqualTo("external_users");
-        assertThat((Class<Long>) usersPropertyMeta.getIdClass()).isEqualTo(Long.class);
-        assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(usersPropertyMeta)).isEqualTo(UserBean.class);
     }
 
     @Test
@@ -401,12 +344,12 @@ public class EntityParserTest {
 
         PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
         joinPropertyMeta.setJoinProperties(new JoinProperties());
-        joinPropertyMeta.setType(JOIN_WIDE_MAP);
+        joinPropertyMeta.setType(JOIN_MAP);
         joinPropertyMeta.setIdClass(Long.class);
 
-        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsEntity.class);
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-        entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
+        entityMetaMap.put(BeanWithJoinColumnAsEntity.class, joinEntityMeta);
         parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 
         assertThat(joinPropertyMeta.getJoinProperties().getEntityMeta()).isSameAs(joinEntityMeta);
@@ -414,19 +357,19 @@ public class EntityParserTest {
 
     @Test
     public void should_exception_when_join_entity_is_a_clustered_entity() throws Exception {
-        initEntityParsingContext(BeanWithJoinColumnAsWideMap.class);
+        initEntityParsingContext(BeanWithJoinColumnAsEntity.class);
 
         EntityMeta joinEntityMeta = new EntityMeta();
         joinEntityMeta.setClusteredEntity(true);
-        joinEntityMeta.setClassName(BeanWithJoinColumnAsWideMap.class.getCanonicalName());
+        joinEntityMeta.setClassName(BeanWithJoinColumnAsEntity.class.getCanonicalName());
         PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
 
-        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsEntity.class);
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-        entityMetaMap.put(BeanWithJoinColumnAsWideMap.class, joinEntityMeta);
+        entityMetaMap.put(BeanWithJoinColumnAsEntity.class, joinEntityMeta);
 
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The entity '" + BeanWithJoinColumnAsWideMap.class.getCanonicalName()
+        expectedEx.expectMessage("The entity '" + BeanWithJoinColumnAsEntity.class.getCanonicalName()
                 + "' is a clustered entity and cannot be a join entity");
 
         parser.fillJoinEntityMeta(entityContext, entityMetaMap);
@@ -439,12 +382,12 @@ public class EntityParserTest {
 
         PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
 
-        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsWideMap.class);
+        joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsEntity.class);
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
         expectedEx.expect(AchillesBeanMappingException.class);
         expectedEx.expectMessage("Cannot find mapping for join entity '"
-                + BeanWithJoinColumnAsWideMap.class.getCanonicalName() + "'");
+                + BeanWithJoinColumnAsEntity.class.getCanonicalName() + "'");
 
         parser.fillJoinEntityMeta(entityContext, entityMetaMap);
 

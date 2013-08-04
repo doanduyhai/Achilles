@@ -4,7 +4,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.helper.EntityMapper;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.HashMap;
 import java.util.List;

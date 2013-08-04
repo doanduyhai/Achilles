@@ -7,6 +7,8 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
@@ -28,7 +30,6 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
     private static final Logger log = LoggerFactory.getLogger(EntityManager.class);
 
-    protected final EntityManagerFactory entityManagerFactory;
     protected Map<Class<?>, EntityMeta> entityMetaMap;
     protected AchillesConsistencyLevelPolicy consistencyPolicy;
     protected ConfigurationContext configContext;
@@ -37,9 +38,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     protected EntityValidator<CONTEXT> entityValidator;
     protected EntityInitializer initializer = new EntityInitializer();
 
-    EntityManager(EntityManagerFactory entityManagerFactory, Map<Class<?>, EntityMeta> entityMetaMap, //
+    EntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
             ConfigurationContext configContext) {
-        this.entityManagerFactory = entityManagerFactory;
         this.entityMetaMap = entityMetaMap;
         this.configContext = configContext;
         this.consistencyPolicy = configContext.getConsistencyPolicy();
@@ -88,7 +88,6 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public void persist(final Object entity, int ttl) {
         log.debug("Persisting entity '{}' with ttl {}", entity, ttl);
-
         persist(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
     }
 
@@ -115,12 +114,16 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
 
+        if (ttlO.isPresent())
+        {
+            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+        }
         if (proxifier.isProxy(entity)) {
             throw new IllegalStateException(
                     "Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
         }
 
-        CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, writeLevelO, ttlO);
+        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, ttlO);
         context.persist();
     }
 
@@ -260,7 +263,11 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
     <T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
-        CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, writeLevelO, ttlO);
+        if (ttlO.isPresent())
+        {
+            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+        }
+        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, ttlO);
         return context.<T> merge(entity);
 
     }
@@ -285,6 +292,34 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     }
 
     /**
+     * Remove an entity by its id. Join entities are <strong>not</strong> removed.
+     * 
+     * CascadeType.REMOVE is not supported as per design to avoid
+     * 
+     * inconsistencies while removing <em>shared</em> join entities.
+     * 
+     * You need to remove the join entities manually
+     * 
+     * @param entityClass
+     *            Entity class
+     * 
+     * @param primaryKey
+     *            Primary key
+     */
+    public void removeById(Class<?> entityClass, Object primaryKey) {
+
+        Validator.validateNotNull(entityClass, "The entity class should not be null");
+        Validator.validateNotNull(primaryKey, "The primary key should not be null");
+        if (log.isDebugEnabled()) {
+            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+        }
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL,
+                NO_TTL);
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+        context.remove();
+    }
+
+    /**
      * Remove an entity with the given Consistency Level for write. Join entities are <strong>not</strong> removed.
      * 
      * CascadeType.REMOVE is not supported as per design to avoid
@@ -305,10 +340,38 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         this.remove(entity, Optional.fromNullable(writeLevel));
     }
 
+    /**
+     * Remove an entity by its id with the given Consistency Level for write. Join entities are <strong>not</strong>
+     * removed.
+     * 
+     * CascadeType.REMOVE is not supported as per design to avoid
+     * 
+     * inconsistencies while removing <em>shared</em> join entities.
+     * 
+     * You need to remove the join entities manually
+     * 
+     * @param entityClass
+     *            Entity class
+     * 
+     * @param primaryKey
+     *            Primary key
+     */
+    public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
+        Validator.validateNotNull(entityClass, "The entity class should not be null");
+        Validator.validateNotNull(primaryKey, "The primary key should not be null");
+        if (log.isDebugEnabled()) {
+            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+        }
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, Optional.fromNullable(writeLevel),
+                Optional.fromNullable(writeLevel), NO_TTL);
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+        context.remove();
+    }
+
     void remove(final Object entity, Optional<ConsistencyLevel> writeLevelO) {
         entityValidator.validateEntity(entity, entityMetaMap);
         proxifier.ensureProxy(entity);
-        CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, writeLevelO, NO_TTL);
+        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, NO_TTL);
         context.remove();
     }
 
@@ -349,18 +412,20 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         Validator.validateNotNull(entityClass, "Entity class should not be null");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
         CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> find(entityClass);
     }
 
     /**
-     * Find an entity. Works exactly as find(Class<T> entityClass, Object primaryKey)
+     * Find an entity. Works exactly as find(Class<T> entityClass, Object primaryKey) except that the database will not
+     * be hit. This method never returns null
      * 
      * @param entityClass
      *            Entity type
      * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to load
+     *            Primary key (Cassandra row key) of the entity to initialize
      * @param entity
-     *            Found entity or null if no entity is found
+     *            Proxified empty entity
      */
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
         log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
@@ -369,16 +434,16 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
     /**
      * Find an entity with the given Consistency Level for read. Works exactly as find(Class<T> entityClass, Object
-     * primaryKey)
+     * primaryKey) except that the database will not be hit. This method never returns null
      * 
      * @param entityClass
      *            Entity type
      * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to load
+     *            Primary key (Cassandra row key) of the entity to initialize
      * @param readLevel
      *            Consistency Level for read
      * @param entity
-     *            Found entity or null if no entity is found
+     *            Proxified empty entity
      */
     public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
         log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
@@ -390,6 +455,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         Validator.validateNotNull(entityClass, "Entity class should not be null");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
         CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> getReference(entityClass);
     }
 
@@ -401,7 +467,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * @param entity
      *            Entity to be refreshed
      */
-    public void refresh(Object entity) {
+    public void refresh(Object entity) throws AchillesStaleObjectStateException {
         if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
         }
@@ -420,7 +486,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * @param readLevel
      *            Consistency Level for read
      */
-    public void refresh(final Object entity, ConsistencyLevel readLevel) {
+    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
         if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
         }
@@ -428,7 +494,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         this.refresh(entity, Optional.fromNullable(readLevel));
     }
 
-    void refresh(final Object entity, Optional<ConsistencyLevel> readLevelO) {
+    void refresh(final Object entity, Optional<ConsistencyLevel> readLevelO) throws AchillesStaleObjectStateException {
         entityValidator.validateEntity(entity, entityMetaMap);
         proxifier.ensureProxy(entity);
         CONTEXT context = initPersistenceContext(entity, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
@@ -545,6 +611,16 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
         return proxifier.unwrap(proxies);
     }
+
+    /**
+     * Create a new slice query builder for entity of type T<br/>
+     * <br/>
+     * 
+     * @param entityClass
+     *            Entity class
+     * @return SliceQueryBuilder<T>
+     */
+    public abstract <T> SliceQueryBuilder<CONTEXT, T> sliceQuery(Class<T> entityClass);
 
     protected abstract CONTEXT initPersistenceContext(Object entity, Optional<ConsistencyLevel> readLevelO,
             Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttl);

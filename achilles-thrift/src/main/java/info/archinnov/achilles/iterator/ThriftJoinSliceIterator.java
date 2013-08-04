@@ -7,7 +7,7 @@ import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -108,7 +108,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
             PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
 
             Object joinId;
-            if (propertyMeta.isWideMap() || propertyMeta.isJoin())
+            if (propertyMeta.isJoin())
             {
                 joinId = joinIdMeta.castValue(hColumn.getValue());
             }
@@ -118,7 +118,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
             }
             joinIds.add(joinId);
             hColumMap
-                    .put(joinId, new Pair<Composite, Integer>(hColumn.getName(), hColumn.getTtl()));
+                    .put(joinId, Pair.create(hColumn.getName(), hColumn.getTtl()));
         }
 
         if (joinIds.size() > 0)

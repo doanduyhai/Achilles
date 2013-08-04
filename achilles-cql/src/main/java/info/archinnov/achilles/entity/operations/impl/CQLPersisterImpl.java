@@ -1,12 +1,13 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static com.google.common.collect.Collections2.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static com.google.common.collect.Collections2.filter;
+import static info.archinnov.achilles.entity.metadata.PropertyType.counterType;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder.CounterImpl;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +28,49 @@ public class CQLPersisterImpl
 
     public void persist(CQLPersistenceContext context)
     {
-        context.bindForInsert();
+        context.pushInsertStatement();
+    }
+
+    public void persistClusteredCounter(CQLPersistenceContext context)
+    {
+        Object entity = context.getEntity();
+        PropertyMeta<?, ?> counterMeta = context.getFirstMeta();
+        Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
+        if (counter != null)
+        {
+            Validator.validateTrue(
+                    CounterImpl.class.isAssignableFrom(counter.getClass()),
+                    "Counter property '" + counterMeta.getPropertyName() + "' value from entity class '"
+                            + counterMeta.getEntityClassName() + "'  should be of type '"
+                            + CounterImpl.class.getCanonicalName() + "'");
+            CounterImpl counterValue = (CounterImpl) counter;
+            context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.get());
+        }
+        else
+        {
+            throw new IllegalStateException("Cannot insert clustered counter entity '" + entity
+                    + "' with null clustered counter value");
+        }
+
+    }
+
+    public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> counterMetas)
+    {
+        Object entity = context.getEntity();
+        for (PropertyMeta<?, ?> counterMeta : counterMetas)
+        {
+            Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
+            if (counter != null)
+            {
+                Validator.validateTrue(
+                        CounterImpl.class.isAssignableFrom(counter.getClass()),
+                        "Counter property '" + counterMeta.getPropertyName() + "' value from entity class '"
+                                + counterMeta.getEntityClassName() + "'  should be of type '"
+                                + CounterImpl.class.getCanonicalName() + "'");
+                CounterImpl counterValue = (CounterImpl) counter;
+                context.bindForSimpleCounterIncrement(counterMeta, counterValue.get());
+            }
+        }
     }
 
     public void cascadePersist(CQLEntityPersister entityPersister, CQLPersistenceContext context,
@@ -62,27 +105,26 @@ public class CQLPersisterImpl
     public void remove(CQLPersistenceContext context)
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        context.bindForRemoval(entityMeta.getTableName(), entityMeta.getWriteConsistencyLevel());
-        removeLinkedTables(context);
+        if (entityMeta.isClusteredCounter())
+        {
+            context.bindForClusteredCounterRemoval(entityMeta.getFirstMeta());
+        }
+        else
+        {
+            context.bindForRemoval(entityMeta.getTableName());
+            removeLinkedCounters(context);
+        }
     }
 
-    protected void removeLinkedTables(CQLPersistenceContext context)
+    protected void removeLinkedCounters(CQLPersistenceContext context)
     {
         EntityMeta entityMeta = context.getEntityMeta();
 
         List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
-        Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, isProxyType);
+        Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, counterType);
         for (PropertyMeta<?, ?> pm : proxyMetas)
         {
-            if (pm.type() == COUNTER)
-            {
-                context.bindForSimpleCounterRemoval(entityMeta, pm, context.getPrimaryKey());
-            }
-            else
-            {
-                context.bindForRemoval(pm.getExternalTableName(), pm.getWriteConsistencyLevel());
-            }
-
+            context.bindForSimpleCounterRemoval(pm);
         }
     }
 
