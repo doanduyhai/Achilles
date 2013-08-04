@@ -19,7 +19,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -142,7 +142,7 @@ public class ThriftEntityPersisterTest {
                 //
                 .completeBean(Void.class, UserBean.class).field("user").accessors().type(PropertyType.JOIN_SIMPLE)
                 .joinMeta(joinMeta).cascadeType(CascadeType.PERSIST)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL)).build();
+                .consistencyLevels(Pair.create(ALL, ALL)).build();
 
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("propertyMeta", propertyMeta));
 

@@ -7,11 +7,11 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import me.prettyprint.hector.api.mutation.Mutator;
+import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
@@ -119,8 +119,7 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
             if (entityDao != null)
             {
                 mutator = entityDao.buildMutator();
-                mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
-                        entityDao));
+                mutatorMap.put(tableName, Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, entityDao));
             }
         }
         return mutator;
@@ -140,8 +139,8 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
             if (columnFamilyDao != null)
             {
                 mutator = columnFamilyDao.buildMutator();
-                mutatorMap.put(tableName, new Pair<Mutator<Object>, ThriftAbstractDao>(mutator,
-                        columnFamilyDao));
+                mutatorMap.put(tableName,
+                        Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, columnFamilyDao));
             }
         }
         return mutator;
@@ -159,7 +158,7 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
             ThriftCounterDao thriftCounterDao = thriftDaoContext.getCounterDao();
             mutator = thriftCounterDao.buildMutator();
             mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF,
-                    new Pair<Mutator<Object>, ThriftAbstractDao>(mutator, thriftCounterDao));
+                    Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, thriftCounterDao));
         }
         return mutator;
     }

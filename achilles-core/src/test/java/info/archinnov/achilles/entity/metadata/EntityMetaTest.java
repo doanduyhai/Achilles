@@ -5,7 +5,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class EntityMetaTest
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ALL))
+                .consistencyLevels(Pair.create(ALL, ALL))
                 .build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -40,7 +40,7 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setClusteredEntity(true);
-        entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE));
+        entityMeta.setConsistencyLevels(Pair.create(ONE, ONE));
 
         StringBuilder toString = new StringBuilder();
         toString.append("EntityMeta [className=className, ");

@@ -15,7 +15,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +137,7 @@ public class CQLDaoContextTest
         clusteredCounterQueryMap.clear();
         entityMeta = new EntityMeta();
         entityMeta.setEntityClass(CompleteBean.class);
-        entityMeta.setConsistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE,
+        entityMeta.setConsistencyLevels(Pair.create(ONE,
                 EACH_QUORUM));
 
         when(context.getEntityMeta()).thenReturn(entityMeta);

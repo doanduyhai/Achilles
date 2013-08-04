@@ -11,7 +11,7 @@ import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.cassandra.model.HCounterColumnImpl;
@@ -105,7 +105,7 @@ public abstract class ThriftAbstractDao
             @Override
             public Pair<Composite, V> apply(HColumn<Composite, V> hColumn)
             {
-                return new Pair<Composite, V>(hColumn.getName(), hColumn.getValue());
+                return Pair.create(hColumn.getName(), hColumn.getValue());
             }
         };
     }

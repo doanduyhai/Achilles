@@ -13,7 +13,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -320,7 +320,7 @@ public class ThriftTableCreatorTest {
 
         meta = entityMetaBuilder(idMeta).className("TestBean").columnFamilyName("testCF")
                 .propertyMetas(propertyMetas)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ONE)).build();
+                .consistencyLevels(Pair.create(ONE, ONE)).build();
 
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();
         entityMetaMap.put(this.getClass(), meta);

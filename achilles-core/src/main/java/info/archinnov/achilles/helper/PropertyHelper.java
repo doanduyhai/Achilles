@@ -5,7 +5,7 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -169,7 +169,7 @@ public class PropertyHelper
         }
 
         log.trace("Found consistency levels : {} / {}", defaultGlobalRead, defaultGlobalWrite);
-        return new Pair<ConsistencyLevel, ConsistencyLevel>(defaultGlobalRead, defaultGlobalWrite);
+        return Pair.create(defaultGlobalRead, defaultGlobalWrite);
     }
 
     public <T> Class<T> getClassFromType(Type type)

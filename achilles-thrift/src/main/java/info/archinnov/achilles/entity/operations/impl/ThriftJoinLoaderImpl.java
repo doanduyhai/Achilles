@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -16,7 +16,7 @@ import info.archinnov.achilles.test.integration.entity.EntityWithJoinCollectionA
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;

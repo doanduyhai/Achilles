@@ -6,7 +6,7 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Map;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -34,7 +34,7 @@ public class ThriftDaoFactory {
                 keyspace, //
                 tableName, //
                 configContext.getConsistencyPolicy(), //
-                new Pair<Class<?>, Class<String>>(entityMeta.getIdClass(), String.class));
+                Pair.create(entityMeta.getIdClass(), String.class));
         entityDaosMap.put(tableName, entityDao);
         log.debug("Build entity dao for column family {}", tableName);
     }
@@ -59,15 +59,15 @@ public class ThriftDaoFactory {
         if (isSupportedType(valueClass)) {
             dao = new ThriftGenericWideRowDao(cluster, keyspace, //
                     tableName, consistencyPolicy, //
-                    new Pair<Class<?>, Class<?>>(keyClass, valueClass));
+                    Pair.create(keyClass, valueClass));
         } else if (Counter.class.isAssignableFrom(valueClass)) {
             dao = new ThriftGenericWideRowDao(cluster, keyspace, //
                     tableName, consistencyPolicy,//
-                    new Pair<Class<?>, Class<Long>>(keyClass, Long.class));
+                    Pair.create(keyClass, Long.class));
         } else {
             dao = new ThriftGenericWideRowDao(cluster, keyspace, //
                     tableName, consistencyPolicy, //
-                    new Pair<Class<?>, Class<String>>(keyClass, String.class));
+                    Pair.create(keyClass, String.class));
         }
         wideRowDaosMap.put(tableName, dao);
         log.debug("Build clustered entity dao for column family {}", tableName);
@@ -75,7 +75,7 @@ public class ThriftDaoFactory {
 
     public ThriftCounterDao createCounterDao(Cluster cluster, Keyspace keyspace, ConfigurationContext configContext) {
         ThriftCounterDao counterDao = new ThriftCounterDao(cluster, keyspace, configContext.getConsistencyPolicy(), //
-                new Pair<Class<Composite>, Class<Long>>(Composite.class, Long.class));
+                Pair.create(Composite.class, Long.class));
         log.debug("Build achillesCounterCF dao");
 
         return counterDao;

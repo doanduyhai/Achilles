@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -320,24 +318,5 @@ public class CQLTypedQueryBuilderTest {
         Whitebox.setInternalState(builder, CQLEntityMapper.class, mapper);
         Whitebox.setInternalState(builder, CQLPersistenceContextFactory.class, contextFactory);
         Whitebox.setInternalState(builder, CQLEntityProxifier.class, proxifier);
-    }
-
-    @Test
-    public void should_condition() throws Exception
-    {
-        Pattern pattern = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
-
-        Matcher matcher = pattern.matcher(" SELECT  id, name, friends FROM CompleteBean LIMIT 3".toLowerCase());
-
-        System.out.println("Matches ? " + matcher.matches());
-        if (matcher.matches())
-        {
-            System.out.println("group count = " + matcher.groupCount());
-            System.out.println("group = " + matcher.group(1));
-
-            List<String> selectedColumns = Arrays.asList(matcher.group(1).replaceAll("\\s+", "").split(","));
-
-            System.out.println("splitted = " + selectedColumns);
-        }
     }
 }

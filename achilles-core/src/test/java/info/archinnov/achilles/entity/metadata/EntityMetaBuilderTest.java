@@ -8,7 +8,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class EntityMetaBuilderTest
         propertyMetas.put("name", nameMeta);
 
         when(idMeta.getValueClass()).thenReturn(Long.class);
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = new Pair<ConsistencyLevel, ConsistencyLevel>(
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = Pair.create(
                 ConsistencyLevel.ONE, ConsistencyLevel.TWO);
         List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
 

@@ -7,11 +7,11 @@ import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.type.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,7 +90,7 @@ public class ThriftBatchingFlushContextTest
     @Test
     public void should_end_batch() throws Exception
     {
-        Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
+        Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator,
                 entityDao);
         mutatorMap.put("cf", pair);
 

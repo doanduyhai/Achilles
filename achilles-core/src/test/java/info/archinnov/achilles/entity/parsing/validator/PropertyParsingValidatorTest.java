@@ -8,7 +8,7 @@ import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,7 +132,7 @@ public class PropertyParsingValidatorTest
         when(context.getCurrentField()).thenReturn(counterField);
         when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
 
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = new Pair<ConsistencyLevel, ConsistencyLevel>(
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = Pair.create(
                 ANY, ALL);
 
         exception.expect(AchillesBeanMappingException.class);
@@ -143,7 +143,7 @@ public class PropertyParsingValidatorTest
 
         validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 
-        consistencyLevels = new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, ANY);
+        consistencyLevels = Pair.create(ALL, ANY);
 
         exception.expect(AchillesBeanMappingException.class);
         exception

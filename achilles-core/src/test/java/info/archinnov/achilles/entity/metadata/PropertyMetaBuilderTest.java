@@ -11,7 +11,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -46,7 +46,7 @@ public class PropertyMetaBuilderTest {
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
+                .consistencyLevels(Pair.create(ONE, ALL))
                 .build(Void.class, String.class);
 
         assertThat(built.type()).isEqualTo(SIMPLE);
@@ -77,7 +77,7 @@ public class PropertyMetaBuilderTest {
                 .propertyName("prop")
                 .accessors(accessors)
                 .objectMapper(objectMapper)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL))
+                .consistencyLevels(Pair.create(ONE, ALL))
                 .embeddedIdProperties(props)
                 .build(Void.class, CompoundKey.class);
 

@@ -15,7 +15,7 @@ import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -348,7 +348,7 @@ public class PropertyParser
         Class<K> keyClass = propertyHelper.getClassFromType(actualTypeArguments[0]);
         Class<V> valueClass = propertyHelper.getClassFromType(actualTypeArguments[1]);
 
-        return new Pair<Class<K>, Class<V>>(keyClass, valueClass);
+        return Pair.create(keyClass, valueClass);
     }
 
     private EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)

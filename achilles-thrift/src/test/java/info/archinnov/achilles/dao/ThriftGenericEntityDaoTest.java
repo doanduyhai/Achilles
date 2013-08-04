@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.dao.ThriftGenericEntityDao.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -39,7 +39,7 @@ public class ThriftGenericEntityDaoTest
 	@Test
 	public void should_build_mutator() throws Exception
 	{
-		dao = new ThriftGenericEntityDao(new Pair<Class<Long>, Class<String>>(Long.class,
+		dao = new ThriftGenericEntityDao(Pair.create(Long.class,
 				String.class));
 		Mutator<Long> mutator = dao.buildMutator();
 		assertThat(mutator).isNotNull();

@@ -29,7 +29,7 @@ import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -574,7 +574,7 @@ public class ThriftPersisterImplTest {
                 //
                 .completeBean(Void.class, Counter.class).field("count").type(PropertyType.COUNTER).accessors()
                 .counterIdMeta(counterIdMeta).fqcn(fqcn)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ONE, ALL)).build();
+                .consistencyLevels(Pair.create(ONE, ALL)).build();
 
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));

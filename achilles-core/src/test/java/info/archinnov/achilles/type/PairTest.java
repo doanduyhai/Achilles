@@ -1,7 +1,7 @@
 package info.archinnov.achilles.type;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import org.junit.Test;
 

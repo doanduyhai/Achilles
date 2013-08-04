@@ -9,10 +9,10 @@ import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.type.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import me.prettyprint.hector.api.mutation.Mutator;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,8 +92,7 @@ public class ThriftImmediateFlushContextTest
     @Test
     public void should_flush() throws Exception
     {
-        Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
-                entityDao);
+        Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
         mutatorMap.put("cf", pair);
 
         context.flush();
@@ -124,8 +123,7 @@ public class ThriftImmediateFlushContextTest
     @Test
     public void should_get_existing_entity_mutator() throws Exception
     {
-        Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
-                entityDao);
+        Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
         mutatorMap.put("cf", pair);
 
         Mutator<Object> actual = context.getEntityMutator("cf");
@@ -147,8 +145,7 @@ public class ThriftImmediateFlushContextTest
     @Test
     public void should_get_existing_cf_mutator() throws Exception
     {
-        Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(mutator,
-                entityDao);
+        Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
         mutatorMap.put("cf", pair);
 
         Mutator<Object> actual = context.getWideRowMutator("cf");
@@ -170,8 +167,8 @@ public class ThriftImmediateFlushContextTest
     @Test
     public void should_get_existing_counter_mutator() throws Exception
     {
-        Pair<Mutator<?>, ThriftAbstractDao> pair = new Pair<Mutator<?>, ThriftAbstractDao>(
-                counterMutator, thriftCounterDao);
+        Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(counterMutator,
+                thriftCounterDao);
         mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF, pair);
 
         Mutator<Object> actual = context.getCounterMutator();

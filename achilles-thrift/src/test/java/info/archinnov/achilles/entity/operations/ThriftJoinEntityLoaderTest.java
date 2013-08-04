@@ -9,7 +9,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -70,12 +70,12 @@ public class ThriftJoinEntityLoaderTest
 		Composite end = new Composite();
 
 		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
-		columns1.add(new Pair<Composite, String>(start, "foo"));
-		columns1.add(new Pair<Composite, String>(end, "bar"));
+		columns1.add(Pair.create(start, "foo"));
+		columns1.add(Pair.create(end, "bar"));
 
 		List<Pair<Composite, String>> columns2 = new ArrayList<Pair<Composite, String>>();
-		columns2.add(new Pair<Composite, String>(start, "john"));
-		columns2.add(new Pair<Composite, String>(end, "helen"));
+		columns2.add(Pair.create(start, "john"));
+		columns2.add(Pair.create(end, "helen"));
 
 		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
 		rows.put(11L, columns1);

@@ -8,7 +8,7 @@ import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -158,7 +158,7 @@ public class EntityIntrospector {
 
         log.trace("Found consistency levels : {}/{}", defaultGlobalRead, defaultGlobalWrite);
 
-        return new Pair<ConsistencyLevel, ConsistencyLevel>(defaultGlobalRead, defaultGlobalWrite);
+        return Pair.create(defaultGlobalRead, defaultGlobalWrite);
     }
 
     public List<Field> getInheritedPrivateFields(Class<?> type) {

@@ -1,11 +1,11 @@
 package info.archinnov.achilles.entity.metadata;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;

@@ -16,7 +16,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -153,7 +153,7 @@ public class CQLLoaderImplTest
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(EACH_QUORUM, EACH_QUORUM))
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
         when(entityMeta.isClusteredCounter()).thenReturn(true);
         when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);

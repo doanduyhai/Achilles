@@ -9,7 +9,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.Map;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
@@ -78,19 +78,19 @@ public abstract class ThriftCassandraDaoTest extends AbstractCassandraDaoTest {
     }
 
     public static <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass) {
-        return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, new Pair<Class<K>, Class<String>>(
+        return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, Pair.create(
                 keyClass, String.class));
     }
 
     public static <K, V> ThriftGenericWideRowDao getColumnFamilyDao(String columnFamily, Class<K> keyClass,
             Class<V> valueClass) {
 
-        return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, new Pair<Class<K>, Class<V>>(
+        return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, Pair.create(
                 keyClass, valueClass));
     }
 
     public static ThriftCounterDao getCounterDao() {
-        Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = new Pair<Class<Composite>, Class<Long>>(
+        Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair.create(
                 Composite.class, Long.class);
         return new ThriftCounterDao(cluster, keyspace, policy, rowkeyAndValueClasses);
     }

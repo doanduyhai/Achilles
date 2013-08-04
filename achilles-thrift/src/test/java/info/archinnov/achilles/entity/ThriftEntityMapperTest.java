@@ -14,7 +14,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.KeyValue;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,19 +132,19 @@ public class ThriftEntityMapperTest
 
         List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
-        columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
+        columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
 
-        columns.add(new Pair<Composite, String>(buildListPropertyComposite("friends"), "foo"));
-        columns.add(new Pair<Composite, String>(buildListPropertyComposite("friends"), "bar"));
+        columns.add(Pair.create(buildListPropertyComposite("friends"), "foo"));
+        columns.add(Pair.create(buildListPropertyComposite("friends"), "bar"));
 
-        columns.add(new Pair<Composite, String>(buildSetPropertyComposite("followers"), "George"));
-        columns.add(new Pair<Composite, String>(buildSetPropertyComposite("followers"), "Paul"));
+        columns.add(Pair.create(buildSetPropertyComposite("followers"), "George"));
+        columns.add(Pair.create(buildSetPropertyComposite("followers"), "Paul"));
 
-        columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
+        columns.add(Pair.create(buildMapPropertyComposite("preferences"),
                 writeToString(new KeyValue<Integer, String>(1, "FR"))));
-        columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
+        columns.add(Pair.create(buildMapPropertyComposite("preferences"),
                 writeToString(new KeyValue<Integer, String>(2, "Paris"))));
-        columns.add(new Pair<Composite, String>(buildMapPropertyComposite("preferences"),
+        columns.add(Pair.create(buildMapPropertyComposite("preferences"),
                 writeToString(new KeyValue<Integer, String>(3, "75014"))));
 
         doNothing().when(invoker).setValueToField(eq(entity), eq(idMeta.getSetter()),
@@ -194,8 +194,8 @@ public class ThriftEntityMapperTest
 
         List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
-        columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
-        columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("unmapped"),
+        columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
+        columns.add(Pair.create(buildSimplePropertyComposite("unmapped"),
                 "unmapped property"));
 
         doNothing().when(invoker).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()),
@@ -226,7 +226,7 @@ public class ThriftEntityMapperTest
 
         List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
-        columns.add(new Pair<Composite, String>(buildSimplePropertyComposite("name"), "name"));
+        columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
 
         mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 

@@ -7,7 +7,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;

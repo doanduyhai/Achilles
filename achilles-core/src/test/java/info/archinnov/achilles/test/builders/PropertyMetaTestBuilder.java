@@ -16,7 +16,7 @@ import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -138,7 +138,7 @@ public class PropertyMetaTestBuilder<T, K, V>
         pm.setObjectMapper(objectMapper);
         if (consistencyLevels == null)
         {
-            consistencyLevels = new Pair<ConsistencyLevel, ConsistencyLevel>(ConsistencyLevel.ONE,
+            consistencyLevels = Pair.create(ConsistencyLevel.ONE,
                     ConsistencyLevel.ONE);
         }
         pm.setConsistencyLevels(consistencyLevels);

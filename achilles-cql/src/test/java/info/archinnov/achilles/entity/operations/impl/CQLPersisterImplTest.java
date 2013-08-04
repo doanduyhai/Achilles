@@ -16,7 +16,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.Pair;
+import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -244,7 +244,7 @@ public class CQLPersisterImplTest
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.COUNTER)
-                .consistencyLevels(new Pair<ConsistencyLevel, ConsistencyLevel>(ALL, EACH_QUORUM))
+                .consistencyLevels(Pair.create(ALL, EACH_QUORUM))
                 .build();
 
         allMetas.add(counterMeta);
