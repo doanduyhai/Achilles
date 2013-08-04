@@ -105,7 +105,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         return new SliceToEmbeddedIdBuilder();
     }
 
-    public class SliceShortcutQueryBuilder {
+    public class SliceShortcutQueryBuilder extends DefaultQueryBuilder {
 
         protected SliceShortcutQueryBuilder() {
         }
@@ -141,20 +141,6 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         }
 
         /**
-         * Query using provided consistency level<br/>
-         * <br/>
-         * 
-         * @param consistencyLevel
-         *            consistency level
-         * @return SliceShortcutQueryBuilder
-         */
-        public SliceShortcutQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel)
-        {
-            SliceQueryBuilder.super.consistencyLevel(consistencyLevel);
-            return this;
-        }
-
-        /**
          * Set ordering<br/>
          * <br/>
          * 
@@ -165,21 +151,6 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          */
         public SliceShortcutQueryBuilder ordering(OrderingMode ordering) {
             SliceQueryBuilder.super.ordering(ordering);
-            return this;
-        }
-
-        /**
-         * Set bounding mode<br/>
-         * <br/>
-         * 
-         * @param boundingMode
-         *            bounding mode: ASCENDING or DESCENDING
-         * 
-         * @return SliceShortcutQueryBuilder
-         */
-        public SliceShortcutQueryBuilder bounding(BoundingMode boundingMode)
-        {
-            SliceQueryBuilder.super.bounding(boundingMode);
             return this;
         }
 

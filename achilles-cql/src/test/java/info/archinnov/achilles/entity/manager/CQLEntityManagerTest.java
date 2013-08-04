@@ -177,7 +177,7 @@ public class CQLEntityManagerTest
 
         assertThat(builder).isNotNull();
 
-        verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "queryString", meta);
+        verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class, "queryString", meta);
 
         assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");

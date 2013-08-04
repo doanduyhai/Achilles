@@ -117,7 +117,7 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
                         + "' is not managed by Achilles");
 
         EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
+        typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
         return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false);
     }
 

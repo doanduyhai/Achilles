@@ -1,15 +1,9 @@
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.DATE_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.INT_SRZ;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.LONG_SRZ;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.COUNTER_KEY_ALIAS;
-import static info.archinnov.achilles.table.ThriftColumnFamilyValidator.COUNTER_COMPARATOR_CHECK;
-import static info.archinnov.achilles.table.ThriftColumnFamilyValidator.COUNTER_KEY_CHECK;
-import static info.archinnov.achilles.table.ThriftColumnFamilyValidator.ENTITY_COMPARATOR_TYPE_CHECK;
-import static me.prettyprint.hector.api.ddl.ComparatorType.ASCIITYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COMPOSITETYPE;
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
+import static info.archinnov.achilles.table.ThriftColumnFamilyValidator.*;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -194,33 +188,6 @@ public class ThriftColumnFamilyValidatorTest {
     }
 
     @Test
-    public void should_validate_wide_row_for_property() throws Exception {
-        when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, false)).thenReturn(
-                "CompositeType(CounterType)");
-        when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
-        when(cfDef.getComparatorTypeAlias()).thenReturn("(CounterType)");
-        validator.validateWideRowForProperty(cfDef, propertyMeta, "tableName");
-    }
-
-    @Test
-    public void should_exception_when_wide_row_comparator_alias_does_not_match() throws Exception {
-        when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
-
-        when(comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(propertyMeta, false)).thenReturn(
-                "CompositeType(CounterType)");
-        when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
-        when(cfDef.getComparatorTypeAlias()).thenReturn("(LongType)");
-
-        exception.expect(AchillesInvalidTableException.class);
-        exception
-                .expectMessage("The column family 'tableName' comparator type should be 'CompositeType(CounterType)'");
-
-        validator.validateWideRowForProperty(cfDef, propertyMeta, "tableName");
-    }
-
-    @Test
     public void should_exception_when_comparator_type_alias_does_not_match() throws Exception {
         when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
         when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
@@ -244,6 +211,7 @@ public class ThriftColumnFamilyValidatorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
+        meta.setClusteredEntity(true);
         meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -253,9 +221,9 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn(
                 "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-        when(cfDef.getDefaultValidationClass()).thenReturn(DATE_SRZ.getComparatorType().getTypeName());
+        when(cfDef.getDefaultValidationClass()).thenReturn(DATE_SRZ.getComparatorType().getClassName());
 
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 
     @Test
@@ -282,9 +250,9 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn(
                 "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-        when(cfDef.getDefaultValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getTypeName());
+        when(cfDef.getDefaultValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 
     @Test
@@ -307,7 +275,7 @@ public class ThriftColumnFamilyValidatorTest {
                 "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
         when(cfDef.getDefaultValidationClass()).thenReturn(ComparatorType.COUNTERTYPE.getClassName());
 
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 
     @Test
@@ -329,7 +297,7 @@ public class ThriftColumnFamilyValidatorTest {
         exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The column family 'tableName' key validation type should be '"
                 + LONG_SRZ.getComparatorType().getClassName() + "'");
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 
     @Test
@@ -354,7 +322,7 @@ public class ThriftColumnFamilyValidatorTest {
         exception.expect(AchillesInvalidTableException.class);
         exception
                 .expectMessage("The column family 'tableName' comparator type should be 'CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)'");
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 
     @Test
@@ -375,10 +343,11 @@ public class ThriftColumnFamilyValidatorTest {
         when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
         when(cfDef.getComparatorTypeAlias()).thenReturn(
                 "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-        when(cfDef.getDefaultValidationClass()).thenReturn(INT_SRZ.getComparatorType().getTypeName());
+        when(cfDef.getDefaultValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
 
         exception.expect(AchillesInvalidTableException.class);
-        exception.expectMessage("The column family 'tableName' default validation type should be 'LongType'");
-        validator.validateWideRowForClusteredEntity(cfDef, meta, "tableName");
+        exception
+                .expectMessage("The column family 'tableName' default validation type should be 'org.apache.cassandra.db.marshal.LongType'");
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
     }
 }

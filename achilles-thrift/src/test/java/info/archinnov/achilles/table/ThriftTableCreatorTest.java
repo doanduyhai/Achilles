@@ -12,8 +12,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +23,7 @@ import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -206,30 +205,22 @@ public class ThriftTableCreatorTest {
         verify(columnFamilyValidator).validateCFForEntity(cfDef, meta);
     }
 
-    //    @Test
-    //    public void should_validate_column_family_for_wide_map() throws Exception {
-    //        PropertyMeta<Integer, String> wideMapMeta = PropertyMetaTestBuilder
-    //                .keyValueClass(Integer.class, String.class)
-    //                .field("externalWideMap")
-    //                .externalTable("externalCF")
-    //                .type(PropertyType.WIDE_MAP)
-    //                .idClass(Long.class)
-    //                .build();
-    //
-    //        EntityMeta meta = new EntityMeta();
-    //        meta.setClassName("TestBean");
-    //
-    //        BasicColumnFamilyDefinition externalCFDef = new BasicColumnFamilyDefinition();
-    //        externalCFDef.setName("externalCF");
-    //
-    //        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
-    //        cfDef.setName("testCF");
-    //
-    //        Whitebox.setInternalState(creator, "cfDefs", Arrays.asList((ColumnFamilyDefinition) cfDef, externalCFDef));
-    //
-    //        creator.validateOrCreateTableForWideMap(meta, wideMapMeta, false);
-    //        verify(columnFamilyValidator).validateWideRowForProperty(externalCFDef, wideMapMeta, "externalCF");
-    //    }
+    @Test
+    public void should_validate_column_family_for_clustered_entity() throws Exception {
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("TestBean");
+        meta.setTableName("testCF");
+        meta.setClusteredEntity(true);
+
+        BasicColumnFamilyDefinition cfDef = new BasicColumnFamilyDefinition();
+        cfDef.setName("testCF");
+
+        Whitebox.setInternalState(creator, "cfDefs", Arrays.<ColumnFamilyDefinition> asList(cfDef));
+
+        creator.validateOrCreateTableForEntity(meta, false);
+        verify(columnFamilyValidator).validateCFForClusteredEntity(cfDef, meta, "testCF");
+    }
 
     @Test
     public void should_validate_counter_column_family() throws Exception {

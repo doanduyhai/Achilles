@@ -45,24 +45,7 @@ public class ThriftColumnFamilyValidator {
 
     }
 
-    public void validateWideRowForProperty(ColumnFamilyDefinition cfDef, PropertyMeta<?, ?> propertyMeta,
-            String tableName) {
-        log.trace(
-                "Validating column family composite comparator definition for propertyMeta {} and column family {}",
-                propertyMeta.getPropertyName(), tableName);
-
-        String comparatorTypeAlias = comparatorAliasFactory.determineCompatatorTypeAliasForCompositeCF(propertyMeta,
-                false);
-
-        String comparatorType = (cfDef.getComparatorType() != null ? cfDef.getComparatorType().getTypeName() : "")
-                + cfDef.getComparatorTypeAlias();
-
-        Validator.validateTableTrue(StringUtils.equals(comparatorType, comparatorTypeAlias),
-                "The column family '" + tableName + "' comparator type should be '" + comparatorTypeAlias + "' : "
-                        + comparatorType);
-    }
-
-    public void validateWideRowForClusteredEntity(ColumnFamilyDefinition cfDef, EntityMeta meta, String tableName) {
+    public void validateCFForClusteredEntity(ColumnFamilyDefinition cfDef, EntityMeta meta, String tableName) {
 
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
@@ -93,10 +76,10 @@ public class ThriftColumnFamilyValidator {
             valueValidationType = COUNTERTYPE.getClassName();
         } else if (type.isJoin()) {
             valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.joinIdMeta().getValueClass())
-                    .getComparatorType().getTypeName();
+                    .getComparatorType().getClassName();
         } else {
             valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.getValueClass()).getComparatorType()
-                    .getTypeName();
+                    .getClassName();
         }
 
         Validator.validateTableTrue(StringUtils.equals(cfDef.getDefaultValidationClass(), valueValidationType),

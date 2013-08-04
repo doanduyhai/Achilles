@@ -47,7 +47,8 @@ public class ThriftTableCreator extends TableCreator {
 
     @Override
     protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceTableCreation) {
-        ColumnFamilyDefinition cfDef = this.discoverTable(entityMeta.getTableName());
+        String tableName = entityMeta.getTableName();
+        ColumnFamilyDefinition cfDef = this.discoverTable(tableName);
         if (cfDef == null) {
             if (forceTableCreation) {
                 log.debug("Force creation of column family for entityMeta {}", entityMeta.getClassName());
@@ -55,11 +56,18 @@ public class ThriftTableCreator extends TableCreator {
                 createTable(entityMeta);
             } else {
                 throw new AchillesInvalidTableException("The required column family '"
-                        + entityMeta.getTableName() + "' does not exist for entity '" + entityMeta.getClassName()
+                        + tableName + "' does not exist for entity '" + entityMeta.getClassName()
                         + "'");
             }
         } else {
-            columnFamilyValidator.validateCFForEntity(cfDef, entityMeta);
+            if (entityMeta.isClusteredEntity())
+            {
+                columnFamilyValidator.validateCFForClusteredEntity(cfDef, entityMeta, tableName);
+            }
+            else
+            {
+                columnFamilyValidator.validateCFForEntity(cfDef, entityMeta);
+            }
         }
     }
 
