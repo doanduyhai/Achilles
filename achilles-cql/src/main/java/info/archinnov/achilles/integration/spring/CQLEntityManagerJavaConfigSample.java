@@ -1,40 +1,70 @@
 package info.archinnov.achilles.integration.spring;
 
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.*;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.ReconnectionPolicy;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 /**
- * ThriftEntityManagerJavaConfigSample
+ * CQLEntityManagerJavaConfigSample
  * 
  * @author DuyHai DOAN
  * 
  */
 @Configuration
-public class ThriftEntityManagerJavaConfigSample
+public class CQLEntityManagerJavaConfigSample
 {
 
     @Value("#{cassandraProperties['achilles.entity.packages']}")
     private String entityPackages;
 
-    @Autowired(required = true)
-    private Cluster cluster;
+    @Value("#{cassandraProperties['achilles.cassandra.connection.contactPoints']}")
+    private String contactPoints;
 
-    @Autowired(required = true)
-    private Keyspace keyspace;
+    @Value("#{cassandraProperties['achilles.cassandra.connection.port']}")
+    private Integer port;
+
+    @Autowired
+    private RetryPolicy retryPolicy;
+
+    @Autowired
+    private LoadBalancingPolicy loadBalancingPolicy;
+
+    @Autowired
+    private ReconnectionPolicy reconnectionPolicy;
+
+    @Value("#{cassandraProperties['achilles.cassandra.username']}")
+    private String username;
+
+    @Value("#{cassandraProperties['achilles.cassandra.password']}")
+    private String password;
+
+    @Value("#{cassandraProperties['achilles.cassandra.disable.jmx']}")
+    private boolean disableJmx;
+
+    @Value("#{cassandraProperties['achilles.cassandra.disable.metrics']}")
+    private boolean disableMetrics;
+
+    @Value("#{cassandraProperties['achilles.cassandra.ssl.enabled']}")
+    private boolean sslEnabled;
+
+    @Autowired
+    private SSLOptions sslOptions;
 
     @Autowired
     private ObjectMapperFactory objecMapperFactory;
@@ -57,17 +87,17 @@ public class ThriftEntityManagerJavaConfigSample
     @Value("#{cassandraProperties['achilles.consistency.join.check']}")
     private String ensureJoinConsistency;
 
-    private ThriftEntityManagerFactory emf;
+    private CQLEntityManagerFactory emf;
 
     @PostConstruct
     public void initialize()
     {
         Map<String, Object> configMap = extractConfigParams();
-        emf = new ThriftEntityManagerFactory(configMap);
+        emf = new CQLEntityManagerFactory(configMap);
     }
 
     @Bean
-    public ThriftEntityManager getEntityManager()
+    public CQLEntityManager getEntityManager()
     {
         return emf.createEntityManager();
     }
@@ -77,8 +107,27 @@ public class ThriftEntityManagerJavaConfigSample
         Map<String, Object> configMap = new HashMap<String, Object>();
         configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 
-        configMap.put(CLUSTER_PARAM, cluster);
-        configMap.put(KEYSPACE_NAME_PARAM, keyspace);
+        configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
+        configMap.put(CONNECTION_PORT_PARAM, port);
+
+        //Default compression set to Snappy
+        configMap.put(COMPRESSION_TYPE, Compression.SNAPPY);
+
+        configMap.put(RETRY_POLICY, retryPolicy);
+        configMap.put(LOAD_BALANCING_POLICY, loadBalancingPolicy);
+        configMap.put(RECONNECTION_POLICY, reconnectionPolicy);
+
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password))
+        {
+            configMap.put(USERNAME, username);
+            configMap.put(PASSWORD, password);
+        }
+
+        configMap.put(DISABLE_JMX, disableJmx);
+        configMap.put(DISABLE_METRICS, disableMetrics);
+
+        configMap.put(SSL_ENABLED, sslEnabled);
+        configMap.put(SSL_OPTIONS, sslOptions);
 
         configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objecMapperFactory);
 

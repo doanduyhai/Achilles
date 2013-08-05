@@ -46,7 +46,7 @@ public class CQLCassandraDaoTest extends AbstractCassandraDaoTest {
         Map<String, Object> configMap = new HashMap<String, Object>();
         configMap.put(ENTITY_PACKAGES_PARAM, ENTITY_PACKAGE);
         configMap.put(CONNECTION_CONTACT_POINTS_PARAM, CASSANDRA_TEST_HOST);
-        configMap.put(CONNECTION_PORT_PARAM, CASSANDRA_CQL_TEST_PORT + "");
+        configMap.put(CONNECTION_PORT_PARAM, CASSANDRA_CQL_TEST_PORT);
         configMap.put(KEYSPACE_NAME_PARAM, CASSANDRA_KEYSPACE_NAME);
         configMap.put(FORCE_CF_CREATION_PARAM, true);
         configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
