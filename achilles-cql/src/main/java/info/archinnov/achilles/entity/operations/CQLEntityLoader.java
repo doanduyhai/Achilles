@@ -26,10 +26,9 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
         Object primaryKey = context.getPrimaryKey();
 
         Validator.validateNotNull(entityClass, "Entity class should not be null");
-        Validator.validateNotNull(primaryKey, "Entity '" + entityClass.getCanonicalName()
-                + "' key should not be null");
-        Validator.validateNotNull(entityMeta, "Entity meta for '" + entityClass.getCanonicalName()
-                + "' should not be null");
+        Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
+        Validator.validateNotNull(entityMeta, "Entity meta for '%s' should not be null",
+                entityClass.getCanonicalName());
 
         T entity = null;
 

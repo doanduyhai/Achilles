@@ -30,8 +30,8 @@ public class CQLCompoundKeyValidator extends CompoundKeyValidator {
 
         // No more than 1 non-null component difference between clustering keys
         Validator.validateTrue(Math.abs(endIndex - startIndex) <= 1,
-                "There should be no more than 1 component difference between clustering keys: [[" + startDescription
-                        + "],[" + endDescription + "]");
+                "There should be no more than 1 component difference between clustering keys: [[%s],[%s]",
+                startDescription, endDescription);
 
         if (startIndex < 0 || endIndex < 0) {
             return;
@@ -44,8 +44,8 @@ public class CQLCompoundKeyValidator extends CompoundKeyValidator {
                 int comparisonResult = comparator.compare(startComp, endComp);
 
                 Validator.validateTrue(comparisonResult == 0, (i + 1)
-                        + "th component for clustering keys should be equal: [[" + startDescription + "],["
-                        + endDescription + "]");
+                        + "th component for clustering keys should be equal: [[%s],[%s]",
+                        startDescription, endDescription);
             }
 
             if (startIndex == endIndex) {
@@ -55,15 +55,15 @@ public class CQLCompoundKeyValidator extends CompoundKeyValidator {
                     Validator
                             .validateTrue(
                                     comparator.compare(startComp, endComp) <= 0,
-                                    "For slice query with ascending order, start clustering last component should be 'lesser or equal' to end clustering last component: [["
-                                            + startDescription + "],[" + endDescription + "]");
+                                    "For slice query with ascending order, start clustering last component should be 'lesser or equal' to end clustering last component: [[%s],[%s]",
+                                    startDescription, endDescription);
                 }
                 else {
                     Validator
                             .validateTrue(
                                     comparator.compare(startComp, endComp) >= 0,
-                                    "For slice query with descending order, start clustering last component should be 'greater or equal' to end clustering last component: [["
-                                            + startDescription + "],[" + endDescription + "]");
+                                    "For slice query with descending order, start clustering last component should be 'greater or equal' to end clustering last component: [[%s],[%s]",
+                                    startDescription, endDescription);
                 }
 
             }

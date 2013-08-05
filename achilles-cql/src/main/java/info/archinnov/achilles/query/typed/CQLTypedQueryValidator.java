@@ -29,16 +29,18 @@ public class CQLTypedQueryValidator {
 
                 for (String component : idMeta.getComponentNames())
                 {
-                    Validator.validateTrue(normalizedQuery.contains(component.toLowerCase()), "The typed query ["
-                            + queryString + "] should contain the component column '" + component
-                            + "' for embedded id type '" + idMeta.getValueClass().getCanonicalName() + "'");
+                    Validator
+                            .validateTrue(
+                                    normalizedQuery.contains(component.toLowerCase()),
+                                    "The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
+                                    queryString, component, idMeta.getValueClass().getCanonicalName());
                 }
             }
             else
             {
                 String idColumn = idMeta.getPropertyName();
-                Validator.validateTrue(normalizedQuery.contains(idColumn.toLowerCase()), "The typed query ["
-                        + queryString + "] should contain the id column '" + idColumn + "'");
+                Validator.validateTrue(normalizedQuery.contains(idColumn.toLowerCase()),
+                        "The typed query [%s] should contain the id column '%s'", queryString, idColumn);
             }
         }
     }
@@ -49,9 +51,8 @@ public class CQLTypedQueryValidator {
 
         Validator.validateTrue(
                 normalizedQuery.contains(" from " + tableName),
-                "The typed query [" + queryString + "] should contain the ' from " + tableName
-                        + "' clause if type is '"
-                        + entityClass.getCanonicalName() + "'");
+                "The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
+                entityClass.getCanonicalName());
 
         for (PropertyMeta<?, ?> pm : meta.getAllMetasExceptIdMeta())
         {

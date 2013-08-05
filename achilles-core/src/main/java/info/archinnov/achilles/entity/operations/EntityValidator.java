@@ -39,8 +39,8 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
         log.debug("Validate entity {}", entity);
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
 
-        Validator.validateNotNull(entityMeta, "The entity " + entity.getClass().getCanonicalName()
-                + " is not managed by Achilles");
+        Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
+                .getCanonicalName());
 
         Object id = invoker.getPrimaryKey(entity, idMeta);
         if (id == null) {
@@ -54,8 +54,8 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
         if (idMeta.isEmbeddedId()) {
             List<Object> components = idMeta.encodeToComponents(primaryKey);
             for (Object component : components) {
-                Validator.validateNotNull(component, "The clustered key '" + idMeta.getPropertyName()
-                        + "' components should not be null");
+                Validator.validateNotNull(component, "The clustered key '%s' components should not be null",
+                        idMeta.getPropertyName());
             }
         }
     }
@@ -64,7 +64,7 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
     {
         Class<?> baseClass = proxifier.deriveBaseClass(entity);
         EntityMeta entityMeta = entityMetaMap.get(baseClass);
-        Validator.validateFalse(entityMeta.isClusteredCounter(), "The entity '" + entity
-                + "' is a clustered counter and does not support insert/update with TTL");
+        Validator.validateFalse(entityMeta.isClusteredCounter(),
+                "The entity '%s' is a clustered counter and does not support insert/update with TTL", entity);
     }
 }

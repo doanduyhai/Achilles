@@ -28,10 +28,9 @@ public class ThriftColumnFamilyValidator {
 
         Validator.validateTableTrue(
                 StringUtils.equals(cfDef.getKeyValidationClass(), idSerializer.getComparatorType().getClassName()),
-                "The column family '" + entityMeta.getTableName()
-                        + "' key class '" + cfDef.getKeyValidationClass()
-                        + "' does not correspond to the entity id class '"
-                        + idSerializer.getComparatorType().getClassName() + "'");
+                "The column family '%s' key class '%s' does not correspond to the entity id class '%s'", entityMeta
+                        .getTableName(), cfDef.getKeyValidationClass(), idSerializer.getComparatorType()
+                        .getClassName());
 
         log.trace("Validating column family  composite comparator definition for entityMeta {}",
                 entityMeta.getClassName());
@@ -40,8 +39,8 @@ public class ThriftColumnFamilyValidator {
                 + cfDef.getComparatorTypeAlias();
 
         Validator.validateTableTrue(StringUtils.equals(comparatorType, ENTITY_COMPARATOR_TYPE_CHECK),
-                "The column family '" + entityMeta.getTableName() + "' comparator type '" + comparatorType
-                        + "' should be '" + ENTITY_COMPARATOR_TYPE_CHECK + "'");
+                "The column family '%s' comparator type '%s' should be '%s'", entityMeta.getTableName(),
+                comparatorType, ENTITY_COMPARATOR_TYPE_CHECK);
 
     }
 
@@ -59,7 +58,7 @@ public class ThriftColumnFamilyValidator {
                 .getClassName();
 
         Validator.validateTableTrue(StringUtils.equals(cfDef.getKeyValidationClass(), keyValidationType),
-                "The column family '" + tableName + "' key validation type should be '" + keyValidationType + "'");
+                "The column family '%s' key validation type should be '%s'", tableName, keyValidationType);
 
         String comparatorTypeAlias = comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta,
                 false);
@@ -68,7 +67,7 @@ public class ThriftColumnFamilyValidator {
                 + cfDef.getComparatorTypeAlias();
 
         Validator.validateTableTrue(StringUtils.equals(comparatorType, comparatorTypeAlias),
-                "The column family '" + tableName + "' comparator type should be '" + comparatorTypeAlias + "'");
+                "The column family '%s' comparator type should be '%s'", tableName, comparatorTypeAlias);
 
         String valueValidationType;
         PropertyType type = pm.type();
@@ -83,8 +82,7 @@ public class ThriftColumnFamilyValidator {
         }
 
         Validator.validateTableTrue(StringUtils.equals(cfDef.getDefaultValidationClass(), valueValidationType),
-                "The column family '" + tableName + "' default validation type should be '" + valueValidationType
-                        + "'");
+                "The column family '%s' default validation type should be '%s'", tableName, valueValidationType);
 
     }
 
@@ -94,20 +92,20 @@ public class ThriftColumnFamilyValidator {
         String keyValidation = cfDef.getKeyValidationClass() + cfDef.getKeyValidationAlias();
 
         Validator.validateTableTrue(StringUtils.equals(keyValidation, COUNTER_KEY_CHECK),
-                "The column family '" + AchillesCounter.THRIFT_COUNTER_CF + "' key class '" + keyValidation
-                        + "' should be '" + COUNTER_KEY_CHECK + "'");
+                "The column family '%s' key class '%s' should be '%s'", AchillesCounter.THRIFT_COUNTER_CF,
+                keyValidation, COUNTER_KEY_CHECK);
 
         String comparatorType = (cfDef.getComparatorType() != null ? cfDef.getComparatorType().getTypeName() : "")
                 + cfDef.getComparatorTypeAlias();
 
         Validator.validateTableTrue(StringUtils.equals(comparatorType, COUNTER_COMPARATOR_CHECK),
-                "The column family '" + AchillesCounter.THRIFT_COUNTER_CF
-                        + "' comparator type '" + comparatorType + "' should be '" + COUNTER_COMPARATOR_CHECK + "'");
+                "The column family '%s' comparator type '%s' should be '%s'", AchillesCounter.THRIFT_COUNTER_CF,
+                comparatorType, COUNTER_COMPARATOR_CHECK);
 
         Validator.validateTableTrue(
                 StringUtils.equals(cfDef.getDefaultValidationClass(), COUNTERTYPE.getClassName()),
-                "The column family '" + AchillesCounter.THRIFT_COUNTER_CF + "' validation class '"
-                        + cfDef.getDefaultValidationClass() + "' should be '" + COUNTERTYPE.getClassName() + "'");
+                "The column family '%s' validation class '%s' should be '%s'", AchillesCounter.THRIFT_COUNTER_CF,
+                cfDef.getDefaultValidationClass(), COUNTERTYPE.getClassName());
 
     }
 

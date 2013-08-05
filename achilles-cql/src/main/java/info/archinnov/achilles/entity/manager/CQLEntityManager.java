@@ -87,8 +87,8 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "Cannot perform typed query because the entityClass '" + entityClass.getCanonicalName()
-                        + "' is not managed by Achilles");
+                "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
+                entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
@@ -113,8 +113,8 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "Cannot perform typed query because the entityClass '" + entityClass.getCanonicalName()
-                        + "' is not managed by Achilles");
+                "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
+                entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);

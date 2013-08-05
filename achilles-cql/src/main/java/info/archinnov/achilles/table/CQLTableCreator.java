@@ -173,8 +173,8 @@ public class CQLTableCreator extends TableCreator {
         Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
         KeyspaceMetadata keyspaceMeta = cluster.getMetadata().getKeyspace(keyspaceName);
 
-        Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '" + keyspaceName
-                + "' doest not exist or cannot be found");
+        Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
+                keyspaceName);
 
         for (TableMetadata tableMeta : keyspaceMeta.getTables())
         {

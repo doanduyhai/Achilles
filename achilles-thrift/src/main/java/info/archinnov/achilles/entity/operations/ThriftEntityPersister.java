@@ -255,11 +255,9 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         String className = context.getEntityClass().getCanonicalName();
 
         Validator.validateNotNull(compoundKey,
-                "Compound key should be provided for clustered entity '" + className
-                        + "' persistence");
-        Validator.validateNotNull(entity, "Entity should be provided for clustered entity '"
-                + className
-                + "' persistence");
+                "Compound key should be provided for clustered entity '%s' persistence", className);
+        Validator.validateNotNull(entity, "Entity should be provided for clustered entity '%s' persistence",
+                className);
 
         EntityMeta meta = context.getEntityMeta();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
@@ -268,8 +266,10 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         Object partitionKey = invoker.getPartitionKey(compoundKey, idMeta);
         Object clusteredValue = invoker.getValueFromField(entity, pm.getGetter());
 
-        Validator.validateNotNull(clusteredValue, "Property '" + pm.getPropertyName()
-                + "' should not be null for clustered entity '" + className + "' persistence");
+        Validator.validateNotNull(clusteredValue,
+                "Property '%s' should not be null for clustered entity '%s' persistence", pm.getPropertyName(),
+                className);
+
         persisterImpl.persistClusteredEntity(this, context, partitionKey, clusteredValue);
     }
 
@@ -279,8 +279,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         String className = context.getEntityClass().getCanonicalName();
 
         Validator.validateNotNull(embeddedId,
-                "Embedded id should be provided for clustered entity '" + className
-                        + "' persistence");
+                "Embedded id should be provided for clustered entity '%s' persistence", className);
 
         PropertyMeta<?, ?> idMeta = context.getIdMeta();
 

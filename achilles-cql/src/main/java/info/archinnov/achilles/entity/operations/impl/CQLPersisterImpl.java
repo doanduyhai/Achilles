@@ -40,9 +40,9 @@ public class CQLPersisterImpl
         {
             Validator.validateTrue(
                     CounterImpl.class.isAssignableFrom(counter.getClass()),
-                    "Counter property '" + counterMeta.getPropertyName() + "' value from entity class '"
-                            + counterMeta.getEntityClassName() + "'  should be of type '"
-                            + CounterImpl.class.getCanonicalName() + "'");
+                    "Counter property '%s' value from entity class '%s'  should be of type '%s'",
+                    counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+                    CounterImpl.class.getCanonicalName());
             CounterImpl counterValue = (CounterImpl) counter;
             context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.get());
         }
@@ -64,9 +64,9 @@ public class CQLPersisterImpl
             {
                 Validator.validateTrue(
                         CounterImpl.class.isAssignableFrom(counter.getClass()),
-                        "Counter property '" + counterMeta.getPropertyName() + "' value from entity class '"
-                                + counterMeta.getEntityClassName() + "'  should be of type '"
-                                + CounterImpl.class.getCanonicalName() + "'");
+                        "Counter property '%s' value from entity class '%s'  should be of type '%s'",
+                        counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+                        CounterImpl.class.getCanonicalName());
                 CounterImpl counterValue = (CounterImpl) counter;
                 context.bindForSimpleCounterIncrement(counterMeta, counterValue.get());
             }

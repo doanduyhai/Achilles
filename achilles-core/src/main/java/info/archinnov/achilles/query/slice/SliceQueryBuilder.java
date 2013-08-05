@@ -69,8 +69,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     {
         Class<?> embeddedIdClass = meta.getIdClass();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '"
-                + embeddedIdClass.getCanonicalName() + "'");
+        Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
+                embeddedIdClass.getCanonicalName());
         List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
         List<Object> clusteringFrom = components.subList(1, components.size());
 
@@ -93,8 +93,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     {
         Class<?> embeddedIdClass = meta.getIdClass();
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '"
-                + embeddedIdClass.getCanonicalName() + "'");
+        Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
+                embeddedIdClass.getCanonicalName());
 
         List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
         List<Object> clusteringTo = components.subList(1, components.size());
@@ -350,8 +350,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         {
             Class<?> embeddedIdClass = meta.getIdClass();
             PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-            Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '"
-                    + embeddedIdClass.getCanonicalName() + "'");
+            Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
+                    embeddedIdClass.getCanonicalName());
 
             List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
             List<Object> clusteringTo = components.subList(1, components.size());
@@ -380,8 +380,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         {
             Class<?> embeddedIdClass = meta.getIdClass();
             PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-            Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '"
-                    + embeddedIdClass.getCanonicalName() + "'");
+            Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
+                    embeddedIdClass.getCanonicalName());
 
             List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
             List<Object> clusteringFrom = components.subList(1, components.size());

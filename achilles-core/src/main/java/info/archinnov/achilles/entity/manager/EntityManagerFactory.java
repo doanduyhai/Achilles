@@ -41,9 +41,9 @@ public abstract class EntityManagerFactory
             ArgumentExtractor argumentExtractor)
     {
         Validator.validateNotNull(configurationMap,
-                "Configuration map for AchillesEntityManagerFactory should not be null");
+                "Configuration map for EntityManagerFactory should not be null");
         Validator.validateNotEmpty(configurationMap,
-                "Configuration map for AchillesEntityManagerFactory should not be empty");
+                "Configuration map for EntityManagerFactory should not be empty");
 
         entityPackages = argumentExtractor.initEntityPackages(configurationMap);
         configContext = parseConfiguration(configurationMap, argumentExtractor);

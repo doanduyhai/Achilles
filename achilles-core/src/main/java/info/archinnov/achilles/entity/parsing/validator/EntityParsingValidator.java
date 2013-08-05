@@ -71,15 +71,18 @@ public class EntityParsingValidator {
             log.debug("Validate that the clustered entity {} has an @EmbeddedId", context.getCurrentEntityClass()
                     .getCanonicalName());
 
-            Validator.validateBeanMappingTrue(type1 == PropertyType.EMBEDDED_ID, "The clustered entity '"
-                    + context.getCurrentEntityClass().getCanonicalName() + "' should have an @EmbeddedId property");
+            Validator.validateBeanMappingTrue(type1 == PropertyType.EMBEDDED_ID,
+                    "The clustered entity '%s' should have an @EmbeddedId property", context.getCurrentEntityClass()
+                            .getCanonicalName());
 
             log.debug("Validate that the clustered entity {} has a valid clustered value type", context
                     .getCurrentEntityClass().getCanonicalName());
 
-            Validator.validateBeanMappingTrue(type2.isValidClusteredValueType(), "The clustered entity '"
-                    + context.getCurrentEntityClass().getCanonicalName()
-                    + "' should have a single @Column/@JoinColumn property of type simple/join simple/counter");
+            Validator
+                    .validateBeanMappingTrue(
+                            type2.isValidClusteredValueType(),
+                            "The clustered entity '%s' should have a single @Column/@JoinColumn property of type simple/join simple/counter",
+                            context.getCurrentEntityClass().getCanonicalName());
         }
     }
 
@@ -88,8 +91,7 @@ public class EntityParsingValidator {
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
         Validator.validateBeanMappingFalse(joinEntityMeta.isClusteredEntity(),
-                "The entity '" + joinEntityMeta.getClassName()
-                        + "' is a clustered entity and cannot be a join entity");
+                "The entity '%s' is a clustered entity and cannot be a join entity", joinEntityMeta.getClassName());
     }
 
     public void validateJoinEntityExist(Map<Class<?>, EntityMeta> entityMetaMap, Class<?> joinEntityClass) {
@@ -97,8 +99,7 @@ public class EntityParsingValidator {
                 joinEntityClass.getCanonicalName());
 
         Validator.validateBeanMappingTrue(entityMetaMap.containsKey(joinEntityClass),
-                "Cannot find mapping for join entity '"
-                        + joinEntityClass.getCanonicalName() + "'");
+                "Cannot find mapping for join entity '%s'", joinEntityClass.getCanonicalName());
 
     }
 
@@ -106,8 +107,10 @@ public class EntityParsingValidator {
         log.debug("Validate that at least one entity is found in the packages {}",
                 StringUtils.join(entityPackages, ","));
 
-        Validator.validateBeanMappingFalse(entities.isEmpty(),
-                "No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages '"
-                        + StringUtils.join(entityPackages, ",") + "'");
+        Validator
+                .validateBeanMappingFalse(
+                        entities.isEmpty(),
+                        "No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages '%s'",
+                        StringUtils.join(entityPackages, ","));
     }
 }

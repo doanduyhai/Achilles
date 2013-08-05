@@ -77,16 +77,16 @@ public class CQLTableBuilder {
 
     public CQLTableBuilder addPrimaryKey(String columnName)
     {
-        Validator.validateFalse(lists.containsKey(columnName), "Primary key '" + columnName
-                + "' for table '" + tableName + "' cannot be of list type");
-        Validator.validateFalse(sets.containsKey(columnName), "Primary key '" + columnName
-                + "' for table '" + tableName + "' cannot be of set type");
-        Validator.validateFalse(maps.containsKey(columnName), "Primary key '" + columnName
-                + "' for table '" + tableName + "' cannot be of map type");
+        Validator.validateFalse(lists.containsKey(columnName),
+                "Primary key '%s' for table '%s' cannot be of list type", columnName, tableName);
+        Validator.validateFalse(sets.containsKey(columnName),
+                "Primary key '%s' for table '%s' cannot be of set type", columnName, tableName);
+        Validator.validateFalse(maps.containsKey(columnName),
+                "Primary key '%s' for table '%s' cannot be of map type", columnName, tableName);
 
-        Validator.validateTrue(columns.containsKey(columnName), "Property '" + columnName
-                + "' for table '" + tableName
-                + "' cannot be found. Did you forget to declare it as column first ?");
+        Validator.validateTrue(columns.containsKey(columnName),
+                "Property '%s' for table '%s' cannot be found. Did you forget to declare it as column first ?",
+                columnName, tableName);
 
         primaryKeys.add(columnName);
 
@@ -104,7 +104,7 @@ public class CQLTableBuilder {
 
     public CQLTableBuilder addComment(String comment)
     {
-        Validator.validateNotBlank(comment, "Comment for table '" + tableName + "' should not be blank");
+        Validator.validateNotBlank(comment, "Comment for table '%s' should not be blank", tableName);
         this.comment = comment.replaceAll("'", "\"");
         return this;
     }
@@ -186,8 +186,8 @@ public class CQLTableBuilder {
 
     private String generateCounterTable() {
 
-        Validator.validateTrue(columns.size() == primaryKeys.size() + 1, "Counter table '" + tableName
-                + "' should contain only one counter column and primary keys");
+        Validator.validateTrue(columns.size() == primaryKeys.size() + 1,
+                "Counter table '%s' should contain only one counter column and primary keys", tableName);
 
         StringBuilder ddl = new StringBuilder();
 
@@ -209,8 +209,8 @@ public class CQLTableBuilder {
             }
             else
             {
-                Validator.validateTrue(StringUtils.equals(valueType, COUNTER.toString()), "Column '" + columnName
-                        + "' of table '" + tableName + "' should be of type 'counter'");
+                Validator.validateTrue(StringUtils.equals(valueType, COUNTER.toString()),
+                        "Column '%s' of table '%s' should be of type 'counter'", columnName, tableName);
                 ddl.append("counter");
             }
             ddl.append(",\n");

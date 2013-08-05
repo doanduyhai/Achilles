@@ -69,8 +69,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
     protected RootSliceQueryBuilder<CONTEXT, T> ordering(OrderingMode ordering)
     {
         Validator.validateNotNull(ordering,
-                "Ordering mode for slice query for entity '" + meta.getClassName()
-                        + "' should not be null");
+                "Ordering mode for slice query for entity '%s' should not be null", meta.getClassName());
         this.ordering = ordering;
         orderingHasBeenSet = true;
         return this;
@@ -79,8 +78,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
     protected RootSliceQueryBuilder<CONTEXT, T> bounding(BoundingMode boundingMode)
     {
         Validator.validateNotNull(boundingMode,
-                "Bounding mode for slice query for entity '" + meta.getClassName()
-                        + "' should not be null");
+                "Bounding mode for slice query for entity '%s' should not be null", meta.getClassName());
         bounding = boundingMode;
 
         return this;
@@ -89,8 +87,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
     protected RootSliceQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
     {
         Validator.validateNotNull(consistencyLevel,
-                "ConsistencyLevel for slice query for entity '" + meta.getClassName()
-                        + "' should not be null");
+                "ConsistencyLevel for slice query for entity '%s' should not be null", meta.getClassName());
         this.consistencyLevel = consistencyLevel;
 
         return this;

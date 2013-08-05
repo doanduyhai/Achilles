@@ -36,8 +36,8 @@ public class ThriftTableCreator extends TableCreator {
         this.keyspace = keyspace;
         KeyspaceDefinition keyspaceDef = cluster.describeKeyspace(keyspace.getKeyspaceName());
 
-        Validator.validateNotNull(keyspaceDef, "The keyspace '" + keyspace.getKeyspaceName()
-                + "' provided by configuration does not exist");
+        Validator.validateNotNull(keyspaceDef, "The keyspace '%s' provided by configuration does not exist",
+                keyspace.getKeyspaceName());
 
         if (keyspaceDef != null && keyspaceDef.getCfDefs() != null) {
             cfDefs = keyspaceDef.getCfDefs();

@@ -42,15 +42,13 @@ public class CQLEntityInterceptorBuilder<T> {
 
         EntityMeta entityMeta = context.getEntityMeta();
 
-        Validator.validateNotNull(target, "Target object for interceptor of '"
-                + context.getEntityClass().getCanonicalName() + "' should not be null");
-        Validator.validateNotNull(entityMeta.getGetterMetas(), "Getters metadata for interceptor of '"
-                + context.getEntityClass().getCanonicalName() + "' should not be null");
-        Validator.validateNotNull(entityMeta.getSetterMetas(), "Setters metadata for interceptor of '"
-                + context.getEntityClass().getCanonicalName() + "'should not be null");
-
-        Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '"
-                + context.getEntityClass().getCanonicalName() + "' should not be null");
+        String className = context.getEntityClass().getCanonicalName();
+        Validator.validateNotNull(target, "Target object for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getGetterMetas(),
+                "Getters metadata for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getSetterMetas(),
+                "Setters metadata for interceptor of '%s' should not be null", className);
+        Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '%s' should not be null", className);
 
         interceptor.setTarget(target);
         interceptor.setContext(context);

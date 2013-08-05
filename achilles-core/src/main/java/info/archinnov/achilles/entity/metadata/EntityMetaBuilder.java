@@ -46,9 +46,9 @@ public class EntityMetaBuilder
     {
         log.debug("Build entityMeta for entity class {}", className);
 
-        Validator.validateNotNull(idMeta, "idMeta should not be null");
-        Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty");
-        Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName");
+        Validator.validateNotNull(idMeta, "idMeta should not be null for entity meta creation");
+        Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty for entity meta creation");
+        Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName for entity meta creation");
 
         EntityMeta meta = new EntityMeta();
 

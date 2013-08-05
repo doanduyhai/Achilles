@@ -308,8 +308,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public void removeById(Class<?> entityClass, Object primaryKey) {
 
-        Validator.validateNotNull(entityClass, "The entity class should not be null");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null");
+        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
+        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
         if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
         }
@@ -357,8 +357,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Primary key
      */
     public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null");
+        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
+        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
         if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
         }
@@ -409,8 +409,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     }
 
     <T> T find(final Class<T> entityClass, final Object primaryKey, Optional<ConsistencyLevel> readLevelO) {
-        Validator.validateNotNull(entityClass, "Entity class should not be null");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
+        Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
+        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
         CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> find(entityClass);
@@ -452,8 +452,8 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     }
 
     <T> T getReference(final Class<T> entityClass, final Object primaryKey, Optional<ConsistencyLevel> readLevelO) {
-        Validator.validateNotNull(entityClass, "Entity class should not be null");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null");
+        Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
+        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
         CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> getReference(entityClass);

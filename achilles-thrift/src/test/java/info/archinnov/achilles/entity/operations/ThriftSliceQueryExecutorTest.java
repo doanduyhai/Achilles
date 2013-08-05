@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -260,6 +261,17 @@ public class ThriftSliceQueryExecutorTest
 
         executor.iterator(query);
 
+    }
+
+    @Test
+    public void should_remove_entire_row() throws Exception
+    {
+        when(query.hasNoComponent()).thenReturn(true);
+        when(query.isLimitSet()).thenReturn(false);
+        when(query.getConsistencyLevel()).thenReturn(ANY);
+        executor.remove(query);
+
+        verify(executorImpl).removeRow(eq(partitionKey), any(ThriftPersistenceContext.class), eq(ANY));
     }
 
     @Test

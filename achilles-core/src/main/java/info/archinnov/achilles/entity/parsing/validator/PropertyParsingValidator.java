@@ -5,12 +5,12 @@ import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
+import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +29,9 @@ public class PropertyParsingValidator {
                 .getCurrentEntityClass()
                 .getCanonicalName());
 
-        Validator.validateBeanMappingFalse(context.getPropertyMetas().containsKey(propertyName), "The property '"
-                + propertyName + "' is already used for the entity '"
-                + context.getCurrentEntityClass().getCanonicalName() + "'");
+        Validator.validateBeanMappingFalse(context.getPropertyMetas().containsKey(propertyName),
+                "The property '%s' is already used for the entity '%s'", propertyName, context
+                        .getCurrentEntityClass().getCanonicalName());
 
     }
 

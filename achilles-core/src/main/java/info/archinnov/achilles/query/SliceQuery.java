@@ -31,6 +31,7 @@ public class SliceQuery<T>
     private int batchSize;
     private int limit;
     private boolean limitSet;
+    private boolean noComponent;
 
     public SliceQuery(Class<T> entityClass, EntityMeta meta, Object partitionKey,
             Object[] clusteringsFrom, Object[] clusteringsTo, OrderingMode ordering,
@@ -39,12 +40,12 @@ public class SliceQuery<T>
 
         this.limitSet = limitSet;
         Validator.validateNotNull(partitionKey,
-                "Partition key should be set for slice query for entity class '"
-                        + entityClass.getCanonicalName() + "'");
+                "Partition key should be set for slice query for entity class '%s'", entityClass.getCanonicalName());
 
         this.entityClass = entityClass;
         this.meta = meta;
         this.partitionKey = partitionKey;
+        this.noComponent = clusteringsFrom == null && clusteringsTo == null;
         this.clusteringsFrom = Arrays.<Object> asList(ArrayUtils.add(clusteringsFrom, 0,
                 partitionKey));
         this.clusteringsTo = Arrays.<Object> asList(ArrayUtils.add(clusteringsTo, 0,
@@ -109,6 +110,10 @@ public class SliceQuery<T>
 
     public boolean isLimitSet() {
         return limitSet;
+    }
+
+    public boolean hasNoComponent() {
+        return noComponent;
     }
 
 }

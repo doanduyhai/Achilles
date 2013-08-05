@@ -71,14 +71,14 @@ public class ThriftCompoundKeyMapper
     {
         String propertyName = pm.getPropertyName();
 
-        Validator.validateNotNull(components, "The component values for the @CompoundKey '" + propertyName
-                + "' should not be null");
-        Validator.validateNotEmpty(components, "The component values for the @CompoundKey '" + propertyName
-                + "' should not be null");
+        Validator.validateNotNull(components, "The component values for the @CompoundKey '%s' should not be null",
+                propertyName);
+        Validator.validateNotEmpty(components, "The component values for the @CompoundKey '%s' should not be empty",
+                propertyName);
         for (Object value : components)
         {
-            Validator.validateNotNull(value, "The component values for the @CompoundKey '" + propertyName
-                    + "' should not be null");
+            Validator.validateNotNull(value, "The component values for the @CompoundKey '%s' should not be null",
+                    propertyName);
         }
 
         Composite composite = new Composite();
@@ -96,8 +96,7 @@ public class ThriftCompoundKeyMapper
 
         for (Object value : columnComponents)
         {
-            Validator.validateNotNull(value, "The values for the @CompoundKey '" + propertyName
-                    + "' should not be null");
+            Validator.validateNotNull(value, "The values for the @CompoundKey '%s' should not be null", propertyName);
         }
 
         for (int i = 0; i < srzCount; i++)
@@ -131,8 +130,8 @@ public class ThriftCompoundKeyMapper
 
         int srzCount = serializers.size();
 
-        Validator.validateTrue(srzCount >= columnComponents.size(), "There should be at most "
-                + srzCount + " values for the @CompoundKey '" + propertyName + "'");
+        Validator.validateTrue(srzCount >= columnComponents.size(),
+                "There should be at most %s values for the @CompoundKey '%s'", srzCount, propertyName);
 
         int lastNotNullIndex = validator.validateNoHoleAndReturnLastNonNullIndex(columnComponents);
 

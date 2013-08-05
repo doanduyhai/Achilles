@@ -15,22 +15,20 @@ public abstract class CompoundKeyValidator
     {
         String className = pm.getEntityClassName();
         Validator.validateNotNull(partitionKeys,
-                "There should be at least one partition key provided for querying on entity '"
-                        + className + "'");
+                "There should be at least one partition key provided for querying on entity '%s'", className);
         Validator.validateTrue(partitionKeys.length > 0,
-                "There should be at least one partition key provided for querying on entity '"
-                        + className + "'");
+                "There should be at least one partition key provided for querying on entity '%s'", className);
         Class<?> partitionKeyType = pm.getComponentClasses().get(0);
 
         for (Object partitionKey : partitionKeys)
         {
             Class<?> type = partitionKey.getClass();
 
-            Validator.validateTrue(type.equals(partitionKeyType),
-                    "The type '" + type.getCanonicalName()
-                            + "' of partition key '" + partitionKey + "' for querying on entity '"
-                            + className + "' is not valid. It should be '"
-                            + partitionKeyType.getCanonicalName() + "'");
+            Validator
+                    .validateTrue(
+                            type.equals(partitionKeyType),
+                            "The type '%s' of partition key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                            type.getCanonicalName(), partitionKey, className, partitionKeyType.getCanonicalName());
         }
     }
 
@@ -38,19 +36,17 @@ public abstract class CompoundKeyValidator
     {
         String className = pm.getEntityClassName();
         Validator.validateNotNull(clusteringKeys,
-                "There should be at least one clustering key provided for querying on entity '"
-                        + className + "'");
+                "There should be at least one clustering key provided for querying on entity '%s'", className);
 
         List<Class<?>> clusteringClasses = pm.getComponentClasses().subList(1,
                 pm.getComponentClasses().size());
         int maxClusteringCount = clusteringClasses.size();
 
-        Validator.validateTrue(clusteringKeys.length <= maxClusteringCount,
-                "There should be at most "
-                        + maxClusteringCount
-                        + " value(s) of clustering component(s) provided for querying on entity '"
-                        + className
-                        + "'");
+        Validator
+                .validateTrue(
+                        clusteringKeys.length <= maxClusteringCount,
+                        "There should be at most %s value(s) of clustering component(s) provided for querying on entity '%s'",
+                        maxClusteringCount, className);
 
         validateNoHoleAndReturnLastNonNullIndex(Arrays.<Object> asList(clusteringKeys));
 
@@ -62,18 +58,18 @@ public abstract class CompoundKeyValidator
                 Class<?> clusteringType = clusteringKey.getClass();
                 Class<?> expectedClusteringType = clusteringClasses.get(i);
 
-                Validator.validateComparable(clusteringType,
-                        "The type '" + clusteringType.getCanonicalName()
-                                + "' of clustering key '" + clusteringKey
-                                + "' for querying on entity '"
-                                + className + "' should implement the Comparable<T> interface");
+                Validator
+                        .validateComparable(
+                                clusteringType,
+                                "The type '%s' of clustering key '%s' for querying on entity '%s' should implement the Comparable<T> interface",
+                                clusteringType.getCanonicalName(), clusteringKey, className);
 
-                Validator.validateTrue(expectedClusteringType.equals(clusteringType),
-                        "The type '" + clusteringType.getCanonicalName()
-                                + "' of clustering key '" + clusteringKey
-                                + "' for querying on entity '"
-                                + className + "' is not valid. It should be '"
-                                + expectedClusteringType.getCanonicalName() + "'");
+                Validator
+                        .validateTrue(
+                                expectedClusteringType.equals(clusteringType),
+                                "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                                clusteringType.getCanonicalName(), clusteringKey, className,
+                                expectedClusteringType.getCanonicalName());
             }
 
         }
@@ -82,16 +78,13 @@ public abstract class CompoundKeyValidator
     public void validateComponentsForSliceQuery(PropertyMeta<?, ?> propertyMeta, List<Object> start,
             List<Object> end, OrderingMode ordering)
     {
-        Validator.validateNotNull(start.get(0),
-                "Partition key should not be null for start clustering key : "
-                        + start);
+        Validator.validateNotNull(start.get(0), "Partition key should not be null for start clustering key : %s"
+                , start);
         Validator.validateNotNull(end.get(0),
-                "Partition key should not be null for end clustering key : "
-                        + end);
+                "Partition key should not be null for end clustering key : %s", end);
         Validator.validateTrue(
                 start.get(0).equals(end.get(0)),
-                "Partition key should be equal for start and end clustering keys : ["
-                        + start + "," + end + "]");
+                "Partition key should be equal for start and end clustering keys : [%s,%s]", start, end);
 
         validateComponentsForSliceQuery(start.subList(0, start.size()),
                 end.subList(0, end.size()), ordering);

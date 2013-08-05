@@ -83,34 +83,35 @@ public class CQLTableValidator {
     public void validateAchillesCounter() {
         KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspaceName);
         TableMetadata tableMetadata = keyspaceMetadata.getTable(CQL_COUNTER_TABLE);
-        Validator.validateTableTrue(tableMetadata != null, "Cannot find table '" + CQL_COUNTER_TABLE
-                + "' from keyspace '" + keyspaceName);
+        Validator.validateTableTrue(tableMetadata != null, "Cannot find table '%s' from keyspace '%s'",
+                CQL_COUNTER_TABLE, keyspaceName);
 
         ColumnMetadata fqcnColumn = tableMetadata.getColumn(CQL_COUNTER_FQCN);
-        Validator.validateTableTrue(fqcnColumn != null, "Cannot find column '" + CQL_COUNTER_FQCN + "' from table '"
-                + CQL_COUNTER_TABLE);
-        Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '" + CQL_COUNTER_FQCN
-                + "' of type '" + fqcnColumn.getType() + "' should be of type '" + text());
+        Validator.validateTableTrue(fqcnColumn != null, "Cannot find column '%s' from table '%s'", CQL_COUNTER_FQCN,
+                CQL_COUNTER_TABLE);
+        Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'"
+                , CQL_COUNTER_FQCN, fqcnColumn.getType(), text());
 
         ColumnMetadata pkColumn = tableMetadata.getColumn(CQL_COUNTER_PRIMARY_KEY);
-        Validator.validateTableTrue(pkColumn != null, "Cannot find column '" + CQL_COUNTER_PRIMARY_KEY
-                + "' from table '" + CQL_COUNTER_TABLE);
-        Validator.validateTableTrue(pkColumn.getType() == text(), "Column '" + CQL_COUNTER_PRIMARY_KEY
-                + "' of type '" + pkColumn.getType() + "' should be of type '" + text());
+        Validator.validateTableTrue(pkColumn != null, "Cannot find column '%s' from table '%s'",
+                CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE);
+
+        Validator.validateTableTrue(pkColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
+                CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text());
 
         ColumnMetadata propertyNameColumn = tableMetadata.getColumn(CQL_COUNTER_PROPERTY_NAME);
-        Validator.validateTableTrue(propertyNameColumn != null, "Cannot find column '" + CQL_COUNTER_PROPERTY_NAME
-                + "' from table '" + CQL_COUNTER_TABLE);
-        Validator.validateTableTrue(propertyNameColumn.getType() == text(), "Column '"
-                + CQL_COUNTER_PROPERTY_NAME + "' of type '" + propertyNameColumn.getType()
-                + "' should be of type '" + text());
+        Validator.validateTableTrue(propertyNameColumn != null, "Cannot find column '%s' from table '%s'",
+                CQL_COUNTER_PROPERTY_NAME, CQL_COUNTER_TABLE);
+        Validator.validateTableTrue(propertyNameColumn.getType() == text(),
+                "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PROPERTY_NAME,
+                propertyNameColumn.getType(), text());
 
         ColumnMetadata counterValueColumn = tableMetadata.getColumn(CQL_COUNTER_VALUE);
-        Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '" + counterValueColumn
-                + "' from table '" + CQL_COUNTER_TABLE);
-        Validator.validateTableTrue(counterValueColumn.getType() == counter(), "Column '"
-                + counterValueColumn + "' of type '" + counterValueColumn.getType()
-                + "' should be of type '" + counter());
+        Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
+                counterValueColumn, CQL_COUNTER_TABLE);
+        Validator.validateTableTrue(counterValueColumn.getType() == counter(),
+                "Column '%s' of type '%s' should be of type '%s'", counterValueColumn, counterValueColumn.getType(),
+                counter());
 
     }
 
@@ -132,12 +133,13 @@ public class CQLTableValidator {
         ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
         Name expectedType = toCQLType(columnJavaType);
 
-        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '" + columnName
-                + "' in the table '" + tableName + "'");
+        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
+                tableName);
 
         Name realType = columnMetadata.getType().getName();
-        Validator.validateTableTrue(expectedType == realType, "Column '" + columnName + "' of table '"
-                + tableName + "' of type '" + realType + "' should be of type '" + expectedType + "' indeed");
+        Validator.validateTableTrue(expectedType == realType,
+                "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
+                realType, expectedType);
     }
 
     private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta<?, ?> pm)
@@ -146,8 +148,8 @@ public class CQLTableValidator {
         String tableName = tableMetadata.getName();
         ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
 
-        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '" + columnName
-                + "' in the table '" + tableName + "'");
+        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
+                tableName);
         Name realType = columnMetadata.getType().getName();
         Name expectedValueType;
         if (pm.isJoin())
@@ -162,38 +164,45 @@ public class CQLTableValidator {
         switch (pm.type())
         {
             case LIST:
-                Validator.validateTableTrue(realType == Name.LIST, "Column '" + columnName + "' of table '"
-                        + tableName + "' of type '" + realType + "' should be of type '" + Name.LIST + "' indeed");
+                Validator.validateTableTrue(realType == Name.LIST,
+                        "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName,
+                        tableName, realType, Name.LIST);
                 Name realListValueType = columnMetadata.getType().getTypeArguments().get(0).getName();
                 Validator.validateTableTrue(
                         realListValueType == expectedValueType,
-                        "Column '" + columnName + "' of table '" + tableName + "' of type 'List<" + realListValueType
-                                + ">' should be of type 'List<" + expectedValueType + "'> indeed");
+                        "Column '%s' of table '%s' of type 'List<%s>' should be of type 'List<%s>' indeed",
+                        columnName, tableName, realListValueType, expectedValueType);
 
                 break;
             case SET:
-                Validator.validateTableTrue(realType == Name.SET, "Column '" + columnName + "' of table '"
-                        + tableName + "' of type '" + realType + "' should be of type '" + Name.SET + "' indeed");
+                Validator.validateTableTrue(realType == Name.SET,
+                        "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName,
+                        tableName, realType, Name.SET);
                 Name realSetValueType = columnMetadata.getType().getTypeArguments().get(0).getName();
+
                 Validator.validateTableTrue(
                         realSetValueType == expectedValueType,
-                        "Column '" + columnName + "' of table '" + tableName + "' of type 'Set<" + realSetValueType
-                                + ">' should be of type 'Set<" + expectedValueType + "'> indeed");
+                        "Column '%s' of table '%s' of type 'Set<%s>' should be of type 'Set<%s>' indeed", columnName,
+                        tableName, realSetValueType, expectedValueType);
                 break;
             case MAP:
-                Validator.validateTableTrue(realType == Name.MAP, "Column '" + columnName + "' of table '"
-                        + tableName + "' of type '" + realType + "' should be of type '" + Name.MAP + "' indeed");
+                Validator.validateTableTrue(realType == Name.MAP,
+                        "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName,
+                        tableName, realType, Name.MAP);
+
                 Name expectedMapKeyType = toCQLType(pm.getKeyClass());
                 Name realMapKeyType = columnMetadata.getType().getTypeArguments().get(0).getName();
                 Name realMapValueType = columnMetadata.getType().getTypeArguments().get(1).getName();
                 Validator.validateTableTrue(
                         realMapKeyType == expectedMapKeyType,
-                        "Column '" + columnName + "' of table '" + tableName + "' of type 'Map<" + realMapKeyType
-                                + ",?>' should be of type 'Map<" + expectedMapKeyType + "',?> indeed");
+                        "Column %s' of table '%s' of type 'Map<%s,?>' should be of type 'Map<%s,?>' indeed",
+                        columnName, tableName, realMapKeyType, expectedMapKeyType);
+
                 Validator.validateTableTrue(
                         realMapValueType == expectedValueType,
-                        "Column '" + columnName + "' of table '" + tableName + "' of type 'Map<?," + realMapValueType
-                                + ">' should be of type 'Map<?," + expectedValueType + "'> indeed");
+                        "Column '%s' of table '%s' of type 'Map<?,%s>' should be of type 'Map<?,%s>' indeed",
+                        columnName,
+                        tableName, realMapValueType, expectedValueType);
                 break;
             default:
                 break;

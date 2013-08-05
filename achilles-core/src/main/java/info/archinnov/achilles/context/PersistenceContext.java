@@ -49,12 +49,11 @@ public abstract class PersistenceContext
             Object entity, FlushContext<?> flushContext, Set<String> entitiesIdentity)
     {
         this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
-
-        Validator.validateNotNull(entity, "The entity '" + entity + "' should not be null");
+        Validator.validateNotNull(entity, "The entity should not be null for persistence context creation");
         this.entity = entity;
         this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
-        Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
-                + "' should not be null");
+        Validator.validateNotNull(primaryKey,
+                "The primary key for the entity '%s' should not be null for persistence context creation", entity);
 
     }
 
@@ -65,8 +64,8 @@ public abstract class PersistenceContext
 
         this.primaryKey = primaryKey;
         this.flushContext = flushContext;
-        Validator.validateNotNull(primaryKey, "The primary key for the entity '" + entity
-                + "' should not be null");
+        Validator.validateNotNull(primaryKey,
+                "The primary key for the entity '%s' should not be null for persistence context creation", entity);
 
     }
 

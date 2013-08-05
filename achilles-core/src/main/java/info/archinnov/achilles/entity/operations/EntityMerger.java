@@ -35,8 +35,8 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 
         EntityMeta entityMeta = context.getEntityMeta();
 
-        Validator.validateNotNull(entity, "Proxy object should not be null");
-        Validator.validateNotNull(entityMeta, "entityMeta should not be null");
+        Validator.validateNotNull(entity, "Proxy object should not be null for merge");
+        Validator.validateNotNull(entityMeta, "entityMeta should not be null for merge");
 
         T proxy;
         if (proxifier.isProxy(entity)) {

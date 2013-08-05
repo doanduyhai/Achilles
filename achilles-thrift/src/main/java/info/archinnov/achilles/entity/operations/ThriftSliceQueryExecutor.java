@@ -112,24 +112,31 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
         EntityMeta meta = sliceQuery.getMeta();
         PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
-        switch (pm.type())
+        if (sliceQuery.hasNoComponent() && sliceQuery.isLimitSet() == false)
         {
-            case JOIN_SIMPLE:
-            case SIMPLE:
-                List<HColumn<Composite, Object>> hColumns = executorImpl
-                        .findColumns(sliceQuery, context);
-                executorImpl.removeColumns(hColumns, sliceQuery.getConsistencyLevel(), context);
-                break;
-            case COUNTER:
-                List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(
-                        sliceQuery, context);
-                executorImpl.removeCounterColumns(hCounterColumns, sliceQuery.getConsistencyLevel(),
-                        context);
-                break;
-            default:
-                throw new AchillesException("Cannot remove clustered value of type '"
-                        + pm.type().name() + "' and clustered entity class '"
-                        + sliceQuery.getEntityClass().getCanonicalName() + "'");
+            executorImpl.removeRow(sliceQuery.getPartitionKey(), context, sliceQuery.getConsistencyLevel());
+        }
+        else
+        {
+            switch (pm.type())
+            {
+                case JOIN_SIMPLE:
+                case SIMPLE:
+                    List<HColumn<Composite, Object>> hColumns = executorImpl
+                            .findColumns(sliceQuery, context);
+                    executorImpl.removeColumns(hColumns, sliceQuery.getConsistencyLevel(), context);
+                    break;
+                case COUNTER:
+                    List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(
+                            sliceQuery, context);
+                    executorImpl.removeCounterColumns(hCounterColumns, sliceQuery.getConsistencyLevel(),
+                            context);
+                    break;
+                default:
+                    throw new AchillesException("Cannot remove clustered value of type '"
+                            + pm.type().name() + "' and clustered entity class '"
+                            + sliceQuery.getEntityClass().getCanonicalName() + "'");
+            }
         }
     }
 

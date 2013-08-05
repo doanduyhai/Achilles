@@ -74,9 +74,9 @@ public class ThriftPersisterImpl {
             }
 
             Validator.validateTrue(
-                    CounterImpl.class.isAssignableFrom(counter.getClass()), "Counter clustered entity '"
-                            + entityClassName + "' value should be of type '" + CounterImpl.class.getCanonicalName()
-                            + "'");
+                    CounterImpl.class.isAssignableFrom(counter.getClass()),
+                    "Counter clustered entity '%s' value should be of type '%s'", entityClassName,
+                    CounterImpl.class.getCanonicalName());
 
             CounterImpl counterValue = (CounterImpl) counter;
             context.getCounterDao().incrementCounter(rowKey, name, counterValue.get());
@@ -147,7 +147,7 @@ public class ThriftPersisterImpl {
         PropertyMeta<?, ?> idMeta = propertyMeta.joinIdMeta();
 
         Object joinId = invoker.getPrimaryKey(joinEntity, idMeta);
-        Validator.validateNotNull(joinId, "Primary key for join entity '" + joinEntity + "' should not be null");
+        Validator.validateNotNull(joinId, "Primary key for join entity '%s' should not be null", joinEntity);
         String joinIdString = idMeta.writeValueToString(joinId);
 
         Composite joinComposite = thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta);
@@ -247,8 +247,8 @@ public class ThriftPersisterImpl {
         if (pm.isJoin()) {
             Object joinId = invoker.getValueFromField(clusteredValue, pm.joinIdMeta().getGetter());
 
-            Validator.validateNotNull(joinId, "Primary key for join clustered value '" + clusteredValue
-                    + "' should not be null");
+            Validator.validateNotNull(joinId, "Primary key for join clustered value '%s' should not be null",
+                    clusteredValue);
 
             dao.setValueBatch(partitionKey, comp, joinId, context.getTttO(), mutator);
 
@@ -259,8 +259,8 @@ public class ThriftPersisterImpl {
         } else if (pm.isCounter()) {
             Validator.validateTrue(
                     CounterImpl.class.isAssignableFrom(clusteredValue.getClass()),
-                    "Counter clustered entity '" + className + "' value should be of type '"
-                            + CounterImpl.class.getCanonicalName() + "'");
+                    "Counter clustered entity '%s' value should be of type '%s'", className,
+                    CounterImpl.class.getCanonicalName());
             CounterImpl counterValue = (CounterImpl) clusteredValue;
             dao.incrementCounter(partitionKey, comp, counterValue.get());
         } else {

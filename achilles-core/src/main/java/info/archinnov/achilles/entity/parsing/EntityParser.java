@@ -8,7 +8,6 @@ import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -18,6 +17,7 @@ import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,8 +146,8 @@ public class EntityParser
         Validator.validateInstantiable(entityClass);
 
         ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
-        Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '"
-                + entityClass.getCanonicalName() + "'");
+        Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '%s'",
+                entityClass.getCanonicalName());
 
         log.debug("Set default object mapper {} for entity {}", objectMapper
                 .getClass()

@@ -23,11 +23,9 @@ public class CQLArgumentExtractor extends ArgumentExtractor
     {
         String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
         String port = (String) configurationMap.get(CONNECTION_PORT_PARAM);
-        Validator.validateNotBlank(contactPoints, CONNECTION_CONTACT_POINTS_PARAM
-                + " property should be provided");
-        Validator.validateNotBlank(port, CONNECTION_PORT_PARAM + " property should be provided");
-        Validator.validateTrue(NumberUtils.isNumber(port), CONNECTION_PORT_PARAM
-                + " property should be a number");
+        Validator.validateNotBlank(contactPoints, "%s property should be provided", CONNECTION_CONTACT_POINTS_PARAM);
+        Validator.validateNotBlank(port, "%s property should be provided", CONNECTION_PORT_PARAM);
+        Validator.validateTrue(NumberUtils.isNumber(port), "%s property should be a number", CONNECTION_PORT_PARAM);
 
         String[] contactPointsList = StringUtils.split(contactPoints, ",");
 
@@ -47,7 +45,7 @@ public class CQLArgumentExtractor extends ArgumentExtractor
     public Session initSession(Cluster cluster, Map<String, Object> configurationMap)
     {
         String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
-        Validator.validateNotBlank(keyspace, KEYSPACE_NAME_PARAM + " property should be provided");
+        Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 
         return cluster.connect(keyspace);
     }
