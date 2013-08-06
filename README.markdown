@@ -75,10 +75,21 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **2.0.1**:
+    * Add Spring Integration for CQL 
+    * Add new parameters for **CQLEntityManagerFactory**
+    * Enhance **SliceQueryBuilder** API
+    * Fix bug on Thrift clustered entity validation
+    * Fix small bug on CQL RawTyped queries
 * **2.0.0**:
-    * Official support for CQL3
-    * **BREAKING CHANGE**, removal of `@WideRow` annotation, replaced by clustered entities (see doc for more details) . 
+    * **Official support for CQL3**. See docs for more details    
+    * Remove custom `Pair` type, use the one provided by Cassandra
+    * Fixes bug during entities parsing when List/Set/Map have parameterized typse
+    * Add `removeById()` to EntityManager to avoid read-before-write pattern
     * **BREAKING CHANGE**, removal of `WideMap<K,V>` structure because its use cases are not consistent
+    * Add DML logs to display CQL statements at runtime
+    * Serialize **enum** types using name()
+    * **BREAKING CHANGE**, removal of `@WideRow` annotation, replaced by clustered entities and slice queries for getting data (see doc for more details) . 
 * **1.8.2**:
     * Support immutability for `@CompoundKey` classes (Issue #5). See https://github.com/doanduyhai/Achilles/issues/5#issuecomment-19882998 for more details on new syntax
     * **BREAKING CHANGE**, for `@CompoundKey`, enum types are serialized as String instead of Object (Issue #8)
