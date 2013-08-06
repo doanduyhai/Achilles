@@ -6,9 +6,7 @@
  - Dirty check for simple and collection/map type properties
  - Lazy loading 
  - Collections and map support
- - Native wide row mapping with dedicated annotations
- - Support for Cassandra wide rows mapping inside entities
- - Support for multi components column name with wide row
+ - Support for Cassandra clustered entities with compound primary key
  - Join columns with cascading support
  - Support for counters
  - Support for custom consistency levels
@@ -18,14 +16,22 @@
 
  To use **Achilles**, just add the following dependency in your **pom.xml**:
  
+ For **CQL** version:
+ 
+	<dependency>	
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles-cql</artifactId>
+		<version>2.0.1</version>
+	</dependency>  
+ 
+  For **Thrift** version:
+ 
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>1.8.2</version>
-	</dependency>  
- 
- Right now, only the **Thrift** implementation is available. The **CQL** version is in progress and relies on 
- **[Datastax Java Driver]** which is still in beta.
+		<version>2.0.1</version>
+	</dependency> 
+
  
  The framework has been released on **Sonatype OSS** repository so make sure you have the following
  entry in your **pom.xml**:
@@ -38,8 +44,9 @@
  
  For now, **Achilles** depends on the following libraries:
  
- 1. Cassandra 1.2.0
- 2. Hector-core 1.1-2 ( **Achilles** ThriftEntityManager is built upon Hector API)
+ 1. cassandra 1.2.4
+ 2. cassandra-driver-core 1.0.2 for the **CQL** version
+ 3. hector-core 1.1-2 for the **Thrift** version
  3. CGLIB nodep 2.2.2 for proxy building
  4. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
  5. Jackson asl, mapper & xc 1.9.3 
@@ -51,7 +58,7 @@
 
 # Advanced tutorial
 
- To get a deeper look on how you can use **Achilles**, check out the **[Twitter Demo]** application and read the **[Advanced Tutorial]** section
+ To get a deeper look on how you can use **Achilles Thrift version**, check out the **[Twitter Demo]** application and read the **[Advanced Tutorial]** section
  
 # Documentation
 
@@ -68,6 +75,10 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **2.0.0**:
+    * Official support for CQL3
+    * **BREAKING CHANGE**, removal of `@WideRow` annotation, replaced by clustered entities (see doc for more details) . 
+    * **BREAKING CHANGE**, removal of `WideMap<K,V>` structure because its use cases are not consistent
 * **1.8.2**:
     * Support immutability for `@CompoundKey` classes (Issue #5). See https://github.com/doanduyhai/Achilles/issues/5#issuecomment-19882998 for more details on new syntax
     * **BREAKING CHANGE**, for `@CompoundKey`, enum types are serialized as String instead of Object (Issue #8)
