@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -11,7 +10,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CompoundKeyWithEnum
 {
 

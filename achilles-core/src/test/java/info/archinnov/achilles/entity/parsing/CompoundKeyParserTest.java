@@ -46,7 +46,7 @@ public class CompoundKeyParserTest {
         Method rankSetter = CorrectCompoundKey.class.getMethod("setRank", int.class);
         Constructor<?> constructor = CorrectCompoundKey.class.getConstructor();
 
-        EmbeddedIdProperties props = parser.parseCompoundKey(CorrectCompoundKey.class);
+        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectCompoundKey.class);
 
         assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
         assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter);
@@ -64,7 +64,7 @@ public class CompoundKeyParserTest {
 
         Constructor<?> constructor = CompoundKeyByConstructor.class.getConstructor(Long.class, String.class);
 
-        EmbeddedIdProperties props = parser.parseCompoundKey(CompoundKeyByConstructor.class);
+        EmbeddedIdProperties props = parser.parseEmbeddedId(CompoundKeyByConstructor.class);
 
         assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
         assertThat(props.getComponentClasses()).containsExactly(Long.class, String.class);
@@ -82,7 +82,7 @@ public class CompoundKeyParserTest {
                 .expectMessage("The class 'java.util.List' is not a valid component type for the @CompoundKey class '"
                         + CompoundKeyIncorrectType.class.getCanonicalName() + "'");
 
-        parser.parseCompoundKey(CompoundKeyIncorrectType.class);
+        parser.parseEmbeddedId(CompoundKeyIncorrectType.class);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("The key orders is wrong for @CompoundKey class '"
                 + CompoundKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
-        parser.parseCompoundKey(CompoundKeyWithNegativeOrder.class);
+        parser.parseEmbeddedId(CompoundKeyWithNegativeOrder.class);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class CompoundKeyParserTest {
                 + CompoundKeyWithNoAnnotation.class.getCanonicalName()
                 + "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
 
-        parser.parseCompoundKey(CompoundKeyWithNoAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyWithNoAnnotation.class);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("The order '1' is duplicated in @CompoundKey class '"
                 + CompoundKeyWithDuplicateOrder.class.getCanonicalName() + "'");
 
-        parser.parseCompoundKey(CompoundKeyWithDuplicateOrder.class);
+        parser.parseEmbeddedId(CompoundKeyWithDuplicateOrder.class);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("The @CompoundKey class '" + CompoundKeyNotInstantiable.class.getCanonicalName()
                 + "' should have a public default constructor");
 
-        parser.parseCompoundKey(CompoundKeyNotInstantiable.class);
+        parser.parseEmbeddedId(CompoundKeyNotInstantiable.class);
     }
 
     @Test
@@ -133,7 +133,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("There should be exactly one constructor for @CompoundKey class '"
                 + CompoundKeyByConstructorWithoutOrderAnnotation.class.getCanonicalName()
                 + "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-        parser.parseCompoundKey(CompoundKeyByConstructorWithoutOrderAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorWithoutOrderAnnotation.class);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("There should be exactly one constructor for @CompoundKey class '"
                 + CompoundKeyByConstructorWithoutOrderAnnotation.class.getCanonicalName()
                 + "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-        parser.parseCompoundKey(CompoundKeyByConstructorWithoutOrderAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorWithoutOrderAnnotation.class);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("There should be exactly one constructor for @CompoundKey class '"
                 + CompoundKeyByConstructorWithoutJsonCreatorAnnotation.class.getCanonicalName()
                 + "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-        parser.parseCompoundKey(CompoundKeyByConstructorWithoutJsonCreatorAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorWithoutJsonCreatorAnnotation.class);
     }
 
     @Test
@@ -161,7 +161,7 @@ public class CompoundKeyParserTest {
                 .expectMessage("The property names defined by @JsonProperty should be unique for the @CompoundKey class '"
                         + CompoundKeyByConstructorWithDuplicateJsonPropertyNames.class.getCanonicalName()
                         + "'");
-        parser.parseCompoundKey(CompoundKeyByConstructorWithDuplicateJsonPropertyNames.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorWithDuplicateJsonPropertyNames.class);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("The constructor '" + constructor + "' of @CompoundKey class '"
                 + CompoundKeyByConstructorMissingOrderAnnotation.class.getCanonicalName()
                 + "' should have all its params annotated with @Order AND @JsonProperty");
-        parser.parseCompoundKey(CompoundKeyByConstructorMissingOrderAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorMissingOrderAnnotation.class);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class CompoundKeyParserTest {
         exception.expectMessage("The constructor '" + constructor + "' of @CompoundKey class '"
                 + CompoundKeyByConstructorMissingJsonPropertyAnnotation.class.getCanonicalName()
                 + "' should have all its params annotated with @Order AND @JsonProperty");
-        parser.parseCompoundKey(CompoundKeyByConstructorMissingJsonPropertyAnnotation.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorMissingJsonPropertyAnnotation.class);
     }
 
     @Test
@@ -192,7 +192,7 @@ public class CompoundKeyParserTest {
         exception.expect(AchillesBeanMappingException.class);
         exception
                 .expectMessage("@JsonProperty on constructor param should have a 'value' attribute for deserialization");
-        parser.parseCompoundKey(CompoundKeyByConstructorMissingJsonPropertyAnnotationAttribute.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorMissingJsonPropertyAnnotationAttribute.class);
     }
 
     @Test
@@ -203,7 +203,7 @@ public class CompoundKeyParserTest {
                 .expectMessage("There should be at least 2 components for the @CompoundKey class '"
                         + CompoundKeyWithOnlyOneComponent.class.getCanonicalName()
                         + "'");
-        parser.parseCompoundKey(CompoundKeyWithOnlyOneComponent.class);
+        parser.parseEmbeddedId(CompoundKeyWithOnlyOneComponent.class);
     }
 
     @Test
@@ -213,6 +213,6 @@ public class CompoundKeyParserTest {
         exception
                 .expectMessage("Cannot find field of type 'java.lang.String' and name 'name' in the @CompoundKey class "
                         + CompoundKeyByConstructorWithMissingField.class.getCanonicalName());
-        parser.parseCompoundKey(CompoundKeyByConstructorWithMissingField.class);
+        parser.parseEmbeddedId(CompoundKeyByConstructorWithMissingField.class);
     }
 }

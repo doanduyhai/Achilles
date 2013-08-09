@@ -1,15 +1,13 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
- * MultiKeyNotInstantiable
+ * CompoundKeyNotInstantiable
  * 
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CompoundKeyNotInstantiable
 {
     @Order(1)

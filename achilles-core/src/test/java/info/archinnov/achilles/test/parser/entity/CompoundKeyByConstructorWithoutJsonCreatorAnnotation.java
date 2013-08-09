@@ -1,10 +1,8 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-@CompoundKey
 public class CompoundKeyByConstructorWithoutJsonCreatorAnnotation {
 
     private Long id;

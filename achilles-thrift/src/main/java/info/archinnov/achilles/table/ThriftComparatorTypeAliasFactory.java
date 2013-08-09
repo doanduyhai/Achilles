@@ -1,6 +1,5 @@
 package info.archinnov.achilles.table;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.CompoundKeyParser;
@@ -27,8 +26,8 @@ public class ThriftComparatorTypeAliasFactory {
         List<String> comparatorTypes = new ArrayList<String>();
         String comparatorTypesAlias;
 
-        if (nameClass.getAnnotation(CompoundKey.class) != null) {
-            EmbeddedIdProperties multiKeyProperties = parser.parseCompoundKey(nameClass);
+        if (propertyMeta.isEmbeddedId()) {
+            EmbeddedIdProperties multiKeyProperties = parser.parseEmbeddedId(nameClass);
 
             for (Class<?> clazz : multiKeyProperties.getComponentClasses()) {
                 Serializer<?> srz = ThriftSerializerTypeInferer.getSerializer(clazz);

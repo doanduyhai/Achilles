@@ -8,7 +8,6 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@info.archinnov.achilles.annotations.CompoundKey
 public class CompoundKey
 {
     @Order(1)

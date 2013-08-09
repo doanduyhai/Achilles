@@ -29,20 +29,6 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     }
 
     /**
-     * Query using provided consistency level<br/>
-     * <br/>
-     * 
-     * @param consistencyLevel
-     *            consistency level
-     * @return SliceQueryBuilder
-     */
-    public SliceQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
-    {
-        super.consistencyLevel(consistencyLevel);
-        return this;
-    }
-
-    /**
      * Query by partition key and clustering components<br/>
      * <br/>
      * 
@@ -108,6 +94,20 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     public class SliceShortcutQueryBuilder extends DefaultQueryBuilder {
 
         protected SliceShortcutQueryBuilder() {
+        }
+
+        /**
+         * Query using provided consistency level<br/>
+         * <br/>
+         * 
+         * @param consistencyLevel
+         *            consistency level
+         * @return SliceShortcutQueryBuilder
+         */
+        public SliceShortcutQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel)
+        {
+            SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
+            return this;
         }
 
         /**
@@ -480,7 +480,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
          */
         public DefaultQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel)
         {
-            SliceQueryBuilder.super.consistencyLevel(consistencyLevel);
+            SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
             return this;
         }
 

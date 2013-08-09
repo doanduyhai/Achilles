@@ -1,15 +1,11 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
-
-
 /**
- * MultiKeyWithNoAnnotation
+ * CompoundKeyWithNoAnnotation
  * 
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CompoundKeyWithNoAnnotation
 {
     private String name;

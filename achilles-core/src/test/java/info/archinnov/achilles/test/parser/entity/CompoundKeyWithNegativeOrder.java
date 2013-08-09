@@ -1,15 +1,13 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
- * MultiKeyWithNegativeOrder
+ * CompoundKeyWithNegativeOrder
  * 
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CompoundKeyWithNegativeOrder
 {
     @Order(-1)

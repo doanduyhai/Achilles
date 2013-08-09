@@ -142,7 +142,7 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_consistency_level() throws Exception
     {
-        builder.partitionKeyInternal(10L).consistencyLevel(EACH_QUORUM);
+        builder.partitionKeyInternal(10L).consistencyLevelInternal(EACH_QUORUM);
 
         assertThat(builder.buildClusterQuery().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
     }
@@ -154,7 +154,7 @@ public class RootSliceQueryBuilderTest
         exception
                 .expectMessage("ConsistencyLevel for slice query for entity 'entityClass' should not be null");
 
-        builder.partitionKeyInternal(10L).consistencyLevel(null);
+        builder.partitionKeyInternal(10L).consistencyLevelInternal(null);
     }
 
     @Test

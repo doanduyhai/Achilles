@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
 /**
@@ -9,7 +8,6 @@ import info.archinnov.achilles.annotations.Order;
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CorrectCompoundKey
 {
     @Order(1)

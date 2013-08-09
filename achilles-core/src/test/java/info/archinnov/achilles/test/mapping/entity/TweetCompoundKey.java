@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.mapping.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import java.util.UUID;
 
@@ -10,7 +9,6 @@ import java.util.UUID;
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class TweetCompoundKey
 {
     @Order(2)

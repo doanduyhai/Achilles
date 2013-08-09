@@ -2,8 +2,6 @@ package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.helper.PropertyHelper.allowedTypes;
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -15,7 +13,6 @@ import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -25,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -356,20 +354,7 @@ public class PropertyParser
         log.trace("Parsing compound key class", keyClass.getCanonicalName());
         EmbeddedIdProperties embeddedIdProperties = null;
 
-        if (keyClass.getAnnotation(CompoundKey.class) != null)
-        {
-            embeddedIdProperties = compoundKeyParser.parseCompoundKey(keyClass);
-        }
-        else
-        {
-            PropertyParsingValidator
-                    .validateAllowedTypes(
-                            keyClass,
-                            allowedTypes,
-                            "The class '"
-                                    + keyClass.getCanonicalName()
-                                    + "' is not allowed as WideMap key. Did you forget to add @CompoundKey annotation ?");
-        }
+        embeddedIdProperties = compoundKeyParser.parseEmbeddedId(keyClass);
 
         log.trace("Built compound key properties", embeddedIdProperties);
         return embeddedIdProperties;

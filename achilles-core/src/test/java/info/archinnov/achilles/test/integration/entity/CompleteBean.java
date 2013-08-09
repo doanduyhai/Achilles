@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
@@ -25,8 +24,6 @@ import javax.persistence.OneToMany;
 @Entity
 public class CompleteBean
 {
-
-    public static final long serialVersionUID = 151L;
 
     @Id
     private Long id;
@@ -159,7 +156,6 @@ public class CompleteBean
         this.favoriteTweets = favoriteTweets;
     }
 
-    @CompoundKey
     public static class UserTweetKey
     {
         @Order(1)

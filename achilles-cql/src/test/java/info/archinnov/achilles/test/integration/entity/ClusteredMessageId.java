@@ -1,9 +1,7 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 
-@CompoundKey
 public class ClusteredMessageId {
 
     @Order(1)

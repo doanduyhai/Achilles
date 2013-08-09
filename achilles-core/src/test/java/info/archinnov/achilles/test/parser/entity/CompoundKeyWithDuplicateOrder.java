@@ -1,16 +1,14 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import java.util.Date;
 
 /**
- * MultiKeyWithDuplicateOrder
+ * CompoundKeyWithDuplicateOrder
  * 
  * @author DuyHai DOAN
  * 
  */
-@CompoundKey
 public class CompoundKeyWithDuplicateOrder
 {
     @Order(1)

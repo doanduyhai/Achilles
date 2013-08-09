@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 import javax.persistence.Column;
@@ -78,7 +77,6 @@ public class ClusteredEntityWithCounter
         return true;
     }
 
-    @CompoundKey
     public static class ClusteredKey
     {
         @Column

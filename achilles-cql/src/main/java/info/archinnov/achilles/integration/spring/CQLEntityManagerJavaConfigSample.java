@@ -39,6 +39,9 @@ public class CQLEntityManagerJavaConfigSample
     @Value("#{cassandraProperties['achilles.cassandra.connection.port']}")
     private Integer port;
 
+    @Value("#{cassandraProperties['achilles.cassandra.keyspace.name']}")
+    private String keyspaceName;
+
     @Autowired
     private RetryPolicy retryPolicy;
 
@@ -109,6 +112,7 @@ public class CQLEntityManagerJavaConfigSample
 
         configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
         configMap.put(CONNECTION_PORT_PARAM, port);
+        configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 
         //Default compression set to Snappy
         configMap.put(COMPRESSION_TYPE, Compression.SNAPPY);

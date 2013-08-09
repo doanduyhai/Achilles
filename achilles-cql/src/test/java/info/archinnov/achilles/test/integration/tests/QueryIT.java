@@ -15,7 +15,6 @@ import java.util.Set;
 import net.sf.cglib.proxy.Factory;
 import org.junit.After;
 import org.junit.Test;
-import com.datastax.driver.core.Session;
 
 /**
  * QueryIT
@@ -24,8 +23,6 @@ import com.datastax.driver.core.Session;
  * 
  */
 public class QueryIT {
-
-    private Session session = CQLCassandraDaoTest.getCqlSession();
 
     private CQLEntityManager em = CQLCassandraDaoTest.getEm();
 
@@ -62,7 +59,6 @@ public class QueryIT {
 
         String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
                 + entity1.getId() + "," + entity2.getId() + ")";
-        session.execute(nativeQuery);
 
         List<Map<String, Object>> actual = em.nativeQuery(nativeQuery).get();
 

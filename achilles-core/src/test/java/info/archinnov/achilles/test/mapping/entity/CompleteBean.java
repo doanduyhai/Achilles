@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.mapping.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
@@ -160,7 +159,6 @@ public class CompleteBean
         this.usersMap = usersMap;
     }
 
-    @CompoundKey
     public static class UserTweetKey
     {
         @Order(1)

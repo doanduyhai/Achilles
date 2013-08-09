@@ -1,12 +1,10 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import javax.persistence.Column;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-@CompoundKey
 public class CompoundKeyByConstructorWithMissingField {
 
     @Column(name = "primaryKey")

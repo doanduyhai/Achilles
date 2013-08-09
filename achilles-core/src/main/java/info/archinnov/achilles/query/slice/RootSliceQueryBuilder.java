@@ -84,7 +84,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
         return this;
     }
 
-    protected RootSliceQueryBuilder<CONTEXT, T> consistencyLevel(ConsistencyLevel consistencyLevel)
+    protected RootSliceQueryBuilder<CONTEXT, T> consistencyLevelInternal(ConsistencyLevel consistencyLevel)
     {
         Validator.validateNotNull(consistencyLevel,
                 "ConsistencyLevel for slice query for entity '%s' should not be null", meta.getClassName());

@@ -84,7 +84,7 @@ public class CompoundKeyParser
         }
     };
 
-    public EmbeddedIdProperties parseCompoundKey(Class<?> keyClass)
+    public EmbeddedIdProperties parseEmbeddedId(Class<?> keyClass)
     {
         log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
 

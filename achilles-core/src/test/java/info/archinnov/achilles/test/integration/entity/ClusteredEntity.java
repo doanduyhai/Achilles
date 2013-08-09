@@ -1,6 +1,5 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -88,7 +87,6 @@ public class ClusteredEntity
         return true;
     }
 
-    @CompoundKey
     public static class ClusteredKey
     {
         @Column

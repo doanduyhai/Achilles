@@ -1,10 +1,8 @@
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.CompoundKey;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 
-@CompoundKey
 public class CompoundKeyWithEnum {
 
     @Order(1)
